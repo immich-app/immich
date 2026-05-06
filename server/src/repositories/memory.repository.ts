@@ -9,11 +9,10 @@ import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
-import { withoutNsfwAssets } from 'src/utils/database';
+import { getHiddenContentFilter, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-type MemoryPrivacyOptions = {
-  excludeNsfw?: boolean;
-};
+type MemoryPrivacyOptions = HiddenContentQueryOptions;
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
@@ -46,7 +45,7 @@ export class MemoryRepository implements IBulkAsset {
       )
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
       .where('ownerId', '=', ownerId)
-      .$if(!!options.excludeNsfw, (qb) =>
+      .$if(!!getHiddenContentFilter(options), (qb) =>
         qb.where((eb) =>
           eb.or([
             eb.not((eb) =>
@@ -65,7 +64,7 @@ export class MemoryRepository implements IBulkAsset {
                 .whereRef('memory_asset.memoriesId', '=', 'memory.id')
                 .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
                 .where('asset.deletedAt', 'is', null)
-                .$call(withoutNsfwAssets),
+                .$call((qb) => withHiddenContentFilter(qb, options)),
             ),
           ]),
         ),
@@ -98,7 +97,7 @@ export class MemoryRepository implements IBulkAsset {
             .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
             .where('asset.deletedAt', 'is', null)
-            .$if(!!options.excludeNsfw, withoutNsfwAssets),
+            .$call((qb) => withHiddenContentFilter(qb, options)),
         ).as('assets'),
       )
       .selectAll('memory')
@@ -195,12 +194,12 @@ export class MemoryRepository implements IBulkAsset {
             .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
             .where('asset.deletedAt', 'is', null)
-            .$if(!!options.excludeNsfw, withoutNsfwAssets),
+            .$call((qb) => withHiddenContentFilter(qb, options)),
         ).as('assets'),
       )
       .where('id', '=', id)
       .where('deletedAt', 'is', null)
-      .$if(!!options.excludeNsfw, (qb) =>
+      .$if(!!getHiddenContentFilter(options), (qb) =>
         qb.where((eb) =>
           eb.or([
             eb.not((eb) =>
@@ -219,7 +218,7 @@ export class MemoryRepository implements IBulkAsset {
                 .whereRef('memory_asset.memoriesId', '=', 'memory.id')
                 .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
                 .where('asset.deletedAt', 'is', null)
-                .$call(withoutNsfwAssets),
+                .$call((qb) => withHiddenContentFilter(qb, options)),
             ),
           ]),
         ),

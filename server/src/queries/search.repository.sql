@@ -95,7 +95,7 @@ limit
   $7
 offset
   $8
-commit
+rollback
 
 -- SearchRepository.getEmbedding
 select
@@ -134,7 +134,7 @@ from
   "cte"
 where
   "cte"."distance" <= $4
-commit
+rollback
 
 -- SearchRepository.searchPlaces
 select

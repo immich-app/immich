@@ -10,26 +10,28 @@ from
 where
   "activity"."id" in ($1)
   and "activity"."userId" = $2
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "asset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "asset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 
 -- AccessRepository.activity.checkAlbumOwnerAccess
@@ -46,26 +48,28 @@ from
   and "album_user"."userId" = $1::uuid
 where
   "activity"."id" in ($2)
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "asset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "asset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 
 -- AccessRepository.activity.checkCreateAccess
@@ -215,26 +219,28 @@ where
   and "asset"."deletedAt" is null
   and "asset"."visibility" in ('archive', 'timeline')
   and "asset"."stackId" is null
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "asset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "asset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 group by
   "asset"."duplicateId"
@@ -269,26 +275,28 @@ where
         "memory_asset"."memoriesId" = "memory"."id"
         and "asset"."visibility" = 'timeline'
         and "asset"."deletedAt" is null
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $3
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $3
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )
@@ -334,26 +342,28 @@ where
         "asset_face"."personId" = "person"."id"
         and "asset_face"."deletedAt" is null
         and "asset_face"."isVisible" is true
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $3
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $3
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )
@@ -368,26 +378,28 @@ from
 where
   "asset_face"."id" in ($1)
   and "asset"."ownerId" = $2
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "asset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "asset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 
 -- AccessRepository.partner.checkUpdateAccess
@@ -418,26 +430,28 @@ where
   "stack"."id" in ($1)
   and "stack"."ownerId" = $2
   and "primaryAsset"."deletedAt" is null
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "primaryAsset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "primaryAsset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 
 -- AccessRepository.tag.checkOwnerAccess
@@ -470,22 +484,32 @@ where
           select
             1
           from
-            asset_metadata
+            asset as hidden_content_asset
           where
-            asset_metadata."assetId" = "tag_asset"."assetId"
-            and asset_metadata.key = $3
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+            hidden_content_asset.id = "tag_asset"."assetId"
+            and (
+              exists (
+                select
+                  1
+                from
+                  asset_metadata
+                where
+                  asset_metadata."assetId" = "hidden_content_asset"."id"
+                  and asset_metadata.key = $3
+                  and coalesce(
+                    (
+                      asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                    )::boolean,
+                    (
+                      asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                    )::boolean,
+                    (
+                      asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                    )::boolean,
+                    false
+                  ) = true
+              )
+            )
         )
     )
   )

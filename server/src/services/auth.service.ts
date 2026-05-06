@@ -26,7 +26,9 @@ import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
+import { HiddenContentFilter, hasHiddenContentFilter } from 'src/utils/hidden-content';
 import { isNsfwHidingEnabled } from 'src/utils/misc';
+import { getPreferences } from 'src/utils/preferences';
 import { generateProfileImage } from 'src/utils/profile-image';
 import { getUserAgentDetails } from 'src/utils/request';
 export interface LoginDetails {
@@ -240,11 +242,30 @@ export class AuthService extends BaseService {
     }
 
     const { machineLearning } = await this.getConfig({ withCache: true });
-    if (isNsfwHidingEnabled(machineLearning) && !authDto.session?.hasElevatedPermission) {
+    const hiddenContent = await this.getHiddenContentFilter(authDto, isNsfwHidingEnabled(machineLearning));
+    if (hasHiddenContentFilter(hiddenContent)) {
+      authDto.suppressedContent = hiddenContent;
+    }
+
+    if (hasHiddenContentFilter(hiddenContent) && !authDto.session?.hasElevatedPermission) {
+      authDto.hiddenContent = hiddenContent;
       authDto.hideNsfwAssets = true;
     }
 
     return authDto;
+  }
+
+  private async getHiddenContentFilter(auth: AuthDto, includeNsfw: boolean): Promise<HiddenContentFilter> {
+    const metadata = (await this.userRepository.getMetadata(auth.user.id)) ?? [];
+    const suppression = getPreferences(metadata).privacy.suppression;
+
+    return {
+      userId: auth.user.id,
+      includeNsfw,
+      tagIds: suppression.tagIds,
+      personIds: suppression.personIds,
+      scope: suppression.scope,
+    };
   }
 
   private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {

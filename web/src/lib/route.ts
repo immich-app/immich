@@ -103,6 +103,8 @@ export const Route = {
   archive: () => '/archive',
   favorites: () => '/favorites',
   locked: () => '/locked',
+  suppressed: (params?: { tab?: 'timeline' | 'albums' }) => '/suppressed' + asQueryString(params),
+  suppressedAlbum: ({ id }: { id: string }) => `/suppressed/albums/${id}`,
   trash: () => '/trash',
   viewTrashedAsset: ({ id }: { id: string }) => `/trash/photos/${id}`,
 

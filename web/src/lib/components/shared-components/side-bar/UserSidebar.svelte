@@ -26,6 +26,8 @@
     mdiMagnify,
     mdiMap,
     mdiMapOutline,
+    mdiShieldLock,
+    mdiShieldLockOutline,
     mdiTagMultipleOutline,
     mdiToolbox,
     mdiToolboxOutline,
@@ -97,6 +99,13 @@
   />
 
   <NavbarItem title={$t('locked_folder')} href={Route.locked()} icon={mdiLockOutline} activeIcon={mdiLock} />
+
+  <NavbarItem
+    title={$t('suppressed_content')}
+    href={Route.suppressed()}
+    icon={mdiShieldLockOutline}
+    activeIcon={mdiShieldLock}
+  />
 
   {#if featureFlagsManager.value.trash}
     <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />

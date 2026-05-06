@@ -1656,6 +1656,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "suppressedOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return album metadata for suppressed content only",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1955,6 +1964,15 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "suppressedOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return album metadata for suppressed content only",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -9531,6 +9549,15 @@
             }
           },
           {
+            "name": "suppressedOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "tagIds",
             "required": false,
             "in": "query",
@@ -13463,6 +13490,15 @@
             }
           },
           {
+            "name": "suppressedOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -13650,6 +13686,15 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "suppressedOnly",
+            "required": false,
+            "in": "query",
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -19142,6 +19187,10 @@
             "nullable": true,
             "type": "string"
           },
+          "suppressedOnly": {
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "type": "boolean"
+          },
           "tagIds": {
             "description": "Filter by tag IDs",
             "items": {
@@ -20625,6 +20674,27 @@
         ],
         "type": "string"
       },
+      "PrivacyResponse": {
+        "description": "Privacy preferences",
+        "properties": {
+          "suppression": {
+            "$ref": "#/components/schemas/SuppressionResponse"
+          }
+        },
+        "required": [
+          "suppression"
+        ],
+        "type": "object"
+      },
+      "PrivacyUpdate": {
+        "description": "Privacy preferences",
+        "properties": {
+          "suppression": {
+            "$ref": "#/components/schemas/SuppressionUpdate"
+          }
+        },
+        "type": "object"
+      },
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
@@ -21095,6 +21165,10 @@
             "description": "Filter by state/province name",
             "nullable": true,
             "type": "string"
+          },
+          "suppressedOnly": {
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "type": "boolean"
           },
           "tagIds": {
             "description": "Filter by tag IDs",
@@ -22493,6 +22567,10 @@
             "nullable": true,
             "type": "string"
           },
+          "suppressedOnly": {
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "type": "boolean"
+          },
           "tagIds": {
             "description": "Filter by tag IDs",
             "items": {
@@ -22750,6 +22828,10 @@
             "nullable": true,
             "type": "string"
           },
+          "suppressedOnly": {
+            "description": "Return only suppressed content. Requires an elevated session.",
+            "type": "boolean"
+          },
           "tagIds": {
             "description": "Filter by tag IDs",
             "items": {
@@ -22822,6 +22904,68 @@
           "backups"
         ],
         "type": "string"
+      },
+      "SuppressionResponse": {
+        "properties": {
+          "personIds": {
+            "description": "Person IDs to suppress from locked browsing sessions",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/SuppressionScope",
+            "description": "Whether suppression applies only to owned assets or all visible assets"
+          },
+          "tagIds": {
+            "description": "Tag IDs to suppress from locked browsing sessions",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "personIds",
+          "scope",
+          "tagIds"
+        ],
+        "type": "object"
+      },
+      "SuppressionScope": {
+        "enum": [
+          "owned",
+          "visible"
+        ],
+        "type": "string"
+      },
+      "SuppressionUpdate": {
+        "properties": {
+          "personIds": {
+            "description": "Person IDs to suppress from locked browsing sessions",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/SuppressionScope",
+            "description": "Whether suppression applies only to owned assets or all visible assets"
+          },
+          "tagIds": {
+            "description": "Tag IDs to suppress from locked browsing sessions",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
       },
       "SyncAckDeleteDto": {
         "properties": {
@@ -26324,6 +26468,9 @@
           "people": {
             "$ref": "#/components/schemas/PeopleResponse"
           },
+          "privacy": {
+            "$ref": "#/components/schemas/PrivacyResponse"
+          },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseResponse"
           },
@@ -26345,6 +26492,7 @@
           "folders",
           "memories",
           "people",
+          "privacy",
           "purchase",
           "ratings",
           "sharedLinks",
@@ -26377,6 +26525,9 @@
           },
           "people": {
             "$ref": "#/components/schemas/PeopleUpdate"
+          },
+          "privacy": {
+            "$ref": "#/components/schemas/PrivacyUpdate"
           },
           "purchase": {
             "$ref": "#/components/schemas/PurchaseUpdate"

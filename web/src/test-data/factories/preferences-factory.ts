@@ -1,4 +1,4 @@
-import { AssetOrder, type UserPreferencesResponseDto } from '@immich/sdk';
+import { AssetOrder, SuppressionScope, type UserPreferencesResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
 
 export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
@@ -28,6 +28,13 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
   people: {
     enabled: false,
     sidebarWeb: false,
+  },
+  privacy: {
+    suppression: {
+      personIds: [],
+      scope: SuppressionScope.Owned,
+      tagIds: [],
+    },
   },
   purchase: {
     hideBuyButtonUntil: '',

@@ -17,6 +17,7 @@
     showOwner?: boolean;
     showDateRange?: boolean;
     showItemCount?: boolean;
+    getAlbumHref?: (album: AlbumResponseDto) => string;
     onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
   }
 
@@ -26,6 +27,7 @@
     showOwner = false,
     showDateRange = false,
     showItemCount = false,
+    getAlbumHref = Route.viewAlbum,
     onShowContextMenu = undefined,
   }: Props = $props();
 
@@ -64,10 +66,10 @@
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         <a
-          href={Route.viewAlbum(album)}
+          href={getAlbumHref(album)}
           class="h-fit"
           animate:flip={{ duration: 400 }}
-          oncontextmenu={(event) => oncontextmenu(event, album)}
+          oncontextmenu={(event) => (onShowContextMenu ? oncontextmenu(event, album) : undefined)}
         >
           <AlbumCard
             {album}

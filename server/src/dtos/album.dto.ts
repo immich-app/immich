@@ -69,8 +69,15 @@ const GetAlbumsSchema = z
       .optional()
       .describe('Filter by shared status: true = only shared, false = not shared, undefined = all owned albums'),
     assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores shared parameter)'),
+    suppressedOnly: stringToBool.optional().describe('Return album metadata for suppressed content only'),
   })
   .meta({ id: 'GetAlbumsDto' });
+
+const GetAlbumInfoSchema = z
+  .object({
+    suppressedOnly: stringToBool.optional().describe('Return album metadata for suppressed content only'),
+  })
+  .meta({ id: 'GetAlbumInfoDto' });
 
 const AlbumStatisticsResponseSchema = z
   .object({
@@ -142,6 +149,7 @@ export class AlbumsAddAssetsDto extends createZodDto(AlbumsAddAssetsSchema) {}
 export class AlbumsAddAssetsResponseDto extends createZodDto(AlbumsAddAssetsResponseSchema) {}
 export class UpdateAlbumDto extends createZodDto(UpdateAlbumSchema) {}
 export class GetAlbumsDto extends createZodDto(GetAlbumsSchema) {}
+export class GetAlbumInfoDto extends createZodDto(GetAlbumInfoSchema) {}
 export class AlbumStatisticsResponseDto extends createZodDto(AlbumStatisticsResponseSchema) {}
 export class UpdateAlbumUserDto extends createZodDto(UpdateAlbumUserSchema) {}
 export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}

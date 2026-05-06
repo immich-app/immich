@@ -79,22 +79,32 @@ where
           select
             1
           from
-            asset_metadata
+            asset as hidden_content_asset
           where
-            asset_metadata."assetId" = "tag_asset"."assetId"
-            and asset_metadata.key = $2
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+            hidden_content_asset.id = "tag_asset"."assetId"
+            and (
+              exists (
+                select
+                  1
+                from
+                  asset_metadata
+                where
+                  asset_metadata."assetId" = "hidden_content_asset"."id"
+                  and asset_metadata.key = $2
+                  and coalesce(
+                    (
+                      asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                    )::boolean,
+                    (
+                      asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                    )::boolean,
+                    (
+                      asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                    )::boolean,
+                    false
+                  ) = true
+              )
+            )
         )
     )
   )
@@ -149,11 +159,4 @@ begin
 delete from "tag_asset"
 where
   "assetId" = $1
-insert into
-  "tag_asset" ("tagId", "assetId")
-values
-  ($1, $2)
-on conflict do nothing
-returning
-  *
 rollback

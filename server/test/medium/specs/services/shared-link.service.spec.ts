@@ -12,6 +12,7 @@ import { StorageRepository } from 'src/repositories/storage.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { SharedLinkService } from 'src/services/shared-link.service';
+import type { HiddenContentFilter } from 'src/utils/hidden-content';
 import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
@@ -167,6 +168,49 @@ describe(SharedLinkService.name, () => {
     const visibleResponse = await sut.getMine({ user, sharedLink }, []);
     expect(visibleResponse.assets.map(({ id }) => id)).toEqual(
       expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]),
+    );
+  });
+
+  it('should hide configured tag and person assets from public individual shared-link payloads', async () => {
+    const { sut, ctx } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+
+    const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: tagSuppressed } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: faceSuppressed } = await ctx.newAsset({ ownerId: user.id });
+
+    for (const assetId of [visible.id, tagSuppressed.id, faceSuppressed.id]) {
+      await ctx.newExif({ assetId, make: 'Canon' });
+    }
+
+    const [tag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['medical'] });
+    await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [tagSuppressed.id] });
+
+    const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Private Person' });
+    await ctx.newAssetFace({ assetId: faceSuppressed.id, personId: person.id });
+
+    const sharedLink = await ctx.get(SharedLinkRepository).create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: [visible.id, tagSuppressed.id, faceSuppressed.id],
+    });
+
+    const hiddenContent: HiddenContentFilter = {
+      userId: user.id,
+      includeNsfw: false,
+      tagIds: [tag.id],
+      personIds: [person.id],
+      scope: 'owned',
+    };
+    const hiddenResponse = await sut.getMine({ user, sharedLink, hideNsfwAssets: true, hiddenContent }, []);
+    expect(hiddenResponse.assets.map(({ id }) => id)).toEqual([visible.id]);
+
+    const visibleResponse = await sut.getMine({ user, sharedLink }, []);
+    expect(visibleResponse.assets.map(({ id }) => id)).toEqual(
+      expect.arrayContaining([visible.id, tagSuppressed.id, faceSuppressed.id]),
     );
   });
 

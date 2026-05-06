@@ -18,18 +18,19 @@ import { AlbumUserRole } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { asUuid, dummy, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
+import { asUuid, dummy, withDefaultVisibility, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
 export interface AlbumAssetCount {
   albumId: string;
   assetCount: number;
+  thumbnailAssetId?: string | null;
   startDate: Date | null;
   endDate: Date | null;
   lastModifiedAssetTimestamp: Date | null;
 }
 
-export interface AlbumInfoOptions {
-  excludeNsfw?: boolean;
+export interface AlbumInfoOptions extends HiddenContentQueryOptions {
   withAssets: boolean;
 }
 
@@ -67,7 +68,7 @@ const withAssets = (options: AlbumInfoOptions) => (eb: ExpressionBuilder<DB, 'al
         .whereRef('album_asset.albumId', '=', 'album.id')
         .where('asset.deletedAt', 'is', null)
         .$call(withDefaultVisibility)
-        .$if(!!options.excludeNsfw, withoutNsfwAssets)
+        .$call((qb) => withHiddenContentFilter(qb, options))
         .orderBy('asset.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -104,13 +105,13 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { excludeNsfw: true }] })
-  getByAssetId(ownerId: string, assetId: string, options: { excludeNsfw?: boolean } = {}) {
+  getByAssetId(ownerId: string, assetId: string, options: HiddenContentQueryOptions = {}) {
     return this.db
       .selectFrom('album')
       .selectAll('album')
       .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
-      .$if(!!options.excludeNsfw, (qb) =>
-        qb.innerJoin('asset', 'asset.id', 'album_asset.assetId').$call(withoutNsfwAssets),
+      .$call((qb) =>
+        qb.innerJoin('asset', 'asset.id', 'album_asset.assetId').$call((qb) => withHiddenContentFilter(qb, options)),
       )
       .where((eb) =>
         eb.exists(
@@ -164,7 +165,7 @@ export class AlbumRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
-  async getMetadataForIds(ids: string[], options: { excludeNsfw?: boolean } = {}): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[], options: HiddenContentQueryOptions = {}): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (ids.length === 0) {
       return [];
@@ -174,13 +175,16 @@ export class AlbumRepository {
       this.db
         .selectFrom('asset')
         .$call(withDefaultVisibility)
-        .$if(!!options.excludeNsfw, withoutNsfwAssets)
+        .$call((qb) => withHiddenContentFilter(qb, options))
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
         .select('album_asset.albumId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
         .select((eb) => eb.fn.max(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('endDate'))
         // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
         .select((eb) => eb.fn.max('asset.updatedAt').as('lastModifiedAssetTimestamp'))
+        .select(
+          sql<string | null>`(array_agg("asset"."id" order by "asset"."fileCreatedAt" desc))[1]`.as('thumbnailAssetId'),
+        )
         .select((eb) => sql<number>`${eb.fn.count('asset.id')}::int`.as('assetCount'))
         .where('album_asset.albumId', 'in', ids)
         .where('asset.deletedAt', 'is', null)

@@ -8,6 +8,7 @@ import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -130,6 +131,6 @@ export class DownloadService extends BaseService {
   }
 
   private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? { excludeNsfw: true } : undefined;
+    return auth.hideNsfwAssets ? getHiddenContentQueryOptions(auth) : undefined;
   }
 }

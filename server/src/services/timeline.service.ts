@@ -6,6 +6,7 @@ import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { getPrivacyQueryOptions, requireSuppressedOnlyAccess } from 'src/utils/hidden-content';
 
 @Injectable()
 export class TimelineService extends BaseService {
@@ -26,7 +27,7 @@ export class TimelineService extends BaseService {
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const { userId, ...options } = dto;
+    const { userId, suppressedOnly, ...options } = dto;
     let userIds: string[] | undefined = undefined;
 
     if (userId) {
@@ -41,10 +42,12 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}), userIds };
+    return { ...options, ...getPrivacyQueryOptions(auth, suppressedOnly), userIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
+    requireSuppressedOnlyAccess(auth, dto.suppressedOnly);
+
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }

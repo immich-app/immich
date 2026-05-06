@@ -7,11 +7,10 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagTable } from 'src/schema/tables/tag.table';
-import { tagHasVisibleAssetOrNoAssets } from 'src/utils/database';
+import { getHiddenContentFilter, tagHasVisibleAssetOrNoAssets } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-export interface TagSearchOptions {
-  excludeNsfw?: boolean;
-}
+export interface TagSearchOptions extends HiddenContentQueryOptions {}
 
 @Injectable()
 export class TagRepository {
@@ -79,7 +78,9 @@ export class TagRepository {
       .selectFrom('tag')
       .select(columns.tag)
       .where('userId', '=', userId)
-      .$if(!!options.excludeNsfw, (qb) => qb.where(tagHasVisibleAssetOrNoAssets(sql.ref('tag.id'))))
+      .$if(!!getHiddenContentFilter(options), (qb) =>
+        qb.where(tagHasVisibleAssetOrNoAssets(sql.ref('tag.id'), getHiddenContentFilter(options))),
+      )
       .orderBy('value')
       .execute();
   }

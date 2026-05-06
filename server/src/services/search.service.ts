@@ -22,6 +22,7 @@ import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { getHiddenContentQueryOptions, getPrivacyQueryOptions } from 'src/utils/hidden-content';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -39,7 +40,7 @@ export class SearchService extends BaseService {
   }
 
   async getExploreData(auth: AuthDto) {
-    const options = { ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}), maxFields: 12, minAssetsPerField: 5 };
+    const options = { ...getHiddenContentQueryOptions(auth), maxFields: 12, minAssetsPerField: 5 };
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
     const assets = await this.assetRepository.getByIdsWithAllRelationsButStacks(cities.items.map(({ data }) => data));
     const items = assets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
@@ -47,6 +48,9 @@ export class SearchService extends BaseService {
   }
 
   async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
+    const { suppressedOnly, ...searchDto } = dto;
+    const privacyOptions = getPrivacyQueryOptions(auth, suppressedOnly);
+
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
@@ -63,9 +67,9 @@ export class SearchService extends BaseService {
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {
-        ...dto,
+        ...searchDto,
         checksum,
-        ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+        ...privacyOptions,
         userIds,
         orderDirection: dto.order ?? AssetOrder.Desc,
       },
@@ -75,44 +79,51 @@ export class SearchService extends BaseService {
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
+    const { suppressedOnly, ...searchDto } = dto;
     const userIds = await this.getUserIdsToSearch(auth);
 
     return await this.searchRepository.searchStatistics({
-      ...dto,
-      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      ...searchDto,
+      ...getPrivacyQueryOptions(auth, suppressedOnly),
       userIds,
     });
   }
 
   async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
+    const { suppressedOnly, ...searchDto } = dto;
+
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
     const items = await this.searchRepository.searchRandom(dto.size || 250, {
-      ...dto,
-      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      ...searchDto,
+      ...getPrivacyQueryOptions(auth, suppressedOnly),
       userIds,
     });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
   async searchLargeAssets(auth: AuthDto, dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
+    const { suppressedOnly, ...searchDto } = dto;
+
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 
     const userIds = await this.getUserIdsToSearch(auth);
     const items = await this.searchRepository.searchLargeAssets(dto.size || 250, {
-      ...dto,
-      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      ...searchDto,
+      ...getPrivacyQueryOptions(auth, suppressedOnly),
       userIds,
     });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
+    const { suppressedOnly, ...searchDto } = dto;
+
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
@@ -149,7 +160,7 @@ export class SearchService extends BaseService {
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}), userIds: await userIds, embedding },
+      { ...searchDto, ...getPrivacyQueryOptions(auth, suppressedOnly), userIds: await userIds, embedding },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
@@ -157,10 +168,7 @@ export class SearchService extends BaseService {
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
     const userIds = await this.getUserIdsToSearch(auth);
-    const assets = await this.searchRepository.getAssetsByCity(
-      userIds,
-      auth.hideNsfwAssets ? { excludeNsfw: true } : {},
-    );
+    const assets = await this.searchRepository.getAssetsByCity(userIds, getHiddenContentQueryOptions(auth));
     return assets.map((asset) => mapAsset(asset));
   }
 
@@ -178,13 +186,11 @@ export class SearchService extends BaseService {
     dto: SearchSuggestionRequestDto,
     auth: AuthDto,
   ): Promise<Array<string | null>> {
-    const nsfwOptions = auth.hideNsfwAssets ? { excludeNsfw: true } : undefined;
+    const nsfwOptions = getHiddenContentQueryOptions(auth);
 
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return auth.hideNsfwAssets
-          ? this.searchRepository.getCountries(userIds, nsfwOptions)
-          : this.searchRepository.getCountries(userIds);
+        return this.searchRepository.getCountries(userIds, nsfwOptions);
       }
       case SearchSuggestionType.STATE: {
         return this.searchRepository.getStates(userIds, { country: dto.country, ...nsfwOptions });

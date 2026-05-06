@@ -11,6 +11,7 @@ import { SearchRepository } from 'src/repositories/search.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { SearchService } from 'src/services/search.service';
+import type { HiddenContentFilter } from 'src/utils/hidden-content';
 import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
@@ -168,6 +169,57 @@ describe(SearchService.name, () => {
       expect(unlockedResponse.assets.items.map(({ id }) => id)).toEqual(
         expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]),
       );
+    });
+
+    it('should return only configured tag, person, and NSFW assets when suppressedOnly is requested', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: tagSuppressed } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: faceSuppressed } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: nsfwSuppressed } = await ctx.newAsset({ ownerId: user.id });
+
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['medical'] });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [tagSuppressed.id] });
+
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Private Person' });
+      await ctx.newAssetFace({ assetId: faceSuppressed.id, personId: person.id });
+
+      await ctx.newMetadata({
+        assetId: nsfwSuppressed.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      const suppressedContent: HiddenContentFilter = {
+        userId: user.id,
+        includeNsfw: true,
+        tagIds: [tag.id],
+        personIds: [person.id],
+        scope: 'owned',
+      };
+      const hiddenAuth = {
+        ...factory.auth({ user: { id: user.id } }),
+        hideNsfwAssets: true,
+        hiddenContent: suppressedContent,
+      };
+      const elevatedAuth = {
+        ...factory.auth({ user: { id: user.id } }),
+        session: { id: factory.uuid(), hasElevatedPermission: true },
+        suppressedContent,
+      };
+
+      const hiddenResponse = await sut.searchMetadata(hiddenAuth, {});
+      expect(hiddenResponse.assets.items.map(({ id }) => id)).toEqual([visible.id]);
+
+      const suppressedResponse = await sut.searchMetadata(elevatedAuth, { suppressedOnly: true });
+      expect(suppressedResponse.assets.items.map(({ id }) => id)).toEqual(
+        expect.arrayContaining([tagSuppressed.id, faceSuppressed.id, nsfwSuppressed.id]),
+      );
+      expect(suppressedResponse.assets.items.map(({ id }) => id)).not.toEqual(expect.arrayContaining([visible.id]));
+
+      await expect(sut.searchStatistics(elevatedAuth, { suppressedOnly: true })).resolves.toEqual({ total: 3 });
     });
   });
 

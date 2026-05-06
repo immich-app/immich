@@ -3,6 +3,7 @@ import { AuthSharedLink } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserRole, Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import type { HiddenContentFilter } from 'src/utils/hidden-content';
 import { setDifference, setIsEqual, setIsSuperset, setUnion } from 'src/utils/set';
 
 export type GrantedRequest = {
@@ -26,11 +27,13 @@ export type AccessRequest = {
 
 type SharedLinkAccessRequest = {
   sharedLink: AuthSharedLink;
-  hideNsfwAssets?: boolean;
+  hideNsfwAssets?: boolean | HiddenContentFilter;
   permission: Permission;
   ids: Set<string>;
 };
 type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
+
+const accessPrivacy = (auth: AuthDto) => auth.hiddenContent ?? auth.hideNsfwAssets;
 
 const checkAssetOwnerAccess = (
   access: AccessRepository,
@@ -38,53 +41,53 @@ const checkAssetOwnerAccess = (
   ids: Set<string>,
   hasElevatedPermission: boolean | undefined,
 ) =>
-  auth.hideNsfwAssets
-    ? access.asset.checkOwnerAccess(auth.user.id, ids, hasElevatedPermission, true)
+  accessPrivacy(auth)
+    ? access.asset.checkOwnerAccess(auth.user.id, ids, hasElevatedPermission, accessPrivacy(auth))
     : access.asset.checkOwnerAccess(auth.user.id, ids, hasElevatedPermission);
 
 const checkAssetAlbumAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.asset.checkAlbumAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.asset.checkAlbumAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.asset.checkAlbumAccess(auth.user.id, ids);
 
 const checkAssetPartnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.asset.checkPartnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.asset.checkPartnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.asset.checkPartnerAccess(auth.user.id, ids);
 
 const checkPersonOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.person.checkOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.person.checkOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.person.checkOwnerAccess(auth.user.id, ids);
 
 const checkPersonFaceOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.person.checkFaceOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.person.checkFaceOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.person.checkFaceOwnerAccess(auth.user.id, ids);
 
 const checkActivityOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.activity.checkOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.activity.checkOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.activity.checkOwnerAccess(auth.user.id, ids);
 
 const checkActivityAlbumOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.activity.checkAlbumOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.activity.checkAlbumOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.activity.checkAlbumOwnerAccess(auth.user.id, ids);
 
 const checkDuplicateOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.duplicate.checkOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.duplicate.checkOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.duplicate.checkOwnerAccess(auth.user.id, ids);
 
 const checkMemoryOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.memory.checkOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.memory.checkOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.memory.checkOwnerAccess(auth.user.id, ids);
 
 const checkStackOwnerAccess = (access: AccessRepository, auth: AuthDto, ids: Set<string>) =>
-  auth.hideNsfwAssets
-    ? access.stack.checkOwnerAccess(auth.user.id, ids, true)
+  accessPrivacy(auth)
+    ? access.stack.checkOwnerAccess(auth.user.id, ids, accessPrivacy(auth))
     : access.stack.checkOwnerAccess(auth.user.id, ids);
 
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
@@ -113,7 +116,7 @@ export const checkAccess = async (
   return auth.sharedLink
     ? checkSharedLinkAccess(access, {
         sharedLink: auth.sharedLink,
-        hideNsfwAssets: auth.hideNsfwAssets,
+        hideNsfwAssets: accessPrivacy(auth),
         permission,
         ids: idSet,
       })
@@ -130,13 +133,13 @@ const checkSharedLinkAccess = async (
   switch (permission) {
     case Permission.AssetRead: {
       return hideNsfwAssets
-        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, true)
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, hideNsfwAssets)
         : await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AssetView: {
       return hideNsfwAssets
-        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, true)
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, hideNsfwAssets)
         : await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
@@ -145,7 +148,7 @@ const checkSharedLinkAccess = async (
         return new Set();
       }
       return hideNsfwAssets
-        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, true)
+        ? await access.asset.checkSharedLinkAccess(sharedLinkId, ids, hideNsfwAssets)
         : await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
@@ -333,7 +336,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     case Permission.TagRead:
     case Permission.TagUpdate:
     case Permission.TagDelete: {
-      return await access.tag.checkOwnerAccess(auth.user.id, ids, auth.hideNsfwAssets);
+      return await access.tag.checkOwnerAccess(auth.user.id, ids, accessPrivacy(auth));
     }
 
     case Permission.TimelineRead: {

@@ -31,6 +31,7 @@ import {
   UserMetadataKey,
   VideoCodec,
 } from 'src/enum';
+import type { SuppressionPreferences } from 'src/utils/hidden-content';
 
 export type DeepPartial<T> =
   T extends Record<string, unknown>
@@ -565,6 +566,9 @@ export type UserPreferences = {
   };
   cast: {
     gCastEnabled: boolean;
+  };
+  privacy: {
+    suppression: SuppressionPreferences;
   };
 };
 

@@ -3,11 +3,10 @@ import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { anyUuid, withoutNsfwAssets } from 'src/utils/database';
+import { anyUuid, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-type DownloadPrivacyOptions = {
-  excludeNsfw?: boolean;
-};
+type DownloadPrivacyOptions = HiddenContentQueryOptions;
 
 const builder = (db: Kysely<DB>, options: DownloadPrivacyOptions = {}) =>
   db
@@ -15,7 +14,7 @@ const builder = (db: Kysely<DB>, options: DownloadPrivacyOptions = {}) =>
     .innerJoin('asset_exif', 'assetId', 'id')
     .select(['asset.id', 'asset.livePhotoVideoId', 'asset_exif.fileSizeInByte as size'])
     .where('asset.deletedAt', 'is', null)
-    .$if(!!options.excludeNsfw, withoutNsfwAssets);
+    .$call((qb) => withHiddenContentFilter(qb, options));
 
 @Injectable()
 export class DownloadRepository {

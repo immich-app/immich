@@ -4,6 +4,8 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { UUIDAssetIDParamDto } from 'src/validation';
 
 @Injectable()
@@ -84,7 +86,7 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
   }
 
-  private async findOrFail(id: string, options?: { excludeNsfw: true }) {
+  private async findOrFail(id: string, options?: HiddenContentQueryOptions) {
     const stack = options ? await this.stackRepository.getById(id, options) : await this.stackRepository.getById(id);
     if (!stack) {
       throw new Error('Asset stack not found');
@@ -94,6 +96,6 @@ export class StackService extends BaseService {
   }
 
   private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? ({ excludeNsfw: true } as const) : undefined;
+    return auth.hideNsfwAssets ? getHiddenContentQueryOptions(auth) : undefined;
   }
 }

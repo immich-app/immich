@@ -110,7 +110,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: false, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA']);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], {});
     });
 
     it('should exclude NSFW assets from suggestions when privacy hiding is active', async () => {
@@ -132,7 +132,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, { includeNull: true, type: SearchSuggestionType.COUNTRY }),
       ).resolves.toEqual(['USA', null]);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], {});
     });
 
     it('should return search suggestions for state', async () => {

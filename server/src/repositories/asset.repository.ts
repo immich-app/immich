@@ -28,8 +28,9 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   anyUuid,
   asUuid,
+  getHiddenContentFilter,
   hasPeople,
-  nsfwAssetIdExists,
+  hiddenContentAssetIdExists,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -40,14 +41,16 @@ import {
   withFacesAndPeople,
   withFilePath,
   withFiles,
+  withHiddenContentFilter,
+  withHiddenContentOnly,
   withLibrary,
   withNsfwAssets,
-  withoutNsfwAssets,
   withOwner,
   withSmartSearch,
   withTagId,
   withTags,
 } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
@@ -59,16 +62,13 @@ export interface BoundingBox {
   north: number;
 }
 
-interface AssetStatsOptions {
-  excludeNsfw?: boolean;
+interface AssetStatsOptions extends HiddenContentQueryOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
   visibility?: AssetVisibility;
 }
 
-interface AssetChecksumOptions {
-  excludeNsfw?: boolean;
-}
+interface AssetChecksumOptions extends HiddenContentQueryOptions {}
 
 interface LivePhotoSearchOptions {
   ownerId: string;
@@ -78,8 +78,7 @@ interface LivePhotoSearchOptions {
   type: AssetType;
 }
 
-interface AssetBuilderOptions {
-  excludeNsfw?: boolean;
+interface AssetBuilderOptions extends HiddenContentQueryOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
@@ -111,8 +110,7 @@ export interface YearMonthDay {
   year: number;
 }
 
-interface AssetExploreFieldOptions {
-  excludeNsfw?: boolean;
+interface AssetExploreFieldOptions extends HiddenContentQueryOptions {
   maxFields: number;
   minAssetsPerField: number;
 }
@@ -668,7 +666,7 @@ export class AssetRepository {
       .select(['id', 'checksum', 'deletedAt'])
       .where('ownerId', '=', asUuid(userId))
       .where('checksum', 'in', checksums)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .execute();
   }
 
@@ -684,7 +682,7 @@ export class AssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .where('libraryId', 'is', null)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .limit(1)
       .executeTakeFirst();
 
@@ -705,10 +703,8 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  getStatistics(
-    ownerId: string,
-    { excludeNsfw, visibility, isFavorite, isTrashed }: AssetStatsOptions,
-  ): Promise<AssetStats> {
+  getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats> {
+    const { visibility, isFavorite, isTrashed } = options;
     return this.db
       .selectFrom('asset')
       .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Audio).as(AssetType.Audio))
@@ -720,7 +716,7 @@ export class AssetRepository {
       .$if(!!visibility, (qb) => qb.where('asset.visibility', '=', visibility!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
       .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
-      .$if(!!excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
       .executeTakeFirstOrThrow();
   }
@@ -750,7 +746,7 @@ export class AssetRepository {
           })
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
-          .$if(!!options.excludeNsfw, withoutNsfwAssets)
+          .$call((qb) => withHiddenContentFilter(qb, options))
           .$if(!!options.albumId, (qb) =>
             qb
               .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
@@ -785,8 +781,9 @@ export class AssetRepository {
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const order = options.order ?? 'desc';
-    const livePhotoVideoId = options.excludeNsfw
-      ? sql`case when ${nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId'))} then null else asset."livePhotoVideoId" end`.as(
+    const hiddenContent = getHiddenContentFilter(options);
+    const livePhotoVideoId = hiddenContent
+      ? sql`case when ${hiddenContentAssetIdExists(sql.ref('asset.livePhotoVideoId'), hiddenContent)} then null else asset."livePhotoVideoId" end`.as(
           'livePhotoVideoId',
         )
       : 'asset.livePhotoVideoId';
@@ -829,7 +826,7 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
-          .$if(!!options.excludeNsfw, withoutNsfwAssets)
+          .$call((qb) => withHiddenContentFilter(qb, options))
           .$if(!!options.bbox, (qb) => {
             const bbox = options.bbox!;
             const circle = getBoundingCircle(bbox);
@@ -876,7 +873,7 @@ export class AssetRepository {
                     .whereRef('stacked.stackId', '=', 'asset.stackId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.visibility', '=', AssetVisibility.Timeline)
-                    .$if(!!options.excludeNsfw, (qb) => withoutNsfwAssets(qb, 'stacked'))
+                    .$call((qb) => withHiddenContentFilter(qb, options, 'stacked'))
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -931,7 +928,8 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
-  async getAssetIdByCity(ownerId: string, { excludeNsfw, minAssetsPerField, maxFields }: AssetExploreFieldOptions) {
+  async getAssetIdByCity(ownerId: string, options: AssetExploreFieldOptions) {
+    const { minAssetsPerField, maxFields } = options;
     const items = await this.db
       .with('cities', (qb) =>
         qb
@@ -951,7 +949,7 @@ export class AssetRepository {
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
-      .$if(!!excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .limit(maxFields)
       .execute();
 
@@ -970,6 +968,21 @@ export class AssetRepository {
       .select('asset.id')
       .where('asset.id', '=', anyUuid(ids))
       .$call(withNsfwAssets)
+      .execute();
+    return new Set(rows.map(({ id }) => id));
+  }
+
+  async getHiddenContentAssetIds(ids: string[], options: HiddenContentQueryOptions): Promise<Set<string>> {
+    const hiddenContent = getHiddenContentFilter(options);
+    if (ids.length === 0 || !hiddenContent) {
+      return new Set();
+    }
+
+    const rows = await this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .where('asset.id', '=', anyUuid(ids))
+      .$call((qb) => withHiddenContentOnly(qb, hiddenContent))
       .execute();
     return new Set(rows.map(({ id }) => id));
   }

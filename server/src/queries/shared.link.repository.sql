@@ -54,6 +54,29 @@ select
         where
           "shared_link"."id" = "shared_link_asset"."sharedLinkId"
           and "asset"."deletedAt" is null
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $1
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -125,6 +148,29 @@ from
         where
           "album_asset"."assetId" = "asset"."id"
           and "asset"."deletedAt" is null
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $2
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as "assets" on true
@@ -158,10 +204,10 @@ from
       "owner".*
   ) as "album" on true
 where
-  "shared_link"."id" = $1
-  and "shared_link"."userId" = $2
+  "shared_link"."id" = $3
+  and "shared_link"."userId" = $4
   and (
-    "shared_link"."type" = $3
+    "shared_link"."type" = $5
     or "album"."id" is not null
   )
 order by

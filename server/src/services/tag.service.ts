@@ -17,12 +17,13 @@ import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { upsertTags } from 'src/utils/tag';
 
 @Injectable()
 export class TagService extends BaseService {
   async getAll(auth: AuthDto) {
-    const tags = await this.tagRepository.getAll(auth.user.id, { excludeNsfw: auth.hideNsfwAssets === true });
+    const tags = await this.tagRepository.getAll(auth.user.id, getHiddenContentQueryOptions(auth));
     return tags.map((tag) => mapTag(tag));
   }
 

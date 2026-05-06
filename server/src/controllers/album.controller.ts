@@ -8,6 +8,7 @@ import {
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
+  GetAlbumInfoDto,
   GetAlbumsDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
@@ -65,8 +66,12 @@ export class AlbumController {
     description: 'Retrieve information about a specific album by its ID.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getAlbumInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumResponseDto> {
-    return this.service.get(auth, id);
+  getAlbumInfo(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() query: GetAlbumInfoDto,
+  ): Promise<AlbumResponseDto> {
+    return this.service.get(auth, id, query);
   }
 
   @Patch(':id')

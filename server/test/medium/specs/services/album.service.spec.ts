@@ -9,6 +9,7 @@ import { MapRepository } from 'src/repositories/map.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { AlbumService } from 'src/services/album.service';
+import type { HiddenContentFilter } from 'src/utils/hidden-content';
 import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
@@ -88,6 +89,102 @@ describe(AlbumService.name, () => {
 
       await expect(albumRepository.getAssetIds(markedNsfwAlbum.id, [markedNsfw.id])).resolves.toEqual(
         new Set([markedNsfw.id]),
+      );
+    });
+
+    it('should compute suppressed-only album metadata and thumbnails from configured tags, people, and NSFW assets', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+
+      const { asset: visible } = await ctx.newAsset({
+        ownerId: user.id,
+        fileCreatedAt: new Date('2024-01-01T00:00:00.000Z'),
+      });
+      const { asset: faceSuppressed } = await ctx.newAsset({
+        ownerId: user.id,
+        fileCreatedAt: new Date('2024-02-01T00:00:00.000Z'),
+      });
+      const { asset: tagSuppressed } = await ctx.newAsset({
+        ownerId: user.id,
+        fileCreatedAt: new Date('2024-03-01T00:00:00.000Z'),
+      });
+      const { asset: nsfwSuppressed } = await ctx.newAsset({
+        ownerId: user.id,
+        fileCreatedAt: new Date('2024-04-01T00:00:00.000Z'),
+      });
+      const { asset: otherVisible } = await ctx.newAsset({ ownerId: user.id });
+
+      const { album: mixedAlbum } = await ctx.newAlbum({ ownerId: user.id, albumThumbnailAssetId: visible.id }, [
+        visible.id,
+        faceSuppressed.id,
+        tagSuppressed.id,
+        nsfwSuppressed.id,
+      ]);
+      const { album: visibleOnlyAlbum } = await ctx.newAlbum(
+        { ownerId: user.id, albumThumbnailAssetId: otherVisible.id },
+        [otherVisible.id],
+      );
+
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['medical'] });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [tagSuppressed.id] });
+
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Private Person' });
+      await ctx.newAssetFace({ assetId: faceSuppressed.id, personId: person.id });
+
+      await ctx.newMetadata({
+        assetId: nsfwSuppressed.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      const suppressedContent: HiddenContentFilter = {
+        userId: user.id,
+        includeNsfw: true,
+        tagIds: [tag.id],
+        personIds: [person.id],
+        scope: 'owned',
+      };
+      const hiddenAuth = {
+        ...factory.auth({ user: { id: user.id } }),
+        hideNsfwAssets: true,
+        hiddenContent: suppressedContent,
+      };
+      const elevatedAuth = {
+        ...factory.auth({ user: { id: user.id } }),
+        session: { id: factory.uuid(), hasElevatedPermission: true },
+        suppressedContent,
+      };
+
+      const hiddenAlbums = await sut.getAll(hiddenAuth, {});
+      expect(hiddenAlbums).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: mixedAlbum.id, assetCount: 1, albumThumbnailAssetId: visible.id }),
+          expect.objectContaining({ id: visibleOnlyAlbum.id, assetCount: 1, albumThumbnailAssetId: otherVisible.id }),
+        ]),
+      );
+
+      const suppressedAlbums = await sut.getAll(elevatedAuth, { suppressedOnly: true });
+      expect(suppressedAlbums).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: mixedAlbum.id,
+            assetCount: 3,
+            albumThumbnailAssetId: nsfwSuppressed.id,
+          }),
+          expect.objectContaining({
+            id: visibleOnlyAlbum.id,
+            assetCount: 0,
+            albumThumbnailAssetId: null,
+          }),
+        ]),
+      );
+
+      await expect(sut.get(elevatedAuth, mixedAlbum.id, { suppressedOnly: true })).resolves.toEqual(
+        expect.objectContaining({
+          id: mixedAlbum.id,
+          assetCount: 3,
+          albumThumbnailAssetId: nsfwSuppressed.id,
+        }),
       );
     });
   });

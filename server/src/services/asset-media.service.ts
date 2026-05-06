@@ -35,6 +35,7 @@ import { requireUploadAccess } from 'src/utils/access';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
 
@@ -332,7 +333,7 @@ export class AssetMediaService extends BaseService {
   }
 
   private getDuplicateCheckOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? ({ excludeNsfw: true } as const) : undefined;
+    return auth.hideNsfwAssets ? getHiddenContentQueryOptions(auth) : undefined;
   }
 
   private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {

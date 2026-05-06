@@ -27,6 +27,7 @@ const TimeBucketQueryBaseSchema = z
       'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
     ),
     withCoordinates: stringToBool.optional().describe('Include location data in the response'),
+    suppressedOnly: stringToBool.optional().describe('Return only suppressed content. Requires an elevated session.'),
     key: z.string().optional(),
     slug: z.string().optional(),
     bbox: z

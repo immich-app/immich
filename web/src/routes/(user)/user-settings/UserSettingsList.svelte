@@ -4,6 +4,7 @@
   import DownloadSettings from './DownloadSettings.svelte';
   import FeatureSettings from './FeatureSettings.svelte';
   import NotificationsSettings from './NotificationsSettings.svelte';
+  import SuppressedContentSettings from './SuppressedContentSettings.svelte';
   import UserPurchaseSettings from './UserPurchaseSettings.svelte';
   import UserUsageStatistic from './UserUsageStatistic.svelte';
   import { OpenQueryParam, QueryParameter } from '$lib/constants';
@@ -23,6 +24,7 @@
     mdiKeyOutline,
     mdiLockSmart,
     mdiServerOutline,
+    mdiShieldLockOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -100,6 +102,16 @@
     subtitle={$t('features_setting_description')}
   >
     <FeatureSettings />
+  </SettingAccordion>
+
+  <SettingAccordion
+    icon={mdiShieldLockOutline}
+    key="suppressed-content"
+    title={$t('suppressed_content')}
+    subtitle={$t('suppressed_content_settings_description')}
+    autoScrollTo={true}
+  >
+    <SuppressedContentSettings />
   </SettingAccordion>
 
   <SettingAccordion

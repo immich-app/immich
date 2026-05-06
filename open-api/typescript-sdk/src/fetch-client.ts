@@ -301,6 +301,17 @@ export type PeopleResponse = {
     /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
 };
+export type SuppressionResponse = {
+    /** Person IDs to suppress from locked browsing sessions */
+    personIds: string[];
+    /** Whether suppression applies only to owned assets or all visible assets */
+    scope: SuppressionScope;
+    /** Tag IDs to suppress from locked browsing sessions */
+    tagIds: string[];
+};
+export type PrivacyResponse = {
+    suppression: SuppressionResponse;
+};
 export type PurchaseResponse = {
     /** Date until which to hide buy button */
     hideBuyButtonUntil: string;
@@ -331,6 +342,7 @@ export type UserPreferencesResponseDto = {
     folders: FoldersResponse;
     memories: MemoriesResponse;
     people: PeopleResponse;
+    privacy: PrivacyResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
     sharedLinks: SharedLinksResponse;
@@ -378,6 +390,17 @@ export type PeopleUpdate = {
     /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
 };
+export type SuppressionUpdate = {
+    /** Person IDs to suppress from locked browsing sessions */
+    personIds?: string[];
+    /** Whether suppression applies only to owned assets or all visible assets */
+    scope?: SuppressionScope;
+    /** Tag IDs to suppress from locked browsing sessions */
+    tagIds?: string[];
+};
+export type PrivacyUpdate = {
+    suppression?: SuppressionUpdate;
+};
 export type PurchaseUpdate = {
     /** Date until which to hide buy button */
     hideBuyButtonUntil?: string;
@@ -409,6 +432,7 @@ export type UserPreferencesUpdateDto = {
     folders?: FoldersUpdate;
     memories?: MemoriesUpdate;
     people?: PeopleUpdate;
+    privacy?: PrivacyUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
     sharedLinks?: SharedLinksUpdate;
@@ -1741,6 +1765,8 @@ export type MetadataSearchDto = {
     size?: number;
     /** Filter by state/province name */
     state?: string | null;
+    /** Return only suppressed content. Requires an elevated session. */
+    suppressedOnly?: boolean;
     /** Filter by tag IDs */
     tagIds?: string[] | null;
     /** Filter by taken date (after) */
@@ -1853,6 +1879,8 @@ export type RandomSearchDto = {
     size?: number;
     /** Filter by state/province name */
     state?: string | null;
+    /** Return only suppressed content. Requires an elevated session. */
+    suppressedOnly?: boolean;
     /** Filter by tag IDs */
     tagIds?: string[] | null;
     /** Filter by taken date (after) */
@@ -1926,6 +1954,8 @@ export type SmartSearchDto = {
     size?: number;
     /** Filter by state/province name */
     state?: string | null;
+    /** Return only suppressed content. Requires an elevated session. */
+    suppressedOnly?: boolean;
     /** Filter by tag IDs */
     tagIds?: string[] | null;
     /** Filter by taken date (after) */
@@ -1987,6 +2017,8 @@ export type StatisticsSearchDto = {
     rating?: number | null;
     /** Filter by state/province name */
     state?: string | null;
+    /** Return only suppressed content. Requires an elevated session. */
+    suppressedOnly?: boolean;
     /** Filter by tag IDs */
     tagIds?: string[] | null;
     /** Filter by taken date (after) */
@@ -3746,16 +3778,18 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, shared }: {
+export function getAllAlbums({ assetId, shared, suppressedOnly }: {
     assetId?: string;
     shared?: boolean;
+    suppressedOnly?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
-        shared
+        shared,
+        suppressedOnly
     }))}`, {
         ...opts
     }));
@@ -3815,17 +3849,19 @@ export function deleteAlbum({ id }: {
 /**
  * Retrieve an album
  */
-export function getAlbumInfo({ id, key, slug }: {
+export function getAlbumInfo({ id, key, slug, suppressedOnly }: {
     id: string;
     key?: string;
     slug?: string;
+    suppressedOnly?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto;
     }>(`/albums/${encodeURIComponent(id)}${QS.query(QS.explode({
         key,
-        slug
+        slug,
+        suppressedOnly
     }))}`, {
         ...opts
     }));
@@ -5513,7 +5549,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, imageEnrichment, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, imageEnrichment, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, suppressedOnly, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -5535,6 +5571,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     rating?: number | null;
     size?: number;
     state?: string | null;
+    suppressedOnly?: boolean;
     tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
@@ -5572,6 +5609,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         rating,
         size,
         state,
+        suppressedOnly,
         tagIds,
         takenAfter,
         takenBefore,
@@ -6444,7 +6482,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, suppressedOnly, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6453,6 +6491,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     order?: AssetOrder;
     personId?: string;
     slug?: string;
+    suppressedOnly?: boolean;
     tagId?: string;
     timeBucket: string;
     userId?: string;
@@ -6473,6 +6512,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         order,
         personId,
         slug,
+        suppressedOnly,
         tagId,
         timeBucket,
         userId,
@@ -6487,7 +6527,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, suppressedOnly, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
@@ -6496,6 +6536,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     order?: AssetOrder;
     personId?: string;
     slug?: string;
+    suppressedOnly?: boolean;
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
@@ -6515,6 +6556,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         order,
         personId,
         slug,
+        suppressedOnly,
         tagId,
         userId,
         visibility,
@@ -6895,6 +6937,10 @@ export enum UserStatus {
 export enum AssetOrder {
     Asc = "asc",
     Desc = "desc"
+}
+export enum SuppressionScope {
+    Owned = "owned",
+    Visible = "visible"
 }
 export enum AssetVisibility {
     Archive = "archive",

@@ -6,6 +6,7 @@ import {
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
+  GetAlbumInfoDto,
   GetAlbumsDto,
   mapAlbum,
   MapAlbumDto,
@@ -20,6 +21,7 @@ import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.reposi
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { asDateString } from 'src/utils/date';
+import { getHiddenContentQueryOptions, getPrivacyQueryOptions } from 'src/utils/hidden-content';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -38,13 +40,14 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll(auth: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll(auth: AuthDto, { assetId, shared, suppressedOnly }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
     const ownerId = auth.user.id;
+    const privacyOptions = this.nsfwOptions(auth, suppressedOnly);
     let albums: MapAlbumDto[];
     if (assetId) {
-      albums = await this.albumRepository.getByAssetId(ownerId, assetId, this.nsfwOptions(auth));
+      albums = await this.albumRepository.getByAssetId(ownerId, assetId, privacyOptions);
     } else if (shared === true) {
       albums = await this.albumRepository.getShared(ownerId);
     } else if (shared === false) {
@@ -52,18 +55,17 @@ export class AlbumService extends BaseService {
     } else {
       albums = await this.albumRepository.getOwned(ownerId);
     }
-    albums = await this.hideNsfwAlbumThumbnails(auth, albums);
-
     // Get asset count for each album. Then map the result to an object:
     // { [albumId]: assetCount }
     const results = await this.albumRepository.getMetadataForIds(
       albums.map((album) => album.id),
-      this.nsfwOptions(auth),
+      privacyOptions,
     );
     const albumMetadata: Record<string, AlbumAssetCount> = {};
     for (const metadata of results) {
       albumMetadata[metadata.albumId] = metadata;
     }
+    albums = await this.hideNsfwAlbumThumbnails(auth, albums, privacyOptions, albumMetadata);
 
     return albums.map((album) => ({
       ...mapAlbum(album),
@@ -76,16 +78,19 @@ export class AlbumService extends BaseService {
     }));
   }
 
-  async get(auth: AuthDto, id: string): Promise<AlbumResponseDto> {
+  async get(auth: AuthDto, id: string, { suppressedOnly }: GetAlbumInfoDto = {}): Promise<AlbumResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
     await this.albumRepository.updateThumbnails();
+    const privacyOptions = this.nsfwOptions(auth, suppressedOnly);
     const album = await this.findOrFail(id, auth, { withAssets: false });
-    const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id], this.nsfwOptions(auth));
+    const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id], privacyOptions);
 
     const hasSharedUsers = album.albumUsers && album.albumUsers.length > 1;
     const hasSharedLink = album.sharedLinks && album.sharedLinks.length > 0;
     const isShared = hasSharedUsers || hasSharedLink;
-    const [mappedAlbum] = await this.hideNsfwAlbumThumbnails(auth, [album]);
+    const [mappedAlbum] = await this.hideNsfwAlbumThumbnails(auth, [album], privacyOptions, {
+      [album.id]: albumMetadataForIds,
+    });
 
     return {
       ...mapAlbum(mappedAlbum),
@@ -354,19 +359,31 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
-  private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? { excludeNsfw: true } : {};
+  private nsfwOptions(auth: AuthDto, suppressedOnly?: boolean) {
+    return suppressedOnly ? getPrivacyQueryOptions(auth, true) : getHiddenContentQueryOptions(auth);
   }
 
-  private async hideNsfwAlbumThumbnails<T extends MapAlbumDto>(auth: AuthDto, albums: T[]): Promise<T[]> {
-    if (!auth.hideNsfwAssets) {
+  private async hideNsfwAlbumThumbnails<T extends MapAlbumDto>(
+    auth: AuthDto,
+    albums: T[],
+    options = this.nsfwOptions(auth),
+    albumMetadata: Record<string, AlbumAssetCount | undefined> = {},
+  ): Promise<T[]> {
+    if (options.onlyHiddenContent) {
+      return albums.map((album) => ({
+        ...album,
+        albumThumbnailAssetId: albumMetadata[album.id]?.thumbnailAssetId ?? null,
+      }));
+    }
+
+    if (!options.excludeNsfw && !options.hiddenContent && !options.onlyHiddenContent) {
       return albums;
     }
 
     const thumbnailIds = albums.flatMap(({ albumThumbnailAssetId }) =>
       albumThumbnailAssetId ? [albumThumbnailAssetId] : [],
     );
-    const nsfwThumbnailIds = await this.assetRepository.getNsfwAssetIds(thumbnailIds);
+    const nsfwThumbnailIds = await this.assetRepository.getHiddenContentAssetIds(thumbnailIds, options);
 
     return albums.map((album) =>
       album.albumThumbnailAssetId && nsfwThumbnailIds.has(album.albumThumbnailAssetId)

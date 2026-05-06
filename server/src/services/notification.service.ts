@@ -24,9 +24,10 @@ import {
 import { EmailTemplate } from 'src/repositories/email.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { EmailImageAttachment, JobOf } from 'src/types';
+import { EmailImageAttachment, JobOf, UserMetadataItem } from 'src/types';
 import { getFilenameExtension } from 'src/utils/file';
-import { getExternalDomain } from 'src/utils/misc';
+import { hasHiddenContentFilter, HiddenContentFilter } from 'src/utils/hidden-content';
+import { getExternalDomain, isNsfwHidingEnabled } from 'src/utils/misc';
 import { isEqualObject } from 'src/utils/object';
 import { getPreferences } from 'src/utils/preferences';
 
@@ -316,13 +317,14 @@ export class NotificationService extends BaseService {
 
     await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, senderName);
 
-    const { emailNotifications } = getPreferences(recipient.metadata);
+    const preferences = getPreferences(recipient.metadata);
+    const { emailNotifications } = preferences;
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
       return JobStatus.Skipped;
     }
 
-    const attachment = await this.getAlbumThumbnailAttachment(album);
+    const attachment = await this.getAlbumThumbnailAttachment(album, await this.getEmailHiddenContentFilter(recipient));
 
     const { server, templates } = await this.getConfig({ withCache: false });
     const { html, text } = await this.emailRepository.renderEmail({
@@ -367,7 +369,7 @@ export class NotificationService extends BaseService {
 
     await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumUpdate);
 
-    const attachment = await this.getAlbumThumbnailAttachment(album);
+    const attachment = await this.getAlbumThumbnailAttachment(album, await this.getEmailHiddenContentFilter(recipient));
 
     const { server, templates } = await this.getConfig({ withCache: false });
 
@@ -432,14 +434,19 @@ export class NotificationService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async getAlbumThumbnailAttachment(album: {
-    albumThumbnailAssetId: string | null;
-  }): Promise<EmailImageAttachment | undefined> {
+  private async getAlbumThumbnailAttachment(
+    album: {
+      albumThumbnailAssetId: string | null;
+    },
+    hiddenContent: HiddenContentFilter,
+  ): Promise<EmailImageAttachment | undefined> {
     if (!album.albumThumbnailAssetId) {
       return;
     }
 
-    const nsfwThumbnailIds = await this.assetRepository.getNsfwAssetIds([album.albumThumbnailAssetId]);
+    const nsfwThumbnailIds = hasHiddenContentFilter(hiddenContent)
+      ? await this.assetRepository.getHiddenContentAssetIds([album.albumThumbnailAssetId], { hiddenContent })
+      : new Set<string>();
     if (nsfwThumbnailIds.has(album.albumThumbnailAssetId)) {
       return;
     }
@@ -457,6 +464,22 @@ export class NotificationService extends BaseService {
       filename: `album-thumbnail${getFilenameExtension(albumThumbnailFiles[0].path)}`,
       path: albumThumbnailFiles[0].path,
       cid: 'album-thumbnail',
+    };
+  }
+
+  private async getEmailHiddenContentFilter(user: {
+    id: string;
+    metadata: UserMetadataItem[];
+  }): Promise<HiddenContentFilter> {
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    const suppression = getPreferences(user.metadata).privacy.suppression;
+
+    return {
+      userId: user.id,
+      includeNsfw: isNsfwHidingEnabled(machineLearning),
+      tagIds: suppression.tagIds,
+      personIds: suppression.personIds,
+      scope: suppression.scope,
     };
   }
 

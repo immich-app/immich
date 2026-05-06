@@ -14,10 +14,10 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { DB } from 'src/schema';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
-import { withoutNsfwAssets } from 'src/utils/database';
+import { withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-export interface MapMarkerSearchOptions {
-  excludeNsfw?: boolean;
+export interface MapMarkerSearchOptions extends HiddenContentQueryOptions {
   isArchived?: boolean;
   isFavorite?: boolean;
   fileCreatedBefore?: Date;
@@ -73,22 +73,19 @@ export class MapRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAlbumMapMarkers(albumId: string, options: { excludeNsfw?: boolean } = {}) {
+  getAlbumMapMarkers(albumId: string, options: HiddenContentQueryOptions = {}) {
     return this.mapMarkersQuery()
       .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
       .where('album_asset.albumId', '=', albumId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
-  getMapMarkers(
-    ownerIds: string[],
-    albumIds: string[],
-    { excludeNsfw, isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
-  ) {
+  getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}) {
+    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
     return this.mapMarkersQuery()
-      .$if(!!excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .$if(isArchived === true, (qb) =>
         qb.where((eb) =>
           eb.or([

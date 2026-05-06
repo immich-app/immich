@@ -14,6 +14,8 @@ import {
 } from 'src/dtos/shared-link.dto';
 import { Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
@@ -146,7 +148,7 @@ export class SharedLinkService extends BaseService {
   }
 
   // TODO: replace `userId` with permissions and access control checks
-  private async findOrFail(userId: string, id: string, options?: { excludeNsfw?: boolean }) {
+  private async findOrFail(userId: string, id: string, options?: HiddenContentQueryOptions) {
     const sharedLink = options
       ? await this.sharedLinkRepository.get(userId, id, options)
       : await this.sharedLinkRepository.get(userId, id);
@@ -276,7 +278,10 @@ export class SharedLinkService extends BaseService {
       return sharedLink;
     }
 
-    const nsfwThumbnailIds = await this.assetRepository.getNsfwAssetIds([albumThumbnailAssetId]);
+    const nsfwThumbnailIds = await this.assetRepository.getHiddenContentAssetIds(
+      [albumThumbnailAssetId],
+      getHiddenContentQueryOptions(auth),
+    );
     return nsfwThumbnailIds.has(albumThumbnailAssetId)
       ? {
           ...sharedLink,
@@ -286,6 +291,6 @@ export class SharedLinkService extends BaseService {
   }
 
   private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? { excludeNsfw: true } : undefined;
+    return auth.hideNsfwAssets ? getHiddenContentQueryOptions(auth) : undefined;
   }
 }

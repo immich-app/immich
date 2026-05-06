@@ -3,6 +3,7 @@ import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { AssetOrder, UserMetadataKey } from 'src/enum';
 import { DeepPartial, UserMetadataItem, UserPreferences } from 'src/types';
 import { HumanReadableSize } from 'src/utils/bytes';
+import { emptySuppressionPreferences } from 'src/utils/hidden-content';
 import { getKeysDeep } from 'src/utils/misc';
 
 const getDefaultPreferences = (): UserPreferences => {
@@ -48,6 +49,9 @@ const getDefaultPreferences = (): UserPreferences => {
     },
     cast: {
       gCastEnabled: false,
+    },
+    privacy: {
+      suppression: emptySuppressionPreferences(),
     },
   };
 };

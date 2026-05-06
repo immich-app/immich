@@ -10,6 +10,7 @@ import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 
 type ResolveRequest = {
@@ -299,7 +300,7 @@ export class DuplicateService extends BaseService {
   }
 
   private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? { excludeNsfw: true } : {};
+    return getHiddenContentQueryOptions(auth);
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })

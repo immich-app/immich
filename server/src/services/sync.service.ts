@@ -18,6 +18,7 @@ import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.ta
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
@@ -155,7 +156,7 @@ export class SyncService extends BaseService {
     }
 
     const { nowId } = await this.syncCheckpointRepository.getNow();
-    const options: SyncQueryOptions = { nowId, userId: auth.user.id, excludeNsfw: auth.hideNsfwAssets };
+    const options: SyncQueryOptions = { nowId, userId: auth.user.id, ...getHiddenContentQueryOptions(auth) };
 
     const handlers: Record<SyncRequestType, () => Promise<void>> = {
       // deprecated handlers

@@ -54,26 +54,28 @@ select
           "asset"."deletedAt" is null
           and "asset"."stackId" = "stack"."id"
           and "asset"."visibility" in ('archive', 'timeline')
-          and not exists (
-            select
-              1
-            from
-              asset_metadata
-            where
-              asset_metadata."assetId" = "asset"."id"
-              and asset_metadata.key = $1
-              and coalesce(
-                (
-                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-                )::boolean,
-                false
-              ) = true
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $1
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
           )
       ) as agg
   ) as "assets"
@@ -83,26 +85,28 @@ from
 where
   "stack"."ownerId" = $2
   and "primaryAsset"."deletedAt" is null
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "primaryAsset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "primaryAsset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 
 -- StackRepository.delete
@@ -183,26 +187,28 @@ select
           "asset"."deletedAt" is null
           and "asset"."stackId" = "stack"."id"
           and "asset"."visibility" in ('archive', 'timeline')
-          and not exists (
-            select
-              1
-            from
-              asset_metadata
-            where
-              asset_metadata."assetId" = "asset"."id"
-              and asset_metadata.key = $1
-              and coalesce(
-                (
-                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-                )::boolean,
-                false
-              ) = true
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $1
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
           )
       ) as agg
   ) as "assets"
@@ -212,26 +218,28 @@ from
 where
   "id" = $2::uuid
   and "primaryAsset"."deletedAt" is null
-  and not exists (
-    select
-      1
-    from
-      asset_metadata
-    where
-      asset_metadata."assetId" = "primaryAsset"."id"
-      and asset_metadata.key = $3
-      and coalesce(
-        (
-          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-        )::boolean,
-        (
-          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-        )::boolean,
-        false
-      ) = true
+  and not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "primaryAsset"."id"
+        and asset_metadata.key = $3
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
   )
 
 -- StackRepository.getForAssetRemoval

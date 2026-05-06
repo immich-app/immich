@@ -24,7 +24,7 @@ describe(TagService.name, () => {
     it('should return all tags for a user', async () => {
       mocks.tag.getAll.mockResolvedValue([tagStub.tag]);
       await expect(sut.getAll(authStub.admin)).resolves.toEqual([tagResponseStub.tag1]);
-      expect(mocks.tag.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { excludeNsfw: false });
+      expect(mocks.tag.getAll).toHaveBeenCalledWith(authStub.admin.user.id, {});
     });
 
     it('should request non-NSFW tags while hide mode is active', async () => {

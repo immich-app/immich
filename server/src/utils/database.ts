@@ -30,6 +30,7 @@ import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
+import type { HiddenContentFilter, HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -111,6 +112,91 @@ export function withoutNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAl
   return qb.where(sql<boolean>`not ${nsfwAssetExists(assetAlias)}`);
 }
 
+const nsfwOnlyFilter: HiddenContentFilter = {
+  userId: '',
+  includeNsfw: true,
+  tagIds: [],
+  personIds: [],
+  scope: 'visible',
+};
+
+export const getHiddenContentFilter = (options?: HiddenContentQueryOptions): HiddenContentFilter | undefined => {
+  return options?.onlyHiddenContent ?? options?.hiddenContent ?? (options?.excludeNsfw ? nsfwOnlyFilter : undefined);
+};
+
+const scopedToOwner = (filter: HiddenContentFilter, assetAlias: string) =>
+  filter.scope === 'owned' ? sql<boolean>`${sql.ref(`${assetAlias}.ownerId`)} = ${asUuid(filter.userId)}` : sql`true`;
+
+const hiddenContentAssetExists = (filter: HiddenContentFilter, assetAlias = 'asset') => {
+  const predicates: ReturnType<typeof sql>[] = [];
+
+  if (filter.includeNsfw) {
+    predicates.push(nsfwAssetExists(assetAlias));
+  }
+
+  if (filter.tagIds.length > 0) {
+    predicates.push(sql<boolean>`(${scopedToOwner(filter, assetAlias)} and exists (
+      select 1
+      from tag_asset
+      inner join tag_closure on tag_closure.id_descendant = tag_asset."tagId"
+      where tag_asset."assetId" = ${sql.ref(`${assetAlias}.id`)}
+        and tag_closure.id_ancestor = ${anyUuid(filter.tagIds)}
+    ))`);
+  }
+
+  if (filter.personIds.length > 0) {
+    predicates.push(sql<boolean>`(${scopedToOwner(filter, assetAlias)} and exists (
+      select 1
+      from asset_face
+      where asset_face."assetId" = ${sql.ref(`${assetAlias}.id`)}
+        and asset_face."personId" = ${anyUuid(filter.personIds)}
+        and asset_face."deletedAt" is null
+        and asset_face."isVisible" is true
+    ))`);
+  }
+
+  return predicates.length === 0 ? sql<boolean>`false` : sql<boolean>`(${sql.join(predicates, sql` or `)})`;
+};
+
+export const hiddenContentAssetIdExists = (assetId: Expression<unknown>, filter: HiddenContentFilter) =>
+  sql<boolean>`exists (
+    select 1
+    from asset as hidden_content_asset
+    where hidden_content_asset.id = ${assetId}
+      and ${hiddenContentAssetExists(filter, 'hidden_content_asset')}
+  )`;
+
+export function withHiddenContentOnly<QDB, TB extends keyof QDB, O>(
+  qb: SelectQueryBuilder<QDB, TB, O>,
+  filter: HiddenContentFilter,
+  assetAlias = 'asset',
+) {
+  return qb.where(hiddenContentAssetExists(filter, assetAlias));
+}
+
+export function withoutHiddenContent<QDB, TB extends keyof QDB, O>(
+  qb: SelectQueryBuilder<QDB, TB, O>,
+  filter: HiddenContentFilter,
+  assetAlias = 'asset',
+) {
+  return qb.where(sql<boolean>`not ${hiddenContentAssetExists(filter, assetAlias)}`);
+}
+
+export function withHiddenContentFilter<QDB, TB extends keyof QDB, O>(
+  qb: SelectQueryBuilder<QDB, TB, O>,
+  options?: HiddenContentQueryOptions,
+  assetAlias = 'asset',
+) {
+  const filter = getHiddenContentFilter(options);
+  if (!filter) {
+    return qb;
+  }
+
+  return options?.onlyHiddenContent
+    ? withHiddenContentOnly(qb, filter, assetAlias)
+    : withoutHiddenContent(qb, filter, assetAlias);
+}
+
 const taggedAssetExists = (tagId: Expression<unknown>) => sql<boolean>`exists (
       select 1
       from tag_closure
@@ -118,16 +204,16 @@ const taggedAssetExists = (tagId: Expression<unknown>) => sql<boolean>`exists (
       where tag_closure.id_ancestor = ${tagId}
     )`;
 
-const nonNsfwTaggedAssetExists = (tagId: Expression<unknown>) => sql<boolean>`exists (
+const nonHiddenTaggedAssetExists = (tagId: Expression<unknown>, filter = nsfwOnlyFilter) => sql<boolean>`exists (
       select 1
       from tag_closure
       inner join tag_asset on tag_asset."tagId" = tag_closure.id_descendant
       where tag_closure.id_ancestor = ${tagId}
-        and not ${nsfwAssetIdExists(sql.ref('tag_asset.assetId'))}
+        and not ${hiddenContentAssetIdExists(sql.ref('tag_asset.assetId'), filter)}
     )`;
 
-export const tagHasVisibleAssetOrNoAssets = (tagId: Expression<unknown>) =>
-  sql<boolean>`(not ${taggedAssetExists(tagId)} or ${nonNsfwTaggedAssetExists(tagId)})`;
+export const tagHasVisibleAssetOrNoAssets = (tagId: Expression<unknown>, filter?: HiddenContentFilter) =>
+  sql<boolean>`(not ${taggedAssetExists(tagId)} or ${nonHiddenTaggedAssetExists(tagId, filter)})`;
 
 const enrichmentExists = (assetAlias: string, predicate: ReturnType<typeof sql>) => sql<boolean>`exists (
       select 1
@@ -565,7 +651,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
-    .$if(!!options.excludeNsfw, withoutNsfwAssets)
+    .$call((qb) => withHiddenContentFilter(qb, options))
     .$if(!!options.encodedVideoPath, (qb) =>
       qb
         .innerJoin('asset_file', (join) =>

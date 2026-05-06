@@ -3,6 +3,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 
 @Injectable()
 export class MapService extends BaseService {
@@ -25,7 +26,7 @@ export class MapService extends BaseService {
 
     return this.mapRepository.getMapMarkers(userIds, albumIds, {
       ...options,
-      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      ...getHiddenContentQueryOptions(auth),
     });
   }
 

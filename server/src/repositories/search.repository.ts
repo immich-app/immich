@@ -6,7 +6,8 @@ import { AssetStatus, AssetType, AssetVisibility, ImageEnrichmentFilter, VectorI
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilder, withExifInner, withoutNsfwAssets } from 'src/utils/database';
+import { anyUuid, searchAssetBuilder, withExifInner, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -22,8 +23,7 @@ export interface SearchUserIdOptions {
 
 export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
 
-export interface SearchStatusOptions {
-  excludeNsfw?: boolean;
+export interface SearchStatusOptions extends HiddenContentQueryOptions {
   isEncoded?: boolean;
   isFavorite?: boolean;
   isMotion?: boolean;
@@ -142,9 +142,7 @@ export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
-interface SearchSuggestionPrivacyOptions {
-  excludeNsfw?: boolean;
-}
+interface SearchSuggestionPrivacyOptions extends HiddenContentQueryOptions {}
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
@@ -388,7 +386,7 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getAssetsByCity(userIds: string[], { excludeNsfw }: SearchSuggestionPrivacyOptions = {}) {
+  getAssetsByCity(userIds: string[], options: SearchSuggestionPrivacyOptions = {}) {
     return this.db
       .withRecursive('cte', (qb) => {
         const base = qb
@@ -399,7 +397,7 @@ export class SearchRepository {
           .where('asset.visibility', '=', AssetVisibility.Timeline)
           .where('asset.type', '=', AssetType.Image)
           .where('asset.deletedAt', 'is', null)
-          .$if(!!excludeNsfw, withoutNsfwAssets)
+          .$call((qb) => withHiddenContentFilter(qb, options))
           .orderBy('city')
           .limit(1);
 
@@ -416,7 +414,7 @@ export class SearchRepository {
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
                 .where('asset.type', '=', AssetType.Image)
                 .where('asset.deletedAt', 'is', null)
-                .$if(!!excludeNsfw, withoutNsfwAssets)
+                .$call((qb) => withHiddenContentFilter(qb, options))
                 .whereRef('asset_exif.city', '>', 'cte.city')
                 .orderBy('city')
                 .limit(1)
@@ -456,9 +454,9 @@ export class SearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
   async getStates(
     userIds: string[],
-    { country, excludeNsfw }: GetStatesOptions & SearchSuggestionPrivacyOptions,
+    { country, ...options }: GetStatesOptions & SearchSuggestionPrivacyOptions,
   ): Promise<string[]> {
-    const res = await this.getExifField('state', userIds, { excludeNsfw })
+    const res = await this.getExifField('state', userIds, options)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .execute();
 
@@ -468,9 +466,9 @@ export class SearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
   async getCities(
     userIds: string[],
-    { country, state, excludeNsfw }: GetCitiesOptions & SearchSuggestionPrivacyOptions,
+    { country, state, ...options }: GetCitiesOptions & SearchSuggestionPrivacyOptions,
   ): Promise<string[]> {
-    const res = await this.getExifField('city', userIds, { excludeNsfw })
+    const res = await this.getExifField('city', userIds, options)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .$if(!!state, (qb) => qb.where('state', '=', state!))
       .execute();
@@ -481,9 +479,9 @@ export class SearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
   async getCameraMakes(
     userIds: string[],
-    { model, lensModel, excludeNsfw }: GetCameraMakesOptions & SearchSuggestionPrivacyOptions,
+    { model, lensModel, ...options }: GetCameraMakesOptions & SearchSuggestionPrivacyOptions,
   ): Promise<string[]> {
-    const res = await this.getExifField('make', userIds, { excludeNsfw })
+    const res = await this.getExifField('make', userIds, options)
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -494,9 +492,9 @@ export class SearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
   async getCameraModels(
     userIds: string[],
-    { make, lensModel, excludeNsfw }: GetCameraModelsOptions & SearchSuggestionPrivacyOptions,
+    { make, lensModel, ...options }: GetCameraModelsOptions & SearchSuggestionPrivacyOptions,
   ): Promise<string[]> {
-    const res = await this.getExifField('model', userIds, { excludeNsfw })
+    const res = await this.getExifField('model', userIds, options)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -507,9 +505,9 @@ export class SearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
   async getCameraLensModels(
     userIds: string[],
-    { make, model, excludeNsfw }: GetCameraLensModelsOptions & SearchSuggestionPrivacyOptions,
+    { make, model, ...options }: GetCameraLensModelsOptions & SearchSuggestionPrivacyOptions,
   ): Promise<string[]> {
-    const res = await this.getExifField('lensModel', userIds, { excludeNsfw })
+    const res = await this.getExifField('lensModel', userIds, options)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .execute();
@@ -520,7 +518,7 @@ export class SearchRepository {
   private getExifField(
     field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel',
     userIds: string[],
-    { excludeNsfw }: SearchSuggestionPrivacyOptions = {},
+    options: SearchSuggestionPrivacyOptions = {},
   ) {
     return this.db
       .selectFrom('asset_exif')
@@ -530,7 +528,7 @@ export class SearchRepository {
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
-      .$if(!!excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .where(field, 'is not', null)
       .where(field, '!=', '');
   }

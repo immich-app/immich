@@ -97,6 +97,27 @@ const CastUpdateSchema = z
   .optional()
   .meta({ id: 'CastUpdate' });
 
+const SuppressionScopeSchema = z.enum(['owned', 'visible']).meta({ id: 'SuppressionScope' });
+
+const SuppressionUpdateSchema = z
+  .object({
+    tagIds: z.array(z.uuidv4()).optional().describe('Tag IDs to suppress from locked browsing sessions'),
+    personIds: z.array(z.uuidv4()).optional().describe('Person IDs to suppress from locked browsing sessions'),
+    scope: SuppressionScopeSchema.optional().describe(
+      'Whether suppression applies only to owned assets or all visible assets',
+    ),
+  })
+  .optional()
+  .meta({ id: 'SuppressionUpdate' });
+
+const PrivacyUpdateSchema = z
+  .object({
+    suppression: SuppressionUpdateSchema,
+  })
+  .optional()
+  .describe('Privacy preferences')
+  .meta({ id: 'PrivacyUpdate' });
+
 const UserPreferencesUpdateSchema = z
   .object({
     albums: AlbumsUpdateSchema,
@@ -107,6 +128,7 @@ const UserPreferencesUpdateSchema = z
     folders: FoldersUpdateSchema,
     memories: MemoriesUpdateSchema,
     people: PeopleUpdateSchema,
+    privacy: PrivacyUpdateSchema,
     purchase: PurchaseUpdateSchema,
     ratings: RatingsUpdateSchema,
     sharedLinks: SharedLinksUpdateSchema,
@@ -189,12 +211,28 @@ const CastResponseSchema = z
   })
   .meta({ id: 'CastResponse' });
 
+const SuppressionResponseSchema = z
+  .object({
+    tagIds: z.array(z.string()).describe('Tag IDs to suppress from locked browsing sessions'),
+    personIds: z.array(z.string()).describe('Person IDs to suppress from locked browsing sessions'),
+    scope: SuppressionScopeSchema.describe('Whether suppression applies only to owned assets or all visible assets'),
+  })
+  .meta({ id: 'SuppressionResponse' });
+
+const PrivacyResponseSchema = z
+  .object({
+    suppression: SuppressionResponseSchema,
+  })
+  .describe('Privacy preferences')
+  .meta({ id: 'PrivacyResponse' });
+
 const UserPreferencesResponseSchema = z
   .object({
     albums: AlbumsResponseSchema,
     folders: FoldersResponseSchema,
     memories: MemoriesResponseSchema,
     people: PeopleResponseSchema,
+    privacy: PrivacyResponseSchema,
     ratings: RatingsResponseSchema,
     sharedLinks: SharedLinksResponseSchema,
     tags: TagsResponseSchema,

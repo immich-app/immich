@@ -7,6 +7,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
+  import { Route } from '$lib/route';
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import {
     AlbumFilter,
@@ -34,7 +35,9 @@
     userSettings: AlbumViewSettings;
     allowEdit?: boolean;
     showOwner?: boolean;
+    showContextMenu?: boolean;
     albumGroupIds?: string[];
+    getAlbumHref?: (album: AlbumResponseDto) => string;
     empty?: Snippet;
   }
 
@@ -45,8 +48,10 @@
     userSettings,
     allowEdit = false,
     showOwner = false,
+    showContextMenu = true,
     // eslint-disable-next-line no-useless-assignment
     albumGroupIds = $bindable([]),
+    getAlbumHref = Route.viewAlbum,
     empty,
   }: Props = $props();
 
@@ -191,6 +196,8 @@
     isOpen = true;
   };
 
+  let albumContextMenuHandler = $derived(showContextMenu ? showAlbumContextMenu : undefined);
+
   const closeAlbumContextMenu = () => {
     isOpen = false;
   };
@@ -267,7 +274,8 @@
         {showOwner}
         showDateRange
         showItemCount
-        onShowContextMenu={showAlbumContextMenu}
+        {getAlbumHref}
+        onShowContextMenu={albumContextMenuHandler}
       />
     {:else}
       {#each groupedAlbums as albumGroup (albumGroup.id)}
@@ -277,13 +285,14 @@
           {showOwner}
           showDateRange
           showItemCount
-          onShowContextMenu={showAlbumContextMenu}
+          {getAlbumHref}
+          onShowContextMenu={albumContextMenuHandler}
         />
       {/each}
     {/if}
   {:else if userSettings.view === AlbumViewMode.List}
     <!-- Album Table -->
-    <AlbumsTable {groupedAlbums} {albumGroupOption} onShowContextMenu={showAlbumContextMenu} />
+    <AlbumsTable {groupedAlbums} {albumGroupOption} onShowContextMenu={albumContextMenuHandler} />
   {/if}
 {:else}
   <!-- Empty Message -->
@@ -291,13 +300,15 @@
 {/if}
 
 <!-- Context Menu -->
-<RightClickContextMenu title={$t('album_options')} {...contextMenuPosition} {isOpen} onClose={closeAlbumContextMenu}>
-  {#if showFullContextMenu}
-    <MenuOption icon={mdiRenameOutline} text={$t('edit_album')} onClick={() => handleSelect('edit')} />
-    <MenuOption icon={mdiShareVariantOutline} text={$t('share')} onClick={() => handleSelect('share')} />
-  {/if}
-  <MenuOption icon={mdiDownload} text={$t('download')} onClick={() => handleSelect('download')} />
-  {#if showFullContextMenu}
-    <MenuOption icon={mdiDeleteOutline} text={$t('delete')} onClick={() => handleSelect('delete')} />
-  {/if}
-</RightClickContextMenu>
+{#if showContextMenu}
+  <RightClickContextMenu title={$t('album_options')} {...contextMenuPosition} {isOpen} onClose={closeAlbumContextMenu}>
+    {#if showFullContextMenu}
+      <MenuOption icon={mdiRenameOutline} text={$t('edit_album')} onClick={() => handleSelect('edit')} />
+      <MenuOption icon={mdiShareVariantOutline} text={$t('share')} onClick={() => handleSelect('share')} />
+    {/if}
+    <MenuOption icon={mdiDownload} text={$t('download')} onClick={() => handleSelect('download')} />
+    {#if showFullContextMenu}
+      <MenuOption icon={mdiDeleteOutline} text={$t('delete')} onClick={() => handleSelect('delete')} />
+    {/if}
+  </RightClickContextMenu>
+{/if}

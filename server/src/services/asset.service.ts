@@ -46,6 +46,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -57,7 +58,7 @@ export class AssetService extends BaseService {
 
     const stats = await this.assetRepository.getStatistics(auth.user.id, {
       ...dto,
-      ...(auth.hideNsfwAssets ? { excludeNsfw: true } : {}),
+      ...getHiddenContentQueryOptions(auth),
     });
     return mapStats(stats);
   }
@@ -79,7 +80,10 @@ export class AssetService extends BaseService {
     }
 
     if (auth.hideNsfwAssets && asset.livePhotoVideoId) {
-      const nsfwMotionAssetIds = await this.assetRepository.getNsfwAssetIds([asset.livePhotoVideoId]);
+      const nsfwMotionAssetIds = await this.assetRepository.getHiddenContentAssetIds(
+        [asset.livePhotoVideoId],
+        getHiddenContentQueryOptions(auth),
+      );
       if (nsfwMotionAssetIds.has(asset.livePhotoVideoId)) {
         asset.livePhotoVideoId = null;
       }

@@ -6,18 +6,26 @@ import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   asUuid,
-  nsfwAssetIdExists,
+  getHiddenContentFilter,
+  hiddenContentAssetIdExists,
   tagHasVisibleAssetOrNoAssets,
   withDefaultVisibility,
-  withoutNsfwAssets,
+  withHiddenContentFilter,
 } from 'src/utils/database';
+import type { HiddenContentFilter, HiddenContentQueryOptions } from 'src/utils/hidden-content';
+
+type AccessPrivacy = boolean | HiddenContentFilter | undefined;
+
+const privacyOptions = (privacy: AccessPrivacy): HiddenContentQueryOptions => {
+  return typeof privacy === 'object' ? { hiddenContent: privacy } : privacy ? { excludeNsfw: true } : {};
+};
 
 class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, activityIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkOwnerAccess(userId: string, activityIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (activityIds.size === 0) {
       return new Set<string>();
     }
@@ -28,14 +36,14 @@ class ActivityAccess {
       .select('activity.id')
       .where('activity.id', 'in', [...activityIds])
       .where('activity.userId', '=', userId)
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets)))
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (activityIds.size === 0) {
       return new Set<string>();
     }
@@ -52,7 +60,7 @@ class ActivityAccess {
           .on('album_user.userId', '=', asUuid(userId)),
       )
       .where('activity.id', 'in', [...activityIds])
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets)))
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
@@ -150,10 +158,13 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumAccess(userId: string, assetIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkAlbumAccess(userId: string, assetIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
+
+    const options = privacyOptions(hideNsfwAssets);
+    const hiddenContent = getHiddenContentFilter(options);
 
     return this.db
       .with('target', (qb) => qb.selectNoFrom(sql`array[${sql.join([...assetIds])}]::uuid[]`.as('ids')))
@@ -166,8 +177,10 @@ class AssetAccess {
       .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .crossJoin('target')
       .select(['asset.id', 'asset.livePhotoVideoId'])
-      .$if(!!hideNsfwAssets, (qb) =>
-        qb.select(nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId')).as('isLivePhotoVideoNsfw')),
+      .$if(!!hiddenContent, (qb) =>
+        qb.select(
+          hiddenContentAssetIdExists(sql.ref('asset.livePhotoVideoId'), hiddenContent!).as('isLivePhotoVideoNsfw'),
+        ),
       )
       .where((eb) =>
         eb.or([
@@ -177,7 +190,7 @@ class AssetAccess {
       )
       .where('user.id', '=', userId)
       .where('album.deletedAt', 'is', null)
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();
@@ -188,7 +201,7 @@ class AssetAccess {
           if (
             asset.livePhotoVideoId &&
             assetIds.has(asset.livePhotoVideoId) &&
-            !(hideNsfwAssets && asset.isLivePhotoVideoNsfw)
+            !(hiddenContent && asset.isLivePhotoVideoNsfw)
           ) {
             allowedIds.add(asset.livePhotoVideoId);
           }
@@ -203,7 +216,7 @@ class AssetAccess {
     userId: string,
     assetIds: Set<string>,
     hasElevatedPermission: boolean | undefined,
-    hideNsfwAssets?: boolean,
+    hideNsfwAssets?: AccessPrivacy,
   ) {
     if (assetIds.size === 0) {
       return new Set<string>();
@@ -215,14 +228,14 @@ class AssetAccess {
       .where('asset.id', 'in', [...assetIds])
       .where('asset.ownerId', '=', userId)
       .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets)))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkPartnerAccess(userId: string, assetIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkPartnerAccess(userId: string, assetIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -243,17 +256,20 @@ class AssetAccess {
       )
 
       .where('asset.id', 'in', [...assetIds])
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets)))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
+
+    const options = privacyOptions(hideNsfwAssets);
+    const hiddenContent = getHiddenContentFilter(options);
 
     return this.db
       .selectFrom('shared_link')
@@ -272,10 +288,12 @@ class AssetAccess {
         'albumAssets.id as albumAssetId',
         'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
       ])
-      .$if(!!hideNsfwAssets, (qb) =>
+      .$if(!!hiddenContent, (qb) =>
         qb.select([
-          nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId')).as('isAssetLivePhotoVideoNsfw'),
-          nsfwAssetIdExists(sql.ref('albumAssets.livePhotoVideoId')).as('isAlbumAssetLivePhotoVideoNsfw'),
+          hiddenContentAssetIdExists(sql.ref('asset.livePhotoVideoId'), hiddenContent!).as('isAssetLivePhotoVideoNsfw'),
+          hiddenContentAssetIdExists(sql.ref('albumAssets.livePhotoVideoId'), hiddenContent!).as(
+            'isAlbumAssetLivePhotoVideoNsfw',
+          ),
         ]),
       )
       .where('shared_link.id', '=', sharedLinkId)
@@ -284,8 +302,8 @@ class AssetAccess {
         '&&',
         sql`array[${sql.join([...assetIds])}]::uuid[] `,
       )
-      .$if(!!hideNsfwAssets, (qb) => withoutNsfwAssets(qb, 'asset'))
-      .$if(!!hideNsfwAssets, (qb) => withoutNsfwAssets(qb, 'albumAssets'))
+      .$call((qb) => withHiddenContentFilter(qb, options, 'asset'))
+      .$call((qb) => withHiddenContentFilter(qb, options, 'albumAssets'))
       .execute()
       .then((rows) => {
         const allowedIds = new Set<string>();
@@ -296,7 +314,7 @@ class AssetAccess {
           if (
             row.assetLivePhotoVideoId &&
             assetIds.has(row.assetLivePhotoVideoId) &&
-            !(hideNsfwAssets && row.isAssetLivePhotoVideoNsfw)
+            !(hiddenContent && row.isAssetLivePhotoVideoNsfw)
           ) {
             allowedIds.add(row.assetLivePhotoVideoId);
           }
@@ -306,7 +324,7 @@ class AssetAccess {
           if (
             row.albumAssetLivePhotoVideoId &&
             assetIds.has(row.albumAssetLivePhotoVideoId) &&
-            !(hideNsfwAssets && row.isAlbumAssetLivePhotoVideoNsfw)
+            !(hiddenContent && row.isAlbumAssetLivePhotoVideoNsfw)
           ) {
             allowedIds.add(row.albumAssetLivePhotoVideoId);
           }
@@ -341,10 +359,13 @@ class DuplicateAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, duplicateIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkOwnerAccess(userId: string, duplicateIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (duplicateIds.size === 0) {
       return new Set<string>();
     }
+
+    const options = privacyOptions(hideNsfwAssets);
+    const hasHiddenContent = !!getHiddenContentFilter(options);
 
     return this.db
       .selectFrom('asset')
@@ -352,10 +373,10 @@ class DuplicateAccess {
       .where('asset.duplicateId', 'in', [...duplicateIds])
       .where('asset.ownerId', '=', userId)
       .where('asset.deletedAt', 'is', null)
-      .$if(!!hideNsfwAssets, (qb) => qb.$call(withDefaultVisibility).where('asset.stackId', 'is', null))
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$if(hasHiddenContent, (qb) => qb.$call(withDefaultVisibility).where('asset.stackId', 'is', null))
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .$narrowType<{ duplicateId: NotNull }>()
-      .$if(!!hideNsfwAssets, (qb) => qb.groupBy('asset.duplicateId').having((eb) => eb.fn.count('asset.id'), '>', 1))
+      .$if(hasHiddenContent, (qb) => qb.groupBy('asset.duplicateId').having((eb) => eb.fn.count('asset.id'), '>', 1))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.duplicateId)));
   }
@@ -405,7 +426,7 @@ class StackAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, stackIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkOwnerAccess(userId: string, stackIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (stackIds.size === 0) {
       return new Set<string>();
     }
@@ -415,11 +436,11 @@ class StackAccess {
       .select('stack.id')
       .where('stack.id', 'in', [...stackIds])
       .where('stack.ownerId', '=', userId)
-      .$if(!!hideNsfwAssets, (qb) =>
+      .$if(!!getHiddenContentFilter(privacyOptions(hideNsfwAssets)), (qb) =>
         qb
           .innerJoin('asset as primaryAsset', 'primaryAsset.id', 'stack.primaryAssetId')
           .where('primaryAsset.deletedAt', 'is', null)
-          .$call((qb) => withoutNsfwAssets(qb, 'primaryAsset')),
+          .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets), 'primaryAsset')),
       )
       .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
@@ -451,7 +472,7 @@ class MemoryAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, memoryIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkOwnerAccess(userId: string, memoryIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (memoryIds.size === 0) {
       return new Set<string>();
     }
@@ -462,7 +483,7 @@ class MemoryAccess {
       .where('memory.id', 'in', [...memoryIds])
       .where('memory.ownerId', '=', userId)
       .where('memory.deletedAt', 'is', null)
-      .$if(!!hideNsfwAssets, (qb) =>
+      .$if(!!getHiddenContentFilter(privacyOptions(hideNsfwAssets)), (qb) =>
         qb.where((eb) =>
           eb.or([
             eb.not((eb) =>
@@ -481,7 +502,7 @@ class MemoryAccess {
                 .whereRef('memory_asset.memoriesId', '=', 'memory.id')
                 .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
                 .where('asset.deletedAt', 'is', null)
-                .$call(withoutNsfwAssets),
+                .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets))),
             ),
           ]),
         ),
@@ -496,7 +517,7 @@ class PersonAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, personIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkOwnerAccess(userId: string, personIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (personIds.size === 0) {
       return new Set<string>();
     }
@@ -506,7 +527,7 @@ class PersonAccess {
       .select('person.id')
       .where('person.id', 'in', [...personIds])
       .where('person.ownerId', '=', userId)
-      .$if(!!hideNsfwAssets, (qb) =>
+      .$if(!!getHiddenContentFilter(privacyOptions(hideNsfwAssets)), (qb) =>
         qb.where((eb) =>
           eb.or([
             eb.not((eb) =>
@@ -536,7 +557,7 @@ class PersonAccess {
                 .whereRef('asset_face.personId', '=', 'person.id')
                 .where('asset_face.deletedAt', 'is', null)
                 .where('asset_face.isVisible', 'is', true)
-                .$call(withoutNsfwAssets),
+                .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets))),
             ),
           ]),
         ),
@@ -547,7 +568,7 @@ class PersonAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (assetFaceIds.size === 0) {
       return new Set<string>();
     }
@@ -558,7 +579,7 @@ class PersonAccess {
       .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.deletedAt', 'is', null))
       .where('asset_face.id', 'in', [...assetFaceIds])
       .where('asset.ownerId', '=', userId)
-      .$if(!!hideNsfwAssets, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, privacyOptions(hideNsfwAssets)))
       .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
   }
@@ -589,7 +610,7 @@ class TagAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, true] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, tagIds: Set<string>, hideNsfwAssets?: boolean) {
+  async checkOwnerAccess(userId: string, tagIds: Set<string>, hideNsfwAssets?: AccessPrivacy) {
     if (tagIds.size === 0) {
       return new Set<string>();
     }
@@ -599,7 +620,11 @@ class TagAccess {
       .select('tag.id')
       .where('tag.id', 'in', [...tagIds])
       .where('tag.userId', '=', userId)
-      .$if(!!hideNsfwAssets, (qb) => qb.where(tagHasVisibleAssetOrNoAssets(sql.ref('tag.id'))))
+      .$if(!!getHiddenContentFilter(privacyOptions(hideNsfwAssets)), (qb) =>
+        qb.where(
+          tagHasVisibleAssetOrNoAssets(sql.ref('tag.id'), getHiddenContentFilter(privacyOptions(hideNsfwAssets))),
+        ),
+      )
       .execute()
       .then((tags) => new Set(tags.map((tag) => tag.id)));
   }

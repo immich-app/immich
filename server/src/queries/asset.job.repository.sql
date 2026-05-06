@@ -502,6 +502,31 @@ from
 where
   "asset"."id" = $1
 
+-- AssetJobRepository.getForImageEnrichment
+select
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."type",
+  "asset"."status",
+  "asset"."deletedAt",
+  "asset"."visibility",
+  "asset_exif"."description",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'preview'
+      and "asset_file"."isEdited" = false
+  ) as "previewFile"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."id" = $1
+
 -- AssetJobRepository.getForSyncAssets
 select
   "asset"."id",
@@ -849,6 +874,70 @@ where
   "asset_job_status"."ocrAt" is null
   and "asset"."deletedAt" is null
   and "asset"."visibility" != $1
+
+-- AssetJobRepository.streamForImageDescriptionJob
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_job_status" as "job_status" on "assetId" = "asset"."id"
+where
+  "asset"."visibility" != $1
+  and "asset"."deletedAt" is null
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "assetId" = "asset"."id"
+      and "asset_file"."type" = $2
+  )
+  and "asset"."type" = 'IMAGE'
+  and "asset"."visibility" in ('archive', 'timeline')
+  and not exists (
+    select
+      "asset_metadata"."assetId"
+    from
+      "asset_metadata"
+    where
+      "asset_metadata"."assetId" = "asset"."id"
+      and "asset_metadata"."key" = $3
+      and asset_metadata.value -> $4 ->> 'status' = $5
+  )
+order by
+  "asset"."fileCreatedAt" desc
+
+-- AssetJobRepository.streamForNsfwDetectionJob
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_job_status" as "job_status" on "assetId" = "asset"."id"
+where
+  "asset"."visibility" != $1
+  and "asset"."deletedAt" is null
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "assetId" = "asset"."id"
+      and "asset_file"."type" = $2
+  )
+  and "asset"."type" = 'IMAGE'
+  and "asset"."visibility" in ('archive', 'timeline')
+  and not exists (
+    select
+      "asset_metadata"."assetId"
+    from
+      "asset_metadata"
+    where
+      "asset_metadata"."assetId" = "asset"."id"
+      and "asset_metadata"."key" = $3
+      and asset_metadata.value -> $4 ->> 'status' = $5
+  )
+order by
+  "asset"."fileCreatedAt" desc
 
 -- AssetJobRepository.streamForMigrationJob
 select

@@ -77,7 +77,7 @@ describe(AlbumService.name, () => {
       const auth = { ...AuthFactory.create(owner), hideNsfwAssets: true };
 
       mocks.album.getOwned.mockResolvedValue([getForAlbum(album)]);
-      mocks.asset.getNsfwAssetIds.mockResolvedValue(new Set([thumbnailAssetId]));
+      mocks.asset.getHiddenContentAssetIds.mockResolvedValue(new Set([thumbnailAssetId]));
       mocks.album.getMetadataForIds.mockResolvedValue([
         {
           albumId: album.id,
@@ -91,8 +91,44 @@ describe(AlbumService.name, () => {
       const result = await sut.getAll(auth, {});
 
       expect(result[0].albumThumbnailAssetId).toBeNull();
-      expect(mocks.asset.getNsfwAssetIds).toHaveBeenCalledWith([thumbnailAssetId]);
+      expect(mocks.asset.getHiddenContentAssetIds).toHaveBeenCalledWith([thumbnailAssetId], { excludeNsfw: true });
       expect(mocks.album.getMetadataForIds).toHaveBeenCalledWith([album.id], { excludeNsfw: true });
+    });
+
+    it('should use suppressed album thumbnails when suppressedOnly is active', async () => {
+      const regularThumbnailId = newUuid();
+      const suppressedThumbnailId = newUuid();
+      const album = AlbumFactory.from({ albumThumbnailAssetId: regularThumbnailId }).albumUser().build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const suppressedContent = {
+        userId: owner.id,
+        includeNsfw: true,
+        tagIds: [],
+        personIds: [],
+        scope: 'owned' as const,
+      };
+      const auth = {
+        ...AuthFactory.from(owner).session({ hasElevatedPermission: true }).build(),
+        suppressedContent,
+      };
+
+      mocks.album.getOwned.mockResolvedValue([getForAlbum(album)]);
+      mocks.album.getMetadataForIds.mockResolvedValue([
+        {
+          albumId: album.id,
+          assetCount: 1,
+          thumbnailAssetId: suppressedThumbnailId,
+          startDate: null,
+          endDate: null,
+          lastModifiedAssetTimestamp: null,
+        },
+      ]);
+
+      const result = await sut.getAll(auth, { suppressedOnly: true });
+
+      expect(result[0].albumThumbnailAssetId).toEqual(suppressedThumbnailId);
+      expect(mocks.asset.getHiddenContentAssetIds).not.toHaveBeenCalled();
+      expect(mocks.album.getMetadataForIds).toHaveBeenCalledWith([album.id], { onlyHiddenContent: suppressedContent });
     });
 
     it('gets list of albums that have a specific asset', async () => {

@@ -536,6 +536,13 @@ describe(AuthService.name, () => {
         machineLearning: { nsfwDetection: { hideFromLibrary: true } },
       });
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+      const hiddenContent = {
+        includeNsfw: true,
+        personIds: [],
+        scope: 'owned',
+        tagIds: [],
+        userId: sessionWithToken.user.id,
+      };
 
       await expect(
         sut.authenticate({
@@ -549,7 +556,9 @@ describe(AuthService.name, () => {
           id: session.id,
           hasElevatedPermission: false,
         },
+        hiddenContent,
         hideNsfwAssets: true,
+        suppressedContent: hiddenContent,
       });
     });
 
@@ -575,12 +584,20 @@ describe(AuthService.name, () => {
         metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
       });
 
+      const suppressedContent = {
+        includeNsfw: true,
+        personIds: [],
+        scope: 'owned',
+        tagIds: [],
+        userId: sessionWithToken.user.id,
+      };
       expect(result).toEqual({
         user: sessionWithToken.user,
         session: {
           id: session.id,
           hasElevatedPermission: true,
         },
+        suppressedContent,
       });
       expect(result.hideNsfwAssets).toBeUndefined();
     });

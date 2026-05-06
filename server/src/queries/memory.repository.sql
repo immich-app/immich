@@ -27,26 +27,28 @@ where
         "memory_asset"."memoriesId" = "memory"."id"
         and "asset"."visibility" = 'timeline'
         and "asset"."deletedAt" is null
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $2
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $2
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )
@@ -86,26 +88,28 @@ where
         "memory_asset"."memoriesId" = "memory"."id"
         and "asset"."visibility" = 'timeline'
         and "asset"."deletedAt" is null
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $4
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $4
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )
@@ -126,26 +130,28 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
-          and not exists (
-            select
-              1
-            from
-              asset_metadata
-            where
-              asset_metadata."assetId" = "asset"."id"
-              and asset_metadata.key = $1
-              and coalesce(
-                (
-                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-                )::boolean,
-                false
-              ) = true
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $1
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -176,26 +182,28 @@ where
         "memory_asset"."memoriesId" = "memory"."id"
         and "asset"."visibility" = 'timeline'
         and "asset"."deletedAt" is null
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $3
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $3
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )
@@ -218,26 +226,28 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
-          and not exists (
-            select
-              1
-            from
-              asset_metadata
-            where
-              asset_metadata."assetId" = "asset"."id"
-              and asset_metadata.key = $1
-              and coalesce(
-                (
-                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-                )::boolean,
-                false
-              ) = true
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $1
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -276,26 +286,28 @@ where
         "memory_asset"."memoriesId" = "memory"."id"
         and "asset"."visibility" = 'timeline'
         and "asset"."deletedAt" is null
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $5
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $5
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )
@@ -319,26 +331,28 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
-          and not exists (
-            select
-              1
-            from
-              asset_metadata
-            where
-              asset_metadata."assetId" = "asset"."id"
-              and asset_metadata.key = $1
-              and coalesce(
-                (
-                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-                )::boolean,
-                (
-                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-                )::boolean,
-                false
-              ) = true
+          and not (
+            exists (
+              select
+                1
+              from
+                asset_metadata
+              where
+                asset_metadata."assetId" = "asset"."id"
+                and asset_metadata.key = $1
+                and coalesce(
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                  )::boolean,
+                  (
+                    asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                  )::boolean,
+                  false
+                ) = true
+            )
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -368,26 +382,28 @@ where
         "memory_asset"."memoriesId" = "memory"."id"
         and "asset"."visibility" = 'timeline'
         and "asset"."deletedAt" is null
-        and not exists (
-          select
-            1
-          from
-            asset_metadata
-          where
-            asset_metadata."assetId" = "asset"."id"
-            and asset_metadata.key = $3
-            and coalesce(
-              (
-                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
-              )::boolean,
-              (
-                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
-              )::boolean,
-              false
-            ) = true
+        and not (
+          exists (
+            select
+              1
+            from
+              asset_metadata
+            where
+              asset_metadata."assetId" = "asset"."id"
+              and asset_metadata.key = $3
+              and coalesce(
+                (
+                  asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+                )::boolean,
+                (
+                  asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+                )::boolean,
+                false
+              ) = true
+          )
         )
     )
   )

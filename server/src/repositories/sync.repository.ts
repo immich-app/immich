@@ -6,13 +6,13 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetMetadataKey, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
-import { nsfwAssetIdExists, withoutNsfwAssets } from 'src/utils/database';
+import { getHiddenContentFilter, hiddenContentAssetIdExists, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-export type SyncBackfillOptions = {
+export type SyncBackfillOptions = HiddenContentQueryOptions & {
   nowId: string;
   afterUpdateId?: string;
   beforeUpdateId: string;
-  excludeNsfw?: boolean;
 };
 
 const dummyBackfillOptions = {
@@ -34,11 +34,10 @@ const dummyCreateAfterOptions = {
   afterCreateId: DummyValue.UUID,
 };
 
-export type SyncQueryOptions = {
+export type SyncQueryOptions = HiddenContentQueryOptions & {
   nowId: string;
   userId: string;
   ack?: SyncAck;
-  excludeNsfw?: boolean;
 };
 
 const dummyQueryOptions = {
@@ -50,33 +49,39 @@ const dummyQueryOptions = {
   excludeNsfw: true,
 };
 
-const albumThumbnailAssetId = (excludeNsfw?: boolean) =>
-  excludeNsfw
+const albumThumbnailAssetId = (options: HiddenContentQueryOptions) => {
+  const hiddenContent = getHiddenContentFilter(options);
+  return hiddenContent
     ? sql<string | null>`case
-        when ${nsfwAssetIdExists(sql.ref('album.albumThumbnailAssetId'))} then null
+        when ${hiddenContentAssetIdExists(sql.ref('album.albumThumbnailAssetId'), hiddenContent)} then null
         else album."albumThumbnailAssetId"
       end`.as('thumbnailAssetId')
     : sql<string | null>`album."albumThumbnailAssetId"`.as('thumbnailAssetId');
+};
 
-const personFaceAssetId = (excludeNsfw?: boolean) =>
-  excludeNsfw
+const personFaceAssetId = (options: HiddenContentQueryOptions) => {
+  const hiddenContent = getHiddenContentFilter(options);
+  return hiddenContent
     ? sql<string | null>`case
-        when ${nsfwAssetIdExists(sql.ref('person_face_asset.id'))} then null
+        when ${hiddenContentAssetIdExists(sql.ref('person_face_asset.id'), hiddenContent)} then null
         else person."faceAssetId"
       end`.as('faceAssetId')
     : sql<string | null>`person."faceAssetId"`.as('faceAssetId');
+};
 
 const syncAssetColumns = columns.syncAsset.filter((column) => column !== 'asset.livePhotoVideoId');
 
-const syncLivePhotoVideoId = (excludeNsfw?: boolean) =>
-  excludeNsfw
+const syncLivePhotoVideoId = (options: HiddenContentQueryOptions) => {
+  const hiddenContent = getHiddenContentFilter(options);
+  return hiddenContent
     ? sql<string | null>`case
-        when ${nsfwAssetIdExists(sql.ref('asset.livePhotoVideoId'))} then null
+        when ${hiddenContentAssetIdExists(sql.ref('asset.livePhotoVideoId'), hiddenContent)} then null
         else asset."livePhotoVideoId"
       end`.as('livePhotoVideoId')
     : sql<string | null>`asset."livePhotoVideoId"`.as('livePhotoVideoId');
+};
 
-const syncAsset = (excludeNsfw?: boolean) => [...syncAssetColumns, syncLivePhotoVideoId(excludeNsfw)] as const;
+const syncAsset = (options: HiddenContentQueryOptions) => [...syncAssetColumns, syncLivePhotoVideoId(options)] as const;
 
 @Injectable()
 export class SyncRepository {
@@ -212,7 +217,7 @@ class AlbumSync extends BaseSync {
         'album.description',
         'album.createdAt',
         'album.updatedAt',
-        albumThumbnailAssetId(options.excludeNsfw),
+        albumThumbnailAssetId(options),
         'album.isActivityEnabled',
         'album.order',
         'album.updateId',
@@ -231,10 +236,10 @@ class AlbumAssetSync extends BaseSync {
   getBackfill(options: SyncBackfillOptions, albumId: string) {
     return this.backfillQuery('album_asset', options)
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
-      .select(syncAsset(options.excludeNsfw))
+      .select(syncAsset(options))
       .select('album_asset.updateId')
       .where('album_asset.albumId', '=', albumId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -243,12 +248,12 @@ class AlbumAssetSync extends BaseSync {
     const userId = options.userId;
     return this.upsertQuery('asset', options)
       .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
-      .select(syncAsset(options.excludeNsfw))
+      .select(syncAsset(options))
       .select('asset.updateId')
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -258,10 +263,10 @@ class AlbumAssetSync extends BaseSync {
     return this.upsertQuery('album_asset', options)
       .select('album_asset.updateId')
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
-      .select(syncAsset(options.excludeNsfw))
+      .select(syncAsset(options))
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -275,7 +280,7 @@ class AlbumAssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .select('album_asset.updateId')
       .where('album_asset.albumId', '=', albumId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -290,7 +295,7 @@ class AlbumAssetExifSync extends BaseSync {
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send exif updates for assets that the client already knows about
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -305,7 +310,7 @@ class AlbumAssetExifSync extends BaseSync {
       .innerJoin('album', 'album.id', 'album_asset.albumId')
       .leftJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -317,7 +322,7 @@ class AlbumToAssetSync extends BaseSync {
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
       .select(['album_asset.assetId as assetId', 'album_asset.albumId as albumId', 'album_asset.updateId'])
       .where('album_asset.albumId', '=', albumId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -334,7 +339,7 @@ class AlbumToAssetSync extends BaseSync {
           eb.selectFrom('album_user').select(['album_user.albumId as id']).where('album_user.userId', '=', userId),
         ),
       )
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -350,7 +355,7 @@ class AlbumToAssetSync extends BaseSync {
       .select(['album_asset.assetId as assetId', 'album_asset.albumId as albumId', 'album_asset.updateId'])
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -420,10 +425,10 @@ class AssetSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(syncAsset(options.excludeNsfw))
+      .select(syncAsset(options))
       .select('asset.updateId')
       .where('ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -456,24 +461,24 @@ class PersonSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('person', options)
       .select([
-        'id',
-        'createdAt',
-        'updatedAt',
-        'ownerId',
-        'name',
-        'birthDate',
-        'isHidden',
-        'isFavorite',
-        'color',
-        'updateId',
+        'person.id',
+        'person.createdAt',
+        'person.updatedAt',
+        'person.ownerId',
+        'person.name',
+        'person.birthDate',
+        'person.isHidden',
+        'person.isFavorite',
+        'person.color',
+        'person.updateId',
       ])
-      .$if(!!options.excludeNsfw, (qb) =>
+      .$if(!!getHiddenContentFilter(options), (qb) =>
         qb
           .leftJoin('asset_face as person_face', 'person_face.id', 'person.faceAssetId')
           .leftJoin('asset as person_face_asset', 'person_face_asset.id', 'person_face.assetId'),
       )
-      .where('ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, (qb) =>
+      .where('person.ownerId', '=', options.userId)
+      .$if(!!getHiddenContentFilter(options), (qb) =>
         qb.where((eb) =>
           eb.or([
             eb.not((eb) =>
@@ -503,12 +508,12 @@ class PersonSync extends BaseSync {
                 .whereRef('asset_face.personId', '=', 'person.id')
                 .where('asset_face.deletedAt', 'is', null)
                 .where('asset_face.isVisible', 'is', true)
-                .$call(withoutNsfwAssets),
+                .$call((qb) => withHiddenContentFilter(qb, options)),
             ),
           ]),
         ),
       )
-      .select(personFaceAssetId(options.excludeNsfw))
+      .select(personFaceAssetId(options))
       .stream();
   }
 }
@@ -520,7 +525,7 @@ class AssetFaceSync extends BaseSync {
       .select(['asset_face_audit.id', 'assetFaceId'])
       .leftJoin('asset', 'asset.id', 'asset_face_audit.assetId')
       .where('asset.ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -548,7 +553,7 @@ class AssetFaceSync extends BaseSync {
       ])
       .leftJoin('asset', 'asset.id', 'asset_face.assetId')
       .where('asset.ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -561,7 +566,7 @@ class AssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .where('asset.ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -573,7 +578,7 @@ class AssetEditSync extends BaseSync {
       .select(['asset_edit_audit.id', 'editId'])
       .innerJoin('asset', 'asset.id', 'asset_edit_audit.assetId')
       .where('asset.ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -587,7 +592,7 @@ class AssetEditSync extends BaseSync {
       .select([...columns.syncAssetEdit, 'asset_edit.updateId'])
       .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
       .where('asset.ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -635,7 +640,7 @@ class MemoryToAssetSync extends BaseSync {
       .select(['memory_asset_audit.id', 'memoryId', 'assetId'])
       .leftJoin('asset', 'asset.id', 'memory_asset_audit.assetId')
       .where('memoryId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -650,7 +655,7 @@ class MemoryToAssetSync extends BaseSync {
       .select(['memory_asset.memoriesId as memoryId', 'memory_asset.assetId as assetId'])
       .select('memory_asset.updateId')
       .where('memoriesId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -695,10 +700,10 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
-      .select(syncAsset(options.excludeNsfw))
+      .select(syncAsset(options))
       .select('asset.updateId')
       .where('asset.ownerId', '=', partnerId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -715,12 +720,12 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(syncAsset(options.excludeNsfw))
+      .select(syncAsset(options))
       .select('asset.updateId')
       .where('asset.ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -733,7 +738,7 @@ class PartnerAssetExifsSync extends BaseSync {
       .select('asset_exif.updateId')
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('asset.ownerId', '=', partnerId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -746,7 +751,7 @@ class PartnerAssetExifsSync extends BaseSync {
       .where('asset.ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -771,7 +776,7 @@ class StackSync extends BaseSync {
       .select(columns.syncStack)
       .select('stack.updateId')
       .where('stack.ownerId', '=', options.userId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -794,7 +799,7 @@ class PartnerStackSync extends BaseSync {
       .select(columns.syncStack)
       .select('stack.updateId')
       .where('stack.ownerId', '=', partnerId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -807,7 +812,7 @@ class PartnerStackSync extends BaseSync {
       .where('stack.ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }
@@ -858,7 +863,7 @@ class AssetMetadataSync extends BaseSync {
       .leftJoin('asset', 'asset.id', 'asset_metadata_audit.assetId')
       .where('asset.ownerId', '=', userId)
       .where('asset_metadata_audit.key', '!=', AssetMetadataKey.MlEnrichment)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 
@@ -873,7 +878,7 @@ class AssetMetadataSync extends BaseSync {
       .innerJoin('asset', 'asset.id', 'asset_metadata.assetId')
       .where('asset.ownerId', '=', userId)
       .where('asset_metadata.key', '!=', AssetMetadataKey.MlEnrichment)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .stream();
   }
 }

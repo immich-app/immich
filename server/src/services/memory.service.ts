@@ -7,6 +7,8 @@ import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, m
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 
 const DAYS = 3;
 
@@ -169,7 +171,7 @@ export class MemoryService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string, options?: { excludeNsfw: true }) {
+  private async findOrFail(id: string, options?: HiddenContentQueryOptions) {
     const memory = options ? await this.memoryRepository.get(id, options) : await this.memoryRepository.get(id);
     if (!memory) {
       throw new BadRequestException('Memory not found');
@@ -178,6 +180,6 @@ export class MemoryService extends BaseService {
   }
 
   private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? ({ excludeNsfw: true } as const) : undefined;
+    return auth.hideNsfwAssets ? getHiddenContentQueryOptions(auth) : undefined;
   }
 }

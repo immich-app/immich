@@ -385,15 +385,26 @@ describe(NotificationService.name, () => {
           },
         ],
       });
-      mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {},
+        machineLearning: { nsfwDetection: { hideFromLibrary: true } },
+      });
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.asset.getNsfwAssetIds.mockResolvedValue(new Set([assetFile.assetId]));
+      mocks.asset.getHiddenContentAssetIds.mockResolvedValue(new Set([assetFile.assetId]));
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '', senderName: 'foo' })).resolves.toBe(
         JobStatus.Success,
       );
-      expect(mocks.asset.getNsfwAssetIds).toHaveBeenCalledWith([album.albumThumbnailAssetId]);
+      expect(mocks.asset.getHiddenContentAssetIds).toHaveBeenCalledWith([album.albumThumbnailAssetId], {
+        hiddenContent: {
+          userId: userStub.user1.id,
+          includeNsfw: true,
+          tagIds: [],
+          personIds: [],
+          scope: 'owned',
+        },
+      });
       expect(mocks.assetJob.getAlbumThumbnailFiles).not.toHaveBeenCalled();
       expect(mocks.email.renderEmail).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -566,13 +577,24 @@ describe(NotificationService.name, () => {
         .build();
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.user.get.mockResolvedValue(user);
-      mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {},
+        machineLearning: { nsfwDetection: { hideFromLibrary: true } },
+      });
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.asset.getNsfwAssetIds.mockResolvedValue(new Set([assetFile.assetId]));
+      mocks.asset.getHiddenContentAssetIds.mockResolvedValue(new Set([assetFile.assetId]));
 
       await expect(sut.handleAlbumUpdate({ id: '', recipientId: user.id })).resolves.toBe(JobStatus.Success);
-      expect(mocks.asset.getNsfwAssetIds).toHaveBeenCalledWith([album.albumThumbnailAssetId]);
+      expect(mocks.asset.getHiddenContentAssetIds).toHaveBeenCalledWith([album.albumThumbnailAssetId], {
+        hiddenContent: {
+          userId: user.id,
+          includeNsfw: true,
+          tagIds: [],
+          personIds: [],
+          scope: 'owned',
+        },
+      });
       expect(mocks.assetJob.getAlbumThumbnailFiles).not.toHaveBeenCalled();
       expect(mocks.email.renderEmail).toHaveBeenCalledWith(
         expect.objectContaining({

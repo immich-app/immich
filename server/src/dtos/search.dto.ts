@@ -54,6 +54,7 @@ const BaseSearchSchema = z.object({
     }),
   ocr: z.string().optional().describe('Filter by OCR text content'),
   imageEnrichment: ImageEnrichmentFilterSchema.optional(),
+  suppressedOnly: z.boolean().optional().describe('Return only suppressed content. Requires an elevated session.'),
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({

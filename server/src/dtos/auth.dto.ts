@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie, UserMetadataKey } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
+import type { HiddenContentFilter } from 'src/utils/hidden-content';
 import { toEmail } from 'src/validation';
 import z from 'zod';
 
@@ -18,6 +19,8 @@ export type AuthDto = {
   sharedLink?: AuthSharedLink;
   session?: AuthSession;
   hideNsfwAssets?: boolean;
+  hiddenContent?: HiddenContentFilter;
+  suppressedContent?: HiddenContentFilter;
 };
 
 const LoginCredentialSchema = z

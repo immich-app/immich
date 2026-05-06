@@ -6,17 +6,15 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { StackTable } from 'src/schema/tables/stack.table';
-import { asUuid, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
+import { asUuid, getHiddenContentFilter, withDefaultVisibility, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-export interface StackSearch {
+export interface StackSearch extends HiddenContentQueryOptions {
   ownerId: string;
   primaryAssetId?: string;
-  excludeNsfw?: boolean;
 }
 
-type StackPrivacyOptions = {
-  excludeNsfw?: boolean;
-};
+type StackPrivacyOptions = HiddenContentQueryOptions;
 
 const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false, options: StackPrivacyOptions = {}) => {
   return jsonArrayFrom(
@@ -47,7 +45,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false, option
       .where('asset.deletedAt', 'is', null)
       .whereRef('asset.stackId', '=', 'stack.id')
       .$call(withDefaultVisibility)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets),
+      .$call((qb) => withHiddenContentFilter(qb, options)),
   ).as('assets');
 };
 
@@ -63,11 +61,11 @@ export class StackRepository {
       .select((eb) => withAssets(eb, false, query))
       .where('stack.ownerId', '=', query.ownerId)
       .$if(!!query.primaryAssetId, (eb) => eb.where('stack.primaryAssetId', '=', query.primaryAssetId!))
-      .$if(!!query.excludeNsfw, (qb) =>
+      .$if(!!getHiddenContentFilter(query), (qb) =>
         qb
           .innerJoin('asset as primaryAsset', 'primaryAsset.id', 'stack.primaryAssetId')
           .where('primaryAsset.deletedAt', 'is', null)
-          .$call((qb) => withoutNsfwAssets(qb, 'primaryAsset')),
+          .$call((qb) => withHiddenContentFilter(qb, query, 'primaryAsset')),
       )
       .execute();
   }
@@ -162,11 +160,11 @@ export class StackRepository {
       .selectAll()
       .select((eb) => withAssets(eb, true, options))
       .where('id', '=', asUuid(id))
-      .$if(!!options.excludeNsfw, (qb) =>
+      .$if(!!getHiddenContentFilter(options), (qb) =>
         qb
           .innerJoin('asset as primaryAsset', 'primaryAsset.id', 'stack.primaryAssetId')
           .where('primaryAsset.deletedAt', 'is', null)
-          .$call((qb) => withoutNsfwAssets(qb, 'primaryAsset')),
+          .$call((qb) => withHiddenContentFilter(qb, options, 'primaryAsset')),
       )
       .executeTakeFirst();
   }

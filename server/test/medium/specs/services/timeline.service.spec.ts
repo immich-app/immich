@@ -8,6 +8,7 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { TimelineService } from 'src/services/timeline.service';
+import type { HiddenContentFilter } from 'src/utils/hidden-content';
 import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
@@ -100,6 +101,68 @@ describe(TimelineService.name, () => {
       ]);
     });
 
+    it('should return only configured tag, person, and NSFW assets when suppressedOnly is requested', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const localDateTime = new Date('2020-01-15T12:00:00.000Z');
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: tagSuppressed } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: faceSuppressed } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+      const { asset: nsfwSuppressed } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+
+      for (const assetId of [visible.id, tagSuppressed.id, faceSuppressed.id, nsfwSuppressed.id]) {
+        await ctx.newExif({ assetId, make: 'Canon' });
+      }
+
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['medical'] });
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [tagSuppressed.id] });
+
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Private Person' });
+      await ctx.newAssetFace({ assetId: faceSuppressed.id, personId: person.id });
+
+      await ctx.newMetadata({
+        assetId: nsfwSuppressed.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+
+      const suppressedContent: HiddenContentFilter = {
+        userId: user.id,
+        includeNsfw: true,
+        tagIds: [tag.id],
+        personIds: [person.id],
+        scope: 'owned',
+      };
+      const hiddenAuth = {
+        ...factory.auth({ user: { id: user.id } }),
+        hideNsfwAssets: true,
+        hiddenContent: suppressedContent,
+      };
+      const elevatedAuth = {
+        ...factory.auth({ user: { id: user.id } }),
+        session: { id: factory.uuid(), hasElevatedPermission: true },
+        suppressedContent,
+      };
+
+      await expect(sut.getTimeBuckets(hiddenAuth, {})).resolves.toEqual([{ count: 1, timeBucket: '2020-01-01' }]);
+
+      const hiddenBucket = JSON.parse(await sut.getTimeBucket(hiddenAuth, { timeBucket: '2020-01-01' }));
+      expect(hiddenBucket.id).toEqual([visible.id]);
+
+      await expect(sut.getTimeBuckets(elevatedAuth, { suppressedOnly: true })).resolves.toEqual([
+        { count: 3, timeBucket: '2020-01-01' },
+      ]);
+
+      const suppressedBucket = JSON.parse(
+        await sut.getTimeBucket(elevatedAuth, { timeBucket: '2020-01-01', suppressedOnly: true }),
+      );
+      expect(suppressedBucket.id).toEqual(
+        expect.arrayContaining([tagSuppressed.id, faceSuppressed.id, nsfwSuppressed.id]),
+      );
+      expect(suppressedBucket.id).not.toEqual(expect.arrayContaining([visible.id]));
+    });
+
     it('should hide NSFW Live Photo motion IDs from hidden timeline buckets', async () => {
       const { sut, ctx } = setup(await getKyselyDB());
       const { user } = await ctx.newUser();
@@ -129,13 +192,27 @@ describe(TimelineService.name, () => {
 
       const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
       const hiddenBucket = JSON.parse(await sut.getTimeBucket(hiddenAuth, { timeBucket: '2020-01-01' }));
-      expect(hiddenBucket.id).toEqual([safePhoto.id, nsfwMotionPhoto.id]);
-      expect(hiddenBucket.livePhotoVideoId).toEqual([safeMotion.id, null]);
+      expect(hiddenBucket.id).toEqual(expect.arrayContaining([safePhoto.id, nsfwMotionPhoto.id]));
+      expect(
+        Object.fromEntries(
+          hiddenBucket.id.map((id: string, index: number) => [id, hiddenBucket.livePhotoVideoId[index]]),
+        ),
+      ).toEqual({
+        [safePhoto.id]: safeMotion.id,
+        [nsfwMotionPhoto.id]: null,
+      });
 
       const visibleBucket = JSON.parse(
         await sut.getTimeBucket(factory.auth({ user: { id: user.id } }), { timeBucket: '2020-01-01' }),
       );
-      expect(visibleBucket.livePhotoVideoId).toEqual([safeMotion.id, nsfwMotion.id]);
+      expect(
+        Object.fromEntries(
+          visibleBucket.id.map((id: string, index: number) => [id, visibleBucket.livePhotoVideoId[index]]),
+        ),
+      ).toEqual({
+        [safePhoto.id]: safeMotion.id,
+        [nsfwMotionPhoto.id]: nsfwMotion.id,
+      });
     });
 
     it('should return error if time bucket is requested with partners asset and archived', async () => {

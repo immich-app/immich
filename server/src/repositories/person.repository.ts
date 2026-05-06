@@ -9,14 +9,14 @@ import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { dummy, removeUndefinedKeys, withFilePath, withoutNsfwAssets } from 'src/utils/database';
+import { dummy, removeUndefinedKeys, withFilePath, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
-export interface PersonSearchOptions {
+export interface PersonSearchOptions extends HiddenContentQueryOptions {
   minimumFaceCount: number;
   withHidden: boolean;
   closestFaceAssetId?: string;
-  excludeNsfw?: boolean;
 }
 
 export interface PersonNameSearchOptions {
@@ -166,7 +166,7 @@ export class PersonRepository {
       .where('person.ownerId', '=', userId)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
-      .$if(!!options?.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .orderBy('person.isHidden', 'asc')
       .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
@@ -339,7 +339,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
-  async getStatistics(personId: string, options: { excludeNsfw?: boolean } = {}): Promise<PersonStatistics> {
+  async getStatistics(personId: string, options: HiddenContentQueryOptions = {}): Promise<PersonStatistics> {
     const result = await this.db
       .selectFrom('asset_face')
       .leftJoin('asset', (join) =>
@@ -352,7 +352,7 @@ export class PersonRepository {
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .where('asset_face.personId', '=', personId)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .executeTakeFirst();
 
     return {
@@ -361,7 +361,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { excludeNsfw: true }] })
-  getNumberOfPeople(userId: string, options: { excludeNsfw?: boolean } = {}) {
+  getNumberOfPeople(userId: string, options: HiddenContentQueryOptions = {}) {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
@@ -379,7 +379,7 @@ export class PersonRepository {
                   .whereRef('asset.id', '=', 'asset_face.assetId')
                   .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
                   .where('asset.deletedAt', 'is', null)
-                  .$if(!!options.excludeNsfw, withoutNsfwAssets),
+                  .$call((qb) => withHiddenContentFilter(qb, options)),
               ),
             ),
         ),

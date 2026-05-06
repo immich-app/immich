@@ -42,6 +42,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
 import { Point, transformPoints } from 'src/utils/transform';
@@ -64,15 +65,14 @@ export class PersonService extends BaseService {
       closestFaceAssetId = person.faceAssetId;
     }
     const { machineLearning } = await this.getConfig({ withCache: false });
+    const privacyOptions = getHiddenContentQueryOptions(auth);
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
       closestFaceAssetId,
-      excludeNsfw: auth.hideNsfwAssets,
+      ...privacyOptions,
     });
-    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, {
-      excludeNsfw: auth.hideNsfwAssets,
-    });
+    const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id, privacyOptions);
 
     return {
       people: items.map((person) => mapPerson(person)),
@@ -162,7 +162,7 @@ export class PersonService extends BaseService {
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.personRepository.getStatistics(id, { excludeNsfw: auth.hideNsfwAssets });
+    return this.personRepository.getStatistics(id, getHiddenContentQueryOptions(auth));
   }
 
   async getThumbnail(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
@@ -176,7 +176,7 @@ export class PersonService extends BaseService {
       const allowedFaces = await this.accessRepository.person.checkFaceOwnerAccess(
         auth.user.id,
         new Set([person.faceAssetId]),
-        true,
+        auth.hiddenContent ?? true,
       );
       if (!allowedFaces.has(person.faceAssetId)) {
         throw new NotFoundException();

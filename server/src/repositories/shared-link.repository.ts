@@ -10,18 +10,16 @@ import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
-import { withoutNsfwAssets } from 'src/utils/database';
+import { withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
-export type SharedLinkSearchOptions = {
+export type SharedLinkSearchOptions = HiddenContentQueryOptions & {
   userId: string;
   id?: string;
   albumId?: string;
-  excludeNsfw?: boolean;
 };
 
-type SharedLinkPrivacyOptions = {
-  excludeNsfw?: boolean;
-};
+type SharedLinkPrivacyOptions = HiddenContentQueryOptions;
 
 const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>, options: SharedLinkPrivacyOptions = {}) => {
   return eb
@@ -29,7 +27,7 @@ const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>, options: Sha
     .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
     .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
     .where('asset.deletedAt', 'is', null)
-    .$if(!!options.excludeNsfw, withoutNsfwAssets)
+    .$call((qb) => withHiddenContentFilter(qb, options))
     .selectAll('asset')
     .orderBy('asset.fileCreatedAt', 'asc');
 };
@@ -94,7 +92,7 @@ export class SharedLinkRepository {
                   .selectAll('asset')
                   .whereRef('album_asset.assetId', '=', 'asset.id')
                   .where('asset.deletedAt', 'is', null)
-                  .$if(!!options.excludeNsfw, withoutNsfwAssets)
+                  .$call((qb) => withHiddenContentFilter(qb, options))
                   .innerJoinLateral(withExifInfo, (join) => join.onTrue())
                   .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
                   .orderBy('asset.fileCreatedAt', 'asc')
@@ -128,11 +126,11 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
-  getAll({ userId, id, albumId, excludeNsfw }: SharedLinkSearchOptions) {
+  getAll({ userId, id, albumId, ...options }: SharedLinkSearchOptions) {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
-      .select((eb) => jsonArrayFrom(withSharedAssets(eb, { excludeNsfw }).limit(1)).as('assets'))
+      .select((eb) => jsonArrayFrom(withSharedAssets(eb, options).limit(1)).as('assets'))
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
         (eb) =>

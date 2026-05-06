@@ -14,6 +14,7 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { getHiddenContentQueryOptions } from 'src/utils/hidden-content';
 
 @Injectable()
 export class ActivityService extends BaseService {
@@ -83,6 +84,6 @@ export class ActivityService extends BaseService {
   }
 
   private nsfwOptions(auth: AuthDto) {
-    return auth.hideNsfwAssets ? { excludeNsfw: true } : {};
+    return getHiddenContentQueryOptions(auth);
   }
 }

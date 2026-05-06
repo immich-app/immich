@@ -9,7 +9,8 @@ import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, asUuid, withDefaultVisibility, withoutNsfwAssets } from 'src/utils/database';
+import { anyUuid, asUuid, withDefaultVisibility, withHiddenContentFilter } from 'src/utils/database';
+import type { HiddenContentQueryOptions } from 'src/utils/hidden-content';
 
 // Maximum number of candidate duplicates to return from vector search
 const DUPLICATE_SEARCH_LIMIT = 64;
@@ -28,9 +29,7 @@ interface DuplicateMergeOptions {
   sourceIds: string[];
 }
 
-type DuplicatePrivacyOptions = {
-  excludeNsfw?: boolean;
-};
+type DuplicatePrivacyOptions = HiddenContentQueryOptions;
 
 @Injectable()
 export class DuplicateRepository {
@@ -82,7 +81,7 @@ export class DuplicateRepository {
             .$narrowType<{ duplicateId: NotNull }>()
             .where('asset.deletedAt', 'is', null)
             .where('asset.stackId', 'is', null)
-            .$if(!!options.excludeNsfw, withoutNsfwAssets)
+            .$call((qb) => withHiddenContentFilter(qb, options))
             .groupBy('asset.duplicateId'),
         )
         .selectFrom('duplicates')
@@ -152,7 +151,7 @@ export class DuplicateRepository {
       .where('asset.duplicateId', '=', asUuid(duplicateId))
       .where('asset.deletedAt', 'is', null)
       .where('asset.stackId', 'is', null)
-      .$if(!!options.excludeNsfw, withoutNsfwAssets)
+      .$call((qb) => withHiddenContentFilter(qb, options))
       .groupBy('asset.duplicateId')
       .executeTakeFirst();
 

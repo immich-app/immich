@@ -131,16 +131,40 @@ select
 from
   "album"
   inner join "album_asset" on "album_asset"."albumId" = "album"."id"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
 where
-  exists (
+  not (
+    exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "asset"."id"
+        and asset_metadata.key = $2
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    )
+  )
+  and exists (
     select
     from
       "album_user"
     where
       "album_user"."albumId" = "album"."id"
-      and "album_user"."userId" = $2
+      and "album_user"."userId" = $3
   )
-  and "album_asset"."assetId" = $3
+  and "album_asset"."assetId" = $4
   and "album"."deletedAt" is null
 order by
   "album"."createdAt" desc
@@ -174,6 +198,13 @@ select
     ("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date
   ) as "endDate",
   max("asset"."updatedAt") as "lastModifiedAssetTimestamp",
+  (
+    array_agg(
+      "asset"."id"
+      order by
+        "asset"."fileCreatedAt" desc
+    )
+  ) [1] as "thumbnailAssetId",
   count("asset"."id")::int as "assetCount"
 from
   "asset"
