@@ -1,8 +1,10 @@
 import { Kysely } from 'kysely';
 import { AssetMetadataKey } from 'src/enum';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { AlbumService } from 'src/services/album.service';
@@ -16,7 +18,7 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(AlbumService, {
     database: db || defaultDatabase,
-    real: [AlbumRepository, AssetRepository, TagRepository],
+    real: [AccessRepository, AlbumRepository, AssetRepository, MapRepository, TagRepository],
     mock: [LoggingRepository],
   });
 };
@@ -85,6 +87,70 @@ describe(AlbumService.name, () => {
 
       await expect(albumRepository.getAssetIds(markedNsfwAlbum.id, [markedNsfw.id])).resolves.toEqual(
         new Set([markedNsfw.id]),
+      );
+    });
+  });
+
+  describe('getMapMarkers', () => {
+    it('filters album map markers using private NSFW metadata only', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+
+      const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [
+        visible.id,
+        unreviewedNsfw.id,
+        markedSafe.id,
+        markedNsfw.id,
+        tagOnly.id,
+      ]);
+
+      for (const [index, asset] of [visible, unreviewedNsfw, markedSafe, markedNsfw, tagOnly].entries()) {
+        await ctx.newExif({
+          assetId: asset.id,
+          latitude: 42 + index / 100,
+          longitude: 69 + index / 100,
+          city: `city-${index}`,
+          state: 'state',
+          country: 'country',
+        });
+      }
+
+      await Promise.all([
+        ctx.newMetadata({
+          assetId: unreviewedNsfw.id,
+          key: AssetMetadataKey.MlEnrichment,
+          value: nsfwMetadata(true),
+        }),
+        ctx.newMetadata({
+          assetId: markedSafe.id,
+          key: AssetMetadataKey.MlEnrichment,
+          value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+        }),
+        ctx.newMetadata({
+          assetId: markedNsfw.id,
+          key: AssetMetadataKey.MlEnrichment,
+          value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+        }),
+      ]);
+
+      const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+      await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+      const hiddenAuth = { ...factory.auth({ user: { id: user.id } }), hideNsfwAssets: true };
+      const hiddenMarkers = await sut.getMapMarkers(hiddenAuth, album.id);
+      expect(hiddenMarkers.map(({ id }) => id)).toEqual(
+        expect.arrayContaining([visible.id, markedSafe.id, tagOnly.id]),
+      );
+      expect(hiddenMarkers.map(({ id }) => id)).not.toEqual(expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]));
+
+      const elevatedMarkers = await sut.getMapMarkers(factory.auth({ user: { id: user.id } }), album.id);
+      expect(elevatedMarkers.map(({ id }) => id)).toEqual(
+        expect.arrayContaining([visible.id, unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id]),
       );
     });
   });
