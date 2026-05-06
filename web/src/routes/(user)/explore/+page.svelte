@@ -11,6 +11,8 @@
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getAltText } from '$lib/utils/thumbnail-util';
 
   interface Props {
     data: PageData;
@@ -24,6 +26,7 @@
   };
 
   let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
+  let recents = $derived(getFieldItems(data.items, 'createdAt'));
   let people = $state(data.response.people);
 
   let hasPeople = $derived(data.response.total > 0);
@@ -107,7 +110,35 @@
     </div>
   {/if}
 
-  {#if !hasPeople && places.length === 0}
+  {#if recents.length > 0}
+    <div class="mt-2 mb-6">
+      <div class="flex justify-between">
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('recently_added')}</p>
+        <a
+          href={Route.recentlyAdded()}
+          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          draggable="false">{$t('view_all')}</a
+        >
+      </div>
+      <SingleGridRow class="grid grid-flow-col grid-auto-fill-28 gap-x-4 md:grid-auto-fill-36">
+        {#snippet children({ itemCount })}
+          {#each recents.slice(0, itemCount) as item (item.data.id)}
+            <a class="relative" href={Route.viewAsset({ id: item.data.id })} draggable="false">
+              <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
+                <img
+                  src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+                  alt={$getAltText(toTimelineAsset(item.data))}
+                  class="aspect-square w-full object-cover"
+                />
+              </div>
+            </a>
+          {/each}
+        {/snippet}
+      </SingleGridRow>
+    </div>
+  {/if}
+
+  {#if !hasPeople && places.length === 0 && recents.length === 0}
     <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
   {/if}
 </UserPageLayout>
