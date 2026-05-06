@@ -3,7 +3,7 @@ import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetMetadataKey } from 'src/enum';
+import { AssetMetadataKey, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
 import { nsfwAssetIdExists, withoutNsfwAssets } from 'src/utils/database';
@@ -473,6 +473,41 @@ class PersonSync extends BaseSync {
           .leftJoin('asset as person_face_asset', 'person_face_asset.id', 'person_face.assetId'),
       )
       .where('ownerId', '=', options.userId)
+      .$if(!!options.excludeNsfw, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb.not((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('asset_face')
+                  .innerJoin('asset', (join) =>
+                    join
+                      .onRef('asset.id', '=', 'asset_face.assetId')
+                      .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                      .on('asset.deletedAt', 'is', null),
+                  )
+                  .whereRef('asset_face.personId', '=', 'person.id')
+                  .where('asset_face.deletedAt', 'is', null)
+                  .where('asset_face.isVisible', 'is', true),
+              ),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('asset_face')
+                .innerJoin('asset', (join) =>
+                  join
+                    .onRef('asset.id', '=', 'asset_face.assetId')
+                    .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                    .on('asset.deletedAt', 'is', null),
+                )
+                .whereRef('asset_face.personId', '=', 'person.id')
+                .where('asset_face.deletedAt', 'is', null)
+                .where('asset_face.isVisible', 'is', true)
+                .$call(withoutNsfwAssets),
+            ),
+          ]),
+        ),
+      )
       .select(personFaceAssetId(options.excludeNsfw))
       .stream();
   }

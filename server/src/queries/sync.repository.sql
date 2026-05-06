@@ -1712,6 +1712,53 @@ where
   "person"."updateId" < $2
   and "person"."updateId" > $3
   and "ownerId" = $4
+  and (
+    not exists (
+      select
+      from
+        "asset_face"
+        inner join "asset" on "asset"."id" = "asset_face"."assetId"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+      where
+        "asset_face"."personId" = "person"."id"
+        and "asset_face"."deletedAt" is null
+        and "asset_face"."isVisible" is true
+    )
+    or exists (
+      select
+      from
+        "asset_face"
+        inner join "asset" on "asset"."id" = "asset_face"."assetId"
+        and "asset"."visibility" = 'timeline'
+        and "asset"."deletedAt" is null
+      where
+        "asset_face"."personId" = "person"."id"
+        and "asset_face"."deletedAt" is null
+        and "asset_face"."isVisible" is true
+        and not exists (
+          select
+            1
+          from
+            asset_metadata
+          where
+            asset_metadata."assetId" = "asset"."id"
+            and asset_metadata.key = $5
+            and coalesce(
+              (
+                asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+              )::boolean,
+              (
+                asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+              )::boolean,
+              false
+            ) = true
+        )
+    )
+  )
 order by
   "person"."updateId" asc
 
