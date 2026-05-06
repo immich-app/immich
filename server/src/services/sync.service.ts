@@ -155,7 +155,7 @@ export class SyncService extends BaseService {
     }
 
     const { nowId } = await this.syncCheckpointRepository.getNow();
-    const options: SyncQueryOptions = { nowId, userId: auth.user.id };
+    const options: SyncQueryOptions = { nowId, userId: auth.user.id, excludeNsfw: auth.hideNsfwAssets };
 
     const handlers: Record<SyncRequestType, () => Promise<void>> = {
       // deprecated handlers

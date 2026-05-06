@@ -88,10 +88,10 @@ export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>)
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
 }
 
-const nsfwAssetExists = (assetAlias = 'asset') => sql<boolean>`exists (
+export const nsfwAssetIdExists = (assetId: Expression<unknown>) => sql<boolean>`exists (
       select 1
       from asset_metadata
-      where asset_metadata."assetId" = ${sql.ref(`${assetAlias}.id`)}
+      where asset_metadata."assetId" = ${assetId}
         and asset_metadata.key = ${AssetMetadataKey.MlEnrichment}
         and coalesce(
           (asset_metadata.value #>> '{nsfwDetection,review,isNsfw}')::boolean,
@@ -100,6 +100,8 @@ const nsfwAssetExists = (assetAlias = 'asset') => sql<boolean>`exists (
           false
         ) = true
     )`;
+
+const nsfwAssetExists = (assetAlias = 'asset') => nsfwAssetIdExists(sql.ref(`${assetAlias}.id`));
 
 export function withNsfwAssets<O>(qb: SelectQueryBuilder<DB, any, O>, assetAlias = 'asset') {
   return qb.where(nsfwAssetExists(assetAlias));

@@ -33,7 +33,30 @@ select distinct
   "album"."description",
   "album"."createdAt",
   "album"."updatedAt",
-  "album"."albumThumbnailAssetId" as "thumbnailAssetId",
+  case
+    when exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "album"."albumThumbnailAssetId"
+        and asset_metadata.key = $1
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    ) then null
+    else album."albumThumbnailAssetId"
+  end as "thumbnailAssetId",
   "album"."isActivityEnabled",
   "album"."order",
   "album"."updateId"
@@ -41,9 +64,9 @@ from
   "album" as "album"
   left join "album_user" as "album_users" on "album"."id" = "album_users"."albumId"
 where
-  "album"."updateId" < $1
-  and "album"."updateId" > $2
-  and "album_users"."userId" = $3
+  "album"."updateId" < $2
+  and "album"."updateId" > $3
+  and "album_users"."userId" = $4
 order by
   "album"."updateId" asc
 
@@ -86,6 +109,27 @@ where
   and "album_asset"."updateId" <= $2
   and "album_asset"."updateId" >= $3
   and "album_asset"."albumId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset"."updateId" asc
 
@@ -120,6 +164,27 @@ where
   and "asset"."updateId" > $2
   and "album_asset"."updateId" <= $3
   and "album_user"."userId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset"."updateId" asc
 
@@ -153,6 +218,27 @@ where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" > $2
   and "album_user"."userId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset"."updateId" asc
 
@@ -187,11 +273,33 @@ select
 from
   "album_asset" as "album_asset"
   inner join "asset_exif" on "asset_exif"."assetId" = "album_asset"."assetId"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" <= $2
   and "album_asset"."updateId" >= $3
   and "album_asset"."albumId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset"."updateId" asc
 
@@ -226,12 +334,34 @@ select
 from
   "asset_exif" as "asset_exif"
   inner join "album_asset" on "album_asset"."assetId" = "asset_exif"."assetId"
+  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
   inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
   "asset_exif"."updateId" < $1
   and "asset_exif"."updateId" > $2
   and "album_asset"."updateId" <= $3
   and "album_user"."userId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_exif"."updateId" asc
 
@@ -266,12 +396,34 @@ select
 from
   "album_asset" as "album_asset"
   inner join "asset_exif" on "asset_exif"."assetId" = "album_asset"."assetId"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
   inner join "album" on "album"."id" = "album_asset"."albumId"
   left join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" > $2
   and "album_user"."userId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset"."updateId" asc
 
@@ -282,21 +434,44 @@ select
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" <= $2
   and "album_asset"."updateId" >= $3
   and "album_asset"."albumId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset"."updateId" asc
 
 -- SyncRepository.albumToAsset.getDeletes
 select
-  "id",
+  "album_asset_audit"."id",
   "assetId",
   "albumId"
 from
   "album_asset_audit" as "album_asset_audit"
+  left join "asset" on "asset"."id" = "album_asset_audit"."assetId"
 where
   "album_asset_audit"."id" < $1
   and "album_asset_audit"."id" > $2
@@ -308,6 +483,27 @@ where
     where
       "album_user"."userId" = $3
   )
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset_audit"."id" asc
 
@@ -318,11 +514,33 @@ select
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
   inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" > $2
   and "album_user"."userId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "album_asset"."updateId" asc
 
@@ -426,6 +644,27 @@ where
   "asset"."updateId" < $1
   and "asset"."updateId" > $2
   and "ownerId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset"."updateId" asc
 
@@ -459,16 +698,31 @@ select
   "asset_exif"."updateId"
 from
   "asset_exif" as "asset_exif"
+  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset_exif"."updateId" < $1
   and "asset_exif"."updateId" > $2
-  and "assetId" in (
+  and "asset"."ownerId" = $3
+  and not exists (
     select
-      "id"
+      1
     from
-      "asset"
+      asset_metadata
     where
-      "ownerId" = $3
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
   )
 order by
   "asset_exif"."updateId" asc
@@ -484,6 +738,27 @@ where
   "asset_edit_audit"."id" < $1
   and "asset_edit_audit"."id" > $2
   and "asset"."ownerId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_edit_audit"."id" asc
 
@@ -502,6 +777,27 @@ where
   "asset_edit"."updateId" < $1
   and "asset_edit"."updateId" > $2
   and "asset"."ownerId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_edit"."updateId" asc
 
@@ -516,6 +812,27 @@ where
   "asset_face_audit"."id" < $1
   and "asset_face_audit"."id" > $2
   and "asset"."ownerId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_face_audit"."id" asc
 
@@ -541,6 +858,27 @@ where
   "asset_face"."updateId" < $1
   and "asset_face"."updateId" > $2
   and "asset"."ownerId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_face"."updateId" asc
 
@@ -556,6 +894,28 @@ where
   "asset_metadata_audit"."id" < $1
   and "asset_metadata_audit"."id" > $2
   and "asset"."ownerId" = $3
+  and "asset_metadata_audit"."key" != $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_metadata_audit"."id" asc
 
@@ -572,6 +932,28 @@ where
   "asset_metadata"."updateId" < $1
   and "asset_metadata"."updateId" > $2
   and "asset"."ownerId" = $3
+  and "asset_metadata"."key" != $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_metadata"."updateId" asc
 
@@ -639,11 +1021,12 @@ order by
 
 -- SyncRepository.memoryToAsset.getDeletes
 select
-  "id",
+  "memory_asset_audit"."id",
   "memoryId",
   "assetId"
 from
   "memory_asset_audit" as "memory_asset_audit"
+  left join "asset" on "asset"."id" = "memory_asset_audit"."assetId"
 where
   "memory_asset_audit"."id" < $1
   and "memory_asset_audit"."id" > $2
@@ -655,16 +1038,38 @@ where
     where
       "ownerId" = $3
   )
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "memory_asset_audit"."id" asc
 
 -- SyncRepository.memoryToAsset.getUpserts
 select
-  "memoriesId" as "memoryId",
-  "assetId" as "assetId",
-  "updateId"
+  "memory_asset"."memoriesId" as "memoryId",
+  "memory_asset"."assetId" as "assetId",
+  "memory_asset"."updateId"
 from
   "memory_asset" as "memory_asset"
+  inner join "asset" on "asset"."id" = "memory_asset"."assetId"
 where
   "memory_asset"."updateId" < $1
   and "memory_asset"."updateId" > $2
@@ -675,6 +1080,27 @@ where
       "memory"
     where
       "ownerId" = $3
+  )
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
   )
 order by
   "memory_asset"."updateId" asc
@@ -755,7 +1181,28 @@ where
   "asset"."updateId" < $1
   and "asset"."updateId" <= $2
   and "asset"."updateId" >= $3
-  and "ownerId" = $4
+  and "asset"."ownerId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset"."updateId" asc
 
@@ -806,13 +1253,34 @@ from
 where
   "asset"."updateId" < $1
   and "asset"."updateId" > $2
-  and "ownerId" in (
+  and "asset"."ownerId" in (
     select
       "sharedById"
     from
       "partner"
     where
       "sharedWithId" = $3
+  )
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
   )
 order by
   "asset"."updateId" asc
@@ -853,6 +1321,27 @@ where
   and "asset_exif"."updateId" <= $2
   and "asset_exif"."updateId" >= $3
   and "asset"."ownerId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "asset_exif"."updateId" asc
 
@@ -886,23 +1375,38 @@ select
   "asset_exif"."updateId"
 from
   "asset_exif" as "asset_exif"
+  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset_exif"."updateId" < $1
   and "asset_exif"."updateId" > $2
-  and "assetId" in (
+  and "asset"."ownerId" in (
     select
-      "id"
+      "sharedById"
     from
-      "asset"
+      "partner"
     where
-      "ownerId" in (
-        select
-          "sharedById"
-        from
-          "partner"
-        where
-          "sharedWithId" = $3
-      )
+      "sharedWithId" = $3
+  )
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
   )
 order by
   "asset_exif"."updateId" asc
@@ -934,14 +1438,36 @@ select
   "stack"."updatedAt",
   "stack"."primaryAssetId",
   "stack"."ownerId",
-  "updateId"
+  "stack"."updateId"
 from
   "stack" as "stack"
+  inner join "asset" on "asset"."id" = "stack"."primaryAssetId"
 where
   "stack"."updateId" < $1
   and "stack"."updateId" <= $2
   and "stack"."updateId" >= $3
-  and "ownerId" = $4
+  and "stack"."ownerId" = $4
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $5
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "stack"."updateId" asc
 
@@ -952,19 +1478,41 @@ select
   "stack"."updatedAt",
   "stack"."primaryAssetId",
   "stack"."ownerId",
-  "updateId"
+  "stack"."updateId"
 from
   "stack" as "stack"
+  inner join "asset" on "asset"."id" = "stack"."primaryAssetId"
 where
   "stack"."updateId" < $1
   and "stack"."updateId" > $2
-  and "ownerId" in (
+  and "stack"."ownerId" in (
     select
       "sharedById"
     from
       "partner"
     where
       "sharedWithId" = $3
+  )
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
   )
 order by
   "stack"."updateId" asc
@@ -994,13 +1542,38 @@ select
   "isFavorite",
   "color",
   "updateId",
-  "faceAssetId"
+  case
+    when exists (
+      select
+        1
+      from
+        asset_metadata
+      where
+        asset_metadata."assetId" = "person_face_asset"."id"
+        and asset_metadata.key = $1
+        and coalesce(
+          (
+            asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+          )::boolean,
+          (
+            asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+          )::boolean,
+          false
+        ) = true
+    ) then null
+    else person."faceAssetId"
+  end as "faceAssetId"
 from
   "person" as "person"
+  left join "asset_face" as "person_face" on "person_face"."id" = "person"."faceAssetId"
+  left join "asset" as "person_face_asset" on "person_face_asset"."id" = "person_face"."assetId"
 where
-  "person"."updateId" < $1
-  and "person"."updateId" > $2
-  and "ownerId" = $3
+  "person"."updateId" < $2
+  and "person"."updateId" > $3
+  and "ownerId" = $4
 order by
   "person"."updateId" asc
 
@@ -1024,13 +1597,35 @@ select
   "stack"."updatedAt",
   "stack"."primaryAssetId",
   "stack"."ownerId",
-  "updateId"
+  "stack"."updateId"
 from
   "stack" as "stack"
+  inner join "asset" on "asset"."id" = "stack"."primaryAssetId"
 where
   "stack"."updateId" < $1
   and "stack"."updateId" > $2
-  and "ownerId" = $3
+  and "stack"."ownerId" = $3
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $4
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 order by
   "stack"."updateId" asc
 

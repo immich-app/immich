@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AlbumUserRole, AssetMetadataKey, SyncEntityType, SyncRequestType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
@@ -28,6 +28,13 @@ const backfillSyncAck = {
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
+});
+
+const nsfwMetadata = (isNsfw: boolean) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: 0.99, labels: { explicit: 0.99 } },
+  },
 });
 
 describe(SyncRequestType.AlbumAssetsV2, () => {
@@ -109,6 +116,34 @@ describe(SyncRequestType.AlbumAssetsV2, () => {
       expect.objectContaining({ type: SyncEntityType.AlbumAssetCreateV2 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
+  });
+
+  it('should hide NSFW album asset payloads from non-elevated sync', async () => {
+    const { auth, user, ctx } = await setup();
+    const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: nsfw } = await ctx.newAsset({ ownerId: user.id });
+    const { album } = await ctx.newAlbum({ ownerId: user.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: visible.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: nsfw.id });
+    await ctx.newMetadata({
+      assetId: nsfw.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true),
+    });
+
+    const hiddenResponse = await ctx.syncStream({ ...auth, hideNsfwAssets: true }, [SyncRequestType.AlbumAssetsV2]);
+    const hiddenAssetIds = hiddenResponse
+      .filter(({ type }) => type === SyncEntityType.AlbumAssetCreateV2)
+      .map(({ data }) => data.id);
+
+    expect(hiddenAssetIds).toEqual([visible.id]);
+
+    const elevatedResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    const elevatedAssetIds = elevatedResponse
+      .filter(({ type }) => type === SyncEntityType.AlbumAssetCreateV2)
+      .map(({ data }) => data.id);
+
+    expect(elevatedAssetIds).toEqual(expect.arrayContaining([visible.id, nsfw.id]));
   });
 
   it('should not sync album asset for unrelated user', async () => {
