@@ -46,6 +46,12 @@ import {
   SharedSpaceRole,
   UserAvatarColor,
 } from 'src/enum';
+import {
+  buildAutomaticReconciliationClaim,
+  chooseAutomaticTargetIdentity,
+  filterUnambiguousReconciliationClaims,
+  type ReconciliationClaim,
+} from 'src/services/accessible-identity-reconciliation';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { asBirthDateString, asDateString } from 'src/utils/date';
@@ -64,6 +70,12 @@ type SpacePersonMatchResult = {
   id: string;
   identityId?: string | null;
   sourceIdentityId?: string | null;
+};
+
+type SharedSpaceIdentityReconciliationClaim = ReconciliationClaim & {
+  spacePersonId: string;
+  targetIdentityId: string;
+  sourceIdentityId: string;
 };
 
 @Injectable()
@@ -383,6 +395,14 @@ export class SharedSpaceService extends BaseService {
     });
 
     await this.queueSpacePersonMetadataBackfill();
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (space?.faceRecognitionEnabled) {
+      await this.jobRepository.queue({
+        name: JobName.SharedSpaceFaceMatchAll,
+        data: { spaceId },
+      });
+    }
+    await this.queueSpaceIdentityReconciliation({ spaceId, userId: dto.userId });
 
     return this.mapMember(member);
   }
@@ -1160,6 +1180,17 @@ export class SharedSpaceService extends BaseService {
     });
   }
 
+  private async queueSpaceIdentityReconciliation(input: {
+    spaceId: string;
+    userId?: string;
+    spacePersonId?: string;
+  }): Promise<void> {
+    await this.jobRepository.queue({
+      name: JobName.SharedSpaceIdentityReconciliation,
+      data: input,
+    });
+  }
+
   async mergeSpacePeople(
     auth: AuthDto,
     spaceId: string,
@@ -1260,6 +1291,157 @@ export class SharedSpaceService extends BaseService {
     return assets.map((a) => a.assetId);
   }
 
+  @OnJob({ name: JobName.SharedSpaceIdentityReconciliation, queue: QueueName.FacialRecognition })
+  async handleSharedSpaceIdentityReconciliation(
+    job: JobOf<JobName.SharedSpaceIdentityReconciliation>,
+  ): Promise<JobStatus> {
+    return this.reconcileSharedSpaceIdentities(job);
+  }
+
+  private async reconcileSharedSpaceIdentities(
+    job: JobOf<JobName.SharedSpaceIdentityReconciliation>,
+  ): Promise<JobStatus> {
+    const space = await this.sharedSpaceRepository.getById(job.spaceId);
+    if (!space || !space.faceRecognitionEnabled) {
+      return JobStatus.Skipped;
+    }
+
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    const maxDistance = machineLearning.facialRecognition.maxDistance;
+
+    let members;
+    if (job.userId) {
+      const member = await this.sharedSpaceRepository.getMember(job.spaceId, job.userId);
+      members = member ? [member] : [];
+    } else {
+      members = await this.sharedSpaceRepository.getMembers(job.spaceId);
+    }
+
+    const spacePeopleWithEmbeddings = await this.sharedSpaceRepository.getSpacePersonsWithEmbeddings(job.spaceId);
+    const spacePeople = spacePeopleWithEmbeddings.filter(
+      (person) => (!job.spacePersonId || person.id === job.spacePersonId) && person.identityId && !person.isHidden,
+    );
+
+    for (const member of members) {
+      const claims: SharedSpaceIdentityReconciliationClaim[] = [];
+      for (const spacePerson of spacePeople) {
+        const claim = await this.findStrictSpacePersonLocalIdentityClaim({
+          memberUserId: member.userId,
+          spacePerson,
+          maxDistance,
+        });
+        if (claim) {
+          claims.push(claim);
+        }
+      }
+
+      for (const claim of filterUnambiguousReconciliationClaims(claims) as SharedSpaceIdentityReconciliationClaim[]) {
+        await this.applySharedSpaceIdentityReconciliationClaim(claim);
+      }
+    }
+
+    return JobStatus.Success;
+  }
+
+  private async findStrictSpacePersonLocalIdentityClaim(input: {
+    memberUserId: string;
+    spacePerson: {
+      id: string;
+      identityId?: string | null;
+      type: string;
+      embedding: string;
+      isHidden: boolean;
+    };
+    maxDistance: number;
+  }): Promise<SharedSpaceIdentityReconciliationClaim | undefined> {
+    const targetIdentityId = input.spacePerson.identityId;
+    if (!targetIdentityId || input.spacePerson.isHidden) {
+      return;
+    }
+
+    const matches = await this.searchRepository.searchFaces({
+      userIds: [input.memberUserId],
+      embedding: input.spacePerson.embedding,
+      maxDistance: input.maxDistance,
+      numResults: 2,
+      hasPerson: true,
+    });
+
+    const candidates: Array<{ identityId: string }> = [];
+    for (const match of matches) {
+      if (!match.personId) {
+        continue;
+      }
+
+      const person = await this.personRepository.getById(match.personId);
+      if (!person || person.isHidden || person.type !== input.spacePerson.type) {
+        continue;
+      }
+
+      const identity = await this.faceIdentityRepository.ensurePersonIdentity(person.id);
+      if (identity.id === targetIdentityId) {
+        return;
+      }
+
+      candidates.push({ identityId: identity.id });
+    }
+
+    if (candidates.length !== 1) {
+      return;
+    }
+
+    const { sourceIdentityId, targetIdentityId: selectedTargetIdentityId } = chooseAutomaticTargetIdentity({
+      bridge: 'member-join',
+      localIdentityId: candidates[0].identityId,
+      spaceIdentityId: targetIdentityId,
+    });
+    const claim = buildAutomaticReconciliationClaim({
+      bridge: 'member-join',
+      localIdentityId: candidates[0].identityId,
+      spaceIdentityId: targetIdentityId,
+      sourceIdentityId,
+      targetIdentityId: selectedTargetIdentityId,
+      sourceProfileKey: `user:${input.memberUserId}:${candidates[0].identityId}`,
+      targetProfileKey: `space-person:${input.spacePerson.id}`,
+      hasAccessBridge: true,
+      compatibleType: true,
+      hasEmbedding: true,
+      hiddenOrIgnored: false,
+      alreadySameIdentity: false,
+      sameOwnerConflict: false,
+      sameSpaceConflict: false,
+    });
+
+    return claim
+      ? {
+          ...claim,
+          spacePersonId: input.spacePerson.id,
+        }
+      : undefined;
+  }
+
+  private async applySharedSpaceIdentityReconciliationClaim(
+    claim: SharedSpaceIdentityReconciliationClaim,
+  ): Promise<void> {
+    const conflicts = await this.faceIdentityRepository.getMergeConflicts({
+      targetIdentityId: claim.targetIdentityId,
+      sourceIdentityIds: [claim.sourceIdentityId],
+    });
+    if (conflicts.personalProfileConflictCount > 0 || conflicts.spaceProfileConflictCount > 0) {
+      this.logger.warn(
+        `Skipping shared-space identity reconciliation for space person ${claim.spacePersonId}: merge conflicts`,
+      );
+      return;
+    }
+
+    await this.faceIdentityRepository.mergeIdentities({
+      targetIdentityId: claim.targetIdentityId,
+      sourceIdentityIds: [claim.sourceIdentityId],
+      source: 'shared-space-evidence',
+    });
+    await this.queueSpacePersonMetadataBackfill(claim.targetIdentityId);
+  }
+
   @OnJob({ name: JobName.SharedSpaceFaceMatch, queue: QueueName.FacialRecognition })
   async handleSharedSpaceFaceMatch({ spaceId, assetId }: JobOf<JobName.SharedSpaceFaceMatch>): Promise<JobStatus> {
     const space = await this.sharedSpaceRepository.getById(spaceId);
@@ -1267,7 +1449,10 @@ export class SharedSpaceService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    await this.processSpaceFaceMatch(spaceId, assetId);
+    const affectedPersonIds = await this.processSpaceFaceMatch(spaceId, assetId);
+    for (const spacePersonId of affectedPersonIds) {
+      await this.queueSpaceIdentityReconciliation({ spaceId, spacePersonId });
+    }
 
     // Queue dedup pass (jobId deduplication prevents queue spam)
     await this.jobRepository.queue({
@@ -1292,6 +1477,7 @@ export class SharedSpaceService extends BaseService {
 
     const batchSize = 1000;
     let offset = 0;
+    let affectedAny = false;
 
     while (true) {
       // Re-check link each batch to handle concurrent unlink
@@ -1307,10 +1493,15 @@ export class SharedSpaceService extends BaseService {
       }
 
       for (const asset of assets) {
-        await this.processSpaceFaceMatch(job.spaceId, asset.id);
+        const affectedPersonIds = await this.processSpaceFaceMatch(job.spaceId, asset.id);
+        affectedAny ||= affectedPersonIds.length > 0;
       }
 
       offset += assets.length;
+    }
+
+    if (affectedAny) {
+      await this.queueSpaceIdentityReconciliation({ spaceId: job.spaceId });
     }
 
     // Queue dedup pass after library sync completes
@@ -1326,6 +1517,7 @@ export class SharedSpaceService extends BaseService {
   async handleSharedSpaceFaceMatchAll({ spaceId }: JobOf<JobName.SharedSpaceFaceMatchAll>): Promise<JobStatus> {
     const batchSize = this.sharedSpaceFaceMatchBatchSize;
     let processedAny = false;
+    let affectedAny = false;
     let afterAssetId: string | undefined;
 
     const initialSpace = await this.sharedSpaceRepository.getById(spaceId);
@@ -1349,7 +1541,8 @@ export class SharedSpaceService extends BaseService {
       }
 
       for (const { assetId } of assets) {
-        await this.processSpaceFaceMatch(spaceId, assetId);
+        const affectedPersonIds = await this.processSpaceFaceMatch(spaceId, assetId);
+        affectedAny ||= affectedPersonIds.length > 0;
         processedAny = true;
       }
 
@@ -1371,6 +1564,9 @@ export class SharedSpaceService extends BaseService {
         name: JobName.SharedSpacePersonDedup,
         data: { spaceId },
       });
+      if (affectedAny) {
+        await this.queueSpaceIdentityReconciliation({ spaceId });
+      }
     }
 
     return JobStatus.Success;
@@ -1426,13 +1622,13 @@ export class SharedSpaceService extends BaseService {
           continue;
         }
 
-        if (person.identityId) {
+        if (person.isHidden) {
           continue;
         }
 
         const matches = await this.sharedSpaceRepository.findClosestSpacePerson(job.spaceId, person.embedding, {
           maxDistance,
-          numResults: 1,
+          numResults: 2,
           excludePersonIds: [person.id, ...deletedIds],
           type: person.type,
         });
@@ -1441,25 +1637,33 @@ export class SharedSpaceService extends BaseService {
           continue;
         }
 
-        const match = matches[0];
-        const matchPerson = persons.find((p) => p.id === match.personId);
-        if (!matchPerson || deletedIds.has(match.personId)) {
-          this.logger.debug(
-            `Dedup: skipping stale match ${match.personId} for person ${person.id} (already merged in this pass)`,
-          );
+        const compatibleMatches: Array<{ person: (typeof persons)[number]; distance: number }> = [];
+        for (const match of matches) {
+          const matchPerson = persons.find((p) => p.id === match.personId);
+          if (!matchPerson || deletedIds.has(match.personId)) {
+            this.logger.debug(
+              `Dedup: skipping stale match ${match.personId} for person ${person.id} (already merged in this pass)`,
+            );
+            continue;
+          }
+          if (matchPerson.isHidden || matchPerson.type !== person.type) {
+            continue;
+          }
+          compatibleMatches.push({ person: matchPerson, distance: match.distance });
+        }
+
+        if (compatibleMatches.length !== 1) {
           continue;
         }
 
-        if (matchPerson.identityId) {
-          continue;
-        }
+        const { person: matchPerson, distance } = compatibleMatches[0];
 
         // Determine target (more faces) and source
         const [target, source] =
           person.faceCount >= matchPerson.faceCount ? [person, matchPerson] : [matchPerson, person];
 
         this.logger.log(
-          `Dedup: merging person ${source.id} (${source.name || 'unnamed'}, ${source.faceCount} faces) into ${target.id} (${target.name || 'unnamed'}, ${target.faceCount} faces), distance=${match.distance.toFixed(4)}`,
+          `Dedup: merging person ${source.id} (${source.name || 'unnamed'}, ${source.faceCount} faces) into ${target.id} (${target.name || 'unnamed'}, ${target.faceCount} faces), distance=${distance.toFixed(4)}`,
         );
 
         // Reassign faces and migrate aliases
@@ -1495,9 +1699,6 @@ export class SharedSpaceService extends BaseService {
         const updates: Partial<{ name: string; isHidden: boolean }> = {};
         if (!target.name && source.name) {
           updates.name = source.name;
-        }
-        if (target.isHidden && !source.isHidden) {
-          updates.isHidden = false;
         }
 
         // Update and delete separately so deletePerson still runs if updatePerson fails
@@ -1616,10 +1817,10 @@ export class SharedSpaceService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async processSpaceFaceMatch(spaceId: string, assetId: string): Promise<void> {
+  private async processSpaceFaceMatch(spaceId: string, assetId: string): Promise<string[]> {
     const isAssetInSpace = await this.sharedSpaceRepository.isAssetInSpace(spaceId, assetId);
     if (!isAssetInSpace) {
-      return;
+      return [];
     }
 
     const spaceAsset = await this.sharedSpaceRepository.getSpaceAssetAdder(spaceId, assetId);
@@ -1756,6 +1957,7 @@ export class SharedSpaceService extends BaseService {
     if (affectedPersonIds.size > 0) {
       await this.sharedSpaceRepository.recountPersons([...affectedPersonIds]);
     }
+    return [...affectedPersonIds];
   }
 
   private async findOrCreateSpacePersonForFace(input: {

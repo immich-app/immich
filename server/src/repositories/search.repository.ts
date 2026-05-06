@@ -1546,6 +1546,15 @@ export class SearchRepository {
         WHERE shared_space_person."spaceId" = ${anyUuid(timelineSpaceIds)}
           AND shared_space_person."identityId" IS NOT NULL
           AND EXISTS (
+            SELECT 1
+            FROM shared_space_person_face
+            INNER JOIN asset_face AS profile_face
+              ON profile_face.id = shared_space_person_face."assetFaceId"
+            WHERE shared_space_person_face."personId" = shared_space_person.id
+              AND profile_face."deletedAt" IS NULL
+              AND profile_face."isVisible" = true
+          )
+          AND EXISTS (
             SELECT 1 FROM identity_faces WHERE identity_faces."identityId" = shared_space_person."identityId"
           )
       ),
@@ -1560,25 +1569,40 @@ export class SearchRepository {
               lower(profiles.name),
               profiles."updatedAt" DESC,
               profiles."profileId"
-          ) AS rn
+          ) AS display_rn,
+          row_number() OVER (
+            PARTITION BY profiles."identityId"
+            ORDER BY
+              CASE
+                WHEN profiles."profileType" = 'user-person' THEN 0
+                ELSE profiles."profileRank"
+              END,
+              NULLIF(profiles.name, '') IS NULL,
+              lower(profiles.name),
+              profiles."updatedAt" DESC,
+              profiles."profileId"
+          ) AS primary_rn
         FROM profiles
         WHERE profiles."isHidden" = false
       )
       SELECT
         CASE
-          WHEN "profileType" = 'space-person' THEN 'space-person:' || "profileId"::text
-          ELSE 'person:' || "profileId"::text
+          WHEN primary_profiles."profileType" = 'space-person' THEN 'space-person:' || primary_profiles."profileId"::text
+          ELSE 'person:' || primary_profiles."profileId"::text
         END AS id,
-        name,
-        "profileType",
-        "profileId",
-        "spaceId"
-      FROM ranked_profiles
-      WHERE rn = 1
+        COALESCE(NULLIF(display_profiles.name, ''), primary_profiles.name, '') AS name,
+        primary_profiles."profileType",
+        primary_profiles."profileId",
+        primary_profiles."spaceId"
+      FROM ranked_profiles AS primary_profiles
+      INNER JOIN ranked_profiles AS display_profiles
+        ON display_profiles."identityId" = primary_profiles."identityId"
+        AND display_profiles.display_rn = 1
+      WHERE primary_profiles.primary_rn = 1
       ORDER BY
-        NULLIF(name, '') IS NULL,
-        lower(name),
-        "profileId"
+        NULLIF(COALESCE(NULLIF(display_profiles.name, ''), primary_profiles.name, ''), '') IS NULL,
+        lower(COALESCE(NULLIF(display_profiles.name, ''), primary_profiles.name, '')),
+        primary_profiles."profileId"
     `.execute(db);
 
     return {

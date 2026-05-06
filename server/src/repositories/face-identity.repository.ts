@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Selectable, sql } from 'kysely';
+import { Insertable, Kysely, Selectable, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import {
@@ -8,7 +8,8 @@ import {
   PersonResponseDto,
   ScopedPersonProfileRefDto,
 } from 'src/dtos/person.dto';
-import { AssetVisibility, SharedSpaceRole, SourceType } from 'src/enum';
+import { AssetVisibility, SharedSpaceRole, SourceType, VectorIndex } from 'src/enum';
+import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { FaceIdentityFaceSource, FaceIdentityFaceTable } from 'src/schema/tables/face-identity-face.table';
 import { FaceIdentityTable } from 'src/schema/tables/face-identity.table';
@@ -36,6 +37,12 @@ export type SpacePersonBackfillResult = BackfillResult & {
 export type MergeIdentitiesResult = {
   personalProfileConflictCount: number;
   spaceProfileConflictCount: number;
+};
+
+export type AccessibleIdentityFaceMatch = {
+  identityId: string;
+  type: string;
+  distance: number;
 };
 
 type AccessiblePeopleOptions = {
@@ -219,6 +226,16 @@ export class FaceIdentityRepository {
           'shared_space_member.showInTimeline',
         ])
         .where('shared_space_person.id', 'in', [...scopedSpacePersonIds])
+        .where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('shared_space_person_face')
+              .innerJoin('asset_face as profile_face', 'profile_face.id', 'shared_space_person_face.assetFaceId')
+              .whereRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
+              .where('profile_face.deletedAt', 'is', null)
+              .where('profile_face.isVisible', '=', true),
+          ),
+        )
         .execute();
       const rowsById = new Map(rows.map((row) => [row.id, row]));
       const timelineSpaceIds = new Set(input.scope.timelineSpaceIds);
@@ -250,6 +267,88 @@ export class FaceIdentityRepository {
       legacySpacePersonIds: [...legacySpacePersonIds],
       hasInaccessibleToken,
     };
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        userId: DummyValue.UUID,
+        embedding: DummyValue.VECTOR,
+        maxDistance: 0.6,
+        type: 'person',
+        excludeIdentityId: DummyValue.UUID,
+      },
+    ],
+  })
+  async findClosestAccessibleIdentityForFace(input: {
+    userId: string;
+    embedding: string;
+    maxDistance: number;
+    type: string;
+    excludeIdentityId?: string | null;
+  }): Promise<AccessibleIdentityFaceMatch | undefined> {
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Face])}`.execute(trx);
+
+      const result = await sql<AccessibleIdentityFaceMatch>`
+        WITH identity_matches AS (
+          SELECT
+            shared_space_person."identityId" AS "identityId",
+            shared_space_person.type,
+            MIN(face_search.embedding <=> ${input.embedding})::float8 AS distance
+          FROM shared_space_person
+          INNER JOIN shared_space_member
+            ON shared_space_member."spaceId" = shared_space_person."spaceId"
+            AND shared_space_member."userId" = ${input.userId}
+            AND shared_space_member."showInTimeline" = true
+          INNER JOIN shared_space_person_face
+            ON shared_space_person_face."personId" = shared_space_person.id
+          INNER JOIN asset_face
+            ON asset_face.id = shared_space_person_face."assetFaceId"
+          INNER JOIN asset
+            ON asset.id = asset_face."assetId"
+          INNER JOIN face_search
+            ON face_search."faceId" = asset_face.id
+          WHERE shared_space_person."identityId" IS NOT NULL
+            AND shared_space_person.type = ${input.type}
+            AND shared_space_person."isHidden" = false
+            ${input.excludeIdentityId ? sql`AND shared_space_person."identityId" <> ${input.excludeIdentityId}` : sql``}
+            AND asset_face."deletedAt" IS NULL
+            AND asset_face."isVisible" = true
+            AND asset."deletedAt" IS NULL
+            AND asset."isOffline" = false
+            AND asset.visibility = ${AssetVisibility.Timeline}
+            AND NOT EXISTS (
+              SELECT 1
+              FROM person existing_person
+              WHERE existing_person."ownerId" = ${input.userId}
+                AND existing_person."identityId" = shared_space_person."identityId"
+            )
+            ${
+              input.excludeIdentityId
+                ? sql`
+                  AND NOT EXISTS (
+                    SELECT 1
+                    FROM shared_space_person source_space_person
+                    INNER JOIN shared_space_person target_space_person
+                      ON target_space_person."spaceId" = source_space_person."spaceId"
+                      AND target_space_person."identityId" = shared_space_person."identityId"
+                    WHERE source_space_person."identityId" = ${input.excludeIdentityId}
+                  )
+                `
+                : sql``
+            }
+          GROUP BY shared_space_person."identityId", shared_space_person.type
+        )
+        SELECT "identityId", type, distance
+        FROM identity_matches
+        WHERE distance <= ${input.maxDistance}
+        ORDER BY distance
+        LIMIT 2
+      `.execute(trx);
+
+      return result.rows.length === 1 ? result.rows[0] : undefined;
+    });
   }
 
   async hasBackfillWork(): Promise<boolean> {
@@ -407,6 +506,39 @@ export class FaceIdentityRepository {
       hasNextPage: rows.length > size,
       people,
     };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getAccessiblePersonByProfileId(userId: string, profileId: string): Promise<PersonResponseDto | undefined> {
+    const result = await sql<{ identityId: string }>`
+      SELECT shared_space_person."identityId"
+      FROM shared_space_person
+      INNER JOIN shared_space_member
+        ON shared_space_member."spaceId" = shared_space_person."spaceId"
+        AND shared_space_member."userId" = ${userId}
+        AND shared_space_member."showInTimeline" = true
+      WHERE shared_space_person.id = ${profileId}
+        AND shared_space_person."identityId" IS NOT NULL
+        AND shared_space_person."isHidden" = false
+        AND EXISTS (
+          SELECT 1
+          FROM shared_space_person_face
+          INNER JOIN asset_face AS profile_face
+            ON profile_face.id = shared_space_person_face."assetFaceId"
+          WHERE shared_space_person_face."personId" = shared_space_person.id
+            AND profile_face."deletedAt" IS NULL
+            AND profile_face."isVisible" = true
+        )
+      LIMIT 1
+    `.execute(this.db);
+
+    const identityId = result.rows[0]?.identityId;
+    if (!identityId) {
+      return;
+    }
+
+    const people = await this.hydrateAccessiblePeople({ userId, identityIds: [identityId], withHidden: false });
+    return people[0];
   }
 
   async resolveRepairRefs(actorUserId: string, dto: MergeScopedPeopleDto): Promise<RepairRefsResolution> {
@@ -827,6 +959,15 @@ export class FaceIdentityRepository {
           AND shared_space_person_alias."userId" = ${input.userId}
         WHERE shared_space_person."identityId" IS NOT NULL
           AND EXISTS (
+            SELECT 1
+            FROM shared_space_person_face
+            INNER JOIN asset_face AS profile_face
+              ON profile_face.id = shared_space_person_face."assetFaceId"
+            WHERE shared_space_person_face."personId" = shared_space_person.id
+              AND profile_face."deletedAt" IS NULL
+              AND profile_face."isVisible" = true
+          )
+          AND EXISTS (
             SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = shared_space_person."identityId"
           )
       ),
@@ -940,6 +1081,15 @@ export class FaceIdentityRepository {
           ON shared_space_person_alias."personId" = shared_space_person.id
           AND shared_space_person_alias."userId" = ${userId}
         WHERE shared_space_person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1
+            FROM shared_space_person_face
+            INNER JOIN asset_face AS profile_face
+              ON profile_face.id = shared_space_person_face."assetFaceId"
+            WHERE shared_space_person_face."personId" = shared_space_person.id
+              AND profile_face."deletedAt" IS NULL
+              AND profile_face."isVisible" = true
+          )
           AND EXISTS (
             SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = shared_space_person."identityId"
           )
@@ -1066,7 +1216,16 @@ export class FaceIdentityRepository {
         LEFT JOIN shared_space_person_alias
           ON shared_space_person_alias."personId" = shared_space_person.id
           AND shared_space_person_alias."userId" = ${input.userId}
-        WHERE ${input.withHidden}::boolean OR shared_space_person."isHidden" = false
+        WHERE (${input.withHidden}::boolean OR shared_space_person."isHidden" = false)
+          AND EXISTS (
+            SELECT 1
+            FROM shared_space_person_face
+            INNER JOIN asset_face AS profile_face
+              ON profile_face.id = shared_space_person_face."assetFaceId"
+            WHERE shared_space_person_face."personId" = shared_space_person.id
+              AND profile_face."deletedAt" IS NULL
+              AND profile_face."isVisible" = true
+          )
       ),
       ranked_profiles AS (
         SELECT
@@ -1079,28 +1238,43 @@ export class FaceIdentityRepository {
               lower(profiles.name),
               profiles."updatedAt" DESC,
               profiles."profileId"
-          ) AS rn
+          ) AS display_rn,
+          row_number() OVER (
+            PARTITION BY profiles."identityId"
+            ORDER BY
+              CASE
+                WHEN profiles."profileType" = 'user-person' THEN 0
+                ELSE profiles."profileRank"
+              END,
+              NULLIF(profiles.name, '') IS NULL,
+              lower(profiles.name),
+              profiles."updatedAt" DESC,
+              profiles."profileId"
+          ) AS primary_rn
         FROM profiles
         WHERE EXISTS (SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = profiles."identityId")
       )
       SELECT
-        ranked_profiles."profileType",
-        ranked_profiles."profileId",
-        ranked_profiles."spaceId",
-        ranked_profiles.name,
-        ranked_profiles."birthDate",
-        ranked_profiles."thumbnailPath",
-        ranked_profiles."isHidden",
-        ranked_profiles."isFavorite",
-        ranked_profiles.color,
-        ranked_profiles."updatedAt",
-        ranked_profiles.type,
-        ranked_profiles.species,
+        primary_profiles."profileType",
+        primary_profiles."profileId",
+        primary_profiles."spaceId",
+        COALESCE(NULLIF(display_profiles.name, ''), primary_profiles.name, '') AS name,
+        COALESCE(display_profiles."birthDate", primary_profiles."birthDate") AS "birthDate",
+        primary_profiles."thumbnailPath",
+        primary_profiles."isHidden",
+        primary_profiles."isFavorite",
+        primary_profiles.color,
+        primary_profiles."updatedAt",
+        primary_profiles.type,
+        primary_profiles.species,
         asset_counts."numberOfAssets"
       FROM requested_identities
-      INNER JOIN ranked_profiles
-        ON ranked_profiles."identityId" = requested_identities."identityId"
-        AND ranked_profiles.rn = 1
+      INNER JOIN ranked_profiles AS primary_profiles
+        ON primary_profiles."identityId" = requested_identities."identityId"
+        AND primary_profiles.primary_rn = 1
+      INNER JOIN ranked_profiles AS display_profiles
+        ON display_profiles."identityId" = requested_identities."identityId"
+        AND display_profiles.display_rn = 1
       LEFT JOIN asset_counts ON asset_counts."identityId" = requested_identities."identityId"
       ORDER BY requested_identities.ord
     `.execute(this.db);
@@ -1521,27 +1695,10 @@ export class FaceIdentityRepository {
         throw new Error('Cannot merge face identities with different types');
       }
 
-      const personalConflicts = await trx
-        .selectFrom('person as source_person')
-        .innerJoin('person as target_person', (join) =>
-          join
-            .onRef('target_person.ownerId', '=', 'source_person.ownerId')
-            .on('target_person.identityId', '=', input.targetIdentityId),
-        )
-        .select('source_person.id')
-        .where('source_person.identityId', 'in', sourceIdentityIds)
-        .execute();
-
-      const spaceConflicts = await trx
-        .selectFrom('shared_space_person as source_person')
-        .innerJoin('shared_space_person as target_person', (join) =>
-          join
-            .onRef('target_person.spaceId', '=', 'source_person.spaceId')
-            .on('target_person.identityId', '=', input.targetIdentityId),
-        )
-        .select('source_person.id')
-        .where('source_person.identityId', 'in', sourceIdentityIds)
-        .execute();
+      const { personalProfileConflictCount, spaceProfileConflictCount } = await this.countMergeConflicts(trx, {
+        targetIdentityId: input.targetIdentityId,
+        sourceIdentityIds,
+      });
 
       await trx
         .updateTable('face_identity_face')
@@ -1599,9 +1756,57 @@ export class FaceIdentityRepository {
       }
 
       return {
-        personalProfileConflictCount: personalConflicts.length,
-        spaceProfileConflictCount: spaceConflicts.length,
+        personalProfileConflictCount,
+        spaceProfileConflictCount,
       };
     });
+  }
+
+  private async countMergeConflicts(
+    db: Kysely<DB> | Transaction<DB>,
+    input: {
+      targetIdentityId: string;
+      sourceIdentityIds: string[];
+    },
+  ): Promise<MergeIdentitiesResult> {
+    const sourceIdentityIds = [...new Set(input.sourceIdentityIds)].filter((id) => id !== input.targetIdentityId);
+    if (sourceIdentityIds.length === 0) {
+      return { personalProfileConflictCount: 0, spaceProfileConflictCount: 0 };
+    }
+
+    const [personalConflicts, spaceConflicts] = await Promise.all([
+      db
+        .selectFrom('person as source_person')
+        .innerJoin('person as target_person', (join) =>
+          join
+            .onRef('target_person.ownerId', '=', 'source_person.ownerId')
+            .on('target_person.identityId', '=', input.targetIdentityId),
+        )
+        .select('source_person.id')
+        .where('source_person.identityId', 'in', sourceIdentityIds)
+        .execute(),
+      db
+        .selectFrom('shared_space_person as source_person')
+        .innerJoin('shared_space_person as target_person', (join) =>
+          join
+            .onRef('target_person.spaceId', '=', 'source_person.spaceId')
+            .on('target_person.identityId', '=', input.targetIdentityId),
+        )
+        .select('source_person.id')
+        .where('source_person.identityId', 'in', sourceIdentityIds)
+        .execute(),
+    ]);
+
+    return {
+      personalProfileConflictCount: personalConflicts.length,
+      spaceProfileConflictCount: spaceConflicts.length,
+    };
+  }
+
+  async getMergeConflicts(input: {
+    targetIdentityId: string;
+    sourceIdentityIds: string[];
+  }): Promise<MergeIdentitiesResult> {
+    return this.countMergeConflicts(this.db, input);
   }
 }

@@ -1,10 +1,10 @@
 <script lang="ts">
   interface Props {
-    altText?: string;
     url?: string;
+    altText?: string;
   }
 
-  let { altText = '', url = '' }: Props = $props();
+  const { url = '', altText = '' }: Props = $props();
 </script>
 
-<img src={url} alt={altText} />
+<img data-testid="image-thumbnail" src={url} alt={altText} />

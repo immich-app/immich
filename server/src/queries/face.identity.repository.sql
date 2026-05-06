@@ -20,6 +20,82 @@ from
   and "shared_space_member"."userId" = $1
 where
   "shared_space_person"."id" in ($2)
+  and exists (
+    select
+    from
+      "shared_space_person_face"
+      inner join "asset_face" as "profile_face" on "profile_face"."id" = "shared_space_person_face"."assetFaceId"
+    where
+      "shared_space_person_face"."personId" = "shared_space_person"."id"
+      and "profile_face"."deletedAt" is null
+      and "profile_face"."isVisible" = $3
+  )
+
+-- FaceIdentityRepository.findClosestAccessibleIdentityForFace
+begin
+set
+  local vchordrq.probes = 1
+WITH
+  identity_matches AS (
+    SELECT
+      shared_space_person."identityId" AS "identityId",
+      shared_space_person.type,
+      MIN(face_search.embedding <=> $1)::float8 AS distance
+    FROM
+      shared_space_person
+      INNER JOIN shared_space_member ON shared_space_member."spaceId" = shared_space_person."spaceId"
+      AND shared_space_member."userId" = $2
+      AND shared_space_member."showInTimeline" = true
+      INNER JOIN shared_space_person_face ON shared_space_person_face."personId" = shared_space_person.id
+      INNER JOIN asset_face ON asset_face.id = shared_space_person_face."assetFaceId"
+      INNER JOIN asset ON asset.id = asset_face."assetId"
+      INNER JOIN face_search ON face_search."faceId" = asset_face.id
+    WHERE
+      shared_space_person."identityId" IS NOT NULL
+      AND shared_space_person.type = $3
+      AND shared_space_person."isHidden" = false
+      AND shared_space_person."identityId" <> $4
+      AND asset_face."deletedAt" IS NULL
+      AND asset_face."isVisible" = true
+      AND asset."deletedAt" IS NULL
+      AND asset."isOffline" = false
+      AND asset.visibility = $5
+      AND NOT EXISTS (
+        SELECT
+          1
+        FROM
+          person existing_person
+        WHERE
+          existing_person."ownerId" = $6
+          AND existing_person."identityId" = shared_space_person."identityId"
+      )
+      AND NOT EXISTS (
+        SELECT
+          1
+        FROM
+          shared_space_person source_space_person
+          INNER JOIN shared_space_person target_space_person ON target_space_person."spaceId" = source_space_person."spaceId"
+          AND target_space_person."identityId" = shared_space_person."identityId"
+        WHERE
+          source_space_person."identityId" = $7
+      )
+    GROUP BY
+      shared_space_person."identityId",
+      shared_space_person.type
+  )
+SELECT
+  "identityId",
+  type,
+  distance
+FROM
+  identity_matches
+WHERE
+  distance <= $8
+ORDER BY
+  distance
+LIMIT
+  2
+commit
 
 -- FaceIdentityRepository.searchAccessiblePeople
 WITH
@@ -110,6 +186,17 @@ WITH
       AND shared_space_person_alias."userId" = $5
     WHERE
       shared_space_person."identityId" IS NOT NULL
+      AND EXISTS (
+        SELECT
+          1
+        FROM
+          shared_space_person_face
+          INNER JOIN asset_face AS profile_face ON profile_face.id = shared_space_person_face."assetFaceId"
+        WHERE
+          shared_space_person_face."personId" = shared_space_person.id
+          AND profile_face."deletedAt" IS NULL
+          AND profile_face."isVisible" = true
+      )
       AND EXISTS (
         SELECT
           1
@@ -278,6 +365,17 @@ WITH
         SELECT
           1
         FROM
+          shared_space_person_face
+          INNER JOIN asset_face AS profile_face ON profile_face.id = shared_space_person_face."assetFaceId"
+        WHERE
+          shared_space_person_face."personId" = shared_space_person.id
+          AND profile_face."deletedAt" IS NULL
+          AND profile_face."isVisible" = true
+      )
+      AND EXISTS (
+        SELECT
+          1
+        FROM
           accessible_faces
         WHERE
           accessible_faces."identityId" = shared_space_person."identityId"
@@ -348,6 +446,32 @@ LIMIT
   $10
 OFFSET
   $11
+
+-- FaceIdentityRepository.getAccessiblePersonByProfileId
+SELECT
+  shared_space_person."identityId"
+FROM
+  shared_space_person
+  INNER JOIN shared_space_member ON shared_space_member."spaceId" = shared_space_person."spaceId"
+  AND shared_space_member."userId" = $1
+  AND shared_space_member."showInTimeline" = true
+WHERE
+  shared_space_person.id = $2
+  AND shared_space_person."identityId" IS NOT NULL
+  AND shared_space_person."isHidden" = false
+  AND EXISTS (
+    SELECT
+      1
+    FROM
+      shared_space_person_face
+      INNER JOIN asset_face AS profile_face ON profile_face.id = shared_space_person_face."assetFaceId"
+    WHERE
+      shared_space_person_face."personId" = shared_space_person.id
+      AND profile_face."deletedAt" IS NULL
+      AND profile_face."isVisible" = true
+  )
+LIMIT
+  1
 
 -- FaceIdentityRepository.getAccessiblePeopleIdentityPage
 WITH
@@ -438,6 +562,17 @@ WITH
       AND shared_space_person_alias."userId" = $5
     WHERE
       shared_space_person."identityId" IS NOT NULL
+      AND EXISTS (
+        SELECT
+          1
+        FROM
+          shared_space_person_face
+          INNER JOIN asset_face AS profile_face ON profile_face.id = shared_space_person_face."assetFaceId"
+        WHERE
+          shared_space_person_face."personId" = shared_space_person.id
+          AND profile_face."deletedAt" IS NULL
+          AND profile_face."isVisible" = true
+      )
       AND EXISTS (
         SELECT
           1
@@ -630,8 +765,21 @@ WITH
       LEFT JOIN shared_space_person_alias ON shared_space_person_alias."personId" = shared_space_person.id
       AND shared_space_person_alias."userId" = $7
     WHERE
-      $8::boolean
-      OR shared_space_person."isHidden" = false
+      (
+        $8::boolean
+        OR shared_space_person."isHidden" = false
+      )
+      AND EXISTS (
+        SELECT
+          1
+        FROM
+          shared_space_person_face
+          INNER JOIN asset_face AS profile_face ON profile_face.id = shared_space_person_face."assetFaceId"
+        WHERE
+          shared_space_person_face."personId" = shared_space_person.id
+          AND profile_face."deletedAt" IS NULL
+          AND profile_face."isVisible" = true
+      )
   ),
   ranked_profiles AS (
     SELECT
@@ -645,7 +793,20 @@ WITH
           lower(profiles.name),
           profiles."updatedAt" DESC,
           profiles."profileId"
-      ) AS rn
+      ) AS display_rn,
+      row_number() OVER (
+        PARTITION BY
+          profiles."identityId"
+        ORDER BY
+          CASE
+            WHEN profiles."profileType" = 'user-person' THEN 0
+            ELSE profiles."profileRank"
+          END,
+          NULLIF(profiles.name, '') IS NULL,
+          lower(profiles.name),
+          profiles."updatedAt" DESC,
+          profiles."profileId"
+      ) AS primary_rn
     FROM
       profiles
     WHERE
@@ -659,23 +820,32 @@ WITH
       )
   )
 SELECT
-  ranked_profiles."profileType",
-  ranked_profiles."profileId",
-  ranked_profiles."spaceId",
-  ranked_profiles.name,
-  ranked_profiles."birthDate",
-  ranked_profiles."thumbnailPath",
-  ranked_profiles."isHidden",
-  ranked_profiles."isFavorite",
-  ranked_profiles.color,
-  ranked_profiles."updatedAt",
-  ranked_profiles.type,
-  ranked_profiles.species,
+  primary_profiles."profileType",
+  primary_profiles."profileId",
+  primary_profiles."spaceId",
+  COALESCE(
+    NULLIF(display_profiles.name, ''),
+    primary_profiles.name,
+    ''
+  ) AS name,
+  COALESCE(
+    display_profiles."birthDate",
+    primary_profiles."birthDate"
+  ) AS "birthDate",
+  primary_profiles."thumbnailPath",
+  primary_profiles."isHidden",
+  primary_profiles."isFavorite",
+  primary_profiles.color,
+  primary_profiles."updatedAt",
+  primary_profiles.type,
+  primary_profiles.species,
   asset_counts."numberOfAssets"
 FROM
   requested_identities
-  INNER JOIN ranked_profiles ON ranked_profiles."identityId" = requested_identities."identityId"
-  AND ranked_profiles.rn = 1
+  INNER JOIN ranked_profiles AS primary_profiles ON primary_profiles."identityId" = requested_identities."identityId"
+  AND primary_profiles.primary_rn = 1
+  INNER JOIN ranked_profiles AS display_profiles ON display_profiles."identityId" = requested_identities."identityId"
+  AND display_profiles.display_rn = 1
   LEFT JOIN asset_counts ON asset_counts."identityId" = requested_identities."identityId"
 ORDER BY
   requested_identities.ord

@@ -1,7 +1,7 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import type { PersonResponseDto } from '@immich/sdk';
+import { Type, type PersonResponseDto } from '@immich/sdk';
 import { modalManager } from '@immich/ui';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
@@ -77,7 +77,7 @@ vi.mock('$lib/components/timeline/Timeline.svelte', async () => {
 });
 
 vi.mock('$lib/components/assets/thumbnail/image-thumbnail.svelte', async () => {
-  const { default: MockComponent } = await import('@test-data/mocks/noop-component.svelte');
+  const { default: MockComponent } = await import('@test-data/mocks/image-thumbnail.stub.svelte');
   return { default: MockComponent };
 });
 
@@ -191,10 +191,43 @@ describe('Person detail page', () => {
     const options = JSON.parse(screen.getByTestId('timeline-stub').dataset.options ?? '{}');
     expect(options).toEqual(
       expect.objectContaining({
-        personId: 'person-1',
+        personIds: ['person-1'],
         visibility: 'timeline',
         withSharedSpaces: true,
       }),
+    );
+  });
+
+  it('uses the scoped person token for identity-wide shared-space timelines', () => {
+    renderPage(
+      makePerson({
+        id: 'space-person-1',
+        filterId: 'space-person:space-person-1',
+        primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+      }),
+    );
+
+    const options = JSON.parse(screen.getByTestId('timeline-stub').dataset.options ?? '{}');
+    expect(options).toEqual(
+      expect.objectContaining({
+        personIds: ['space-person:space-person-1'],
+        visibility: 'timeline',
+        withSharedSpaces: true,
+      }),
+    );
+  });
+
+  it('uses the shared-space thumbnail for a space-primary identity-wide person page', () => {
+    renderPage(
+      makePerson({
+        id: 'space-person-1',
+        filterId: 'space-person:space-person-1',
+        primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+      }),
+    );
+
+    expect(screen.getByRole('img', { name: 'Alice' }).getAttribute('src')).toContain(
+      '/shared-spaces/space-1/people/space-person-1/thumbnail?updatedAt=2026-01-02T00%3A00%3A00.000Z',
     );
   });
 

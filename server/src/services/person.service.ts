@@ -42,10 +42,15 @@ import {
   SystemMetadataKey,
   VectorIndex,
 } from 'src/enum';
+import type { AccessibleIdentityFaceMatch } from 'src/repositories/face-identity.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
+import {
+  buildAutomaticReconciliationClaim,
+  chooseAutomaticTargetIdentity,
+} from 'src/services/accessible-identity-reconciliation';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
@@ -223,8 +228,17 @@ export class PersonService extends BaseService {
   }
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.findOrFail(id).then(mapPerson);
+    const allowedIds = await this.checkAccess({ auth, permission: Permission.PersonRead, ids: [id] });
+    if (allowedIds.has(id)) {
+      return this.findOrFail(id).then(mapPerson);
+    }
+
+    const accessiblePerson = await this.faceIdentityRepository.getAccessiblePersonByProfileId(auth.user.id, id);
+    if (accessiblePerson) {
+      return accessiblePerson;
+    }
+
+    throw new BadRequestException(`Not found or no ${Permission.PersonRead} access`);
   }
 
   async getFacesForPicker(auth: AuthDto, id: string, dto: PersonFacePageQueryDto): Promise<PersonFacePageResponseDto> {
@@ -756,16 +770,25 @@ export class PersonService extends BaseService {
       minBirthDate: new Date(face.asset.fileCreatedAt),
     });
 
+    this.logger.debug(`Face ${id} has ${matches.length} matches`);
+
+    let personId = matches.find((match) => match.personId)?.personId;
+    const accessibleIdentityMatch = personId
+      ? undefined
+      : await this.findClosestAccessibleSharedIdentity({
+          userId: face.asset.ownerId,
+          embedding: face.faceSearch.embedding,
+          maxDistance: machineLearning.facialRecognition.maxDistance,
+        });
+
     // `matches` also includes the face itself
-    if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1) {
+    if (machineLearning.facialRecognition.minFaces > 1 && matches.length <= 1 && !accessibleIdentityMatch) {
       this.logger.debug(`Face ${id} only matched the face itself, skipping`);
       return JobStatus.Skipped;
     }
 
-    this.logger.debug(`Face ${id} has ${matches.length} matches`);
-
     const isCore =
-      matches.length >= machineLearning.facialRecognition.minFaces &&
+      (matches.length >= machineLearning.facialRecognition.minFaces || !!accessibleIdentityMatch) &&
       face.asset.visibility === AssetVisibility.Timeline;
     if (!isCore && !deferred) {
       this.logger.debug(`Deferring non-core face ${id} for later processing`);
@@ -773,7 +796,6 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    let personId = matches.find((match) => match.personId)?.personId;
     if (!personId) {
       const matchWithPerson = await this.searchRepository.searchFaces({
         userIds: [face.asset.ownerId],
@@ -789,17 +811,26 @@ export class PersonService extends BaseService {
       }
     }
 
+    let createdPersonId: string | undefined;
     if (isCore && !personId) {
       this.logger.log(`Creating new person for face ${id}`);
       const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
       await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id: newPerson.id } });
       personId = newPerson.id;
+      createdPersonId = newPerson.id;
     }
 
     if (personId) {
       this.logger.debug(`Assigning face ${id} to person ${personId}`);
       await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
-      await this.replaceFaceIdentity(personId, id, 'owner-person');
+      const sourceIdentityId = await this.replaceFaceIdentity(personId, id, 'owner-person');
+      await this.mergeWithAccessibleSharedIdentity({
+        userId: face.asset.ownerId,
+        embedding: face.faceSearch.embedding,
+        maxDistance: machineLearning.facialRecognition.maxDistance,
+        sourceIdentityId,
+        match: personId === createdPersonId ? accessibleIdentityMatch : undefined,
+      });
     }
 
     // Queue shared space face matching for any spaces containing this asset
@@ -818,9 +849,83 @@ export class PersonService extends BaseService {
     personId: string,
     assetFaceId: string,
     source: 'owner-person' | 'manual',
-  ): Promise<void> {
+  ): Promise<string> {
     const identity = await this.faceIdentityRepository.ensurePersonIdentity(personId);
     await this.faceIdentityRepository.replaceFaceIdentity({ assetFaceId, identityId: identity.id, source });
+    return identity.id;
+  }
+
+  private async mergeWithAccessibleSharedIdentity(input: {
+    userId: string;
+    embedding: string;
+    maxDistance: number;
+    sourceIdentityId: string;
+    match?: AccessibleIdentityFaceMatch;
+  }): Promise<void> {
+    const match =
+      input.match ??
+      (await this.findClosestAccessibleSharedIdentity({
+        userId: input.userId,
+        embedding: input.embedding,
+        maxDistance: input.maxDistance,
+        excludeIdentityId: input.sourceIdentityId,
+      }));
+    if (!match || match.identityId === input.sourceIdentityId) {
+      return;
+    }
+
+    const target = chooseAutomaticTargetIdentity({
+      bridge: 'personal-upload',
+      localIdentityId: input.sourceIdentityId,
+      spaceIdentityId: match.identityId,
+    });
+    const claim = buildAutomaticReconciliationClaim({
+      bridge: 'personal-upload',
+      localIdentityId: input.sourceIdentityId,
+      spaceIdentityId: match.identityId,
+      sourceIdentityId: target.sourceIdentityId,
+      targetIdentityId: target.targetIdentityId,
+      distance: match.distance,
+      hasAccessBridge: true,
+      compatibleType: true,
+      hasEmbedding: true,
+      hiddenOrIgnored: false,
+      alreadySameIdentity: match.identityId === input.sourceIdentityId,
+      sameOwnerConflict: false,
+      sameSpaceConflict: false,
+    });
+    if (!claim) {
+      return;
+    }
+
+    const result = await this.faceIdentityRepository.mergeIdentities({
+      targetIdentityId: claim.targetIdentityId,
+      sourceIdentityIds: [claim.sourceIdentityId],
+      source: 'shared-space-evidence',
+    });
+
+    if (result.personalProfileConflictCount > 0 || result.spaceProfileConflictCount > 0) {
+      this.logger.warn(
+        `Accessible identity merge had conflicts: ${result.personalProfileConflictCount} personal, ${result.spaceProfileConflictCount} space`,
+      );
+    }
+
+    await this.queueSpacePersonMetadataBackfill(claim.targetIdentityId);
+  }
+
+  private findClosestAccessibleSharedIdentity(input: {
+    userId: string;
+    embedding: string;
+    maxDistance: number;
+    excludeIdentityId?: string | null;
+  }): Promise<AccessibleIdentityFaceMatch | undefined> {
+    return this.faceIdentityRepository.findClosestAccessibleIdentityForFace({
+      userId: input.userId,
+      embedding: input.embedding,
+      maxDistance: input.maxDistance,
+      type: 'person',
+      excludeIdentityId: input.excludeIdentityId ?? null,
+    });
   }
 
   @OnJob({ name: JobName.PersonFileMigration, queue: QueueName.Migration })

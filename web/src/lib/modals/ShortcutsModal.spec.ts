@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import ShortcutsModal from './ShortcutsModal.svelte';
 
 vi.mock('$lib/managers/auth-manager.svelte', () => ({
@@ -8,6 +8,13 @@ vi.mock('$lib/managers/auth-manager.svelte', () => ({
     preferences: { ratings: { enabled: false } },
   },
 }));
+
+// Drain bits-ui Modal's deferred body-scroll-lock cleanup before happy-dom tears
+// down `document`. Otherwise CI can report an unhandled `document is not defined`
+// after all assertions in this file have passed.
+afterEach(async () => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+});
 
 describe('ShortcutsModal', () => {
   it('uses the Gallery logo in the modal header', () => {

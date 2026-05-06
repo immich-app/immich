@@ -48,7 +48,9 @@ describe(PersonService.name, () => {
     ({ sut, mocks } = newTestService(PersonService));
     mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'identity-1' } as any);
     (mocks.faceIdentity as any).getAccessiblePeople ??= vi.fn();
+    (mocks.faceIdentity as any).getAccessiblePersonByProfileId ??= vi.fn();
     (mocks.faceIdentity as any).hasBackfillWork ??= vi.fn();
+    (mocks.faceIdentity as any).getAccessiblePersonByProfileId.mockResolvedValue(void 0);
     mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled.mockResolvedValue([]);
   });
 
@@ -222,6 +224,56 @@ describe(PersonService.name, () => {
       await expect(sut.getById(auth, person.id)).resolves.toEqual(expect.objectContaining({ id: person.id }));
       expect(mocks.person.getById).toHaveBeenCalledWith(person.id);
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
+    });
+
+    it('should resolve an accessible shared-space profile id as an identity-wide person', async () => {
+      const auth = AuthFactory.create();
+      const profileId = newUuid();
+      const accessiblePerson = {
+        id: profileId,
+        name: 'Shared Alice',
+        birthDate: null,
+        thumbnailPath: '',
+        isHidden: false,
+        type: 'person',
+        species: null,
+        numberOfAssets: 7,
+        filterId: `space-person:${profileId}`,
+        primaryProfile: { type: 'space-person', id: profileId, spaceId: newUuid() },
+      };
+
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      (mocks.faceIdentity as any).getAccessiblePersonByProfileId.mockResolvedValue(accessiblePerson);
+
+      await expect(sut.getById(auth, profileId)).resolves.toEqual(accessiblePerson);
+      expect((mocks.faceIdentity as any).getAccessiblePersonByProfileId).toHaveBeenCalledWith(auth.user.id, profileId);
+      expect(mocks.person.getById).not.toHaveBeenCalled();
+    });
+
+    it('should keep resolving a local person after shared-space access is removed', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id });
+
+      mocks.person.getById.mockResolvedValue(person);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+
+      await expect(sut.getById(auth, person.id)).resolves.toEqual(expect.objectContaining({ id: person.id }));
+
+      expect(mocks.person.getById).toHaveBeenCalledWith(person.id);
+      expect((mocks.faceIdentity as any).getAccessiblePersonByProfileId).not.toHaveBeenCalled();
+    });
+
+    it('should stop resolving a shared-space profile id after shared-space access is removed', async () => {
+      const auth = AuthFactory.create();
+      const profileId = newUuid();
+
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      (mocks.faceIdentity as any).getAccessiblePersonByProfileId.mockResolvedValue(void 0);
+
+      await expect(sut.getById(auth, profileId)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect((mocks.faceIdentity as any).getAccessiblePersonByProfileId).toHaveBeenCalledWith(auth.user.id, profileId);
+      expect(mocks.person.getById).not.toHaveBeenCalled();
     });
   });
 
@@ -1549,6 +1601,11 @@ describe(PersonService.name, () => {
   describe('handleRecognizeFaces', () => {
     beforeEach(() => {
       mocks.sharedSpace.getSpaceIdsForAsset.mockResolvedValue([]);
+      (mocks.faceIdentity as any).findClosestAccessibleIdentityForFace = vi.fn().mockResolvedValue(void 0);
+      mocks.faceIdentity.mergeIdentities.mockResolvedValue({
+        personalProfileConflictCount: 0,
+        spaceProfileConflictCount: 0,
+      });
     });
 
     it('should fail if face does not exist', async () => {
@@ -1608,6 +1665,21 @@ describe(PersonService.name, () => {
         identityId: 'identity-1',
         source: 'owner-person',
       });
+    });
+
+    it('should not merge an already assigned person identity into an accessible shared identity', async () => {
+      const asset = AssetFactory.create();
+      const face = AssetFaceFactory.from({ assetId: asset.id }).person().build();
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(face, asset));
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'source-identity' } as any);
+      (mocks.faceIdentity as any).findClosestAccessibleIdentityForFace.mockResolvedValue({
+        identityId: 'target-identity',
+        distance: 0.2,
+      });
+
+      await sut.handleRecognizeFaces({ id: face.id });
+
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
     });
 
     it('should not queue space face matching when face has personId but no spaces', async () => {
@@ -1680,6 +1752,48 @@ describe(PersonService.name, () => {
         assetFaceId: noPerson.id,
         identityId: 'identity-1',
         source: 'owner-person',
+      });
+    });
+
+    it('should merge an existing matched local person identity into an accessible shared identity', async () => {
+      const asset = AssetFactory.create();
+      const [noPerson, matchedFace] = [
+        AssetFaceFactory.create({ assetId: asset.id }),
+        AssetFaceFactory.from().person().build(),
+      ];
+      const faces = [
+        { ...noPerson, distance: 0 },
+        { ...matchedFace, distance: 0.2 },
+      ] as FaceSearchResult[];
+      const sourceIdentityId = 'source-identity';
+      const targetIdentityId = 'target-identity';
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue(faces);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson, asset));
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: sourceIdentityId } as any);
+      (mocks.faceIdentity as any).findClosestAccessibleIdentityForFace.mockResolvedValue({
+        identityId: targetIdentityId,
+        distance: 0.2,
+      });
+      mocks.faceIdentity.mergeIdentities.mockResolvedValue({
+        personalProfileConflictCount: 0,
+        spaceProfileConflictCount: 0,
+      });
+
+      await sut.handleRecognizeFaces({ id: noPerson.id });
+
+      expect((mocks.faceIdentity as any).findClosestAccessibleIdentityForFace).toHaveBeenCalledWith({
+        userId: asset.ownerId,
+        embedding: '[1, 2, 3, 4]',
+        maxDistance: 0.5,
+        type: 'person',
+        excludeIdentityId: sourceIdentityId,
+      });
+      expect(mocks.faceIdentity.mergeIdentities).toHaveBeenCalledWith({
+        targetIdentityId,
+        sourceIdentityIds: [sourceIdentityId],
+        source: 'shared-space-evidence',
       });
     });
 
@@ -1774,6 +1888,108 @@ describe(PersonService.name, () => {
         faceIds: [noPerson1.id],
         newPersonId: person.id,
       });
+    });
+
+    it('should merge a newly created person identity into an accessible shared identity match', async () => {
+      const asset = AssetFactory.create();
+      const [noPerson1, noPerson2] = [AssetFaceFactory.create({ assetId: asset.id }), AssetFaceFactory.create()];
+      const person = PersonFactory.create({ ownerId: asset.ownerId });
+      const sourceIdentityId = newUuid();
+      const targetIdentityId = newUuid();
+
+      const faces = [
+        { ...noPerson1, distance: 0 },
+        { ...noPerson2, distance: 0.3 },
+      ] as FaceSearchResult[];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue(faces);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+      mocks.person.create.mockResolvedValue(person);
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: sourceIdentityId } as any);
+      (mocks.faceIdentity as any).findClosestAccessibleIdentityForFace.mockResolvedValue({
+        identityId: targetIdentityId,
+        distance: 0.2,
+      });
+
+      await sut.handleRecognizeFaces({ id: noPerson1.id });
+
+      expect((mocks.faceIdentity as any).findClosestAccessibleIdentityForFace).toHaveBeenCalledWith({
+        userId: asset.ownerId,
+        embedding: '[1, 2, 3, 4]',
+        maxDistance: 0.5,
+        type: 'person',
+        excludeIdentityId: null,
+      });
+      expect(mocks.faceIdentity.mergeIdentities).toHaveBeenCalledWith({
+        targetIdentityId,
+        sourceIdentityIds: [sourceIdentityId],
+        source: 'shared-space-evidence',
+      });
+    });
+
+    it('should create and merge a local person from accessible shared-space evidence even when owner search only finds itself', async () => {
+      const asset = AssetFactory.create();
+      const face = AssetFaceFactory.create({ assetId: asset.id });
+      const person = PersonFactory.create({ ownerId: asset.ownerId });
+      const sourceIdentityId = newUuid();
+      const targetIdentityId = newUuid();
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
+      mocks.search.searchFaces.mockResolvedValue([{ ...face, distance: 0 }] as FaceSearchResult[]);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(face, asset));
+      mocks.person.create.mockResolvedValue(person);
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: sourceIdentityId } as any);
+      (mocks.faceIdentity as any).findClosestAccessibleIdentityForFace.mockResolvedValue({
+        identityId: targetIdentityId,
+        distance: 0.2,
+      });
+
+      await sut.handleRecognizeFaces({ id: face.id });
+
+      expect((mocks.faceIdentity as any).findClosestAccessibleIdentityForFace).toHaveBeenCalledWith({
+        userId: asset.ownerId,
+        embedding: '[1, 2, 3, 4]',
+        maxDistance: 0.5,
+        type: 'person',
+        excludeIdentityId: null,
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.PersonGenerateThumbnail,
+        data: { id: person.id },
+      });
+      expect(mocks.person.create).toHaveBeenCalledWith({
+        ownerId: asset.ownerId,
+        faceAssetId: face.id,
+      });
+      expect(mocks.faceIdentity.mergeIdentities).toHaveBeenCalledWith({
+        targetIdentityId,
+        sourceIdentityIds: [sourceIdentityId],
+        source: 'shared-space-evidence',
+      });
+    });
+
+    it('should not create a local person from inaccessible shared-space evidence after access is removed', async () => {
+      const asset = AssetFactory.create();
+      const face = AssetFaceFactory.create({ assetId: asset.id });
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
+      mocks.search.searchFaces.mockResolvedValue([{ ...face, distance: 0 }] as FaceSearchResult[]);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(face, asset));
+      (mocks.faceIdentity as any).findClosestAccessibleIdentityForFace.mockResolvedValue(void 0);
+
+      await sut.handleRecognizeFaces({ id: face.id });
+
+      expect((mocks.faceIdentity as any).findClosestAccessibleIdentityForFace).toHaveBeenCalledWith({
+        userId: asset.ownerId,
+        embedding: '[1, 2, 3, 4]',
+        maxDistance: 0.5,
+        type: 'person',
+        excludeIdentityId: null,
+      });
+      expect(mocks.person.create).not.toHaveBeenCalled();
+      expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
     });
 
     it('should not queue face with no matches', async () => {

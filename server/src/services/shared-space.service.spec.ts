@@ -38,6 +38,134 @@ const makeMemberResult = (overrides: any = {}) => ({
   ...overrides,
 });
 
+const setupStrictReconciliationFixture = (
+  mocks: ServiceMocks,
+  overrides: {
+    localPerson?: Record<string, unknown>;
+    spacePerson?: Record<string, unknown>;
+    spacePeople?: Array<Record<string, unknown>>;
+  } = {},
+) => {
+  mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true }));
+  mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ spaceId: 'space-1', userId: 'member-1' }));
+  mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValue(
+    (overrides.spacePeople ?? [
+      {
+        id: 'space-person-1',
+        name: '',
+        type: 'person',
+        identityId: 'space-identity',
+        isHidden: false,
+        faceCount: 1,
+        representativeFaceId: 'space-face-1',
+        representativeFaceSource: 'auto',
+        embedding: '[1,2,3]',
+        ...overrides.spacePerson,
+      },
+    ]) as any,
+  );
+  mocks.search.searchFaces.mockResolvedValue([{ id: 'local-face-1', personId: 'local-person-1', distance: 0.2 }]);
+  mocks.person.getById.mockResolvedValue(
+    factory.person({
+      id: 'local-person-1',
+      ownerId: 'member-1',
+      type: 'person',
+      isHidden: false,
+      ...overrides.localPerson,
+    }),
+  );
+  mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'local-identity', type: 'person' } as any);
+  mocks.faceIdentity.getMergeConflicts.mockResolvedValue({
+    personalProfileConflictCount: 0,
+    spaceProfileConflictCount: 0,
+  });
+};
+
+const setupIdentityBackedDedupFixture = (
+  mocks: ServiceMocks,
+  input: {
+    sourceHidden?: boolean;
+    sourceIdentityId?: string | null;
+    targetIdentityId?: string | null;
+    includeThirdPerson?: boolean;
+  } = {},
+) => {
+  const spaceId = 'space-1';
+  const targetIdentityId = input.targetIdentityId === undefined ? 'target-identity' : input.targetIdentityId;
+  const sourceIdentityId = input.sourceIdentityId === undefined ? 'source-identity' : input.sourceIdentityId;
+
+  mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+  mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValueOnce([
+    {
+      id: 'target-space-person',
+      name: '',
+      type: 'person',
+      identityId: targetIdentityId,
+      isHidden: false,
+      faceCount: 2,
+      representativeFaceId: 'face-target',
+      representativeFaceSource: 'auto',
+      embedding: '[1,2,3]',
+    },
+    {
+      id: 'source-space-person',
+      name: '',
+      type: 'person',
+      identityId: sourceIdentityId,
+      isHidden: input.sourceHidden ?? false,
+      faceCount: 1,
+      representativeFaceId: 'face-source',
+      representativeFaceSource: 'auto',
+      embedding: '[1,2,4]',
+    },
+    ...(input.includeThirdPerson
+      ? [
+          {
+            id: 'third-space-person',
+            name: '',
+            type: 'person',
+            identityId: 'third-identity',
+            isHidden: false,
+            faceCount: 1,
+            representativeFaceId: 'face-third',
+            representativeFaceSource: 'auto',
+            embedding: '[1,2,5]',
+          },
+        ]
+      : []),
+  ] as any);
+  mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValueOnce([
+    {
+      id: 'target-space-person',
+      name: '',
+      type: 'person',
+      identityId: targetIdentityId,
+      isHidden: false,
+      faceCount: 3,
+      representativeFaceId: 'face-target',
+      representativeFaceSource: 'auto',
+      embedding: '[1,2,3]',
+    },
+  ] as any);
+  mocks.sharedSpace.findClosestSpacePerson.mockResolvedValue([
+    { personId: 'source-space-person', name: '', distance: 0.2, identityId: sourceIdentityId, type: 'person' },
+  ]);
+  mocks.sharedSpace.getPersonById.mockResolvedValue({
+    id: 'target-space-person',
+    spaceId,
+    identityId: targetIdentityId,
+  } as any);
+  mocks.sharedSpace.getIdentityEvidenceForSpacePerson.mockResolvedValue(
+    [targetIdentityId, sourceIdentityId]
+      .filter((identityId): identityId is string => !!identityId)
+      .map((identityId) => ({ identityId, type: 'person', supportingFaceCount: 1 })),
+  );
+  mocks.sharedSpace.reassignPersonFacesSafe.mockResolvedValue(void 0 as any);
+  mocks.sharedSpace.migrateAliases.mockResolvedValue(void 0 as any);
+  mocks.sharedSpace.migrateAliases.mockResolvedValue(void 0 as any);
+  mocks.sharedSpace.deletePerson.mockResolvedValue(void 0 as any);
+};
+
 describe(SharedSpaceService.name, () => {
   let sut: SharedSpaceService;
   let mocks: ServiceMocks;
@@ -1317,6 +1445,10 @@ describe(SharedSpaceService.name, () => {
   });
 
   describe('addMember', () => {
+    beforeEach(() => {
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ faceRecognitionEnabled: false }));
+    });
+
     it('should add member with default viewer role', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
@@ -1414,6 +1546,74 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SharedSpacePersonMetadataBackfill,
         data: {},
+      });
+    });
+
+    it('should queue identity reconciliation for the joined member', async () => {
+      const auth = factory.auth();
+      const spaceId = 'space-1';
+      const userId = 'new-user';
+
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(makeMemberResult({ role: SharedSpaceRole.Owner }));
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(void 0);
+      mocks.sharedSpace.addMember.mockResolvedValue(factory.sharedSpaceMember({ spaceId, userId }));
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(makeMemberResult({ spaceId, userId }));
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.addMember(auth, spaceId, { userId });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'SharedSpaceIdentityReconciliation',
+        data: { spaceId, userId },
+      });
+    });
+
+    it('should queue space face materialization before identity reconciliation when face recognition is enabled', async () => {
+      const auth = factory.auth();
+      const spaceId = 'space-1';
+      const userId = 'new-user';
+
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(makeMemberResult({ spaceId, role: SharedSpaceRole.Owner }));
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(void 0);
+      mocks.sharedSpace.addMember.mockResolvedValue(factory.sharedSpaceMember({ spaceId, userId }));
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(makeMemberResult({ spaceId, userId }));
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.addMember(auth, spaceId, { userId });
+
+      const queuedJobs = mocks.job.queue.mock.calls.map(([job]) => job);
+      const faceMatchAllIndex = queuedJobs.findIndex((job) => job.name === JobName.SharedSpaceFaceMatchAll);
+      const reconciliationIndex = queuedJobs.findIndex((job) => job.name === JobName.SharedSpaceIdentityReconciliation);
+
+      expect(faceMatchAllIndex).toBeGreaterThanOrEqual(0);
+      expect(reconciliationIndex).toBeGreaterThanOrEqual(0);
+      expect(faceMatchAllIndex).toBeLessThan(reconciliationIndex);
+      expect(queuedJobs[faceMatchAllIndex]).toEqual({
+        name: JobName.SharedSpaceFaceMatchAll,
+        data: { spaceId },
+      });
+    });
+
+    it('should not queue space face materialization when face recognition is disabled', async () => {
+      const auth = factory.auth();
+      const spaceId = 'space-1';
+      const userId = 'new-user';
+
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(makeMemberResult({ spaceId, role: SharedSpaceRole.Owner }));
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(void 0);
+      mocks.sharedSpace.addMember.mockResolvedValue(factory.sharedSpaceMember({ spaceId, userId }));
+      mocks.sharedSpace.getMember.mockResolvedValueOnce(makeMemberResult({ spaceId, userId }));
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false }));
+      mocks.sharedSpace.logActivity.mockResolvedValue(void 0);
+
+      await sut.addMember(auth, spaceId, { userId });
+
+      const queuedJobs = mocks.job.queue.mock.calls.map(([job]) => job);
+      expect(queuedJobs.some((job) => job.name === JobName.SharedSpaceFaceMatchAll)).toBe(false);
+      expect(queuedJobs).toContainEqual({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId, userId },
       });
     });
   });
@@ -2420,6 +2620,203 @@ describe(SharedSpaceService.name, () => {
     });
   });
 
+  describe('handleSharedSpaceIdentityReconciliation', () => {
+    it('should merge one strict local member match into an accessible space identity', async () => {
+      const space = factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true });
+
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getMember.mockResolvedValue(makeMemberResult({ spaceId: space.id, userId: 'member-1' }));
+      mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValue([
+        {
+          id: 'space-person-1',
+          name: '',
+          type: 'person',
+          identityId: 'space-identity',
+          isHidden: false,
+          faceCount: 1,
+          representativeFaceId: 'space-face-1',
+          representativeFaceSource: 'auto',
+          embedding: '[1,2,3]',
+        },
+      ]);
+      mocks.search.searchFaces.mockResolvedValue([{ id: 'local-face-1', personId: 'local-person-1', distance: 0.2 }]);
+      mocks.person.getById.mockResolvedValue(
+        factory.person({ id: 'local-person-1', ownerId: 'member-1', type: 'person', isHidden: false }),
+      );
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'local-identity', type: 'person' } as any);
+      mocks.faceIdentity.getMergeConflicts.mockResolvedValue({
+        personalProfileConflictCount: 0,
+        spaceProfileConflictCount: 0,
+      });
+
+      await expect(
+        sut.handleSharedSpaceIdentityReconciliation({ spaceId: space.id, userId: 'member-1' }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.search.searchFaces).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userIds: ['member-1'],
+          embedding: '[1,2,3]',
+          hasPerson: true,
+          numResults: 2,
+        }),
+      );
+      expect(mocks.faceIdentity.mergeIdentities).toHaveBeenCalledWith({
+        targetIdentityId: 'space-identity',
+        sourceIdentityIds: ['local-identity'],
+        source: 'shared-space-evidence',
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpacePersonMetadataBackfill,
+        data: { identityId: 'space-identity' },
+      });
+    });
+
+    it('should skip member-scoped reconciliation when membership disappeared before the job runs', async () => {
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getMember.mockResolvedValue(null as any);
+      mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValue([
+        {
+          id: 'space-person-1',
+          type: 'person',
+          identityId: 'space-identity',
+          isHidden: false,
+          embedding: '[1,2,3]',
+        },
+      ] as any);
+
+      await expect(
+        sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'removed-member' }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.search.searchFaces).not.toHaveBeenCalled();
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic merge when two local candidates match within threshold', async () => {
+      setupStrictReconciliationFixture(mocks);
+      mocks.search.searchFaces.mockResolvedValue([
+        { id: 'local-face-1', personId: 'local-person-1', distance: 0.2 },
+        { id: 'local-face-2', personId: 'local-person-2', distance: 0.21 },
+      ]);
+      mocks.person.getById
+        .mockResolvedValueOnce(factory.person({ id: 'local-person-1', ownerId: 'member-1', type: 'person' }))
+        .mockResolvedValueOnce(factory.person({ id: 'local-person-2', ownerId: 'member-1', type: 'person' }));
+      mocks.faceIdentity.ensurePersonIdentity
+        .mockResolvedValueOnce({ id: 'local-identity-1', type: 'person' } as any)
+        .mockResolvedValueOnce({ id: 'local-identity-2', type: 'person' } as any);
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic merge for hidden local people', async () => {
+      setupStrictReconciliationFixture(mocks, { localPerson: { isHidden: true } });
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic merge for hidden space people', async () => {
+      setupStrictReconciliationFixture(mocks, { spacePerson: { isHidden: true } });
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.search.searchFaces).not.toHaveBeenCalled();
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic merge for type mismatches', async () => {
+      setupStrictReconciliationFixture(mocks, { localPerson: { type: 'pet' } });
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic merge when identity conflict preflight reports a same-scope conflict', async () => {
+      setupStrictReconciliationFixture(mocks);
+      mocks.faceIdentity.getMergeConflicts.mockResolvedValue({
+        personalProfileConflictCount: 1,
+        spaceProfileConflictCount: 0,
+      });
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should no-op when a repeated reconciliation sees the local profile already on the target identity', async () => {
+      setupStrictReconciliationFixture(mocks);
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'space-identity', type: 'person' } as any);
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.faceIdentity.getMergeConflicts).not.toHaveBeenCalled();
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic merge when two space people claim the same local identity in one pass', async () => {
+      setupStrictReconciliationFixture(mocks, {
+        spacePeople: [
+          {
+            id: 'space-person-1',
+            name: '',
+            type: 'person',
+            identityId: 'space-identity-1',
+            isHidden: false,
+            faceCount: 1,
+            representativeFaceId: 'space-face-1',
+            representativeFaceSource: 'auto',
+            embedding: '[1,2,3]',
+          },
+          {
+            id: 'space-person-2',
+            name: '',
+            type: 'person',
+            identityId: 'space-identity-2',
+            isHidden: false,
+            faceCount: 1,
+            representativeFaceId: 'space-face-2',
+            representativeFaceSource: 'auto',
+            embedding: '[1,2,4]',
+          },
+        ],
+      });
+      mocks.search.searchFaces.mockResolvedValue([{ id: 'local-face-1', personId: 'local-person-1', distance: 0.2 }]);
+      mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'local-identity', type: 'person' } as any);
+
+      await sut.handleSharedSpaceIdentityReconciliation({ spaceId: 'space-1', userId: 'member-1' });
+
+      expect(mocks.faceIdentity.getMergeConflicts).not.toHaveBeenCalled();
+      expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+  });
+
+  function mockOneAffectedSpacePerson() {
+    mocks.sharedSpace.isAssetInSpace.mockResolvedValue(true);
+    mocks.sharedSpace.getAssetFacesForMatching.mockResolvedValue([
+      {
+        id: 'face-1',
+        assetId: 'asset-1',
+        personId: 'owner-person-1',
+        identityId: 'identity-1',
+        type: 'person',
+        embedding: '[1,2,3]',
+      },
+    ] as any);
+    mocks.sharedSpace.isPersonFaceAssigned.mockResolvedValue(false);
+    mocks.sharedSpace.getSpacePersonByIdentity.mockResolvedValue({
+      id: 'space-person-1',
+      identityId: 'identity-1',
+    } as any);
+    mocks.sharedSpace.getSpaceAssetAdder.mockResolvedValue({ addedById: 'member-1' });
+    mocks.sharedSpace.addPersonFaces.mockResolvedValue([]);
+    mocks.sharedSpace.getPetFacesForAsset.mockResolvedValue([]);
+  }
+
   describe('handleSharedSpaceFaceMatch', () => {
     it('should skip when space not found', async () => {
       mocks.sharedSpace.getById.mockResolvedValue(void 0);
@@ -3156,6 +3553,18 @@ describe(SharedSpaceService.name, () => {
         data: { spaceId },
       });
     });
+
+    it('should queue identity reconciliation for affected space people after matching one asset', async () => {
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true }));
+      mockOneAffectedSpacePerson();
+
+      await sut.handleSharedSpaceFaceMatch({ spaceId: 'space-1', assetId: 'asset-1' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId: 'space-1', spacePersonId: 'space-person-1' },
+      });
+    });
   });
 
   describe('handleSharedSpaceFaceMatchAll', () => {
@@ -3193,7 +3602,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getAssetIdsInSpacePage
         .mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }])
         .mockResolvedValueOnce([{ assetId: 'a3' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockImplementation(async () => {});
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
@@ -3222,7 +3631,7 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getAssetIdsInSpacePage
         .mockResolvedValueOnce([{ assetId: 'asset-1' }, { assetId: 'asset-2' }])
         .mockResolvedValueOnce([]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockImplementation(async () => {});
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
@@ -3241,7 +3650,7 @@ describe(SharedSpaceService.name, () => {
 
       mocks.sharedSpace.getById.mockResolvedValue(space);
       mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockImplementation(async () => {});
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
@@ -3263,7 +3672,7 @@ describe(SharedSpaceService.name, () => {
         .mockResolvedValueOnce(enabled)
         .mockResolvedValueOnce(disabled);
       mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockImplementation(async () => {});
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
@@ -3283,9 +3692,9 @@ describe(SharedSpaceService.name, () => {
       mocks.sharedSpace.getById
         .mockResolvedValueOnce(enabled)
         .mockResolvedValueOnce(enabled)
-        .mockImplementationOnce(async () => {});
+        .mockResolvedValueOnce(void 0);
       mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockImplementation(async () => {});
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
@@ -3308,7 +3717,7 @@ describe(SharedSpaceService.name, () => {
         .mockResolvedValueOnce(enabled)
         .mockResolvedValueOnce(disabled);
       mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockImplementation(async () => {});
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
@@ -3317,6 +3726,21 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.job.queue).not.toHaveBeenCalledWith(
         expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
       );
+    });
+
+    it('should queue full-space identity reconciliation after matching all assets', async () => {
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage
+        .mockResolvedValueOnce([{ assetId: 'asset-1' }])
+        .mockResolvedValueOnce([]);
+      mockOneAffectedSpacePerson();
+
+      await sut.handleSharedSpaceFaceMatchAll({ spaceId: 'space-1' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId: 'space-1' },
+      });
     });
   });
 
@@ -6164,6 +6588,20 @@ describe(SharedSpaceService.name, () => {
         data: { spaceId },
       });
     });
+
+    it('should queue full-space identity reconciliation after linked library face sync changes space evidence', async () => {
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true }));
+      mocks.sharedSpace.hasLibraryLink.mockResolvedValue(true);
+      mocks.asset.getByLibraryIdWithFaces.mockResolvedValueOnce([{ id: 'asset-1' }]).mockResolvedValueOnce([]);
+      mockOneAffectedSpacePerson();
+
+      await sut.handleSharedSpaceLibraryFaceSync({ spaceId: 'space-1', libraryId: 'library-1' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId: 'space-1' },
+      });
+    });
   });
 
   describe('handleSharedSpacePersonDedup', () => {
@@ -6259,69 +6697,96 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.deleteOrphanedPersons).toHaveBeenCalledWith(spaceId);
     });
 
-    it('should not deduplicate identity-backed space people by embedding', async () => {
-      const spaceId = newUuid();
-      const personA = newUuid();
-      const personB = newUuid();
-      const identityA = newUuid();
-      const identityB = newUuid();
-
+    it('should physically merge strict identity-backed space people before merging supporting identities', async () => {
+      const spaceId = 'space-1';
       mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
-      mocks.sharedSpace.getSpacePersonsWithEmbeddings
-        .mockResolvedValueOnce([
-          {
-            id: personA,
-            name: '',
-            type: 'person',
-            identityId: identityA,
-            isHidden: false,
-            faceCount: 5,
-            representativeFaceId: null,
-            embedding: '[0.1,0.2]',
-          },
-          {
-            id: personB,
-            name: '',
-            type: 'person',
-            identityId: identityB,
-            isHidden: false,
-            faceCount: 2,
-            representativeFaceId: null,
-            embedding: '[0.11,0.21]',
-          },
-        ])
-        .mockResolvedValueOnce([
-          {
-            id: personA,
-            name: '',
-            type: 'person',
-            identityId: identityA,
-            isHidden: false,
-            faceCount: 5,
-            representativeFaceId: null,
-            embedding: '[0.1,0.2]',
-          },
-        ]);
-      mocks.sharedSpace.findClosestSpacePerson.mockResolvedValueOnce([
-        { personId: personB, name: '', distance: 0.1, identityId: identityB, type: 'person' },
+      mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValueOnce([
+        {
+          id: 'target-space-person',
+          name: '',
+          type: 'person',
+          identityId: 'target-identity',
+          isHidden: false,
+          faceCount: 2,
+          representativeFaceId: 'face-target',
+          representativeFaceSource: 'auto',
+          embedding: '[1,2,3]',
+        },
+        {
+          id: 'source-space-person',
+          name: '',
+          type: 'person',
+          identityId: 'source-identity',
+          isHidden: false,
+          faceCount: 1,
+          representativeFaceId: 'face-source',
+          representativeFaceSource: 'auto',
+          embedding: '[1,2,4]',
+        },
+      ] as any);
+      mocks.sharedSpace.getSpacePersonsWithEmbeddings.mockResolvedValueOnce([
+        {
+          id: 'target-space-person',
+          name: '',
+          type: 'person',
+          identityId: 'target-identity',
+          isHidden: false,
+          faceCount: 3,
+          representativeFaceId: 'face-target',
+          representativeFaceSource: 'auto',
+          embedding: '[1,2,3]',
+        },
+      ] as any);
+      mocks.sharedSpace.findClosestSpacePerson.mockResolvedValue([
+        { personId: 'source-space-person', name: '', distance: 0.2, identityId: 'source-identity', type: 'person' },
       ]);
-      mocks.sharedSpace.getPersonById.mockResolvedValue(
-        factory.sharedSpacePerson({ id: personA, spaceId, identityId: identityA }),
-      );
+      mocks.sharedSpace.getPersonById.mockResolvedValue({
+        id: 'target-space-person',
+        spaceId,
+        identityId: 'target-identity',
+      } as any);
       mocks.sharedSpace.getIdentityEvidenceForSpacePerson.mockResolvedValue([
-        { identityId: identityA, type: 'person', supportingFaceCount: 5 },
-        { identityId: identityB, type: 'person', supportingFaceCount: 2 },
-      ]);
+        { identityId: 'target-identity', type: 'person', supportingFaceCount: 2 },
+        { identityId: 'source-identity', type: 'person', supportingFaceCount: 1 },
+      ] as any);
       mocks.sharedSpace.reassignPersonFacesSafe.mockResolvedValue(void 0 as any);
       mocks.sharedSpace.migrateAliases.mockResolvedValue(void 0 as any);
-      mocks.sharedSpace.updatePerson.mockResolvedValue(void 0 as any);
       mocks.sharedSpace.deletePerson.mockResolvedValue(void 0 as any);
 
       await sut.handleSharedSpacePersonDedup({ spaceId });
 
+      expect(mocks.sharedSpace.reassignPersonFacesSafe).toHaveBeenCalledWith(
+        'source-space-person',
+        'target-space-person',
+      );
+      expect(mocks.sharedSpace.migrateAliases).toHaveBeenCalledWith('source-space-person', 'target-space-person');
+      expect(mocks.sharedSpace.deletePerson).toHaveBeenCalledWith('source-space-person');
+      expect(mocks.faceIdentity.mergeIdentities).toHaveBeenCalledWith({
+        targetIdentityId: 'target-identity',
+        sourceIdentityIds: ['source-identity'],
+        source: 'shared-space-evidence',
+      });
+    });
+
+    it('should skip identity-backed dedup when more than one compatible space match exists', async () => {
+      setupIdentityBackedDedupFixture(mocks, { includeThirdPerson: true });
+      mocks.sharedSpace.findClosestSpacePerson.mockResolvedValue([
+        { personId: 'source-space-person', name: '', distance: 0.2, identityId: 'source-identity', type: 'person' },
+        { personId: 'third-space-person', name: '', distance: 0.21, identityId: 'third-identity', type: 'person' },
+      ]);
+
+      await sut.handleSharedSpacePersonDedup({ spaceId: 'space-1' });
+
       expect(mocks.sharedSpace.reassignPersonFacesSafe).not.toHaveBeenCalled();
-      expect(mocks.sharedSpace.deletePerson).not.toHaveBeenCalled();
       expect(mocks.faceIdentity.mergeIdentities).not.toHaveBeenCalled();
+    });
+
+    it('should skip automatic dedup for hidden space people', async () => {
+      setupIdentityBackedDedupFixture(mocks, { sourceHidden: true });
+
+      await sut.handleSharedSpacePersonDedup({ spaceId: 'space-1' });
+
+      expect(mocks.sharedSpace.reassignPersonFacesSafe).not.toHaveBeenCalled();
     });
 
     it('should succeed with no merges when space has one person (self-exclusion)', async () => {
@@ -6726,64 +7191,14 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(personA, expect.objectContaining({ name: 'Alice' }));
     });
 
-    it('should make merged result visible if either person is visible', async () => {
-      const spaceId = newUuid();
-      const personA = newUuid();
-      const personB = newUuid();
+    it('should keep hidden identity-less space people out of automatic dedup', async () => {
+      setupIdentityBackedDedupFixture(mocks, { sourceIdentityId: null, targetIdentityId: null, sourceHidden: true });
 
-      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
-      mocks.sharedSpace.getSpacePersonsWithEmbeddings
-        .mockResolvedValueOnce([
-          {
-            id: personA,
-            name: '',
-            type: 'person',
-            isHidden: true,
-            faceCount: 5,
-            representativeFaceId: null,
-            embedding: '[0.1,0.2]',
-          },
-          {
-            id: personB,
-            name: '',
-            type: 'person',
-            isHidden: false,
-            faceCount: 2,
-            representativeFaceId: null,
-            embedding: '[0.11,0.21]',
-          },
-        ])
-        .mockResolvedValueOnce([
-          {
-            id: personA,
-            name: '',
-            type: 'person',
-            isHidden: false,
-            faceCount: 5,
-            representativeFaceId: null,
-            embedding: '[0.1,0.2]',
-          },
-        ]);
-      mocks.sharedSpace.findClosestSpacePerson.mockImplementation(
-        (_spaceId: string, _embedding: string, options: { excludePersonIds?: string[] }) => {
-          if (options.excludePersonIds?.includes(personA)) {
-            return Promise.resolve([{ personId: personB, name: '', distance: 0.1 }]);
-          }
-          if (options.excludePersonIds?.includes(personB)) {
-            return Promise.resolve([{ personId: personA, name: '', distance: 0.1 }]);
-          }
-          return Promise.resolve([]);
-        },
-      );
-      mocks.sharedSpace.reassignPersonFacesSafe.mockResolvedValue(void 0 as any);
-      mocks.sharedSpace.migrateAliases.mockResolvedValue(void 0 as any);
-      mocks.sharedSpace.updatePerson.mockResolvedValue(void 0 as any);
-      mocks.sharedSpace.deletePerson.mockResolvedValue(void 0 as any);
+      await sut.handleSharedSpacePersonDedup({ spaceId: 'space-1' });
 
-      await sut.handleSharedSpacePersonDedup({ spaceId });
-
-      expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(
-        personA,
+      expect(mocks.sharedSpace.reassignPersonFacesSafe).not.toHaveBeenCalled();
+      expect(mocks.sharedSpace.updatePerson).not.toHaveBeenCalledWith(
+        expect.any(String),
         expect.objectContaining({ isHidden: false }),
       );
     });

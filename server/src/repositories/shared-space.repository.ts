@@ -1563,6 +1563,12 @@ export class SharedSpaceRepository {
   getSpacePersonsWithEmbeddings(spaceId: string): Promise<SpacePersonWithEmbedding[]> {
     return this.db
       .selectFrom('shared_space_person')
+      .innerJoin('shared_space_person_face', (join) =>
+        join
+          .onRef('shared_space_person_face.personId', '=', 'shared_space_person.id')
+          .onRef('shared_space_person_face.assetFaceId', '=', 'shared_space_person.representativeFaceId'),
+      )
+      .innerJoin('asset_face', 'asset_face.id', 'shared_space_person.representativeFaceId')
       .innerJoin('face_search', 'face_search.faceId', 'shared_space_person.representativeFaceId')
       .select([
         'shared_space_person.id',
@@ -1576,6 +1582,8 @@ export class SharedSpaceRepository {
         'face_search.embedding',
       ])
       .where('shared_space_person.spaceId', '=', spaceId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
       .execute();
   }
 

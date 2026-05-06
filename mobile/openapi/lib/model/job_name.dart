@@ -86,6 +86,7 @@ class JobName {
   static const sharedSpaceFaceMatch = JobName._(r'SharedSpaceFaceMatch');
   static const sharedSpaceFaceMatchAll = JobName._(r'SharedSpaceFaceMatchAll');
   static const sharedSpaceLibraryFaceSync = JobName._(r'SharedSpaceLibraryFaceSync');
+  static const sharedSpaceIdentityReconciliation = JobName._(r'SharedSpaceIdentityReconciliation');
   static const sharedSpacePersonDedup = JobName._(r'SharedSpacePersonDedup');
   static const sharedSpacePersonMetadataBackfill = JobName._(r'SharedSpacePersonMetadataBackfill');
   static const sharedSpaceBulkAddAssets = JobName._(r'SharedSpaceBulkAddAssets');
@@ -157,6 +158,7 @@ class JobName {
     sharedSpaceFaceMatch,
     sharedSpaceFaceMatchAll,
     sharedSpaceLibraryFaceSync,
+    sharedSpaceIdentityReconciliation,
     sharedSpacePersonDedup,
     sharedSpacePersonMetadataBackfill,
     sharedSpaceBulkAddAssets,
@@ -263,6 +265,7 @@ class JobNameTypeTransformer {
         case r'SharedSpaceFaceMatch': return JobName.sharedSpaceFaceMatch;
         case r'SharedSpaceFaceMatchAll': return JobName.sharedSpaceFaceMatchAll;
         case r'SharedSpaceLibraryFaceSync': return JobName.sharedSpaceLibraryFaceSync;
+        case r'SharedSpaceIdentityReconciliation': return JobName.sharedSpaceIdentityReconciliation;
         case r'SharedSpacePersonDedup': return JobName.sharedSpacePersonDedup;
         case r'SharedSpacePersonMetadataBackfill': return JobName.sharedSpacePersonMetadataBackfill;
         case r'SharedSpaceBulkAddAssets': return JobName.sharedSpaceBulkAddAssets;

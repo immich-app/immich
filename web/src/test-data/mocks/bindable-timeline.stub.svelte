@@ -1,11 +1,14 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
+    children?: Snippet;
     timelineManager?: unknown;
     options?: unknown;
     [key: string]: unknown;
   }
 
-  let { timelineManager = $bindable(), options, ...rest }: Props = $props();
+  let { children, timelineManager = $bindable(), options, ...rest }: Props = $props();
   const serializedOptions = $derived(JSON.stringify(options ?? {}));
 </script>
 
@@ -14,4 +17,6 @@
   data-testid="timeline-stub"
   data-has-timeline={String(timelineManager !== undefined)}
   data-options={serializedOptions}
-></div>
+>
+  {@render children?.()}
+</div>

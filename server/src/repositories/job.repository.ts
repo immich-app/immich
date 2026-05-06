@@ -311,6 +311,13 @@ export class JobRepository {
       case JobName.SharedSpacePersonDedup: {
         return { jobId: `space-dedup-${item.data.spaceId}` };
       }
+      case JobName.SharedSpaceIdentityReconciliation: {
+        const data = item.data as { spaceId: string; userId?: string; spacePersonId?: string };
+        return {
+          jobId: `space-identity-reconcile-${data.spaceId}-${data.userId ?? 'all-members'}-${data.spacePersonId ?? 'all-people'}`,
+          removeOnFail: true,
+        };
+      }
       case JobName.SharedSpacePersonMetadataBackfill: {
         const data = item.data as { identityId?: string; cursor?: string };
         const scope = data.identityId ? `identity/${data.identityId}` : 'all';

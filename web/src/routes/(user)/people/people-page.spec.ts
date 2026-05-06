@@ -160,7 +160,7 @@ describe('Global people page', () => {
     expect(gotoMock).toHaveBeenCalledWith('/people/p1?previousRoute=%2Fpeople&action=merge');
   });
 
-  it('routes a space-primary person to the space person page', () => {
+  it('routes a space-primary person to identity-wide person detail', () => {
     renderPage([
       makePerson({
         id: 'space-person-1',
@@ -173,7 +173,7 @@ describe('Global people page', () => {
 
     expect(screen.getByRole('link', { name: 'Shared Alice' })).toHaveAttribute(
       'href',
-      '/spaces/space-1/people/space-person-1?previousRoute=%2Fpeople',
+      '/people/space-person-1?previousRoute=%2Fpeople',
     );
     expect(screen.getByTitle('Shared Alice').getAttribute('src')).toContain(
       '/shared-spaces/space-1/people/space-person-1/thumbnail?updatedAt=2026-01-02T00%3A00%3A00.000Z',

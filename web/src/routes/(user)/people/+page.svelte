@@ -17,7 +17,8 @@
   import { getPersonActions } from '$lib/services/person.service';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { createUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { getGlobalPersonHref, getGlobalPersonThumbnailUrl } from '$lib/utils/global-person-route';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import {
@@ -240,19 +241,9 @@
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
-  const getPersonHref = (person: PersonResponseDto) =>
-    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
-      ? Route.viewSpacePerson(person.primaryProfile.spaceId, person.primaryProfile.id, {
-          previousRoute: Route.people(),
-        })
-      : Route.viewPerson({ ...person, id: person.primaryProfile?.id ?? person.id }, { previousRoute: Route.people() });
+  const getPersonHref = (person: PersonResponseDto) => getGlobalPersonHref(person, Route.people());
 
-  const getPersonThumbnail = (person: PersonResponseDto) =>
-    person.primaryProfile?.type === 'space-person' && person.primaryProfile.spaceId
-      ? createUrl(`/shared-spaces/${person.primaryProfile.spaceId}/people/${person.primaryProfile.id}/thumbnail`, {
-          updatedAt: person.updatedAt,
-        })
-      : getPeopleThumbnailUrl({ ...person, id: person.primaryProfile?.id ?? person.id });
+  const getPersonThumbnail = (person: PersonResponseDto) => getGlobalPersonThumbnailUrl(person);
 
   const isPersonalPrimary = (person: PersonResponseDto) =>
     !person.primaryProfile || person.primaryProfile.type === 'user-person';

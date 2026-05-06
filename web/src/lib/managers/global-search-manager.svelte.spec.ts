@@ -1015,7 +1015,7 @@ describe('activate()', () => {
     expect(entries[0]).toMatchObject({ kind: 'person', personId: 'p1', label: 'Alice' });
   });
 
-  it('activate("person", item) opens identity-backed space-primary people as shared timeline search', () => {
+  it('activate("person", item) opens identity-backed space-primary people as identity-wide person detail', () => {
     const m = new GlobalSearchManager();
     m.open();
     m.activate('person', {
@@ -1025,17 +1025,11 @@ describe('activate()', () => {
       filterId: 'space-person:space-person-1',
     });
 
-    const route = vi.mocked(goto).mock.calls[0][0] as string;
-    const url = new URL(route, 'https://gallery.test');
-    expect(url.pathname).toBe('/search');
-    expect(JSON.parse(url.searchParams.get('query') ?? '{}')).toEqual({
-      personIds: ['space-person:space-person-1'],
-      withSharedSpaces: true,
-    });
+    expect(goto).toHaveBeenCalledWith('/people/space-person-1');
     expect(getEntries()).toHaveLength(0);
   });
 
-  it('activate("person", item) navigates legacy space-primary people to the space person route', () => {
+  it('activate("person", item) navigates legacy space-primary people to identity-wide person detail', () => {
     const m = new GlobalSearchManager();
     m.open();
     m.activate('person', {
@@ -1043,7 +1037,7 @@ describe('activate()', () => {
       name: 'Alice',
       primaryProfile: { type: 'space-person', id: 'space-person-1', spaceId: 'space-1' },
     });
-    expect(goto).toHaveBeenCalledWith('/spaces/space-1/people/space-person-1');
+    expect(goto).toHaveBeenCalledWith('/people/space-person-1');
     expect(getEntries()).toHaveLength(0);
   });
 

@@ -1114,9 +1114,14 @@ select
   "face_search"."embedding"
 from
   "shared_space_person"
+  inner join "shared_space_person_face" on "shared_space_person_face"."personId" = "shared_space_person"."id"
+  and "shared_space_person_face"."assetFaceId" = "shared_space_person"."representativeFaceId"
+  inner join "asset_face" on "asset_face"."id" = "shared_space_person"."representativeFaceId"
   inner join "face_search" on "face_search"."faceId" = "shared_space_person"."representativeFaceId"
 where
   "shared_space_person"."spaceId" = $1
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" = $2
 
 -- SharedSpaceRepository.getAssetFacesForMatching
 select

@@ -28,6 +28,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { locale } from '$lib/stores/preferences.store';
   import { getSpacePersonFaceThumbnailUrl } from '$lib/utils/people-utils';
+  import { toScopedPersonRef as toPersonScopedRef } from '$lib/utils/scoped-person-ref';
   import {
     detachScopedPerson,
     getSpacePersonFaces,
@@ -240,22 +241,11 @@
     'assetCount' in person;
 
   const toScopedPersonRef = (person: ScopedMergeCandidate, fallbackSpaceId = space.id): ScopedPersonProfileRefDto => {
-    if ('primaryProfile' in person && person.primaryProfile) {
-      if (person.primaryProfile.type === 'space-person' && person.primaryProfile.spaceId) {
-        return {
-          type: ScopedPersonProfileType.SpacePerson,
-          id: person.primaryProfile.id,
-          spaceId: person.primaryProfile.spaceId,
-        };
-      }
-      return { type: ScopedPersonProfileType.Person, id: person.primaryProfile.id };
+    if (!isSharedSpacePerson(person)) {
+      return toPersonScopedRef(person);
     }
 
-    if (isSharedSpacePerson(person)) {
-      return { type: ScopedPersonProfileType.SpacePerson, id: person.id, spaceId: person.spaceId ?? fallbackSpaceId };
-    }
-
-    return { type: ScopedPersonProfileType.Person, id: person.id };
+    return { type: ScopedPersonProfileType.SpacePerson, id: person.id, spaceId: person.spaceId ?? fallbackSpaceId };
   };
 
   const getMergeDisplayName = (person: ScopedMergeCandidate) => person.name || '';
