@@ -46,6 +46,9 @@ Allows you to choose the type of format you want for the Preview images, Webp pr
 **Preview resolution**  
 Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
 
+**Video thumbnail selection**
+For video assets, Immich samples multiple candidate frames before writing the preview, thumbnail, and thumbhash. For longer videos, candidates prefer frames at least 30 seconds into the video. For short videos, Immich uses proportional timestamps and chooses the best frame based on brightness, contrast, and detail while rejecting black, blown-out, or flat frames.
+
 **Quality**  
 Image quality from 1-100. Higher is better for quality but produces larger files, this option affects the Preview and Thumbnail images.
 

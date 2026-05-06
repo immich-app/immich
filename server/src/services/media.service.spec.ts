@@ -586,6 +586,92 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should use proportional candidate timestamps for short videos', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+        format: { ...probeStub.videoStream2160p.format, duration: 10_000 },
+      });
+      mocks.media.scoreThumbnailCandidate.mockResolvedValueOnce(10).mockResolvedValueOnce(80).mockResolvedValueOnce(30);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.scoreThumbnailCandidate).toHaveBeenCalledTimes(3);
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(5);
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        1,
+        '/original/path.ext',
+        expect.stringContaining('_candidate_0'),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=2')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        2,
+        '/original/path.ext',
+        expect.stringContaining('_candidate_1'),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=5')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        3,
+        '/original/path.ext',
+        expect.stringContaining('_candidate_2'),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=8')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        4,
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=5')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        5,
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=5')]),
+        }),
+      );
+    });
+
+    it('should fall back to the first frame when thumbnail candidates cannot be scored', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+        format: { ...probeStub.videoStream2160p.format, duration: 10_000 },
+      });
+      mocks.media.scoreThumbnailCandidate.mockRejectedValue(new Error('could not read candidate'));
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.scoreThumbnailCandidate).toHaveBeenCalledTimes(3);
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(5);
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        4,
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=0')]),
+        }),
+      );
+      expect(mocks.media.transcode).toHaveBeenNthCalledWith(
+        5,
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([expect.stringContaining('start_time=0')]),
+        }),
+      );
+    });
+
     it('should tonemap thumbnail for hdr video', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
