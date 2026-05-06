@@ -129,7 +129,7 @@ This feature is independent from Smart Search. Smart Search uses CLIP embeddings
 
 The NSFW detection settings allow you to classify image assets with a dedicated safety model. The detection result is stored privately, and Immich can add a visible `nsfw` tag plus specific reason tags when supported by the image content and classifier result.
 
-The private NSFW flag is the source of truth for privacy features. Tags are searchable metadata and should not be treated as a security boundary. If `Hide detected NSFW assets` is enabled, flagged assets are hidden from non-elevated library views until the current session is unlocked with the locked-folder PIN.
+The private NSFW flag is the source of truth for privacy features. Tags are searchable metadata and should not be treated as a security boundary. If `Hide detected NSFW assets` is enabled, flagged assets are hidden from non-elevated library, shared-link, download, and sync responses until the current session is unlocked with the locked-folder PIN. Album membership is preserved while hidden assets are filtered from non-elevated responses.
 
 ### Duplicate Detection
 

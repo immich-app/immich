@@ -45,6 +45,8 @@ Use this checklist when validating image enrichment against a real library or lo
 7. Confirm generated descriptions append only one `AI description:` block and never remove user-written text.
 8. Confirm generated tags are lowercase, deduplicated, searchable, and removable through the repair action without deleting tag definitions.
 9. For NSFW assets, confirm the private effective NSFW flag drives hiding behavior while tags remain visible metadata only.
+10. With `Hide detected NSFW assets` enabled, confirm non-elevated sync streams exclude private NSFW assets, album asset relations, person face thumbnails, partner assets, stacks, and generic asset metadata.
+11. Unlock the locked-folder PIN session and confirm the same assets and album memberships are returned again without changing album membership.
 
 ## Descriptions and Tags
 
@@ -65,7 +67,11 @@ The default NSFW model is `onnx-community/nsfw_image_detection-ONNX`, with a def
 
 The private NSFW flag is the source of truth for privacy features. Tags are searchable metadata, not a security boundary.
 
-When `Hide detected NSFW assets` is enabled, privately flagged NSFW assets are hidden from library views such as the timeline, search results, albums, album thumbnails and counts, maps, and direct asset access unless the current session has been unlocked with the locked-folder PIN. Album membership is preserved; hiding only changes what is returned to a non-elevated session.
+When `Hide detected NSFW assets` is enabled, privately flagged NSFW assets are hidden from library views such as the timeline, search results, albums, album thumbnails and counts, maps, shared-link payloads, downloads, and direct asset access unless the current session has been unlocked with the locked-folder PIN.
+
+Sync streams apply the same private NSFW filter to asset payloads, album asset payloads, album-to-asset relations, exif, edit, face, memory, partner, and stack payloads, album thumbnails, person face thumbnails, and generic asset metadata. Private `ml-enrichment` metadata is never exposed through generic asset metadata sync.
+
+Album membership is preserved; hiding only changes what is returned to a non-elevated session. Sync clients should treat hidden assets as privacy-filtered results, not album membership removals.
 
 Locked-folder behavior is session based. Unlocking the locked folder elevates the current session so flagged NSFW assets can be returned again; logging out or using another session requires unlocking again.
 
