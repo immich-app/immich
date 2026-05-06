@@ -88,7 +88,6 @@
         {href}
         onclick={(evt) => evt.preventDefault()}
         tabindex={-1}
-        aria-label="Menu URL"
       >
       </a>
     {/if}
