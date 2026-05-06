@@ -1,14 +1,17 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
-import { SharedLinkType } from 'src/enum';
+import { AssetMetadataKey, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { DB } from 'src/schema';
 import { SharedLinkService } from 'src/services/shared-link.service';
+import { upsertTags } from 'src/utils/tag';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
@@ -18,10 +21,25 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SharedLinkService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, SharedLinkRepository, SharedLinkAssetRepository],
+    real: [
+      AccessRepository,
+      AssetRepository,
+      DatabaseRepository,
+      SharedLinkRepository,
+      SharedLinkAssetRepository,
+      TagRepository,
+    ],
     mock: [LoggingRepository, StorageRepository],
   });
 };
+
+const nsfwMetadata = (isNsfw: boolean, review?: { action: string; isNsfw: boolean }) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: { explicit: isNsfw ? 0.95 : 0.05 } },
+    ...(review ? { review } : {}),
+  },
+});
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
@@ -93,6 +111,118 @@ describe(SharedLinkService.name, () => {
     await expect(sut.getMine({ user, sharedLink }, [])).resolves.toMatchObject({
       assets: assets.map(({ asset }) => expect.objectContaining({ id: asset.id })),
     });
+  });
+
+  it('should hide NSFW assets from public individual shared-link payloads', async () => {
+    const { sut, ctx } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+
+    const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+
+    for (const assetId of [visible.id, unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id]) {
+      await ctx.newExif({ assetId, make: 'Canon' });
+    }
+
+    await ctx.newMetadata({
+      assetId: unreviewedNsfw.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true),
+    });
+    await ctx.newMetadata({
+      assetId: markedSafe.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+    });
+    await ctx.newMetadata({
+      assetId: markedNsfw.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+    });
+
+    const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+    await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+    const sharedLink = await ctx.get(SharedLinkRepository).create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: [visible.id, unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id],
+    });
+
+    const hiddenResponse = await sut.getMine({ user, sharedLink, hideNsfwAssets: true }, []);
+    expect(hiddenResponse.assets.map(({ id }) => id)).toEqual(
+      expect.arrayContaining([visible.id, markedSafe.id, tagOnly.id]),
+    );
+    expect(hiddenResponse.assets.map(({ id }) => id)).not.toEqual(
+      expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]),
+    );
+
+    const visibleResponse = await sut.getMine({ user, sharedLink }, []);
+    expect(visibleResponse.assets.map(({ id }) => id)).toEqual(
+      expect.arrayContaining([unreviewedNsfw.id, markedNsfw.id]),
+    );
+  });
+
+  it('should hide NSFW album assets and thumbnails from public album shared-link payloads', async () => {
+    const { sut, ctx } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+
+    const { asset: visible } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id });
+    const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id });
+
+    for (const assetId of [visible.id, unreviewedNsfw.id, markedSafe.id, markedNsfw.id]) {
+      await ctx.newExif({ assetId, make: 'Canon' });
+    }
+
+    await ctx.newMetadata({
+      assetId: unreviewedNsfw.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true),
+    });
+    await ctx.newMetadata({
+      assetId: markedSafe.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+    });
+    await ctx.newMetadata({
+      assetId: markedNsfw.id,
+      key: AssetMetadataKey.MlEnrichment,
+      value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+    });
+
+    const { album } = await ctx.newAlbum({ ownerId: user.id, albumThumbnailAssetId: unreviewedNsfw.id }, [
+      visible.id,
+      unreviewedNsfw.id,
+      markedSafe.id,
+      markedNsfw.id,
+    ]);
+
+    const sharedLink = await ctx.get(SharedLinkRepository).create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      albumId: album.id,
+      allowUpload: false,
+      type: SharedLinkType.Album,
+    });
+
+    const hiddenResponse = await sut.getMine({ user, sharedLink, hideNsfwAssets: true }, []);
+    expect(hiddenResponse.album).toEqual(
+      expect.objectContaining({ id: album.id, albumThumbnailAssetId: null, assetCount: 2 }),
+    );
+
+    const visibleResponse = await sut.getMine({ user, sharedLink }, []);
+    expect(visibleResponse.album).toEqual(
+      expect.objectContaining({ id: album.id, albumThumbnailAssetId: unreviewedNsfw.id, assetCount: 4 }),
+    );
   });
 
   describe('getAll', () => {

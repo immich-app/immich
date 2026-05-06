@@ -29,6 +29,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { DownloadRepository } from 'src/repositories/download.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
@@ -421,6 +422,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AssetEditRepository:
     case AssetJobRepository:
     case MemoryRepository:
+    case DownloadRepository:
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:

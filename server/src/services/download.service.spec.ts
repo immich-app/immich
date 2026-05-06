@@ -256,6 +256,22 @@ describe(DownloadService.name, () => {
       expect(mocks.downloadRepository.downloadAlbumId).toHaveBeenCalledWith('album-1');
     });
 
+    it('should filter album downloads when NSFW hiding is active', async () => {
+      const auth = { ...authStub.admin, hideNsfwAssets: true };
+      mocks.user.getMetadata.mockResolvedValue([]);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
+      mocks.downloadRepository.downloadAlbumId.mockReturnValue(
+        makeStream([
+          { id: 'asset-1', livePhotoVideoId: null, size: 100_000 },
+          { id: 'asset-2', livePhotoVideoId: null, size: 5000 },
+        ]),
+      );
+
+      await expect(sut.getDownloadInfo(auth, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
+
+      expect(mocks.downloadRepository.downloadAlbumId).toHaveBeenCalledWith('album-1', { excludeNsfw: true });
+    });
+
     it('should return a list of archives (userId)', async () => {
       mocks.user.getMetadata.mockResolvedValue([]);
       mocks.downloadRepository.downloadUserId.mockReturnValue(
@@ -270,6 +286,21 @@ describe(DownloadService.name, () => {
       );
 
       expect(mocks.downloadRepository.downloadUserId).toHaveBeenCalledWith(authStub.admin.user.id);
+    });
+
+    it('should filter timeline downloads when NSFW hiding is active', async () => {
+      const auth = { ...authStub.admin, hideNsfwAssets: true };
+      mocks.user.getMetadata.mockResolvedValue([]);
+      mocks.downloadRepository.downloadUserId.mockReturnValue(
+        makeStream([
+          { id: 'asset-1', livePhotoVideoId: null, size: 100_000 },
+          { id: 'asset-2', livePhotoVideoId: null, size: 5000 },
+        ]),
+      );
+
+      await expect(sut.getDownloadInfo(auth, { userId: auth.user.id })).resolves.toEqual(downloadResponse);
+
+      expect(mocks.downloadRepository.downloadUserId).toHaveBeenCalledWith(auth.user.id, { excludeNsfw: true });
     });
 
     it('should split archives by size', async () => {
@@ -322,6 +353,28 @@ describe(DownloadService.name, () => {
           { assetIds: ['asset-3', 'asset-4'], size: 146_456 },
         ],
       });
+    });
+
+    it('should filter live-photo motion assets when NSFW hiding is active', async () => {
+      const auth = { ...authStub.admin, hideNsfwAssets: true };
+      const assetIds = ['asset-1'];
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
+      mocks.user.getMetadata.mockResolvedValue([]);
+      mocks.downloadRepository.downloadAssetIds.mockReturnValue(
+        makeStream([{ id: 'asset-1', livePhotoVideoId: 'asset-2', size: 5000 }]),
+      );
+      mocks.downloadRepository.downloadMotionAssetIds.mockReturnValue(
+        makeStream([{ id: 'asset-2', livePhotoVideoId: null, size: 23_456, originalPath: '/path/to/file.mp4' }]),
+      );
+
+      await expect(sut.getDownloadInfo(auth, { assetIds })).resolves.toEqual({
+        totalSize: 28_456,
+        archives: [{ assetIds: ['asset-1', 'asset-2'], size: 28_456 }],
+      });
+
+      expect(mocks.downloadRepository.downloadAssetIds).toHaveBeenCalledWith(assetIds, { excludeNsfw: true });
+      expect(mocks.downloadRepository.downloadMotionAssetIds).toHaveBeenCalledWith(['asset-2'], { excludeNsfw: true });
     });
 
     it('should skip the video portion of an android live photo by default', async () => {

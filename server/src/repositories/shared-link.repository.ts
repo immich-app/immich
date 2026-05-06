@@ -10,19 +10,26 @@ import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
+import { withoutNsfwAssets } from 'src/utils/database';
 
 export type SharedLinkSearchOptions = {
   userId: string;
   id?: string;
   albumId?: string;
+  excludeNsfw?: boolean;
 };
 
-const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
+type SharedLinkPrivacyOptions = {
+  excludeNsfw?: boolean;
+};
+
+const withSharedAssets = (eb: ExpressionBuilder<DB, 'shared_link'>, options: SharedLinkPrivacyOptions = {}) => {
   return eb
     .selectFrom('shared_link_asset')
     .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
     .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
     .where('asset.deletedAt', 'is', null)
+    .$if(!!options.excludeNsfw, withoutNsfwAssets)
     .selectAll('asset')
     .orderBy('asset.fileCreatedAt', 'asc');
 };
@@ -64,14 +71,14 @@ const withSharedLinkAlbum = (eb: ExpressionBuilder<DB, 'shared_link'>) => {
 export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  get(userId: string, id: string) {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { excludeNsfw: true }] })
+  get(userId: string, id: string, options: SharedLinkPrivacyOptions = {}) {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
       .select((eb) =>
         jsonArrayFrom(
-          withSharedAssets(eb)
+          withSharedAssets(eb, options)
             .innerJoinLateral(withExifInfo, (join) => join.onTrue())
             .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo')),
         ).as('assets'),
@@ -87,6 +94,7 @@ export class SharedLinkRepository {
                   .selectAll('asset')
                   .whereRef('album_asset.assetId', '=', 'asset.id')
                   .where('asset.deletedAt', 'is', null)
+                  .$if(!!options.excludeNsfw, withoutNsfwAssets)
                   .innerJoinLateral(withExifInfo, (join) => join.onTrue())
                   .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
                   .orderBy('asset.fileCreatedAt', 'asc')
@@ -120,11 +128,11 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
-  getAll({ userId, id, albumId }: SharedLinkSearchOptions) {
+  getAll({ userId, id, albumId, excludeNsfw }: SharedLinkSearchOptions) {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
-      .select((eb) => jsonArrayFrom(withSharedAssets(eb).limit(1)).as('assets'))
+      .select((eb) => jsonArrayFrom(withSharedAssets(eb, { excludeNsfw }).limit(1)).as('assets'))
       .where('shared_link.userId', '=', userId)
       .leftJoinLateral(
         (eb) =>

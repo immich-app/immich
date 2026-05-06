@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetFileType, SharedLinkType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -11,11 +11,13 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
 import { ImmichFileResponse } from 'src/utils/file';
+import { upsertTags } from 'src/utils/tag';
 import { mediumFactory, newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
@@ -25,10 +27,18 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(AssetMediaService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, AlbumRepository, AssetRepository, SharedLinkRepository, UserRepository],
+    real: [AccessRepository, AlbumRepository, AssetRepository, SharedLinkRepository, TagRepository, UserRepository],
     mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository],
   });
 };
+
+const nsfwMetadata = (isNsfw: boolean, review?: { action: string; isNsfw: boolean }) => ({
+  nsfwDetection: {
+    status: 'success',
+    result: { isNsfw, score: isNsfw ? 0.95 : 0.05, labels: { explicit: isNsfw ? 0.95 : 0.05 } },
+    ...(review ? { review } : {}),
+  },
+});
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
@@ -254,6 +264,69 @@ describe(AssetService.name, () => {
   });
 
   describe('viewThumbnail', () => {
+    it('should hide NSFW shared-link media using private review state', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+
+      const { asset: unreviewedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedSafe } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: markedNsfw } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: tagOnly } = await ctx.newAsset({ ownerId: user.id });
+
+      for (const assetId of [unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id]) {
+        await ctx.newExif({ assetId, fileSizeInByte: 12_345 });
+        await ctx.newAssetFile({
+          assetId,
+          type: AssetFileType.Preview,
+          path: `/${assetId}/preview.jpg`,
+          isEdited: false,
+        });
+      }
+
+      await ctx.newMetadata({
+        assetId: unreviewedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true),
+      });
+      await ctx.newMetadata({
+        assetId: markedSafe.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(true, { action: 'marked-safe', isNsfw: false }),
+      });
+      await ctx.newMetadata({
+        assetId: markedNsfw.id,
+        key: AssetMetadataKey.MlEnrichment,
+        value: nsfwMetadata(false, { action: 'marked-nsfw', isNsfw: true }),
+      });
+
+      const [visibleNsfwTag] = await upsertTags(ctx.get(TagRepository), { userId: user.id, tags: ['nsfw'] });
+      await ctx.newTagAsset({ tagIds: [visibleNsfwTag.id], assetIds: [tagOnly.id] });
+
+      const sharedLink = await ctx.get(SharedLinkRepository).create({
+        key: randomBytes(16),
+        id: factory.uuid(),
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: false,
+        type: SharedLinkType.Individual,
+        assetIds: [unreviewedNsfw.id, markedSafe.id, markedNsfw.id, tagOnly.id],
+      });
+
+      const auth = { user, sharedLink, hideNsfwAssets: true };
+      await expect(sut.viewThumbnail(auth, unreviewedNsfw.id, { size: AssetMediaSize.PREVIEW })).rejects.toThrow(
+        'Not found or no asset.view access',
+      );
+      await expect(sut.viewThumbnail(auth, markedNsfw.id, { size: AssetMediaSize.PREVIEW })).rejects.toThrow(
+        'Not found or no asset.view access',
+      );
+      await expect(sut.viewThumbnail(auth, markedSafe.id, { size: AssetMediaSize.PREVIEW })).resolves.toEqual(
+        expect.objectContaining({ path: `/${markedSafe.id}/preview.jpg` }),
+      );
+      await expect(sut.downloadOriginal(auth, tagOnly.id, {})).resolves.toEqual(
+        expect.objectContaining({ path: tagOnly.originalPath }),
+      );
+    });
+
     it('should return original thumbnail by default when both exist', async () => {
       const { sut, ctx } = setup();
 

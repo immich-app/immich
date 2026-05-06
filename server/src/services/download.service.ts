@@ -14,19 +14,26 @@ import { getPreferences } from 'src/utils/preferences';
 export class DownloadService extends BaseService {
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     let assets;
+    const nsfwOptions = this.nsfwOptions(auth);
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
       await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: assetIds });
-      assets = this.downloadRepository.downloadAssetIds(assetIds);
+      assets = nsfwOptions
+        ? this.downloadRepository.downloadAssetIds(assetIds, nsfwOptions)
+        : this.downloadRepository.downloadAssetIds(assetIds);
     } else if (dto.albumId) {
       const albumId = dto.albumId;
       await this.requireAccess({ auth, permission: Permission.AlbumDownload, ids: [albumId] });
-      assets = this.downloadRepository.downloadAlbumId(albumId);
+      assets = nsfwOptions
+        ? this.downloadRepository.downloadAlbumId(albumId, nsfwOptions)
+        : this.downloadRepository.downloadAlbumId(albumId);
     } else if (dto.userId) {
       const userId = dto.userId;
       await this.requireAccess({ auth, permission: Permission.TimelineDownload, ids: [userId] });
-      assets = this.downloadRepository.downloadUserId(userId);
+      assets = nsfwOptions
+        ? this.downloadRepository.downloadUserId(userId, nsfwOptions)
+        : this.downloadRepository.downloadUserId(userId);
     } else {
       throw new BadRequestException('assetIds, albumId, or userId is required');
     }
@@ -58,7 +65,9 @@ export class DownloadService extends BaseService {
     }
 
     if (motionIds.size > 0) {
-      const motionAssets = this.downloadRepository.downloadMotionAssetIds([...motionIds]);
+      const motionAssets = nsfwOptions
+        ? this.downloadRepository.downloadMotionAssetIds([...motionIds], nsfwOptions)
+        : this.downloadRepository.downloadMotionAssetIds([...motionIds]);
       for await (const motionAsset of motionAssets) {
         if (StorageCore.isAndroidMotionPath(motionAsset.originalPath) && !preferences.download.includeEmbeddedVideos) {
           continue;
@@ -118,5 +127,9 @@ export class DownloadService extends BaseService {
     void zip.finalize();
 
     return { stream: zip.stream };
+  }
+
+  private nsfwOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? { excludeNsfw: true } : undefined;
   }
 }

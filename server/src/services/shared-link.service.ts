@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PostgresError } from 'postgres';
+import { SharedLink } from 'src/database';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -18,9 +19,12 @@ import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 @Injectable()
 export class SharedLinkService extends BaseService {
   async getAll(auth: AuthDto, { id, albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
-    return this.sharedLinkRepository
-      .getAll({ userId: auth.user.id, id, albumId })
-      .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
+    const searchOptions = { userId: auth.user.id, id, albumId };
+    const nsfwOptions = this.nsfwOptions(auth);
+    const links = await this.sharedLinkRepository.getAll(
+      nsfwOptions ? { ...searchOptions, ...nsfwOptions } : searchOptions,
+    );
+    return Promise.all(links.map((link) => this.mapSharedLink(auth, link, { stripAssetMetadata: false })));
   }
 
   async login(auth: AuthDto, dto: SharedLinkLoginDto) {
@@ -28,7 +32,7 @@ export class SharedLinkService extends BaseService {
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
+    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id, this.nsfwOptions(auth));
     const { id, password } = sharedLink;
 
     if (!password) {
@@ -40,7 +44,7 @@ export class SharedLinkService extends BaseService {
     }
 
     return {
-      sharedLink: mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif }),
+      sharedLink: await this.mapSharedLink(auth, sharedLink, { stripAssetMetadata: !sharedLink.showExif }),
       token: this.asToken({ id, password }),
     };
   }
@@ -50,19 +54,19 @@ export class SharedLinkService extends BaseService {
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
+    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id, this.nsfwOptions(auth));
     const { id, password } = sharedLink;
 
     if (password && !authTokens.includes(this.asToken({ id, password }))) {
       throw new UnauthorizedException('Password required');
     }
 
-    return mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
+    return this.mapSharedLink(auth, sharedLink, { stripAssetMetadata: !sharedLink.showExif });
   }
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
-    const sharedLink = await this.findOrFail(auth.user.id, id);
-    return mapSharedLink(sharedLink, { stripAssetMetadata: false });
+    const sharedLink = await this.findOrFail(auth.user.id, id, this.nsfwOptions(auth));
+    return this.mapSharedLink(auth, sharedLink, { stripAssetMetadata: false });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
@@ -142,8 +146,10 @@ export class SharedLinkService extends BaseService {
   }
 
   // TODO: replace `userId` with permissions and access control checks
-  private async findOrFail(userId: string, id: string) {
-    const sharedLink = await this.sharedLinkRepository.get(userId, id);
+  private async findOrFail(userId: string, id: string, options?: { excludeNsfw?: boolean }) {
+    const sharedLink = options
+      ? await this.sharedLinkRepository.get(userId, id, options)
+      : await this.sharedLinkRepository.get(userId, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }
@@ -221,8 +227,12 @@ export class SharedLinkService extends BaseService {
     }
 
     const config = await this.getConfig({ withCache: true });
-    const sharedLink = await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id);
-    const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
+    const sharedLink = await this.applyNsfwPrivacy(
+      auth,
+      await this.findOrFail(auth.sharedLink.userId, auth.sharedLink.id, this.nsfwOptions(auth)),
+    );
+    const assetId =
+      sharedLink.album?.albumThumbnailAssetId || sharedLink.album?.assets?.[0]?.id || sharedLink.assets[0]?.id;
     const assetCount = sharedLink.assets.length > 0 ? sharedLink.assets.length : sharedLink.album?.assets?.length || 0;
     const imagePath = assetId
       ? `/api/assets/${assetId}/thumbnail?key=${sharedLink.key.toString('base64url')}`
@@ -237,5 +247,33 @@ export class SharedLinkService extends BaseService {
 
   private asToken(sharedLink: { id: string; password: string }) {
     return this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`).toString('base64');
+  }
+
+  private async mapSharedLink(
+    auth: AuthDto,
+    sharedLink: SharedLink,
+    options: { stripAssetMetadata: boolean },
+  ): Promise<SharedLinkResponseDto> {
+    return mapSharedLink(await this.applyNsfwPrivacy(auth, sharedLink), options);
+  }
+
+  private async applyNsfwPrivacy(auth: AuthDto, sharedLink: SharedLink): Promise<SharedLink> {
+    const album = sharedLink.album;
+    const albumThumbnailAssetId = album?.albumThumbnailAssetId;
+    if (!auth.hideNsfwAssets || !albumThumbnailAssetId) {
+      return sharedLink;
+    }
+
+    const nsfwThumbnailIds = await this.assetRepository.getNsfwAssetIds([albumThumbnailAssetId]);
+    return nsfwThumbnailIds.has(albumThumbnailAssetId)
+      ? {
+          ...sharedLink,
+          album: { ...album, albumThumbnailAssetId: null },
+        }
+      : sharedLink;
+  }
+
+  private nsfwOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? { excludeNsfw: true } : undefined;
   }
 }
