@@ -7,6 +7,7 @@
     "outDir": "build",
     "module": "Node16",
     "moduleResolution": "Node16",
+    "rootDir": "./src",
     "lib": ["esnext", "dom"]
   },
   "include": ["src/**/*.ts"]

@@ -1,8 +1,10 @@
 import { Selectable, ShallowDehydrateObject } from 'kysely';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
+import { AudioStreamInfo, VideoFormat, VideoStreamInfo } from 'src/types';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -83,7 +85,6 @@ export const getForAlbum = (album: ReturnType<AlbumFactory['build']>) => ({
     createdAt: albumUser.createdAt.toISOString(),
     user: getDehydrated(albumUser.user),
   })),
-  owner: getDehydrated(album.owner),
   sharedLinks: album.sharedLinks.map((sharedLink) => getDehydrated(sharedLink)),
 });
 
@@ -125,8 +126,7 @@ export const getForMemory = (memory: ReturnType<MemoryFactory['build']>) => ({
 export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']>) => ({
   id: asset.id,
   checksum: asset.checksum,
-  deviceAssetId: asset.deviceAssetId,
-  deviceId: asset.deviceId,
+  checksumAlgorithm: asset.checksumAlgorithm,
   fileCreatedAt: asset.fileCreatedAt,
   fileModifiedAt: asset.fileModifiedAt,
   isExternal: asset.isExternal,
@@ -138,6 +138,7 @@ export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']
   originalPath: asset.originalPath,
   ownerId: asset.ownerId,
   type: asset.type,
+  isEdited: asset.isEdited,
   width: asset.width,
   height: asset.height,
   faces: asset.faces.map((face) => getDehydrated(face)),
@@ -155,6 +156,9 @@ export const getForGenerateThumbnail = (asset: ReturnType<AssetFactory['build']>
   files: asset.files.map((file) => getDehydrated(file)),
   exifInfo: getDehydrated(asset.exifInfo),
   edits: asset.edits.map(({ action, parameters }) => ({ action, parameters })) as AssetEditActionItem[],
+  videoStream: null as (VideoStreamInfo & { timeBase: number }) | null,
+  audioStream: null as AudioStreamInfo | null,
+  format: null as VideoFormat | null,
 });
 
 export const getForAssetFace = (face: ReturnType<AssetFaceFactory['build']>) => ({
@@ -183,7 +187,6 @@ export const getForAssetDeletion = (asset: ReturnType<AssetFactory['build']>) =>
   libraryId: asset.libraryId,
   ownerId: asset.ownerId,
   livePhotoVideoId: asset.livePhotoVideoId,
-  encodedVideoPath: asset.encodedVideoPath,
   originalPath: asset.originalPath,
   isOffline: asset.isOffline,
   exifInfo: asset.exifInfo ? getDehydrated(asset.exifInfo) : null,
@@ -204,10 +207,11 @@ export const getForStack = (stack: ReturnType<StackFactory['build']>) => ({
   })),
 });
 
-export const getForDuplicate = (asset: ReturnType<AssetFactory['build']>) => ({
-  ...getDehydrated(asset),
-  exifInfo: getDehydrated(asset.exifInfo),
-});
+export const getForDuplicate = (asset: ReturnType<AssetFactory['build']>) =>
+  ({
+    ...getDehydrated(asset),
+    exifInfo: getDehydrated(asset.exifInfo),
+  }) as unknown as MapAsset;
 
 export const getForSharedLink = (sharedLink: ReturnType<SharedLinkFactory['build']>) => ({
   ...sharedLink,
@@ -218,7 +222,6 @@ export const getForSharedLink = (sharedLink: ReturnType<SharedLinkFactory['build
   album: sharedLink.album
     ? {
         ...getDehydrated(sharedLink.album),
-        owner: getDehydrated(sharedLink.album.owner),
         assets: sharedLink.album.assets.map((asset) => getDehydrated(asset)),
       }
     : null,

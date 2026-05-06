@@ -11,7 +11,6 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { AggregationType } from '@opentelemetry/sdk-metrics';
 import { NodeSDK, contextBase } from '@opentelemetry/sdk-node';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import { ClassConstructor } from 'class-transformer';
 import { snakeCase, startCase } from 'lodash';
 import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
@@ -118,7 +117,7 @@ export class TelemetryRepository {
     this.repo = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.Repo) });
   }
 
-  setup({ repositories }: { repositories: ClassConstructor<unknown>[] }) {
+  setup({ repositories }: { repositories: (new (...args: any[]) => unknown)[] }) {
     const { telemetry } = this.configRepository.getEnv();
     const { metrics } = telemetry;
     if (!metrics.has(ImmichTelemetry.Repo)) {
@@ -136,7 +135,7 @@ export class TelemetryRepository {
     }
   }
 
-  private wrap(Repository: ClassConstructor<unknown>) {
+  private wrap(Repository: new (...args: any[]) => unknown) {
     const className = Repository.name;
     const descriptors = Object.getOwnPropertyDescriptors(Repository.prototype);
     const unit = 'ms';

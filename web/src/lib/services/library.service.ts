@@ -1,12 +1,3 @@
-import { goto } from '$app/navigation';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import LibraryExclusionPatternAddModal from '$lib/modals/LibraryExclusionPatternAddModal.svelte';
-import LibraryExclusionPatternEditModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
-import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
-import LibraryFolderEditModal from '$lib/modals/LibraryFolderEditModal.svelte';
-import { Route } from '$lib/route';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   createLibrary,
   deleteLibrary,
@@ -22,11 +13,19 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import LibraryExclusionPatternAddModal from '$lib/modals/LibraryExclusionPatternAddModal.svelte';
+import LibraryExclusionPatternEditModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
+import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
+import LibraryFolderEditModal from '$lib/modals/LibraryFolderEditModal.svelte';
+import { Route } from '$lib/route';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getLibrariesActions = ($t: MessageFormatter) => {
   const ScanAll: ActionItem = {
     title: $t('scan_all_libraries'),
-    type: $t('command'),
     icon: mdiSync,
     onAction: () => handleScanAllLibraries(),
     shortcuts: { shift: true, key: 'r' },
@@ -34,7 +33,6 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
 
   const Create: ActionItem = {
     title: $t('create_library'),
-    type: $t('command'),
     icon: mdiPlusBoxOutline,
     onAction: () => goto(Route.newLibrary()),
     shortcuts: { shift: true, key: 'n' },
@@ -46,14 +44,12 @@ export const getLibrariesActions = ($t: MessageFormatter) => {
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
   const Detail: ActionItem = {
     icon: mdiInformationOutline,
-    type: $t('command'),
     title: $t('details'),
     onAction: () => goto(Route.viewLibrary(library)),
   };
 
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
-    type: $t('command'),
     title: $t('edit'),
     onAction: () => goto(Route.editLibrary(library)),
     shortcuts: { key: 'r' },
@@ -61,7 +57,6 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
-    type: $t('command'),
     title: $t('delete'),
     color: 'danger',
     onAction: () => handleDeleteLibrary(library),
@@ -71,21 +66,18 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 
   const AddFolder: ActionItem = {
     icon: mdiPlusBoxOutline,
-    type: $t('command'),
     title: $t('add'),
     onAction: () => modalManager.show(LibraryFolderAddModal, { library }),
   };
 
   const AddExclusionPattern: ActionItem = {
     icon: mdiPlusBoxOutline,
-    type: $t('command'),
     title: $t('add'),
     onAction: () => modalManager.show(LibraryExclusionPatternAddModal, { library }),
   };
 
   const Scan: ActionItem = {
     icon: mdiSync,
-    type: $t('command'),
     title: $t('scan_library'),
     onAction: () => handleScanLibrary(library),
     shortcuts: { shift: true, key: 'r' },
@@ -97,14 +89,12 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
-    type: $t('command'),
     title: $t('edit'),
     onAction: () => modalManager.show(LibraryFolderEditModal, { folder, library }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
-    type: $t('command'),
     title: $t('delete'),
     onAction: () => handleDeleteLibraryFolder(library, folder),
   };
@@ -119,14 +109,12 @@ export const getLibraryExclusionPatternActions = (
 ) => {
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
-    type: $t('command'),
     title: $t('edit'),
     onAction: () => modalManager.show(LibraryExclusionPatternEditModal, { exclusionPattern, library }),
   };
 
   const Delete: ActionItem = {
     icon: mdiTrashCanOutline,
-    type: $t('command'),
     title: $t('delete'),
     onAction: () => handleDeleteExclusionPattern(library, exclusionPattern),
   };
@@ -161,7 +149,7 @@ export const handleCreateLibrary = async (dto: CreateLibraryDto) => {
   try {
     const library = await createLibrary({ createLibraryDto: dto });
     eventManager.emit('LibraryCreate', library);
-    toastManager.success($t('admin.library_created', { values: { library: library.name } }));
+    toastManager.primary($t('admin.library_created', { values: { library: library.name } }));
     return library;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create_library'));
@@ -174,7 +162,7 @@ export const handleUpdateLibrary = async (library: LibraryResponseDto, dto: Upda
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: dto });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
@@ -205,7 +193,7 @@ const handleDeleteLibrary = async (library: LibraryResponseDto) => {
   try {
     await deleteLibrary({ id: library.id });
     eventManager.emit('LibraryDelete', { id: library.id });
-    toastManager.success($t('admin.library_deleted'));
+    toastManager.primary($t('admin.library_deleted'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_library'));
   }
@@ -225,7 +213,7 @@ export const handleAddLibraryFolder = async (library: LibraryResponseDto, folder
       updateLibraryDto: { importPaths: [...library.importPaths, folder] },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -246,7 +234,7 @@ export const handleEditLibraryFolder = async (library: LibraryResponseDto, oldVa
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: { importPaths } });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -273,7 +261,7 @@ const handleDeleteLibraryFolder = async (library: LibraryResponseDto, folder: st
       updateLibraryDto: { importPaths: library.importPaths.filter((path) => path !== folder) },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
   }
@@ -293,7 +281,7 @@ export const handleAddLibraryExclusionPattern = async (library: LibraryResponseD
       updateLibraryDto: { exclusionPatterns: [...library.exclusionPatterns, exclusionPattern] },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -314,7 +302,7 @@ export const handleEditExclusionPattern = async (library: LibraryResponseDto, ol
   try {
     const updatedLibrary = await updateLibrary({ id: library.id, updateLibraryDto: { exclusionPatterns } });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
     return false;
@@ -339,7 +327,7 @@ const handleDeleteExclusionPattern = async (library: LibraryResponseDto, exclusi
       },
     });
     eventManager.emit('LibraryUpdate', updatedLibrary);
-    toastManager.success($t('admin.library_updated'));
+    toastManager.primary($t('admin.library_updated'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_library'));
   }

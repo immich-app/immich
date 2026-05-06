@@ -7,7 +7,6 @@ import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
 import app.alextran.immich.core.HttpClientManager
-import app.alextran.immich.core.USER_AGENT
 import kotlinx.coroutines.*
 import okhttp3.Cache
 import okhttp3.Call
@@ -15,9 +14,6 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.Credentials
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
@@ -25,16 +21,7 @@ import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
-
-
-private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
 
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
 
@@ -101,7 +88,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 }
 
 private object ImageFetcherManager {
-  private lateinit var appContext: Context
   private lateinit var cacheDir: File
   private lateinit var fetcher: ImageFetcher
   private var initialized = false
@@ -110,7 +96,6 @@ private object ImageFetcherManager {
     if (initialized) return
     synchronized(this) {
       if (initialized) return
-      appContext = context.applicationContext
       cacheDir = context.cacheDir
       fetcher = build()
       HttpClientManager.addClientChangedListener(::invalidate)
@@ -143,7 +128,7 @@ private object ImageFetcherManager {
     return if (HttpClientManager.isMtls) {
       OkHttpImageFetcher.create(cacheDir)
     } else {
-      CronetImageFetcher(appContext, cacheDir)
+      CronetImageFetcher()
     }
   }
 }
@@ -161,19 +146,11 @@ private sealed interface ImageFetcher {
   fun clearCache(onCleared: (Result<Long>) -> Unit)
 }
 
-private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
-  private val ctx = context
-  private var engine: CronetEngine
-  private val executor = Executors.newFixedThreadPool(4)
+private class CronetImageFetcher : ImageFetcher {
   private val stateLock = Any()
   private var activeCount = 0
   private var draining = false
   private var onCacheCleared: ((Result<Long>) -> Unit)? = null
-  private val storageDir = File(cacheDir, "cronet").apply { mkdirs() }
-
-  init {
-    engine = build(context)
-  }
 
   override fun fetch(
     url: String,
@@ -190,28 +167,14 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     }
 
     val callback = FetchCallback(onSuccess, onFailure, ::onComplete)
-    val requestBuilder = engine.newUrlRequestBuilder(url, callback, executor)
-    HttpClientManager.headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
-    HttpClientManager.loadCookieHeader(url)?.let { requestBuilder.addHeader("Cookie", it) }
-    url.toHttpUrlOrNull()?.let { httpUrl ->
-      if (httpUrl.username.isNotEmpty()) {
-        requestBuilder.addHeader("Authorization", Credentials.basic(httpUrl.username, httpUrl.password))
-      }
+    val requestBuilder = HttpClientManager.cronetEngine!!
+      .newUrlRequestBuilder(url, callback, HttpClientManager.cronetExecutor)
+    HttpClientManager.getAuthHeaders(url).forEach { (key, value) ->
+      requestBuilder.addHeader(key, value)
     }
     val request = requestBuilder.build()
     signal.setOnCancelListener(request::cancel)
     request.start()
-  }
-
-  private fun build(ctx: Context): CronetEngine {
-    return CronetEngine.Builder(ctx)
-      .enableHttp2(true)
-      .enableQuic(true)
-      .enableBrotli(true)
-      .setStoragePath(storageDir.absolutePath)
-      .setUserAgent(USER_AGENT)
-      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
-      .build()
   }
 
   private fun onComplete() {
@@ -236,22 +199,16 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
   }
 
   private fun onDrained() {
-    engine.shutdown()
     val onCacheCleared = synchronized(stateLock) {
-      val onCacheCleared = onCacheCleared
+      val onCacheCleared = this.onCacheCleared
       this.onCacheCleared = null
       onCacheCleared
-    }
-    if (onCacheCleared == null) {
-      executor.shutdown()
-    } else {
-      CoroutineScope(Dispatchers.IO).launch {
-        val result = runCatching { deleteFolderAndGetSize(storageDir.toPath()) }
-        // Cronet is very good at self-repair, so it shouldn't fail here regardless of clear result
-        engine = build(ctx)
-        synchronized(stateLock) { draining = false }
-        onCacheCleared(result)
-      }
+    } ?: return
+
+    CoroutineScope(Dispatchers.IO).launch {
+      val result = HttpClientManager.rebuildCronetEngine()
+      synchronized(stateLock) { draining = false }
+      onCacheCleared(result)
     }
   }
 
@@ -341,26 +298,6 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     }
   }
 
-  suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
-    var totalSize = 0L
-
-    Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
-      override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-        totalSize += attrs.size()
-        Files.delete(file)
-        return FileVisitResult.CONTINUE
-      }
-
-      override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-        if (dir != root) {
-          Files.delete(dir)
-        }
-        return FileVisitResult.CONTINUE
-      }
-    })
-
-    totalSize
-  }
 }
 
 private class OkHttpImageFetcher private constructor(
@@ -375,7 +312,7 @@ private class OkHttpImageFetcher private constructor(
       val dir = File(cacheDir, "okhttp")
 
       val client = HttpClientManager.getClient().newBuilder()
-        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
+        .cache(Cache(File(dir, "thumbnails"), HttpClientManager.MEDIA_CACHE_SIZE_BYTES))
         .build()
 
       return OkHttpImageFetcher(client)

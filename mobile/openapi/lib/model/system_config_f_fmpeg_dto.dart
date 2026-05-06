@@ -36,7 +36,6 @@ class SystemConfigFFmpegDto {
     required this.twoPass,
   });
 
-  /// Transcode hardware acceleration
   TranscodeHWAccel accel;
 
   /// Accelerated decode
@@ -57,7 +56,6 @@ class SystemConfigFFmpegDto {
   /// Maximum value: 16
   int bframes;
 
-  /// CQ mode
   CQMode cqMode;
 
   /// CRF
@@ -69,6 +67,7 @@ class SystemConfigFFmpegDto {
   /// GOP size
   ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int gopSize;
 
   /// Max bitrate
@@ -86,13 +85,11 @@ class SystemConfigFFmpegDto {
   /// Maximum value: 6
   int refs;
 
-  /// Target audio codec
   AudioCodec targetAudioCodec;
 
   /// Target resolution
   String targetResolution;
 
-  /// Target video codec
   VideoCodec targetVideoCodec;
 
   /// Temporal AQ
@@ -101,12 +98,11 @@ class SystemConfigFFmpegDto {
   /// Threads
   ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int threads;
 
-  /// Tone mapping
   ToneMapping tonemap;
 
-  /// Transcode policy
   TranscodePolicy transcode;
 
   /// Two pass

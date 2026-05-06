@@ -1,7 +1,11 @@
 import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
-import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
-  album_delete_audit,
+  album_user_role_enum,
+  asset_face_source_type,
+  asset_visibility_enum,
+  assets_status_enum,
+} from 'src/schema/enums';
+import {
   album_user_after_insert,
   album_user_delete_audit,
   asset_delete_audit,
@@ -29,6 +33,7 @@ import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
+import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
 import { AssetEditAuditTable } from 'src/schema/tables/asset-edit-audit.table';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -40,7 +45,6 @@ import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { AuditTable } from 'src/schema/tables/audit.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -73,6 +77,11 @@ import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.ta
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
+import {
+  VideoStreamSegmentTable,
+  VideoStreamSessionTable,
+  VideoStreamVariantTable,
+} from 'src/schema/tables/video-stream.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
@@ -98,7 +107,6 @@ export class ImmichDatabase {
     AssetOcrTable,
     AssetTable,
     AssetFileTable,
-    AuditTable,
     AssetExifTable,
     FaceSearchTable,
     GeodataPlacesTable,
@@ -131,6 +139,9 @@ export class ImmichDatabase {
     UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
+    VideoStreamSessionTable,
+    VideoStreamVariantTable,
+    VideoStreamSegmentTable,
     PluginTable,
     PluginFilterTable,
     PluginActionTable,
@@ -148,7 +159,6 @@ export class ImmichDatabase {
     user_delete_audit,
     partner_delete_audit,
     asset_delete_audit,
-    album_delete_audit,
     album_user_after_insert,
     album_user_delete_audit,
     memory_delete_audit,
@@ -160,7 +170,7 @@ export class ImmichDatabase {
     asset_face_audit,
   ];
 
-  enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
+  enum = [album_user_role_enum, assets_status_enum, asset_face_source_type, asset_visibility_enum];
 }
 
 export interface Migrations {
@@ -195,9 +205,10 @@ export interface DB {
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
   asset_ocr: AssetOcrTable;
+  asset_audio: AssetAudioTable;
+  asset_video: AssetVideoTable;
+  asset_keyframe: AssetKeyframeTable;
   ocr_search: OcrSearchTable;
-
-  audit: AuditTable;
 
   face_search: FaceSearchTable;
 
@@ -247,6 +258,10 @@ export interface DB {
   user_metadata_audit: UserMetadataAuditTable;
 
   version_history: VersionHistoryTable;
+
+  video_stream_session: VideoStreamSessionTable;
+  video_stream_variant: VideoStreamVariantTable;
+  video_stream_segment: VideoStreamSegmentTable;
 
   plugin: PluginTable;
   plugin_filter: PluginFilterTable;

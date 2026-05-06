@@ -120,7 +120,7 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toMatchObject(errorDto.badRequest('Email already in use by another account'));
+      expect(body).toMatchObject(errorDto.badRequest('Email is not available'));
     });
 
     it('should update my email', async () => {
@@ -178,7 +178,11 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['download.archiveSize must be an integer number']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['download', 'archiveSize'], message: 'Invalid input: expected int, received number' },
+        ]),
+      );
     });
 
     it('should update download archive size', async () => {
@@ -204,7 +208,11 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['download.includeEmbeddedVideos must be a boolean value']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['download', 'includeEmbeddedVideos'], message: 'Invalid input: expected boolean, received number' },
+        ]),
+      );
     });
 
     it('should update download include embedded videos', async () => {

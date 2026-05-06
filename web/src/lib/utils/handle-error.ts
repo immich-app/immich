@@ -16,6 +16,18 @@ export function getServerErrorMessage(error: unknown) {
     }
   }
 
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    const details = data.errors
+      .map(({ path, message }) => {
+        const field = path
+          .map((segment, i) => (typeof segment === 'number' ? `[${segment}]` : i === 0 ? segment : `.${segment}`))
+          .join('');
+        return field ? `${field}: ${message}` : message;
+      })
+      .join(', ');
+    return `${data.message}: ${details}`;
+  }
+
   return data?.message || error.message;
 }
 
@@ -23,7 +35,8 @@ export function standardizeError(error: unknown) {
   return error instanceof Error ? error : new Error(String(error));
 }
 
-export function handleError(error: unknown, localizedMessage: string) {
+export function handleError(error: unknown, localizedMessage: string, options?: { notify?: boolean }) {
+  const { notify = true } = options ?? {};
   const standardizedError = standardizeError(error);
   if (standardizedError.name === 'AbortError') {
     return;
@@ -39,7 +52,9 @@ export function handleError(error: unknown, localizedMessage: string) {
 
     const errorMessage = serverMessage || localizedMessage;
 
-    toastManager.danger(errorMessage);
+    if (notify) {
+      toastManager.danger(errorMessage);
+    }
 
     return errorMessage;
   } catch (error) {

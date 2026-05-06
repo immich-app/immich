@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
+  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/Combobox.svelte';
   import { handleCreateJob } from '$lib/services/job.service';
   import { ManualJobName } from '@immich/sdk';
   import { FormModal } from '@immich/ui';

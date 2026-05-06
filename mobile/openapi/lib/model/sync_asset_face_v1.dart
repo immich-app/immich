@@ -28,19 +28,43 @@ class SyncAssetFaceV1 {
   /// Asset ID
   String assetId;
 
+  /// Bounding box X1
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX1;
 
+  /// Bounding box X2
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX2;
 
+  /// Bounding box Y1
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY1;
 
+  /// Bounding box Y2
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY2;
 
   /// Asset face ID
   String id;
 
+  /// Image height
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int imageHeight;
 
+  /// Image width
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int imageWidth;
 
   /// Person ID

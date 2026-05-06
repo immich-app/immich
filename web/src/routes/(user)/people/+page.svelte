@@ -3,11 +3,11 @@
   import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
-  import PeopleCard from '$lib/components/faces-page/people-card.svelte';
-  import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
-  import SearchPeople from '$lib/components/faces-page/people-search.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ManagePeopleVisibility from './ManagePeopleVisibility.svelte';
+  import PeopleCard from './PeopleCard.svelte';
+  import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
+  import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
@@ -157,7 +157,7 @@
             break;
           }
         }
-        toastManager.success($t('change_name_successfully'));
+        toastManager.primary($t('change_name_successfully'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -178,7 +178,7 @@
         return person;
       });
 
-      toastManager.success($t('changed_visibility_successfully'));
+      toastManager.primary($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -198,7 +198,7 @@
         return person;
       });
 
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
+      toastManager.primary(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
     }
@@ -315,9 +315,9 @@
 >
   {#snippet buttons()}
     {#if people.length > 0}
-      <div class="flex gap-2 items-center justify-center">
+      <div class="flex items-center justify-center gap-2">
         <div class="hidden sm:block">
-          <div class="w-40 lg:w-80 h-10">
+          <div class="h-10 w-40 lg:w-80">
             <SearchPeople
               bind:this={searchPeopleElement}
               type="searchBar"
@@ -344,7 +344,7 @@
     <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
       {#snippet children({ person })}
         <div
-          class="p-2 rounded-xl hover:bg-gray-200 border-2 hover:border-immich-primary/50 hover:shadow-sm dark:hover:bg-immich-dark-primary/20 hover:dark:border-immich-dark-primary/25 border-transparent transition-all"
+          class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"
         >
           <PeopleCard
             {person}
@@ -355,7 +355,7 @@
 
           <input
             type="text"
-            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-primary"
+            class="mt-2 w-full rounded-2xl border-gray-100 bg-white py-2 text-center text-sm text-primary placeholder-gray-400 dark:border-gray-900 dark:bg-immich-dark-gray"
             value={person.name}
             placeholder={$t('add_a_name')}
             use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
@@ -370,7 +370,7 @@
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
         <Icon icon={mdiAccountOff} size="3.5em" />
-        <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
+        <p class="mt-5 line-clamp-2 max-w-lg overflow-hidden text-3xl font-medium">
           {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
       </div>
@@ -381,7 +381,7 @@
 {#if selectHidden}
   <dialog
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="fixed inset-0 h-full w-full max-w-none max-h-none bg-light"
+    class="fixed inset-0 size-full max-h-none max-w-none bg-light"
     aria-labelledby="manage-visibility-title"
     {@attach (dialog) => dialog.showModal()}
   >

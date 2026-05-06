@@ -1,5 +1,12 @@
-import { exportJWK, generateKeyPair } from 'jose';
+import {
+  calculateJwkThumbprint,
+  exportJWK,
+  importPKCS8,
+  importSPKI,
+  SignJWT,
+} from 'jose';
 import Provider from 'oidc-provider';
+import { PRIVATE_KEY_PEM, PUBLIC_KEY_PEM } from './test-keys';
 
 export enum OAuthClient {
   DEFAULT = 'client-default',
@@ -10,6 +17,7 @@ export enum OAuthClient {
 export enum OAuthUser {
   NO_EMAIL = 'no-email',
   NO_NAME = 'no-name',
+  ID_TOKEN_CLAIMS = 'id-token-claims',
   WITH_QUOTA = 'with-quota',
   WITH_USERNAME = 'with-username',
   WITH_ROLE = 'with-role',
@@ -43,6 +51,29 @@ const claims = [
   },
 ];
 
+const privateKey = await importPKCS8(PRIVATE_KEY_PEM, 'RS256', {
+  extractable: true,
+});
+const publicKey = await importSPKI(PUBLIC_KEY_PEM, 'RS256', {
+  extractable: true,
+});
+const kid = await calculateJwkThumbprint(await exportJWK(publicKey));
+
+export async function generateLogoutToken(iss: string, sub: string) {
+  return await new SignJWT({
+    iss: iss,
+    aud: OAuthClient.DEFAULT,
+    iat: Math.floor(Date.now() / 1000),
+    jti: crypto.randomUUID(),
+    sub: sub,
+    events: {
+      'http://schemas.openid.net/event/backchannel-logout': {},
+    },
+  })
+    .setProtectedHeader({ alg: 'RS256', typ: 'logout+jwt', kid: kid })
+    .sign(privateKey);
+}
+
 const withDefaultClaims = (sub: string) => ({
   sub,
   email: `${sub}@immich.app`,
@@ -52,12 +83,23 @@ const withDefaultClaims = (sub: string) => ({
   email_verified: true,
 });
 
-const getClaims = (sub: string) => claims.find((user) => user.sub === sub) || withDefaultClaims(sub);
+const getClaims = (sub: string, use?: string) => {
+  if (sub === OAuthUser.ID_TOKEN_CLAIMS) {
+    return {
+      sub,
+      email: `oauth-${sub}@immich.app`,
+      email_verified: true,
+      name: use === 'id_token' ? 'ID Token User' : 'Userinfo User',
+    };
+  }
+  return claims.find((user) => user.sub === sub) || withDefaultClaims(sub);
+};
 
 const setup = async () => {
-  const { privateKey, publicKey } = await generateKeyPair('RS256');
-
-  const redirectUris = ['http://127.0.0.1:2285/auth/login', 'https://photos.immich.app/oauth/mobile-redirect'];
+  const redirectUris = [
+    'http://127.0.0.1:2285/auth/login',
+    'https://photos.immich.app/oauth/mobile-redirect',
+  ];
   const port = 2286;
   const host = '0.0.0.0';
   const oidc = new Provider(`http://${host}:${port}`, {
@@ -66,7 +108,10 @@ const setup = async () => {
       console.error(error);
       ctx.body = 'Internal Server Error';
     },
-    findAccount: (ctx, sub) => ({ accountId: sub, claims: () => getClaims(sub) }),
+    findAccount: (ctx, sub) => ({
+      accountId: sub,
+      claims: (use) => getClaims(sub, use),
+    }),
     scopes: ['openid', 'email', 'profile'],
     claims: {
       openid: ['sub'],
@@ -94,6 +139,7 @@ const setup = async () => {
         state: 'oidc.state',
       },
     },
+    conformIdTokenClaims: false,
     pkce: {
       required: () => false,
     },
@@ -125,7 +171,10 @@ const setup = async () => {
     ],
   });
 
-  const onStart = () => console.log(`[e2e-auth-server] http://${host}:${port}/.well-known/openid-configuration`);
+  const onStart = () =>
+    console.log(
+      `[e2e-auth-server] http://${host}:${port}/.well-known/openid-configuration`,
+    );
   const app = oidc.listen(port, host, onStart);
   return () => app.close();
 };

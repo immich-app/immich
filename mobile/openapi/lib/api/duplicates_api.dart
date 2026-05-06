@@ -16,9 +16,9 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
-  /// Delete a duplicate
+  /// Dismiss a duplicate group
   ///
-  /// Delete a single duplicate asset specified by its ID.
+  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -51,9 +51,9 @@ class DuplicatesApi {
     );
   }
 
-  /// Delete a duplicate
+  /// Dismiss a duplicate group
   ///
-  /// Delete a single duplicate asset specified by its ID.
+  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
   ///
   /// Parameters:
   ///
@@ -158,6 +158,65 @@ class DuplicatesApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<DuplicateResponseDto>') as List)
         .cast<DuplicateResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Resolve duplicate groups
+  ///
+  /// Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [DuplicateResolveDto] duplicateResolveDto (required):
+  Future<Response> resolveDuplicatesWithHttpInfo(DuplicateResolveDto duplicateResolveDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/resolve';
+
+    // ignore: prefer_final_locals
+    Object? postBody = duplicateResolveDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Resolve duplicate groups
+  ///
+  /// Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.
+  ///
+  /// Parameters:
+  ///
+  /// * [DuplicateResolveDto] duplicateResolveDto (required):
+  Future<List<BulkIdResponseDto>?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto,) async {
+    final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
         .toList(growable: false);
 
     }

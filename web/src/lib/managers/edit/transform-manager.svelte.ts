@@ -1,11 +1,11 @@
+import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
+import { clamp } from 'lodash-es';
+import { tick } from 'svelte';
 import { type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
 import { normalizeTransformEdits } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
-import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
-import { clamp } from 'lodash-es';
-import { tick } from 'svelte';
 
 export type CropAspectRatio =
   | '1:1'
@@ -203,7 +203,7 @@ class TransformManager implements EditToolManager {
       passive: true,
     });
 
-    globalThis.addEventListener('mousemove', (e) => transformManager.handleMouseMove(e), { passive: true });
+    globalThis.addEventListener('mousemove', (e: MouseEvent) => transformManager.handleMouseMove(e), { passive: true });
 
     const transformEdits = edits.filter((e) => e.action === 'rotate' || e.action === 'mirror');
 

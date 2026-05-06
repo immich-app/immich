@@ -23,14 +23,14 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@05e16407c0a5492138bb38139c9d9bf067b40886 # create-workflow-token-action-v1.0.1
+        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@eed0f8b8165ffcb951f2ba854b2dd031935e1d73 # pre-job-action-v2.0.2
+        uses: immich-app/devtools/actions/pre-job@f50e3b600b6ac1763ddb8f3dfc69093512b967a1 # pre-job-action-v2.0.3
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -60,7 +60,7 @@ jobs:
         suffix: ['', '-cuda', '-rocm', '-openvino', '-armnn', '-rknn']
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -90,7 +90,7 @@ jobs:
         suffix: ['']
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -132,7 +132,7 @@ jobs:
             suffixes: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "pokedex-large"}'
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@bd49ed7a5a6022149f79b6564df48177476a822b # multi-runner-build-workflow-v2.2.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@61a0fc2b41524edcc7c9fffb8bb178e6b0ccf21d # multi-runner-build-workflow-v2.3.0
     permissions:
       contents: read
       actions: read
@@ -155,7 +155,7 @@ jobs:
     name: Build and Push Server
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@bd49ed7a5a6022149f79b6564df48177476a822b # multi-runner-build-workflow-v2.2.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@61a0fc2b41524edcc7c9fffb8bb178e6b0ccf21d # multi-runner-build-workflow-v2.3.0
     permissions:
       contents: read
       actions: read
@@ -178,7 +178,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
+      - uses: immich-app/devtools/actions/success-check@53bb77345ee9f953f93bd6fd9980f07a2f24965e # success-check-action-v0.0.5
         with:
           needs: ${{ toJSON(needs) }}
 
@@ -189,6 +189,6 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
+      - uses: immich-app/devtools/actions/success-check@53bb77345ee9f953f93bd6fd9980f07a2f24965e # success-check-action-v0.0.5
         with:
           needs: ${{ toJSON(needs) }}

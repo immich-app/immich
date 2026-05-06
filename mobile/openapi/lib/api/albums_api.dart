@@ -27,11 +27,7 @@ class AlbumsApi {
   /// * [String] id (required):
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
+  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
@@ -42,13 +38,6 @@ class AlbumsApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-    if (slug != null) {
-      queryParams.addAll(_queryParams('', 'slug', slug));
-    }
 
     const contentTypes = <String>['application/json'];
 
@@ -73,12 +62,8 @@ class AlbumsApi {
   /// * [String] id (required):
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
-    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, slug: slug, );
+  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto,) async {
+    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -104,11 +89,7 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
+  Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/assets';
 
@@ -118,13 +99,6 @@ class AlbumsApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-    if (slug != null) {
-      queryParams.addAll(_queryParams('', 'slug', slug));
-    }
 
     const contentTypes = <String>['application/json'];
 
@@ -147,12 +121,8 @@ class AlbumsApi {
   /// Parameters:
   ///
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
-    final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, slug: slug, );
+  Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto,) async {
+    final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -345,10 +315,7 @@ class AlbumsApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  ///
-  /// * [bool] withoutAssets:
-  ///   Exclude assets from response
-  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
+  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
       .replaceAll('{id}', id);
@@ -365,9 +332,6 @@ class AlbumsApi {
     }
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
-    }
-    if (withoutAssets != null) {
-      queryParams.addAll(_queryParams('', 'withoutAssets', withoutAssets));
     }
 
     const contentTypes = <String>[];
@@ -395,11 +359,8 @@ class AlbumsApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  ///
-  /// * [bool] withoutAssets:
-  ///   Exclude assets from response
-  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
-    final response = await getAlbumInfoWithHttpInfo(id,  key: key, slug: slug, withoutAssets: withoutAssets, );
+  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, String? slug, }) async {
+    final response = await getAlbumInfoWithHttpInfo(id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -409,6 +370,81 @@ class AlbumsApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
     
+    }
+    return null;
+  }
+
+  /// Retrieve album map markers
+  ///
+  /// Retrieve map marker information for a specific album by its ID.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> getAlbumMapMarkersWithHttpInfo(String id, { String? key, String? slug, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/map-markers'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve album map markers
+  ///
+  /// Retrieve map marker information for a specific album by its ID.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<List<MapMarkerResponseDto>?> getAlbumMapMarkers(String id, { String? key, String? slug, }) async {
+    final response = await getAlbumMapMarkersWithHttpInfo(id,  key: key, slug: slug, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MapMarkerResponseDto>') as List)
+        .cast<MapMarkerResponseDto>()
+        .toList(growable: false);
+
     }
     return null;
   }

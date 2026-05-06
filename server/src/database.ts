@@ -5,6 +5,7 @@ import {
   AssetFileType,
   AssetType,
   AssetVisibility,
+  ChecksumAlgorithm,
   MemoryType,
   Permission,
   PluginContext,
@@ -17,7 +18,7 @@ import {
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
 import type { ActionConfig, FilterConfig, JSONSchema } from 'src/types/plugin-schema.types';
@@ -103,7 +104,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: object;
+  data: Record<string, unknown>;
   ownerId: string;
   isSaved: boolean;
   assets: ShallowDehydrateObject<MapAsset>[];
@@ -112,8 +113,7 @@ export type Memory = {
 export type Asset = {
   id: string;
   checksum: Buffer<ArrayBufferLike>;
-  deviceAssetId: string;
-  deviceId: string;
+  checksumAlgorithm: ChecksumAlgorithm;
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
@@ -154,7 +154,6 @@ export type StorageAsset = {
   id: string;
   ownerId: string;
   files: AssetFile[];
-  encodedVideoPath: string | null;
 };
 
 export type Stack = {
@@ -170,6 +169,7 @@ export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;
   userId: string;
+  albumId: string | null;
   showExif: boolean;
   allowUpload: boolean;
   allowDownload: boolean;
@@ -195,7 +195,6 @@ export type SharedLink = {
 };
 
 export type Album = Selectable<AlbumTable> & {
-  owner: ShallowDehydrateObject<User>;
   assets: ShallowDehydrateObject<Selectable<AssetTable>>[];
 };
 
@@ -277,8 +276,6 @@ export type AssetFace = {
   isVisible: boolean;
 };
 
-export type Plugin = Selectable<PluginTable>;
-
 export type PluginFilter = Selectable<PluginFilterTable> & {
   methodName: string;
   title: string;
@@ -330,8 +327,7 @@ export const columns = {
   asset: [
     'asset.id',
     'asset.checksum',
-    'asset.deviceAssetId',
-    'asset.deviceId',
+    'asset.checksumAlgorithm',
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
     'asset.isExternal',
@@ -345,6 +341,7 @@ export const columns = {
     'asset.type',
     'asset.width',
     'asset.height',
+    'asset.isEdited',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.isEdited'],
   assetFilesForThumbnail: [
@@ -358,15 +355,6 @@ export const columns = {
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
-  authSharedLink: [
-    'shared_link.id',
-    'shared_link.userId',
-    'shared_link.expiresAt',
-    'shared_link.showExif',
-    'shared_link.allowUpload',
-    'shared_link.allowDownload',
-    'shared_link.password',
-  ],
   user: userColumns,
   userWithPrefix: userWithPrefixColumns,
   userAdmin: [

@@ -16,7 +16,6 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
   const now = new Date().toISOString();
   return {
     id: assetId,
-    deviceAssetId: `device-${assetId}`,
     ownerId,
     owner: {
       id: ownerId,
@@ -27,7 +26,6 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
       avatarColor: 'blue' as never,
     },
     libraryId: `library-${ownerId}`,
-    deviceId: `device-${ownerId}`,
     type: AssetTypeEnum.Image,
     originalPath: `/original/${assetId}.jpg`,
     originalFileName: `${assetId}.jpg`,
@@ -42,7 +40,7 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
     isArchived: false,
     isTrashed: false,
     visibility: AssetVisibility.Timeline,
-    duration: '0:00:00.00000',
+    duration: null,
     exifInfo: {
       make: null,
       model: null,
@@ -69,7 +67,7 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
     tags: [],
     people: [],
     unassignedFaces: [],
-    stack: null,
+    stack: undefined,
     isOffline: false,
     hasMetadata: true,
     duplicateId: null,
