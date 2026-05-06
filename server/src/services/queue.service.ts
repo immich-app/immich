@@ -243,6 +243,24 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
       }
 
+      case QueueName.NsfwDetection: {
+        const { machineLearning } = await this.getConfig({ withCache: false });
+        if (!isNsfwDetectionEnabled(machineLearning)) {
+          throw new BadRequestException(`NSFW detection is not enabled`);
+        }
+
+        return this.jobRepository.queue({ name: JobName.NsfwDetectionQueueAll, data: { force } });
+      }
+
+      case QueueName.ImageDescription: {
+        const { machineLearning } = await this.getConfig({ withCache: false });
+        if (!isImageDescriptionEnabled(machineLearning)) {
+          throw new BadRequestException(`Image descriptions and tags are not enabled`);
+        }
+
+        return this.jobRepository.queue({ name: JobName.ImageDescriptionQueueAll, data: { force } });
+      }
+
       case QueueName.ImageEnrichment: {
         const { machineLearning } = await this.getConfig({ withCache: false });
         const jobs: JobItem[] = [];

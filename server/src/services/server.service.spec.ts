@@ -142,6 +142,8 @@ describe(ServerService.name, () => {
         oauth: false,
         oauthAutoLaunch: false,
         ocr: true,
+        imageDescription: false,
+        nsfwDetection: false,
         passwordLogin: true,
         search: true,
         sidecar: true,

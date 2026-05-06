@@ -103,6 +103,8 @@ const SystemConfigJobSchema = z
     notifications: JobSettingsSchema,
     ocr: JobSettingsSchema,
     imageEnrichment: JobSettingsSchema,
+    imageDescription: JobSettingsSchema,
+    nsfwDetection: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
   })

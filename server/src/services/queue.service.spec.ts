@@ -23,7 +23,7 @@ describe(QueueService.name, () => {
     it('should update concurrency', () => {
       sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(19);
+      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(21);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FacialRecognition, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
@@ -76,6 +76,8 @@ describe(QueueService.name, () => {
         [QueueName.BackupDatabase]: expected,
         [QueueName.Ocr]: expected,
         [QueueName.ImageEnrichment]: expected,
+        [QueueName.ImageDescription]: expected,
+        [QueueName.NsfwDetection]: expected,
         [QueueName.Workflow]: expected,
         [QueueName.Editor]: expected,
       });
@@ -203,6 +205,43 @@ describe(QueueService.name, () => {
       await sut.runCommandLegacy(QueueName.BackupDatabase, { command: QueueCommand.Start, force: false });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.DatabaseBackup, data: { force: false } });
+    });
+
+    it('should handle a start NSFW detection command', async () => {
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { nsfwDetection: { enabled: true }, imageDescription: { enabled: false } },
+      });
+
+      await sut.runCommandLegacy(QueueName.NsfwDetection, { command: QueueCommand.Start, force: false });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.NsfwDetectionQueueAll, data: { force: false } });
+    });
+
+    it('should handle a start image description command', async () => {
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { nsfwDetection: { enabled: false }, imageDescription: { enabled: true } },
+      });
+
+      await sut.runCommandLegacy(QueueName.ImageDescription, { command: QueueCommand.Start, force: true });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.ImageDescriptionQueueAll, data: { force: true } });
+    });
+
+    it('should reject disabled image description queue starts', async () => {
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { nsfwDetection: { enabled: true }, imageDescription: { enabled: false } },
+      });
+
+      await expect(
+        sut.runCommandLegacy(QueueName.ImageDescription, { command: QueueCommand.Start, force: false }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should throw a bad request when an invalid queue is used', async () => {

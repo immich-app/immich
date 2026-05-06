@@ -76,7 +76,7 @@ graph TD
 
 ## Image Enrichment Jobs
 
-Image Enrichment is a shared queue for AI descriptions, tags, and NSFW detection. The `All` action schedules only the tasks that are enabled in `Administration > Settings > Machine Learning Settings`.
+Image enrichment has separate backfill queues for `NSFW Detection` and `Image descriptions and tags`. Each queue can be run independently from `Administration > Jobs`, so you can classify NSFW images first, review the results, and then backfill generated descriptions and tags without toggling settings.
 
 When both image descriptions and NSFW detection are enabled, newly uploaded images queue a description job after thumbnail generation. That job runs NSFW detection first when no stored NSFW result exists, then passes the result to the description model. If only NSFW detection is enabled, uploads queue the NSFW job directly.
 

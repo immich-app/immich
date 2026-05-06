@@ -22,6 +22,8 @@ import { mimeTypes } from 'src/utils/mime-types';
 import {
   isDuplicateDetectionEnabled,
   isFacialRecognitionEnabled,
+  isImageDescriptionEnabled,
+  isNsfwDetectionEnabled,
   isOcrEnabled,
   isSmartSearchEnabled,
 } from 'src/utils/misc';
@@ -106,6 +108,8 @@ export class ServerService extends BaseService {
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
       email: notifications.smtp.enabled,
+      imageDescription: isImageDescriptionEnabled(machineLearning),
+      nsfwDetection: isNsfwDetectionEnabled(machineLearning),
     };
   }
 

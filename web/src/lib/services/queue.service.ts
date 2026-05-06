@@ -25,8 +25,10 @@ import {
   mdiPlay,
   mdiPlus,
   mdiStateMachine,
+  mdiShieldSearch,
   mdiTable,
   mdiTagFaces,
+  mdiTextBoxSearchOutline,
   mdiTrashCanOutline,
   mdiTrayFull,
   mdiVideo,
@@ -211,6 +213,16 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       icon: mdiImageSearch,
       title: $t('admin.machine_learning_image_enrichment'),
       subtitle: $t('admin.image_enrichment_job_description'),
+    },
+    [QueueName.ImageDescription]: {
+      icon: mdiTextBoxSearchOutline,
+      title: $t('admin.machine_learning_image_description'),
+      subtitle: $t('admin.image_description_job_description'),
+    },
+    [QueueName.NsfwDetection]: {
+      icon: mdiShieldSearch,
+      title: $t('admin.machine_learning_nsfw_detection'),
+      subtitle: $t('admin.nsfw_detection_job_description'),
     },
     [QueueName.VideoConversion]: {
       icon: mdiVideo,

@@ -57,7 +57,7 @@ const normalizeTag = (tag: string) =>
 
 @Injectable()
 export class ImageEnrichmentService extends BaseService {
-  @OnJob({ name: JobName.ImageDescriptionQueueAll, queue: QueueName.ImageEnrichment })
+  @OnJob({ name: JobName.ImageDescriptionQueueAll, queue: QueueName.ImageDescription })
   async handleQueueImageDescription({ force }: JobOf<JobName.ImageDescriptionQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isImageDescriptionEnabled(machineLearning)) {
@@ -80,7 +80,7 @@ export class ImageEnrichmentService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.NsfwDetectionQueueAll, queue: QueueName.ImageEnrichment })
+  @OnJob({ name: JobName.NsfwDetectionQueueAll, queue: QueueName.NsfwDetection })
   async handleQueueNsfwDetection({ force }: JobOf<JobName.NsfwDetectionQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isNsfwDetectionEnabled(machineLearning)) {
@@ -103,7 +103,7 @@ export class ImageEnrichmentService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.NsfwDetection, queue: QueueName.ImageEnrichment })
+  @OnJob({ name: JobName.NsfwDetection, queue: QueueName.NsfwDetection })
   async handleNsfwDetection({ id }: JobOf<JobName.NsfwDetection>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isNsfwDetectionEnabled(machineLearning)) {
@@ -145,7 +145,7 @@ export class ImageEnrichmentService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.ImageDescription, queue: QueueName.ImageEnrichment })
+  @OnJob({ name: JobName.ImageDescription, queue: QueueName.ImageDescription })
   async handleImageDescription({ id }: JobOf<JobName.ImageDescription>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isImageDescriptionEnabled(machineLearning)) {

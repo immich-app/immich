@@ -75,6 +75,16 @@
       missingText: $t('missing'),
       disabled: !featureFlags.ocr,
     },
+    [QueueName.NsfwDetection]: {
+      allText: $t('all'),
+      missingText: $t('missing'),
+      disabled: !featureFlags.nsfwDetection,
+    },
+    [QueueName.ImageDescription]: {
+      allText: $t('all'),
+      missingText: $t('missing'),
+      disabled: !featureFlags.imageDescription,
+    },
     [QueueName.VideoConversion]: {
       allText: $t('all'),
       missingText: $t('missing'),

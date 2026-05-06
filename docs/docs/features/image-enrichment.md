@@ -8,9 +8,9 @@ Image enrichment processes image assets only. It skips deleted, hidden, and lock
 
 For an existing library, enable and backfill one task at a time:
 
-1. Enable `Detect NSFW images` first and run `Administration > Jobs > Image Enrichment > All`.
+1. Enable `Detect NSFW images` first and run `Administration > Jobs > NSFW Detection > All`.
 2. Review the generated `nsfw` tags and tune the threshold if needed.
-3. Enable `Generate AI descriptions and tags` and run the Image Enrichment job again.
+3. Enable `Generate AI descriptions and tags` and run `Administration > Jobs > Image descriptions and tags > All`.
 4. Enable `Hide detected NSFW assets` only after the classifier results look acceptable for your library.
 
 New uploads are queued automatically after thumbnail generation when the relevant setting is enabled.
@@ -42,7 +42,7 @@ Locked-folder behavior is session based. Unlocking the locked folder elevates th
 
 If both settings are enabled, Immich runs NSFW detection first and passes the result into the description and tag prompt. This allows the generated description and tags to remain factual while including visible NSFW reasons when they are supported.
 
-To process existing libraries, go to `Administration > Jobs` and run the `All` action for Image Enrichment. The job page queues only enabled enrichment tasks. If both tasks are enabled, the NSFW queue-all job and the description queue-all job are both scheduled; individual description jobs reuse a stored NSFW result or run NSFW detection first when one is missing.
+To process existing libraries, go to `Administration > Jobs` and run the `All` action for the specific enrichment task you want to backfill. Use `NSFW Detection` first if you want classifier results available before description/tag generation, then run `Image descriptions and tags`. The legacy `Image Enrichment` queue command still queues every enabled enrichment task for API compatibility, but the admin Jobs page exposes the two backfills separately.
 
 Backfills skip images that already have a successful result for the selected task unless the job is forced. A forced run recalculates the selected task, but visible descriptions and tags are still protected by stored applied hashes so generated metadata is not appended repeatedly.
 

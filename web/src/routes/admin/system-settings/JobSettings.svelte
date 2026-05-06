@@ -24,7 +24,8 @@
     QueueName.StorageTemplateMigration,
     QueueName.Migration,
     QueueName.Ocr,
-    QueueName.ImageEnrichment,
+    QueueName.NsfwDetection,
+    QueueName.ImageDescription,
   ];
 
   function isSystemConfigJobDto(jobName: string): jobName is keyof SystemConfigJobDto {
@@ -49,6 +50,8 @@
     [QueueName.BackupDatabase]: $t('admin.backup_database'),
     [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
     [QueueName.ImageEnrichment]: $t('admin.machine_learning_image_enrichment'),
+    [QueueName.ImageDescription]: $t('admin.machine_learning_image_description'),
+    [QueueName.NsfwDetection]: $t('admin.machine_learning_nsfw_detection'),
     [QueueName.Workflow]: $t('workflows'),
     [QueueName.Editor]: $t('editor'),
   });

@@ -20406,6 +20406,8 @@
           "backupDatabase",
           "ocr",
           "imageEnrichment",
+          "imageDescription",
+          "nsfwDetection",
           "workflow",
           "editor"
         ],
@@ -20541,6 +20543,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "imageDescription": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "imageEnrichment": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -20554,6 +20559,9 @@
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "notifications": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
+          "nsfwDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
           "ocr": {
@@ -20588,11 +20596,13 @@
           "editor",
           "faceDetection",
           "facialRecognition",
+          "imageDescription",
           "imageEnrichment",
           "library",
           "metadataExtraction",
           "migration",
           "notifications",
+          "nsfwDetection",
           "ocr",
           "search",
           "sidecar",
@@ -21268,12 +21278,20 @@
             "description": "Whether facial recognition is enabled",
             "type": "boolean"
           },
+          "imageDescription": {
+            "description": "Whether image description and tag generation is enabled",
+            "type": "boolean"
+          },
           "importFaces": {
             "description": "Whether face import is enabled",
             "type": "boolean"
           },
           "map": {
             "description": "Whether map feature is enabled",
+            "type": "boolean"
+          },
+          "nsfwDetection": {
+            "description": "Whether NSFW detection is enabled",
             "type": "boolean"
           },
           "oauth": {
@@ -21318,8 +21336,10 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "imageDescription",
           "importFaces",
           "map",
+          "nsfwDetection",
           "oauth",
           "oauthAutoLaunch",
           "ocr",
@@ -24335,6 +24355,9 @@
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "imageDescription": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "imageEnrichment": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -24348,6 +24371,9 @@
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "notifications": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "nsfwDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "ocr": {
@@ -24376,11 +24402,13 @@
           "backgroundTask",
           "editor",
           "faceDetection",
+          "imageDescription",
           "imageEnrichment",
           "library",
           "metadataExtraction",
           "migration",
           "notifications",
+          "nsfwDetection",
           "ocr",
           "search",
           "sidecar",

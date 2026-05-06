@@ -767,6 +767,8 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   ImageEnrichment = 'imageEnrichment',
+  ImageDescription = 'imageDescription',
+  NsfwDetection = 'nsfwDetection',
   Workflow = 'workflow',
   Editor = 'editor',
 }
