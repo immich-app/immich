@@ -26,7 +26,9 @@
   };
 
   let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
-  let recents = $derived(getFieldItems(data.items, 'createdAt'));
+  let recents = $derived(
+    getFieldItems(data.items, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
+  );
   let people = $state(data.response.people);
 
   let hasPeople = $derived(data.response.total > 0);

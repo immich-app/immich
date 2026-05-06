@@ -41,7 +41,7 @@ class TimeBucketAssetResponseDto {
   List<String?> country;
 
   /// Array of UTC timestamps when each asset was originally uploaded to Immich
-  List<DateTime> createdAt;
+  List<String> createdAt;
 
   /// Array of video/gif durations in milliseconds (null for static images)
   List<int?> duration;
@@ -178,7 +178,9 @@ class TimeBucketAssetResponseDto {
         country: json[r'country'] is Iterable
             ? (json[r'country'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        createdAt: DateTime.listFromJson(json[r'createdAt']),
+        createdAt: json[r'createdAt'] is Iterable
+            ? (json[r'createdAt'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         duration: json[r'duration'] is Iterable
             ? (json[r'duration'] as Iterable).cast<int>().toList(growable: false)
             : const [],

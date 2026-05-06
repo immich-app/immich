@@ -86,7 +86,7 @@ const TimeBucketAssetResponseSchema = z
       .array(z.string().nullable())
       .describe('Array of BlurHash strings for generating asset previews (base64 encoded)'),
     createdAt: z
-      .array(z.string().meta({ format: 'date-time' }))
+      .array(z.string())
       .describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
     fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
     localOffsetHours: z

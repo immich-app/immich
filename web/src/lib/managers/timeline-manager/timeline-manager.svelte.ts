@@ -1,4 +1,4 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBuckets, OrderingDate, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -394,7 +394,10 @@ export class TimelineManager extends VirtualScrollManager {
       return;
     }
 
-    timelineMonth = await this.#loadTimelineMonthAtTime(timelineAsset.localDateTime, { cancelable: false });
+    timelineMonth = await this.#loadTimelineMonthAtTime(
+      this.#options.orderingDate == OrderingDate.Created ? timelineAsset.createdAt : timelineAsset.localDateTime,
+      { cancelable: false },
+    );
     if (timelineMonth?.findAssetById({ id })) {
       return timelineMonth;
     }
@@ -463,10 +466,11 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertSegmentForAsset(asset: TimelineAsset) {
-    let month = getTimelineMonthByDate(this, asset.localDateTime);
+    const dateTime = this.#options.orderingDate == OrderingDate.Created ? asset.createdAt : asset.localDateTime;
+    let month = getTimelineMonthByDate(this, dateTime);
 
     if (!month) {
-      month = new TimelineMonth(this, asset.localDateTime, 1, true, this.#options.order, this.#options.orderingDate);
+      month = new TimelineMonth(this, dateTime, 1, true, this.#options.order, this.#options.orderingDate);
       this.months.push(month);
     }
     return month;

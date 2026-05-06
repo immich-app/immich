@@ -25164,7 +25164,6 @@
           "createdAt": {
             "description": "Array of UTC timestamps when each asset was originally uploaded to Immich",
             "items": {
-              "format": "date-time",
               "type": "string"
             },
             "type": "array"

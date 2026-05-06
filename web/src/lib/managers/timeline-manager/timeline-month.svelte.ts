@@ -189,7 +189,7 @@ export class TimelineMonth {
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
-        createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]),
+        createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).setZone('local'),
         fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
@@ -248,7 +248,7 @@ export class TimelineMonth {
       addContext.setTimelineDay(timelineDay, dateTime);
     } else {
       const groupTitle = formatGroupTitle(fromTimelinePlainDate(dateTime));
-      timelineDay = new TimelineDay(this, this.timelineDays.length, dateTime.day, groupTitle);
+      timelineDay = new TimelineDay(this, this.timelineDays.length, dateTime.day, groupTitle, this.#orderingDate);
       this.timelineDays.push(timelineDay);
       addContext.setTimelineDay(timelineDay, dateTime);
       addContext.newTimelineDays.add(timelineDay);
@@ -378,7 +378,9 @@ export class TimelineMonth {
     let closest = undefined;
     let smallestDiff = Infinity;
     for (const current of this.assetsIterator()) {
-      const currentAssetDate = fromTimelinePlainDateTime(current.localDateTime);
+      const currentAssetDate = fromTimelinePlainDateTime(
+        this.#orderingDate == OrderingDate.Created ? current.createdAt : current.localDateTime,
+      );
       const diff = Math.abs(targetDate.diff(currentAssetDate).as('milliseconds'));
       if (diff < smallestDiff) {
         smallestDiff = diff;

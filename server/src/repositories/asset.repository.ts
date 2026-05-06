@@ -863,7 +863,12 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
+          .orderBy(
+            options.orderingDate == OrderingDate.Created
+              ? sql`"createdAt"`
+              : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
+            order,
+          )
           .orderBy('asset.fileCreatedAt', order),
       )
       .with('agg', (qb) =>
@@ -941,7 +946,7 @@ export class AssetRepository {
       .where('asset.visibility', '=', AssetVisibility.Timeline)
       .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
-      .orderBy('asset.createdAt', 'desc')
+      .orderBy('value', 'desc')
       .limit(maxAssets)
       .execute();
 

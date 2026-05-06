@@ -499,7 +499,7 @@ where
   and "type" = $3
   and "deletedAt" is null
 order by
-  "asset"."createdAt" desc
+  "value" desc
 limit
   $4
 
