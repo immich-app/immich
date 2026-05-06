@@ -107,7 +107,7 @@ export class ClassificationService extends BaseService {
 
   @OnJob({ name: JobName.AssetClassifyQueueAll, queue: QueueName.Classification })
   async handleClassifyQueueAll({ force }: JobOf<JobName.AssetClassifyQueueAll>): Promise<JobStatus> {
-    const { classification, machineLearning } = await this.getConfig({ withCache: true });
+    const { classification } = await this.getConfig({ withCache: true });
 
     if (!classification.enabled) {
       return JobStatus.Skipped;
@@ -115,15 +115,6 @@ export class ClassificationService extends BaseService {
 
     if (force) {
       await this.classificationRepository.resetClassifiedAt();
-    }
-
-    const faceAwareCategories = classification.categories.filter(
-      (category) => category.enabled && this.isFaceAwareCategory(category),
-    );
-
-    if (force && faceAwareCategories.length > 0 && isFacialRecognitionEnabled(machineLearning)) {
-      await this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force: true } });
-      await this.jobRepository.queue({ name: JobName.FacialRecognitionQueueAll, data: { force: true } });
     }
 
     const stream = this.classificationRepository.streamUnclassifiedAssets();

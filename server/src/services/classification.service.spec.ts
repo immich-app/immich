@@ -4,15 +4,17 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+type ClassificationCategoryConfig = {
+  name: string;
+  prompts: string[];
+  similarity: number;
+  action: string;
+  enabled?: boolean;
+  faceExclusion?: 'off' | 'any_assigned_face' | 'named_people' | 'named_visible_people';
+};
+
 const makeClassificationConfig = (
-  categories: Array<{
-    name: string;
-    prompts: string[];
-    similarity: number;
-    action: string;
-    enabled?: boolean;
-    faceExclusion?: 'off' | 'any_assigned_face' | 'named_people' | 'named_visible_people';
-  }> = [],
+  categories: ClassificationCategoryConfig[] = [],
   enabled = true,
   facialRecognitionEnabled = true,
 ) => ({
@@ -26,6 +28,22 @@ const makeClassificationConfig = (
     facialRecognition: { enabled: facialRecognitionEnabled },
   },
 });
+
+const expectNoQueuedJob = (mocks: ServiceMocks, name: JobName) => {
+  expect(mocks.job.queue).not.toHaveBeenCalledWith({
+    name,
+    data: expect.anything(),
+  });
+};
+
+const expectQueuedAssetClassify = (mocks: ServiceMocks, assetId: string) => {
+  expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetClassify, data: { id: assetId } }]);
+};
+
+const expectNoFacePrerequisiteQueues = (mocks: ServiceMocks) => {
+  expectNoQueuedJob(mocks, JobName.AssetDetectFacesQueueAll);
+  expectNoQueuedJob(mocks, JobName.FacialRecognitionQueueAll);
+};
 
 describe(ClassificationService.name, () => {
   let sut: ClassificationService;
@@ -749,6 +767,26 @@ describe(ClassificationService.name, () => {
   });
 
   describe('handleClassifyQueueAll', () => {
+    const queueAsset = { id: 'asset-1', ownerId: 'user-1' };
+    const peopleCategory: ClassificationCategoryConfig = {
+      name: 'People',
+      prompts: ['a portrait'],
+      similarity: 0.8,
+      action: 'tag',
+      faceExclusion: 'named_people',
+    };
+
+    const setupQueueAll = (
+      categories: ClassificationCategoryConfig[] = [],
+      enabled = true,
+      facialRecognitionEnabled = true,
+    ) => {
+      mocks.classification.streamUnclassifiedAssets.mockReturnValue(makeStream([queueAsset]));
+      sut['getConfig'] = vi
+        .fn()
+        .mockResolvedValue(makeClassificationConfig(categories, enabled, facialRecognitionEnabled));
+    };
+
     it('should stream unclassified assets and queue jobs in batches', async () => {
       const assets = [
         { id: 'a1', ownerId: 'user-1' },
@@ -805,62 +843,68 @@ describe(ClassificationService.name, () => {
       expect(mocks.classification.streamUnclassifiedAssets).not.toHaveBeenCalled();
     });
 
-    it('should queue face work before forced classification when enabled categories are face-aware', async () => {
-      mocks.classification.streamUnclassifiedAssets.mockReturnValue(makeStream([{ id: 'asset-1', ownerId: 'user-1' }]));
-      sut['getConfig'] = vi.fn().mockResolvedValue(
-        makeClassificationConfig([
-          {
-            name: 'People',
-            prompts: ['a portrait'],
-            similarity: 0.8,
-            action: 'tag',
-            faceExclusion: 'named_people',
-          },
-        ]),
-      );
+    it('should not queue face prerequisites before forced classification when enabled categories are face-aware', async () => {
+      setupQueueAll([peopleCategory]);
 
       await sut.handleClassifyQueueAll({ force: true });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.AssetDetectFacesQueueAll,
-        data: { force: true },
-      });
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.FacialRecognitionQueueAll,
-        data: { force: true },
-      });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetClassify, data: { id: 'asset-1' } }]);
+      expectNoFacePrerequisiteQueues(mocks);
+      expectQueuedAssetClassify(mocks, queueAsset.id);
+    });
+
+    it('should not queue face work when forced classification has no enabled face-aware categories', async () => {
+      setupQueueAll([
+        {
+          name: 'Screenshots',
+          prompts: ['screenshot'],
+          similarity: 0.8,
+          action: 'tag',
+          faceExclusion: 'off',
+        },
+        { ...peopleCategory, name: 'DisabledPeopleRule', enabled: false },
+      ]);
+
+      await sut.handleClassifyQueueAll({ force: true });
+
+      expectNoFacePrerequisiteQueues(mocks);
+      expectQueuedAssetClassify(mocks, queueAsset.id);
+    });
+
+    it('should not queue face prerequisites for non-forced classification scans', async () => {
+      setupQueueAll([peopleCategory]);
+
+      await sut.handleClassifyQueueAll({ force: false });
+
+      expect(mocks.classification.resetClassifiedAt).not.toHaveBeenCalled();
+      expectNoFacePrerequisiteQueues(mocks);
+      expectQueuedAssetClassify(mocks, queueAsset.id);
     });
 
     it('should not queue face work before forced classification when facial recognition is disabled', async () => {
-      mocks.classification.streamUnclassifiedAssets.mockReturnValue(makeStream([{ id: 'asset-1', ownerId: 'user-1' }]));
-      sut['getConfig'] = vi.fn().mockResolvedValue(
-        makeClassificationConfig(
-          [
-            {
-              name: 'People',
-              prompts: ['a portrait'],
-              similarity: 0.8,
-              action: 'tag',
-              faceExclusion: 'named_people',
-            },
-          ],
-          true,
-          false,
-        ),
-      );
+      setupQueueAll([peopleCategory], true, false);
 
       await sut.handleClassifyQueueAll({ force: true });
 
-      expect(mocks.job.queue).not.toHaveBeenCalledWith({
-        name: JobName.AssetDetectFacesQueueAll,
-        data: { force: true },
-      });
-      expect(mocks.job.queue).not.toHaveBeenCalledWith({
-        name: JobName.FacialRecognitionQueueAll,
-        data: { force: true },
-      });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetClassify, data: { id: 'asset-1' } }]);
+      expectNoFacePrerequisiteQueues(mocks);
+      expectQueuedAssetClassify(mocks, queueAsset.id);
+    });
+
+    it('should not queue face prerequisites when multiple enabled categories are face-aware', async () => {
+      setupQueueAll([
+        peopleCategory,
+        {
+          name: 'AssignedFaces',
+          prompts: ['person'],
+          similarity: 0.8,
+          action: 'tag',
+          faceExclusion: 'any_assigned_face',
+        },
+      ]);
+
+      await sut.handleClassifyQueueAll({ force: true });
+
+      expectNoFacePrerequisiteQueues(mocks);
+      expectQueuedAssetClassify(mocks, queueAsset.id);
     });
   });
 
