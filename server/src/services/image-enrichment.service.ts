@@ -3,7 +3,7 @@ import { Insertable } from 'kysely';
 import { createHash } from 'node:crypto';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import { AssetMetadataKey, AssetType, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import {
   ImageDescriptionResult,
   NsfwDetectionOptions,
@@ -246,12 +246,16 @@ export class ImageEnrichmentService extends BaseService {
     asset:
       | {
           type: AssetType;
+          status: AssetStatus;
+          deletedAt: Date | null;
           visibility: AssetVisibility;
         }
       | undefined,
   ) {
     return (
       asset?.type === AssetType.Image &&
+      asset.status === AssetStatus.Active &&
+      asset.deletedAt === null &&
       (asset.visibility === AssetVisibility.Timeline || asset.visibility === AssetVisibility.Archive)
     );
   }

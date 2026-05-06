@@ -257,6 +257,8 @@ export class AssetJobRepository {
         'asset.id',
         'asset.ownerId',
         'asset.type',
+        'asset.status',
+        'asset.deletedAt',
         'asset.visibility',
         'asset_exif.description',
         withFilePath(eb, AssetFileType.Preview).as('previewFile'),

@@ -73,3 +73,11 @@ graph TD
     E --> I[Duplicate Detection]
     F --> J[Facial Recognition]
 ```
+
+## Image Enrichment Jobs
+
+Image Enrichment is a shared queue for AI descriptions, tags, and NSFW detection. The `All` action schedules only the tasks that are enabled in `Administration > Settings > Machine Learning Settings`.
+
+When both image descriptions and NSFW detection are enabled, newly uploaded images queue a description job after thumbnail generation. That job runs NSFW detection first when no stored NSFW result exists, then passes the result to the description model. If only NSFW detection is enabled, uploads queue the NSFW job directly.
+
+Backfill jobs process image assets with generated previews and skip deleted, hidden, and locked assets. A normal backfill skips assets that already have a successful private result for that task. A forced backfill recalculates results, but generated descriptions and tags are still applied idempotently to avoid duplicate `AI description:` blocks or repeated tags.

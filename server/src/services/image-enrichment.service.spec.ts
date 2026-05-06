@@ -1,4 +1,4 @@
-import { AssetMetadataKey, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
+import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { ImageEnrichmentService } from 'src/services/image-enrichment.service';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -18,6 +18,8 @@ describe(ImageEnrichmentService.name, () => {
       id: assetId,
       ownerId,
       type: AssetType.Image,
+      status: AssetStatus.Active,
+      deletedAt: null,
       visibility: AssetVisibility.Timeline,
       description: '',
       previewFile,
@@ -68,6 +70,8 @@ describe(ImageEnrichmentService.name, () => {
       id: assetId,
       ownerId,
       type: AssetType.Image,
+      status: AssetStatus.Active,
+      deletedAt: null,
       visibility: AssetVisibility.Timeline,
       description: 'User note',
       previewFile,
@@ -108,5 +112,51 @@ describe(ImageEnrichmentService.name, () => {
     expect(mocks.tag.upsertValue).toHaveBeenCalledWith(expect.objectContaining({ userId: ownerId, value: 'beach' }));
     expect(mocks.tag.upsertValue).toHaveBeenCalledWith(expect.objectContaining({ userId: ownerId, value: 'nsfw' }));
     expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SidecarWrite, data: { id: assetId } });
+  });
+
+  it.each([
+    ['trashed', AssetStatus.Trashed, new Date()] as const,
+    ['deleted', AssetStatus.Deleted, new Date()] as const,
+  ])('should skip %s assets for single image enrichment jobs', async (_label, status, deletedAt) => {
+    mocks.systemMetadata.get.mockResolvedValue({
+      machineLearning: { nsfwDetection: { enabled: true }, imageDescription: { enabled: true } },
+    });
+    mocks.assetJob.getForImageEnrichment.mockResolvedValue({
+      id: assetId,
+      ownerId,
+      type: AssetType.Image,
+      status,
+      deletedAt,
+      visibility: AssetVisibility.Timeline,
+      description: '',
+      previewFile,
+    });
+
+    await expect(sut.handleImageDescription({ id: assetId })).resolves.toBe(JobStatus.Skipped);
+
+    expect(mocks.machineLearning.detectNsfw).not.toHaveBeenCalled();
+    expect(mocks.machineLearning.describeImage).not.toHaveBeenCalled();
+    expect(mocks.asset.upsertMetadata).not.toHaveBeenCalled();
+  });
+
+  it('should skip locked assets for single image enrichment jobs', async () => {
+    mocks.systemMetadata.get.mockResolvedValue({
+      machineLearning: { nsfwDetection: { enabled: true }, imageDescription: { enabled: true } },
+    });
+    mocks.assetJob.getForImageEnrichment.mockResolvedValue({
+      id: assetId,
+      ownerId,
+      type: AssetType.Image,
+      status: AssetStatus.Active,
+      deletedAt: null,
+      visibility: AssetVisibility.Locked,
+      description: '',
+      previewFile,
+    });
+
+    await expect(sut.handleNsfwDetection({ id: assetId })).resolves.toBe(JobStatus.Skipped);
+
+    expect(mocks.machineLearning.detectNsfw).not.toHaveBeenCalled();
+    expect(mocks.asset.upsertMetadata).not.toHaveBeenCalled();
   });
 });
