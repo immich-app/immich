@@ -49,7 +49,10 @@ export class AssetMediaService extends BaseService {
       return;
     }
 
-    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
+    const duplicateOptions = this.getDuplicateCheckOptions(auth);
+    const assetId = duplicateOptions
+      ? await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum), duplicateOptions)
+      : await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
     if (!assetId) {
       return;
     }
@@ -251,7 +254,10 @@ export class AssetMediaService extends BaseService {
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
-    const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
+    const duplicateOptions = this.getDuplicateCheckOptions(auth);
+    const results = duplicateOptions
+      ? await this.assetRepository.getByChecksums(auth.user.id, checksums, duplicateOptions)
+      : await this.assetRepository.getByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};
 
     for (const { id, deletedAt, checksum } of results) {
@@ -299,8 +305,16 @@ export class AssetMediaService extends BaseService {
 
     // handle duplicates with a success response
     if (isAssetChecksumConstraint(error)) {
-      const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
+      const duplicateOptions = this.getDuplicateCheckOptions(auth);
+      const duplicateId = duplicateOptions
+        ? await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum, duplicateOptions)
+        : await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
       if (!duplicateId) {
+        if (auth.hideNsfwAssets) {
+          this.logger.debug('Duplicate asset upload rejected while existing asset is hidden by NSFW privacy mode');
+          throw new BadRequestException('Asset upload failed');
+        }
+
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
@@ -315,6 +329,10 @@ export class AssetMediaService extends BaseService {
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
     throw error;
+  }
+
+  private getDuplicateCheckOptions(auth: AuthDto) {
+    return auth.hideNsfwAssets ? ({ excludeNsfw: true } as const) : undefined;
   }
 
   private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {

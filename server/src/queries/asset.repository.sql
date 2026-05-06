@@ -326,6 +326,27 @@ from
 where
   "ownerId" = $1::uuid
   and "checksum" in ($2)
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 
 -- AssetRepository.getUploadAssetIdByChecksum
 select
@@ -336,8 +357,29 @@ where
   "ownerId" = $1::uuid
   and "checksum" = $2
   and "libraryId" is null
+  and not exists (
+    select
+      1
+    from
+      asset_metadata
+    where
+      asset_metadata."assetId" = "asset"."id"
+      and asset_metadata.key = $3
+      and coalesce(
+        (
+          asset_metadata.value #>> '{nsfwDetection,review,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,isNsfw}'
+        )::boolean,
+        (
+          asset_metadata.value #>> '{nsfwDetection,result,nsfw}'
+        )::boolean,
+        false
+      ) = true
+  )
 limit
-  $3
+  $4
 
 -- AssetRepository.getTimeBuckets
 with

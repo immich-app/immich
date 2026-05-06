@@ -65,6 +65,10 @@ interface AssetStatsOptions {
   visibility?: AssetVisibility;
 }
 
+interface AssetChecksumOptions {
+  excludeNsfw?: boolean;
+}
+
 interface LivePhotoSearchOptions {
   ownerId: string;
   libraryId?: string | null;
@@ -656,24 +660,30 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.BUFFER]] })
-  getByChecksums(userId: string, checksums: Buffer[]) {
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.BUFFER], { excludeNsfw: true }] })
+  getByChecksums(userId: string, checksums: Buffer[], options: AssetChecksumOptions = {}) {
     return this.db
       .selectFrom('asset')
       .select(['id', 'checksum', 'deletedAt'])
       .where('ownerId', '=', asUuid(userId))
       .where('checksum', 'in', checksums)
+      .$if(!!options.excludeNsfw, withoutNsfwAssets)
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER, { excludeNsfw: true }] })
+  async getUploadAssetIdByChecksum(
+    ownerId: string,
+    checksum: Buffer,
+    options: AssetChecksumOptions = {},
+  ): Promise<string | undefined> {
     const asset = await this.db
       .selectFrom('asset')
       .select('id')
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .where('libraryId', 'is', null)
+      .$if(!!options.excludeNsfw, withoutNsfwAssets)
       .limit(1)
       .executeTakeFirst();
 

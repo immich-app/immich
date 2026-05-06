@@ -204,6 +204,14 @@ describe(AssetMediaService.name, () => {
       });
       expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
     });
+
+    it('should hide duplicate checksum ids in hidden NSFW mode', async () => {
+      const auth = { ...authStub.admin, hideNsfwAssets: true };
+
+      await expect(sut.getUploadAssetIdByChecksum(auth, file1.toString('hex'))).resolves.toBeUndefined();
+
+      expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(auth.user.id, file1, { excludeNsfw: true });
+    });
   });
 
   describe('canUpload', () => {
@@ -392,6 +400,34 @@ describe(AssetMediaService.name, () => {
         InternalServerErrorException,
       );
 
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['fake_path/asset_1.jpeg', undefined] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should not disclose a hidden NSFW duplicate id if upload hits the checksum constraint', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
+
+      mocks.asset.create.mockRejectedValue(error);
+
+      await expect(
+        sut.uploadAsset({ ...authStub.user1, hideNsfwAssets: true }, createDto, file),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.user1.user.id, file.checksum, {
+        excludeNsfw: true,
+      });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
@@ -830,6 +866,43 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
+    });
+
+    it('should hide duplicate checksum matches in hidden NSFW mode', async () => {
+      const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+      const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
+
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null }]);
+
+      await expect(
+        sut.bulkUploadCheck(
+          { ...authStub.admin, hideNsfwAssets: true },
+          {
+            assets: [
+              { id: '1', checksum: file1.toString('hex') },
+              { id: '2', checksum: file2.toString('base64') },
+            ],
+          },
+        ),
+      ).resolves.toEqual({
+        results: [
+          {
+            id: '1',
+            assetId: 'asset-1',
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+            isTrashed: false,
+          },
+          {
+            id: '2',
+            action: AssetUploadAction.ACCEPT,
+          },
+        ],
+      });
+
+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2], {
+        excludeNsfw: true,
+      });
     });
   });
 
