@@ -34,13 +34,17 @@ jobs:
               - 'web/**'
               - 'i18n/**'
               - 'open-api/typescript-sdk/**'
+              - 'pnpm-lock.yaml'
             server:
               - 'server/**'
+              - 'pnpm-lock.yaml'
             cli:
               - 'cli/**'
               - 'open-api/typescript-sdk/**'
+              - 'pnpm-lock.yaml'
             e2e:
               - 'e2e/**'
+              - 'pnpm-lock.yaml'
             mobile:
               - 'mobile/**'
             machine-learning:
