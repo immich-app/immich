@@ -1,5 +1,6 @@
 import { AssetController } from 'src/controllers/asset.controller';
-import { AssetMetadataKey } from 'src/enum';
+import { AssetImageEnrichmentAction } from 'src/dtos/asset.dto';
+import { AssetMetadataKey, Permission } from 'src/enum';
 import { AssetService } from 'src/services/asset.service';
 import { ImageEnrichmentService } from 'src/services/image-enrichment.service';
 import request from 'supertest';
@@ -101,10 +102,83 @@ describe(AssetController.name, () => {
       expect(ctx.authenticate).toHaveBeenCalled();
     });
 
+    it('should require asset update permission', async () => {
+      await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/image-enrichment`);
+
+      expect(ctx.authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({ permission: Permission.AssetUpdate, sharedLinkRoute: false }),
+        }),
+      );
+    });
+
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123/image-enrichment`);
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
+    });
+
+    it('should return image enrichment metadata', async () => {
+      const id = factory.uuid();
+      imageEnrichmentService.getAssetEnrichment.mockResolvedValue({
+        assetId: id,
+        description: {
+          status: 'success',
+          modelName: 'Qwen/Qwen2.5-VL-3B-Instruct',
+          updatedAt: '2026-05-05T00:00:00.000Z',
+          description: 'A person standing near a lake.',
+          people: [{ count: 1, apparent_age_group: 'adult', activity: 'standing', confidence: 'high' }],
+          environment: 'lake',
+          objects: ['water'],
+          visibleText: [],
+          context: 'outdoor photo',
+          tags: ['lake', 'person'],
+          appliedDescription: true,
+          appliedTags: true,
+        },
+        nsfwDetection: {
+          status: 'success',
+          modelName: 'onnx-community/nsfw_image_detection-ONNX',
+          updatedAt: '2026-05-05T00:00:00.000Z',
+          isNsfw: false,
+          effectiveIsNsfw: false,
+          score: 0.02,
+          labels: { normal: 0.98 },
+          appliedTags: false,
+        },
+      });
+
+      const { status, body } = await request(ctx.getHttpServer()).get(`/assets/${id}/image-enrichment`);
+
+      expect(status).toBe(200);
+      expect(imageEnrichmentService.getAssetEnrichment).toHaveBeenCalledWith(undefined, id);
+      expect(body).toEqual({
+        assetId: id,
+        description: {
+          status: 'success',
+          modelName: 'Qwen/Qwen2.5-VL-3B-Instruct',
+          updatedAt: '2026-05-05T00:00:00.000Z',
+          description: 'A person standing near a lake.',
+          people: [{ count: 1, apparent_age_group: 'adult', activity: 'standing', confidence: 'high' }],
+          environment: 'lake',
+          objects: ['water'],
+          visibleText: [],
+          context: 'outdoor photo',
+          tags: ['lake', 'person'],
+          appliedDescription: true,
+          appliedTags: true,
+        },
+        nsfwDetection: {
+          status: 'success',
+          modelName: 'onnx-community/nsfw_image_detection-ONNX',
+          updatedAt: '2026-05-05T00:00:00.000Z',
+          isNsfw: false,
+          effectiveIsNsfw: false,
+          score: 0.02,
+          labels: { normal: 0.98 },
+          appliedTags: false,
+        },
+      });
     });
   });
 
@@ -114,6 +188,18 @@ describe(AssetController.name, () => {
         .put(`/assets/${factory.uuid()}/image-enrichment`)
         .send({ action: 'rerun-image-description' });
       expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require asset update permission', async () => {
+      await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/image-enrichment`)
+        .send({ action: AssetImageEnrichmentAction.RerunImageDescription });
+
+      expect(ctx.authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({ permission: Permission.AssetUpdate, sharedLinkRoute: false }),
+        }),
+      );
     });
 
     it('should require a valid action', async () => {
@@ -131,6 +217,27 @@ describe(AssetController.name, () => {
           },
         ]),
       );
+    });
+
+    it.each(Object.values(AssetImageEnrichmentAction))('should accept the %s action', async (action) => {
+      const id = factory.uuid();
+      imageEnrichmentService.updateAssetEnrichment.mockResolvedValue({
+        assetId: id,
+        description: { status: 'missing', appliedDescription: false, appliedTags: false },
+        nsfwDetection: { status: 'missing', effectiveIsNsfw: false, appliedTags: false },
+      });
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/${id}/image-enrichment`)
+        .send({ action });
+
+      expect(status).toBe(200);
+      expect(imageEnrichmentService.updateAssetEnrichment).toHaveBeenCalledWith(undefined, id, { action });
+      expect(body).toEqual({
+        assetId: id,
+        description: { status: 'missing', appliedDescription: false, appliedTags: false },
+        nsfwDetection: { status: 'missing', effectiveIsNsfw: false, appliedTags: false },
+      });
     });
   });
 
