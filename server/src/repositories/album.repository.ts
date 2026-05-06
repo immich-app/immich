@@ -208,7 +208,7 @@ export class AlbumRepository {
       );
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, {}] })
+  @GenerateSql({ params: [DummyValue.UUID, { isOwned: true, isShared: true }] })
   getAll(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<MapAlbumDto[]> {
     return this.buildAlbumBaseQuery(ownerId, options)
       .selectAll('album')
@@ -218,7 +218,7 @@ export class AlbumRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, {}] })
+  @GenerateSql({ params: [DummyValue.UUID, { isOwned: true, isShared: true }] })
   async getAllIds(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<string[]> {
     const rows = await this.buildAlbumBaseQuery(ownerId, options)
       .select('album.id')

@@ -244,6 +244,24 @@ from
   and "album_user"."userId" = $2
 where
   "album"."deletedAt" is null
+  and "album_user"."role" = 'owner'
+  and (
+    exists (
+      select
+      from
+        "album_user" as "au"
+      where
+        "au"."albumId" = "album"."id"
+        and "au"."role" != 'owner'
+    )
+    or exists (
+      select
+      from
+        "shared_link"
+      where
+        "shared_link"."albumId" = "album"."id"
+    )
+  )
 order by
   "album"."createdAt" desc
 
@@ -256,6 +274,24 @@ from
   and "album_user"."userId" = $1
 where
   "album"."deletedAt" is null
+  and "album_user"."role" = 'owner'
+  and (
+    exists (
+      select
+      from
+        "album_user" as "au"
+      where
+        "au"."albumId" = "album"."id"
+        and "au"."role" != 'owner'
+    )
+    or exists (
+      select
+      from
+        "shared_link"
+      where
+        "shared_link"."albumId" = "album"."id"
+    )
+  )
 order by
   "album"."createdAt" desc
 
