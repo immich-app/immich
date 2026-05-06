@@ -9,7 +9,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -26,7 +25,6 @@ class LocalSyncService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final DriftTrashSyncRepository _trashSyncRepository;
   final LocalFilesManagerRepository _localFilesManager;
-  final StorageRepository _storageRepository;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
@@ -35,28 +33,19 @@ class LocalSyncService {
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required DriftTrashSyncRepository trashSyncRepository,
     required LocalFilesManagerRepository localFilesManager,
-    required StorageRepository storageRepository,
     required NativeSyncApi nativeSyncApi,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _trashSyncRepository = trashSyncRepository,
        _localFilesManager = localFilesManager,
-       _storageRepository = storageRepository,
        _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (CurrentPlatform.isAndroid &&
-          (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
-        final hasPermission = await _localFilesManager.hasManageMediaPermission();
-        if (hasPermission) {
-          await _syncTrashedAssets();
-        } else {
-          _log.warning("syncTrashedAssets cannot proceed because MANAGE_MEDIA permission is missing");
-        }
+      if (CurrentPlatform.isAndroid) {
+        await _syncTrashedAssets();
       }
 
       if (CurrentPlatform.isIOS) {
@@ -377,43 +366,37 @@ class LocalSyncService {
 
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
     await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
+    final locallyResolved = await _trashSyncRepository.deleteLocallyResolved();
+    if (locallyResolved > 0) {
+      _log.info("syncTrashedAssets, locally resolved deleted: $locallyResolved");
+    }
 
-    final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    if (assetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
-      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
-    } else {
-      _log.info("syncTrashedAssets, No remote assets found for restoration");
-    }
-    final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
-    final localAssetsToTrash = await _localAssetRepository.getToTrash();
-    if (localAssetsToTrash.isNotEmpty) {
-      final flattenedAssetsToTrash = localAssetsToTrash.values.flattened;
-      if (reviewMode) {
-        final itemsToReview = flattenedAssetsToTrash.where((la) => la.asset.checksum?.isNotEmpty == true);
-        _log.fine(
-          "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.asset.id}, name:${e.asset.name}').join('|')}",
-        );
-        await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
-      } else {
-        final mediaUrls = await Future.wait(
-          flattenedAssetsToTrash.map((item) => _storageRepository.getMediaUrlForAsset(item.asset)),
-        );
-        _log.info("Moving to trash ${mediaUrls.join(", ")} assets");
-        final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-        if (result) {
-          await _trashedLocalAssetRepository.trashLocalAssets(localAssetsToTrash);
+    if (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+        Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+      final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+      if (assetsToRestore.isNotEmpty) {
+        if (await _hasManageMediaPermission("restore from trash")) {
+          final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+          await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
         }
-      }
-    } else {
-      _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
-    }
-    if (reviewMode) {
-      final result = await _trashSyncRepository.cleanupOutdatedEntriesThrottled();
-      if (result != null) {
-        _log.info("syncTrashedAssets, outdated deleted: $result");
+      } else {
+        _log.info("syncTrashedAssets, No remote assets found for restoration");
       }
     }
+
+    final result = await _trashSyncRepository.cleanupOutdatedEntriesThrottled();
+    if (result != null) {
+      _log.info("syncTrashedAssets, outdated deleted: $result");
+    }
+  }
+
+  Future<bool> _hasManageMediaPermission(String logContext) async {
+    final hasPermission = await _localFilesManager.hasManageMediaPermission();
+    if (!hasPermission) {
+      _log.warning("syncTrashedAssets $logContext cannot proceed because MANAGE_MEDIA permission is missing");
+    }
+
+    return hasPermission;
   }
 }
 

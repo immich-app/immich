@@ -173,12 +173,16 @@ void main() {
       () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
     ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
     when(() => mockTrashedLocalAssetRepo.trashLocalAssets(any())).thenAnswer((_) async {});
+    when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
+    when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
     hasManageMediaPermission = false;
     when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
     when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => true);
+    when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
     when(() => mockStorageRepo.getMediaUrlForAsset(any())).thenAnswer((_) async => null);
     when(() => mockTrashSyncRepo.upsertReviewCandidates(any())).thenAnswer((_) async {});
     when(() => mockTrashSyncRepo.deleteOutdated(any())).thenAnswer((_) async => 0);
+    when(() => mockTrashSyncRepo.deleteResolved(any())).thenAnswer((_) async => 0);
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
     await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
   });
@@ -473,11 +477,144 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockTrashedLocalAssetRepo.trashLocalAssets(assetsByAlbum)).called(1);
+      verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
+      final trashedAssets =
+          verify(() => mockTrashedLocalAssetRepo.trashLocalAssets(captureAny())).captured.single
+              as Map<String, List<RemoteDeletedLocalAsset>>;
+      expect(trashedAssets.keys, unorderedEquals(['album-a', 'album-b']));
+      expect(trashedAssets['album-a']!.map((item) => item.asset.id), ['local-only']);
+      expect(trashedAssets['album-b']!.map((item) => item.asset.id), ['merged-local']);
+      final resolvedChecksums =
+          verify(() => mockTrashSyncRepo.deleteResolved(captureAny())).captured.single as Iterable<String>;
+      expect(resolvedChecksums, unorderedEquals(['checksum-local', 'checksum-merged']));
       verify(() => mockSyncApiRepo.ack(['asset-remote-only-3'])).called(1);
     });
 
+    test("records only unresolved candidates after automatic trash move", () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      hasManageMediaPermission = true;
+
+      final resolvedAsset = LocalAssetStub.image1.copyWith(id: 'resolved-local', checksum: 'checksum-resolved');
+      final unresolvedAsset = LocalAssetStub.image2.copyWith(id: 'unresolved-local', checksum: 'checksum-unresolved');
+      final assetsByAlbum = {
+        'album-a': [
+          RemoteDeletedLocalAsset(asset: resolvedAsset, remoteDeletedAt: DateTime(2025, 5, 1)),
+          RemoteDeletedLocalAsset(asset: unresolvedAsset, remoteDeletedAt: DateTime(2025, 5, 2)),
+        ],
+      };
+      when(
+        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      ).thenAnswer((_) async => assetsByAlbum);
+      when(() => mockStorageRepo.getMediaUrlForAsset(resolvedAsset)).thenAnswer((_) async => 'content://resolved');
+      when(() => mockStorageRepo.getMediaUrlForAsset(unresolvedAsset)).thenAnswer((_) async => null);
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: resolvedAsset.checksum!,
+          ack: 'asset-remote-resolved-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+        SyncStreamStub.assetTrashed(
+          id: 'remote-2',
+          checksum: unresolvedAsset.checksum!,
+          ack: 'asset-remote-unresolved-2',
+          trashedAt: DateTime(2025, 5, 2),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      final trashedAssets =
+          verify(() => mockTrashedLocalAssetRepo.trashLocalAssets(captureAny())).captured.single
+              as Map<String, List<RemoteDeletedLocalAsset>>;
+      expect(trashedAssets['album-a']!.map((item) => item.asset.id), ['resolved-local']);
+      final resolvedChecksums =
+          verify(() => mockTrashSyncRepo.deleteResolved(captureAny())).captured.single as Iterable<String>;
+      expect(resolvedChecksums, ['checksum-resolved']);
+      final reviewCandidates =
+          verify(
+                () => mockTrashSyncRepo.upsertReviewCandidates(captureAny<Iterable<RemoteDeletedLocalAsset>>()),
+              ).captured.single
+              as Iterable<RemoteDeletedLocalAsset>;
+      expect(reviewCandidates.map((item) => item.asset.id), ['unresolved-local']);
+    });
+
+    test("records all candidates when automatic trash move fails", () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      hasManageMediaPermission = true;
+
+      final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-failed');
+      final assetsByAlbum = {
+        'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
+      };
+      when(
+        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      ).thenAnswer((_) async => assetsByAlbum);
+      when(() => mockStorageRepo.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => 'content://failed');
+      when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => false);
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: localAsset.checksum!,
+          ack: 'asset-remote-failed-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
+      verifyNever(() => mockTrashSyncRepo.deleteResolved(any()));
+      final reviewCandidates =
+          verify(
+                () => mockTrashSyncRepo.upsertReviewCandidates(captureAny<Iterable<RemoteDeletedLocalAsset>>()),
+              ).captured.single
+              as Iterable<RemoteDeletedLocalAsset>;
+      expect(reviewCandidates.map((item) => item.asset.id), ['local-only']);
+    });
+
+    test("records all candidates when automatic trash move has no media urls", () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      hasManageMediaPermission = true;
+
+      final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-no-url');
+      final assetsByAlbum = {
+        'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
+      };
+      when(
+        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      ).thenAnswer((_) async => assetsByAlbum);
+      when(() => mockStorageRepo.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => null);
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: localAsset.checksum!,
+          ack: 'asset-remote-no-url-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
+      verifyNever(() => mockTrashSyncRepo.deleteResolved(any()));
+      final reviewCandidates =
+          verify(
+                () => mockTrashSyncRepo.upsertReviewCandidates(captureAny<Iterable<RemoteDeletedLocalAsset>>()),
+              ).captured.single
+              as Iterable<RemoteDeletedLocalAsset>;
+      expect(reviewCandidates.map((item) => item.asset.id), ['local-only']);
+    });
+
     test("uses review mode without moving assets to trash", () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, false);
       await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
       when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => true);
       final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-review', remoteId: null);
@@ -533,6 +670,55 @@ void main() {
       verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
+    });
+
+    test("records review candidates even when Android trash settings and permission are disabled", () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      hasManageMediaPermission = false;
+
+      final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-disabled');
+      final assetsByAlbum = {
+        'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
+      };
+      when(
+        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      ).thenAnswer((_) async => assetsByAlbum);
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: localAsset.checksum!,
+          ack: 'asset-remote-disabled-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verify(() => mockTrashSyncRepo.upsertReviewCandidates(any())).called(1);
+      verifyNever(() => mockLocalFilesManagerRepo.hasManageMediaPermission());
+      verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
+    });
+
+    test("cleans stale review entries for restored remote assets without media permission", () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      hasManageMediaPermission = false;
+      when(() => mockTrashSyncRepo.deleteOutdated(any())).thenAnswer((invocation) async {
+        final remoteIds = invocation.positionalArguments.first as Iterable<String>;
+        expect(remoteIds.toList(), ['remote-1']);
+        return 0;
+      });
+
+      final events = [SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-1', ack: 'asset-restored-1')];
+
+      await simulateEvents(events);
+
+      verify(() => mockTrashSyncRepo.deleteOutdated(any())).called(1);
+      verifyNever(() => mockLocalFilesManagerRepo.hasManageMediaPermission());
+      verifyNever(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any()));
     });
 
     test("requests local deletions lookup by remote ids for permanent remote delete events", () async {

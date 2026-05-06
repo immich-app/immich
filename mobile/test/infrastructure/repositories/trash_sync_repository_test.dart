@@ -186,13 +186,56 @@ void main() {
 
       final remaining = await db.select(db.trashSyncEntity).get();
       final remainingChecksums = remaining.map((row) => row.checksum).toSet();
-      expect(
-        remainingChecksums,
-        containsAll(['alive-not-requested', 'deleted-matched', 'missing-remote']),
-      );
+      expect(remainingChecksums, containsAll(['alive-not-requested', 'deleted-matched', 'missing-remote']));
       expect(remainingChecksums, isNot(contains('alive-matched')));
       expect(remainingChecksums, isNot(contains('alive-rejected')));
       expect(remainingChecksums, isNot(contains('alive-approved')));
+    });
+  });
+
+  group('deleteResolved', () {
+    test('removes pending and rejected entries for matched checksums', () async {
+      final now = DateTime(2025, 1, 1);
+
+      await insertTrashSync(checksum: 'pending-matched', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'rejected-matched', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'approved-matched', isSyncApproved: true, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'pending-not-requested', isSyncApproved: null, remoteDeletedAt: now);
+
+      final deleted = await repository.deleteResolved(['pending-matched', 'rejected-matched', 'approved-matched']);
+
+      expect(deleted, 2);
+
+      final remaining = await db.select(db.trashSyncEntity).get();
+      final remainingChecksums = remaining.map((row) => row.checksum).toSet();
+      expect(remainingChecksums, containsAll(['approved-matched', 'pending-not-requested']));
+      expect(remainingChecksums, isNot(contains('pending-matched')));
+      expect(remainingChecksums, isNot(contains('rejected-matched')));
+    });
+  });
+
+  group('deleteLocallyResolved', () {
+    test('removes pending and rejected entries matched by local trash checksums', () async {
+      final now = DateTime(2025, 1, 1);
+
+      await insertTrashedLocalAsset(checksum: 'local-pending');
+      await insertTrashedLocalAsset(checksum: 'local-rejected');
+      await insertTrashedLocalAsset(checksum: 'local-approved');
+
+      await insertTrashSync(checksum: 'local-pending', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'local-rejected', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'local-approved', isSyncApproved: true, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'not-local', isSyncApproved: null, remoteDeletedAt: now);
+
+      final deleted = await repository.deleteLocallyResolved();
+
+      expect(deleted, 2);
+
+      final remaining = await db.select(db.trashSyncEntity).get();
+      final remainingChecksums = remaining.map((row) => row.checksum).toSet();
+      expect(remainingChecksums, containsAll(['local-approved', 'not-local']));
+      expect(remainingChecksums, isNot(contains('local-pending')));
+      expect(remainingChecksums, isNot(contains('local-rejected')));
     });
   });
 
@@ -219,14 +262,13 @@ void main() {
 
       final deleted = await repository.cleanupOutdatedEntries();
 
-      expect(deleted, 6);
+      expect(deleted, 5);
 
       final remaining = await db.select(db.trashSyncEntity).get();
       final remainingChecksums = remaining.map((row) => row.checksum).toSet();
-      expect(remainingChecksums, containsAll(['pending-keep', 'reject-keep', 'approve-keep']));
+      expect(remainingChecksums, containsAll(['local-trashed', 'pending-keep', 'reject-keep', 'approve-keep']));
       expect(remainingChecksums, isNot(contains('alive-remote')));
       expect(remainingChecksums, isNot(contains('alive-approved')));
-      expect(remainingChecksums, isNot(contains('local-trashed')));
       expect(remainingChecksums, isNot(contains('pending-orphan')));
       expect(remainingChecksums, isNot(contains('reject-orphan')));
       expect(remainingChecksums, isNot(contains('approve-orphan')));

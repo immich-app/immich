@@ -70,6 +70,29 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     return deletedMatched;
   }
 
+  Future<int> deleteResolved(Iterable<String> checksums) {
+    final checksumSet = checksums.toSet();
+    if (checksumSet.isEmpty) {
+      return Future.value(0);
+    }
+
+    final query = _db.delete(_db.trashSyncEntity)
+      ..where((row) => row.checksum.isIn(checksumSet) & row.isSyncApproved.isNotValue(true));
+
+    return query.go();
+  }
+
+  Future<int> deleteLocallyResolved() {
+    final localTrashedChecksums = _db.selectOnly(_db.trashedLocalAssetEntity)
+      ..addColumns([_db.trashedLocalAssetEntity.checksum])
+      ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
+
+    final query = _db.delete(_db.trashSyncEntity)
+      ..where((row) => row.checksum.isInQuery(localTrashedChecksums) & row.isSyncApproved.isNotValue(true));
+
+    return query.go();
+  }
+
   Future<int?> cleanupOutdatedEntriesThrottled({Duration minInterval = const Duration(hours: 8)}) async {
     final lastRunMillis = await _getLastCleanupTimeMillis();
     final nowMillis = DateTime.now().millisecondsSinceEpoch;
@@ -87,15 +110,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       ..addColumns([_db.remoteAssetEntity.checksum])
       ..where(_db.remoteAssetEntity.deletedAt.isNull());
 
-    final localTrashedSelect = _db.selectOnly(_db.trashedLocalAssetEntity)
-      ..addColumns([_db.trashedLocalAssetEntity.checksum]);
-
-    final query = _db.delete(_db.trashSyncEntity)
-      ..where(
-        (row) =>
-            row.checksum.isInQuery(remoteAliveSelect) |
-            (row.isSyncApproved.isNotValue(true) & row.checksum.isInQuery(localTrashedSelect)),
-      );
+    final query = _db.delete(_db.trashSyncEntity)..where((row) => row.checksum.isInQuery(remoteAliveSelect));
 
     final deletedMatched = await query.go();
 
@@ -110,7 +125,9 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     final orphanQuery = _db.delete(_db.trashSyncEntity)
       ..where(
         (row) =>
-            (row.isSyncApproved.isNotValue(true) & row.checksum.isNotInQuery(localAssetChecksums)) |
+            (row.isSyncApproved.isNotValue(true) &
+                row.checksum.isNotInQuery(localAssetChecksums) &
+                row.checksum.isNotInQuery(localTrashedChecksums)) |
             (row.isSyncApproved.equals(true) & row.checksum.isNotInQuery(localTrashedChecksums)),
       );
 

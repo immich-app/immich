@@ -3,7 +3,6 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -11,7 +10,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
@@ -31,16 +29,15 @@ void main() {
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late DriftTrashSyncRepository mockTrashSyncRepo;
   late LocalFilesManagerRepository mockLocalFilesManager;
-  late StorageRepository mockStorageRepository;
   late MockNativeSyncApi mockNativeSyncApi;
   late Drift db;
+  late bool hasManageMediaPermission;
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(<LocalAsset>[]);
-    registerFallbackValue(RemoteDeletedLocalAsset(asset: LocalAssetStub.image1, remoteDeletedAt: DateTime(2025, 1, 1)));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
@@ -53,12 +50,13 @@ void main() {
   });
 
   setUp(() async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+
     mockLocalAlbumRepository = MockLocalAlbumRepository();
     mockLocalAssetRepository = MockLocalAssetRepository();
     mockTrashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     mockTrashSyncRepo = MockTrashSyncRepository();
     mockLocalFilesManager = MockLocalFilesManagerRepository();
-    mockStorageRepository = MockStorageRepository();
     mockNativeSyncApi = MockNativeSyncApi();
 
     when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => false);
@@ -68,16 +66,8 @@ void main() {
     when(() => mockNativeSyncApi.getTrashedAssets()).thenAnswer((_) async => {});
     when(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepository.getToRestore()).thenAnswer((_) async => []);
-    when(
-      () => mockLocalAssetRepository.getToTrash(),
-    ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
     when(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any())).thenAnswer((_) async {});
-    when(() => mockTrashedLocalAssetRepository.trashLocalAssets(any())).thenAnswer((_) async {});
-    when(() => mockLocalFilesManager.moveToTrash(any<List<String>>())).thenAnswer((_) async => true);
-    when(() => mockStorageRepository.getMediaUrlForAsset(any())).thenAnswer((_) async => null);
-    when(
-      () => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<RemoteDeletedLocalAsset>>()),
-    ).thenAnswer((_) async {});
+    when(() => mockTrashSyncRepo.deleteLocallyResolved()).thenAnswer((_) async => 0);
     when(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).thenAnswer((_) async => 0);
 
     sut = LocalSyncService(
@@ -85,7 +75,6 @@ void main() {
       localAssetRepository: mockLocalAssetRepository,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepository,
       localFilesManager: mockLocalFilesManager,
-      storageRepository: mockStorageRepository,
       nativeSyncApi: mockNativeSyncApi,
       trashSyncRepository: mockTrashSyncRepo,
     );
@@ -93,40 +82,66 @@ void main() {
     await Store.clear();
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
     await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
-    when(() => mockLocalFilesManager.hasManageMediaPermission()).thenAnswer((_) async => false);
+    hasManageMediaPermission = false;
+    when(() => mockLocalFilesManager.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
   });
 
   group('LocalSyncService - syncTrashedAssets gating', () {
     test('invokes syncTrashedAssets when Android flag enabled and permission granted', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      when(() => mockLocalFilesManager.hasManageMediaPermission()).thenAnswer((_) async => true);
-      when(
-        () => mockLocalAssetRepository.getToTrash(),
-      ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
+      hasManageMediaPermission = true;
 
       await sut.sync();
 
       verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
       verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
     });
 
-    test('skips syncTrashedAssets when store flag disabled', () async {
+    test('syncs trashed snapshot when store flags are disabled', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      when(() => mockLocalFilesManager.hasManageMediaPermission()).thenAnswer((_) async => true);
+      hasManageMediaPermission = true;
 
       await sut.sync();
 
-      verifyNever(() => mockNativeSyncApi.getTrashedAssets());
+      verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
+      verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verifyNever(() => mockLocalFilesManager.hasManageMediaPermission());
+      verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
+      verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
     });
 
-    test('skips syncTrashedAssets when MANAGE_MEDIA permission absent', () async {
+    test('syncs trashed snapshot but does not handle remote trash intents', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
-      when(() => mockLocalFilesManager.hasManageMediaPermission()).thenAnswer((_) async => false);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      hasManageMediaPermission = false;
 
       await sut.sync();
 
-      verifyNever(() => mockNativeSyncApi.getTrashedAssets());
+      verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
+      verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verifyNever(() => mockLocalAssetRepository.getToTrash());
+      verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
+      verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
+      verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
+    });
+
+    test('syncs trashed snapshot but skips review restore when MANAGE_MEDIA permission absent', () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
+      when(() => mockTrashedLocalAssetRepository.getToRestore()).thenAnswer((_) async => [LocalAssetStub.image1]);
+      hasManageMediaPermission = false;
+
+      await sut.processTrashedAssets({});
+
+      verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verify(() => mockLocalFilesManager.hasManageMediaPermission()).called(1);
+      verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
+      verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
     });
 
     test('skips syncTrashedAssets on non-Android platforms', () async {
@@ -134,7 +149,7 @@ void main() {
       addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
 
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      when(() => mockLocalFilesManager.hasManageMediaPermission()).thenAnswer((_) async => false);
+      hasManageMediaPermission = false;
 
       await sut.sync();
 
@@ -143,7 +158,8 @@ void main() {
   });
 
   group('LocalSyncService - syncTrashedAssets behavior', () {
-    test('review mode records candidates and deletes outdated once', () async {
+    test('review mode only restores local trash and runs throttled cleanup', () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, false);
       await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
       expect(Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false), isTrue);
 
@@ -157,26 +173,21 @@ void main() {
         playbackStyle: PlatformAssetPlaybackStyle.image,
       );
 
-      final localAssetToTrash = LocalAssetStub.image2.copyWith(id: 'local-trash', checksum: 'checksum-review');
-      final remoteDeletedAt = DateTime(2025, 1, 1);
-      when(() => mockLocalAssetRepository.getToTrash()).thenAnswer(
-        (_) async => {
-          'album-a': [RemoteDeletedLocalAsset(asset: localAssetToTrash, remoteDeletedAt: remoteDeletedAt)],
-        },
-      );
-
       await sut.processTrashedAssets({
         'album-a': [platformAsset],
       });
 
-      verify(() => mockLocalAssetRepository.getToTrash()).called(1);
-      verify(() => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<RemoteDeletedLocalAsset>>())).called(1);
+      verifyNever(() => mockLocalAssetRepository.getToTrash());
+      verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
       verify(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).called(1);
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
 
-    test('processes trashed snapshot, restores assets, and trashes local files', () async {
+    test('processes trashed snapshot and restores assets', () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      hasManageMediaPermission = true;
+
       final platformAsset = PlatformAsset(
         id: 'remote-id',
         name: 'remote.jpg',
@@ -196,18 +207,6 @@ void main() {
         return restoredIds;
       });
 
-      final localAssetToTrash = LocalAssetStub.image2.copyWith(id: 'local-trash', checksum: 'checksum-trash');
-      final remoteDeletedAt = DateTime(2025, 1, 1);
-      when(() => mockLocalAssetRepository.getToTrash()).thenAnswer(
-        (_) async => {
-          'album-a': [RemoteDeletedLocalAsset(asset: localAssetToTrash, remoteDeletedAt: remoteDeletedAt)],
-        },
-      );
-
-      when(
-        () => mockStorageRepository.getMediaUrlForAsset(localAssetToTrash),
-      ).thenAnswer((_) async => 'content://local-trash');
-
       await sut.processTrashedAssets({
         'album-a': [platformAsset],
       });
@@ -220,22 +219,12 @@ void main() {
       expect(trashedEntry.albumId, 'album-a');
       expect(trashedEntry.asset.id, platformAsset.id);
       expect(trashedEntry.asset.name, platformAsset.name);
-      verify(() => mockLocalAssetRepository.getToTrash()).called(1);
+      verifyNever(() => mockLocalAssetRepository.getToTrash());
 
       verify(() => mockLocalFilesManager.restoreAssetsFromTrash(any())).called(1);
       verify(() => mockTrashedLocalAssetRepository.applyRestoredAssets(restoredIds)).called(1);
-
-      verify(() => mockStorageRepository.getMediaUrlForAsset(localAssetToTrash)).called(1);
-      final moveArgs = verify(() => mockLocalFilesManager.moveToTrash(captureAny())).captured.single as List<String>;
-      expect(moveArgs, ['content://local-trash']);
-      final trashArgs =
-          verify(() => mockTrashedLocalAssetRepository.trashLocalAssets(captureAny())).captured.single
-              as Map<String, List<RemoteDeletedLocalAsset>>;
-      expect(trashArgs.keys, ['album-a']);
-      expect(trashArgs['album-a']!.length, 1);
-      final trashedRecord = trashArgs['album-a']!.single;
-      expect(trashedRecord.asset, localAssetToTrash);
-      expect(trashedRecord.remoteDeletedAt, remoteDeletedAt);
+      verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
 
     test('does not attempt restore when repository has no assets to restore', () async {
@@ -249,17 +238,6 @@ void main() {
       expect(trashedSnapshot, isEmpty);
       verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any()));
-    });
-
-    test('does not move local assets when repository finds nothing to trash', () async {
-      when(
-        () => mockLocalAssetRepository.getToTrash(),
-      ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
-
-      await sut.processTrashedAssets({});
-
-      verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
-      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
   });
 

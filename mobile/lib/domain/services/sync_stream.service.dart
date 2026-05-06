@@ -199,25 +199,26 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        await _handleRemoteAssetTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
+        if (CurrentPlatform.isAndroid) {
+          await _handleRemoteAssetTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
+        }
         return;
       case SyncEntityType.assetV2:
         final remoteSyncAssets = data.cast<SyncAssetV2>();
         await _syncStreamRepository.updateAssetsV2(remoteSyncAssets);
-        await _handleRemoteAssetTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
+        if (CurrentPlatform.isAndroid) {
+          await _handleRemoteAssetTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
+        }
         return;
       case SyncEntityType.assetDeleteV1:
         final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
-        await _runWithManageMediaPermission(
-          logContext: "Deleted Assets",
-          action: () async {
-            final now = DateTime.now();
-            final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
-              remoteSyncAssets.map((e) => MapEntry(e.assetId, now)),
-            );
-            await _handleRemoteDeletedOrTrashed(remoteDeletedAtByRemoteId);
-          },
-        );
+        if (CurrentPlatform.isAndroid) {
+          final now = DateTime.now();
+          final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
+            remoteSyncAssets.map((e) => MapEntry(e.assetId, now)),
+          );
+          await _handleRemoteDeletedOrTrashed(remoteDeletedAtByRemoteId);
+        }
         return _syncStreamRepository.deleteAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
@@ -484,52 +485,97 @@ class SyncStreamService {
     }
   }
 
+  Future<void> _handleRemoteAssetTrashState(Iterable<_RemoteAssetTrashState> remoteSyncAssets) async {
+    final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
+      remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => MapEntry(e.id, e.deletedAt!)),
+    );
+    await _handleRemoteDeletedOrTrashed(remoteDeletedAtByRemoteId);
+    await _deleteOutdatedTrashSyncEntries(remoteSyncAssets.where((e) => e.deletedAt == null).map((e) => e.id));
+
+    if (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+        Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+      await _applyRemoteRestoreToLocal();
+    }
+  }
+
   Future<void> _handleRemoteDeletedOrTrashed(Map<String, DateTime> remoteDeletedAtByRemoteId) async {
     if (remoteDeletedAtByRemoteId.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(remoteDeletedAtByRemoteId);
-      if (localAssetsToTrash.isNotEmpty) {
-        final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
-        if (reviewMode) {
-          final flattenedAssetsToTrash = localAssetsToTrash.values.flattened;
-          final itemsToReview = flattenedAssetsToTrash.where((la) => la.asset.checksum?.isNotEmpty == true);
-          _logger.info(
-            "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.asset.id}, name:${e.asset.name}').join('*')}",
-          );
-          await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
-        } else {
-          await _trashLocalAssets(localAssetsToTrash);
-        }
+      final remoteTrashCandidatesByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(
+        remoteDeletedAtByRemoteId,
+      );
+      if (remoteTrashCandidatesByAlbum.isNotEmpty) {
+        final unresolvedCandidatesByAlbum = await _tryAutoTrashLocalAssets(remoteTrashCandidatesByAlbum);
+
+        await _upsertTrashSyncCandidates(unresolvedCandidatesByAlbum);
       } else {
         _logger.info("No assets found in backup-enabled albums for remote assets: $remoteDeletedAtByRemoteId");
       }
     }
   }
 
-  Future<void> _handleRemoteAssetTrashState(Iterable<_RemoteAssetTrashState> remoteSyncAssets) async {
-    await _runWithManageMediaPermission(
-      logContext: "Trashed Assets",
-      action: () async {
-        final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
-          remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => MapEntry(e.id, e.deletedAt!)),
-        );
-        await _handleRemoteDeletedOrTrashed(remoteDeletedAtByRemoteId);
-        await _deleteOutdatedTrashSyncEntries(remoteSyncAssets.where((e) => e.deletedAt == null).map((e) => e.id));
-        await _applyRemoteRestoreToLocal();
-      },
+  Future<void> _upsertTrashSyncCandidates(Map<String, List<RemoteDeletedLocalAsset>> candidatesByAlbum) async {
+    final candidates = candidatesByAlbum.values.flattened;
+    final reviewCandidates = candidates.where((la) => la.asset.checksum?.isNotEmpty == true);
+    if (reviewCandidates.isEmpty) {
+      return;
+    }
+    _logger.info(
+      "Apply remote trash action to review for: ${reviewCandidates.map((e) => 'id:${e.asset.id}, name:${e.asset.name}').join('*')}",
     );
+    await _trashSyncRepository.upsertReviewCandidates(reviewCandidates);
   }
 
-  Future<void> _trashLocalAssets(Map<String, List<RemoteDeletedLocalAsset>> localAssetsToTrash) async {
-    final mediaUrls = await Future.wait(
-      localAssetsToTrash.values.expand((e) => e).map((item) => _storageRepository.getMediaUrlForAsset(item.asset)),
-    );
-    _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-    final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-    if (result) {
-      await _trashedLocalAssetRepository.trashLocalAssets(localAssetsToTrash);
+  Future<Map<String, List<RemoteDeletedLocalAsset>>> _tryAutoTrashLocalAssets(
+    Map<String, List<RemoteDeletedLocalAsset>> candidatesByAlbum,
+  ) async {
+    if (!await _canMoveLocalMediaToTrash()) {
+      return candidatesByAlbum;
     }
+
+    final resolvedMoveCandidates = <({String albumId, RemoteDeletedLocalAsset candidate, String mediaUrl})>[];
+    final unresolvedCandidatesByAlbum = <String, List<RemoteDeletedLocalAsset>>{};
+
+    for (final entry in candidatesByAlbum.entries) {
+      for (final item in entry.value) {
+        final mediaUrl = await _storageRepository.getMediaUrlForAsset(item.asset);
+        if (mediaUrl?.isNotEmpty == true) {
+          resolvedMoveCandidates.add((albumId: entry.key, candidate: item, mediaUrl: mediaUrl!));
+        } else {
+          (unresolvedCandidatesByAlbum[entry.key] ??= []).add(item);
+        }
+      }
+    }
+
+    if (resolvedMoveCandidates.isEmpty) {
+      return candidatesByAlbum;
+    }
+
+    final mediaUrls = resolvedMoveCandidates.map((item) => item.mediaUrl).toList();
+    _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
+    final result = await _localFilesManager.moveToTrash(mediaUrls);
+    if (!result) {
+      // moveToTrash returns only aggregate success. On failure, keep all candidates
+      // unresolved so review state is not lost after a partial or unknown result.
+      // If some items were actually moved, the next local trash snapshot will clean
+      // their pending/rejected review rows via deleteLocallyResolved()
+      return candidatesByAlbum;
+    }
+
+    final movedByAlbum = groupBy(
+      resolvedMoveCandidates,
+      (item) => item.albumId,
+    ).map((albumId, items) => MapEntry(albumId, items.map((item) => item.candidate).toList()));
+    await _trashedLocalAssetRepository.trashLocalAssets(movedByAlbum);
+    await _trashSyncRepository.deleteResolved(
+      resolvedMoveCandidates
+          .map((item) => item.candidate.asset.checksum)
+          .nonNulls
+          .where((checksum) => checksum.isNotEmpty),
+    );
+
+    return unresolvedCandidatesByAlbum;
   }
 
   Future<void> _deleteOutdatedTrashSyncEntries(Iterable<String> remoteIds) async {
@@ -541,31 +587,26 @@ class SyncStreamService {
 
   Future<void> _applyRemoteRestoreToLocal() async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    if (assetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
-      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
-    } else {
-      _logger.info("No remote assets found for restoration");
-    }
-  }
-
-  Future<void> _runWithManageMediaPermission({
-    required String logContext,
-    required Future<void> Function() action,
-  }) async {
-    if (!CurrentPlatform.isAndroid ||
-        (!Store.get(StoreKey.manageLocalMediaAndroid, false) &&
-            !Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
+    if (assetsToRestore.isEmpty) {
+      _logger.fine("No remote assets found for restoration");
       return;
     }
+    if (!await _hasManageMediaPermission("restore from trash")) {
+      return;
+    }
+    final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+    await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
+  }
 
+  Future<bool> _hasManageMediaPermission(String logContext) async {
     final hasPermission = await _localFilesManager.hasManageMediaPermission();
     if (!hasPermission) {
       _logger.warning("sync $logContext cannot proceed because MANAGE_MEDIA permission is missing");
-
-      return;
     }
 
-    await action();
+    return hasPermission;
   }
+
+  Future<bool> _canMoveLocalMediaToTrash() async =>
+      Store.get(StoreKey.manageLocalMediaAndroid, false) && await _hasManageMediaPermission("move to trash");
 }

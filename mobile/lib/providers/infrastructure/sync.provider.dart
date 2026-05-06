@@ -43,7 +43,6 @@ final localSyncServiceProvider = Provider(
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     localFilesManager: ref.watch(localFilesManagerRepositoryProvider),
-    storageRepository: ref.watch(storageRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
   ),
 );
