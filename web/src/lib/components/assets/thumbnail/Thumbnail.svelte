@@ -78,7 +78,7 @@
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
-  let assetUrl = $derived(currentUrlReplaceAssetId(asset.id));
+  const assetUrl = $derived(currentUrlReplaceAssetId(asset.id));
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
