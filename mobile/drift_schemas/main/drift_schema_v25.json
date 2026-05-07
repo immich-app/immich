@@ -1062,7 +1062,7 @@
       "data": {
         "on": 1,
         "name": "idx_remote_asset_owner_visibility_deleted_created",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created\nON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)\n",
         "unique": false,
         "columns": []
       }
@@ -2751,6 +2751,54 @@
     },
     {
       "id": 30,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "metadata",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "key",
+            "getter_name": "key",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "value",
+            "getter_name": "value",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": true,
+        "constraints": [],
+        "strict": true,
+        "explicit_pk": [
+          "key"
+        ]
+      }
+    },
+    {
+      "id": 31,
       "references": [
         18
       ],
@@ -2764,7 +2812,7 @@
       }
     },
     {
-      "id": 31,
+      "id": 32,
       "references": [
         19
       ],
@@ -2778,7 +2826,7 @@
       }
     },
     {
-      "id": 32,
+      "id": 33,
       "references": [
         19
       ],
@@ -2786,13 +2834,13 @@
       "data": {
         "on": 19,
         "name": "idx_remote_exif_city",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_exif_city\nON remote_exif_entity (city) WHERE city IS NOT NULL\n",
         "unique": false,
         "columns": []
       }
     },
     {
-      "id": 33,
+      "id": 34,
       "references": [
         20
       ],
@@ -2806,7 +2854,7 @@
       }
     },
     {
-      "id": 34,
+      "id": 35,
       "references": [
         22
       ],
@@ -2820,7 +2868,7 @@
       }
     },
     {
-      "id": 35,
+      "id": 36,
       "references": [
         25
       ],
@@ -2834,7 +2882,7 @@
       }
     },
     {
-      "id": 36,
+      "id": 37,
       "references": [
         26
       ],
@@ -2848,7 +2896,7 @@
       }
     },
     {
-      "id": 37,
+      "id": 38,
       "references": [
         26
       ],
@@ -2862,7 +2910,7 @@
       }
     },
     {
-      "id": 38,
+      "id": 39,
       "references": [
         26
       ],
@@ -2870,13 +2918,13 @@
       "data": {
         "on": 26,
         "name": "idx_asset_face_visible_person",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person\nON asset_face_entity (person_id, asset_id)\nWHERE is_visible = 1 AND deleted_at IS NULL\n",
         "unique": false,
         "columns": []
       }
     },
     {
-      "id": 39,
+      "id": 40,
       "references": [
         28
       ],
@@ -2890,7 +2938,7 @@
       }
     },
     {
-      "id": 40,
+      "id": 41,
       "references": [
         28
       ],
@@ -2904,7 +2952,7 @@
       }
     },
     {
-      "id": 41,
+      "id": 42,
       "references": [
         29
       ],
@@ -3186,6 +3234,15 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE TABLE IF NOT EXISTS \"asset_edit_entity\" (\"id\" TEXT NOT NULL, \"asset_id\" TEXT NOT NULL REFERENCES remote_asset_entity (id) ON DELETE CASCADE, \"action\" INTEGER NOT NULL, \"parameters\" BLOB NOT NULL, \"sequence\" INTEGER NOT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+        }
+      ]
+    },
+    {
+      "name": "metadata",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"metadata\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },

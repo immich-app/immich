@@ -12409,6 +12409,7 @@ final class Schema25 extends i0.VersionedSchema {
     storeEntity,
     trashedLocalAssetEntity,
     assetEditEntity,
+    metadata,
     idxPartnerSharedWithId,
     idxLatLng,
     idxRemoteExifCity,
@@ -12855,6 +12856,17 @@ final class Schema25 extends i0.VersionedSchema {
     ),
     alias: null,
   );
+  late final Shape49 metadata = Shape49(
+    source: i0.VersionedTable(
+      entityName: 'metadata',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_210, _column_211, _column_115],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
   final i1.Index idxPartnerSharedWithId = i1.Index(
     'idx_partner_shared_with_id',
     'CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)',
@@ -12905,6 +12917,32 @@ final class Schema25 extends i0.VersionedSchema {
   );
 }
 
+class Shape49 extends i0.VersionedTable {
+  Shape49({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get key =>
+      columnsByName['key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get value =>
+      columnsByName['value']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_210(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'key',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_211(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'value',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

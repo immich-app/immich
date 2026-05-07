@@ -1,28 +1,28 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
+  import PeopleInfiniteScroll from '../PeopleInfiniteScroll.svelte';
+  import { goto } from '$app/navigation';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { updatePeople, type PersonResponseDto } from '@immich/sdk';
+  import { getAllPeople, updatePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, toastManager } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteMap } from 'svelte/reactivity';
+  import type { PageData } from './$types';
 
   interface Props {
-    people: PersonResponseDto[];
-    totalPeopleCount: number;
-    titleId?: string | undefined;
-    onClose: () => void;
-    onUpdate: (people: PersonResponseDto[]) => void;
-    loadNextPage: () => void;
+    data: PageData;
   }
 
-  let { people, totalPeopleCount, titleId = undefined, onClose, onUpdate, loadNextPage }: Props = $props();
+  const { data }: Props = $props();
 
+  let people = $derived(data.people.people);
+  const totalPeopleCount = $derived(data.people.total);
+  let nextPage = $state(data.people.hasNextPage ? 2 : null);
   let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
   let showLoadingSpinner = $state(false);
   const overrides = new SvelteMap<string, boolean>();
@@ -78,8 +78,7 @@
       }
       overrides.clear();
 
-      onUpdate(people);
-      onClose();
+      await goto('/people');
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
     } finally {
@@ -95,6 +94,19 @@
     overrides.set(person.id, isHidden);
   };
 
+  const loadNextPage = async () => {
+    if (!nextPage) {
+      return;
+    }
+    try {
+      const { people: newPeople, hasNextPage } = await getAllPeople({ withHidden: true, page: nextPage });
+      people = people.concat(newPeople);
+      nextPage = hasNextPage ? nextPage + 1 : null;
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_load_people'));
+    }
+  };
+
   let toggleButtonOptions: Record<ToggleVisibility, { icon: string; label: string }> = $derived({
     [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
     [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
@@ -103,28 +115,18 @@
   let toggleButton = $derived(toggleButtonOptions[getNextVisibility(toggleVisibility)]);
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
-
-<div class="h-full overflow-y-auto">
-  <div
-    class="sticky top-0 z-1 flex h-16 w-full items-center justify-between border-b bg-white p-1 md:p-8 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg"
-  >
-    <div class="flex items-center">
-      <IconButton
-        shape="round"
-        color="secondary"
-        variant="ghost"
-        aria-label={$t('close')}
-        icon={mdiClose}
-        onclick={onClose}
-      />
-      <div class="flex items-center gap-2">
-        <p id={titleId} class="ms-2">{$t('show_and_hide_people')}</p>
-        <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
-      </div>
-    </div>
+<UserPageLayout title={$t('show_and_hide_people')} description={`(${totalPeopleCount.toLocaleString($locale)})`}>
+  {#snippet buttons()}
     <div class="flex items-center justify-end">
       <div class="flex items-center md:me-4">
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('close')}
+          icon={mdiClose}
+          onclick={() => goto('/people')}
+        />
         <IconButton
           shape="round"
           color="secondary"
@@ -144,10 +146,10 @@
       </div>
       <Button loading={showLoadingSpinner} onclick={handleSaveVisibility} size="small">{$t('done')}</Button>
     </div>
-  </div>
+  {/snippet}
 
   <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8">
-    <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
+    <PeopleInfiniteScroll {people} hasNextPage={nextPage !== null} {loadNextPage}>
       {#snippet children({ person })}
         {@const hidden = overrides.get(person.id) ?? person.isHidden}
         <button
@@ -175,4 +177,4 @@
       {/snippet}
     </PeopleInfiniteScroll>
   </div>
-</div>
+</UserPageLayout>
