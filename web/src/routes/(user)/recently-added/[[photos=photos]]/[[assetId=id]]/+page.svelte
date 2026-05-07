@@ -48,7 +48,7 @@
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
-    orderingDate: OrderingDate.Created,
+    orderBy: OrderingDate.Created,
   };
 
   let selectedAssets = $derived(assetMultiSelectManager.assets);
