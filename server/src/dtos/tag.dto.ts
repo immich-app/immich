@@ -1,68 +1,63 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Tag } from 'src/database';
 import { MaybeDehydrated } from 'src/types';
 import { asDateString } from 'src/utils/date';
-import { Optional, ValidateHexColor, ValidateUUID } from 'src/validation';
+import { emptyStringToNull, hexColor } from 'src/validation';
+import z from 'zod';
 
-export class TagCreateDto {
-  @ApiProperty({ description: 'Tag name' })
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
+const TagCreateSchema = z
+  .object({
+    name: z.string().describe('Tag name'),
+    parentId: z.uuidv4().nullish().describe('Parent tag ID'),
+    color: emptyStringToNull(hexColor.nullable()).optional().describe('Tag color (hex)'),
+  })
+  .meta({ id: 'TagCreateDto' });
 
-  @ValidateUUID({ nullable: true, optional: true, description: 'Parent tag ID' })
-  parentId?: string | null;
+const TagUpdateSchema = z
+  .object({
+    color: emptyStringToNull(hexColor.nullable()).optional().describe('Tag color (hex)'),
+  })
+  .meta({ id: 'TagUpdateDto' });
 
-  @ApiPropertyOptional({ description: 'Tag color (hex)' })
-  @IsHexColor()
-  @Optional({ nullable: true, emptyToNull: true })
-  color?: string;
-}
+const TagUpsertSchema = z
+  .object({
+    tags: z.array(z.string()).describe('Tag names to upsert'),
+  })
+  .meta({ id: 'TagUpsertDto' });
 
-export class TagUpdateDto {
-  @ApiPropertyOptional({ description: 'Tag color (hex)' })
-  @Optional({ nullable: true, emptyToNull: true })
-  @ValidateHexColor()
-  color?: string | null;
-}
+const TagBulkAssetsSchema = z
+  .object({
+    tagIds: z.array(z.uuidv4()).describe('Tag IDs'),
+    assetIds: z.array(z.uuidv4()).describe('Asset IDs'),
+  })
+  .meta({ id: 'TagBulkAssetsDto' });
 
-export class TagUpsertDto {
-  @ApiProperty({ description: 'Tag names to upsert' })
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  tags!: string[];
-}
+const TagBulkAssetsResponseSchema = z
+  .object({
+    count: z.int().describe('Number of assets tagged'),
+  })
+  .meta({ id: 'TagBulkAssetsResponseDto' });
 
-export class TagBulkAssetsDto {
-  @ValidateUUID({ each: true, description: 'Tag IDs' })
-  tagIds!: string[];
+export const TagResponseSchema = z
+  .object({
+    id: z.string().describe('Tag ID'),
+    parentId: z.string().optional().describe('Parent tag ID'),
+    name: z.string().describe('Tag name'),
+    value: z.string().describe('Tag value (full path)'),
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
+    color: z.string().optional().describe('Tag color (hex)'),
+  })
+  .meta({ id: 'TagResponseDto' });
 
-  @ValidateUUID({ each: true, description: 'Asset IDs' })
-  assetIds!: string[];
-}
-
-export class TagBulkAssetsResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Number of assets tagged' })
-  count!: number;
-}
-
-export class TagResponseDto {
-  @ApiProperty({ description: 'Tag ID' })
-  id!: string;
-  @ApiPropertyOptional({ description: 'Parent tag ID' })
-  parentId?: string;
-  @ApiProperty({ description: 'Tag name' })
-  name!: string;
-  @ApiProperty({ description: 'Tag value (full path)' })
-  value!: string;
-  @ApiProperty({ description: 'Creation date', format: 'date-time' })
-  createdAt!: string;
-  @ApiProperty({ description: 'Last update date', format: 'date-time' })
-  updatedAt!: string;
-  @ApiPropertyOptional({ description: 'Tag color (hex)' })
-  color?: string;
-}
+export class TagCreateDto extends createZodDto(TagCreateSchema) {}
+export class TagUpdateDto extends createZodDto(TagUpdateSchema) {}
+export class TagUpsertDto extends createZodDto(TagUpsertSchema) {}
+export class TagBulkAssetsDto extends createZodDto(TagBulkAssetsSchema) {}
+export class TagBulkAssetsResponseDto extends createZodDto(TagBulkAssetsResponseSchema) {}
+export class TagResponseDto extends createZodDto(TagResponseSchema) {}
 
 export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
   return {

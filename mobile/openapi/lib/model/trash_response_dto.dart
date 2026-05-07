@@ -17,6 +17,9 @@ class TrashResponseDto {
   });
 
   /// Number of items in trash
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int count;
 
   @override

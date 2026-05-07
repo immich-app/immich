@@ -1,10 +1,10 @@
-import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
+import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+import { locale } from '$lib/stores/preferences.store';
+import { getAssetRatio } from '$lib/utils/asset-utils';
 
 // Move type definitions to the top
 export type TimelineYearMonth = {
@@ -100,7 +100,7 @@ export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string =>
   return `${yearFull}-${monthFull}-01T00:00:00.000Z`;
 };
 
-export function formatMonthGroupTitle(_date: DateTime): string {
+export function formatTimelineMonthTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
   }
@@ -128,7 +128,7 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar({ locale: get(locale) });
+    return date.toRelativeCalendar({ locale: get(locale), unit: 'days' });
   }
 
   // Last week
