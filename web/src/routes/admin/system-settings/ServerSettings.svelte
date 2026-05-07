@@ -1,7 +1,7 @@
 <script lang="ts">
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
@@ -16,7 +16,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
-      <div class="mt-4 ms-4">
+      <div class="ms-4 mt-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_external_domain_settings')}

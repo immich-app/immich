@@ -1,0 +1,18 @@
+[tools]
+python = "3.11"
+uv = "0.8.15"
+
+[tasks.install]
+run = "uv sync --locked"
+
+[tasks.lint]
+run = "uv run ruff check immich_ml"
+
+[tasks.test]
+run = "uv run pytest --cov=immich_ml --cov-report term-missing"
+
+[tasks.format]
+run = "uv run ruff format immich_ml"
+
+[tasks.check]
+run = "uv run mypy --strict immich_ml/"

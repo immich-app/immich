@@ -1,27 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/constants/colors.dart';
-import 'package:immich_mobile/theme/color_scheme.dart';
-import 'package:immich_mobile/theme/theme_data.dart';
-import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/theme/color_scheme.dart';
+import 'package:immich_mobile/theme/dynamic_theme.dart';
+import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
-final immichThemeModeProvider = StateProvider<ThemeMode>((ref) {
-  final themeMode = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.themeMode);
-
-  dPrint(() => "Current themeMode $themeMode");
-
-  if (themeMode == ThemeMode.light.name) {
-    return ThemeMode.light;
-  } else if (themeMode == ThemeMode.dark.name) {
-    return ThemeMode.dark;
-  } else {
-    return ThemeMode.system;
-  }
-});
+final immichThemeModeProvider = StateProvider<ThemeMode>((ref) => ref.watch(appConfigProvider).theme.mode);
 
 final immichThemePresetProvider = StateProvider<ImmichColorPreset>((ref) {
   final appSettingsProvider = ref.watch(appSettingsServiceProvider);

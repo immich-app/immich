@@ -1,7 +1,7 @@
 <script lang="ts">
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
@@ -14,7 +14,7 @@
   import { mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import SettingSelect from './setting-select.svelte';
+  import SettingSelect from './SettingSelect.svelte';
 
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
@@ -89,7 +89,7 @@
             {#if configToEdit.oauth.enabled}
               <hr />
 
-              <div class="flex items-center gap-2 justify-between">
+              <div class="flex items-center justify-between gap-2">
                 <Text size="small">{$t('admin.unlink_all_oauth_accounts_description')}</Text>
                 <Button size="small" onclick={handleUnlinkAllOAuthAccounts}
                   >{$t('admin.unlink_all_oauth_accounts')}</Button
@@ -169,7 +169,7 @@
                 label="prompt"
                 description={$t('admin.oauth_prompt_description')}
                 bind:value={configToEdit.oauth.prompt}
-                required={true}
+                required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
                 isEdited={!(configToEdit.oauth.prompt === config.oauth.prompt)}
               />

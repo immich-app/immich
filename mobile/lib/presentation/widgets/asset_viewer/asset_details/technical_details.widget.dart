@@ -22,6 +22,7 @@ class TechnicalDetails extends ConsumerWidget {
     final exifInfo = this.exifInfo;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
+    final lensSubtitle = _getLensInfoSubtitle(exifInfo);
 
     return Column(
       children: [
@@ -46,8 +47,15 @@ class TechnicalDetails extends ConsumerWidget {
             title: lensTitle,
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
-            subtitle: _getLensInfoSubtitle(exifInfo),
+            subtitle: lensSubtitle,
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+          ),
+        ] else if (lensSubtitle != null) ...[
+          const SizedBox(height: 16),
+          SheetTile(
+            title: lensSubtitle,
+            titleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
           ),
         ],
       ],
@@ -123,6 +131,7 @@ class TechnicalDetails extends ConsumerWidget {
     if (exifInfo == null) return null;
     final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
+    if (fNumber == null && focalLength == null) return null;
     return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 }

@@ -2,20 +2,20 @@ import 'dart:async';
 
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
 /// Service responsible for handling application logging.
 ///
 /// It listens to Dart's [Logger.root], buffers logs in memory (optionally),
-/// writes them to a persistent [ILogRepository], and manages log levels
-/// via [IStoreRepository]
+/// writes them to a persistent [LogRepository], and manages log levels via
+/// [MetadataRepository].
 class LogService {
   final LogRepository _logRepository;
-  final DriftStoreRepository _storeRepository;
+  final MetadataRepository _metadataRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -38,12 +38,12 @@ class LogService {
 
   static Future<LogService> init({
     required LogRepository logRepository,
-    required DriftStoreRepository storeRepository,
+    required MetadataRepository metadataRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
       logRepository: logRepository,
-      storeRepository: storeRepository,
+      metadataRepository: metadataRepository,
       shouldBuffer: shouldBuffer,
     );
     return _instance!;
@@ -51,17 +51,17 @@ class LogService {
 
   static Future<LogService> create({
     required LogRepository logRepository,
-    required DriftStoreRepository storeRepository,
+    required MetadataRepository metadataRepository,
     bool shouldBuffer = true,
   }) async {
-    final instance = LogService._(logRepository, storeRepository, shouldBuffer);
+    final instance = LogService._(logRepository, metadataRepository, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
-    final level = await instance._storeRepository.tryGet(StoreKey.logLevel) ?? LogLevel.info.index;
-    Logger.root.level = Level.LEVELS.elementAtOrNull(level) ?? Level.INFO;
+    final level = instance._metadataRepository.systemConfig.logLevel;
+    Logger.root.level = Level.LEVELS.elementAtOrNull(level.index) ?? Level.INFO;
     return instance;
   }
 
-  LogService._(this._logRepository, this._storeRepository, this._shouldBuffer) {
+  LogService._(this._logRepository, this._metadataRepository, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
@@ -91,7 +91,7 @@ class LogService {
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _storeRepository.upsert(StoreKey.logLevel, level.index);
+    await _metadataRepository.write(MetadataKey.logLevel, level);
     Logger.root.level = level.toLevel();
   }
 

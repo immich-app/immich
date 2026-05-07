@@ -18,8 +18,8 @@
   import TrashSettings from './TrashSettings.svelte';
   import UserSettings from './UserSettings.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingAccordionState from '$lib/components/shared-components/settings/SettingAccordionState.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { QueryParameter } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -210,7 +210,7 @@
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[CopyToClipboard, Download, Upload]}>
   <Container size="large" center>
     {#if featureFlagsManager.value.configFile}
-      <Alert color="warning" class="text-dark my-4" title={$t('admin.config_set_by_file')} />
+      <Alert color="warning" class="my-4 text-dark" title={$t('admin.config_set_by_file')} />
     {/if}
     <div>
       <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />

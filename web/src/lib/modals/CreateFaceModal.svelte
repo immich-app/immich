@@ -74,10 +74,10 @@
   <Text size="tiny" class="mb-4" color="muted">{$t('create_person_subtitle')}</Text>
   {#if previewUrl}
     <Field label={$t('preview')}>
-      <div class="flex justify-center rounded-xl bg-gray-50 p-3 dark:border-gray-700 dark:bg-black/20 relative">
+      <div class="relative flex justify-center rounded-xl bg-gray-50 p-3 dark:border-gray-700 dark:bg-black/20">
         <img src={previewUrl} alt={$t('preview')} class="max-h-48 rounded-lg object-contain shadow-sm" />
         {#if isSubmitting}
-          <div class="flex place-items-center place-content-center absolute inset-0 bg-black/20 rounded-lg">
+          <div class="absolute inset-0 flex place-content-center place-items-center rounded-lg bg-black/20">
             <LoadingSpinner />
           </div>
         {/if}

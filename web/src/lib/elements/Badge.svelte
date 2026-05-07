@@ -10,7 +10,7 @@
 </script>
 
 <span
-  class="bg-primary text-subtle inline-block h-min whitespace-nowrap px-3 py-1 text-center align-baseline text-xs leading-none"
+  class="inline-block h-min bg-primary px-3 py-1 text-center align-baseline text-xs leading-none whitespace-nowrap text-subtle"
   class:rounded-md={rounded === true}
   class:rounded-full={rounded === 'full'}
 >
