@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -12,6 +14,8 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
@@ -336,6 +340,11 @@ class DriftMemoryPage extends HookConsumerWidget {
                             child: const Icon(Icons.close_rounded, color: Colors.white),
                           ),
                         ),
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: _MemoryFavoriteButton(memory: memories[mIndex]),
+                        ),
                         if (currentAsset.value != null && currentAsset.value!.isVideo)
                           Positioned(
                             bottom: 24,
@@ -353,5 +362,68 @@ class DriftMemoryPage extends HookConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _MemoryFavoriteButton extends ConsumerWidget {
+  final DriftMemory memory;
+  const _MemoryFavoriteButton({required this.memory});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final currentUser = ref.watch(currentUserProvider);
+    final favoriteAsset = currentAsset is RemoteAsset && currentAsset.ownerId == currentUser?.id
+        ? currentAsset
+        : null;
+    if (favoriteAsset == null) return const SizedBox.shrink();
+    return Tooltip(
+      message: favoriteAsset.isFavorite ? 'unfavorite'.tr() : 'favorite'.tr(),
+      child: MaterialButton(
+        minWidth: 0,
+        onPressed: () => _onTap(context, ref),
+        shape: const CircleBorder(),
+        color: Colors.white.withValues(alpha: 0.2),
+        elevation: 0,
+        child: Icon(
+          favoriteAsset.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _onTap(BuildContext context, WidgetRef ref) async {
+    if (!context.mounted) return;
+
+    final asset = ref.read(assetViewerProvider).currentAsset;
+    if (asset is! RemoteAsset) return;
+
+    if (asset.isFavorite) {
+      final result = await ref.read(actionProvider.notifier).unFavorite(ActionSource.viewer);
+      if (result.success) {
+        final currentAsset = ref.read(assetViewerProvider).currentAsset;
+        if (currentAsset is RemoteAsset && currentAsset.isFavorite) {
+          ref.read(assetViewerProvider.notifier).setAsset(currentAsset.copyWith(isFavorite: false));
+        }
+        _updateMemoryAsset(asset.id, false);
+      }
+    } else {
+      final result = await ref.read(actionProvider.notifier).favorite(ActionSource.viewer);
+      if (result.success) {
+        final currentAsset = ref.read(assetViewerProvider).currentAsset;
+        if (currentAsset is RemoteAsset && !currentAsset.isFavorite) {
+          ref.read(assetViewerProvider.notifier).setAsset(currentAsset.copyWith(isFavorite: true));
+        }
+        _updateMemoryAsset(asset.id, true);
+      }
+    }
+  }
+
+  void _updateMemoryAsset(String assetId, bool isFavorite) {
+    final assetIndex = memory.assets.indexWhere((a) => a.id == assetId);
+    if (assetIndex != -1) {
+      memory.assets[assetIndex] = memory.assets[assetIndex].copyWith(isFavorite: isFavorite);
+    }
   }
 }
