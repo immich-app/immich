@@ -73,6 +73,7 @@ jobs:
     needs: pre-job
     permissions:
       contents: read
+      pull-requests: write
     # Skip when PR from a fork
     if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
     runs-on: mich
@@ -149,14 +150,62 @@ jobs:
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
+            flutter build apk --debug
             flutter build apk --debug --split-per-abi --target-platform android-arm64
           fi
 
       - name: Publish Android Artifact
+        id: upload-apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
+
+      - name: Upload PR APK to R2
+        if: github.event_name == 'pull_request'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_APK_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_APK_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.R2_APK_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          R2_BUCKET: ${{ secrets.R2_APK_BUCKET }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          APK="./mobile/build/app/outputs/flutter-apk/app-debug.apk"
+          aws s3 cp "$APK" "s3://${R2_BUCKET}/pr-${PR_NUMBER}/immich-${HEAD_SHA}.apk" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --content-type application/vnd.android.package-archive
+          aws s3 cp "$APK" "s3://${R2_BUCKET}/pr-${PR_NUMBER}/immich-pr-${PR_NUMBER}.apk" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --content-type application/vnd.android.package-archive \
+            --cache-control "no-cache, max-age=0"
+
+      - name: Comment APK download links on PR
+        if: github.event_name == 'pull_request'
+        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APK_HOST: ${{ vars.APK_PUBLIC_HOST || 'apk.immich.app' }}
+          ARTIFACT_URL: ${{ steps.upload-apk.outputs.artifact-url }}
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          message-id: 'mobile-android-apk'
+          message: |
+            📱 **Android debug APK** — `${{ env.HEAD_SHA }}`
+
+            Tap to install on your Android device. Coexists with the release app (`app.alextran.immich.debug`) — no need to uninstall.
+
+            | Method | Link |
+            | --- | --- |
+            | Direct install (universal, latest) | https://${{ env.APK_HOST }}/pr-${{ env.PR_NUMBER }}/immich-pr-${{ env.PR_NUMBER }}.apk |
+            | Direct install (this commit) | https://${{ env.APK_HOST }}/pr-${{ env.PR_NUMBER }}/immich-${{ env.HEAD_SHA }}.apk |
+            | Action artifact (zip, GitHub login required) | ${{ env.ARTIFACT_URL }} |
+
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=https%3A%2F%2F${{ env.APK_HOST }}%2Fpr-${{ env.PR_NUMBER }}%2Fimmich-pr-${{ env.PR_NUMBER }}.apk" alt="QR code" />
+
+            > Enable "install from unknown sources" for your browser before tapping the link.
 
       - name: Save Gradle Cache
         id: cache-gradle-save
