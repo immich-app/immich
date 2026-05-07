@@ -25,6 +25,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   RealColumn get longitude => real().nullable()();
 
+  IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -37,12 +39,13 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     type: type,
     createdAt: createdAt,
     updatedAt: updatedAt,
-    durationInSeconds: durationInSeconds,
+    durationMs: durationMs,
     isFavorite: isFavorite,
     height: height,
     width: width,
     remoteId: remoteId,
     orientation: orientation,
+    playbackStyle: playbackStyle,
     adjustmentTime: adjustmentTime,
     latitude: latitude,
     longitude: longitude,

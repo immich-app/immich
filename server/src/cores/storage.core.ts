@@ -18,6 +18,7 @@ import { MoveRepository } from 'src/repositories/move.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { VideoInterfaces } from 'src/types';
 import { getAssetFile } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 
@@ -154,10 +155,11 @@ export class StorageCore {
   }
 
   async moveAssetVideo(asset: StorageAsset) {
+    const encodedVideoFile = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
     return this.moveFile({
       entityId: asset.id,
       pathType: AssetPathType.EncodedVideo,
-      oldPath: asset.encodedVideoPath,
+      oldPath: encodedVideoFile?.path || null,
       newPath: StorageCore.getEncodedVideoPath(asset),
     });
   }
@@ -298,26 +300,25 @@ export class StorageCore {
     return this.storageRepository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
   }
 
+  async getVideoInterfaces(): Promise<VideoInterfaces> {
+    const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
+    return { dri, mali };
+  }
+
   private savePath(pathType: PathType, id: string, newPath: string) {
     switch (pathType) {
       case AssetPathType.Original: {
         return this.assetRepository.update({ id, originalPath: newPath });
       }
-      case AssetFileType.FullSize: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.FullSize, path: newPath });
-      }
-      case AssetFileType.Preview: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Preview, path: newPath });
-      }
-      case AssetFileType.Thumbnail: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Thumbnail, path: newPath });
-      }
-      case AssetPathType.EncodedVideo: {
-        return this.assetRepository.update({ id, encodedVideoPath: newPath });
-      }
+
+      case AssetFileType.FullSize:
+      case AssetFileType.EncodedVideo:
+      case AssetFileType.Thumbnail:
+      case AssetFileType.Preview:
       case AssetFileType.Sidecar: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: newPath });
+        return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
       }
+
       case PersonPathType.Face: {
         return this.personRepository.update({ id, thumbnailPath: newPath });
       }
@@ -334,5 +335,27 @@ export class StorageCore {
 
   static getTempPathInDir(dir: string): string {
     return join(dir, `${randomUUID()}.tmp`);
+  }
+
+  private async getDevices() {
+    try {
+      return await this.storageRepository.readdir('/dev/dri');
+    } catch {
+      this.logger.debug('No devices found in /dev/dri.');
+      return [];
+    }
+  }
+
+  private async hasMaliOpenCL() {
+    try {
+      const [maliIcdStat, maliDeviceStat] = await Promise.all([
+        this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd'),
+        this.storageRepository.stat('/dev/mali0'),
+      ]);
+      return maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+    } catch {
+      this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU tonemapping');
+      return false;
+    }
   }
 }

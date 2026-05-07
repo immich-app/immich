@@ -171,9 +171,10 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
             id: asset.localIdentifier,
             name: "",
             type: 0,
-            durationInSeconds: 0,
+            durationMs: 0,
             orientation: 0,
-            isFavorite: false
+            isFavorite: false,
+            playbackStyle: .unknown
           )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue

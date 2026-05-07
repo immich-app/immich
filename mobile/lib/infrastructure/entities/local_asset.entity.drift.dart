@@ -16,7 +16,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInSeconds,
+      i0.Value<int?> durationMs,
       required String id,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
@@ -25,6 +25,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime?> adjustmentTime,
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
@@ -34,7 +35,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInSeconds,
+      i0.Value<int?> durationMs,
       i0.Value<String> id,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
@@ -43,6 +44,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime?> adjustmentTime,
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -85,8 +87,8 @@ class $$LocalAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -129,6 +131,16 @@ class $$LocalAssetEntityTableFilterComposer
     column: $table.longitude,
     builder: (column) => i0.ColumnFilters(column),
   );
+
+  i0.ColumnWithTypeConverterFilters<
+    i2.AssetPlaybackStyle,
+    i2.AssetPlaybackStyle,
+    int
+  >
+  get playbackStyle => $composableBuilder(
+    column: $table.playbackStyle,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -170,8 +182,8 @@ class $$LocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -214,6 +226,11 @@ class $$LocalAssetEntityTableOrderingComposer
     column: $table.longitude,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<int> get playbackStyle => $composableBuilder(
+    column: $table.playbackStyle,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -243,8 +260,8 @@ class $$LocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<int> get height =>
       $composableBuilder(column: $table.height, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => column,
   );
 
@@ -277,6 +294,12 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<double> get longitude =>
       $composableBuilder(column: $table.longitude, builder: (column) => column);
+
+  i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
+  get playbackStyle => $composableBuilder(
+    column: $table.playbackStyle,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalAssetEntityTableTableManager
@@ -325,7 +348,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
@@ -334,6 +357,8 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
                 i0.Value<double?> latitude = const i0.Value.absent(),
                 i0.Value<double?> longitude = const i0.Value.absent(),
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
+                    const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion(
                 name: name,
                 type: type,
@@ -341,7 +366,7 @@ class $$LocalAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInSeconds: durationInSeconds,
+                durationMs: durationMs,
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
@@ -350,6 +375,7 @@ class $$LocalAssetEntityTableTableManager
                 adjustmentTime: adjustmentTime,
                 latitude: latitude,
                 longitude: longitude,
+                playbackStyle: playbackStyle,
               ),
           createCompanionCallback:
               ({
@@ -359,7 +385,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 required String id,
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
@@ -368,6 +394,8 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
                 i0.Value<double?> latitude = const i0.Value.absent(),
                 i0.Value<double?> longitude = const i0.Value.absent(),
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
+                    const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -375,7 +403,7 @@ class $$LocalAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInSeconds: durationInSeconds,
+                durationMs: durationMs,
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
@@ -384,6 +412,7 @@ class $$LocalAssetEntityTableTableManager
                 adjustmentTime: adjustmentTime,
                 latitude: latitude,
                 longitude: longitude,
+                playbackStyle: playbackStyle,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -493,17 +522,17 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const i0.VerificationMeta _durationInSecondsMeta =
-      const i0.VerificationMeta('durationInSeconds');
+  static const i0.VerificationMeta _durationMsMeta = const i0.VerificationMeta(
+    'durationMs',
+  );
   @override
-  late final i0.GeneratedColumn<int> durationInSeconds =
-      i0.GeneratedColumn<int>(
-        'duration_in_seconds',
-        aliasedName,
-        true,
-        type: i0.DriftSqlType.int,
-        requiredDuringInsert: false,
-      );
+  late final i0.GeneratedColumn<int> durationMs = i0.GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
@@ -596,6 +625,19 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     requiredDuringInsert: false,
   );
   @override
+  late final i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
+  playbackStyle =
+      i0.GeneratedColumn<int>(
+        'playback_style',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const i4.Constant(0),
+      ).withConverter<i2.AssetPlaybackStyle>(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle,
+      );
+  @override
   List<i0.GeneratedColumn> get $columns => [
     name,
     type,
@@ -603,7 +645,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     updatedAt,
     width,
     height,
-    durationInSeconds,
+    durationMs,
     id,
     checksum,
     isFavorite,
@@ -612,6 +654,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     adjustmentTime,
     latitude,
     longitude,
+    playbackStyle,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -657,13 +700,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
     }
-    if (data.containsKey('duration_in_seconds')) {
+    if (data.containsKey('duration_ms')) {
       context.handle(
-        _durationInSecondsMeta,
-        durationInSeconds.isAcceptableOrUnknown(
-          data['duration_in_seconds']!,
-          _durationInSecondsMeta,
-        ),
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -757,9 +797,9 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}height'],
       ),
-      durationInSeconds: attachedDatabase.typeMapping.read(
+      durationMs: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
-        data['${effectivePrefix}duration_in_seconds'],
+        data['${effectivePrefix}duration_ms'],
       ),
       id: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
@@ -793,6 +833,12 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.double,
         data['${effectivePrefix}longitude'],
       ),
+      playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStyle.fromSql(
+        attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.int,
+          data['${effectivePrefix}playback_style'],
+        )!,
+      ),
     );
   }
 
@@ -803,6 +849,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
 
   static i0.JsonTypeConverter2<i2.AssetType, int, int> $convertertype =
       const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
+  static i0.JsonTypeConverter2<i2.AssetPlaybackStyle, int, int>
+  $converterplaybackStyle = const i0.EnumIndexConverter<i2.AssetPlaybackStyle>(
+    i2.AssetPlaybackStyle.values,
+  );
   @override
   bool get withoutRowId => true;
   @override
@@ -817,7 +867,7 @@ class LocalAssetEntityData extends i0.DataClass
   final DateTime updatedAt;
   final int? width;
   final int? height;
-  final int? durationInSeconds;
+  final int? durationMs;
   final String id;
   final String? checksum;
   final bool isFavorite;
@@ -826,6 +876,7 @@ class LocalAssetEntityData extends i0.DataClass
   final DateTime? adjustmentTime;
   final double? latitude;
   final double? longitude;
+  final i2.AssetPlaybackStyle playbackStyle;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -833,7 +884,7 @@ class LocalAssetEntityData extends i0.DataClass
     required this.updatedAt,
     this.width,
     this.height,
-    this.durationInSeconds,
+    this.durationMs,
     required this.id,
     this.checksum,
     required this.isFavorite,
@@ -842,6 +893,7 @@ class LocalAssetEntityData extends i0.DataClass
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    required this.playbackStyle,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -860,8 +912,8 @@ class LocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || height != null) {
       map['height'] = i0.Variable<int>(height);
     }
-    if (!nullToAbsent || durationInSeconds != null) {
-      map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = i0.Variable<int>(durationMs);
     }
     map['id'] = i0.Variable<String>(id);
     if (!nullToAbsent || checksum != null) {
@@ -881,6 +933,11 @@ class LocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || longitude != null) {
       map['longitude'] = i0.Variable<double>(longitude);
     }
+    {
+      map['playback_style'] = i0.Variable<int>(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle.toSql(playbackStyle),
+      );
+    }
     return map;
   }
 
@@ -898,7 +955,7 @@ class LocalAssetEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
-      durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
@@ -907,6 +964,9 @@ class LocalAssetEntityData extends i0.DataClass
       adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
+      playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStyle.fromJson(
+        serializer.fromJson<int>(json['playbackStyle']),
+      ),
     );
   }
   @override
@@ -921,7 +981,7 @@ class LocalAssetEntityData extends i0.DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'width': serializer.toJson<int?>(width),
       'height': serializer.toJson<int?>(height),
-      'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
+      'durationMs': serializer.toJson<int?>(durationMs),
       'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
@@ -930,6 +990,9 @@ class LocalAssetEntityData extends i0.DataClass
       'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
+      'playbackStyle': serializer.toJson<int>(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle.toJson(playbackStyle),
+      ),
     };
   }
 
@@ -940,7 +1003,7 @@ class LocalAssetEntityData extends i0.DataClass
     DateTime? updatedAt,
     i0.Value<int?> width = const i0.Value.absent(),
     i0.Value<int?> height = const i0.Value.absent(),
-    i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+    i0.Value<int?> durationMs = const i0.Value.absent(),
     String? id,
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
@@ -949,6 +1012,7 @@ class LocalAssetEntityData extends i0.DataClass
     i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
     i0.Value<double?> latitude = const i0.Value.absent(),
     i0.Value<double?> longitude = const i0.Value.absent(),
+    i2.AssetPlaybackStyle? playbackStyle,
   }) => i1.LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -956,9 +1020,7 @@ class LocalAssetEntityData extends i0.DataClass
     updatedAt: updatedAt ?? this.updatedAt,
     width: width.present ? width.value : this.width,
     height: height.present ? height.value : this.height,
-    durationInSeconds: durationInSeconds.present
-        ? durationInSeconds.value
-        : this.durationInSeconds,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
     id: id ?? this.id,
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
@@ -969,6 +1031,7 @@ class LocalAssetEntityData extends i0.DataClass
         : this.adjustmentTime,
     latitude: latitude.present ? latitude.value : this.latitude,
     longitude: longitude.present ? longitude.value : this.longitude,
+    playbackStyle: playbackStyle ?? this.playbackStyle,
   );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -978,9 +1041,9 @@ class LocalAssetEntityData extends i0.DataClass
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
-      durationInSeconds: data.durationInSeconds.present
-          ? data.durationInSeconds.value
-          : this.durationInSeconds,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
       id: data.id.present ? data.id.value : this.id,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite: data.isFavorite.present
@@ -995,6 +1058,9 @@ class LocalAssetEntityData extends i0.DataClass
           : this.adjustmentTime,
       latitude: data.latitude.present ? data.latitude.value : this.latitude,
       longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      playbackStyle: data.playbackStyle.present
+          ? data.playbackStyle.value
+          : this.playbackStyle,
     );
   }
 
@@ -1007,7 +1073,7 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
@@ -1015,7 +1081,8 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
-          ..write('longitude: $longitude')
+          ..write('longitude: $longitude, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }
@@ -1028,7 +1095,7 @@ class LocalAssetEntityData extends i0.DataClass
     updatedAt,
     width,
     height,
-    durationInSeconds,
+    durationMs,
     id,
     checksum,
     isFavorite,
@@ -1037,6 +1104,7 @@ class LocalAssetEntityData extends i0.DataClass
     adjustmentTime,
     latitude,
     longitude,
+    playbackStyle,
   );
   @override
   bool operator ==(Object other) =>
@@ -1048,7 +1116,7 @@ class LocalAssetEntityData extends i0.DataClass
           other.updatedAt == this.updatedAt &&
           other.width == this.width &&
           other.height == this.height &&
-          other.durationInSeconds == this.durationInSeconds &&
+          other.durationMs == this.durationMs &&
           other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
@@ -1056,7 +1124,8 @@ class LocalAssetEntityData extends i0.DataClass
           other.iCloudId == this.iCloudId &&
           other.adjustmentTime == this.adjustmentTime &&
           other.latitude == this.latitude &&
-          other.longitude == this.longitude);
+          other.longitude == this.longitude &&
+          other.playbackStyle == this.playbackStyle);
 }
 
 class LocalAssetEntityCompanion
@@ -1067,7 +1136,7 @@ class LocalAssetEntityCompanion
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> width;
   final i0.Value<int?> height;
-  final i0.Value<int?> durationInSeconds;
+  final i0.Value<int?> durationMs;
   final i0.Value<String> id;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
@@ -1076,6 +1145,7 @@ class LocalAssetEntityCompanion
   final i0.Value<DateTime?> adjustmentTime;
   final i0.Value<double?> latitude;
   final i0.Value<double?> longitude;
+  final i0.Value<i2.AssetPlaybackStyle> playbackStyle;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -1083,7 +1153,7 @@ class LocalAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInSeconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
@@ -1092,6 +1162,7 @@ class LocalAssetEntityCompanion
     this.adjustmentTime = const i0.Value.absent(),
     this.latitude = const i0.Value.absent(),
     this.longitude = const i0.Value.absent(),
+    this.playbackStyle = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -1100,7 +1171,7 @@ class LocalAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInSeconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     required String id,
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
@@ -1109,6 +1180,7 @@ class LocalAssetEntityCompanion
     this.adjustmentTime = const i0.Value.absent(),
     this.latitude = const i0.Value.absent(),
     this.longitude = const i0.Value.absent(),
+    this.playbackStyle = const i0.Value.absent(),
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id);
@@ -1119,7 +1191,7 @@ class LocalAssetEntityCompanion
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? width,
     i0.Expression<int>? height,
-    i0.Expression<int>? durationInSeconds,
+    i0.Expression<int>? durationMs,
     i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
@@ -1128,6 +1200,7 @@ class LocalAssetEntityCompanion
     i0.Expression<DateTime>? adjustmentTime,
     i0.Expression<double>? latitude,
     i0.Expression<double>? longitude,
+    i0.Expression<int>? playbackStyle,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1136,7 +1209,7 @@ class LocalAssetEntityCompanion
       if (updatedAt != null) 'updated_at': updatedAt,
       if (width != null) 'width': width,
       if (height != null) 'height': height,
-      if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
+      if (durationMs != null) 'duration_ms': durationMs,
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
@@ -1145,6 +1218,7 @@ class LocalAssetEntityCompanion
       if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (playbackStyle != null) 'playback_style': playbackStyle,
     });
   }
 
@@ -1155,7 +1229,7 @@ class LocalAssetEntityCompanion
     i0.Value<DateTime>? updatedAt,
     i0.Value<int?>? width,
     i0.Value<int?>? height,
-    i0.Value<int?>? durationInSeconds,
+    i0.Value<int?>? durationMs,
     i0.Value<String>? id,
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
@@ -1164,6 +1238,7 @@ class LocalAssetEntityCompanion
     i0.Value<DateTime?>? adjustmentTime,
     i0.Value<double?>? latitude,
     i0.Value<double?>? longitude,
+    i0.Value<i2.AssetPlaybackStyle>? playbackStyle,
   }) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1172,7 +1247,7 @@ class LocalAssetEntityCompanion
       updatedAt: updatedAt ?? this.updatedAt,
       width: width ?? this.width,
       height: height ?? this.height,
-      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      durationMs: durationMs ?? this.durationMs,
       id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
@@ -1181,6 +1256,7 @@ class LocalAssetEntityCompanion
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      playbackStyle: playbackStyle ?? this.playbackStyle,
     );
   }
 
@@ -1207,8 +1283,8 @@ class LocalAssetEntityCompanion
     if (height.present) {
       map['height'] = i0.Variable<int>(height.value);
     }
-    if (durationInSeconds.present) {
-      map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds.value);
+    if (durationMs.present) {
+      map['duration_ms'] = i0.Variable<int>(durationMs.value);
     }
     if (id.present) {
       map['id'] = i0.Variable<String>(id.value);
@@ -1234,6 +1310,13 @@ class LocalAssetEntityCompanion
     if (longitude.present) {
       map['longitude'] = i0.Variable<double>(longitude.value);
     }
+    if (playbackStyle.present) {
+      map['playback_style'] = i0.Variable<int>(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle.toSql(
+          playbackStyle.value,
+        ),
+      );
+    }
     return map;
   }
 
@@ -1246,7 +1329,7 @@ class LocalAssetEntityCompanion
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
@@ -1254,7 +1337,8 @@ class LocalAssetEntityCompanion
           ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
-          ..write('longitude: $longitude')
+          ..write('longitude: $longitude, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }

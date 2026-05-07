@@ -39,6 +39,16 @@ class _RatingBarState extends State<RatingBar> {
     _currentRating = widget.initialRating;
   }
 
+  @override
+  void didUpdateWidget(covariant RatingBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialRating != widget.initialRating && _currentRating != widget.initialRating) {
+      setState(() {
+        _currentRating = widget.initialRating;
+      });
+    }
+  }
+
   void _updateRating(Offset localPosition, bool isRTL, {bool isTap = false}) {
     final totalWidth = widget.itemCount * widget.itemSize + (widget.itemCount - 1) * widget.starPadding;
     double dx = localPosition.dx;

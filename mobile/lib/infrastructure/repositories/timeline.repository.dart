@@ -83,7 +83,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   width: row.width,
                   height: row.height,
                   isFavorite: row.isFavorite,
-                  durationInSeconds: row.durationInSeconds,
+                  durationMs: row.durationMs,
                   livePhotoVideoId: row.livePhotoVideoId,
                   stackId: row.stackId,
                   isEdited: row.isEdited,
@@ -99,8 +99,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   width: row.width,
                   height: row.height,
                   isFavorite: row.isFavorite,
-                  durationInSeconds: row.durationInSeconds,
+                  durationMs: row.durationMs,
                   orientation: row.orientation,
+                  playbackStyle: AssetPlaybackStyle.values[row.playbackStyle],
                   cloudId: row.iCloudId,
                   latitude: row.latitude,
                   longitude: row.longitude,
@@ -274,6 +275,19 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     assetSource: (offset, count) => Future.value(assets.skip(offset).take(count).toList(growable: false)),
     origin: origin,
   );
+
+  TimelineQuery fromAssetStream(List<BaseAsset> Function() getAssets, Stream<int> assetCount, TimelineOrigin origin) =>
+      (
+        bucketSource: () async* {
+          yield _generateBuckets(getAssets().length);
+          yield* assetCount.map(_generateBuckets);
+        },
+        assetSource: (offset, count) {
+          final assets = getAssets();
+          return Future.value(assets.skip(offset).take(count).toList(growable: false));
+        },
+        origin: origin,
+      );
 
   TimelineQuery fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin origin) {
     // Sort assets by date descending and group by day

@@ -79,11 +79,6 @@ const checkSharedLinkAccess = async (
       return sharedLink.allowUpload ? ids : new Set();
     }
 
-    case Permission.AssetShare: {
-      // TODO: fix this to not use sharedLink.userId for access control
-      return await access.asset.checkOwnerAccess(sharedLink.userId, ids, false);
-    }
-
     case Permission.AlbumRead: {
       return await access.album.checkSharedLinkAccess(sharedLinkId, ids);
     }
@@ -190,7 +185,13 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.AlbumUpdate: {
-      return await access.album.checkOwnerAccess(auth.user.id, ids);
+      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
+      const isShared = await access.album.checkSharedAlbumAccess(
+        auth.user.id,
+        setDifference(ids, isOwner),
+        AlbumUserRole.Editor,
+      );
+      return setUnion(isOwner, isShared);
     }
 
     case Permission.AlbumDelete: {
@@ -198,7 +199,13 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.AlbumShare: {
-      return await access.album.checkOwnerAccess(auth.user.id, ids);
+      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
+      const isShared = await access.album.checkSharedAlbumAccess(
+        auth.user.id,
+        setDifference(ids, isOwner),
+        AlbumUserRole.Editor,
+      );
+      return setUnion(isOwner, isShared);
     }
 
     case Permission.AlbumDownload: {
@@ -227,6 +234,11 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.ArchiveRead: {
       return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
+    }
+
+    case Permission.DuplicateRead:
+    case Permission.DuplicateDelete: {
+      return access.duplicate.checkOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.AuthDeviceDelete: {

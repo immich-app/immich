@@ -34,6 +34,7 @@ enum TimelineOrigin {
   search,
   deepLink,
   albumActivities,
+  folder,
 }
 
 class TimelineFactory {
@@ -78,6 +79,9 @@ class TimelineFactory {
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));
 
+  TimelineService fromAssetStream(List<BaseAsset> Function() getAssets, Stream<int> assetCount, TimelineOrigin type) =>
+      TimelineService(_timelineRepository.fromAssetStream(getAssets, assetCount, type));
+
   TimelineService fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssetsWithBuckets(assets, type));
 
@@ -112,7 +116,7 @@ class TimelineService {
 
         if (totalAssets == 0) {
           _bufferOffset = 0;
-          _buffer.clear();
+          _buffer = [];
         } else {
           final int offset;
           final int count;

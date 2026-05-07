@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -17,20 +16,16 @@ import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart' show nativeSyncApiProvider;
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
-import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/wm_executor.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
 class BackgroundWorkerFgService {
@@ -60,27 +55,19 @@ class BackgroundWorkerFgService {
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   ProviderContainer? _ref;
-  final Isar _isar;
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final CancellationToken _cancellationToken = CancellationToken();
+  final _cancellationToken = Completer<void>();
   final Logger _logger = Logger('BackgroundWorkerBgService');
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required Isar isar, required Drift drift, required DriftLogger driftLogger})
-    : _isar = isar,
-      _drift = drift,
+  BackgroundWorkerBgService({required Drift drift, required DriftLogger driftLogger})
+    : _drift = drift,
       _driftLogger = driftLogger,
       _backgroundHostApi = BackgroundWorkerBgHostApi() {
-    _ref = ProviderContainer(
-      overrides: [
-        dbProvider.overrideWithValue(isar),
-        isarProvider.overrideWithValue(isar),
-        driftProvider.overrideWith(driftOverride(drift)),
-      ],
-    );
+    _ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(drift))]);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
@@ -88,8 +75,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> init() async {
     try {
-      HttpSSLOptions.apply();
-
       await Future.wait(
         [
           loadTranslations(),
@@ -106,7 +91,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           ),
           FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false),
           FileDownloader().trackTasks(),
-          _ref?.read(fileMediaRepositoryProvider).enableBackgroundAccess(),
         ].nonNulls,
       );
 
@@ -192,15 +176,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
 
-      await _drift.close();
-      await _driftLogger.close();
-
-      _ref?.dispose();
-      _ref = null;
-
-      _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
-
+      _cancellationToken.complete();
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
         workerManagerPatch.dispose().catchError((_) async {
@@ -211,13 +188,15 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         Store.dispose(),
 
         backgroundSyncManager?.cancel(),
+        _drift.optimize(allTables: true),
       ];
 
-      if (_isar.isOpen) {
-        cleanupFutures.add(_isar.close());
-      }
       await Future.wait(cleanupFutures.nonNulls);
-      _logger.info("Background worker resources cleaned up");
+      await _drift.close();
+      await _driftLogger.close();
+
+      _ref?.dispose();
+      _ref = null;
     } catch (error, stack) {
       dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
     }
@@ -305,7 +284,6 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  final (isar, drift, logDB) = await Bootstrap.initDB();
-  await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false, listenStoreUpdates: false);
-  await BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();
+  final (drift, logDB) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
+  await BackgroundWorkerBgService(drift: drift, driftLogger: logDB).init();
 }

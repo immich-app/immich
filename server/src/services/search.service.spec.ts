@@ -5,6 +5,7 @@ import { SearchService } from 'src/services/search.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
+import { getForAsset } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
 
@@ -74,7 +75,9 @@ describe(SearchService.name, () => {
         items: [{ value: 'city', data: asset.id }],
       });
       mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
-      const expectedResponse = [{ fieldName: 'exifInfo.city', items: [{ value: 'city', data: mapAsset(asset) }] }];
+      const expectedResponse = [
+        { fieldName: 'exifInfo.city', items: [{ value: 'city', data: mapAsset(getForAsset(asset)) }] },
+      ];
 
       const result = await sut.getExploreData(auth);
 

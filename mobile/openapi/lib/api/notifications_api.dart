@@ -182,10 +182,8 @@ class NotificationsApi {
   ///   Filter by notification ID
   ///
   /// * [NotificationLevel] level:
-  ///   Filter by notification level
   ///
   /// * [NotificationType] type:
-  ///   Filter by notification type
   ///
   /// * [bool] unread:
   ///   Filter by unread status
@@ -237,10 +235,8 @@ class NotificationsApi {
   ///   Filter by notification ID
   ///
   /// * [NotificationLevel] level:
-  ///   Filter by notification level
   ///
   /// * [NotificationType] type:
-  ///   Filter by notification type
   ///
   /// * [bool] unread:
   ///   Filter by unread status

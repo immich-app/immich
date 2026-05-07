@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
+import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -20,7 +20,7 @@ export class ApiKeyController {
     description: 'Creates a new API key. It will be limited to the permissions specified.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  createApiKey(@Auth() auth: AuthDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
+  createApiKey(@Auth() auth: AuthDto, @Body() dto: ApiKeyCreateDto): Promise<ApiKeyCreateResponseDto> {
     return this.service.create(auth, dto);
   }
 
@@ -31,7 +31,7 @@ export class ApiKeyController {
     description: 'Retrieve all API keys of the current user.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getApiKeys(@Auth() auth: AuthDto): Promise<APIKeyResponseDto[]> {
+  getApiKeys(@Auth() auth: AuthDto): Promise<ApiKeyResponseDto[]> {
     return this.service.getAll(auth);
   }
 
@@ -42,7 +42,7 @@ export class ApiKeyController {
     description: 'Retrieve the API key that is used to access this endpoint.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  async getMyApiKey(@Auth() auth: AuthDto): Promise<APIKeyResponseDto> {
+  async getMyApiKey(@Auth() auth: AuthDto): Promise<ApiKeyResponseDto> {
     return this.service.getMine(auth);
   }
 
@@ -53,7 +53,7 @@ export class ApiKeyController {
     description: 'Retrieve an API key by its ID. The current user must own this API key.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
+  getApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<ApiKeyResponseDto> {
     return this.service.getById(auth, id);
   }
 
@@ -67,8 +67,8 @@ export class ApiKeyController {
   updateApiKey(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: APIKeyUpdateDto,
-  ): Promise<APIKeyResponseDto> {
+    @Body() dto: ApiKeyUpdateDto,
+  ): Promise<ApiKeyResponseDto> {
     return this.service.update(auth, id, dto);
   }
 

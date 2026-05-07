@@ -1,6 +1,6 @@
+import { AssetEditAction, MirrorAxis } from '@immich/sdk';
 import type { EditActions } from '$lib/managers/edit/edit-manager.svelte';
 import { buildAffineFromEdits, normalizeTransformEdits } from '$lib/utils/editor';
-import { AssetEditAction, MirrorAxis } from '@immich/sdk';
 
 type NormalizedParameters = {
   rotation: number;

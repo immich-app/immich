@@ -1,10 +1,10 @@
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, expect, it, MockedFunction, vi } from 'vitest';
 
-import { Action, checkBulkUpload, defaults, getSupportedMediaTypes, Reason } from '@immich/sdk';
+import { AssetRejectReason, AssetUploadAction, checkBulkUpload, defaults, getSupportedMediaTypes } from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
 
 import {
@@ -58,7 +58,7 @@ describe('uploadFiles', () => {
   });
 
   it('returns new assets when upload file is successful', async () => {
-    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
       return {
         status: 200,
         body: JSON.stringify({ id: 'fc5621b1-86f6-44a1-9905-403e607df9f5', status: 'created' }),
@@ -75,7 +75,7 @@ describe('uploadFiles', () => {
 
   it('returns new assets when upload file retry is successful', async () => {
     let counter = 0;
-    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
       counter++;
       if (counter < retry) {
         throw new Error('Network error');
@@ -96,7 +96,7 @@ describe('uploadFiles', () => {
   });
 
   it('returns new assets when upload file retry is failed', async () => {
-    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
       throw new Error('Network error');
     });
 
@@ -120,7 +120,7 @@ describe('checkForDuplicates', () => {
     vi.mocked(checkBulkUpload).mockResolvedValue({
       results: [
         {
-          action: Action.Accept,
+          action: AssetUploadAction.Accept,
           id: testFilePath,
         },
       ],
@@ -144,10 +144,10 @@ describe('checkForDuplicates', () => {
     vi.mocked(checkBulkUpload).mockResolvedValue({
       results: [
         {
-          action: Action.Reject,
+          action: AssetUploadAction.Reject,
           id: testFilePath,
           assetId: 'fc5621b1-86f6-44a1-9905-403e607df9f5',
-          reason: Reason.Duplicate,
+          reason: AssetRejectReason.Duplicate,
         },
       ],
     });
@@ -167,7 +167,7 @@ describe('checkForDuplicates', () => {
     vi.mocked(checkBulkUpload).mockResolvedValue({
       results: [
         {
-          action: Action.Accept,
+          action: AssetUploadAction.Accept,
           id: testFilePath,
         },
       ],
@@ -187,7 +187,7 @@ describe('checkForDuplicates', () => {
     mocked.mockResolvedValue({
       results: [
         {
-          action: Action.Accept,
+          action: AssetUploadAction.Accept,
           id: testFilePath,
         },
       ],
@@ -236,16 +236,19 @@ describe('startWatch', () => {
     await sleep(100); // to debounce the watcher from considering the test file as a existing file
     await fs.promises.writeFile(testFilePath, 'testjpg');
 
-    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-    expect(checkBulkUpload).toHaveBeenCalledWith({
-      assetBulkUploadCheckDto: {
-        assets: [
-          expect.objectContaining({
-            id: testFilePath,
-          }),
-        ],
-      },
-    });
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: [
+              expect.objectContaining({
+                id: testFilePath,
+              }),
+            ],
+          },
+        }),
+      { timeout: 5000 },
+    );
   });
 
   it('should filter out unsupported files', async () => {
@@ -257,16 +260,19 @@ describe('startWatch', () => {
     await fs.promises.writeFile(testFilePath, 'testjpg');
     await fs.promises.writeFile(unsupportedFilePath, 'testtxt');
 
-    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-    expect(checkBulkUpload).toHaveBeenCalledWith({
-      assetBulkUploadCheckDto: {
-        assets: expect.arrayContaining([
-          expect.objectContaining({
-            id: testFilePath,
-          }),
-        ]),
-      },
-    });
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: expect.arrayContaining([
+              expect.objectContaining({
+                id: testFilePath,
+              }),
+            ]),
+          },
+        }),
+      { timeout: 5000 },
+    );
 
     expect(checkBulkUpload).not.toHaveBeenCalledWith({
       assetBulkUploadCheckDto: {
@@ -291,16 +297,19 @@ describe('startWatch', () => {
     await fs.promises.writeFile(testFilePath, 'testjpg');
     await fs.promises.writeFile(ignoredFilePath, 'ignoredjpg');
 
-    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-    expect(checkBulkUpload).toHaveBeenCalledWith({
-      assetBulkUploadCheckDto: {
-        assets: expect.arrayContaining([
-          expect.objectContaining({
-            id: testFilePath,
-          }),
-        ]),
-      },
-    });
+    await vi.waitFor(
+      () =>
+        expect(checkBulkUpload).toHaveBeenCalledWith({
+          assetBulkUploadCheckDto: {
+            assets: expect.arrayContaining([
+              expect.objectContaining({
+                id: testFilePath,
+              }),
+            ]),
+          },
+        }),
+      { timeout: 5000 },
+    );
 
     expect(checkBulkUpload).not.toHaveBeenCalledWith({
       assetBulkUploadCheckDto: {

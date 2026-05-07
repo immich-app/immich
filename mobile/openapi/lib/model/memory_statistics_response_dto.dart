@@ -17,6 +17,9 @@ class MemoryStatisticsResponseDto {
   });
 
   /// Total number of memories
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int total;
 
   @override

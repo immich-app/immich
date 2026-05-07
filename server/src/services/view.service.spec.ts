@@ -2,6 +2,7 @@ import { mapAsset } from 'src/dtos/asset-response.dto';
 import { ViewService } from 'src/services/view.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
+import { getForAsset } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(ViewService.name, () => {
@@ -37,7 +38,7 @@ describe(ViewService.name, () => {
 
       const mockAssets = [asset1, asset2];
 
-      const mockAssetReponseDto = mockAssets.map((a) => mapAsset(a, { auth: authStub.admin }));
+      const mockAssetReponseDto = mockAssets.map((asset) => mapAsset(getForAsset(asset), { auth: authStub.admin }));
 
       mocks.view.getAssetsByOriginalPath.mockResolvedValue(mockAssets as any);
 
