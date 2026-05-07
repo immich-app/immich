@@ -5412,6 +5412,109 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.updatePerson).not.toHaveBeenCalled();
     });
 
+    it('should prefer a personal profile name over a space-derived name at the same priority', async () => {
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const identityId = newUuid();
+      const personalPersonId = newUuid();
+      const otherSpacePersonId = newUuid();
+      const person = factory.sharedSpacePerson({ id: personId, spaceId, identityId, nameSource: 'none' });
+
+      mocks.sharedSpace.getSpacePersonMetadataBackfillPage.mockResolvedValue([person]);
+      mocks.sharedSpace.getPersonById.mockResolvedValue(person);
+      mocks.sharedSpace.getMetadataInheritanceCandidates.mockResolvedValue([
+        {
+          personId: otherSpacePersonId,
+          sourceProfileType: 'space-person',
+          sourceProfileId: otherSpacePersonId,
+          userId: newUuid(),
+          role: SharedSpaceRole.Owner,
+          name: 'Space Name',
+          birthDate: null,
+          type: 'person',
+          species: null,
+          updatedAt: newDate(),
+          supportingFaceCount: 1,
+          isAssetAdder: true,
+        },
+        {
+          personId: personalPersonId,
+          sourceProfileType: 'user-person',
+          sourceProfileId: personalPersonId,
+          userId: newUuid(),
+          role: SharedSpaceRole.Owner,
+          name: 'Personal Name',
+          birthDate: null,
+          type: 'person',
+          species: null,
+          updatedAt: newDate(),
+          supportingFaceCount: 1,
+          isAssetAdder: true,
+        },
+      ]);
+      mocks.sharedSpace.updatePerson.mockResolvedValue(person);
+
+      const result = await sut.backfillSpacePersonMetadata({ limit: 50 });
+
+      expect(result).toEqual({ processed: 1, inherited: 1, skipped: 0 });
+      expect(mocks.sharedSpace.updatePerson).toHaveBeenCalledWith(
+        personId,
+        expect.objectContaining({
+          name: 'Personal Name',
+          nameSource: 'inherited',
+          nameSourceProfileType: 'user-person',
+          nameSourceProfileId: personalPersonId,
+        }),
+      );
+    });
+
+    it('should keep an inherited name when candidate names conflict', async () => {
+      const spaceId = newUuid();
+      const personId = newUuid();
+      const identityId = newUuid();
+      const person = factory.sharedSpacePerson({
+        id: personId,
+        spaceId,
+        identityId,
+        name: 'Existing Alice',
+        nameSource: 'inherited',
+      });
+
+      mocks.sharedSpace.getSpacePersonMetadataBackfillPage.mockResolvedValue([person]);
+      mocks.sharedSpace.getPersonById.mockResolvedValue(person);
+      mocks.sharedSpace.getMetadataInheritanceCandidates.mockResolvedValue([
+        {
+          personId: newUuid(),
+          userId: newUuid(),
+          role: SharedSpaceRole.Editor,
+          name: 'Alice One',
+          birthDate: null,
+          type: 'person',
+          species: null,
+          updatedAt: newDate(),
+          supportingFaceCount: 1,
+          isAssetAdder: false,
+        },
+        {
+          personId: newUuid(),
+          userId: newUuid(),
+          role: SharedSpaceRole.Editor,
+          name: 'Alice Two',
+          birthDate: null,
+          type: 'person',
+          species: null,
+          updatedAt: newDate(),
+          supportingFaceCount: 1,
+          isAssetAdder: false,
+        },
+      ]);
+
+      const result = await sut.backfillSpacePersonMetadata({ limit: 50 });
+
+      expect(result).toEqual({ processed: 1, inherited: 0, skipped: 1 });
+      expect(mocks.sharedSpace.updatePerson).not.toHaveBeenCalled();
+    });
+
     it('should queue the next chunk without starting the backfill automatically elsewhere', async () => {
       const person = factory.sharedSpacePerson({ identityId: newUuid() });
       mocks.sharedSpace.getSpacePersonMetadataBackfillPage.mockResolvedValue([person]);

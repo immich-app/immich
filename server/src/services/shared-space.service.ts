@@ -65,6 +65,7 @@ const ROLE_HIERARCHY: Record<SharedSpaceRole, number> = {
 };
 
 const getSharedSpaceRoleScore = (role: string) => ROLE_HIERARCHY[role as SharedSpaceRole] ?? 0;
+const getMetadataSourceScore = (sourceProfileType?: string | null) => (sourceProfileType === 'user-person' ? 1 : 0);
 
 type SpacePersonMatchResult = {
   id: string;
@@ -2129,12 +2130,11 @@ export class SharedSpaceService extends BaseService {
     const candidates = metadataCandidates.filter((item) => item.type === person.type);
     const updates: Parameters<typeof this.sharedSpaceRepository.updatePerson>[1] = {};
     const now = new Date();
-    const nameCandidate = this.selectMetadataCandidate(
-      candidates.filter((candidate) => candidate.name.trim().length > 0),
-      (candidate) => candidate.name.trim(),
-    );
+    const nameCandidates = candidates.filter((candidate) => candidate.name.trim().length > 0);
+    const birthDateCandidates = candidates.filter((candidate) => candidate.birthDate !== null);
+    const nameCandidate = this.selectMetadataCandidate(nameCandidates, (candidate) => candidate.name.trim());
     const birthDateCandidate = this.selectMetadataCandidate(
-      candidates.filter((candidate) => candidate.birthDate !== null),
+      birthDateCandidates,
       (candidate) => asBirthDateString(candidate.birthDate) ?? '',
     );
 
@@ -2144,7 +2144,7 @@ export class SharedSpaceService extends BaseService {
       updates.nameSourceProfileType = nameCandidate.candidate.sourceProfileType ?? 'user-person';
       updates.nameSourceProfileId = nameCandidate.candidate.sourceProfileId ?? nameCandidate.candidate.personId;
       updates.nameSourceUpdatedAt = now;
-    } else if (person.nameSource === 'inherited' && !nameCandidate) {
+    } else if (person.nameSource === 'inherited' && nameCandidates.length === 0) {
       updates.name = '';
       updates.nameSource = 'none';
       updates.nameSourceProfileType = null;
@@ -2159,7 +2159,7 @@ export class SharedSpaceService extends BaseService {
       updates.birthDateSourceProfileId =
         birthDateCandidate.candidate.sourceProfileId ?? birthDateCandidate.candidate.personId;
       updates.birthDateSourceUpdatedAt = now;
-    } else if (person.birthDateSource === 'inherited' && !birthDateCandidate) {
+    } else if (person.birthDateSource === 'inherited' && birthDateCandidates.length === 0) {
       updates.birthDate = null;
       updates.birthDateSource = 'none';
       updates.birthDateSourceProfileType = null;
@@ -2174,10 +2174,9 @@ export class SharedSpaceService extends BaseService {
     return false;
   }
 
-  private selectMetadataCandidate<T extends { role: string; isAssetAdder: boolean; supportingFaceCount: number }>(
-    candidates: T[],
-    getValue: (candidate: T) => string,
-  ): { candidate: T; value: string } | null {
+  private selectMetadataCandidate<
+    T extends { role: string; isAssetAdder: boolean; supportingFaceCount: number; sourceProfileType?: string | null },
+  >(candidates: T[], getValue: (candidate: T) => string): { candidate: T; value: string } | null {
     if (candidates.length === 0) {
       return null;
     }
@@ -2197,6 +2196,11 @@ export class SharedSpaceService extends BaseService {
         if (faceDelta !== 0) {
           return faceDelta;
         }
+        const sourceDelta =
+          getMetadataSourceScore(b.candidate.sourceProfileType) - getMetadataSourceScore(a.candidate.sourceProfileType);
+        if (sourceDelta !== 0) {
+          return sourceDelta;
+        }
         return 0;
       });
 
@@ -2205,7 +2209,8 @@ export class SharedSpaceService extends BaseService {
       (item) =>
         getSharedSpaceRoleScore(item.candidate.role) === getSharedSpaceRoleScore(best.role) &&
         item.candidate.isAssetAdder === best.isAssetAdder &&
-        Number(item.candidate.supportingFaceCount) === Number(best.supportingFaceCount),
+        Number(item.candidate.supportingFaceCount) === Number(best.supportingFaceCount) &&
+        getMetadataSourceScore(item.candidate.sourceProfileType) === getMetadataSourceScore(best.sourceProfileType),
     );
     const values = new Set(topCandidates.map((item) => item.value));
     return values.size === 1 ? ranked[0] : null;
