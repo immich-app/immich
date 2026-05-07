@@ -142,10 +142,8 @@
         options={Object.values(metadataOverlayModeOptions)}
         selectedOption={metadataOverlayModeOptions[tempSlideshowMetadataOverlayMode]}
         onToggle={(option) => {
-          if (tempSlideshowShowMetadataOverlay) {
-            tempSlideshowMetadataOverlayMode =
-              handleToggle(option, metadataOverlayModeOptions) || tempSlideshowMetadataOverlayMode;
-          }
+          tempSlideshowMetadataOverlayMode =
+            handleToggle(option, metadataOverlayModeOptions) || tempSlideshowMetadataOverlayMode;
         }}
       />
     </div>

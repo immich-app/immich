@@ -14,10 +14,8 @@
 
   const scrimOpacity = 0.7;
 
-  // Compute description
   const description = $derived(asset.exifInfo?.description?.trim() || '');
 
-  // Compute date taken
   const dateTime = $derived(
     asset.exifInfo?.timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, asset.exifInfo.timeZone)
@@ -25,61 +23,35 @@
   );
   const dateString = $derived(dateTime.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY));
 
-  // Compute location
-  const locationParts = $derived(
-    (() => {
-      const parts: string[] = [];
-      if (asset.exifInfo?.city) {
-        parts.push(asset.exifInfo.city);
-      }
-      if (asset.exifInfo?.state) {
-        parts.push(asset.exifInfo.state);
-      }
-      if (asset.exifInfo?.country) {
-        parts.push(asset.exifInfo.country);
-      }
-      return parts;
-    })(),
+  const locationString = $derived(
+    [asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean).join(', '),
   );
-  const locationString = $derived(locationParts.join(', '));
 
-  // Compute visibility
-  const shouldShow = $derived(() => {
+  const shouldShow = $derived.by(() => {
     if (!$slideshowShowMetadataOverlay) {
       return false;
     }
-
     if ($slideshowMetadataOverlayMode === SlideshowMetadataOverlayMode.DescriptionOnly) {
       return !!description;
     }
-
-    // Full mode: show if any field is available
     return !!description || !!dateString || !!locationString;
   });
 </script>
 
-{#if shouldShow()}
+{#if shouldShow}
   <div class="absolute bottom-0 left-0 right-0 z-10">
-    <!-- Dark scrim -->
     <div
       class="w-full px-6 py-4"
       style="background: linear-gradient(to top, rgba(0, 0, 0, {scrimOpacity}) 0%, rgba(0, 0, 0, {scrimOpacity *
         0.8}) 100%);"
     >
       <div class="flex flex-col gap-2 text-white">
-        {#if $slideshowMetadataOverlayMode === SlideshowMetadataOverlayMode.DescriptionOnly}
-          {#if description}
-            <p class="text-base font-medium leading-relaxed whitespace-pre-wrap wrap-break-word">
-              {description}
-            </p>
-          {/if}
-        {:else}
-          <!-- Full mode: show all available metadata -->
-          {#if description}
-            <p class="text-base font-medium leading-relaxed whitespace-pre-wrap wrap-break-word">
-              {description}
-            </p>
-          {/if}
+        {#if description}
+          <p class="text-base font-medium leading-relaxed whitespace-pre-wrap wrap-break-word">
+            {description}
+          </p>
+        {/if}
+        {#if $slideshowMetadataOverlayMode !== SlideshowMetadataOverlayMode.DescriptionOnly}
           <div class="flex flex-col gap-1 text-sm opacity-90">
             {#if dateString}
               <p>{dateString}</p>
