@@ -72,7 +72,7 @@ jobs:
     name: Build and sign Android
     needs: pre-job
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     # Skip when PR from a fork
     if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
@@ -150,34 +150,57 @@ jobs:
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
-            flutter build apk --debug
-            flutter build apk --debug --split-per-abi --target-platform android-arm64
+            flutter build apk --release
+            flutter build apk --release --split-per-abi --target-platform android-arm64
           fi
 
       - name: Publish Android Artifact
-        id: upload-apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
 
+      - name: Publish PR APK to GitHub Release
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+        working-directory: ./mobile/build/app/outputs/flutter-apk
+        run: |
+          UNIVERSAL="immich-pr-${PR_NUMBER}.apk"
+          ARM64="immich-pr-${PR_NUMBER}-arm64.apk"
+          cp app-release.apk "${UNIVERSAL}"
+          cp app-arm64-v8a-release.apk "${ARM64}"
+          TAG="pr-${PR_NUMBER}"
+          gh release delete "${TAG}" --repo "${REPO}" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --title "Mobile PR #${PR_NUMBER} build" \
+            --prerelease \
+            --target "${HEAD_SHA}" \
+            --notes "Automated APK build for PR #${PR_NUMBER} at ${HEAD_SHA}." \
+            "${UNIVERSAL}" "${ARM64}"
+
       - name: Comment APK download link on PR
         if: github.event_name == 'pull_request'
         uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          ARTIFACT_URL: ${{ steps.upload-apk.outputs.artifact-url }}
+          APK_URL: https://github.com/${{ github.repository }}/releases/download/pr-${{ github.event.pull_request.number }}/immich-pr-${{ github.event.pull_request.number }}.apk
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'mobile-android-apk'
           message: |
-            📱 **Android debug APK** — `${{ env.HEAD_SHA }}`
+            📱 **Android release APK** — `${{ env.HEAD_SHA }}`
 
-            Download: ${{ env.ARTIFACT_URL }}
+            Tap to install (universal): ${{ env.APK_URL }}
 
-            Contains a universal `app-debug.apk` and `app-arm64-v8a-debug.apk`. GitHub login required; downloads as a zip — extract and install the APK. Coexists with the release app via `app.alextran.immich.debug`.
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
 
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.ARTIFACT_URL }}" alt="QR code" />
+            Signed with the release keystore — same applicationId (`app.alextran.immich`) as the Play Store version, so uninstall the Play Store build first to install this one.
 
       - name: Save Gradle Cache
         id: cache-gradle-save
