@@ -71,4 +71,28 @@ describe('TypedSearchTokenRail', () => {
     expect(screen.getByTestId('typed-search-token-person')).toHaveAttribute('data-status', 'error');
     expect(screen.getByLabelText('No person found for "anna"')).toBeInTheDocument();
   });
+
+  it('renders draft scalar errors with the error status color', () => {
+    render(TypedSearchTokenRail, {
+      props: {
+        tokens: [
+          {
+            raw: 'rating:9',
+            key: 'rating',
+            value: '9',
+            status: 'error',
+            issue: {
+              code: 'invalid-rating',
+              raw: 'rating:9',
+              key: 'rating',
+              value: '9',
+              message: 'Rating must be 0-5',
+            },
+          },
+        ],
+      },
+    });
+
+    expect(screen.getByTestId('typed-search-token-rating')).toHaveAttribute('data-status', 'error');
+  });
 });

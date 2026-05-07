@@ -41,6 +41,9 @@ export type TypedSearchScalarToken = {
   raw: string;
   value: string;
   normalizedValue: string | number | boolean;
+  start: number;
+  end: number;
+  identity: TypedSearchTokenIdentity;
 };
 
 export type TypedSearchResolutionToken = {
@@ -48,6 +51,9 @@ export type TypedSearchResolutionToken = {
   key: TypedSearchResolutionKey;
   raw: string;
   value: string;
+  start: number;
+  end: number;
+  identity: TypedSearchTokenIdentity;
 };
 
 export type TypedSearchDisplayToken = {
@@ -58,6 +64,26 @@ export type TypedSearchDisplayToken = {
   issue?: TypedSearchIssue;
 };
 
+export type TypedSearchParseMode = 'commit' | 'draft';
+export type TypedSearchTokenIdentity = `${TypedSearchFilterKey}:${number}:${number}:${string}`;
+
+export type TypedSearchTokenSpan = {
+  raw: string;
+  key?: TypedSearchFilterKey;
+  rawKey?: string;
+  value: string;
+  start: number;
+  end: number;
+  valueStart: number;
+  valueEnd: number;
+  quoted: boolean;
+  issue?: TypedSearchIssue;
+};
+
+export type TypedSearchParseOptions = {
+  mode?: TypedSearchParseMode;
+};
+
 export type TypedSearchParseResult = {
   raw: string;
   queryText: string;
@@ -65,17 +91,30 @@ export type TypedSearchParseResult = {
   resolutionTokens: TypedSearchResolutionToken[];
   displayTokens: TypedSearchDisplayToken[];
   issues: TypedSearchIssue[];
+  tokens: TypedSearchTokenSpan[];
+};
+
+export type TypedSearchRewriteValue = {
+  key: TypedSearchFilterKey;
+  value: string;
 };
 
 type ParsedPiece = {
   raw: string;
+  start: number;
+  end: number;
   key?: string;
   value: string;
+  valueStart: number;
+  valueEnd: number;
+  quoted: boolean;
   issue?: 'unterminated-quote' | 'escaped-quote';
 };
 
+type TypedSearchScalarTokenBase = Omit<TypedSearchScalarToken, 'start' | 'end' | 'identity'>;
+
 type ScalarResult =
-  | { token: TypedSearchScalarToken }
+  | { token: TypedSearchScalarTokenBase }
   | {
       issue: TypedSearchIssue;
     };
@@ -100,13 +139,40 @@ const FILTER_KEY_ALIASES: Record<string, TypedSearchFilterKey> = {
   tags: 'tag',
 };
 
-export function parseTypedSearch(raw: string): TypedSearchParseResult {
+type TypedSearchTokenIdentityParts = {
+  key: TypedSearchFilterKey;
+  start: number;
+  end: number;
+  raw: string;
+};
+
+export function getTypedSearchTokenIdentity(token: TypedSearchTokenIdentityParts): TypedSearchTokenIdentity;
+export function getTypedSearchTokenIdentity(
+  key: TypedSearchFilterKey,
+  start: number,
+  end: number,
+  raw: string,
+): TypedSearchTokenIdentity;
+export function getTypedSearchTokenIdentity(
+  ...args: [TypedSearchTokenIdentityParts] | [TypedSearchFilterKey, number, number, string]
+): TypedSearchTokenIdentity {
+  if (args.length === 1) {
+    const [token] = args;
+    return `${token.key}:${token.start}:${token.end}:${token.raw}`;
+  }
+  const [key, start, end, raw] = args;
+  return `${key}:${start}:${end}:${raw}`;
+}
+
+export function parseTypedSearch(raw: string, options: TypedSearchParseOptions = {}): TypedSearchParseResult {
+  const mode = options.mode ?? 'commit';
   const pieces = splitSearch(raw);
   const queryParts: string[] = [];
   const scalarTokens: TypedSearchScalarToken[] = [];
   const resolutionTokens: TypedSearchResolutionToken[] = [];
   const displayTokens: TypedSearchDisplayToken[] = [];
   const issues: TypedSearchIssue[] = [];
+  const tokens: TypedSearchTokenSpan[] = [];
   const seenScalarKeys = new Set<string>();
 
   for (const piece of pieces) {
@@ -116,8 +182,22 @@ export function parseTypedSearch(raw: string): TypedSearchParseResult {
     }
 
     const key = normalizeFilterKey(piece.key);
+    const token: TypedSearchTokenSpan = {
+      raw: piece.raw,
+      key,
+      rawKey: piece.key,
+      value: piece.value,
+      start: piece.start,
+      end: piece.end,
+      valueStart: piece.valueStart,
+      valueEnd: piece.valueEnd,
+      quoted: piece.quoted,
+    };
+    tokens.push(token);
+
     if (!key) {
       const issue = makeIssue('unknown-key', piece.raw, `Unknown filter "${piece.key}"`, piece.key, piece.value);
+      token.issue = issue;
       issues.push(issue);
       displayTokens.push({ raw: piece.raw, key: piece.key, value: piece.value, status: 'error', issue });
       continue;
@@ -125,13 +205,24 @@ export function parseTypedSearch(raw: string): TypedSearchParseResult {
 
     if (piece.issue) {
       const issue = makeIssue(piece.issue, piece.raw, issueMessage(piece.issue, key), key, piece.value);
+      token.issue = issue;
       issues.push(issue);
       displayTokens.push({ raw: piece.raw, key, value: piece.value, status: 'error', issue });
       continue;
     }
 
     if (!piece.value.trim()) {
+      if (mode === 'draft') {
+        displayTokens.push({
+          raw: piece.raw,
+          key,
+          value: piece.value,
+          status: RESOLUTION_KEYS.has(key as TypedSearchResolutionKey) ? 'pending-entity' : 'recognized',
+        });
+        continue;
+      }
       const issue = makeIssue('empty-value', piece.raw, `Filter "${key}" needs a value`, key, piece.value);
+      token.issue = issue;
       issues.push(issue);
       displayTokens.push({ raw: piece.raw, key, value: piece.value, status: 'error', issue });
       continue;
@@ -139,17 +230,27 @@ export function parseTypedSearch(raw: string): TypedSearchParseResult {
 
     if (!REPEATABLE_KEYS.has(key) && seenScalarKeys.has(key)) {
       const issue = makeIssue('duplicate-filter', piece.raw, `Filter "${key}" can only be used once`, key, piece.value);
+      token.issue = issue;
       issues.push(issue);
       displayTokens.push({ raw: piece.raw, key, value: piece.value, status: 'error', issue });
       continue;
     }
 
     if (RESOLUTION_KEYS.has(key as TypedSearchResolutionKey)) {
+      const resolutionKey = key as TypedSearchResolutionKey;
       resolutionTokens.push({
         kind: 'resolution',
-        key: key as TypedSearchResolutionKey,
+        key: resolutionKey,
         raw: piece.raw,
         value: piece.value,
+        start: piece.start,
+        end: piece.end,
+        identity: getTypedSearchTokenIdentity({
+          key: resolutionKey,
+          start: piece.start,
+          end: piece.end,
+          raw: piece.raw,
+        }),
       });
       displayTokens.push({ raw: piece.raw, key, value: piece.value, status: 'pending-entity' });
       continue;
@@ -158,12 +259,23 @@ export function parseTypedSearch(raw: string): TypedSearchParseResult {
     seenScalarKeys.add(key);
     const scalar = normalizeScalarToken(key, piece.raw, piece.value);
     if ('issue' in scalar) {
+      token.issue = scalar.issue;
       issues.push(scalar.issue);
       displayTokens.push({ raw: piece.raw, key, value: piece.value, status: 'error', issue: scalar.issue });
       continue;
     }
 
-    scalarTokens.push(scalar.token);
+    scalarTokens.push({
+      ...scalar.token,
+      start: piece.start,
+      end: piece.end,
+      identity: getTypedSearchTokenIdentity({
+        key: scalar.token.key,
+        start: piece.start,
+        end: piece.end,
+        raw: piece.raw,
+      }),
+    });
     displayTokens.push({ raw: piece.raw, key, value: piece.value, status: 'recognized' });
   }
 
@@ -184,7 +296,34 @@ export function parseTypedSearch(raw: string): TypedSearchParseResult {
     resolutionTokens,
     displayTokens,
     issues,
+    tokens,
   };
+}
+
+export function getActiveTypedSearchToken(
+  parsed: TypedSearchParseResult,
+  caret: number | null | undefined,
+): TypedSearchTokenSpan | undefined {
+  if (caret === null || caret === undefined) {
+    return undefined;
+  }
+  return parsed.tokens.find((token) => caret >= token.start && caret <= token.end);
+}
+
+export function rewriteTypedSearchToken(
+  raw: string,
+  token: TypedSearchTokenSpan,
+  next: TypedSearchRewriteValue,
+): { text: string; caret: number } {
+  const key = token.rawKey && normalizeFilterKey(token.rawKey) === next.key ? token.rawKey : next.key;
+  const value = quoteTypedSearchValue(next.value);
+  const replacement = `${key}:${value}`;
+  const text = `${raw.slice(0, token.start)}${replacement}${raw.slice(token.end)}`;
+  return { text, caret: token.start + replacement.length };
+}
+
+function quoteTypedSearchValue(value: string): string {
+  return /\s/.test(value) ? `"${value}"` : value;
 }
 
 function normalizeFilterKey(rawKey: string): TypedSearchFilterKey | undefined {
@@ -194,8 +333,9 @@ function normalizeFilterKey(rawKey: string): TypedSearchFilterKey | undefined {
 }
 
 function splitSearch(raw: string): ParsedPiece[] {
-  const parts: string[] = [];
+  const parts: ParsedPiece[] = [];
   let current = '';
+  let currentStart = 0;
   let inQuote = false;
 
   for (let index = 0; index < raw.length; index++) {
@@ -206,47 +346,82 @@ function splitSearch(raw: string): ParsedPiece[] {
 
     if (/\s/.test(char) && !inQuote) {
       if (current) {
-        parts.push(current);
+        parts.push(parsePiece(current, currentStart, index));
         current = '';
       }
       continue;
     }
 
+    if (!current) {
+      currentStart = index;
+    }
     current += char;
   }
 
   if (current) {
-    parts.push(current);
+    parts.push(parsePiece(current, currentStart, raw.length));
   }
 
-  return parts.map((part) => parsePiece(part));
+  return parts;
 }
 
-function parsePiece(raw: string): ParsedPiece {
+function parsePiece(raw: string, start: number, end: number): ParsedPiece {
   if (raw.includes('://')) {
-    return { raw, value: '' };
+    return { raw, start, end, value: '', valueStart: start, valueEnd: end, quoted: false };
   }
 
   const match = /^([A-Za-z]+):(.*)$/s.exec(raw);
   if (!match) {
-    return { raw, value: '' };
+    return { raw, start, end, value: '', valueStart: start, valueEnd: end, quoted: false };
   }
 
   const [, key, rawValue] = match;
+  const valueOffset = key.length + 1;
   if (!rawValue.startsWith('"')) {
-    return { raw, key, value: rawValue };
+    return {
+      raw,
+      start,
+      end,
+      key,
+      value: rawValue,
+      valueStart: start + valueOffset,
+      valueEnd: end,
+      quoted: false,
+    };
   }
 
   const closingQuoteIndex = findClosingQuote(rawValue);
   const value = closingQuoteIndex === -1 ? rawValue.slice(1) : rawValue.slice(1, closingQuoteIndex);
+  const valueStart = start + valueOffset + 1;
+  const valueEnd = closingQuoteIndex === -1 ? end : start + valueOffset + closingQuoteIndex;
   if (value.includes(String.raw`\"`)) {
-    return { raw, key, value, issue: 'escaped-quote' };
+    return {
+      raw,
+      start,
+      end,
+      key,
+      value,
+      valueStart,
+      valueEnd,
+      quoted: true,
+      issue: 'escaped-quote',
+    };
   }
   if (closingQuoteIndex === -1) {
-    return { raw, key, value, issue: 'unterminated-quote' };
+    return {
+      raw,
+      start,
+      end,
+      key,
+      value,
+      valueStart,
+      valueEnd,
+      quoted: true,
+      issue: 'unterminated-quote',
+    };
   }
 
-  return { raw, key, value };
+  return { raw, start, end, key, value, valueStart, valueEnd, quoted: true };
 }
 
 function findClosingQuote(value: string): number {

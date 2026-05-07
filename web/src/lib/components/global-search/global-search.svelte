@@ -6,6 +6,7 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import type { GlobalSearchManager, SearchMode } from '$lib/managers/global-search-manager.svelte';
   import GlobalSearchSection from './global-search-section.svelte';
+  import LiveTypedFilterSection from './live-typed-filter-section.svelte';
   import GlobalSearchNavigationSections from './global-search-navigation-sections.svelte';
   import GlobalSearchCommandsSection from './global-search-commands-section.svelte';
   import PhotoRow from './rows/photo-row.svelte';
@@ -29,6 +30,10 @@
   import { getSearchablePageState } from '$lib/utils/searchable-page-search';
   import { getTypedSearchDisplayText } from '$lib/utils/typed-search/typed-search-name-cache';
   import TypedSearchTokenRail from './typed-search-token-rail.svelte';
+  import {
+    liveTypedSearchChoiceValue,
+    type LiveTypedSearchChoice,
+  } from '$lib/utils/typed-search/typed-search-live-suggestions';
 
   interface Props {
     manager: GlobalSearchManager;
@@ -38,6 +43,7 @@
 
   const isApplePlatform = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
   const hotkeyLabel = isApplePlatform ? '⌘K' : 'Ctrl+K';
+  let modalInput = $state<HTMLInputElement | null>(null);
 
   // Two-way sync with manager.query: the user types into the Command.Input (writes to
   // inputValue), and the manager can also update its own query internally (e.g. when
@@ -58,6 +64,13 @@
       return;
     }
     inputValue = manager.query;
+  });
+  $effect(() => {
+    if (variant === 'modal' && manager.isOpen) {
+      queueMicrotask(() => {
+        modalInput?.focus();
+      });
+    }
   });
   let selectedValue = $state<string>('');
 
@@ -137,6 +150,9 @@
   let lastAutoSelectedTopResultToken = $state<string | null>(null);
   let lastDismissedTopResultToken = $state<string | null>(null);
   const preferredTopResultId = $derived.by<string | null>(() => {
+    if (isLiveTypedFilterValueMode()) {
+      return null;
+    }
     if (manager.topCommandMatch) {
       return manager.topCommandMatch.id;
     }
@@ -146,6 +162,9 @@
     return manager.topSearchMatch?.id ?? null;
   });
   const preferredTopResultToken = $derived.by<string | null>(() => {
+    if (isLiveTypedFilterValueMode()) {
+      return null;
+    }
     const query = manager.query.trim();
     if (manager.topCommandMatch) {
       return `${inputEditRevision}:command:${manager.topCommandMatch.id}:${query}`;
@@ -159,6 +178,7 @@
     return null;
   });
   let previousActiveItemId = $state<string | null>(null);
+  let lastAutoSelectedLiveFilterToken = $state<string | null>(null);
   $effect(() => {
     const topResultId = preferredTopResultId;
     const topResultToken = preferredTopResultToken;
@@ -179,6 +199,30 @@
       lastAutoSelectedTopResultToken = topResultToken;
     }
     previousActiveItemId = manager.activeItemId;
+  });
+
+  $effect(() => {
+    if (!isLiveTypedFilterValueMode()) {
+      lastAutoSelectedLiveFilterToken = null;
+      return;
+    }
+
+    const liveFilterToken = getLiveTypedFilterSelectionToken();
+    if (liveFilterToken) {
+      if (lastAutoSelectedLiveFilterToken === liveFilterToken) {
+        return;
+      }
+      if (!hasActiveLiveTypedFilterItem()) {
+        setSelectedValue(getFirstLiveTypedFilterItemValue());
+      }
+      lastAutoSelectedLiveFilterToken = liveFilterToken;
+      return;
+    }
+
+    lastAutoSelectedLiveFilterToken = null;
+    if (manager.activeItemId === manager.topSearchMatch?.id || manager.activeItemId?.startsWith('filter:')) {
+      setSelectedValue(null);
+    }
   });
 
   // Render-time filter: drop unreachable navigate recents before they hit the DOM.
@@ -290,6 +334,17 @@
     manager.close();
   }
 
+  function syncInputCaret(event: Event) {
+    manager.setInputCaret((event.currentTarget as HTMLInputElement).selectionStart);
+  }
+
+  function syncInputCaretAfterKeyUp(event: KeyboardEvent) {
+    if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && isLiveTypedFilterValueMode()) {
+      return;
+    }
+    syncInputCaret(event);
+  }
+
   function moveSelectionFromTopSearch(direction: 1 | -1) {
     const topSearchId = manager.topSearchMatch?.id;
     const currentValue = selectedValue || manager.activeItemId;
@@ -307,6 +362,112 @@
     }
     setSelectedValue(nextValue);
     return true;
+  }
+
+  function liveTypedFilterItemValue(choice: LiveTypedSearchChoice) {
+    return liveTypedSearchChoiceValue(choice);
+  }
+
+  function isLiveTypedFilterValueMode() {
+    const token = manager.activeTypedSearchToken;
+    const key = token?.key;
+    const status = manager.liveTypedSearchStatus.status;
+    if (status === 'idle') {
+      return false;
+    }
+
+    if (manager.liveTypedSearchStatus.status === 'ok') {
+      return manager.liveTypedSearchStatus.items.length > 0;
+    }
+
+    if (!token || (key !== 'person' && key !== 'tag' && key !== 'country' && key !== 'city')) {
+      return false;
+    }
+
+    return token.value.trim() === '';
+  }
+
+  function getFirstLiveTypedFilterItemValue() {
+    const status = manager.liveTypedSearchStatus;
+    return status.status === 'ok' && status.items.length > 0 ? liveTypedFilterItemValue(status.items[0]) : null;
+  }
+
+  function getLiveTypedFilterSelectionToken() {
+    const token = manager.activeTypedSearchToken;
+    const status = manager.liveTypedSearchStatus;
+    if (status.status !== 'ok' || status.items.length === 0) {
+      return null;
+    }
+    if (!token) {
+      const first = status.items[0];
+      return `${first.tokenStart}:${first.tokenEnd}:${manager.query.slice(first.tokenStart, first.tokenEnd)}:${status.items
+        .map((item) => item.id)
+        .join('|')}`;
+    }
+    return `${token.start}:${token.end}:${token.raw}:${status.items.map((item) => item.id).join('|')}`;
+  }
+
+  function hasActiveLiveTypedFilterItem() {
+    const status = manager.liveTypedSearchStatus;
+    return (
+      status.status === 'ok' &&
+      manager.activeItemId !== null &&
+      status.items.some((choice) => liveTypedFilterItemValue(choice) === manager.activeItemId)
+    );
+  }
+
+  function moveLiveTypedFilterSelection(direction: 1 | -1) {
+    const status = manager.liveTypedSearchStatus;
+    if (status.status !== 'ok' || status.items.length === 0) {
+      return false;
+    }
+
+    const values = status.items.map((choice) => liveTypedFilterItemValue(choice));
+    const currentIndex = values.indexOf(manager.activeItemId ?? '');
+    const nextIndex = currentIndex === -1 ? (direction === 1 ? 0 : values.length - 1) : currentIndex + direction;
+    const nextValue = values[nextIndex];
+    if (!nextValue) {
+      return false;
+    }
+
+    setSelectedValue(nextValue);
+    return true;
+  }
+
+  function getActiveLiveTypedFilterChoice() {
+    const status = manager.liveTypedSearchStatus;
+    if (status.status !== 'ok' || !manager.activeItemId?.startsWith('filter:')) {
+      return null;
+    }
+    return status.items.find((choice) => liveTypedFilterItemValue(choice) === manager.activeItemId) ?? null;
+  }
+
+  function selectActiveLiveTypedFilterChoice() {
+    const liveChoice = getActiveLiveTypedFilterChoice();
+    if (!liveChoice) {
+      return false;
+    }
+    manager.setInputCaret(liveChoice.tokenEnd);
+    manager.selectLiveTypedSearchChoice(liveChoice);
+    return true;
+  }
+
+  function onInputKeyDown(e: KeyboardEvent) {
+    if (e.key === 'ArrowDown' && isLiveTypedFilterValueMode() && moveLiveTypedFilterSelection(1)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (e.key === 'ArrowUp' && isLiveTypedFilterValueMode() && moveLiveTypedFilterSelection(-1)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (e.key === 'Enter' && isLiveTypedFilterValueMode()) {
+      selectActiveLiveTypedFilterChoice();
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }
 
   function isModalLauncherShortcut(e: KeyboardEvent) {
@@ -374,7 +535,24 @@
       e.preventDefault();
       return;
     }
-    if (e.key === 'Enter' && manager.topSearchMatch && manager.activeItemId === manager.topSearchMatch.id) {
+    if (e.key === 'Enter' && isLiveTypedFilterValueMode()) {
+      selectActiveLiveTypedFilterChoice();
+      e.preventDefault();
+      return;
+    }
+    if (e.key === 'ArrowDown' && isLiveTypedFilterValueMode() && moveLiveTypedFilterSelection(1)) {
+      e.preventDefault();
+      return;
+    }
+    if (e.key === 'ArrowUp' && isLiveTypedFilterValueMode() && moveLiveTypedFilterSelection(-1)) {
+      e.preventDefault();
+      return;
+    }
+    if (
+      e.key === 'Enter' &&
+      manager.topSearchMatch &&
+      (manager.activeItemId === null || manager.activeItemId === manager.topSearchMatch.id)
+    ) {
       void manager.activateSearch(manager.topSearchMatch.rawQuery);
       e.preventDefault();
       return;
@@ -448,7 +626,19 @@
           placeholder={$t('cmdk_placeholder')}
           maxlength={256}
           onfocus={openDropdown}
-          oninput={() => inputEditRevision++}
+          oninput={(event) => {
+            inputEditRevision++;
+            syncInputCaret(event);
+          }}
+          onkeydown={onInputKeyDown}
+          onselect={syncInputCaret}
+          onkeyup={syncInputCaretAfterKeyUp}
+          onpointerup={syncInputCaret}
+          oncompositionstart={() => manager.setInputComposing(true)}
+          oncompositionend={(event) => {
+            manager.setInputComposing(false);
+            syncInputCaret(event);
+          }}
           class="min-w-0 flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder:text-gray-300"
         />
         <kbd
@@ -526,6 +716,10 @@
                 </div>
               </Command.Group>
             {/if}
+            <LiveTypedFilterSection
+              status={manager.liveTypedSearchStatus}
+              onSelect={(choice) => manager.selectLiveTypedSearchChoice(choice)}
+            />
             {#if inputValue.trim() === ''}
               {#if recentEntries.length > 0}
                 <Command.Group>
@@ -564,7 +758,7 @@
               {/if}
             {:else if manager.scope === 'all'}
               {#if manager.topSearchMatch}
-                <Command.Group class="mb-2" data-cmdk-top-result-search>
+                <Command.Group class="mb-2" data-cmdk-top-result-search data-testid="cmdk-top-result">
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -587,7 +781,7 @@
                 </Command.Group>
               {/if}
               {#if manager.topCommandMatch}
-                <Command.Group class="mb-2" data-cmdk-top-result-commands>
+                <Command.Group class="mb-2" data-cmdk-top-result-commands data-testid="cmdk-top-result">
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -607,7 +801,7 @@
                   </Command.GroupItems>
                 </Command.Group>
               {:else if manager.topNavigationMatch}
-                <Command.Group class="mb-2" data-cmdk-top-result-navigation>
+                <Command.Group class="mb-2" data-cmdk-top-result-navigation data-testid="cmdk-top-result">
                   <Command.GroupHeading
                     class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                   >
@@ -793,11 +987,24 @@
       >
         <div class="flex items-center border-b border-gray-200 dark:border-gray-700">
           <Command.Input
+            bind:ref={modalInput}
             bind:value={inputValue}
             autofocus
             placeholder={$t('cmdk_placeholder')}
             maxlength={256}
-            oninput={() => inputEditRevision++}
+            oninput={(event) => {
+              inputEditRevision++;
+              syncInputCaret(event);
+            }}
+            onkeydown={onInputKeyDown}
+            onselect={syncInputCaret}
+            onkeyup={syncInputCaretAfterKeyUp}
+            onpointerup={syncInputCaret}
+            oncompositionstart={() => manager.setInputComposing(true)}
+            oncompositionend={(event) => {
+              manager.setInputComposing(false);
+              syncInputCaret(event);
+            }}
             class="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm focus:outline-none"
           />
           <IconButton
@@ -893,6 +1100,10 @@
                   </div>
                 </Command.Group>
               {/if}
+              <LiveTypedFilterSection
+                status={manager.liveTypedSearchStatus}
+                onSelect={(choice) => manager.selectLiveTypedSearchChoice(choice)}
+              />
               {#if inputValue.trim() === ''}
                 {#if recentEntries.length > 0}
                   <Command.Group>
@@ -953,7 +1164,7 @@
                 {/if}
               {:else if manager.scope === 'all'}
                 {#if manager.topSearchMatch}
-                  <Command.Group class="mb-4" data-cmdk-top-result-search>
+                  <Command.Group class="mb-4" data-cmdk-top-result-search data-testid="cmdk-top-result">
                     <Command.GroupHeading
                       class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                     >
@@ -976,7 +1187,7 @@
                   </Command.Group>
                 {/if}
                 {#if manager.topCommandMatch}
-                  <Command.Group class="mb-4" data-cmdk-top-result-commands>
+                  <Command.Group class="mb-4" data-cmdk-top-result-commands data-testid="cmdk-top-result">
                     <Command.GroupHeading
                       class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                     >
@@ -996,7 +1207,7 @@
                     </Command.GroupItems>
                   </Command.Group>
                 {:else if manager.topNavigationMatch}
-                  <Command.Group class="mb-4" data-cmdk-top-result-navigation>
+                  <Command.Group class="mb-4" data-cmdk-top-result-navigation data-testid="cmdk-top-result">
                     <Command.GroupHeading
                       class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
                     >

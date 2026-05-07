@@ -56,6 +56,26 @@ describe('resolveTypedSearchFilters', () => {
     }
   });
 
+  it('resolves global person tokens to scoped filter ids from search results', async () => {
+    vi.mocked(searchPerson).mockResolvedValue([
+      {
+        id: 'identity-group-1',
+        filterId: 'person:person-1',
+        name: 'Anna',
+        primaryProfile: { type: 'user-person', id: 'person-1' },
+      } as never,
+    ]);
+
+    const result = await resolveTypedSearchFilters(parseTypedSearch('person:anna'), {});
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.filters.personIds).toEqual(['person:person-1']);
+      expect(result.filters.personIds).not.toContain('identity-group-1');
+      expect(result.personNames.get('person:person-1')).toBe('Anna');
+    }
+  });
+
   it('canonicalizes city filters with case-insensitive suggestions', async () => {
     vi.mocked(getSearchSuggestions).mockResolvedValue(['Munich']);
 
@@ -140,6 +160,39 @@ describe('resolveTypedSearchFilters', () => {
     if (result.ok) {
       expect(result.filters.personIds).toEqual(['person-2']);
       expect(result.personNames.get('person-2')).toBe('Anna Maria');
+    }
+  });
+
+  it('uses selected span identity for repeated selected live person choices', async () => {
+    const parsed = parseTypedSearch('person:ann person:ann', { mode: 'draft' });
+    const selectedChoices = new Map([
+      [
+        parsed.resolutionTokens[0].identity,
+        { tokenRaw: 'person:ann', key: 'person' as const, id: 'person-1', label: 'Ann Live', value: 'ann' },
+      ],
+      [
+        'person:ann',
+        {
+          tokenRaw: 'person:ann',
+          key: 'person' as const,
+          id: 'wrong-raw-person',
+          label: 'Wrong Raw Person',
+          value: 'ann',
+        },
+      ],
+    ]);
+    vi.mocked(searchPerson).mockResolvedValue([{ id: 'person-2', name: 'Ann Search' } as never]);
+
+    const result = await resolveTypedSearchFilters(parsed, { selectedChoices });
+
+    expect(searchPerson).toHaveBeenCalledOnce();
+    expect(searchPerson).toHaveBeenCalledWith({ name: 'ann', withHidden: false }, { signal: undefined });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.filters.personIds).toEqual(['person-1', 'person-2']);
+      expect(result.filters.personIds).not.toContain('wrong-raw-person');
+      expect(result.personNames.get('person-1')).toBe('Ann Live');
+      expect(result.personNames.get('person-2')).toBe('Ann Search');
     }
   });
 

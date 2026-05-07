@@ -12,11 +12,24 @@ import {
   getSearchablePageState,
   type SearchablePageSortOrder,
 } from '$lib/utils/searchable-page-search';
+import {
+  isLiveTypedSearchToken,
+  liveTypedSearchChoiceValue,
+  resolveLiveTypedSearchSuggestions,
+  type LiveTypedSearchChoice,
+  type LiveTypedSearchStatus,
+  type LiveTypedSearchToken,
+} from '$lib/utils/typed-search/typed-search-live-suggestions';
 import { getTypedSearchDisplayText, storeTypedSearchNames } from '$lib/utils/typed-search/typed-search-name-cache';
 import {
+  getActiveTypedSearchToken,
+  getTypedSearchTokenIdentity,
   parseTypedSearch,
+  rewriteTypedSearchToken,
   type TypedSearchDisplayToken,
   type TypedSearchIssue,
+  type TypedSearchParseResult,
+  type TypedSearchTokenSpan,
 } from '$lib/utils/typed-search/typed-search-parser';
 import { resolveTypedSearchFilters, type TypedSearchChoice } from '$lib/utils/typed-search/typed-search-resolver';
 import {
@@ -99,6 +112,23 @@ export type ActiveItem =
   | { kind: 'space'; data: SharedSpaceResponseDto }
   | { kind: 'nav'; data: NavigationItem }
   | { kind: 'command'; data: CommandItem };
+
+function selectedChoiceFromLiveChoice(
+  choice: LiveTypedSearchChoice,
+  rewrittenToken: TypedSearchTokenSpan | undefined,
+): TypedSearchChoice | undefined {
+  if ((choice.key !== 'person' && choice.key !== 'tag') || !choice.entityId || rewrittenToken?.key !== choice.key) {
+    return undefined;
+  }
+
+  return {
+    tokenRaw: rewrittenToken.raw,
+    key: choice.key,
+    id: choice.entityId,
+    label: choice.label,
+    value: rewrittenToken.value,
+  };
+}
 
 type TopSearchMatch = { id: 'top-search'; query: string; rawQuery: string };
 
@@ -252,6 +282,11 @@ export class GlobalSearchManager {
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   selectedTypedSearchChoices = new Map<string, TypedSearchChoice>();
   typedSearchPlainQuery = $state('');
+  activeTypedSearchToken = $state<LiveTypedSearchToken | undefined>();
+  liveTypedSearchStatus = $state<LiveTypedSearchStatus>({ status: 'idle' });
+  typedSearchCaret = $state<number | null>(null);
+  typedSearchComposing = $state(false);
+  skipNextLiveTypedSearchForCaret = $state<number | null>(null);
   sections = $state<Sections>({
     photos: idle,
     people: idle,
@@ -319,6 +354,9 @@ export class GlobalSearchManager {
   protected debounceTimer: ReturnType<typeof setTimeout> | null = null;
   protected batchController: AbortController | null = null;
   protected photosController: AbortController | null = null;
+  private liveTypedSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private liveTypedSearchController: AbortController | null = null;
+  private liveTypedSearchRequestId = 0;
   /**
    * Aborted on `close()`, replaced with a fresh controller on `open()`. Scoped to the
    * open-session lifetime — activation-dispatch and catalog fetches (later tasks) bind
@@ -988,6 +1026,8 @@ export class GlobalSearchManager {
     this.batchController = null;
     this.photosController?.abort();
     this.photosController = null;
+    this.clearLiveTypedSearchRequest();
+    this.liveTypedSearchRequestId++;
     this.sections = {
       photos: idle,
       people: idle,
@@ -1052,6 +1092,10 @@ export class GlobalSearchManager {
         return this.activeItemFromRecent(entry);
       }
     }
+    const liveActiveItem = this.activeItemFromLiveTypedChoice(id);
+    if (liveActiveItem) {
+      return liveActiveItem;
+    }
     // Navigation item IDs are themselves prefixed `nav:...` so the split-on-first-colon
     // trick is inverted: the whole id is the cursor value, and the kind prefix is the
     // string BEFORE the first colon. For nav items, the "kind prefix" is literally `nav`.
@@ -1096,6 +1140,29 @@ export class GlobalSearchManager {
       kind: kind as 'photo' | 'person' | 'place' | 'tag' | 'album' | 'space',
       data: match,
     } as ActiveItem;
+  }
+
+  private activeItemFromLiveTypedChoice(id: string): ActiveItem | null {
+    const status = this.liveTypedSearchStatus;
+    if (!id.startsWith('filter:') || status.status !== 'ok') {
+      return null;
+    }
+
+    const choice = status.items.find((item) => liveTypedSearchChoiceValue(item) === id);
+    const preview = choice?.preview;
+    if (!preview) {
+      return null;
+    }
+
+    if (preview.kind === 'person') {
+      return { kind: 'person', data: preview.data };
+    }
+
+    if (preview.kind === 'tag') {
+      return { kind: 'tag', data: preview.data };
+    }
+
+    return null;
   }
 
   /**
@@ -1250,17 +1317,28 @@ export class GlobalSearchManager {
   }
 
   parseTypedSearchDraft(text = this.query) {
+    const parsed = parseTypedSearch(text, { mode: 'draft' });
+    this.applyTypedSearchParsedState(parsed);
+    this.updateActiveTypedSearchToken();
+    return parsed;
+  }
+
+  private parseTypedSearchCommit(text: string) {
     const parsed = parseTypedSearch(text);
+    this.applyTypedSearchParsedState(parsed);
+    return parsed;
+  }
+
+  private applyTypedSearchParsedState(parsed: TypedSearchParseResult) {
     this.typedSearchDisplayTokens = parsed.displayTokens;
     this.typedSearchPlainQuery = parsed.queryText;
     this.typedSearchIssues = [];
     this.typedSearchChoices = [];
     for (const key of this.selectedTypedSearchChoices.keys()) {
-      if (!parsed.resolutionTokens.some((token) => token.raw === key)) {
+      if (!parsed.resolutionTokens.some((token) => token.raw === key || token.identity === key)) {
         this.selectedTypedSearchChoices.delete(key);
       }
     }
-    return parsed;
   }
 
   clearTypedSearchDraft() {
@@ -1269,6 +1347,142 @@ export class GlobalSearchManager {
     this.typedSearchIssues = [];
     this.typedSearchChoices = [];
     this.selectedTypedSearchChoices.clear();
+    this.activeTypedSearchToken = undefined;
+    this.typedSearchCaret = null;
+    this.skipNextLiveTypedSearchForCaret = null;
+    this.clearLiveTypedSearchRequest();
+    this.liveTypedSearchRequestId++;
+    this.liveTypedSearchStatus = { status: 'idle' };
+    this.typedSearchComposing = false;
+  }
+
+  setInputCaret(caret: number | null) {
+    this.typedSearchCaret = caret;
+    this.updateActiveTypedSearchToken();
+  }
+
+  setInputComposing(isComposing: boolean) {
+    this.typedSearchComposing = isComposing;
+    this.updateActiveTypedSearchToken();
+  }
+
+  private clearLiveTypedSearchRequest() {
+    if (this.liveTypedSearchTimer !== null) {
+      clearTimeout(this.liveTypedSearchTimer);
+      this.liveTypedSearchTimer = null;
+    }
+    this.liveTypedSearchController?.abort();
+    this.liveTypedSearchController = null;
+  }
+
+  private resetLiveTypedSearchSuggestions() {
+    this.clearLiveTypedSearchRequest();
+    this.liveTypedSearchRequestId++;
+    this.liveTypedSearchStatus = { status: 'idle' };
+  }
+
+  private scheduleLiveTypedSearchSuggestions() {
+    if (!this.activeTypedSearchToken || this.typedSearchComposing) {
+      this.resetLiveTypedSearchSuggestions();
+      return;
+    }
+    if (this.skipNextLiveTypedSearchForCaret === this.typedSearchCaret) {
+      this.skipNextLiveTypedSearchForCaret = null;
+      this.resetLiveTypedSearchSuggestions();
+      return;
+    }
+    const key = this.activeTypedSearchToken.key;
+    const supportsLiveSuggestions = key === 'person' || key === 'tag' || key === 'country' || key === 'city';
+    if (!supportsLiveSuggestions) {
+      this.resetLiveTypedSearchSuggestions();
+      return;
+    }
+
+    this.clearLiveTypedSearchRequest();
+    const requestId = ++this.liveTypedSearchRequestId;
+    const token = this.activeTypedSearchToken;
+    this.liveTypedSearchStatus = { status: 'loading', key };
+    this.liveTypedSearchTimer = setTimeout(() => {
+      this.liveTypedSearchTimer = null;
+      const controller = new AbortController();
+      this.liveTypedSearchController = controller;
+      const pathParts = page.url.pathname.split('/').filter(Boolean);
+      const spaceId = pathParts[0] === 'spaces' ? pathParts[1] : undefined;
+      const signal = AbortSignal.any([this.closeSignal, controller.signal, AbortSignal.timeout(PROVIDER_TIMEOUT_MS)]);
+
+      void Promise.resolve()
+        .then(() =>
+          resolveLiveTypedSearchSuggestions({
+            parsed: parseTypedSearch(this.query, { mode: 'draft' }),
+            activeToken: token,
+            spaceId,
+            signal,
+          }),
+        )
+        .then((status) => {
+          if (requestId !== this.liveTypedSearchRequestId) {
+            return;
+          }
+          const isTimeout =
+            signal.aborted && signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError';
+          if (isTimeout) {
+            this.liveTypedSearchStatus = { status: 'timeout', key };
+            return;
+          }
+          if (!signal.aborted) {
+            this.liveTypedSearchStatus = status;
+            this.reconcileCursor();
+          }
+        })
+        .catch((error: unknown) => {
+          const isTimeout =
+            (signal.aborted && signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError') ||
+            (error instanceof DOMException && error.name === 'TimeoutError');
+          if (isTimeout) {
+            if (requestId === this.liveTypedSearchRequestId) {
+              this.liveTypedSearchStatus = { status: 'timeout', key };
+            }
+            return;
+          }
+          if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+            return;
+          }
+          if (requestId === this.liveTypedSearchRequestId) {
+            this.liveTypedSearchStatus = {
+              status: 'error',
+              key,
+              message: error instanceof Error ? error.message : 'unknown error',
+            };
+          }
+        })
+        .finally(() => {
+          if (this.liveTypedSearchController === controller) {
+            this.liveTypedSearchController = null;
+          }
+        });
+    }, 150);
+  }
+
+  private updateActiveTypedSearchToken() {
+    if (this.typedSearchComposing) {
+      this.activeTypedSearchToken = undefined;
+      this.scheduleLiveTypedSearchSuggestions();
+      return;
+    }
+    const parsed = parseTypedSearch(this.query, { mode: 'draft' });
+    const token = getActiveTypedSearchToken(parsed, this.typedSearchCaret);
+    const previousToken = this.activeTypedSearchToken;
+    const nextToken = isLiveTypedSearchToken(token) && token.issue?.code !== 'unterminated-quote' ? token : undefined;
+    const tokenChanged =
+      previousToken?.key !== nextToken?.key ||
+      previousToken?.start !== nextToken?.start ||
+      previousToken?.end !== nextToken?.end ||
+      previousToken?.raw !== nextToken?.raw;
+    this.activeTypedSearchToken = nextToken;
+    if (!this.activeTypedSearchToken || tokenChanged) {
+      this.liveTypedSearchStatus = { status: 'idle' };
+    }
+    this.scheduleLiveTypedSearchSuggestions();
   }
 
   selectTypedSearchChoice(choice: TypedSearchChoice) {
@@ -1280,6 +1494,37 @@ export class GlobalSearchManager {
         ? { raw: token.raw, key: token.key, value: choice.label, status: 'resolved-entity' as const }
         : token,
     );
+  }
+
+  selectLiveTypedSearchChoice(choice: LiveTypedSearchChoice) {
+    const activeToken = this.activeTypedSearchToken;
+    if (!activeToken) {
+      return;
+    }
+    const { text, caret } = rewriteTypedSearchToken(this.query, activeToken, {
+      key: choice.key,
+      value: choice.value,
+    });
+    const needsSeparator = text[caret] === undefined || !/\s/.test(text[caret]);
+    const nextText = needsSeparator ? `${text.slice(0, caret)} ${text.slice(caret)}` : text;
+    const nextCaret = needsSeparator ? caret + 1 : caret;
+
+    this.setQuery(nextText);
+    this.skipNextLiveTypedSearchForCaret = nextCaret;
+    this.setInputCaret(nextCaret);
+    const parsedAfterRewrite = parseTypedSearch(nextText, { mode: 'draft' });
+    const rewrittenToken = getActiveTypedSearchToken(parsedAfterRewrite, caret);
+    const selectedChoice = selectedChoiceFromLiveChoice(choice, rewrittenToken);
+    if (selectedChoice && rewrittenToken) {
+      const tokenKey = getTypedSearchTokenIdentity(
+        selectedChoice.key,
+        rewrittenToken.start,
+        rewrittenToken.end,
+        rewrittenToken.raw,
+      );
+      this.selectedTypedSearchChoices.set(tokenKey, selectedChoice);
+    }
+    this.resetLiveTypedSearchSuggestions();
   }
 
   private getSearchProviderPayload(): string {
@@ -1352,7 +1597,7 @@ export class GlobalSearchManager {
       return;
     }
 
-    const parsed = this.parseTypedSearchDraft(trimmed);
+    const parsed = this.parseTypedSearchCommit(trimmed);
     if (parsed.issues.length > 0) {
       this.typedSearchIssues = parsed.issues;
       this.typedSearchChoices = [];

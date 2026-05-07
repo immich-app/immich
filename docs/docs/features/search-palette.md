@@ -207,6 +207,18 @@ When your query closely matches a single command or navigation entry, that entry
 
 Promotion is based on a fuzzy score against the title, description, and search keywords. Commands win tie-breaks against navigation entries, so unscoped verbs like `upload` or `album` surface their command first. A short query like `peo` will surface **People** as the top result; `users` will surface **Administration → User Management**.
 
+### Typed filter suggestions
+
+On searchable pages, typed filters can be mixed with free-text search:
+
+```text
+beach person:anna tag:travel country:Germany city:Berlin
+```
+
+While the cursor is inside `person:`, `tag:`, `country:`, or non-empty `city:`, the palette shows a compact filter-match section before the normal results. Selecting a row rewrites only that token to the canonical value, such as `person:"Anna Maria"`, and keeps the final search under the normal Enter validation path.
+
+Live filter rows apply filters; they do not navigate to person or tag pages. `camera:` still resolves only when the search is submitted.
+
 ### Page-aware search
 
 When you open the palette from a page that supports inline search, Gallery preloads the page's current query and sort mode. Submitting a new free-text query updates the page URL instead of navigating away:

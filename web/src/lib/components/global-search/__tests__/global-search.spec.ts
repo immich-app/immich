@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -45,6 +45,7 @@ const { mockPage } = vi.hoisted(() => ({
 }));
 vi.mock('$app/state', () => ({ page: mockPage }));
 
+import { goto } from '$app/navigation';
 import { commandContextManager } from '$lib/managers/command-context-manager.svelte';
 import { GlobalSearchManager, type Provider, type Sections } from '$lib/managers/global-search-manager.svelte';
 import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -436,6 +437,505 @@ describe('global-search root', () => {
     });
   });
 
+  it('renders live typed filter section before normal results and selects rows before submit', async () => {
+    const m = new GlobalSearchManager();
+    const selectSpy = vi.spyOn(m, 'selectLiveTypedSearchChoice').mockImplementation(() => {});
+    m.open();
+    m.setQuery('beach person:ann');
+    m.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:6:16:p1',
+          key: 'person',
+          label: 'Anna Maria',
+          value: 'Anna Maria',
+          tokenStart: 6,
+          tokenEnd: 16,
+        },
+      ],
+    };
+    render(GlobalSearch, { props: { manager: m } });
+
+    const liveFilterHeading = screen.getByText(/cmdk_filter_match_person|person filter matches/i);
+    const topResultHeading = screen.getByText(/cmdk_top_result|top result/i);
+    expect(liveFilterHeading.compareDocumentPosition(topResultHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await user.click(screen.getByRole('option', { name: /Anna Maria/i }));
+
+    expect(selectSpy).toHaveBeenCalled();
+  });
+
+  it('renders filter matches before top result and keeps live rows out of normal people results', () => {
+    const manager = new GlobalSearchManager();
+    manager.open();
+    manager.setQuery('person:ann');
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:0:10:p1',
+          key: 'person',
+          label: 'Ann Live',
+          value: 'Ann Live',
+          tokenStart: 0,
+          tokenEnd: 10,
+          entityId: 'p1',
+        },
+      ],
+    };
+    manager.sections.people = {
+      status: 'ok',
+      total: 1,
+      items: [{ id: 'p2', name: 'Ann Normal' } as never],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    const liveSection = screen.getByTestId('live-typed-filter-section');
+    const liveFilterGroup = screen.getByRole('group', {
+      name: /cmdk_filter_match_person|person filter matches/i,
+    });
+    const topResult = screen.getByTestId('cmdk-top-result');
+    expect(liveSection.compareDocumentPosition(topResult) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(liveSection).toContainElement(liveFilterGroup);
+    expect(within(liveSection).getByText(/cmdk_filter_match_person|person filter matches/i)).toBeInTheDocument();
+
+    const peopleGroup = screen.getByRole('group', { name: /cmdk_people_heading|people/i });
+    expect(within(peopleGroup).getByText(/Ann Normal/i)).toBeInTheDocument();
+    expect(within(peopleGroup).queryByText(/Ann Live/i)).toBeNull();
+  });
+
+  it('keeps live tag filter rows out of normal tag results', () => {
+    const manager = new GlobalSearchManager();
+    manager.open();
+    manager.setQuery('tag:tra');
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'tag',
+      total: 1,
+      items: [
+        {
+          id: 'tag:0:7:t1',
+          key: 'tag',
+          label: 'Travel Live',
+          value: 'Travel Live',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 't1',
+        },
+      ],
+    };
+    manager.sections.tags = {
+      status: 'ok',
+      total: 1,
+      items: [{ id: 't2', name: 'Travel Normal' } as never],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    const tagFilterGroup = screen.getByRole('group', { name: /cmdk_filter_match_tag|tag filter matches/i });
+    expect(within(tagFilterGroup).getByText(/Travel Live/i)).toBeInTheDocument();
+
+    const tagsGroup = screen.getByRole('group', { name: /cmdk_tags_heading|^tags$/i });
+    expect(within(tagsGroup).getByText(/Travel Normal/i)).toBeInTheDocument();
+    expect(within(tagsGroup).queryByText(/Travel Live/i)).toBeNull();
+  });
+
+  it('Enter on a highlighted live filter row rewrites the filter without submitting search', async () => {
+    const manager = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(manager, 'activateSearch').mockImplementation(async () => {});
+    manager.open();
+    manager.setQuery('person:ann');
+    manager.setInputCaret('person:ann'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:0:10:p1',
+          key: 'person',
+          label: 'Ann Live',
+          value: 'Ann Live',
+          tokenStart: 0,
+          tokenEnd: 10,
+          entityId: 'p1',
+        },
+      ],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    Object.defineProperty(input, 'selectionStart', { configurable: true, get: () => 'person:ann'.length });
+    Object.defineProperty(input, 'selectionEnd', { configurable: true, get: () => 'person:ann'.length });
+    input.focus();
+    await user.keyboard('{ArrowDown}');
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:10:p1:Ann Live'));
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:0:10:p1',
+          key: 'person',
+          label: 'Ann Live',
+          value: 'Ann Live',
+          tokenStart: 0,
+          tokenEnd: 10,
+          entityId: 'p1',
+        },
+      ],
+    };
+    await fireEvent.keyDown(document.querySelector('[data-command-root]') as HTMLElement, { key: 'Enter' });
+
+    expect(manager.query).toBe('person:"Ann Live" ');
+    expect(activateSearchSpy).not.toHaveBeenCalled();
+  });
+
+  it('auto-highlights the first live filter row while picking a typed person value', async () => {
+    const manager = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(manager, 'activateSearch').mockImplementation(async () => {});
+    manager.open();
+    manager.setQuery('person:');
+    manager.setInputCaret('person:'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 2,
+      items: [
+        {
+          id: 'person:0:7:person:a',
+          key: 'person',
+          label: 'a',
+          value: 'a',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:a',
+        },
+        {
+          id: 'person:0:7:person:b',
+          key: 'person',
+          label: 'b',
+          value: 'b',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:b',
+        },
+      ],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:7:person:a:a'));
+
+    await fireEvent.keyDown(document.querySelector('[data-command-root]') as HTMLElement, { key: 'Enter' });
+
+    expect(manager.query).toBe('person:a ');
+    expect(manager.activeTypedSearchToken).toBeUndefined();
+    expect(activateSearchSpy).not.toHaveBeenCalled();
+  });
+
+  it('auto-highlights the first live city row while picking an empty typed city value', async () => {
+    const manager = new GlobalSearchManager();
+    manager.open();
+    manager.setQuery('city:');
+    manager.setInputCaret('city:'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'city',
+      total: 2,
+      items: [
+        {
+          id: 'city:0:5:Paris',
+          key: 'city',
+          label: 'Paris',
+          value: 'Paris',
+          tokenStart: 0,
+          tokenEnd: 5,
+        },
+        {
+          id: 'city:0:5:Berlin',
+          key: 'city',
+          label: 'Berlin',
+          value: 'Berlin',
+          tokenStart: 0,
+          tokenEnd: 5,
+        },
+      ],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:city:0:5:Paris:Paris'));
+    expect(screen.getByRole('option', { name: /Paris/i })).toBeInTheDocument();
+  });
+
+  it('submits search on the next Enter after keyboard-selecting a live person filter value', async () => {
+    const manager = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(manager, 'activateSearch').mockImplementation(async () => {});
+    manager.open();
+    manager.setQuery('person:');
+    manager.setInputCaret('person:'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 2,
+      items: [
+        {
+          id: 'person:0:7:person:a',
+          key: 'person',
+          label: 'a',
+          value: 'a',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:a',
+        },
+        {
+          id: 'person:0:7:person:b',
+          key: 'person',
+          label: 'b',
+          value: 'b',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:b',
+        },
+      ],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:7:person:a:a'));
+    screen.getByRole('combobox').focus();
+    await user.keyboard('{ArrowDown}');
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:7:person:b:b'));
+
+    await user.keyboard('{Enter}');
+
+    expect(manager.query).toBe('person:b ');
+    expect(manager.activeTypedSearchToken).toBeUndefined();
+    expect(activateSearchSpy).not.toHaveBeenCalled();
+
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('top-search'));
+    await fireEvent.keyDown(document.querySelector('[data-command-root]') as HTMLElement, { key: 'Enter' });
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('person:b');
+  });
+
+  it('allows ArrowDown to move through live person filter matches', async () => {
+    const manager = new GlobalSearchManager();
+    manager.open();
+    manager.setQuery('person:');
+    manager.setInputCaret('person:'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 3,
+      items: [
+        {
+          id: 'person:0:7:person:a',
+          key: 'person',
+          label: 'a',
+          value: 'a',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:a',
+        },
+        {
+          id: 'person:0:7:person:b',
+          key: 'person',
+          label: 'b',
+          value: 'b',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:b',
+        },
+        {
+          id: 'person:0:7:person:c',
+          key: 'person',
+          label: 'c',
+          value: 'c',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:c',
+        },
+      ],
+    };
+
+    render(GlobalSearch, { props: { manager } });
+
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:7:person:a:a'));
+    screen.getByRole('combobox').focus();
+    await user.keyboard('{ArrowDown}');
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:7:person:b:b'));
+
+    await user.keyboard('{ArrowDown}');
+    await vi.waitFor(() => expect(manager.activeItemId).toBe('filter:person:0:7:person:c:c'));
+  });
+
+  it('does not submit top search while a typed person value is still loading', async () => {
+    const manager = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(manager, 'activateSearch').mockImplementation(async () => {});
+    manager.open();
+    manager.setQuery('person:');
+    manager.setInputCaret('person:'.length);
+    manager.liveTypedSearchStatus = { status: 'loading', key: 'person' };
+
+    render(GlobalSearch, { props: { manager } });
+
+    await fireEvent.keyDown(document.querySelector('[data-command-root]') as HTMLElement, { key: 'Enter' });
+
+    expect(activateSearchSpy).not.toHaveBeenCalled();
+    expect(manager.query).toBe('person:');
+  });
+
+  it('selecting a live person row applies the filter and does not navigate to person', async () => {
+    const manager = new GlobalSearchManager();
+    const activateSpy = vi.spyOn(manager, 'activate');
+    manager.open();
+    manager.setQuery('beach person:ann');
+    manager.setInputCaret('beach person:ann'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:6:16:p1',
+          key: 'person',
+          label: 'Anna Maria',
+          value: 'Anna Maria',
+          tokenStart: 6,
+          tokenEnd: 16,
+          entityId: 'p1',
+        },
+      ],
+    };
+    render(GlobalSearch, { props: { manager } });
+
+    await user.click(screen.getByRole('option', { name: /Anna Maria/i }));
+
+    expect(manager.query).toBe('beach person:"Anna Maria" ');
+    expect(goto).not.toHaveBeenCalled();
+    expect(activateSpy).not.toHaveBeenCalledWith('person', expect.anything());
+
+    vi.mocked(goto).mockClear();
+    await manager.activateSearch(manager.query);
+
+    expect(goto).toHaveBeenCalledWith('/photos?q=beach&people=p1');
+  });
+
+  it('selecting a live tag row applies the filter and does not navigate to tag', async () => {
+    const manager = new GlobalSearchManager();
+    const activateSpy = vi.spyOn(manager, 'activate');
+    manager.open();
+    manager.setQuery('beach tag:tra');
+    manager.setInputCaret('beach tag:tra'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'tag',
+      total: 1,
+      items: [
+        {
+          id: 'tag:6:13:t1',
+          key: 'tag',
+          label: 'Travel',
+          value: 'Travel',
+          tokenStart: 6,
+          tokenEnd: 13,
+          entityId: 't1',
+        },
+      ],
+    };
+    render(GlobalSearch, { props: { manager } });
+
+    await user.click(screen.getByRole('option', { name: /Travel/i }));
+
+    expect(manager.query).toBe('beach tag:Travel ');
+    expect(goto).not.toHaveBeenCalled();
+    expect(activateSpy).not.toHaveBeenCalledWith('tag', expect.anything());
+  });
+
+  it('selecting a live city row from filter-match section rewrites the city token', async () => {
+    const manager = new GlobalSearchManager();
+    manager.open();
+    manager.setQuery('city:par');
+    manager.setInputCaret('city:par'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'city',
+      total: 1,
+      items: [
+        {
+          id: 'city:0:8:Paris',
+          key: 'city',
+          label: 'Paris',
+          value: 'Paris',
+          secondaryLabel: 'France',
+          tokenStart: 0,
+          tokenEnd: 8,
+        },
+      ],
+    };
+    render(GlobalSearch, { props: { manager } });
+
+    await user.click(screen.getByRole('option', { name: /Paris/i }));
+
+    expect(manager.query).toBe('city:Paris ');
+  });
+
+  it('renders live typed filter section before normal results in dropdown variant', () => {
+    const m = new GlobalSearchManager();
+    m.open('dropdown');
+    m.setQuery('beach person:ann');
+    m.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:6:16:p1',
+          key: 'person',
+          label: 'Anna Maria',
+          value: 'Anna Maria',
+          tokenStart: 6,
+          tokenEnd: 16,
+        },
+      ],
+    };
+    render(GlobalSearch, { props: { manager: m, variant: 'dropdown' } });
+
+    const liveFilterHeading = screen.getByText(/cmdk_filter_match_person|person filter matches/i);
+    const topResultHeading = screen.getByText(/cmdk_top_result|top result/i);
+    expect(liveFilterHeading.compareDocumentPosition(topResultHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('updates active typed filter token when pointer moves the input caret', async () => {
+    const query = 'beach person:ann tag:family';
+    const m = new GlobalSearchManager();
+    m.open();
+    m.setQuery(query);
+    m.setInputCaret('beach person:ann'.length);
+    render(GlobalSearch, { props: { manager: m } });
+
+    expect(m.activeTypedSearchToken).toMatchObject({ key: 'person', raw: 'person:ann' });
+
+    const input = screen.getByRole('combobox') as HTMLInputElement;
+    Object.defineProperty(input, 'selectionStart', { configurable: true, get: () => query.length });
+    Object.defineProperty(input, 'selectionEnd', { configurable: true, get: () => query.length });
+    expect(m.activeTypedSearchToken).toMatchObject({ key: 'person', raw: 'person:ann' });
+
+    await fireEvent.pointerUp(input);
+
+    expect(m.activeTypedSearchToken).toMatchObject({ key: 'tag', raw: 'tag:family' });
+  });
+
   it('combobox has maxlength="256"', () => {
     const m = new GlobalSearchManager();
     m.open();
@@ -631,6 +1131,18 @@ describe('global-search root', () => {
     await vi.waitFor(() => expect(screen.getByRole('combobox')).toHaveValue(''));
   });
 
+  it('keeps modal presentation when modal focus runs with dropdown input mounted', async () => {
+    const m = new GlobalSearchManager();
+    render(GlobalSearch, { props: { manager: m, variant: 'dropdown' } });
+
+    m.open('modal');
+    render(GlobalSearch, { props: { manager: m, variant: 'modal' } });
+    await Promise.resolve();
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(m.presentation).toBe('modal');
+  });
+
   it('pressing Enter on typed filters commits the raw search text, not the plain preview label', async () => {
     const m = new GlobalSearchManager();
     const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockImplementation(async () => {});
@@ -640,6 +1152,18 @@ describe('global-search root', () => {
     await user.type(screen.getByRole('combobox'), 'beach camera:nikon{enter}');
 
     expect(activateSearchSpy).toHaveBeenCalledWith('beach camera:nikon');
+  });
+
+  it('pressing Enter on the top search row still submits the whole typed search', async () => {
+    const m = new GlobalSearchManager();
+    const activateSearchSpy = vi.spyOn(m, 'activateSearch').mockResolvedValue();
+    m.open();
+    m.setQuery('beach city:Paris');
+    render(GlobalSearch, { props: { manager: m } });
+
+    await user.keyboard('{Enter}');
+
+    expect(activateSearchSpy).toHaveBeenCalledWith('beach city:Paris');
   });
 
   it('pressing Enter on a filter-only tags query commits search instead of navigating to Tags', async () => {
@@ -1402,6 +1926,46 @@ describe('prefix scoping — scoped rendering', () => {
     manager.setActiveItem('person:p1');
     render(GlobalSearch, { props: { manager } });
     expect(document.querySelector('[data-cmdk-preview-person]')).not.toBeNull();
+  });
+
+  it('preview pane under person: with a live person filter choice highlighted renders PersonPreview', () => {
+    mediaState.minLg = true;
+    const manager = new GlobalSearchManager();
+    manager.open();
+    manager.setQuery('person:');
+    manager.setInputCaret('person:'.length);
+    manager.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:0:7:person:p1',
+          key: 'person',
+          label: 'Alice',
+          value: 'Alice',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:p1',
+          preview: {
+            kind: 'person',
+            data: {
+              id: 'p1',
+              filterId: 'person:p1',
+              name: 'Alice',
+              primaryProfile: { type: 'user-person', id: 'p1' },
+            },
+          },
+        } as never,
+      ],
+    };
+    manager.setActiveItem('filter:person:0:7:person:p1:Alice');
+
+    render(GlobalSearch, { props: { manager } });
+
+    const preview = document.querySelector('[data-cmdk-preview-person]') as HTMLElement | null;
+    expect(preview).not.toBeNull();
+    expect(within(preview!).getByText('Alice')).toBeInTheDocument();
   });
 
   it('preview pane under #xmas with tag highlighted renders TagPreview', () => {

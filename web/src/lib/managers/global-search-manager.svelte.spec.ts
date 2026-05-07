@@ -39,6 +39,26 @@ vi.mock('$lib/utils/typed-search/typed-search-resolver', () => ({
   resolveTypedSearchFilters: typedSearchMock.resolveTypedSearchFilters,
 }));
 
+const { liveTypedSearchMock } = vi.hoisted(() => ({
+  liveTypedSearchMock: {
+    resolveLiveTypedSearchSuggestions: vi.fn(),
+  },
+}));
+
+vi.mock('$lib/utils/typed-search/typed-search-live-suggestions', async () => ({
+  ...(await vi.importActual<typeof import('$lib/utils/typed-search/typed-search-live-suggestions')>(
+    '$lib/utils/typed-search/typed-search-live-suggestions',
+  )),
+  resolveLiveTypedSearchSuggestions: liveTypedSearchMock.resolveLiveTypedSearchSuggestions,
+}));
+
+const resetLiveTypedSearchMock = () => {
+  liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockReset();
+  liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({ status: 'idle' });
+};
+
+resetLiveTypedSearchMock();
+
 vi.mock('$lib/utils/typed-search/typed-search-name-cache', () => ({
   getTypedSearchDisplayText: vi.fn(() => undefined),
   storeTypedSearchNames: vi.fn(),
@@ -49,6 +69,7 @@ import { createFilterState, type FilterState } from '$lib/components/filter-pane
 import * as recentModule from '$lib/stores/cmdk-recent';
 import { addEntry, getEntries, __resetForTests as resetRecentStore } from '$lib/stores/cmdk-recent';
 import { getTypedSearchDisplayText, storeTypedSearchNames } from '$lib/utils/typed-search/typed-search-name-cache';
+import type { TypedSearchResolveContext } from '$lib/utils/typed-search/typed-search-resolver';
 import {
   AssetVisibility,
   getAlbumInfo,
@@ -94,6 +115,7 @@ afterEach(() => {
   mockPage.url = new URL('https://gallery.test/photos');
   vi.mocked(getTypedSearchDisplayText).mockReset();
   vi.mocked(getTypedSearchDisplayText).mockReturnValue(undefined);
+  resetLiveTypedSearchMock();
   commandContextManager.setAlbum(null);
   commandContextManager.setSpace(null);
   commandContextManager.setSelection(null);
@@ -1478,6 +1500,862 @@ describe('activate("command")', () => {
       expect(manager.topSearchMatch).toEqual({ id: 'top-search', query: 'beach', rawQuery: 'beach camera:nikon' });
     });
 
+    it('does not show detailed issue rows for invalid scalar tokens until Enter', () => {
+      const manager = new GlobalSearchManager();
+
+      manager.setQuery('rating:9');
+
+      expect(manager.typedSearchDisplayTokens[0]).toMatchObject({ raw: 'rating:9', status: 'error' });
+      expect(manager.typedSearchIssues).toEqual([]);
+    });
+
+    it('tracks the active typed filter token from the input caret', () => {
+      const manager = new GlobalSearchManager();
+
+      manager.setQuery('beach person:ann tag:family');
+      manager.setInputCaret('beach person:ann'.length);
+
+      expect(manager.activeTypedSearchToken).toMatchObject({ key: 'person', raw: 'person:ann' });
+
+      manager.setInputCaret('beach person:ann tag:f'.length);
+      expect(manager.activeTypedSearchToken).toMatchObject({ key: 'tag', raw: 'tag:family' });
+    });
+
+    it('debounces live person filter suggestions for the active token', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'person',
+          total: 1,
+          items: [
+            {
+              id: 'person:6:16:p1',
+              key: 'person',
+              label: 'Anna',
+              value: 'Anna',
+              tokenStart: 6,
+              tokenEnd: 16,
+              entityId: 'p1',
+            },
+          ],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('beach person:ann');
+        manager.setInputCaret('beach person:ann'.length);
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'person' });
+
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+        expect(manager.liveTypedSearchStatus).toMatchObject({ status: 'ok', key: 'person' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('debounces live tag filter suggestions for an active tag token', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'tag',
+          total: 1,
+          items: [
+            {
+              id: 'tag:6:13:t1',
+              key: 'tag',
+              label: 'Travel',
+              value: 'Travel',
+              tokenStart: 6,
+              tokenEnd: 13,
+              entityId: 't1',
+            },
+          ],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('beach tag:tra');
+        manager.setInputCaret('beach tag:tra'.length);
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'tag' });
+
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledWith(
+          expect.objectContaining({
+            activeToken: expect.objectContaining({ key: 'tag', value: 'tra' }),
+          }),
+        );
+        expect(manager.liveTypedSearchStatus).toMatchObject({ status: 'ok', key: 'tag' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('debounces initial live tag suggestions for an empty tag token', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({ status: 'empty', key: 'tag' });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('tag:');
+        manager.setInputCaret('tag:'.length);
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'tag' });
+
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledWith(
+          expect.objectContaining({
+            activeToken: expect.objectContaining({ key: 'tag', value: '' }),
+          }),
+        );
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'empty', key: 'tag' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('debounces live country filter suggestions for an active country token', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'country',
+          total: 1,
+          items: [
+            {
+              id: 'country:0:10:Germany',
+              key: 'country',
+              label: 'Germany',
+              value: 'Germany',
+              tokenStart: 0,
+              tokenEnd: 10,
+            },
+          ],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('country:ge');
+        manager.setInputCaret('country:ge'.length);
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'country' });
+        await vi.advanceTimersByTimeAsync(150);
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('debounces initial live city suggestions for an empty city token', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'city',
+          total: 1,
+          items: [{ id: 'city:0:5:Paris', key: 'city', label: 'Paris', value: 'Paris', tokenStart: 0, tokenEnd: 5 }],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('city:');
+        manager.setInputCaret('city:'.length);
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'city' });
+
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledWith(
+          expect.objectContaining({
+            activeToken: expect.objectContaining({ key: 'city', value: '' }),
+          }),
+        );
+        expect(manager.liveTypedSearchStatus).toMatchObject({ status: 'ok', key: 'city' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('schedules live city suggestions when the city token has text', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'city',
+          total: 1,
+          items: [
+            { id: 'city:16:24:Berlin', key: 'city', label: 'Berlin', value: 'Berlin', tokenStart: 16, tokenEnd: 24 },
+          ],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('country:germany city:ber');
+        manager.setInputCaret('country:germany city:ber'.length);
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledWith(
+          expect.objectContaining({ activeToken: expect.objectContaining({ key: 'city', value: 'ber' }) }),
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('keeps unsupported camera tokens out of live suggestions', async () => {
+      vi.useFakeTimers();
+      try {
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('camera:nik');
+        manager.setInputCaret('camera:nik'.length);
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).not.toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('caret moves outside supported typed tokens clears active token and live section to idle', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({ status: 'empty', key: 'person' });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('beach person:ann camera:nikon');
+        manager.setInputCaret('beach person:ann'.length);
+        expect(manager.activeTypedSearchToken).toMatchObject({ key: 'person', raw: 'person:ann' });
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'person' });
+
+        manager.setInputCaret('beach person:ann camera:nik'.length);
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(manager.activeTypedSearchToken).toBeUndefined();
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).not.toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('IME composition suppresses live requests until composition ends', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({ status: 'empty', key: 'person' });
+        const manager = new GlobalSearchManager();
+
+        manager.setInputComposing(true);
+        manager.setQuery('person:ann');
+        manager.setInputCaret('person:ann'.length);
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(manager.activeTypedSearchToken).toBeUndefined();
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).not.toHaveBeenCalled();
+
+        manager.setInputComposing(false);
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'empty', key: 'person' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not schedule live requests for an unterminated quoted person token', async () => {
+      vi.useFakeTimers();
+      try {
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('person:"Ann');
+        manager.setInputCaret('person:"Ann'.length);
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(manager.activeTypedSearchToken).toBeUndefined();
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).not.toHaveBeenCalled();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('ignores stale live person suggestion responses', async () => {
+      vi.useFakeTimers();
+      try {
+        let resolveFirst!: (value: unknown) => void;
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions
+          .mockImplementationOnce(() => new Promise((resolve) => (resolveFirst = resolve)))
+          .mockResolvedValueOnce({ status: 'empty', key: 'person' });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('person:ann');
+        manager.setInputCaret('person:ann'.length);
+        await vi.advanceTimersByTimeAsync(150);
+        manager.setQuery('person:zz');
+        manager.setInputCaret('person:zz'.length);
+        await vi.advanceTimersByTimeAsync(150);
+
+        resolveFirst({
+          status: 'ok',
+          key: 'person',
+          total: 1,
+          items: [{ id: 'stale', key: 'person', label: 'Anna', value: 'Anna', tokenStart: 0, tokenEnd: 10 }],
+        });
+        await Promise.resolve();
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'empty', key: 'person' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sets timeout status when live suggestion lookup times out', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockRejectedValue(
+          new DOMException('The operation timed out', 'TimeoutError'),
+        );
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('person:ann');
+        manager.setInputCaret('person:ann'.length);
+        await vi.advanceTimersByTimeAsync(150);
+        await Promise.resolve();
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'timeout', key: 'person' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('close aborts live requests and ignores late writes after close', async () => {
+      vi.useFakeTimers();
+      try {
+        let resolveLive!: (value: unknown) => void;
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockImplementation(
+          () => new Promise((resolve) => (resolveLive = resolve)),
+        );
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('person:ann');
+        manager.setInputCaret('person:ann'.length);
+        await vi.advanceTimersByTimeAsync(150);
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+
+        manager.close();
+        resolveLive({
+          status: 'ok',
+          key: 'person',
+          total: 1,
+          items: [{ id: 'late', key: 'person', label: 'Anna', value: 'Anna', tokenStart: 0, tokenEnd: 10 }],
+        });
+        await Promise.resolve();
+
+        expect(manager.isOpen).toBe(false);
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        expect(manager.activeTypedSearchToken).toBeUndefined();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('canonical token selection does not refetch live person suggestions', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'person',
+          total: 1,
+          items: [
+            {
+              id: 'person:6:16:p1',
+              key: 'person',
+              label: 'Anna Maria',
+              value: 'Anna Maria',
+              tokenStart: 6,
+              tokenEnd: 16,
+              entityId: 'p1',
+            },
+          ],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('beach person:ann');
+        manager.setInputCaret('beach person:ann'.length);
+        await vi.advanceTimersByTimeAsync(150);
+        expect(manager.liveTypedSearchStatus).toMatchObject({ status: 'ok', key: 'person' });
+
+        manager.selectLiveTypedSearchChoice({
+          id: 'person:6:16:p1',
+          key: 'person',
+          label: 'Anna Maria',
+          value: 'Anna Maria',
+          tokenStart: 6,
+          tokenEnd: 16,
+          entityId: 'p1',
+        });
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockClear();
+
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).not.toHaveBeenCalled();
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('same-length canonical token selection does not refetch live person suggestions', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({
+          status: 'ok',
+          key: 'person',
+          total: 1,
+          items: [
+            {
+              id: 'person:0:10:p1',
+              key: 'person',
+              label: 'Ann',
+              value: 'Ann',
+              tokenStart: 0,
+              tokenEnd: 10,
+              entityId: 'p1',
+            },
+          ],
+        });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('person:ann');
+        manager.setInputCaret('person:ann'.length);
+        await vi.advanceTimersByTimeAsync(150);
+        expect(manager.liveTypedSearchStatus).toMatchObject({ status: 'ok', key: 'person' });
+
+        manager.selectLiveTypedSearchChoice({
+          id: 'person:0:10:p1',
+          key: 'person',
+          label: 'Ann',
+          value: 'Ann',
+          tokenStart: 0,
+          tokenEnd: 10,
+          entityId: 'p1',
+        });
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockClear();
+
+        await vi.advanceTimersByTimeAsync(200);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).not.toHaveBeenCalled();
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sets live person timeout status from signal.reason after a late resolver status', async () => {
+      vi.useFakeTimers();
+      installFakeAbortTimeout();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockImplementation(
+          ({ signal }: { signal?: AbortSignal }) =>
+            new Promise((resolve) => {
+              signal?.addEventListener('abort', () => {
+                resolve({ status: 'error', key: 'person', message: 'timeout' });
+              });
+            }),
+        );
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('person:ann');
+        manager.setInputCaret('person:ann'.length);
+        await vi.advanceTimersByTimeAsync(150);
+        await vi.advanceTimersByTimeAsync(15_000);
+        await Promise.resolve();
+
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'timeout', key: 'person' });
+      } finally {
+        restoreAbortTimeout();
+        vi.useRealTimers();
+      }
+    });
+
+    it('selectLiveTypedSearchChoice refreshes live selection draft state', () => {
+      const manager = new GlobalSearchManager();
+
+      manager.setQuery('beach person:ann');
+      manager.setInputCaret('beach person:ann'.length);
+      manager.liveTypedSearchStatus = {
+        status: 'ok',
+        key: 'person',
+        total: 1,
+        items: [
+          {
+            id: 'person:6:16:p1',
+            key: 'person',
+            label: 'Anna Maria',
+            value: 'Anna Maria',
+            tokenStart: 6,
+            tokenEnd: 16,
+          },
+        ],
+      };
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'person:6:16:p1',
+        key: 'person',
+        label: 'Anna Maria',
+        value: 'Anna Maria',
+        tokenStart: 6,
+        tokenEnd: 16,
+      });
+
+      expect(manager.query).toBe('beach person:"Anna Maria" ');
+      expect(manager.typedSearchDisplayTokens.map((token) => token.raw)).toContain('person:"Anna Maria"');
+      expect(manager.typedSearchDisplayTokens.map((token) => token.raw)).not.toContain('person:ann');
+      expect(manager.typedSearchPlainQuery).toBe('beach');
+      expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+      expect(manager.typedSearchCaret).toBe('beach person:"Anna Maria" '.length);
+      expect(manager.activeTypedSearchToken).toBeUndefined();
+    });
+
+    it('selecting a live person choice rewrites the active token and stores resolver choice by rewritten span identity', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach person:ann person:ann');
+      manager.setInputCaret('beach person:ann'.length);
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'person:6:16:p1',
+        key: 'person',
+        label: 'Anna Maria',
+        value: 'Anna Maria',
+        tokenStart: 6,
+        tokenEnd: 16,
+        entityId: 'p1',
+      });
+
+      expect(manager.query).toBe('beach person:"Anna Maria" person:ann');
+      expect(manager.selectedTypedSearchChoices.get('person:6:25:person:"Anna Maria"')).toEqual(
+        expect.objectContaining({
+          tokenRaw: 'person:"Anna Maria"',
+          key: 'person',
+          id: 'p1',
+          label: 'Anna Maria',
+          value: 'Anna Maria',
+        }),
+      );
+      expect(manager.selectedTypedSearchChoices.has('person:ann')).toBe(false);
+      expect(manager.selectedTypedSearchChoices.has('person:"Anna Maria"')).toBe(false);
+      expect([...manager.selectedTypedSearchChoices.keys()]).toEqual(['person:6:25:person:"Anna Maria"']);
+    });
+
+    it('selecting first live person choice in repeated equal raw tokens stores only the rewritten span identity', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('person:ann person:ann');
+      manager.setInputCaret('person:ann'.length);
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'person:0:10:p1',
+        key: 'person',
+        label: 'Ann Live',
+        value: 'Ann Live',
+        tokenStart: 0,
+        tokenEnd: 10,
+        entityId: 'person-1',
+      });
+
+      expect(manager.query).toBe('person:"Ann Live" person:ann');
+      expect(manager.selectedTypedSearchChoices.get('person:0:17:person:"Ann Live"')).toEqual(
+        expect.objectContaining({
+          tokenRaw: 'person:"Ann Live"',
+          key: 'person',
+          id: 'person-1',
+          label: 'Ann Live',
+          value: 'Ann Live',
+        }),
+      );
+      expect(manager.selectedTypedSearchChoices.has('person:0:10:person:ann')).toBe(false);
+      expect(manager.selectedTypedSearchChoices.has('person:ann')).toBe(false);
+      expect([...manager.selectedTypedSearchChoices.keys()]).toEqual(['person:0:17:person:"Ann Live"']);
+    });
+
+    it('clears a selected live choice when the token raw text changes', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('person:ann');
+      manager.setInputCaret('person:ann'.length);
+      manager.selectLiveTypedSearchChoice({
+        id: 'person:0:10:p1',
+        key: 'person',
+        label: 'Ann Live',
+        value: 'Ann Live',
+        tokenStart: 0,
+        tokenEnd: 10,
+        entityId: 'person-1',
+      });
+
+      manager.setQuery('person:anna');
+
+      expect([...manager.selectedTypedSearchChoices.keys()]).toEqual([]);
+    });
+
+    it('keeps selected live person span identity after typed search draft refresh', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach person:ann');
+      manager.setInputCaret('beach person:ann'.length);
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'person:6:16:p1',
+        key: 'person',
+        label: 'Anna Maria',
+        value: 'Anna Maria',
+        tokenStart: 6,
+        tokenEnd: 16,
+        entityId: 'p1',
+      });
+
+      manager.parseTypedSearchDraft(manager.query);
+
+      expect(manager.selectedTypedSearchChoices.get('person:6:25:person:"Anna Maria"')).toEqual(
+        expect.objectContaining({ key: 'person', id: 'p1', tokenRaw: 'person:"Anna Maria"' }),
+      );
+    });
+
+    it('selecting a live tag choice rewrites the active token and stores resolver choice by rewritten span identity', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach tag:tra');
+      manager.setInputCaret('beach tag:tra'.length);
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'tag:6:13:t1',
+        key: 'tag',
+        label: 'Family Travel',
+        value: 'Family Travel',
+        tokenStart: 6,
+        tokenEnd: 13,
+        entityId: 't1',
+      });
+
+      expect(manager.query).toBe('beach tag:"Family Travel" ');
+      expect(manager.selectedTypedSearchChoices.get('tag:6:25:tag:"Family Travel"')).toEqual({
+        key: 'tag',
+        id: 't1',
+        label: 'Family Travel',
+        value: 'Family Travel',
+        tokenRaw: 'tag:"Family Travel"',
+      });
+      expect(manager.selectedTypedSearchChoices.has('tag:tra')).toBe(false);
+      expect(manager.selectedTypedSearchChoices.has('tag:"Family Travel"')).toBe(false);
+      expect([...manager.selectedTypedSearchChoices.keys()]).toEqual(['tag:6:25:tag:"Family Travel"']);
+    });
+
+    it('selecting a live country choice rewrites only the active country token without storing resolver choice', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach country:ge city:ber');
+      manager.setInputCaret('beach country:ge'.length);
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'country:6:16:Germany',
+        key: 'country',
+        label: 'Germany',
+        value: 'Germany',
+        tokenStart: 6,
+        tokenEnd: 16,
+      });
+
+      expect(manager.query).toBe('beach country:Germany city:ber');
+      expect(manager.selectedTypedSearchChoices.size).toBe(0);
+    });
+
+    it('selecting a live city choice rewrites the active city token without adding a country token', () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach city:par');
+      manager.setInputCaret('beach city:par'.length);
+
+      manager.selectLiveTypedSearchChoice({
+        id: 'city:6:14:Paris',
+        key: 'city',
+        label: 'Paris',
+        value: 'Paris',
+        tokenStart: 6,
+        tokenEnd: 14,
+        secondaryLabel: 'France',
+      });
+
+      expect(manager.query).toBe('beach city:Paris ');
+      expect(manager.query).not.toContain('country:');
+      expect(manager.selectedTypedSearchChoices.size).toBe(0);
+    });
+
+    it('submits selected live scalar values through the existing all-or-nothing resolver', async () => {
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: true,
+        queryText: 'beach',
+        filters: { ...createFilterState(), city: 'Paris' },
+        personNames: new Map(),
+        tagNames: new Map(),
+      });
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach city:par');
+      manager.setInputCaret('beach city:par'.length);
+      manager.selectLiveTypedSearchChoice({
+        id: 'city:6:14:Paris',
+        key: 'city',
+        label: 'Paris',
+        value: 'Paris',
+        tokenStart: 6,
+        tokenEnd: 14,
+      });
+
+      await manager.activateSearch(manager.query);
+
+      expect(typedSearchMock.resolveTypedSearchFilters).toHaveBeenCalledWith(
+        expect.objectContaining({ raw: 'beach city:Paris' }),
+        expect.anything(),
+      );
+    });
+
+    it('activating after a live person span identity selection uses the selected filter choice', async () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('beach person:ann');
+      manager.setInputCaret('beach person:ann'.length);
+      manager.selectLiveTypedSearchChoice({
+        id: 'person:6:16:p1',
+        key: 'person',
+        label: 'Anna Maria',
+        value: 'Anna Maria',
+        tokenStart: 6,
+        tokenEnd: 16,
+        entityId: 'p1',
+      });
+      typedSearchMock.resolveTypedSearchFilters.mockImplementation(
+        (_parsed: unknown, context: TypedSearchResolveContext) => {
+          const selectedChoice = context.selectedChoices?.get('person:6:25:person:"Anna Maria"');
+          if (!selectedChoice?.id) {
+            return {
+              ok: false as const,
+              queryText: 'beach',
+              issues: [
+                {
+                  code: 'no-match' as const,
+                  key: 'person',
+                  raw: 'person:"Anna Maria"',
+                  value: 'Anna Maria',
+                  message: 'No person found for "Anna Maria"',
+                },
+              ],
+              choices: [],
+            };
+          }
+          const filters = createFilterState();
+          filters.personIds.push(selectedChoice.id);
+          return {
+            ok: true as const,
+            queryText: 'beach',
+            filters,
+            personNames: new Map([[selectedChoice.id, selectedChoice.label]]),
+            tagNames: new Map(),
+          };
+        },
+      );
+
+      await manager.activateSearch(manager.query);
+
+      expect(goto).toHaveBeenCalledWith('/photos?q=beach&people=p1');
+    });
+
+    it('clears live suggestion state on close', () => {
+      const manager = new GlobalSearchManager();
+
+      manager.liveTypedSearchStatus = { status: 'loading', key: 'person' };
+      manager.setQuery('person:ann');
+      manager.setInputCaret(8);
+      manager.close();
+
+      expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+      expect(manager.activeTypedSearchToken).toBeUndefined();
+    });
+
+    it('reports empty-value issues at typed search commit', async () => {
+      const manager = new GlobalSearchManager();
+      typedSearchMock.resolveTypedSearchFilters.mockResolvedValue({
+        ok: true,
+        queryText: '',
+        filters: createFilterState(),
+        personNames: new Map(),
+        tagNames: new Map(),
+      });
+
+      await manager.activateSearch('person:');
+
+      expect(typedSearchMock.resolveTypedSearchFilters).not.toHaveBeenCalled();
+      expect(goto).not.toHaveBeenCalled();
+      expect(manager.typedSearchIssues[0]).toMatchObject({ code: 'empty-value', raw: 'person:' });
+    });
+
+    it('clears live suggestion state immediately when IME composition starts', () => {
+      const manager = new GlobalSearchManager();
+
+      manager.setQuery('person:ann');
+      manager.setInputCaret('person:ann'.length);
+      manager.liveTypedSearchStatus = { status: 'loading', key: 'person' };
+
+      manager.setInputComposing(true);
+
+      expect(manager.activeTypedSearchToken).toBeUndefined();
+      expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+    });
+
+    it('clears composition state when clearing the typed search draft', () => {
+      const manager = new GlobalSearchManager();
+
+      manager.setQuery('person:ann');
+      manager.setInputCaret('person:ann'.length);
+      manager.setInputComposing(true);
+      manager.liveTypedSearchStatus = { status: 'loading', key: 'person' };
+
+      manager.clearTypedSearchDraft();
+
+      expect(manager.typedSearchComposing).toBe(false);
+      expect(manager.typedSearchCaret).toBeNull();
+      expect(manager.liveTypedSearchStatus).toEqual({ status: 'idle' });
+    });
+
+    it('clears stale status when the active live token changes', async () => {
+      vi.useFakeTimers();
+      try {
+        liveTypedSearchMock.resolveLiveTypedSearchSuggestions.mockResolvedValue({ status: 'empty', key: 'tag' });
+        const manager = new GlobalSearchManager();
+
+        manager.setQuery('beach person:ann tag:family');
+        manager.setInputCaret('beach person:ann'.length);
+        manager.liveTypedSearchStatus = { status: 'ok', key: 'person', total: 0, items: [] };
+
+        manager.setInputCaret('beach person:ann tag:f'.length);
+
+        expect(manager.activeTypedSearchToken).toMatchObject({ key: 'tag', raw: 'tag:family' });
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'loading', key: 'tag' });
+
+        await vi.advanceTimersByTimeAsync(150);
+
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledOnce();
+        expect(liveTypedSearchMock.resolveLiveTypedSearchSuggestions).toHaveBeenCalledWith(
+          expect.objectContaining({
+            activeToken: expect.objectContaining({ key: 'tag', value: 'family' }),
+          }),
+        );
+        expect(manager.liveTypedSearchStatus).toEqual({ status: 'empty', key: 'tag' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('blocks parser issues before calling the resolver', async () => {
       const manager = new GlobalSearchManager();
 
@@ -1486,6 +2364,17 @@ describe('activate("command")', () => {
       expect(typedSearchMock.resolveTypedSearchFilters).not.toHaveBeenCalled();
       expect(goto).not.toHaveBeenCalled();
       expect(manager.typedSearchIssues[0]).toMatchObject({ code: 'unknown-key', raw: 'persn:anna' });
+    });
+
+    it('keeps duplicate scalar live tokens commit-blocking on Enter', async () => {
+      const manager = new GlobalSearchManager();
+      manager.setQuery('country:Germany country:France');
+
+      await manager.activateSearch(manager.query);
+
+      expect(manager.typedSearchIssues).toEqual([
+        expect.objectContaining({ code: 'duplicate-filter', key: 'country' }),
+      ]);
     });
 
     it('stores resolver names for the destination URL before navigating', async () => {
@@ -3770,6 +4659,44 @@ describe('getActiveItem recent-entry preview lookup (cold open)', () => {
       const data = active.data as { id: string; name: string };
       expect(data.id).toBe('p1');
       expect(data.name).toBe('Alice');
+    }
+  });
+
+  it('returns a person ActiveItem for the highlighted live person filter choice', () => {
+    const m = new GlobalSearchManager();
+    m.setQuery('person:');
+    m.liveTypedSearchStatus = {
+      status: 'ok',
+      key: 'person',
+      total: 1,
+      items: [
+        {
+          id: 'person:0:7:person:p1',
+          key: 'person',
+          label: 'Alice',
+          value: 'Alice',
+          tokenStart: 0,
+          tokenEnd: 7,
+          entityId: 'person:p1',
+          preview: {
+            kind: 'person',
+            data: {
+              id: 'p1',
+              filterId: 'person:p1',
+              name: 'Alice',
+              primaryProfile: { type: 'user-person', id: 'p1' },
+            },
+          },
+        } as never,
+      ],
+    };
+    m.activeItemId = 'filter:person:0:7:person:p1:Alice';
+
+    const active = m.getActiveItem();
+
+    expect(active?.kind).toBe('person');
+    if (active?.kind === 'person') {
+      expect(active.data).toMatchObject({ id: 'p1', filterId: 'person:p1', name: 'Alice' });
     }
   });
 
