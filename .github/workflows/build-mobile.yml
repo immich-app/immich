@@ -151,29 +151,21 @@ jobs:
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
             flutter build apk --release
-            flutter build apk --release --split-per-abi --target-platform android-arm64
           fi
 
       - name: Publish Android Artifact
+        id: upload-apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
-
-      - name: Publish Universal APK Artifact
-        id: upload-universal
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: immich-pr-${{ github.event.pull_request.number }}-universal
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
 
       - name: Comment APK download link on PR
         if: github.event_name == 'pull_request'
         uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          APK_URL: ${{ steps.upload-universal.outputs.artifact-url }}
+          APK_URL: ${{ steps.upload-apk.outputs.artifact-url }}
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'mobile-android-apk'
