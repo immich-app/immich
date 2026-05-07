@@ -16,7 +16,6 @@ import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
@@ -38,7 +37,6 @@ class SyncStreamService {
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final DriftTrashSyncRepository _trashSyncRepository;
-  final LocalFilesManagerRepository _localFilesManager;
   final AssetMediaRepository _assetMediaRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
@@ -50,7 +48,6 @@ class SyncStreamService {
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required DriftTrashSyncRepository trashSyncRepository,
-    required LocalFilesManagerRepository localFilesManager,
     required AssetMediaRepository assetMediaRepository,
     required SyncMigrationRepository syncMigrationRepository,
     required ApiService api,
@@ -60,7 +57,6 @@ class SyncStreamService {
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _trashSyncRepository = trashSyncRepository,
-       _localFilesManager = localFilesManager,
        _assetMediaRepository = assetMediaRepository,
        _syncMigrationRepository = syncMigrationRepository,
        _api = api,
@@ -587,12 +583,12 @@ class SyncStreamService {
     if (!await _hasManageMediaPermission("restore from trash")) {
       return;
     }
-    final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+    final restoredIds = await _assetMediaRepository.restoreAssetsFromTrash(assetsToRestore);
     await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
   }
 
   Future<bool> _hasManageMediaPermission(String logContext) async {
-    final hasPermission = await _localFilesManager.hasManageMediaPermission();
+    final hasPermission = await _assetMediaRepository.hasManageMediaPermission();
     if (!hasPermission) {
       _logger.warning("sync $logContext cannot proceed because MANAGE_MEDIA permission is missing");
     }

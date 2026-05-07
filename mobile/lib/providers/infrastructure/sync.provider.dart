@@ -13,7 +13,6 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 
 final syncMigrationRepositoryProvider = Provider((ref) => SyncMigrationRepository(ref.watch(driftProvider)));
 
@@ -24,7 +23,6 @@ final syncStreamServiceProvider = Provider(
     localAssetRepository: ref.watch(localAssetRepository),
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
-    localFilesManager: ref.watch(localFilesManagerRepositoryProvider),
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     syncMigrationRepository: ref.watch(syncMigrationRepositoryProvider),
     api: ref.watch(apiServiceProvider),
@@ -42,7 +40,7 @@ final localSyncServiceProvider = Provider(
     localAssetRepository: ref.watch(localAssetRepository),
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
-    localFilesManager: ref.watch(localFilesManagerRepositoryProvider),
+    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
   ),
 );

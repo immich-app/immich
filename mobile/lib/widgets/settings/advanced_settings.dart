@@ -10,7 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -144,7 +144,7 @@ class AdvancedSettings extends HookConsumerWidget {
 enum _TrashSyncMode { none, auto, review }
 
 final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
-  return ref.watch(localFilesManagerRepositoryProvider).hasManageMediaPermission();
+  return ref.watch(assetMediaRepositoryProvider).hasManageMediaPermission();
 });
 
 class _TrashSyncModeSelector extends HookConsumerWidget {
@@ -165,7 +165,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         : _TrashSyncMode.none;
 
     Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
-      final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+      final result = await ref.read(assetMediaRepositoryProvider).requestManageMediaPermission();
       ref.invalidate(_manageMediaPermissionProvider);
       if (key == AppSettingsEnum.manageLocalMediaAndroid) {
         autoSyncChanges.value = result;
@@ -249,7 +249,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
               ? const Color.fromARGB(255, 243, 188, 106)
               : null,
           onActionTap: () async {
-            await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+            await ref.read(assetMediaRepositoryProvider).manageMediaPermission();
             ref.invalidate(_manageMediaPermissionProvider);
           },
         ),

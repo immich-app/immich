@@ -68,52 +68,12 @@ class MediaTrashDelegate(context: Context) : PluginRegistry.ActivityResultListen
     activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE)
   }
 
-  fun moveToTrash(mediaUrls: List<String>, callback: (Result<Boolean>) -> Unit) {
+  fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || !hasManageMediaPermission()) {
       callback(Result.failure(FlutterError("PERMISSION_DENIED", "Media permission required", null)))
       return
     }
 
-    val urisToTrash = mediaUrls.map { it.toUri() }
-    if (urisToTrash.isEmpty()) {
-      callback(Result.failure(FlutterError("INVALID_ARGS", "No valid URIs provided", null)))
-      return
-    }
-
-    toggleTrash(urisToTrash, true, callback)
-  }
-
-  fun restoreFromTrash(
-    fileName: String?,
-    mediaId: String?,
-    type: Long,
-    callback: (Result<Boolean>) -> Unit
-  ) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || !hasManageMediaPermission()) {
-      callback(Result.failure(FlutterError("PERMISSION_DENIED", "Media permission required", null)))
-      return
-    }
-
-    when {
-      fileName != null -> restoreFromTrashByName(fileName, type.toInt(), callback)
-      mediaId != null -> restoreFromTrashById(mediaId, type.toInt(), callback)
-      else -> callback(Result.failure(FlutterError("INVALID_PARAMS", "Required params are not specified", null)))
-    }
-  }
-
-  @RequiresApi(Build.VERSION_CODES.R)
-  private fun restoreFromTrashByName(fileName: String, type: Int, callback: (Result<Boolean>) -> Unit) {
-    val uri = getTrashedFileUri(fileName, type)
-    if (uri == null) {
-      callback(Result.failure(FlutterError("TRASH_NOT_FOUND", "Asset URI cannot be found", null)))
-      return
-    }
-
-    restoreUris(listOf(uri), callback)
-  }
-
-  @RequiresApi(Build.VERSION_CODES.R)
-  private fun restoreFromTrashById(mediaId: String, type: Int, callback: (Result<Boolean>) -> Unit) {
     val id = mediaId.toLongOrNull()
     if (id == null) {
       callback(
@@ -129,7 +89,7 @@ class MediaTrashDelegate(context: Context) : PluginRegistry.ActivityResultListen
       return
     }
 
-    restoreUris(listOf(ContentUris.withAppendedId(contentUriForType(type), id)), callback)
+    restoreUris(listOf(ContentUris.withAppendedId(contentUriForType(type.toInt()), id)), callback)
   }
 
   @RequiresApi(Build.VERSION_CODES.R)
@@ -169,28 +129,6 @@ class MediaTrashDelegate(context: Context) : PluginRegistry.ActivityResultListen
       Log.e(TAG, "Error creating or starting trash request", e)
       callback(Result.failure(FlutterError("TRASH_ERROR", "Error creating or starting trash request", null)))
     }
-  }
-
-  @RequiresApi(Build.VERSION_CODES.R)
-  private fun getTrashedFileUri(fileName: String, type: Int): Uri? {
-    val queryUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
-    val projection = arrayOf(MediaStore.Files.FileColumns._ID)
-    val queryArgs = Bundle().apply {
-      putString(
-        ContentResolver.QUERY_ARG_SQL_SELECTION,
-        "${MediaStore.Files.FileColumns.DISPLAY_NAME} = ?"
-      )
-      putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(fileName))
-      putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-    }
-
-    ctx.contentResolver.query(queryUri, projection, queryArgs, null)?.use { cursor ->
-      if (cursor.moveToFirst()) {
-        val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
-        return ContentUris.withAppendedId(contentUriForType(type), id)
-      }
-    }
-    return null
   }
 
   @RequiresApi(Build.VERSION_CODES.R)

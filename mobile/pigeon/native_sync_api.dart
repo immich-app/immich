@@ -144,10 +144,7 @@ abstract class NativeSyncApi {
   bool manageMediaPermission();
 
   @async
-  bool moveToTrash(List<String> mediaUrls);
-
-  @async
-  bool restoreFromTrash({String? fileName, String? mediaId, required int type});
+  bool restoreFromTrashById(String mediaId, int type);
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);

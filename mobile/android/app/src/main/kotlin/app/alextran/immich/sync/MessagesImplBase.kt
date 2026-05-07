@@ -461,17 +461,8 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     mediaTrashDelegate.manageMediaPermission { completeWhenActive(callback, it) }
   }
 
-  fun moveToTrash(mediaUrls: List<String>, callback: (Result<Boolean>) -> Unit) {
-    mediaTrashDelegate.moveToTrash(mediaUrls) { completeWhenActive(callback, it) }
-  }
-
-  fun restoreFromTrash(
-    fileName: String?,
-    mediaId: String?,
-    type: Long,
-    callback: (Result<Boolean>) -> Unit
-  ) {
-    mediaTrashDelegate.restoreFromTrash(fileName, mediaId, type) { completeWhenActive(callback, it) }
+  fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
+    mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
