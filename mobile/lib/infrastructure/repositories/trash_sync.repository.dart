@@ -30,7 +30,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
         final checksum = item.asset.checksum!;
         final existing = existingMap[checksum];
         if (existing == null ||
-            (existing.isSyncApproved != true && item.remoteDeletedAt.isAfter(existing.remoteDeletedAt))) {
+            (existing.isSyncApproved == null && item.remoteDeletedAt.isAfter(existing.remoteDeletedAt))) {
           batch.insert(
             _db.trashSyncEntity,
             TrashSyncEntityCompanion.insert(checksum: checksum, remoteDeletedAt: item.remoteDeletedAt),

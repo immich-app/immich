@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
@@ -20,7 +22,7 @@ void main() {
     await ctx.dispose();
   });
 
-  group('getAssetsFromBackupAlbums', () {
+  group('getRemoteTrashCandidatesByAlbum', () {
     test('returns local assets from selected backup albums matched by remote id', () async {
       final user = await ctx.newUser();
       final remoteDeletedAt = DateTime(2025, 6, 1);
@@ -34,7 +36,7 @@ void main() {
 
       final remoteOnlyAsset = await ctx.newRemoteAsset(ownerId: user.id);
 
-      final result = await sut.getAssetsFromBackupAlbums({
+      final result = await sut.getRemoteTrashCandidatesByAlbum({
         remoteAsset.id: remoteDeletedAt,
         remoteOnlyAsset.id: DateTime(2025, 6, 2),
       });
@@ -44,6 +46,61 @@ void main() {
       expect(result[selectedAlbum.id]!.single.asset.id, localAsset.id);
       expect(result[selectedAlbum.id]!.single.asset.remoteId, remoteAsset.id);
       expect(result[selectedAlbum.id]!.single.remoteDeletedAt, remoteDeletedAt);
+    });
+
+    test('excludes assets with accepted or rejected trash sync decisions', () async {
+      final user = await ctx.newUser();
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      final selectedAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+
+      final pendingRemote = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: remoteDeletedAt);
+      final rejectedRemote = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: remoteDeletedAt);
+      final approvedRemote = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: remoteDeletedAt);
+
+      final pendingLocal = await ctx.newLocalAsset(checksum: pendingRemote.checksum);
+      final rejectedLocal = await ctx.newLocalAsset(checksum: rejectedRemote.checksum);
+      final approvedLocal = await ctx.newLocalAsset(checksum: approvedRemote.checksum);
+
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: pendingLocal.id);
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: rejectedLocal.id);
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: approvedLocal.id);
+
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              checksum: pendingRemote.checksum,
+              remoteDeletedAt: remoteDeletedAt,
+              isSyncApproved: const Value<bool?>(null),
+            ),
+          );
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              checksum: rejectedRemote.checksum,
+              remoteDeletedAt: remoteDeletedAt,
+              isSyncApproved: const Value(false),
+            ),
+          );
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              checksum: approvedRemote.checksum,
+              remoteDeletedAt: remoteDeletedAt,
+              isSyncApproved: const Value(true),
+            ),
+          );
+
+      final result = await sut.getRemoteTrashCandidatesByAlbum({
+        pendingRemote.id: remoteDeletedAt,
+        rejectedRemote.id: remoteDeletedAt,
+        approvedRemote.id: remoteDeletedAt,
+      });
+
+      expect(result.keys, equals({selectedAlbum.id}));
+      expect(result[selectedAlbum.id]!.map((item) => item.asset.id), [pendingLocal.id]);
     });
   });
 

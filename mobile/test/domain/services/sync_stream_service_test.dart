@@ -170,7 +170,7 @@ void main() {
     );
 
     when(
-      () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+      () => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>()),
     ).thenAnswer((_) async => <String, List<RemoteDeletedLocalAsset>>{});
     when(() => mockTrashedLocalAssetRepo.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
@@ -430,7 +430,7 @@ void main() {
         'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
         'album-b': [RemoteDeletedLocalAsset(asset: mergedAsset, remoteDeletedAt: DateTime(2025, 5, 2))],
       };
-      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((
+      when(() => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>())).thenAnswer((
         invocation,
       ) async {
         final Map<String, DateTime> trashedAssetsMap = invocation.positionalArguments.first as Map<String, DateTime>;
@@ -504,7 +504,7 @@ void main() {
         ],
       };
       when(
-        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+        () => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>()),
       ).thenAnswer((_) async => assetsByAlbum);
       when(() => mockStorageRepo.getMediaUrlForAsset(resolvedAsset)).thenAnswer((_) async => 'content://resolved');
       when(() => mockStorageRepo.getMediaUrlForAsset(unresolvedAsset)).thenAnswer((_) async => null);
@@ -551,7 +551,7 @@ void main() {
         'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
       };
       when(
-        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+        () => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>()),
       ).thenAnswer((_) async => assetsByAlbum);
       when(() => mockStorageRepo.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => 'content://failed');
       when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => false);
@@ -587,7 +587,7 @@ void main() {
         'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
       };
       when(
-        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+        () => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>()),
       ).thenAnswer((_) async => assetsByAlbum);
       when(() => mockStorageRepo.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => null);
 
@@ -622,7 +622,7 @@ void main() {
         'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
       };
       when(
-        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+        () => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>()),
       ).thenAnswer((_) async => assetsByAlbum);
 
       final events = [
@@ -667,7 +667,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
+      verify(() => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
     });
@@ -682,7 +682,7 @@ void main() {
         'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
       };
       when(
-        () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),
+        () => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>()),
       ).thenAnswer((_) async => assetsByAlbum);
 
       final events = [
@@ -722,7 +722,7 @@ void main() {
     });
 
     test("requests local deletions lookup by remote ids for permanent remote delete events", () async {
-      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((
+      when(() => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>())).thenAnswer((
         invocation,
       ) async {
         final lookup = invocation.positionalArguments.first as Map<String, DateTime>;
@@ -734,7 +734,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
+      verify(() => mockLocalAssetRepo.getRemoteTrashCandidatesByAlbum(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
     });

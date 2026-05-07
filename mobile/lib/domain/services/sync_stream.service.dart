@@ -502,7 +502,7 @@ class SyncStreamService {
     if (remoteDeletedAtByRemoteId.isEmpty) {
       return Future.value();
     } else {
-      final remoteTrashCandidatesByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(
+      final remoteTrashCandidatesByAlbum = await _localAssetRepository.getRemoteTrashCandidatesByAlbum(
         remoteDeletedAtByRemoteId,
       );
       if (remoteTrashCandidatesByAlbum.isNotEmpty) {

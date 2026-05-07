@@ -79,7 +79,7 @@ void main() {
       Logger('ActionServiceTest'),
     );
 
-    when(() => localAssetRepository.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
+    when(() => localAssetRepository.getRemoteTrashCandidatesByAlbum(any())).thenAnswer((_) async => {});
     when(() => trashedLocalAssetRepository.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => trashSyncRepository.updateApproves(any(), any())).thenAnswer((_) async {});
   });
@@ -211,9 +211,11 @@ void main() {
 
       expect(result, 0);
       verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
-      verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
-      verify(() => localAssetRepository.getAssetsFromBackupAlbums(any())).called(1);
-      verify(() => trashedLocalAssetRepository.trashLocalAssets(any())).called(1);
+      verifyInOrder([
+        () => localAssetRepository.getRemoteTrashCandidatesByAlbum(any()),
+        () => trashedLocalAssetRepository.trashLocalAssets(any()),
+        () => trashSyncRepository.updateApproves(any(), true),
+      ]);
     });
 
     test('builds trashed assets map from remote deletion dates', () async {
@@ -232,7 +234,7 @@ void main() {
 
       expect(result, 0);
       final captured =
-          verify(() => localAssetRepository.getAssetsFromBackupAlbums(captureAny())).captured.single
+          verify(() => localAssetRepository.getRemoteTrashCandidatesByAlbum(captureAny())).captured.single
               as Map<String, DateTime>;
       expect(captured, {'remote-1': deletedAt1, 'remote-2': deletedAt2});
     });

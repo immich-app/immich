@@ -122,7 +122,6 @@ void main() {
       verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
       verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
       verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
-      verifyNever(() => mockLocalAssetRepository.getToTrash());
       verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
       verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
@@ -177,7 +176,6 @@ void main() {
         'album-a': [platformAsset],
       });
 
-      verifyNever(() => mockLocalAssetRepository.getToTrash());
       verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
       verify(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).called(1);
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
@@ -219,8 +217,6 @@ void main() {
       expect(trashedEntry.albumId, 'album-a');
       expect(trashedEntry.asset.id, platformAsset.id);
       expect(trashedEntry.asset.name, platformAsset.name);
-      verifyNever(() => mockLocalAssetRepository.getToTrash());
-
       verify(() => mockLocalFilesManager.restoreAssetsFromTrash(any())).called(1);
       verify(() => mockTrashedLocalAssetRepository.applyRestoredAssets(restoredIds)).called(1);
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));

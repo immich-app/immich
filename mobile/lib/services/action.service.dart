@@ -310,14 +310,13 @@ class ActionService {
       }
     }
 
-    await _trashSyncRepository.updateApproves(trashedChecksums, true);
-
     final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
       assetsToTrash.where((e) => e.asset.remoteId != null).map((e) => MapEntry(e.asset.remoteId!, e.remoteDeletedAt)),
     );
 
-    final assetsByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(remoteDeletedAtByRemoteId);
+    final assetsByAlbum = await _localAssetRepository.getRemoteTrashCandidatesByAlbum(remoteDeletedAtByRemoteId);
     await _trashedLocalAssetRepository.trashLocalAssets(assetsByAlbum);
+    await _trashSyncRepository.updateApproves(trashedChecksums, true);
 
     return trashUrls.length;
   }

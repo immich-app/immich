@@ -100,7 +100,7 @@ void main() {
   }
 
   group('upsertReviewCandidates', () {
-    test('inserts new entries and updates pending or rejected entries when newer', () async {
+    test('inserts new entries and updates pending entries when newer', () async {
       final oldTime = DateTime(2025, 1, 1);
       final newTime = DateTime(2025, 1, 2);
 
@@ -146,8 +146,8 @@ void main() {
       expect(byChecksum['pending']?.remoteDeletedAt, newTime);
 
       expect(byChecksum['rejected'], isNotNull);
-      expect(byChecksum['rejected']!.isSyncApproved, isNull);
-      expect(byChecksum['rejected']?.remoteDeletedAt, newTime);
+      expect(byChecksum['rejected']!.isSyncApproved, isFalse);
+      expect(byChecksum['rejected']?.remoteDeletedAt, oldTime);
 
       expect(byChecksum['approved']?.isSyncApproved, isTrue);
       expect(byChecksum['approved']?.remoteDeletedAt, oldTime);
