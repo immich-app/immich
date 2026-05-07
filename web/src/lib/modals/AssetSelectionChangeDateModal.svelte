@@ -1,5 +1,6 @@
 <script lang="ts">
   import Combobox from '$lib/components/shared-components/Combobox.svelte';
+  import { dateFormats } from '$lib/constants';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -11,8 +12,8 @@
     toIsoDate,
     type ZoneOption,
   } from '$lib/modals/timezone-utils';
+  import { locale } from '$lib/stores/preferences.store';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
-  import { getFullDateFormat } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
   import { Field, FormModal, Label, Switch, Text } from '@immich/ui';
@@ -53,7 +54,10 @@
 
     first = showRelative && first ? calcNewDate(first, selectedDuration, selectedOption?.value) : first;
     last = showRelative && last ? calcNewDate(last, selectedDuration, selectedOption?.value) : last;
-    return { first: getFullDateFormat(first), last: getFullDateFormat(last) };
+    return {
+      first: first ? first.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) : '',
+      last: last ? last.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) : '',
+    };
   });
 
   const onSubmit = async () => {
