@@ -4,15 +4,15 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
 
-  interface Props {
+  type Props = {
     asset: AssetResponseDto;
-  }
+  };
 
-  let { asset }: Props = $props();
+  const { asset }: Props = $props();
 
   const { slideshowShowMetadataOverlay, slideshowMetadataOverlayMode } = slideshowStore;
 
-  const scrimOpacity = 0.7;
+  const opacity = 0.7;
 
   const description = $derived(asset.exifInfo?.description?.trim() || '');
 
@@ -39,15 +39,14 @@
 </script>
 
 {#if shouldShow}
-  <div class="absolute bottom-0 left-0 right-0 z-10">
+  <div class="absolute inset-x-0 bottom-0 z-10">
     <div
       class="w-full px-6 py-4"
-      style="background: linear-gradient(to top, rgba(0, 0, 0, {scrimOpacity}) 0%, rgba(0, 0, 0, {scrimOpacity *
-        0.8}) 100%);"
+      style="background: linear-gradient(to top, rgba(0, 0, 0, {opacity}) 0%, rgba(0, 0, 0, {opacity * 0.8}) 100%);"
     >
       <div class="flex flex-col gap-2 text-white">
         {#if description}
-          <p class="text-base font-medium leading-relaxed whitespace-pre-wrap wrap-break-word">
+          <p class="text-base/relaxed font-medium wrap-break-word whitespace-pre-wrap">
             {description}
           </p>
         {/if}

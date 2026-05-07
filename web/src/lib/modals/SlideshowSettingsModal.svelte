@@ -136,17 +136,16 @@
       <Switch bind:checked={tempSlideshowShowMetadataOverlay} />
     </Field>
 
-    <div class={tempSlideshowShowMetadataOverlay ? '' : 'opacity-50 pointer-events-none'}>
-      <SettingDropdown
-        title={$t('slideshow_metadata_overlay_mode')}
-        options={Object.values(metadataOverlayModeOptions)}
-        selectedOption={metadataOverlayModeOptions[tempSlideshowMetadataOverlayMode]}
-        onToggle={(option) => {
-          tempSlideshowMetadataOverlayMode =
-            handleToggle(option, metadataOverlayModeOptions) || tempSlideshowMetadataOverlayMode;
-        }}
-      />
-    </div>
+    <SettingDropdown
+      title={$t('slideshow_metadata_overlay_mode')}
+      options={Object.values(metadataOverlayModeOptions)}
+      selectedOption={metadataOverlayModeOptions[tempSlideshowMetadataOverlayMode]}
+      disabled={!tempSlideshowShowMetadataOverlay}
+      onToggle={(option) => {
+        tempSlideshowMetadataOverlayMode =
+          handleToggle(option, metadataOverlayModeOptions) || tempSlideshowMetadataOverlayMode;
+      }}
+    />
 
     <Field label={$t('duration')}>
       <NumberInput min={1} bind:value={tempSlideshowDelay} />
