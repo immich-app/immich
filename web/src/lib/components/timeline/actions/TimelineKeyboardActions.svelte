@@ -45,10 +45,7 @@
 
     await deleteAssets(
       force,
-      (assetIds) => {
-        timelineManager.removeAssets(assetIds);
-        eventManager.emit('AssetsDelete', assetIds);
-      },
+      (assetIds) => timelineManager.removeAssets(assetIds),
       selectedAssets,
       force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );

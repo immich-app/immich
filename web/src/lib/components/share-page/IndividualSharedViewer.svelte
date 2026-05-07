@@ -74,11 +74,11 @@
 </script>
 
 {#if sharedLink?.allowUpload || assets.length > 1}
-  <main class="mt-24 mb-40 mx-4 isolate" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+  <main class="isolate mx-4 mt-24 mb-40" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
     <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
 
-  <header class="fixed top-0 inset-s-0 w-full">
+  <header class="fixed inset-s-0 top-0 w-full">
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar>
         <IconButton

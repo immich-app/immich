@@ -52,7 +52,7 @@
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <div class="sm:ms-8 flex flex-col gap-4">
+    <div class="flex flex-col gap-4 sm:ms-8">
       {#if currentSession}
         <div class="mb-6">
           <Text class="mb-2" fontWeight="medium" size="tiny" color="primary">

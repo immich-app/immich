@@ -49,7 +49,8 @@ export class UserService extends BaseService {
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== user.id) {
-        throw new BadRequestException('Email already in use by another account');
+        this.logger.warn('Email already in use by another account');
+        throw new BadRequestException('Email is not available');
       }
     }
 
@@ -134,9 +135,10 @@ export class UserService extends BaseService {
   }
 
   async getProfileImage(id: string): Promise<ImmichFileResponse> {
-    const user = await this.findOrFail(id, {});
-    if (!user.profileImagePath) {
-      throw new NotFoundException('User does not have a profile image');
+    const user = await this.userRepository.get(id, {});
+    if (!user || !user.profileImagePath) {
+      this.logger.debug('User or profile image not found');
+      throw new NotFoundException();
     }
 
     return new ImmichFileResponse({

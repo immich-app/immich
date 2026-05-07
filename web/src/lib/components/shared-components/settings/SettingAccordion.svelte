@@ -64,7 +64,7 @@
 </script>
 
 <div
-  class="border-2 rounded-2xl border-primary/20 mt-4 px-6 py-4 transition-all {isOpen
+  class="mt-4 rounded-2xl border-2 border-primary/20 px-6 py-4 transition-all {isOpen
     ? 'border-primary/60 shadow-md'
     : ''}"
   bind:this={accordionElement}
@@ -76,7 +76,7 @@
     class="flex w-full place-items-center justify-between text-start"
   >
     <div>
-      <div class="flex gap-2 place-items-center">
+      <div class="flex place-items-center gap-2">
         {#if icon}
           <Icon {icon} class="text-primary" size="24" aria-hidden />
         {/if}
@@ -86,7 +86,7 @@
       </div>
 
       {#if subtitleSnippet}{@render subtitleSnippet()}{:else}
-        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitle}</p>
+        <p class="mt-1 text-sm dark:text-immich-dark-fg">{subtitle}</p>
       {/if}
     </div>
 
@@ -110,7 +110,7 @@
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 150 }} class="mb-2 ms-4">
+    <ul transition:slide={{ duration: 150 }} class="ms-4 mb-2">
       {@render children?.()}
     </ul>
   {/if}

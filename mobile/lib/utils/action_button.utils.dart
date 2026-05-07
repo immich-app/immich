@@ -148,6 +148,7 @@ enum ActionButtonType {
             context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
+            context.timelineOrigin != TimelineOrigin.trash &&
             !context.isInLockedView && //
             context.isStacked,
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,

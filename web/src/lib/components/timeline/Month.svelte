@@ -74,12 +74,12 @@
   >
     <!-- Day title -->
     <div
-      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
+      class="flex h-6 place-items-center pt-7 pb-5 text-xs font-medium text-immich-fg max-md:pt-5 max-md:pb-3 md:text-sm dark:text-immich-dark-fg"
       style:width={timelineDay.width + 'px'}
     >
       {#if !singleSelect}
         <div
-          class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
+          class="w-0 overflow-hidden transition-all duration-200 ease-out hover:cursor-pointer"
           class:w-8={hoveredTimelineDay === timelineDay.groupTitle ||
             assetInteraction.selectedGroup.has(timelineDay.groupTitle)}
           onclick={() => onTimelineDaySelect(timelineDay, assetsSnapshot(timelineDay.getAssets()))}

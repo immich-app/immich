@@ -51,8 +51,8 @@ const PersonSearchSchema = z
     withHidden: stringToBool.optional().describe('Include hidden people'),
     closestPersonId: z.uuidv4().optional().describe('Closest person ID for similarity search'),
     closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
-    page: z.coerce.number().min(1).default(1).describe('Page number for pagination'),
-    size: z.coerce.number().min(1).max(1000).default(500).describe('Number of items per page'),
+    page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
+    size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
   })
   .meta({ id: 'PersonSearchDto' });
 

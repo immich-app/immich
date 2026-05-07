@@ -12,7 +12,7 @@
   let { tree, active, icons, getLink }: Props = $props();
 </script>
 
-<ul class="list-none ms-2">
+<ul class="ms-2 list-none">
   {#each tree.children as node (node.color ? node.path + node.color : node.path)}
     <li>
       <Tree {node} {icons} {active} {getLink} />

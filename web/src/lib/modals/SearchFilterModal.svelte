@@ -54,6 +54,10 @@
       query = searchQuery.originalFileName;
     }
 
+    if ('originalPath' in searchQuery && searchQuery.originalPath) {
+      query = searchQuery.originalPath;
+    }
+
     return {
       query,
       ocr: searchQuery.ocr,
@@ -133,6 +137,7 @@
       ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
+      originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -197,7 +202,7 @@
           <SearchRatingsSection bind:rating={filter.rating} />
         {/if}
 
-        <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
+        <div class="grid gap-x-5 gap-y-10 md:grid-cols-2">
           <!-- MEDIA TYPE -->
           <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
