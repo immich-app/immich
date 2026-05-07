@@ -4,7 +4,7 @@ import z from 'zod';
 
 const SessionCreateSchema = z
   .object({
-    duration: z.number().min(1).optional().describe('Session duration in seconds'),
+    duration: z.int().min(1).optional().describe('Session duration in seconds'),
     deviceType: z.string().optional().describe('Device type'),
     deviceOS: z.string().optional().describe('Device OS'),
   })

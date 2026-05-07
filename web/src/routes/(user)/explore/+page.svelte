@@ -41,7 +41,7 @@
 
 <UserPageLayout title={data.meta.title}>
   {#if hasPeople}
-    <div class="mb-6 mt-2">
+    <div class="mt-2 mb-6">
       <div class="flex justify-between">
         <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('people')}</p>
         <a
@@ -50,10 +50,10 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
+      <SingleGridRow class="grid grid-flow-col grid-auto-fill-20 gap-x-4 md:grid-auto-fill-28">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
-            <a href={Route.viewPerson(person)} class="text-center relative">
+            <a href={Route.viewPerson(person)} class="relative text-center">
               <ImageThumbnail
                 circle
                 shadow
@@ -62,11 +62,11 @@
                 widthStyle="100%"
               />
               {#if person.isFavorite}
-                <div class="absolute top-2 start-2">
+                <div class="absolute inset-s-2 top-2">
                   <Icon icon={mdiHeart} size="24" class="text-white" />
                 </div>
               {/if}
-              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+              <p class="mt-2 text-sm font-medium text-ellipsis dark:text-white">{person.name}</p>
             </a>
           {/each}
         {/snippet}
@@ -75,7 +75,7 @@
   {/if}
 
   {#if places.length > 0}
-    <div class="mb-6 mt-2">
+    <div class="mt-2 mb-6">
       <div class="flex justify-between">
         <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('places')}</p>
         <a
@@ -84,7 +84,7 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
+      <SingleGridRow class="grid grid-flow-col grid-auto-fill-28 gap-x-4 md:grid-auto-fill-36">
         {#snippet children({ itemCount })}
           {#each places.slice(0, itemCount) as item (item.data.id)}
             <a class="relative" href={Route.search({ city: item.value })} draggable="false">
@@ -92,11 +92,11 @@
                 <img
                   src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
                   alt={item.value}
-                  class="object-cover aspect-square w-full"
+                  class="aspect-square w-full object-cover"
                 />
               </div>
               <span
-                class="absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+                class="absolute bottom-2 w-full px-1 text-center text-sm font-medium text-ellipsis text-white capitalize backdrop-blur-[1px] hover:cursor-pointer"
               >
                 {item.value}
               </span>
@@ -108,6 +108,6 @@
   {/if}
 
   {#if !hasPeople && places.length === 0}
-    <EmptyPlaceholder text={$t('no_explore_results_message')} class="mt-10 mx-auto" />
+    <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
   {/if}
 </UserPageLayout>

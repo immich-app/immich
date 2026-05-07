@@ -20,7 +20,7 @@
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { AlbumUserRole, type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
@@ -98,24 +98,26 @@
     /** Group by owner */
     [AlbumGroupBy.Owner]: (order, albums): AlbumGroup[] => {
       const currentUserId = authManager.user.id;
-      const groupedByOwnerIds = groupBy(albums, 'ownerId');
+      const groupedByOwnerIds = groupBy(albums, (album) => album.albumUsers[0].user.id);
 
       const sortSign = order === SortOrder.Desc ? -1 : 1;
-      const sortedByOwnerNames = Object.entries(groupedByOwnerIds).sort(([ownerA, albumsA], [ownerB, albumsB]) => {
+      const sortedByOwnerNames = Object.entries(groupedByOwnerIds).sort(([ownerIdA, albumsA], [ownerIdB, albumsB]) => {
         // We make sure owned albums stay either at the beginning or the end
         // of the list
-        if (ownerA === currentUserId) {
+        if (ownerIdA === currentUserId) {
           return -sortSign;
-        } else if (ownerB === currentUserId) {
+        } else if (ownerIdB === currentUserId) {
           return sortSign;
         } else {
-          return albumsA[0].owner.name.localeCompare(albumsB[0].owner.name, $locale) * sortSign;
+          const ownerA = albumsA[0].albumUsers[0].user;
+          const ownerB = albumsB[0].albumUsers[0].user;
+          return ownerA.name.localeCompare(ownerB.name, $locale) * sortSign;
         }
       });
 
       return sortedByOwnerNames.map(([ownerId, albums]) => ({
         id: ownerId,
-        name: ownerId === currentUserId ? $t('my_albums') : albums[0].owner.name,
+        name: ownerId === currentUserId ? $t('my_albums') : albums[0].albumUsers[0].user.name,
         albums,
       }));
     },
@@ -130,7 +132,10 @@
         return sharedAlbums;
       }
       default: {
-        const nonOwnedAlbums = sharedAlbums.filter((album) => album.ownerId !== authManager.user.id);
+        const nonOwnedAlbums = sharedAlbums.filter(
+          (album) =>
+            album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role !== AlbumUserRole.Owner,
+        );
         return nonOwnedAlbums.length > 0 ? ownedAlbums.concat(nonOwnedAlbums) : ownedAlbums;
       }
     }
@@ -167,7 +172,9 @@
     albumGroupIds = groupedAlbums.map(({ id }) => id);
   });
 
-  let showFullContextMenu = $derived(allowEdit && selectedAlbum && selectedAlbum.ownerId === authManager.user.id);
+  let showFullContextMenu = $derived(
+    allowEdit && selectedAlbum && selectedAlbum.albumUsers[0].user.id === authManager.user.id,
+  );
 
   onMount(async () => {
     if (allowEdit) {

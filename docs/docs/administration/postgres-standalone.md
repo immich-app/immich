@@ -81,7 +81,7 @@ VectorChord is the successor extension to pgvecto.rs, allowing for higher perfor
 
 ### Migrating from pgvecto.rs
 
-Support for pgvecto.rs will be dropped in a later release, hence we recommend all users currently using pgvecto.rs to migrate to VectorChord at their convenience. There are two primary approaches to do so.
+Support for pgvecto.rs has been dropped as of 3.0, hence all users currently using pgvecto.rs should migrate to VectorChord. There are two primary approaches to do so.
 
 The easiest option is to have both extensions installed during the migration:
 

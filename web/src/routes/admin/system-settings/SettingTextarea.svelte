@@ -31,7 +31,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex h-6.5 place-items-center gap-1">
-    <label class="font-medium text-primary text-sm" for={label}>{label}</label>
+    <label class="text-sm font-medium text-primary" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -47,7 +47,7 @@
   </div>
 
   {#if description}
-    <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
+    <p class="pb-2 text-sm immich-form-label" id="{label}-desc">
       {description}
     </p>
   {:else}

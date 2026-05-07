@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
@@ -146,6 +147,36 @@ describe(DuplicateService.name, () => {
           data: { id: asset.id },
         },
       ]);
+    });
+  });
+
+  describe('delete', () => {
+    it('should throw for an unknown or unauthorized group id', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set());
+      await expect(sut.delete(authStub.admin, 'group-1')).rejects.toThrow(BadRequestException);
+      expect(mocks.duplicateRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it('should dismiss the duplicate group', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.delete.mockResolvedValue();
+      await expect(sut.delete(authStub.admin, 'group-1')).resolves.toBeUndefined();
+      expect(mocks.duplicateRepository.delete).toHaveBeenCalledWith(authStub.admin.user.id, 'group-1');
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should throw if any group id is unknown or unauthorized', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      await expect(sut.deleteAll(authStub.admin, { ids: ['group-1', 'group-2'] })).rejects.toThrow(BadRequestException);
+      expect(mocks.duplicateRepository.deleteAll).not.toHaveBeenCalled();
+    });
+
+    it('should dismiss all duplicate groups', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1', 'group-2']));
+      mocks.duplicateRepository.deleteAll.mockResolvedValue();
+      await expect(sut.deleteAll(authStub.admin, { ids: ['group-1', 'group-2'] })).resolves.toBeUndefined();
+      expect(mocks.duplicateRepository.deleteAll).toHaveBeenCalledWith(authStub.admin.user.id, ['group-1', 'group-2']);
     });
   });
 

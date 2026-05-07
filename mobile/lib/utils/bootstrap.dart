@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -48,9 +49,11 @@ abstract final class Bootstrap {
 
     await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
 
+    final metadataRepo = await MetadataRepository.ensureInitialized(drift);
+
     await LogService.init(
       logRepository: LogRepository(logDb),
-      storeRepository: storeRepo,
+      metadataRepository: metadataRepo,
       shouldBuffer: shouldBufferLogs,
     );
 

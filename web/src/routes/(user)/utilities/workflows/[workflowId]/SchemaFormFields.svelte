@@ -67,7 +67,7 @@
     {#each Object.entries(components) as [key, component] (key)}
       {@const label = component.title || component.label || key}
 
-      <div class="flex flex-col gap-1 border bg-light p-4 rounded-xl">
+      <div class="flex flex-col gap-1 rounded-xl border bg-light p-4">
         <!-- Select component -->
         {#if component.type === 'select'}
           {#if isPickerField(component.subType)}

@@ -1,6 +1,5 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:openapi/api.dart' as api;
 
@@ -14,7 +13,7 @@ extension DTOToAsset on api.AssetResponseDto {
       updatedAt: updatedAt,
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
-      durationMs: duration?.toDuration()?.inMilliseconds ?? 0,
+      durationMs: duration,
       height: height?.toInt(),
       width: width?.toInt(),
       isFavorite: isFavorite,
@@ -36,7 +35,7 @@ extension DTOToAsset on api.AssetResponseDto {
       updatedAt: updatedAt,
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
-      durationMs: duration?.toDuration()?.inMilliseconds ?? 0,
+      durationMs: duration,
       height: height?.toInt(),
       width: width?.toInt(),
       isFavorite: isFavorite,

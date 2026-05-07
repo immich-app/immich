@@ -35,6 +35,7 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
@@ -218,13 +219,18 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newExif(dto: Insertable<AssetExifTable>) {
-    const result = await this.get(AssetRepository).upsertExif(dto, { lockedPropertiesBehavior: 'override' });
+    const result = await this.get(AssetRepository).upsertExif({ exif: dto, lockedPropertiesBehavior: 'override' });
     return { result };
   }
 
-  async newAlbum(dto: Insertable<AlbumTable>, assetIds?: string[]) {
+  async newAlbum({ ownerId, ...dto }: Insertable<AlbumTable> & { ownerId: string }, assetIds?: string[]) {
     const album = mediumFactory.albumInsert(dto);
-    const result = await this.get(AlbumRepository).create(album, assetIds ?? [], []);
+    const result = await this.get(AlbumRepository).create(
+      album,
+      assetIds ?? [],
+      [{ userId: ownerId, role: AlbumUserRole.Owner }],
+      ownerId,
+    );
     return { album, result };
   }
 
@@ -357,7 +363,14 @@ export class ExifTestContext extends MediumTestContext<MetadataService> {
   constructor(database: Kysely<DB>) {
     super(MetadataService, {
       database,
-      real: [AssetRepository, AssetJobRepository, MetadataRepository, SystemMetadataRepository, TagRepository],
+      real: [
+        AssetRepository,
+        AssetJobRepository,
+        MediaRepository,
+        MetadataRepository,
+        SystemMetadataRepository,
+        TagRepository,
+      ],
       mock: [ConfigRepository, EventRepository, LoggingRepository, MapRepository, StorageRepository],
     });
 
@@ -440,6 +453,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
       return new key(LoggingRepository.create());
     }
 
+    case MediaRepository:
     case MetadataRepository: {
       return new key(LoggingRepository.create());
     }
@@ -570,9 +584,9 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   };
 };
 
-const albumInsert = (album: Partial<Insertable<AlbumTable>> & { ownerId: string }) => {
+const albumInsert = (album: Partial<Insertable<AlbumTable>>) => {
   const id = album.id || newUuid();
-  const defaults: Omit<Insertable<AlbumTable>, 'ownerId'> = {
+  const defaults: Insertable<AlbumTable> = {
     albumName: 'Album',
   };
 

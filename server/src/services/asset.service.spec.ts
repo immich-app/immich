@@ -187,8 +187,10 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, asset.id, { description: 'Test description' });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: asset.id, description: 'Test description', lockedProperties: ['description'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: asset.id, description: 'Test description', lockedProperties: ['description'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
     });
 
@@ -201,12 +203,14 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, asset.id, { rating: 3 });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        {
-          assetId: asset.id,
-          rating: 3,
-          lockedProperties: ['rating'],
-        },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: {
+            assetId: asset.id,
+            rating: 3,
+            lockedProperties: ['rating'],
+          },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
     });
 

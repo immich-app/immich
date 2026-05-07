@@ -30,7 +30,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey, AssetEditAction;
-import 'package:openapi/api.dart' hide AlbumUserRole, UserMetadataKey, AssetEditAction, AssetVisibility;
+import 'package:openapi/api.dart' hide UserMetadataKey, AssetEditAction, AssetVisibility, AlbumUserRole;
 
 class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
@@ -220,6 +220,44 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> updateAssetsV2(Iterable<SyncAssetV2> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        for (final asset in data) {
+          final companion = RemoteAssetEntityCompanion(
+            name: Value(asset.originalFileName),
+            type: Value(asset.type.toAssetType()),
+            createdAt: Value.absentIfNull(asset.fileCreatedAt),
+            updatedAt: Value.absentIfNull(asset.fileModifiedAt),
+            durationMs: Value(asset.duration),
+            checksum: Value(asset.checksum),
+            isFavorite: Value(asset.isFavorite),
+            ownerId: Value(asset.ownerId),
+            localDateTime: Value(asset.localDateTime),
+            thumbHash: Value(asset.thumbhash),
+            deletedAt: Value(asset.deletedAt),
+            visibility: Value(asset.visibility.toAssetVisibility()),
+            livePhotoVideoId: Value(asset.livePhotoVideoId),
+            stackId: Value(asset.stackId),
+            libraryId: Value(asset.libraryId),
+            width: Value(asset.width),
+            height: Value(asset.height),
+            isEdited: Value(asset.isEdited),
+          );
+
+          batch.insert(
+            _db.remoteAssetEntity,
+            companion.copyWith(id: Value(asset.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsV2 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
@@ -398,6 +436,47 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> updateAlbumsV1(Iterable<SyncAlbumV1> data) async {
     try {
+      await _db.transaction(() async {
+        await _db.batch((batch) {
+          for (final album in data) {
+            final companion = RemoteAlbumEntityCompanion(
+              name: Value(album.name),
+              description: Value(album.description),
+              isActivityEnabled: Value(album.isActivityEnabled),
+              order: Value(album.order.toAlbumAssetOrder()),
+              thumbnailAssetId: Value(album.thumbnailAssetId),
+              createdAt: Value(album.createdAt),
+              updatedAt: Value(album.updatedAt),
+            );
+
+            batch.insert(
+              _db.remoteAlbumEntity,
+              companion.copyWith(id: Value(album.id)),
+              onConflict: DoUpdate((_) => companion),
+            );
+          }
+        });
+
+        await _db.batch((batch) {
+          for (final album in data) {
+            final companion = RemoteAlbumUserEntityCompanion(
+              albumId: Value(album.id),
+              userId: Value(album.ownerId),
+              role: const Value(AlbumUserRole.owner),
+            );
+
+            batch.insert(_db.remoteAlbumUserEntity, companion, onConflict: DoUpdate((_) => companion));
+          }
+        });
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAlbumsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAlbumsV2(Iterable<SyncAlbumV2> data) async {
+    try {
       await _db.batch((batch) {
         for (final album in data) {
           final companion = RemoteAlbumEntityCompanion(
@@ -406,7 +485,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             isActivityEnabled: Value(album.isActivityEnabled),
             order: Value(album.order.toAlbumAssetOrder()),
             thumbnailAssetId: Value(album.thumbnailAssetId),
-            ownerId: Value(album.ownerId),
             createdAt: Value(album.createdAt),
             updatedAt: Value(album.updatedAt),
           );
@@ -419,7 +497,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updateAlbumsV1', error, stack);
+      _logger.severe('Error: updateAlbumsV2', error, stack);
       rethrow;
     }
   }
@@ -821,6 +899,7 @@ extension on api.AlbumUserRole {
   AlbumUserRole toAlbumUserRole() => switch (this) {
     api.AlbumUserRole.editor => AlbumUserRole.editor,
     api.AlbumUserRole.viewer => AlbumUserRole.viewer,
+    api.AlbumUserRole.owner => AlbumUserRole.owner,
     _ => throw Exception('Unknown AlbumUserRole value: $this'),
   };
 }

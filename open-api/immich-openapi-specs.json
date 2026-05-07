@@ -5172,7 +5172,7 @@
     },
     "/duplicates/{id}": {
       "delete": {
-        "description": "Delete a single duplicate asset specified by its ID.",
+        "description": "Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.",
         "operationId": "deleteDuplicate",
         "parameters": [
           {
@@ -5202,7 +5202,7 @@
             "api_key": []
           }
         ],
-        "summary": "Delete a duplicate",
+        "summary": "Dismiss a duplicate group",
         "tags": [
           "Duplicates"
         ],
@@ -7964,8 +7964,9 @@
             "description": "Page number for pagination",
             "schema": {
               "minimum": 1,
+              "maximum": 9007199254740991,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -7977,7 +7978,7 @@
               "minimum": 1,
               "maximum": 1000,
               "default": 500,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -9372,7 +9373,7 @@
             ],
             "x-immich-state": "Stable",
             "schema": {
-              "type": "number",
+              "type": "integer",
               "minimum": -1,
               "maximum": 5,
               "nullable": true
@@ -9386,7 +9387,7 @@
             "schema": {
               "minimum": 1,
               "maximum": 1000,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -14968,7 +14969,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.7.5",
+    "version": "3.0.0",
     "contact": {}
   },
   "tags": [
@@ -15279,9 +15280,11 @@
             "type": "string"
           },
           "albumUsers": {
+            "description": "First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically.",
             "items": {
               "$ref": "#/components/schemas/AlbumUserResponseDto"
             },
+            "minItems": 1,
             "type": "array"
           },
           "assetCount": {
@@ -15330,13 +15333,6 @@
           "order": {
             "$ref": "#/components/schemas/AssetOrder"
           },
-          "owner": {
-            "$ref": "#/components/schemas/UserResponseDto"
-          },
-          "ownerId": {
-            "description": "Owner user ID",
-            "type": "string"
-          },
           "shared": {
             "description": "Is shared album",
             "type": "boolean"
@@ -15362,8 +15358,6 @@
           "hasSharedLink",
           "id",
           "isActivityEnabled",
-          "owner",
-          "ownerId",
           "shared",
           "updatedAt"
         ],
@@ -15453,6 +15447,7 @@
         "description": "Album user role",
         "enum": [
           "editor",
+          "owner",
           "viewer"
         ],
         "type": "string"
@@ -15642,7 +15637,9 @@
           },
           "dateTimeRelative": {
             "description": "Relative time offset in seconds",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "description": {
             "description": "Asset description",
@@ -16264,8 +16261,10 @@
             "type": "string"
           },
           "duration": {
-            "description": "Duration (for videos)",
-            "type": "string"
+            "description": "Duration in milliseconds (for videos)",
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer"
           },
           "fileCreatedAt": {
             "description": "File creation date",
@@ -16633,9 +16632,11 @@
             "type": "string"
           },
           "duration": {
-            "description": "Video/gif duration in hh:mm:ss.SSS format (null for static images)",
+            "description": "Video/gif duration in milliseconds (null for static images)",
+            "maximum": 2147483647,
+            "minimum": 0,
             "nullable": true,
-            "type": "string"
+            "type": "integer"
           },
           "exifInfo": {
             "$ref": "#/components/schemas/ExifResponseDto"
@@ -16656,9 +16657,10 @@
           },
           "height": {
             "description": "Asset height",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "id": {
             "description": "Asset ID",
@@ -16801,9 +16803,10 @@
           },
           "width": {
             "description": "Asset width",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -17220,23 +17223,27 @@
         "properties": {
           "height": {
             "description": "Height of the crop",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "width": {
             "description": "Width of the crop",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "x": {
             "description": "Top-Left X coordinate of crop",
+            "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           },
           "y": {
             "description": "Top-Left Y coordinate of crop",
+            "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -17260,8 +17267,9 @@
           },
           "keepLastAmount": {
             "description": "Keep last amount",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -17294,7 +17302,9 @@
           },
           "filesize": {
             "description": "Backup file size",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "timezone": {
             "description": "Backup timezone",
@@ -17633,16 +17643,18 @@
           "exifImageHeight": {
             "default": null,
             "description": "Image height in pixels",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exifImageWidth": {
             "default": null,
             "description": "Image width in pixels",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exposureTime": {
             "default": null,
@@ -17673,8 +17685,10 @@
           "iso": {
             "default": null,
             "description": "ISO sensitivity",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "latitude": {
             "default": null,
@@ -17728,8 +17742,10 @@
           "rating": {
             "default": null,
             "description": "Rating",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "default": null,
@@ -18156,10 +18172,14 @@
             "type": "boolean"
           },
           "interval": {
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "timeout": {
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           }
         },
         "required": [
@@ -18209,7 +18229,9 @@
         "properties": {
           "files": {
             "description": "Number of files in the folder",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "folder": {
             "$ref": "#/components/schemas/StorageFolder"
@@ -18252,7 +18274,9 @@
             "type": "string"
           },
           "progress": {
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "task": {
             "type": "string"
@@ -18729,8 +18753,9 @@
           },
           "page": {
             "description": "Page number",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
             "description": "Filter by person IDs",
@@ -18750,7 +18775,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -18772,7 +18797,7 @@
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -20603,7 +20628,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -20625,7 +20650,7 @@
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -21443,8 +21468,9 @@
           },
           "duration": {
             "description": "Session duration in seconds",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "type": "object"
@@ -21958,8 +21984,9 @@
           },
           "page": {
             "description": "Page number",
+            "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
             "description": "Filter by person IDs",
@@ -21985,7 +22012,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -22007,7 +22034,7 @@
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -22245,7 +22272,7 @@
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number",
+            "type": "integer",
             "x-immich-history": [
               {
                 "version": "v1",
@@ -22526,6 +22553,59 @@
           "name",
           "order",
           "ownerId",
+          "thumbnailAssetId",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumV2": {
+        "properties": {
+          "createdAt": {
+            "description": "Created at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "description": {
+            "description": "Album description",
+            "type": "string"
+          },
+          "id": {
+            "description": "Album ID",
+            "type": "string"
+          },
+          "isActivityEnabled": {
+            "description": "Is activity enabled",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Album name",
+            "type": "string"
+          },
+          "order": {
+            "$ref": "#/components/schemas/AssetOrder"
+          },
+          "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Updated at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "id",
+          "isActivityEnabled",
+          "name",
+          "order",
           "thumbnailAssetId",
           "updatedAt"
         ],
@@ -23099,6 +23179,135 @@
         ],
         "type": "object"
       },
+      "SyncAssetV2": {
+        "properties": {
+          "checksum": {
+            "description": "Checksum",
+            "type": "string"
+          },
+          "deletedAt": {
+            "description": "Deleted at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "duration": {
+            "description": "Duration",
+            "maximum": 2147483647,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "fileCreatedAt": {
+            "description": "File created at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "description": "File modified at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "height": {
+            "description": "Asset height",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "isEdited": {
+            "description": "Is edited",
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "description": "Is favorite",
+            "type": "boolean"
+          },
+          "libraryId": {
+            "description": "Library ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "livePhotoVideoId": {
+            "description": "Live photo video ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "localDateTime": {
+            "description": "Local date time",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "originalFileName": {
+            "description": "Original file name",
+            "type": "string"
+          },
+          "ownerId": {
+            "description": "Owner ID",
+            "type": "string"
+          },
+          "stackId": {
+            "description": "Stack ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "thumbhash": {
+            "description": "Thumbhash",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
+          "width": {
+            "description": "Asset width",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checksum",
+          "deletedAt",
+          "duration",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "height",
+          "id",
+          "isEdited",
+          "isFavorite",
+          "libraryId",
+          "livePhotoVideoId",
+          "localDateTime",
+          "originalFileName",
+          "ownerId",
+          "stackId",
+          "thumbhash",
+          "type",
+          "visibility",
+          "width"
+        ],
+        "type": "object"
+      },
       "SyncAuthUserV1": {
         "properties": {
           "avatarColor": {
@@ -23199,6 +23408,7 @@
           "UserV1",
           "UserDeleteV1",
           "AssetV1",
+          "AssetV2",
           "AssetDeleteV1",
           "AssetExifV1",
           "AssetEditV1",
@@ -23208,7 +23418,9 @@
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
+          "PartnerAssetV2",
           "PartnerAssetBackfillV1",
+          "PartnerAssetBackfillV2",
           "PartnerAssetDeleteV1",
           "PartnerAssetExifV1",
           "PartnerAssetExifBackfillV1",
@@ -23216,13 +23428,17 @@
           "PartnerStackDeleteV1",
           "PartnerStackV1",
           "AlbumV1",
+          "AlbumV2",
           "AlbumDeleteV1",
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
           "AlbumAssetCreateV1",
+          "AlbumAssetCreateV2",
           "AlbumAssetUpdateV1",
+          "AlbumAssetUpdateV2",
           "AlbumAssetBackfillV1",
+          "AlbumAssetBackfillV2",
           "AlbumAssetExifCreateV1",
           "AlbumAssetExifUpdateV1",
           "AlbumAssetExifBackfillV1",
@@ -23510,11 +23726,14 @@
         "description": "Sync request type",
         "enum": [
           "AlbumsV1",
+          "AlbumsV2",
           "AlbumUsersV1",
           "AlbumToAssetsV1",
           "AlbumAssetsV1",
+          "AlbumAssetsV2",
           "AlbumAssetExifsV1",
           "AssetsV1",
+          "AssetsV2",
           "AssetExifsV1",
           "AssetEditsV1",
           "AssetMetadataV1",
@@ -23523,6 +23742,7 @@
           "MemoryToAssetsV1",
           "PartnersV1",
           "PartnerAssetsV1",
+          "PartnerAssetsV2",
           "PartnerAssetExifsV1",
           "PartnerStacksV1",
           "StacksV1",
@@ -24322,9 +24542,10 @@
           },
           "defaultStorageQuota": {
             "description": "Default storage quota",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "enabled": {
             "description": "Enabled",
@@ -24499,7 +24720,7 @@
             "description": "SMTP server port",
             "maximum": 65535,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           },
           "secure": {
             "description": "Whether to use secure connection (TLS/SSL)",
@@ -24915,10 +25136,12 @@
             "type": "array"
           },
           "duration": {
-            "description": "Array of video/gif durations in hh:mm:ss.SSS format (null for static images)",
+            "description": "Array of video/gif durations in milliseconds (null for static images)",
             "items": {
+              "maximum": 2147483647,
+              "minimum": 0,
               "nullable": true,
-              "type": "string"
+              "type": "integer"
             },
             "type": "array"
           },
@@ -25917,7 +26140,9 @@
           },
           "order": {
             "description": "Action order",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "pluginActionId": {
             "description": "Plugin action ID",
@@ -26016,7 +26241,9 @@
           },
           "order": {
             "description": "Filter order",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "pluginFilterId": {
             "description": "Plugin filter ID",

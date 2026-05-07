@@ -7,9 +7,18 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
+  AacProfile,
   AssetOrder,
   AssetType,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  DvProfile,
+  DvSignalCompatibility,
   ExifOrientation,
+  H264Profile,
+  HevcProfile,
   ImageFormat,
   JobName,
   MemoryType,
@@ -80,20 +89,43 @@ export interface VideoStreamInfo {
   height: number;
   width: number;
   rotation: number;
-  codecName?: string;
+  codecName: string | null;
+  profile: H264Profile | HevcProfile | Av1Profile | null;
+  level: number | null;
   frameCount: number;
-  isHDR: boolean;
+  frameRate: number | null;
+  timeBase: number | null;
   bitrate: number;
   pixelFormat: string;
-  colorPrimaries?: string;
-  colorSpace?: string;
-  colorTransfer?: string;
+  colorPrimaries: ColorPrimaries;
+  colorMatrix: ColorMatrix;
+  colorTransfer: ColorTransfer;
+  dvProfile: DvProfile | null;
+  dvLevel: number | null;
+  dvBlSignalCompatibilityId: DvSignalCompatibility | null;
 }
 
 export interface AudioStreamInfo {
   index: number;
-  codecName?: string;
+  codecName: string | null;
+  profile: AacProfile | null;
   bitrate: number;
+}
+
+/** Packet-derived video data needed for accurate HLS playlists. */
+export interface VideoPacketInfo {
+  /** Sum of source packet duration across all packets (includes discard). */
+  totalDuration: number;
+  /** Post-discard packet count. */
+  packetCount: number;
+  /** Output CFR frame count at `packetCount / format.duration`. */
+  outputFrames: number;
+  /** All keyframe PTS in source ticks, including pre-roll discard keyframes. */
+  keyframePts: number[];
+  /** Cumulative packet duration through each keyframe, inclusive. */
+  keyframeAccDuration: number[];
+  /** Each keyframe's own packet duration (needed for VFR). */
+  keyframeOwnDuration: number[];
 }
 
 export interface VideoFormat {
@@ -144,7 +176,7 @@ export interface VideoCodecSWConfig {
   getCommand(
     target: TranscodeTarget,
     videoStream: VideoStreamInfo,
-    audioStream: AudioStreamInfo,
+    audioStream?: AudioStreamInfo,
     format?: VideoFormat,
   ): TranscodeCommand;
 }
@@ -249,6 +281,7 @@ export interface INotifySignupJob extends IEntityJob {
 
 export interface INotifyAlbumInviteJob extends IEntityJob {
   recipientId: string;
+  senderName: string;
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
@@ -391,10 +424,6 @@ export interface ExtensionVersion {
   name: VectorExtension;
   availableVersion: string | null;
   installedVersion: string | null;
-}
-
-export interface VectorUpdateResult {
-  restartRequired: boolean;
 }
 
 export interface ImmichFile extends Express.Multer.File {

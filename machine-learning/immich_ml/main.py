@@ -183,7 +183,10 @@ async def predict(
     text: str | None = Form(default=None),
 ) -> Any:
     if image is not None:
-        inputs: Image | str = await run(lambda: decode_pil(image))
+        decoded = await run(lambda: decode_pil(image))
+        if decoded.width == 0 or decoded.height == 0:
+            raise HTTPException(400, "Image has zero width or height")
+        inputs: Image | str = decoded
     elif text is not None:
         inputs = text
     else:
