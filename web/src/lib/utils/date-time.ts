@@ -7,25 +7,6 @@ export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }
 
-export function getFullDateFormat(dateTime: DateTime | undefined) {
-  if (!dateTime || !dateTime.isValid) {
-    return '';
-  }
-  return dateTime.toLocaleString(
-    {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZoneName: 'longOffset',
-    },
-    { locale: get(locale) },
-  );
-}
-
 export const getShortDateRange = (startTimestamp: string, endTimestamp: string) => {
   const userLocale = get(locale);
   let startDate = DateTime.fromISO(startTimestamp).setZone('UTC');
