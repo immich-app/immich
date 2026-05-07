@@ -31,8 +31,6 @@ void main() {
   late MockTrashSyncRepository trashSyncRepository;
   late MockAssetMediaRepository assetMediaRepository;
   late MockDownloadRepository downloadRepository;
-  late MockStorageRepository storageRepository;
-  late MockLocalFilesManagerRepository localFilesManagerRepository;
 
   late Drift db;
 
@@ -61,8 +59,6 @@ void main() {
     trashSyncRepository = MockTrashSyncRepository();
     assetMediaRepository = MockAssetMediaRepository();
     downloadRepository = MockDownloadRepository();
-    storageRepository = MockStorageRepository();
-    localFilesManagerRepository = MockLocalFilesManagerRepository();
 
     sut = ActionService(
       assetApiRepository,
@@ -74,8 +70,6 @@ void main() {
       trashSyncRepository,
       assetMediaRepository,
       downloadRepository,
-      storageRepository,
-      localFilesManagerRepository,
       Logger('ActionServiceTest'),
     );
 
@@ -143,7 +137,7 @@ void main() {
       expect(result, 1);
       verify(() => trashSyncRepository.updateApproves(any(), false)).called(1);
       verifyNever(() => localAssetRepository.getRemoteTrashedLocalAssets(any()));
-      verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
+      verifyNever(() => assetMediaRepository.deleteAll(any()));
     });
 
     test('returns 0 when no local assets match', () async {
@@ -155,63 +149,60 @@ void main() {
       expect(result, 0);
       verify(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).called(1);
       verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
-      verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
+      verifyNever(() => assetMediaRepository.deleteAll(any()));
     });
 
-    test('closes review when no local files are found', () async {
+    test('keeps review pending when media plugin deletes no local files', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
       when(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).thenAnswer((_) async => [remoteDeleted]);
-      when(() => storageRepository.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => null);
-      when(() => trashSyncRepository.updateApproves(any(), true)).thenAnswer((_) async {});
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => []);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
       expect(result, 0);
-      verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
-      verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
+      verify(() => assetMediaRepository.deleteAll([localAsset.id])).called(1);
+      verifyNever(() => trashSyncRepository.updateApproves(any(), true));
     });
 
-    test('moves files to trash and updates approvals on success', () async {
-      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
+    test('moves files to trash through media plugin and updates approvals on success', () async {
+      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', remoteId: 'remote-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
       when(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).thenAnswer((_) async => [remoteDeleted]);
-      when(() => storageRepository.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => 'content://asset-1');
-      when(() => localFilesManagerRepository.moveToTrash(any())).thenAnswer((_) async => true);
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [localAsset.id]);
       when(() => trashSyncRepository.updateApproves(any(), true)).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
       expect(result, 1);
-      verify(() => localFilesManagerRepository.moveToTrash(['content://asset-1'])).called(1);
+      verify(() => assetMediaRepository.deleteAll([localAsset.id])).called(1);
       verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
     });
 
-    test('does not update approvals when move to trash fails', () async {
+    test('does not update approvals when media plugin delete fails', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
       when(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).thenAnswer((_) async => [remoteDeleted]);
-      when(() => storageRepository.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => 'content://asset-1');
-      when(() => localFilesManagerRepository.moveToTrash(any())).thenAnswer((_) async => false);
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => []);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
       expect(result, 0);
-      verify(() => localFilesManagerRepository.moveToTrash(['content://asset-1'])).called(1);
+      verify(() => assetMediaRepository.deleteAll([localAsset.id])).called(1);
       verifyNever(() => trashSyncRepository.updateApproves(any(), true));
     });
 
-    test('updates approvals and syncs trash even when no media urls are found', () async {
+    test('updates approvals and syncs trash after media plugin delete', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', remoteId: 'remote-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
       when(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).thenAnswer((_) async => [remoteDeleted]);
-      when(() => storageRepository.getMediaUrlForAsset(localAsset)).thenAnswer((_) async => null);
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [localAsset.id]);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
-      expect(result, 0);
-      verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
+      expect(result, 1);
       verifyInOrder([
+        () => assetMediaRepository.deleteAll([localAsset.id]),
         () => localAssetRepository.getRemoteTrashCandidatesByAlbum(any()),
         () => trashedLocalAssetRepository.trashLocalAssets(any()),
         () => trashSyncRepository.updateApproves(any(), true),
@@ -228,15 +219,39 @@ void main() {
         RemoteDeletedLocalAsset(asset: asset2, remoteDeletedAt: deletedAt2),
       ];
       when(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).thenAnswer((_) async => remoteDeleted);
-      when(() => storageRepository.getMediaUrlForAsset(any())).thenAnswer((_) async => null);
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [asset1.id, asset2.id]);
 
       final result = await sut.resolveRemoteTrash(['checksum-1', 'checksum-2'], isSyncApproved: true);
 
-      expect(result, 0);
+      expect(result, 2);
       final captured =
           verify(() => localAssetRepository.getRemoteTrashCandidatesByAlbum(captureAny())).captured.single
               as Map<String, DateTime>;
       expect(captured, {'remote-1': deletedAt1, 'remote-2': deletedAt2});
+    });
+
+    test('updates only deleted assets on partial media plugin success', () async {
+      final asset1 = LocalAssetStub.image1.copyWith(id: 'local-1', checksum: 'checksum-1', remoteId: 'remote-1');
+      final asset2 = LocalAssetStub.image2.copyWith(id: 'local-2', checksum: 'checksum-2', remoteId: 'remote-2');
+      final deletedAt1 = DateTime(2024, 1, 1);
+      final deletedAt2 = DateTime(2024, 2, 2);
+      final remoteDeleted = [
+        RemoteDeletedLocalAsset(asset: asset1, remoteDeletedAt: deletedAt1),
+        RemoteDeletedLocalAsset(asset: asset2, remoteDeletedAt: deletedAt2),
+      ];
+      when(() => localAssetRepository.getRemoteTrashedLocalAssets(any())).thenAnswer((_) async => remoteDeleted);
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [asset1.id]);
+
+      final result = await sut.resolveRemoteTrash(['checksum-1', 'checksum-2'], isSyncApproved: true);
+
+      expect(result, 1);
+      final capturedRemoteDeletedAt =
+          verify(() => localAssetRepository.getRemoteTrashCandidatesByAlbum(captureAny())).captured.single
+              as Map<String, DateTime>;
+      expect(capturedRemoteDeletedAt, {'remote-1': deletedAt1});
+      final capturedChecksums =
+          verify(() => trashSyncRepository.updateApproves(captureAny(), true)).captured.single as Iterable<String>;
+      expect(capturedChecksums, ['checksum-1']);
     });
   });
 }
