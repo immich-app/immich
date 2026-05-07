@@ -20,6 +20,7 @@ import {
   setDifference,
   type TimelineDateTime,
   type TimelineYearMonth,
+  getOrderingDate,
 } from '$lib/utils/timeline-util';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import { TimelineDay } from './timeline-day.svelte';
@@ -234,8 +235,7 @@ export class TimelineMonth {
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
-    const dateTime =
-      this.#orderingDate === OrderingDate.Created ? timelineAsset.createdAt : timelineAsset.localDateTime;
+    const dateTime = getOrderingDate(timelineAsset, this.#orderingDate);
 
     const { year, month } = this.yearMonth;
     if (month !== dateTime.month || year !== dateTime.year) {
@@ -378,9 +378,7 @@ export class TimelineMonth {
     let closest = undefined;
     let smallestDiff = Infinity;
     for (const current of this.assetsIterator()) {
-      const currentAssetDate = fromTimelinePlainDateTime(
-        this.#orderingDate == OrderingDate.Created ? current.createdAt : current.localDateTime,
-      );
+      const currentAssetDate = fromTimelinePlainDateTime(getOrderingDate(current, this.#orderingDate));
       const diff = Math.abs(targetDate.diff(currentAssetDate).as('milliseconds'));
       if (diff < smallestDiff) {
         smallestDiff = diff;

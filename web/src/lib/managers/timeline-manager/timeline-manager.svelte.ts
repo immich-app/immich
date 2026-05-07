@@ -20,6 +20,7 @@ import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websoc
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
+  getOrderingDate,
   isAssetResponseDto,
   setDifference,
   toTimelineAsset,
@@ -252,7 +253,7 @@ export class TimelineManager extends VirtualScrollManager {
         timeBucket.count,
         false,
         this.#options.order,
-        this.#options.orderingDate,
+        this.#options.orderBy,
       );
     });
     this.albumAssets.clear();
@@ -395,7 +396,7 @@ export class TimelineManager extends VirtualScrollManager {
     }
 
     timelineMonth = await this.#loadTimelineMonthAtTime(
-      this.#options.orderingDate == OrderingDate.Created ? timelineAsset.createdAt : timelineAsset.localDateTime,
+      getOrderingDate(timelineAsset, this.#options.orderBy || OrderingDate.Local),
       { cancelable: false },
     );
     if (timelineMonth?.findAssetById({ id })) {
@@ -466,11 +467,11 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertSegmentForAsset(asset: TimelineAsset) {
-    const dateTime = this.#options.orderingDate == OrderingDate.Created ? asset.createdAt : asset.localDateTime;
+    const dateTime = getOrderingDate(asset, this.#options.orderBy || OrderingDate.Local);
     let month = getTimelineMonthByDate(this, dateTime);
 
     if (!month) {
-      month = new TimelineMonth(this, dateTime, 1, true, this.#options.order, this.#options.orderingDate);
+      month = new TimelineMonth(this, dateTime, 1, true, this.#options.order, this.#options.orderBy);
       this.months.push(month);
     }
     return month;

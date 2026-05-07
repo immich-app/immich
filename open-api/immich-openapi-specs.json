@@ -13314,10 +13314,10 @@
             }
           },
           {
-            "name": "orderingDate",
+            "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets with (LOCAL for date taken, CREATED for date added)",
+            "description": "Date to group and order assets by (LOCAL for date taken, CREATED for date added)",
             "schema": {
               "$ref": "#/components/schemas/OrderingDate"
             }
@@ -13513,10 +13513,10 @@
             }
           },
           {
-            "name": "orderingDate",
+            "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets with (LOCAL for date taken, CREATED for date added)",
+            "description": "Date to group and order assets by (LOCAL for date taken, CREATED for date added)",
             "schema": {
               "$ref": "#/components/schemas/OrderingDate"
             }

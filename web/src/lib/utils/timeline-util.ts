@@ -1,4 +1,4 @@
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, OrderingDate, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
@@ -238,3 +238,6 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   }
   return result;
 }
+
+export const getOrderingDate = (asset: TimelineAsset, order: OrderingDate) =>
+  order == OrderingDate.Created ? asset.createdAt : asset.localDateTime;

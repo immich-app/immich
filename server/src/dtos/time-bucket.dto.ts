@@ -23,8 +23,8 @@ const TimeBucketQueryBaseSchema = z
     order: AssetOrderSchema.optional().describe(
       'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
     ),
-    orderingDate: OrderingDateSchema.optional().describe(
-      'Date to group and order assets with (LOCAL for date taken, CREATED for date added)',
+    orderBy: OrderingDateSchema.optional().describe(
+      'Date to group and order assets by (LOCAL for date taken, CREATED for date added)',
     ),
     visibility: AssetVisibilitySchema.optional().describe(
       'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',

@@ -89,7 +89,7 @@ interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   order?: AssetOrder;
-  orderingDate?: OrderingDate;
+  orderBy?: OrderingDate;
 }
 
 export interface TimeBucketItem {
@@ -712,7 +712,7 @@ export class AssetRepository {
       .with('asset', (qb) =>
         qb
           .selectFrom('asset')
-          .select(truncatedDate<Date>(options.orderingDate).as('timeBucket'))
+          .select(truncatedDate<Date>(options.orderBy).as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(!!options.bbox, (qb) => {
@@ -817,7 +817,7 @@ export class AssetRepository {
 
             return withBoundingBox(withBoundingCircle, bbox);
           })
-          .where(truncatedDate(options.orderingDate), '=', timeBucket.replace(/^[+-]/, ''))
+          .where(truncatedDate(options.orderBy), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(
@@ -864,7 +864,7 @@ export class AssetRepository {
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
           .orderBy(
-            options.orderingDate == OrderingDate.Created
+            options.orderBy == OrderingDate.Created
               ? sql`"createdAt"`
               : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
             order,

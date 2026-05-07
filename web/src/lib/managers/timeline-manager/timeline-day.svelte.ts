@@ -2,7 +2,7 @@ import { AssetOrder, OrderingDate } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
-import { plainDateTimeCompare } from '$lib/utils/timeline-util';
+import { getOrderingDate, plainDateTimeCompare } from '$lib/utils/timeline-util';
 import type { TimelineMonth } from './timeline-month.svelte';
 import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
@@ -123,10 +123,10 @@ export class TimelineDay {
         continue;
       }
 
-      const oldTime = { ...(this.orderingDate == OrderingDate.Created ? asset.createdAt : asset.localDateTime) };
+      const oldTime = { ...getOrderingDate(asset, this.orderingDate) };
       const callbackResult = callback(asset);
       let remove = (callbackResult as { remove?: boolean } | undefined)?.remove ?? false;
-      const newTime = this.orderingDate == OrderingDate.Created ? asset.createdAt : asset.localDateTime;
+      const newTime = getOrderingDate(asset, this.orderingDate);
       if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
         const { year, month, day } = newTime;
         remove = true;
