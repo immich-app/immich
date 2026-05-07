@@ -30,6 +30,7 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
+import 'package:logging/logging.dart';
 
 @DriftDatabase(
   tables: [
@@ -83,6 +84,17 @@ class Drift extends $Drift {
       // Refresh all stream queries
       notifyUpdates({for (final table in allTables) TableUpdate.onTable(table)});
     });
+  }
+
+  Future<void> optimize({bool allTables = false}) async {
+    try {
+      if (allTables) {
+        await customStatement('PRAGMA optimize=0x10002');
+      }
+      await customStatement('PRAGMA optimize');
+    } catch (error) {
+      Logger('Drift').fine('Failed to optimize database', error);
+    }
   }
 
   @override
@@ -265,6 +277,7 @@ class Drift extends $Drift {
       }
 
       await customStatement('PRAGMA foreign_keys = ON;');
+      await optimize();
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');

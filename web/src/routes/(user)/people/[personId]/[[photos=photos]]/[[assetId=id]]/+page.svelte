@@ -62,6 +62,8 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $derived(data.statistics.assets);
+  let person = $derived(data.person);
+  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
@@ -74,7 +76,7 @@
   let potentialMergePeople: PersonResponseDto[] = $state([]);
   let isSuggestionSelectedByUser = $state(false);
 
-  let personName = '';
+  let personName = $derived(person.name);
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
@@ -187,7 +189,6 @@
     isEditingName = false;
     if (person.id !== person2.id) {
       potentialMergePeople = [];
-      personName = person.name;
       personMerge1 = person;
       personMerge2 = person2;
       isSuggestionSelectedByUser = true;
@@ -275,10 +276,6 @@
     timelineManager.upsertAssets(assets);
     await updateAssetCount();
   };
-
-  let person = $derived(data.person);
-
-  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);

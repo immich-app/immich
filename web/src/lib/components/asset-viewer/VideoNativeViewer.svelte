@@ -4,7 +4,7 @@
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { autoPlayVideo, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
+  import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner } from '@immich/ui';
@@ -166,6 +166,7 @@
       <!-- dir=ltr based on https://github.com/videojs/video.js/issues/949 -->
       <media-controller
         dir="ltr"
+        lang={$lang}
         nohotkeys
         class="dark h-full max-w-full"
         style:aspect-ratio={aspectRatio}
@@ -194,14 +195,14 @@
         ></video>
 
         {#if extendedControls}
-          <media-settings-menu hidden anchor="auto" class="w-3xs rounded-xl border border-light-300 shadow-sm">
+          <media-settings-menu hidden anchor="auto" class="min-w-3xs rounded-xl border border-light-300 shadow-sm">
             <Icon slot="checked-indicator" icon={mdiCheck} class="m-2" />
             <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
-              {$t('playback_speed')}
+              {$t('media_chrome.playback_rate')}
               <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />
               <media-playback-rate-menu slot="submenu" hidden rates="0.5 1 1.5 2">
                 <Icon slot="back-icon" icon={mdiChevronLeft} class="m-2" />
-                <span slot="title">{$t('playback_speed')}</span>
+                <span slot="title">{$t('media_chrome.playback_rate')}</span>
               </media-playback-rate-menu>
             </media-settings-menu-item>
           </media-settings-menu>
