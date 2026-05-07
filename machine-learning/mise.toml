@@ -9,7 +9,6 @@ run = "uv sync --locked"
 run = "uv run ruff check immich_ml"
 
 [tasks.test]
-depends = ["install --extra cpu"]
 run = "uv run pytest --cov=immich_ml --cov-report term-missing"
 
 [tasks.format]

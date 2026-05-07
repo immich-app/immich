@@ -638,7 +638,7 @@ jobs:
           working_directory: ./machine-learning
 
       - name: Install dependencies
-        run: mise run install
+        run: mise run install --extra cpu
       - name: Lint code
         run: mise run lint --output-format=github
       - name: Format code
