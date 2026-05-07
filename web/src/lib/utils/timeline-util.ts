@@ -128,7 +128,7 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar({ locale: get(locale) });
+    return date.toRelativeCalendar({ locale: get(locale), unit: 'days' });
   }
 
   // Last week

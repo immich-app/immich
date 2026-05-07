@@ -176,15 +176,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
 
-      await _drift.close();
-      await _driftLogger.close();
-
-      _ref?.dispose();
-      _ref = null;
-
-      _cancellationToken.complete();
       _logger.info("Cleaning up background worker");
-
+      _cancellationToken.complete();
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
         workerManagerPatch.dispose().catchError((_) async {
@@ -195,10 +188,15 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         Store.dispose(),
 
         backgroundSyncManager?.cancel(),
+        _drift.optimize(allTables: true),
       ];
 
       await Future.wait(cleanupFutures.nonNulls);
-      _logger.info("Background worker resources cleaned up");
+      await _drift.close();
+      await _driftLogger.close();
+
+      _ref?.dispose();
+      _ref = null;
     } catch (error, stack) {
       dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
     }

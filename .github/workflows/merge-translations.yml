@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   workflow_call:
     secrets:
-      PUSH_O_MATIC_APP_ID:
+      PUSH_O_MATIC_APP_CLIENT_ID:
         required: true
       PUSH_O_MATIC_APP_KEY:
         required: true
@@ -33,7 +33,7 @@ jobs:
         if: ${{ inputs.skip != true }}
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Find translation PR

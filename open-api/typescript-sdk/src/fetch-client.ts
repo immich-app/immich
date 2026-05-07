@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.7.5
+ * 3.0.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -4480,7 +4480,7 @@ export function resolveDuplicates({ duplicateResolveDto }: {
     })));
 }
 /**
- * Delete a duplicate
+ * Dismiss a duplicate group
  */
 export function deleteDuplicate({ id }: {
     id: string;
