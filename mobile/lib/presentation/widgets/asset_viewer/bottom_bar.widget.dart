@@ -123,7 +123,6 @@ class ViewerBottomBar extends ConsumerWidget {
   void _updateView(ActionResult result, WidgetRef ref) {
     Future.delayed(Durations.extralong4, () {
       if (result.success) {
-        EventStream.shared.emit(const ViewerReloadAssetEvent());
         EventStream.shared.emit(const TimelineReloadEvent());
       }
       if (ref.context.mounted) {
