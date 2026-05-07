@@ -1,14 +1,9 @@
-import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
   loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
-  themeMode<String>(StoreKey.themeMode, "themeMode", "system"), // "light","dark","system"
-  primaryColor<String>(StoreKey.primaryColor, "primaryColor", defaultColorPresetName),
-  dynamicTheme<bool>(StoreKey.dynamicTheme, "dynamicTheme", false),
-  colorfulInterface<bool>(StoreKey.colorfulInterface, "colorfulInterface", true),
   tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
   dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),
   groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),
@@ -30,7 +25,6 @@ enum AppSettingsEnum<T> {
   selectedAlbumSortOrder<int>(StoreKey.selectedAlbumSortOrder, "selectedAlbumSortOrder", 2),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
-  logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, "loadOriginalVideo", false),

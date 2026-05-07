@@ -44,7 +44,7 @@
   <button
     type="button"
     {onclick}
-    class="flex items-start gap-3 p-3 rounded-lg text-left bg-light-100 hover:border-primary border text-dark"
+    class="flex items-start gap-3 rounded-lg border bg-light-100 p-3 text-left text-dark hover:border-primary"
   >
     <div class="flex-1">
       <Text color="primary" fontWeight="medium">{title}</Text>

@@ -54,9 +54,15 @@ class ServerConfigDto {
   bool publicUsers;
 
   /// Number of days before trashed assets are permanently deleted
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int trashDays;
 
   /// Delay in days before deleted users are permanently removed
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int userDeleteDelay;
 
   @override

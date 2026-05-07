@@ -1,10 +1,8 @@
 import { AssetOrder } from '@immich/sdk';
-
+import { SvelteSet } from 'svelte/reactivity';
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
-
-import { SvelteSet } from 'svelte/reactivity';
 import type { TimelineMonth } from './timeline-month.svelte';
 import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';

@@ -1,19 +1,19 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
-  import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
-  import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
-  import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
-  import OnboardingMobileApp from '$lib/components/onboarding-page/onboarding-mobile-app.svelte';
-  import OnboardingServerPrivacy from '$lib/components/onboarding-page/onboarding-server-privacy.svelte';
-  import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
-  import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
-  import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
+  import OnboardingBackup from './OnboardingBackup.svelte';
+  import OnboardingCard from './OnboardingCard.svelte';
+  import OnboardingHello from './OnboardingHello.svelte';
+  import OnboardingLocale from './OnboardingLanguage.svelte';
+  import OnboardingMobileApp from './OnboardingMobileApp.svelte';
+  import OnboardingServerPrivacy from './OnboardingServerPrivacy.svelte';
+  import OnboardingStorageTemplate from './OnboardingStorageTemplate.svelte';
+  import OnboardingTheme from './OnboardingTheme.svelte';
+  import OnboardingUserPrivacy from './OnboardingUserPrivacy.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Route } from '$lib/route';
-  import { user } from '$lib/stores/user.store';
   import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
@@ -101,7 +101,7 @@
     return temporaryIndex === -1 ? 0 : temporaryIndex;
   });
   let userRole = $derived(
-    $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+    authManager.user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
   );
 
   let onboardingStepCount = $derived(onboardingSteps.filter((step) => shouldRunStep(step.role, userRole)).length);
@@ -128,7 +128,7 @@
 
   const handleNextClicked = async () => {
     if (nextStepIndex == -1) {
-      if ($user.isAdmin) {
+      if (authManager.user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
         await serverConfigManager.loadServerConfig();
       }
@@ -160,15 +160,15 @@
   });
 </script>
 
-<section id="onboarding-page" class="min-w-dvw flex min-h-dvh p-4">
-  <div class="flex flex-col w-full">
-    <div class=" bg-gray-300 dark:bg-gray-600 rounded-md h-2">
+<section id="onboarding-page" class="flex min-h-dvh min-w-dvw p-4">
+  <div class="flex w-full flex-col">
+    <div class="h-2 rounded-md bg-gray-300 dark:bg-gray-600">
       <div
-        class="progress-bar bg-primary h-2 rounded-md transition-all duration-200 ease-out"
+        class="progress-bar h-2 rounded-md bg-primary transition-all duration-200 ease-out"
         style="width: {(onboardingProgress / onboardingStepCount) * 100}%"
       ></div>
     </div>
-    <div class="py-8 flex place-content-center place-items-center m-auto w-[min(100%,800px)]">
+    <div class="m-auto flex w-[min(100%,800px)] place-content-center place-items-center py-8">
       <OnboardingCard
         title={onboardingSteps[index].title}
         icon={onboardingSteps[index].icon}

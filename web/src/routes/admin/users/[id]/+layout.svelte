@@ -4,9 +4,9 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
-  import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
+  import FeatureSetting from './FeatureSetting.svelte';
   import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
@@ -101,8 +101,8 @@
         <Alert color="danger" class="my-4" title={$t('user_has_been_deleted')} icon={mdiTrashCanOutline} />
       {/if}
 
-      <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-        <div class="col-span-full flex flex-col gap-4 my-4">
+      <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="col-span-full my-4 flex flex-col gap-4">
           <div class="flex items-center gap-4">
             <UserAvatar {user} size="md" />
             <Heading tag="h1" size="large">{user.name}</Heading>
@@ -114,10 +114,22 @@
           {/if}
         </div>
         <div class="col-span-full">
-          <div class="flex flex-col lg:flex-row gap-4 w-full">
-            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics.images} />
-            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics.videos} />
-            <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
+          <div class="flex w-full flex-col gap-4 lg:flex-row">
+            <ServerStatisticsCard
+              icon={mdiCameraIris}
+              title={$t('photos')}
+              valuePromise={Promise.resolve({ value: userStatistics.images })}
+            />
+            <ServerStatisticsCard
+              icon={mdiPlayCircle}
+              title={$t('videos')}
+              valuePromise={Promise.resolve({ value: userStatistics.videos })}
+            />
+            <ServerStatisticsCard
+              icon={mdiChartPie}
+              title={$t('storage')}
+              valuePromise={Promise.resolve({ value: statsUsage, unit: statsUsageUnit })}
+            />
           </div>
         </div>
 

@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/stack.model.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' hide ExifInfo;
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
@@ -263,5 +265,12 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getCount() {
     return _db.managers.remoteAssetEntity.count();
+  }
+
+  Future<List<AssetEdit>> getAssetEdits(String assetId) {
+    final query = _db.assetEditEntity.select()
+      ..where((row) => row.assetId.equals(assetId) & row.action.equals(AssetEditAction.other.index).not())
+      ..orderBy([(row) => OrderingTerm.asc(row.sequence)]);
+    return query.map((row) => row.toDto()!).get();
   }
 }

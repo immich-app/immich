@@ -2,7 +2,6 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-
 import { installMessageListener } from './messaging';
 import { handleFetch as handleAssetFetch } from './request';
 

@@ -1,302 +1,212 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
-import { AssetOrder, UserAvatarColor } from 'src/enum';
+import { createZodDto } from 'nestjs-zod';
+import { AssetOrderSchema, UserAvatarColorSchema } from 'src/enum';
 import { UserPreferences } from 'src/types';
-import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
+import z from 'zod';
 
-class AvatarUpdate {
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
-  color?: UserAvatarColor;
-}
+const AlbumsUpdateSchema = z
+  .object({
+    defaultAssetOrder: AssetOrderSchema.optional(),
+  })
+  .optional()
+  .describe('Album preferences')
+  .meta({ id: 'AlbumsUpdate' });
 
-class MemoriesUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether memories are enabled' })
-  enabled?: boolean;
+const AvatarUpdateSchema = z
+  .object({
+    color: UserAvatarColorSchema.optional(),
+  })
+  .optional()
+  .meta({ id: 'AvatarUpdate' });
 
-  @Optional()
-  @IsInt()
-  @IsPositive()
-  @ApiProperty({ type: 'integer', description: 'Memory duration in seconds' })
-  duration?: number;
-}
+const MemoriesUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether memories are enabled'),
+    duration: z.int().min(1).optional().describe('Memory duration in seconds'),
+  })
+  .optional()
+  .meta({ id: 'MemoriesUpdate' });
 
-class RatingsUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether ratings are enabled' })
-  enabled?: boolean;
-}
+const RatingsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether ratings are enabled'),
+  })
+  .optional()
+  .meta({ id: 'RatingsUpdate' });
 
-@ApiSchema({ description: 'Album preferences' })
-class AlbumsUpdate {
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, description: 'Default asset order for albums' })
-  defaultAssetOrder?: AssetOrder;
-}
+const FoldersUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether folders are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether folders appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'FoldersUpdate' });
 
-class FoldersUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether folders are enabled' })
-  enabled?: boolean;
+const PeopleUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether people are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether people appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'PeopleUpdate' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether folders appear in web sidebar' })
-  sidebarWeb?: boolean;
-}
+const SharedLinksUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether shared links are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether shared links appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'SharedLinksUpdate' });
 
-class PeopleUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether people are enabled' })
-  enabled?: boolean;
+const TagsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether tags are enabled'),
+    sidebarWeb: z.boolean().optional().describe('Whether tags appear in web sidebar'),
+  })
+  .optional()
+  .meta({ id: 'TagsUpdate' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether people appear in web sidebar' })
-  sidebarWeb?: boolean;
-}
+const EmailNotificationsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional().describe('Whether email notifications are enabled'),
+    albumInvite: z.boolean().optional().describe('Whether to receive email notifications for album invites'),
+    albumUpdate: z.boolean().optional().describe('Whether to receive email notifications for album updates'),
+  })
+  .optional()
+  .meta({ id: 'EmailNotificationsUpdate' });
 
-class SharedLinksUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether shared links are enabled' })
-  enabled?: boolean;
+const DownloadUpdateSchema = z
+  .object({
+    archiveSize: z.int().min(1).optional().describe('Maximum archive size in bytes'),
+    includeEmbeddedVideos: z.boolean().optional().describe('Whether to include embedded videos in downloads'),
+  })
+  .optional()
+  .meta({ id: 'DownloadUpdate' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether shared links appear in web sidebar' })
-  sidebarWeb?: boolean;
-}
+const PurchaseUpdateSchema = z
+  .object({
+    showSupportBadge: z.boolean().optional().describe('Whether to show support badge'),
+    hideBuyButtonUntil: z.string().optional().describe('Date until which to hide buy button'),
+  })
+  .optional()
+  .meta({ id: 'PurchaseUpdate' });
 
-class TagsUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether tags are enabled' })
-  enabled?: boolean;
+const CastUpdateSchema = z
+  .object({
+    gCastEnabled: z.boolean().optional().describe('Whether Google Cast is enabled'),
+  })
+  .optional()
+  .meta({ id: 'CastUpdate' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether tags appear in web sidebar' })
-  sidebarWeb?: boolean;
-}
+const UserPreferencesUpdateSchema = z
+  .object({
+    albums: AlbumsUpdateSchema,
+    avatar: AvatarUpdateSchema,
+    cast: CastUpdateSchema,
+    download: DownloadUpdateSchema,
+    emailNotifications: EmailNotificationsUpdateSchema,
+    folders: FoldersUpdateSchema,
+    memories: MemoriesUpdateSchema,
+    people: PeopleUpdateSchema,
+    purchase: PurchaseUpdateSchema,
+    ratings: RatingsUpdateSchema,
+    sharedLinks: SharedLinksUpdateSchema,
+    tags: TagsUpdateSchema,
+  })
+  .meta({ id: 'UserPreferencesUpdateDto' });
 
-class EmailNotificationsUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether email notifications are enabled' })
-  enabled?: boolean;
+const AlbumsResponseSchema = z
+  .object({
+    defaultAssetOrder: AssetOrderSchema,
+  })
+  .meta({ id: 'AlbumsResponse' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether to receive email notifications for album invites' })
-  albumInvite?: boolean;
+const FoldersResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether folders are enabled'),
+    sidebarWeb: z.boolean().describe('Whether folders appear in web sidebar'),
+  })
+  .meta({ id: 'FoldersResponse' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether to receive email notifications for album updates' })
-  albumUpdate?: boolean;
-}
+const MemoriesResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether memories are enabled'),
+    duration: z.int().describe('Memory duration in seconds'),
+  })
+  .meta({ id: 'MemoriesResponse' });
 
-class DownloadUpdate implements Partial<DownloadResponse> {
-  @Optional()
-  @IsInt()
-  @IsPositive()
-  @ApiPropertyOptional({ type: 'integer', description: 'Maximum archive size in bytes' })
-  archiveSize?: number;
+const PeopleResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether people are enabled'),
+    sidebarWeb: z.boolean().describe('Whether people appear in web sidebar'),
+  })
+  .meta({ id: 'PeopleResponse' });
 
-  @ValidateBoolean({ optional: true, description: 'Whether to include embedded videos in downloads' })
-  includeEmbeddedVideos?: boolean;
-}
+const RatingsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether ratings are enabled'),
+  })
+  .meta({ id: 'RatingsResponse' });
 
-class PurchaseUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether to show support badge' })
-  showSupportBadge?: boolean;
+const SharedLinksResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether shared links are enabled'),
+    sidebarWeb: z.boolean().describe('Whether shared links appear in web sidebar'),
+  })
+  .meta({ id: 'SharedLinksResponse' });
 
-  @ApiPropertyOptional({ description: 'Date until which to hide buy button' })
-  @IsDateString()
-  @Optional()
-  hideBuyButtonUntil?: string;
-}
+const TagsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether tags are enabled'),
+    sidebarWeb: z.boolean().describe('Whether tags appear in web sidebar'),
+  })
+  .meta({ id: 'TagsResponse' });
 
-class CastUpdate {
-  @ValidateBoolean({ optional: true, description: 'Whether Google Cast is enabled' })
-  gCastEnabled?: boolean;
-}
+const EmailNotificationsResponseSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether email notifications are enabled'),
+    albumInvite: z.boolean().describe('Whether to receive email notifications for album invites'),
+    albumUpdate: z.boolean().describe('Whether to receive email notifications for album updates'),
+  })
+  .meta({ id: 'EmailNotificationsResponse' });
 
-export class UserPreferencesUpdateDto {
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => AlbumsUpdate)
-  albums?: AlbumsUpdate;
+const DownloadResponseSchema = z
+  .object({
+    archiveSize: z.int().describe('Maximum archive size in bytes'),
+    includeEmbeddedVideos: z.boolean().describe('Whether to include embedded videos in downloads'),
+  })
+  .meta({ id: 'DownloadResponse' });
 
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => FoldersUpdate)
-  folders?: FoldersUpdate;
+const PurchaseResponseSchema = z
+  .object({
+    showSupportBadge: z.boolean().describe('Whether to show support badge'),
+    hideBuyButtonUntil: z.string().describe('Date until which to hide buy button'),
+  })
+  .meta({ id: 'PurchaseResponse' });
 
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => MemoriesUpdate)
-  memories?: MemoriesUpdate;
+const CastResponseSchema = z
+  .object({
+    gCastEnabled: z.boolean().describe('Whether Google Cast is enabled'),
+  })
+  .meta({ id: 'CastResponse' });
 
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => PeopleUpdate)
-  people?: PeopleUpdate;
+const UserPreferencesResponseSchema = z
+  .object({
+    albums: AlbumsResponseSchema,
+    folders: FoldersResponseSchema,
+    memories: MemoriesResponseSchema,
+    people: PeopleResponseSchema,
+    ratings: RatingsResponseSchema,
+    sharedLinks: SharedLinksResponseSchema,
+    tags: TagsResponseSchema,
+    emailNotifications: EmailNotificationsResponseSchema,
+    download: DownloadResponseSchema,
+    purchase: PurchaseResponseSchema,
+    cast: CastResponseSchema,
+  })
+  .meta({ id: 'UserPreferencesResponseDto' });
 
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => RatingsUpdate)
-  ratings?: RatingsUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined, required: false })
-  @Optional()
-  @ValidateNested()
-  @Type(() => SharedLinksUpdate)
-  sharedLinks?: SharedLinksUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => TagsUpdate)
-  tags?: TagsUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => AvatarUpdate)
-  avatar?: AvatarUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => EmailNotificationsUpdate)
-  emailNotifications?: EmailNotificationsUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => DownloadUpdate)
-  download?: DownloadUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => PurchaseUpdate)
-  purchase?: PurchaseUpdate;
-
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Optional()
-  @ValidateNested()
-  @Type(() => CastUpdate)
-  cast?: CastUpdate;
-}
-
-class AlbumsResponse {
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Default asset order for albums' })
-  defaultAssetOrder: AssetOrder = AssetOrder.Desc;
-}
-
-class RatingsResponse {
-  @ApiProperty({ description: 'Whether ratings are enabled' })
-  enabled: boolean = false;
-}
-
-class MemoriesResponse {
-  @ApiProperty({ description: 'Whether memories are enabled' })
-  enabled: boolean = true;
-
-  @ApiProperty({ type: 'integer', description: 'Memory duration in seconds' })
-  duration: number = 5;
-}
-
-class FoldersResponse {
-  @ApiProperty({ description: 'Whether folders are enabled' })
-  enabled: boolean = false;
-  @ApiProperty({ description: 'Whether folders appear in web sidebar' })
-  sidebarWeb: boolean = false;
-}
-
-class PeopleResponse {
-  @ApiProperty({ description: 'Whether people are enabled' })
-  enabled: boolean = true;
-  @ApiProperty({ description: 'Whether people appear in web sidebar' })
-  sidebarWeb: boolean = false;
-}
-
-class TagsResponse {
-  @ApiProperty({ description: 'Whether tags are enabled' })
-  enabled: boolean = true;
-  @ApiProperty({ description: 'Whether tags appear in web sidebar' })
-  sidebarWeb: boolean = true;
-}
-
-class SharedLinksResponse {
-  @ApiProperty({ description: 'Whether shared links are enabled' })
-  enabled: boolean = true;
-  @ApiProperty({ description: 'Whether shared links appear in web sidebar' })
-  sidebarWeb: boolean = false;
-}
-
-class EmailNotificationsResponse {
-  @ApiProperty({ description: 'Whether email notifications are enabled' })
-  enabled!: boolean;
-  @ApiProperty({ description: 'Whether to receive email notifications for album invites' })
-  albumInvite!: boolean;
-  @ApiProperty({ description: 'Whether to receive email notifications for album updates' })
-  albumUpdate!: boolean;
-}
-
-class DownloadResponse {
-  @ApiProperty({ type: 'integer', description: 'Maximum archive size in bytes' })
-  archiveSize!: number;
-
-  @ApiProperty({ description: 'Whether to include embedded videos in downloads' })
-  includeEmbeddedVideos: boolean = false;
-}
-
-class PurchaseResponse {
-  @ApiProperty({ description: 'Whether to show support badge' })
-  showSupportBadge!: boolean;
-  @ApiProperty({ description: 'Date until which to hide buy button' })
-  hideBuyButtonUntil!: string;
-}
-
-class CastResponse {
-  @ApiProperty({ description: 'Whether Google Cast is enabled' })
-  gCastEnabled: boolean = false;
-}
-
-export class UserPreferencesResponseDto implements UserPreferences {
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  albums!: AlbumsResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  folders!: FoldersResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  memories!: MemoriesResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  people!: PeopleResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  ratings!: RatingsResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  sharedLinks!: SharedLinksResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  tags!: TagsResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  emailNotifications!: EmailNotificationsResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  download!: DownloadResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  purchase!: PurchaseResponse;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  cast!: CastResponse;
-}
+export class UserPreferencesUpdateDto extends createZodDto(UserPreferencesUpdateSchema) {}
+export class UserPreferencesResponseDto extends createZodDto(UserPreferencesResponseSchema) {}
 
 export const mapPreferences = (preferences: UserPreferences): UserPreferencesResponseDto => {
   return preferences;

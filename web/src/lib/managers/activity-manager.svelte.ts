@@ -1,6 +1,3 @@
-import { user } from '$lib/stores/user.store';
-import { handlePromiseError } from '$lib/utils';
-import { handleError } from '$lib/utils/handle-error';
 import {
   createActivity,
   deleteActivity,
@@ -13,6 +10,9 @@ import {
 } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { handlePromiseError } from '$lib/utils';
+import { handleError } from '$lib/utils/handle-error';
 
 type CacheKey = string;
 type ActivityCache = {
@@ -157,7 +157,7 @@ class ActivityManager {
     const [liked] = await getActivities({
       albumId,
       assetId,
-      userId: get(user).id,
+      userId: authManager.user.id,
       $type: ReactionType.Like,
       level: assetId ? undefined : ReactionLevel.Album,
     });
