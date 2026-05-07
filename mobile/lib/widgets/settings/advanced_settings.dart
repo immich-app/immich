@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -31,7 +32,7 @@ class AdvancedSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final isManageMediaSupported = useState(false);
-    final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
+    final levelId = useState<int>(ref.read(systemConfigProvider).logLevel.index);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 

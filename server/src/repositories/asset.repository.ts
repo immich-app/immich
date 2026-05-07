@@ -19,6 +19,7 @@ import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
+import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
@@ -124,6 +125,14 @@ interface GetByIdsRelations {
   edits?: boolean;
 }
 
+type UpsertExifOptions = {
+  exif: Insertable<AssetExifTable>;
+  audio?: Insertable<AssetAudioTable>;
+  video?: Insertable<AssetVideoTable>;
+  keyframes?: Insertable<AssetKeyframeTable>;
+  lockedPropertiesBehavior: 'override' | 'append' | 'skip';
+};
+
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
   sql<T>`nullif(array(select distinct unnest(${eb.ref('asset_exif.lockedProperties')} || ${columns})), '{}')`;
 
@@ -161,15 +170,76 @@ export class AssetRepository {
 
   @GenerateSql({
     params: [
-      { dateTimeOriginal: DummyValue.DATE, lockedProperties: ['dateTimeOriginal'] },
-      { lockedPropertiesBehavior: 'append' },
+      {
+        exif: { dateTimeOriginal: DummyValue.DATE, lockedProperties: ['dateTimeOriginal'] },
+        lockedPropertiesBehavior: 'append',
+      },
     ],
   })
-  async upsertExif(
-    exif: Insertable<AssetExifTable>,
-    { lockedPropertiesBehavior }: { lockedPropertiesBehavior: 'override' | 'append' | 'skip' },
-  ): Promise<void> {
-    await this.db
+  async upsertExif({ exif, audio, video, keyframes, lockedPropertiesBehavior }: UpsertExifOptions): Promise<void> {
+    let query = this.db;
+    if (audio) {
+      (query as any) = this.db.with('audio', (qb) =>
+        qb
+          .insertInto('asset_audio')
+          .values(audio)
+          .onConflict((oc) =>
+            oc.column('assetId').doUpdateSet(({ ref }) => ({
+              bitrate: ref('asset_audio.bitrate'),
+              index: ref('asset_audio.index'),
+              profile: ref('asset_audio.profile'),
+              codecName: ref('asset_audio.codecName'),
+            })),
+          ),
+      );
+    }
+
+    if (video) {
+      (query as any) = query.with('video', (qb) =>
+        qb
+          .insertInto('asset_video')
+          .values(video)
+          .onConflict((oc) =>
+            oc.column('assetId').doUpdateSet(({ ref }) => ({
+              bitrate: ref('asset_video.bitrate'),
+              timeBase: ref('asset_video.timeBase'),
+              index: ref('asset_video.index'),
+              profile: ref('asset_video.profile'),
+              level: ref('asset_video.level'),
+              colorPrimaries: ref('asset_video.colorPrimaries'),
+              colorTransfer: ref('asset_video.colorTransfer'),
+              colorMatrix: ref('asset_video.colorMatrix'),
+              dvProfile: ref('asset_video.dvProfile'),
+              dvLevel: ref('asset_video.dvLevel'),
+              dvBlSignalCompatibilityId: ref('asset_video.dvBlSignalCompatibilityId'),
+              codecName: ref('asset_video.codecName'),
+              formatName: ref('asset_video.formatName'),
+              formatLongName: ref('asset_video.formatLongName'),
+              pixelFormat: ref('asset_video.pixelFormat'),
+            })),
+          ),
+      );
+    }
+
+    if (keyframes) {
+      (query as any) = query.with('keyframe', (qb) =>
+        qb
+          .insertInto('asset_keyframe')
+          .values(keyframes)
+          .onConflict((oc) =>
+            oc.column('assetId').doUpdateSet(({ ref }) => ({
+              pts: ref('asset_keyframe.pts'),
+              accDuration: ref('asset_keyframe.accDuration'),
+              ownDuration: ref('asset_keyframe.ownDuration'),
+              totalDuration: ref('asset_keyframe.totalDuration'),
+              packetCount: ref('asset_keyframe.packetCount'),
+              outputFrames: ref('asset_keyframe.outputFrames'),
+            })),
+          ),
+      );
+    }
+
+    await query
       .insertInto('asset_exif')
       .values(exif)
       .onConflict((oc) =>

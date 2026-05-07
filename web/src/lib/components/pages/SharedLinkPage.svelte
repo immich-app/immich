@@ -36,6 +36,10 @@
   let isOwned = $derived(authManager.authenticated && authManager.user.id === sharedLink?.userId);
   let password = $state('');
 
+  if (passwordRequired) {
+    assetViewerManager.showAssetViewer(false);
+  }
+
   const handlePasswordSubmit = async () => {
     try {
       sharedLink = await sharedLinkLogin({ key, slug, sharedLinkLoginDto: { password } });
@@ -101,10 +105,10 @@
   </header>
 {/if}
 
-{#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
+{#if !passwordRequired && sharedLink?.type === SharedLinkType.Album}
   <AlbumViewer {sharedLink} />
 {/if}
-{#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
+{#if !passwordRequired && sharedLink?.type === SharedLinkType.Individual}
   <div class="immich-scrollbar">
     <IndividualSharedViewer {sharedLink} {isOwned} />
   </div>

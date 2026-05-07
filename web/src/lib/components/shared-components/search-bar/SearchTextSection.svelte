@@ -6,7 +6,7 @@
 
   interface Props {
     query: string | undefined;
-    queryType?: 'smart' | 'metadata' | 'description' | 'ocr';
+    queryType?: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
   }
 
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
@@ -33,6 +33,13 @@
         bind:group={queryType}
         value="description"
       />
+      <RadioButton
+        name="query-type"
+        id="full-path-radio"
+        label={$t('full_path_or_folder')}
+        bind:group={queryType}
+        value="fullPath"
+      />
       {#if featureFlagsManager.value.ocr}
         <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
       {/if}
@@ -50,6 +57,10 @@
   {:else if queryType === 'description'}
     <Field label={$t('search_by_description')}>
       <Input type="text" placeholder={$t('search_by_description_example')} bind:value={query} />
+    </Field>
+  {:else if queryType === 'fullPath'}
+    <Field label={$t('search_by_full_path')}>
+      <Input type="text" placeholder={$t('search_by_full_path_example')} bind:value={query} />
     </Field>
   {:else if queryType === 'ocr'}
     <Field label={$t('search_by_ocr')}>

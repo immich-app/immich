@@ -8792,71 +8792,67 @@ class AssetEditEntityCompanion extends UpdateCompanion<AssetEditEntityData> {
   }
 }
 
-class TrashSyncEntity extends Table
-    with TableInfo<TrashSyncEntity, TrashSyncEntityData> {
+class Metadata extends Table with TableInfo<Metadata, MetadataData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  TrashSyncEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
+  Metadata(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
-  late final GeneratedColumn<int> isSyncApproved = GeneratedColumn<int>(
-    'is_sync_approved',
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
     aliasedName,
-    true,
-    type: DriftSqlType.int,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
-    $customConstraints: 'NULL CHECK (is_sync_approved IN (0, 1))',
-  );
-  late final GeneratedColumn<String> remoteDeletedAt = GeneratedColumn<String>(
-    'remote_deleted_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
+    $customConstraints: 'NOT NULL DEFAULT CURRENT_TIMESTAMP',
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    checksum,
-    isSyncApproved,
-    remoteDeletedAt,
-  ];
+  List<GeneratedColumn> get $columns => [key, value, updatedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'trash_sync_entity';
+  static const String $name = 'metadata';
   @override
-  Set<GeneratedColumn> get $primaryKey => {checksum};
+  Set<GeneratedColumn> get $primaryKey => {key};
   @override
-  TrashSyncEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  MetadataData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TrashSyncEntityData(
-      checksum: attachedDatabase.typeMapping.read(
+    return MetadataData(
+      key: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
+        data['${effectivePrefix}key'],
       )!,
-      isSyncApproved: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}is_sync_approved'],
-      ),
-      remoteDeletedAt: attachedDatabase.typeMapping.read(
+      value: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}remote_deleted_at'],
+        data['${effectivePrefix}value'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
       )!,
     );
   }
 
   @override
-  TrashSyncEntity createAlias(String alias) {
-    return TrashSyncEntity(attachedDatabase, alias);
+  Metadata createAlias(String alias) {
+    return Metadata(attachedDatabase, alias);
   }
 
   @override
@@ -8864,157 +8860,145 @@ class TrashSyncEntity extends Table
   @override
   bool get isStrict => true;
   @override
-  List<String> get customConstraints => const ['PRIMARY KEY(checksum)'];
+  List<String> get customConstraints => const ['PRIMARY KEY("key")'];
   @override
   bool get dontWriteConstraints => true;
 }
 
-class TrashSyncEntityData extends DataClass
-    implements Insertable<TrashSyncEntityData> {
-  final String checksum;
-  final int? isSyncApproved;
-  final String remoteDeletedAt;
-  const TrashSyncEntityData({
-    required this.checksum,
-    this.isSyncApproved,
-    required this.remoteDeletedAt,
+class MetadataData extends DataClass implements Insertable<MetadataData> {
+  final String key;
+  final String value;
+  final String updatedAt;
+  const MetadataData({
+    required this.key,
+    required this.value,
+    required this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['checksum'] = Variable<String>(checksum);
-    if (!nullToAbsent || isSyncApproved != null) {
-      map['is_sync_approved'] = Variable<int>(isSyncApproved);
-    }
-    map['remote_deleted_at'] = Variable<String>(remoteDeletedAt);
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    map['updated_at'] = Variable<String>(updatedAt);
     return map;
   }
 
-  factory TrashSyncEntityData.fromJson(
+  factory MetadataData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TrashSyncEntityData(
-      checksum: serializer.fromJson<String>(json['checksum']),
-      isSyncApproved: serializer.fromJson<int?>(json['isSyncApproved']),
-      remoteDeletedAt: serializer.fromJson<String>(json['remoteDeletedAt']),
+    return MetadataData(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'checksum': serializer.toJson<String>(checksum),
-      'isSyncApproved': serializer.toJson<int?>(isSyncApproved),
-      'remoteDeletedAt': serializer.toJson<String>(remoteDeletedAt),
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+      'updatedAt': serializer.toJson<String>(updatedAt),
     };
   }
 
-  TrashSyncEntityData copyWith({
-    String? checksum,
-    Value<int?> isSyncApproved = const Value.absent(),
-    String? remoteDeletedAt,
-  }) => TrashSyncEntityData(
-    checksum: checksum ?? this.checksum,
-    isSyncApproved: isSyncApproved.present
-        ? isSyncApproved.value
-        : this.isSyncApproved,
-    remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
-  );
-  TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
-    return TrashSyncEntityData(
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      isSyncApproved: data.isSyncApproved.present
-          ? data.isSyncApproved.value
-          : this.isSyncApproved,
-      remoteDeletedAt: data.remoteDeletedAt.present
-          ? data.remoteDeletedAt.value
-          : this.remoteDeletedAt,
+  MetadataData copyWith({String? key, String? value, String? updatedAt}) =>
+      MetadataData(
+        key: key ?? this.key,
+        value: value ?? this.value,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  MetadataData copyWithCompanion(MetadataCompanion data) {
+    return MetadataData(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('TrashSyncEntityData(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('remoteDeletedAt: $remoteDeletedAt')
+    return (StringBuffer('MetadataData(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(checksum, isSyncApproved, remoteDeletedAt);
+  int get hashCode => Object.hash(key, value, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is TrashSyncEntityData &&
-          other.checksum == this.checksum &&
-          other.isSyncApproved == this.isSyncApproved &&
-          other.remoteDeletedAt == this.remoteDeletedAt);
+      (other is MetadataData &&
+          other.key == this.key &&
+          other.value == this.value &&
+          other.updatedAt == this.updatedAt);
 }
 
-class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
-  final Value<String> checksum;
-  final Value<int?> isSyncApproved;
-  final Value<String> remoteDeletedAt;
-  const TrashSyncEntityCompanion({
-    this.checksum = const Value.absent(),
-    this.isSyncApproved = const Value.absent(),
-    this.remoteDeletedAt = const Value.absent(),
+class MetadataCompanion extends UpdateCompanion<MetadataData> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<String> updatedAt;
+  const MetadataCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.updatedAt = const Value.absent(),
   });
-  TrashSyncEntityCompanion.insert({
-    required String checksum,
-    this.isSyncApproved = const Value.absent(),
-    required String remoteDeletedAt,
-  }) : checksum = Value(checksum),
-       remoteDeletedAt = Value(remoteDeletedAt);
-  static Insertable<TrashSyncEntityData> custom({
-    Expression<String>? checksum,
-    Expression<int>? isSyncApproved,
-    Expression<String>? remoteDeletedAt,
+  MetadataCompanion.insert({
+    required String key,
+    required String value,
+    this.updatedAt = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<MetadataData> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<String>? updatedAt,
   }) {
     return RawValuesInsertable({
-      if (checksum != null) 'checksum': checksum,
-      if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (remoteDeletedAt != null) 'remote_deleted_at': remoteDeletedAt,
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
 
-  TrashSyncEntityCompanion copyWith({
-    Value<String>? checksum,
-    Value<int?>? isSyncApproved,
-    Value<String>? remoteDeletedAt,
+  MetadataCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<String>? updatedAt,
   }) {
-    return TrashSyncEntityCompanion(
-      checksum: checksum ?? this.checksum,
-      isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
+    return MetadataCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
     }
-    if (isSyncApproved.present) {
-      map['is_sync_approved'] = Variable<int>(isSyncApproved.value);
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
     }
-    if (remoteDeletedAt.present) {
-      map['remote_deleted_at'] = Variable<String>(remoteDeletedAt.value);
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('TrashSyncEntityCompanion(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('remoteDeletedAt: $remoteDeletedAt')
+    return (StringBuffer('MetadataCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -9092,7 +9076,7 @@ class DatabaseAtV25 extends GeneratedDatabase {
   late final TrashedLocalAssetEntity trashedLocalAssetEntity =
       TrashedLocalAssetEntity(this);
   late final AssetEditEntity assetEditEntity = AssetEditEntity(this);
-  late final TrashSyncEntity trashSyncEntity = TrashSyncEntity(this);
+  late final Metadata metadata = Metadata(this);
   late final Index idxPartnerSharedWithId = Index(
     'idx_partner_shared_with_id',
     'CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)',
@@ -9133,14 +9117,6 @@ class DatabaseAtV25 extends GeneratedDatabase {
     'idx_asset_edit_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)',
   );
-  late final Index idxTrashSyncIsSyncApproved = Index(
-    'idx_trash_sync_is_sync_approved',
-    'CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
-  );
-  late final Index idxTrashSyncChecksumStatus = Index(
-    'idx_trash_sync_checksum_status',
-    'CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
-  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9178,7 +9154,7 @@ class DatabaseAtV25 extends GeneratedDatabase {
     storeEntity,
     trashedLocalAssetEntity,
     assetEditEntity,
-    trashSyncEntity,
+    metadata,
     idxPartnerSharedWithId,
     idxLatLng,
     idxRemoteAlbumAssetAlbumAsset,
@@ -9189,8 +9165,6 @@ class DatabaseAtV25 extends GeneratedDatabase {
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
-    idxTrashSyncIsSyncApproved,
-    idxTrashSyncChecksumStatus,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([

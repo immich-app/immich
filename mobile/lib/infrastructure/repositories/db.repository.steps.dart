@@ -12411,7 +12411,7 @@ final class Schema25 extends i0.VersionedSchema {
     storeEntity,
     trashedLocalAssetEntity,
     assetEditEntity,
-    trashSyncEntity,
+    metadata,
     idxPartnerSharedWithId,
     idxLatLng,
     idxRemoteAlbumAssetAlbumAsset,
@@ -12422,8 +12422,6 @@ final class Schema25 extends i0.VersionedSchema {
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
-    idxTrashSyncIsSyncApproved,
-    idxTrashSyncChecksumStatus,
   ];
   late final Shape33 userEntity = Shape33(
     source: i0.VersionedTable(
@@ -12866,13 +12864,13 @@ final class Schema25 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape49 trashSyncEntity = Shape49(
+  late final Shape49 metadata = Shape49(
     source: i0.VersionedTable(
-      entityName: 'trash_sync_entity',
+      entityName: 'metadata',
       withoutRowId: true,
       isStrict: true,
-      tableConstraints: ['PRIMARY KEY(checksum)'],
-      columns: [_column_119, _column_210, _column_211],
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_210, _column_211, _column_115],
       attachedDatabase: database,
     ),
     alias: null,
@@ -12917,37 +12915,29 @@ final class Schema25 extends i0.VersionedSchema {
     'idx_asset_edit_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)',
   );
-  final i1.Index idxTrashSyncIsSyncApproved = i1.Index(
-    'idx_trash_sync_is_sync_approved',
-    'CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
-  );
-  final i1.Index idxTrashSyncChecksumStatus = i1.Index(
-    'idx_trash_sync_checksum_status',
-    'CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
-  );
 }
 
 class Shape49 extends i0.VersionedTable {
   Shape49({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get checksum =>
-      columnsByName['checksum']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<int> get isSyncApproved =>
-      columnsByName['is_sync_approved']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<String> get remoteDeletedAt =>
-      columnsByName['remote_deleted_at']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get key =>
+      columnsByName['key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get value =>
+      columnsByName['value']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<String>;
 }
 
-i1.GeneratedColumn<int> _column_210(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'is_sync_approved',
+i1.GeneratedColumn<String> _column_210(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'key',
       aliasedName,
-      true,
-      type: i1.DriftSqlType.int,
-      $customConstraints: 'NULL CHECK (is_sync_approved IN (0, 1))',
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
     );
 i1.GeneratedColumn<String> _column_211(String aliasedName) =>
     i1.GeneratedColumn<String>(
-      'remote_deleted_at',
+      'value',
       aliasedName,
       false,
       type: i1.DriftSqlType.string,

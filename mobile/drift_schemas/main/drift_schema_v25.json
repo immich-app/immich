@@ -2782,12 +2782,12 @@
       "references": [],
       "type": "table",
       "data": {
-        "name": "trash_sync_entity",
+        "name": "metadata",
         "was_declared_in_moor": false,
         "columns": [
           {
-            "name": "checksum",
-            "getter_name": "checksum",
+            "name": "key",
+            "getter_name": "key",
             "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
@@ -2796,26 +2796,22 @@
             "dsl_features": []
           },
           {
-            "name": "is_sync_approved",
-            "getter_name": "isSyncApproved",
-            "moor_type": "bool",
-            "nullable": true,
+            "name": "value",
+            "getter_name": "value",
+            "moor_type": "string",
+            "nullable": false,
             "customConstraints": null,
-            "defaultConstraints": "CHECK (\"is_sync_approved\" IN (0, 1))",
-            "dialectAwareDefaultConstraints": {
-              "sqlite": "CHECK (\"is_sync_approved\" IN (0, 1))"
-            },
             "default_dart": null,
             "default_client_dart": null,
             "dsl_features": []
           },
           {
-            "name": "remote_deleted_at",
-            "getter_name": "remoteDeletedAt",
+            "name": "updated_at",
+            "getter_name": "updatedAt",
             "moor_type": "dateTime",
             "nullable": false,
             "customConstraints": null,
-            "default_dart": null,
+            "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
             "dsl_features": []
           }
@@ -2825,7 +2821,7 @@
         "constraints": [],
         "strict": true,
         "explicit_pk": [
-          "checksum"
+          "key"
         ]
       }
     },
@@ -2965,34 +2961,6 @@
         "on": 31,
         "name": "idx_asset_edit_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 43,
-      "references": [
-        32
-      ],
-      "type": "index",
-      "data": {
-        "on": 32,
-        "name": "idx_trash_sync_is_sync_approved",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 44,
-      "references": [
-        32
-      ],
-      "type": "index",
-      "data": {
-        "on": 32,
-        "name": "idx_trash_sync_checksum_status",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)",
         "unique": false,
         "columns": []
       }
@@ -3288,11 +3256,11 @@
       ]
     },
     {
-      "name": "trash_sync_entity",
+      "name": "metadata",
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"trash_sync_entity\" (\"checksum\" TEXT NOT NULL, \"is_sync_approved\" INTEGER NULL CHECK (\"is_sync_approved\" IN (0, 1)), \"remote_deleted_at\" TEXT NOT NULL, PRIMARY KEY (\"checksum\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"metadata\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3383,24 +3351,6 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)"
-        }
-      ]
-    },
-    {
-      "name": "idx_trash_sync_is_sync_approved",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)"
-        }
-      ]
-    },
-    {
-      "name": "idx_trash_sync_checksum_status",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)"
         }
       ]
     }

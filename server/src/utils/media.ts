@@ -1,6 +1,15 @@
 import { AUDIO_ENCODER } from 'src/constants';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { CQMode, ToneMapping, TranscodeHardwareAcceleration, TranscodeTarget, VideoCodec } from 'src/enum';
+import {
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  CQMode,
+  ToneMapping,
+  TranscodeHardwareAcceleration,
+  TranscodeTarget,
+  VideoCodec,
+} from 'src/enum';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -255,7 +264,10 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   shouldToneMap(videoStream: VideoStreamInfo) {
-    return videoStream.isHDR && this.config.tonemap !== ToneMapping.Disabled;
+    return (
+      this.config.tonemap !== ToneMapping.Disabled &&
+      (videoStream.colorTransfer === ColorTransfer.Smpte2084 || videoStream.colorTransfer === ColorTransfer.AribStdB67)
+    );
   }
 
   getScaling(videoStream: VideoStreamInfo, mult = 2) {
@@ -409,15 +421,15 @@ export class ThumbnailConfig extends BaseConfig {
         : ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'];
 
     const metadataOverrides = [];
-    if (videoStream.colorPrimaries === 'reserved') {
+    if (videoStream.colorPrimaries === ColorPrimaries.Reserved) {
       metadataOverrides.push('colour_primaries=1');
     }
 
-    if (videoStream.colorSpace === 'reserved') {
+    if (videoStream.colorMatrix === ColorMatrix.Reserved) {
       metadataOverrides.push('matrix_coefficients=1');
     }
 
-    if (videoStream.colorTransfer === 'reserved') {
+    if (videoStream.colorTransfer === ColorTransfer.Reserved) {
       metadataOverrides.push('transfer_characteristics=1');
     }
 

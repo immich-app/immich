@@ -22,7 +22,6 @@ enum StoreKey<T> {
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>._(100),
   loadOriginal<bool>._(101),
-  themeMode<String>._(102),
   tilesPerRow<int>._(103),
   dynamicLayout<bool>._(104),
   groupAssetsBy<int>._(105),
@@ -35,7 +34,6 @@ enum StoreKey<T> {
   albumThumbnailCacheSize<int>._(112),
   selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
-  logLevel<int>._(115),
   preferRemoteImage<bool>._(116),
   loopVideo<bool>._(117),
   // map related settings
@@ -95,8 +93,13 @@ enum StoreKey<T> {
   cleanupDefaultsInitialized<bool>._(1012),
 
   syncMigrationStatus<String>._(1013),
+
   reviewOutOfSyncChangesAndroid<bool>._(1014),
-  trashSyncLastCleanup<int>._(1015);
+  trashSyncLastCleanup<int>._(1015),
+
+  // Legacy keys that have been migrated to the new metadata store
+  legacyThemeMode<String>._(102),
+  legacyLogLevel<int>._(115);
 
   const StoreKey._(this.id);
   final int id;
