@@ -125,7 +125,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         .map((row) => row.read<int>(_db.trashedLocalAssetEntity.id.count()) ?? 0);
   }
 
-  Future<void> trashLocalAssets(Map<String, List<RemoteDeletedLocalAsset>> assetsByAlbums) async {
+  Future<void> trashLocalAssets(Map<String, Iterable<RemoteDeletedLocalAsset>> assetsByAlbums) async {
     if (assetsByAlbums.isEmpty) {
       return Future.value();
     }

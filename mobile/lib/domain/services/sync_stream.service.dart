@@ -10,12 +10,12 @@ import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
@@ -39,7 +39,7 @@ class SyncStreamService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final DriftTrashSyncRepository _trashSyncRepository;
   final LocalFilesManagerRepository _localFilesManager;
-  final StorageRepository _storageRepository;
+  final AssetMediaRepository _assetMediaRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final bool Function()? _cancelChecker;
@@ -51,7 +51,7 @@ class SyncStreamService {
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required DriftTrashSyncRepository trashSyncRepository,
     required LocalFilesManagerRepository localFilesManager,
-    required StorageRepository storageRepository,
+    required AssetMediaRepository assetMediaRepository,
     required SyncMigrationRepository syncMigrationRepository,
     required ApiService api,
     bool Function()? cancelChecker,
@@ -61,7 +61,7 @@ class SyncStreamService {
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _trashSyncRepository = trashSyncRepository,
        _localFilesManager = localFilesManager,
-       _storageRepository = storageRepository,
+       _assetMediaRepository = assetMediaRepository,
        _syncMigrationRepository = syncMigrationRepository,
        _api = api,
        _cancelChecker = cancelChecker;
@@ -515,7 +515,7 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _upsertTrashSyncCandidates(Map<String, List<RemoteDeletedLocalAsset>> candidatesByAlbum) async {
+  Future<void> _upsertTrashSyncCandidates(Map<String, Iterable<RemoteDeletedLocalAsset>> candidatesByAlbum) async {
     final candidates = candidatesByAlbum.values.flattened;
     final reviewCandidates = candidates.where((la) => la.asset.checksum?.isNotEmpty == true);
     if (reviewCandidates.isEmpty) {
@@ -527,46 +527,36 @@ class SyncStreamService {
     await _trashSyncRepository.upsertReviewCandidates(reviewCandidates);
   }
 
-  Future<Map<String, List<RemoteDeletedLocalAsset>>> _tryAutoTrashLocalAssets(
-    Map<String, List<RemoteDeletedLocalAsset>> candidatesByAlbum,
+  Future<Map<String, Iterable<RemoteDeletedLocalAsset>>> _tryAutoTrashLocalAssets(
+    Map<String, Iterable<RemoteDeletedLocalAsset>> candidatesByAlbum,
   ) async {
     if (!await _canMoveLocalMediaToTrash()) {
       return candidatesByAlbum;
     }
 
-    final resolvedMoveCandidates = <({String albumId, RemoteDeletedLocalAsset candidate, String mediaUrl})>[];
-    final unresolvedCandidatesByAlbum = <String, List<RemoteDeletedLocalAsset>>{};
-
-    for (final entry in candidatesByAlbum.entries) {
-      for (final item in entry.value) {
-        final mediaUrl = await _storageRepository.getMediaUrlForAsset(item.asset);
-        if (mediaUrl?.isNotEmpty == true) {
-          resolvedMoveCandidates.add((albumId: entry.key, candidate: item, mediaUrl: mediaUrl!));
-        } else {
-          (unresolvedCandidatesByAlbum[entry.key] ??= []).add(item);
-        }
-      }
-    }
-
-    if (resolvedMoveCandidates.isEmpty) {
+    final moveCandidates = candidatesByAlbum.entries.expand(
+      (entry) => entry.value.map((candidate) => (albumId: entry.key, candidate: candidate)),
+    );
+    if (moveCandidates.isEmpty) {
       return candidatesByAlbum;
     }
 
-    final mediaUrls = resolvedMoveCandidates.map((item) => item.mediaUrl).toList();
-    _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-    final result = await _localFilesManager.moveToTrash(mediaUrls);
-    if (!result) {
-      // moveToTrash returns only aggregate success. On failure, keep all candidates
-      // unresolved so review state is not lost after a partial or unknown result.
-      // If some items were actually moved, the next local trash snapshot will clean
-      // their pending/rejected review rows via deleteLocallyResolved()
+    final localIds = moveCandidates.map((item) => item.candidate.asset.id).toList();
+    _logger.info("Moving to trash ${localIds.join(", ")} assets");
+    final movedIds = await _assetMediaRepository.deleteAll(localIds);
+    if (movedIds.isEmpty) {
       return candidatesByAlbum;
     }
+
+    final movedIdSet = movedIds.toSet();
+    final candidatesByMoveResult = groupBy(moveCandidates, (item) => movedIdSet.contains(item.candidate.asset.id));
+    final resolvedMoveCandidates = candidatesByMoveResult[true] ?? [];
+    final unresolvedCandidates = candidatesByMoveResult[false] ?? [];
 
     final movedByAlbum = groupBy(
       resolvedMoveCandidates,
       (item) => item.albumId,
-    ).map((albumId, items) => MapEntry(albumId, items.map((item) => item.candidate).toList()));
+    ).map((albumId, items) => MapEntry(albumId, items.map((item) => item.candidate)));
     await _trashedLocalAssetRepository.trashLocalAssets(movedByAlbum);
     await _trashSyncRepository.deleteResolved(
       resolvedMoveCandidates
@@ -575,7 +565,10 @@ class SyncStreamService {
           .where((checksum) => checksum.isNotEmpty),
     );
 
-    return unresolvedCandidatesByAlbum;
+    return groupBy(
+      unresolvedCandidates,
+      (item) => item.albumId,
+    ).map((albumId, items) => MapEntry(albumId, items.map((item) => item.candidate)));
   }
 
   Future<void> _deleteOutdatedTrashSyncEntries(Iterable<String> remoteIds) async {
