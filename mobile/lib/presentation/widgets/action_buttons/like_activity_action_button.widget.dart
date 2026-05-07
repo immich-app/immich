@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
@@ -20,10 +20,10 @@ class LikeActivityActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentRemoteAlbumProvider);
-    final asset = ref.watch(currentAssetNotifier) as RemoteAsset?;
+    final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset)) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
-    final activities = ref.watch(albumActivityProvider(album?.id ?? "", asset?.id));
+    final activities = ref.watch(albumActivityProvider((album?.id ?? "", asset?.id)));
 
     onTap(Activity? liked) async {
       if (user == null) {
@@ -31,12 +31,12 @@ class LikeActivityActionButton extends ConsumerWidget {
       }
 
       if (liked != null) {
-        await ref.read(albumActivityProvider(album?.id ?? "", asset?.id).notifier).removeActivity(liked.id);
+        await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).removeActivity(liked.id);
       } else {
-        await ref.read(albumActivityProvider(album?.id ?? "", asset?.id).notifier).addLike();
+        await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).addLike();
       }
 
-      ref.invalidate(albumActivityProvider(album?.id ?? "", asset?.id));
+      ref.invalidate(albumActivityProvider((album?.id ?? "", asset?.id)));
     }
 
     return activities.when(

@@ -25,7 +25,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
   Future<Response> emptyQueueWithHttpInfo(QueueName name, QueueDeleteDto queueDeleteDto,) async {
@@ -61,7 +60,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
   Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto,) async {
@@ -80,7 +78,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   Future<Response> getQueueWithHttpInfo(QueueName name,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}'
@@ -114,7 +111,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   Future<QueueResponseDto?> getQueue(QueueName name,) async {
     final response = await getQueueWithHttpInfo(name,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -139,7 +135,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
   ///   Filter jobs by status
@@ -180,7 +175,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
   ///   Filter jobs by status
@@ -262,7 +256,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
   Future<Response> updateQueueWithHttpInfo(QueueName name, QueueUpdateDto queueUpdateDto,) async {
@@ -298,7 +291,6 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
   Future<QueueResponseDto?> updateQueue(QueueName name, QueueUpdateDto queueUpdateDto,) async {

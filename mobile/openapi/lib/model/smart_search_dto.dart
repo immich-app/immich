@@ -18,7 +18,6 @@ class SmartSearchDto {
     this.country,
     this.createdAfter,
     this.createdBefore,
-    this.deviceId,
     this.isEncoded,
     this.isFavorite,
     this.isMotion,
@@ -76,15 +75,6 @@ class SmartSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   DateTime? createdBefore;
-
-  /// Device ID to filter by
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? deviceId;
 
   /// Filter by encoded status
   ///
@@ -147,12 +137,6 @@ class SmartSearchDto {
   String? libraryId;
 
   /// Filter by camera make
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? make;
 
   /// Filter by camera model
@@ -170,13 +154,14 @@ class SmartSearchDto {
   /// Page number
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? page;
+  int? page;
 
   /// Filter by person IDs
   List<String> personIds;
@@ -199,17 +184,11 @@ class SmartSearchDto {
   ///
   String? queryAssetId;
 
-  /// Filter by rating
+  /// Filter by rating [1-5], or null for unrated
   ///
   /// Minimum value: -1
   /// Maximum value: 5
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  num? rating;
+  int? rating;
 
   /// Number of results to return
   ///
@@ -221,7 +200,7 @@ class SmartSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? size;
+  int? size;
 
   /// Filter by state/province name
   String? state;
@@ -265,7 +244,6 @@ class SmartSearchDto {
   ///
   DateTime? trashedBefore;
 
-  /// Asset type filter
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -292,7 +270,6 @@ class SmartSearchDto {
   ///
   DateTime? updatedBefore;
 
-  /// Filter by visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -326,7 +303,6 @@ class SmartSearchDto {
     other.country == country &&
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
-    other.deviceId == deviceId &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
@@ -365,7 +341,6 @@ class SmartSearchDto {
     (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
-    (deviceId == null ? 0 : deviceId!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
@@ -397,7 +372,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, page=$page, personIds=$personIds, query=$query, queryAssetId=$queryAssetId, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, page=$page, personIds=$personIds, query=$query, queryAssetId=$queryAssetId, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -413,19 +388,18 @@ class SmartSearchDto {
     //  json[r'country'] = null;
     }
     if (this.createdAfter != null) {
-      json[r'createdAfter'] = this.createdAfter!.toUtc().toIso8601String();
+      json[r'createdAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAfter!.millisecondsSinceEpoch
+        : this.createdAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'createdAfter'] = null;
     }
     if (this.createdBefore != null) {
-      json[r'createdBefore'] = this.createdBefore!.toUtc().toIso8601String();
+      json[r'createdBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdBefore!.millisecondsSinceEpoch
+        : this.createdBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'createdBefore'] = null;
-    }
-    if (this.deviceId != null) {
-      json[r'deviceId'] = this.deviceId;
-    } else {
-    //  json[r'deviceId'] = null;
     }
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
@@ -519,22 +493,30 @@ class SmartSearchDto {
     //  json[r'tagIds'] = null;
     }
     if (this.takenAfter != null) {
-      json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
+      json[r'takenAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.takenAfter!.millisecondsSinceEpoch
+        : this.takenAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'takenAfter'] = null;
     }
     if (this.takenBefore != null) {
-      json[r'takenBefore'] = this.takenBefore!.toUtc().toIso8601String();
+      json[r'takenBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.takenBefore!.millisecondsSinceEpoch
+        : this.takenBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'takenBefore'] = null;
     }
     if (this.trashedAfter != null) {
-      json[r'trashedAfter'] = this.trashedAfter!.toUtc().toIso8601String();
+      json[r'trashedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.trashedAfter!.millisecondsSinceEpoch
+        : this.trashedAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'trashedAfter'] = null;
     }
     if (this.trashedBefore != null) {
-      json[r'trashedBefore'] = this.trashedBefore!.toUtc().toIso8601String();
+      json[r'trashedBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.trashedBefore!.millisecondsSinceEpoch
+        : this.trashedBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'trashedBefore'] = null;
     }
@@ -544,12 +526,16 @@ class SmartSearchDto {
     //  json[r'type'] = null;
     }
     if (this.updatedAfter != null) {
-      json[r'updatedAfter'] = this.updatedAfter!.toUtc().toIso8601String();
+      json[r'updatedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAfter!.millisecondsSinceEpoch
+        : this.updatedAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedAfter'] = null;
     }
     if (this.updatedBefore != null) {
-      json[r'updatedBefore'] = this.updatedBefore!.toUtc().toIso8601String();
+      json[r'updatedBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedBefore!.millisecondsSinceEpoch
+        : this.updatedBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedBefore'] = null;
     }
@@ -585,9 +571,8 @@ class SmartSearchDto {
             : const [],
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
-        createdAfter: mapDateTime(json, r'createdAfter', r''),
-        createdBefore: mapDateTime(json, r'createdBefore', r''),
-        deviceId: mapValueOfType<String>(json, r'deviceId'),
+        createdAfter: mapDateTime(json, r'createdAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        createdBefore: mapDateTime(json, r'createdBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
@@ -599,25 +584,25 @@ class SmartSearchDto {
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         ocr: mapValueOfType<String>(json, r'ocr'),
-        page: num.parse('${json[r'page']}'),
+        page: mapValueOfType<int>(json, r'page'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         query: mapValueOfType<String>(json, r'query'),
         queryAssetId: mapValueOfType<String>(json, r'queryAssetId'),
-        rating: num.parse('${json[r'rating']}'),
-        size: num.parse('${json[r'size']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
+        size: mapValueOfType<int>(json, r'size'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        takenAfter: mapDateTime(json, r'takenAfter', r''),
-        takenBefore: mapDateTime(json, r'takenBefore', r''),
-        trashedAfter: mapDateTime(json, r'trashedAfter', r''),
-        trashedBefore: mapDateTime(json, r'trashedBefore', r''),
+        takenAfter: mapDateTime(json, r'takenAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        takenBefore: mapDateTime(json, r'takenBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        trashedAfter: mapDateTime(json, r'trashedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        trashedBefore: mapDateTime(json, r'trashedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         type: AssetTypeEnum.fromJson(json[r'type']),
-        updatedAfter: mapDateTime(json, r'updatedAfter', r''),
-        updatedBefore: mapDateTime(json, r'updatedBefore', r''),
+        updatedAfter: mapDateTime(json, r'updatedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        updatedBefore: mapDateTime(json, r'updatedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),

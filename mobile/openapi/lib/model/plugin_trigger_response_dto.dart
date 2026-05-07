@@ -17,10 +17,8 @@ class PluginTriggerResponseDto {
     required this.type,
   });
 
-  /// Context type
   PluginContextType contextType;
 
-  /// Trigger type
   PluginTriggerType type;
 
   @override

@@ -82,9 +82,10 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             updatedAt: Value(item.asset.updatedAt),
             width: Value(item.asset.width),
             height: Value(item.asset.height),
-            durationInSeconds: Value(item.asset.durationInSeconds),
+            durationMs: Value(item.asset.durationMs),
             isFavorite: Value(item.asset.isFavorite),
             orientation: Value(item.asset.orientation),
+            playbackStyle: Value(item.asset.playbackStyle),
             source: TrashOrigin.localSync,
           );
 
@@ -144,9 +145,10 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             type: Value(asset.type),
             width: Value(asset.width),
             height: Value(asset.height),
-            durationInSeconds: Value(asset.durationInSeconds),
+            durationMs: Value(asset.durationMs),
             isFavorite: Value(asset.isFavorite),
             orientation: Value(asset.orientation),
+            playbackStyle: Value(asset.playbackStyle),
             createdAt: Value(asset.createdAt),
             updatedAt: Value(asset.updatedAt),
             source: const Value(TrashOrigin.remoteSync),
@@ -191,10 +193,11 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         updatedAt: Value(e.updatedAt),
         width: Value(e.width),
         height: Value(e.height),
-        durationInSeconds: Value(e.durationInSeconds),
+        durationMs: Value(e.durationMs),
         checksum: Value(e.checksum),
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
+        playbackStyle: Value(e.playbackStyle),
       );
     });
 
@@ -241,10 +244,11 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         updatedAt: Value(e.asset.updatedAt),
         width: Value(e.asset.width),
         height: Value(e.asset.height),
-        durationInSeconds: Value(e.asset.durationInSeconds),
+        durationMs: Value(e.asset.durationMs),
         checksum: Value(e.asset.checksum),
         isFavorite: Value(e.asset.isFavorite),
         orientation: Value(e.asset.orientation),
+        playbackStyle: Value(e.asset.playbackStyle),
         source: TrashOrigin.localUser,
         albumId: e.albumId,
       );

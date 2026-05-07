@@ -35,7 +35,7 @@ class PluginFilterResponseDto {
   String pluginId;
 
   /// Filter schema
-  Object? schema;
+  PluginJsonSchema? schema;
 
   /// Supported contexts
   List<PluginContextType> supportedContexts;
@@ -96,7 +96,7 @@ class PluginFilterResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         methodName: mapValueOfType<String>(json, r'methodName')!,
         pluginId: mapValueOfType<String>(json, r'pluginId')!,
-        schema: mapValueOfType<Object>(json, r'schema'),
+        schema: PluginJsonSchema.fromJson(json[r'schema']),
         supportedContexts: PluginContextType.listFromJson(json[r'supportedContexts']),
         title: mapValueOfType<String>(json, r'title')!,
       );

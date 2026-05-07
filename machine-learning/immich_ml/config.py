@@ -48,8 +48,11 @@ class PreloadModelData(BaseModel):
 
 
 class MaxBatchSize(BaseModel):
+    ocr_fallback: str | None = os.getenv("MACHINE_LEARNING_MAX_BATCH_SIZE__TEXT_RECOGNITION", None)
+    if ocr_fallback is not None:
+        os.environ["MACHINE_LEARNING_MAX_BATCH_SIZE__OCR"] = ocr_fallback
     facial_recognition: int | None = None
-    text_recognition: int | None = None
+    ocr: int | None = None
 
 
 class Settings(BaseSettings):
@@ -79,6 +82,7 @@ class Settings(BaseSettings):
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
+    rocm_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
     def device_id(self) -> str:

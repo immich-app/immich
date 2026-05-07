@@ -3,6 +3,7 @@
  */
 
 import {
+  AlbumUserRole,
   AssetTypeEnum,
   AssetVisibility,
   UserAvatarColor,
@@ -315,11 +316,9 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
 
   return {
     id: asset.id,
-    deviceAssetId: `device-${asset.id}`,
     ownerId: asset.ownerId,
     owner: owner || defaultOwner,
     libraryId: `library-${asset.ownerId}`,
-    deviceId: `device-${asset.ownerId}`,
     type: asset.isVideo ? AssetTypeEnum.Video : AssetTypeEnum.Image,
     originalPath: `/original/${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`,
     originalFileName: `${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`,
@@ -334,7 +333,7 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     isArchived: false,
     isTrashed: asset.isTrashed,
     visibility: asset.visibility,
-    duration: asset.duration || '0:00:00.00000',
+    duration: asset.duration,
     exifInfo,
     livePhotoVideoId: asset.livePhotoVideoId,
     tags: [],
@@ -422,14 +421,11 @@ export function getAlbum(
     albumThumbnailAssetId: album.thumbnailAssetId,
     createdAt: album.createdAt,
     updatedAt: album.updatedAt,
-    ownerId: albumOwner.id,
-    owner: albumOwner,
-    albumUsers: [], // Empty array for non-shared album
+    albumUsers: [{ user: albumOwner, role: AlbumUserRole.Owner }],
     shared: false,
     hasSharedLink: false,
     isActivityEnabled: true,
     assetCount: albumAssets.length,
-    assets: albumAssets,
     startDate: albumAssets.length > 0 ? albumAssets.at(-1)?.fileCreatedAt : undefined,
     endDate: albumAssets.length > 0 ? albumAssets[0].fileCreatedAt : undefined,
     lastModifiedAssetTimestamp: albumAssets.length > 0 ? albumAssets[0].fileCreatedAt : undefined,

@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -14,19 +13,13 @@ import '../service.mock.dart';
 
 void main() {
   late UserService sut;
-  late IsarUserRepository mockUserRepo;
   late UserApiRepository mockUserApiRepo;
   late StoreService mockStoreService;
 
   setUp(() {
-    mockUserRepo = MockIsarUserRepository();
     mockUserApiRepo = MockUserApiRepository();
     mockStoreService = MockStoreService();
-    sut = UserService(
-      isarUserRepository: mockUserRepo,
-      userApiRepository: mockUserApiRepo,
-      storeService: mockStoreService,
-    );
+    sut = UserService(userApiRepository: mockUserApiRepo, storeService: mockStoreService);
 
     registerFallbackValue(UserStub.admin);
     when(() => mockStoreService.get(StoreKey.currentUser)).thenReturn(UserStub.admin);
@@ -77,11 +70,9 @@ void main() {
     test('should return user from api and store it', () async {
       when(() => mockUserApiRepo.getMyUser()).thenAnswer((_) async => UserStub.admin);
       when(() => mockStoreService.put(StoreKey.currentUser, UserStub.admin)).thenAnswer((_) async => true);
-      when(() => mockUserRepo.update(UserStub.admin)).thenAnswer((_) async => UserStub.admin);
 
       final result = await sut.refreshMyUser();
       verify(() => mockStoreService.put(StoreKey.currentUser, UserStub.admin)).called(1);
-      verify(() => mockUserRepo.update(UserStub.admin)).called(1);
       expect(result, UserStub.admin);
     });
 
@@ -90,7 +81,6 @@ void main() {
 
       final result = await sut.refreshMyUser();
       verifyNever(() => mockStoreService.put(StoreKey.currentUser, UserStub.admin));
-      verifyNever(() => mockUserRepo.update(UserStub.admin));
       expect(result, isNull);
     });
   });
@@ -104,12 +94,10 @@ void main() {
         () => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)),
       ).thenAnswer((_) async => profileImagePath);
       when(() => mockStoreService.put(StoreKey.currentUser, updatedUser)).thenAnswer((_) async => true);
-      when(() => mockUserRepo.update(updatedUser)).thenAnswer((_) async => UserStub.admin);
 
       final result = await sut.createProfileImage(profileImagePath, Uint8List(0));
 
       verify(() => mockStoreService.put(StoreKey.currentUser, updatedUser)).called(1);
-      verify(() => mockUserRepo.update(updatedUser)).called(1);
       expect(result, profileImagePath);
     });
 
@@ -123,7 +111,6 @@ void main() {
 
       final result = await sut.createProfileImage(profileImagePath, Uint8List(0));
       verifyNever(() => mockStoreService.put(StoreKey.currentUser, updatedUser));
-      verifyNever(() => mockUserRepo.update(updatedUser));
       expect(result, isNull);
     });
   });

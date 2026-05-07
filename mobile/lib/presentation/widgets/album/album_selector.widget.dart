@@ -17,9 +17,9 @@ import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.wi
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -809,7 +809,7 @@ class CreateAlbumButton extends ConsumerWidget {
         return;
       }
 
-      final asset = ref.read(currentAssetNotifier);
+      final asset = ref.read(assetViewerProvider).currentAsset;
 
       if (asset == null) {
         ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
@@ -833,7 +833,7 @@ class CreateAlbumButton extends ConsumerWidget {
       // Invalidate using the asset's remote ID to refresh the "Appears in" list
       ref.invalidate(albumsContainingAssetProvider(asset.remoteId!));
 
-      context.pop();
+      ContextHelper(context).pop();
     }
 
     return SliverPadding(

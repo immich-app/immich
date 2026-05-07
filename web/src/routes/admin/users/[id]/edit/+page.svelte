@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
-  import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
@@ -82,7 +82,7 @@
     </Link>
   </Text>
 
-  {#if user.id !== $authUser.id}
+  {#if user.id !== authManager.user.id}
     <Field label={$t('admin.admin_user')}>
       <Switch bind:checked={isAdmin} class="mt-4" />
     </Field>

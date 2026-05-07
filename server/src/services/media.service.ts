@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
-import { AssetFile, Exif } from 'src/database';
+import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -13,9 +13,9 @@ import {
   AudioCodec,
   Colorspace,
   ImageFormat,
+  ImmichWorker,
   JobName,
   JobStatus,
-  LogLevel,
   QueueName,
   RawExtractedFormat,
   StorageFolder,
@@ -39,7 +39,7 @@ import {
   VideoInterfaces,
   VideoStreamInfo,
 } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
+import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -61,10 +61,9 @@ type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForG
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
 
-  @OnEvent({ name: 'AppBootstrap' })
+  @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Microservices] })
   async onBootstrap() {
-    const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
-    this.videoInterfaces = { dri, mali };
+    this.videoInterfaces = await this.storageCore.getVideoInterfaces();
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
@@ -258,7 +257,7 @@ export class MediaService extends BaseService {
     return extracted;
   }
 
-  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
+  private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
     const { image } = await this.getConfig({ withCache: true });
     const colorspace = this.isSRGB(exifInfo) ? Colorspace.Srgb : image.colorspace;
     const decodeOptions: DecodeToBufferOptions = {
@@ -506,10 +505,7 @@ export class MediaService extends BaseService {
     };
   }
 
-  private async generateVideoThumbnails(
-    asset: ThumbnailPathEntity & { originalPath: string },
-    { ffmpeg, image }: SystemConfig,
-  ) {
+  private async generateVideoThumbnails(asset: ThumbnailAsset, { ffmpeg, image }: SystemConfig) {
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
       format: image.preview.format,
@@ -526,22 +522,15 @@ export class MediaService extends BaseService {
     });
     this.storageCore.ensureFolders(previewFile.path);
 
-    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
-    const mainVideoStream = this.getMainStream(videoStreams);
-    if (!mainVideoStream) {
-      throw new Error(`No video streams found for asset ${asset.id}`);
+    const { videoStream, format } = asset;
+    if (!videoStream || !format) {
+      throw new Error(`Missing video metadata for asset ${asset.id}`);
     }
-    const mainAudioStream = this.getMainStream(audioStreams);
 
     const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
-    const thumbnailConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
-    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, mainVideoStream, mainAudioStream, format);
-    const thumbnailOptions = thumbnailConfig.getCommand(
-      TranscodeTarget.Video,
-      mainVideoStream,
-      mainAudioStream,
-      format,
-    );
+    const thumbConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
+    const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
+    const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
 
     await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
@@ -554,7 +543,7 @@ export class MediaService extends BaseService {
     return {
       files: [previewFile, thumbnailFile],
       thumbhash,
-      fullsizeDimensions: { width: mainVideoStream.width, height: mainVideoStream.height },
+      fullsizeDimensions: { width: videoStream.width, height: videoStream.height },
     };
   }
 
@@ -588,27 +577,25 @@ export class MediaService extends BaseService {
     const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
 
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
-      countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
-    });
-    const videoStream = this.getMainStream(videoStreams);
-    const audioStream = this.getMainStream(audioStreams);
-    if (!videoStream || !format.formatName) {
+    const { videoStream, format } = asset;
+    const audioStream = asset.audioStream ?? undefined;
+    if (!videoStream || !format) {
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: missing metadata; re-run extraction first`);
       return JobStatus.Failed;
     }
-
     if (!videoStream.height || !videoStream.width) {
-      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video dimensions`);
       return JobStatus.Failed;
     }
 
     let { ffmpeg } = await this.getConfig({ withCache: true });
     const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
     if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
-      if (asset.encodedVideoPath) {
+      const encodedVideo = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
+      if (encodedVideo) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
-        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [asset.encodedVideoPath] } });
-        await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [encodedVideo.path] } });
+        await this.assetRepository.deleteFiles([encodedVideo]);
       } else {
         this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
       }
@@ -656,15 +643,14 @@ export class MediaService extends BaseService {
 
     this.logger.log(`Successfully encoded ${asset.id}`);
 
-    await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
+    await this.assetRepository.upsertFile({
+      assetId: asset.id,
+      type: AssetFileType.EncodedVideo,
+      path: output,
+      isEdited: false,
+    });
 
     return JobStatus.Success;
-  }
-
-  private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {
-    return streams
-      .filter((stream) => stream.codecName !== 'unknown')
-      .toSorted((stream1, stream2) => stream2.bitrate - stream1.bitrate)[0];
   }
 
   private getTranscodeTarget(
@@ -717,7 +703,8 @@ export class MediaService extends BaseService {
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
-    const isLargerThanTargetBitrate = stream.bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
+    const maxBitrate = this.parseBitrateToBps(ffmpegConfig.maxBitrate);
+    const isLargerThanTargetBitrate = maxBitrate > 0 && stream.bitrate > maxBitrate;
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
     const isRequired = !isTargetVideoCodec || !stream.pixelFormat.endsWith('420p');
@@ -749,11 +736,25 @@ export class MediaService extends BaseService {
       return false;
     }
 
-    const name = formatLongName === 'QuickTime / MOV' ? VideoContainer.Mov : (formatName as VideoContainer);
+    const formatLongNameMapping: Record<string, VideoContainer> = {
+      'QuickTime / MOV': VideoContainer.Mov,
+      'Matroska / WebM': VideoContainer.Webm,
+    };
+
+    const name = (formatLongName ? formatLongNameMapping[formatLongName] : undefined) ?? (formatName as VideoContainer);
+
     return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 
-  isSRGB({ colorspace, profileDescription, bitsPerSample }: Exif): boolean {
+  isSRGB({
+    colorspace,
+    profileDescription,
+    bitsPerSample,
+  }: {
+    colorspace: string | null;
+    profileDescription: string | null;
+    bitsPerSample: number | null;
+  }): boolean {
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
     } else if (bitsPerSample) {
@@ -769,6 +770,7 @@ export class MediaService extends BaseService {
     const bitrateValue = Number.parseInt(bitrateString);
 
     if (Number.isNaN(bitrateValue)) {
+      this.logger.log(`Maximum bitrate '${bitrateString} is not a number and will be ignored.`);
       return 0;
     }
 
@@ -785,28 +787,6 @@ export class MediaService extends BaseService {
     const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
-  }
-
-  private async getDevices() {
-    try {
-      return await this.storageRepository.readdir('/dev/dri');
-    } catch {
-      this.logger.debug('No devices found in /dev/dri.');
-      return [];
-    }
-  }
-
-  private async hasMaliOpenCL() {
-    try {
-      const [maliIcdStat, maliDeviceStat] = await Promise.all([
-        this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd'),
-        this.storageRepository.stat('/dev/mali0'),
-      ]);
-      return maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
-    } catch {
-      this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU tonemapping');
-      return false;
-    }
   }
 
   private async syncFiles(

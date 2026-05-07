@@ -7,8 +7,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 
 class RemoteAlbumService {
   final DriftRemoteAlbumRepository _repository;
@@ -26,10 +26,6 @@ class RemoteAlbumService {
 
   Future<RemoteAlbum?> get(String albumId) {
     return _repository.get(albumId);
-  }
-
-  Future<RemoteAlbum?> getByName(String albumName, String ownerId) {
-    return _repository.getByName(albumName, ownerId);
   }
 
   Future<List<RemoteAlbum>> sortAlbums(
@@ -86,8 +82,18 @@ class RemoteAlbumService {
     return filtered;
   }
 
-  Future<RemoteAlbum> createAlbum({required String title, required List<String> assetIds, String? description}) async {
-    final album = await _albumApiRepository.createDriftAlbum(title, description: description, assetIds: assetIds);
+  Future<RemoteAlbum> createAlbum({
+    required String title,
+    required UserDto owner,
+    required List<String> assetIds,
+    String? description,
+  }) async {
+    final album = await _albumApiRepository.createDriftAlbum(
+      title,
+      owner,
+      description: description,
+      assetIds: assetIds,
+    );
     await _repository.create(album, assetIds);
 
     return album;
@@ -101,8 +107,10 @@ class RemoteAlbumService {
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
   }) async {
+    final owner = await _repository.getOwner(albumId);
     final updatedAlbum = await _albumApiRepository.updateAlbum(
       albumId,
+      owner,
       name: name,
       description: description,
       thumbnailAssetId: thumbnailAssetId,

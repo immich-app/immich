@@ -39,7 +39,6 @@ import { requireElevatedPermission } from 'src/utils/access';
 import {
   getAssetFiles,
   getDimensions,
-  getMyPartnerIds,
   isPanorama,
   onAfterUnlink,
   onBeforeLink,
@@ -58,20 +57,6 @@ export class AssetService extends BaseService {
 
     const stats = await this.assetRepository.getStatistics(auth.user.id, dto);
     return mapStats(stats);
-  }
-
-  async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
-      userId: auth.user.id,
-      repository: this.partnerRepository,
-      timelineEnabled: true,
-    });
-    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { auth }));
-  }
-
-  async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {
-    return this.assetRepository.getAllByDeviceId(auth.user.id, deviceId);
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
@@ -370,7 +355,7 @@ export class AssetService extends BaseService {
       assetFiles.editedFullsizeFile?.path,
       assetFiles.editedPreviewFile?.path,
       assetFiles.editedThumbnailFile?.path,
-      asset.encodedVideoPath,
+      assetFiles.encodedVideoFile?.path,
     ];
 
     if (deleteOnDisk && !asset.isOffline) {
@@ -516,7 +501,7 @@ export class AssetService extends BaseService {
     dateTimeOriginal?: string;
     latitude?: number;
     longitude?: number;
-    rating?: number;
+    rating?: number | null;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy(
@@ -532,13 +517,13 @@ export class AssetService extends BaseService {
     );
 
     if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif(
-        updateLockedColumns({
+      await this.assetRepository.upsertExif({
+        exif: updateLockedColumns({
           assetId: id,
           ...writes,
         }),
-        { lockedPropertiesBehavior: 'append' },
-      );
+        lockedPropertiesBehavior: 'append',
+      });
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }
   }

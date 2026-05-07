@@ -162,6 +162,7 @@ export class EmailRepository {
       host: options.host,
       port: options.port,
       tls: { rejectUnauthorized: !options.ignoreCert },
+      secure: options.secure,
       auth:
         options.username || options.password
           ? {

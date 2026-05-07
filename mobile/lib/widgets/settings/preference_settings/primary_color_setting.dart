@@ -1,15 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class PrimaryColorSetting extends HookConsumerWidget {
   const PrimaryColorSetting({super.key});
@@ -17,17 +16,9 @@ class PrimaryColorSetting extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeProvider = ref.read(immichThemeProvider);
+    final themeConfig = ref.watch(appConfigProvider.select((config) => config.theme));
 
-    final primaryColorSetting = useAppSettingsState(AppSettingsEnum.primaryColor);
-    final systemPrimaryColorSetting = useAppSettingsState(AppSettingsEnum.dynamicTheme);
-
-    final currentPreset = useValueNotifier(ref.read(immichThemePresetProvider));
     const tileSize = 55.0;
-
-    useValueChanged(
-      primaryColorSetting.value,
-      (_, __) => currentPreset.value = ImmichColorPreset.values.firstWhere((e) => e.name == primaryColorSetting.value),
-    );
 
     void popBottomSheet() {
       Future.delayed(const Duration(milliseconds: 200), () {
@@ -36,23 +27,18 @@ class PrimaryColorSetting extends HookConsumerWidget {
     }
 
     onUseSystemColorChange(bool newValue) {
-      systemPrimaryColorSetting.value = newValue;
-      ref.watch(dynamicThemeSettingProvider.notifier).state = newValue;
-      ref.invalidate(immichThemeProvider);
+      ref.read(metadataProvider).write(MetadataKey.dynamicTheme, newValue);
       popBottomSheet();
     }
 
     onPrimaryColorChange(ImmichColorPreset colorPreset) {
-      primaryColorSetting.value = colorPreset.name;
-      ref.watch(immichThemePresetProvider.notifier).state = colorPreset;
-      ref.invalidate(immichThemeProvider);
+      ref.read(metadataProvider).write(MetadataKey.primaryColor, colorPreset);
 
       //turn off system color setting
-      if (systemPrimaryColorSetting.value) {
-        onUseSystemColorChange(false);
-      } else {
-        popBottomSheet();
+      if (themeConfig.dynamicTheme) {
+        ref.read(metadataProvider).write(MetadataKey.dynamicTheme, false);
       }
+      popBottomSheet();
     }
 
     buildPrimaryColorTile({
@@ -122,7 +108,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                   'theme_setting_system_primary_color_title'.tr(),
                   style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                 ),
-                value: systemPrimaryColorSetting.value,
+                value: themeConfig.dynamicTheme,
                 onChanged: onUseSystemColorChange,
               ),
             ),
@@ -140,7 +126,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                     topColor: theme.light.primary,
                     bottomColor: theme.dark.primary,
                     tileSize: tileSize,
-                    showSelector: currentPreset.value == preset && !systemPrimaryColorSetting.value,
+                    showSelector: themeConfig.primaryColor == preset && !themeConfig.dynamicTheme,
                   ),
                 );
               }).toList(),

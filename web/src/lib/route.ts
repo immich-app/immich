@@ -1,6 +1,6 @@
-import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 import { QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
+import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 
 const asQueueSlug = (name: QueueName) => {
   return name.replaceAll(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -42,9 +42,16 @@ const asQueryString = (
   return items.length === 0 ? '' : `?${items.join('&')}`;
 };
 
+const DOCS_BASE = 'https://docs.immich.app';
+
+export const Docs = {
+  duplicates: () => `${DOCS_BASE}/features/duplicates-utility`,
+};
+
 export const Route = {
   // auth
   login: (params?: { continue?: string; autoLaunch?: 0 | 1 }) => '/auth/login' + asQueryString(params),
+  logout: (params?: { continue?: string }) => '/auth/logout' + asQueryString(params),
   register: () => '/auth/register',
   changePassword: () => '/auth/change-password',
   onboarding: (params?: { step?: string }) => '/auth/onboarding' + asQueryString(params),

@@ -101,7 +101,8 @@ class _UploadProgressDialog extends ConsumerWidget {
       actions: [
         ImmichTextButton(
           onPressed: () {
-            ref.read(manualUploadCancelTokenProvider)?.cancel();
+            ref.read(manualUploadCancelTokenProvider)?.complete();
+            ref.read(manualUploadCancelTokenProvider.notifier).state = null;
             Navigator.of(context).pop();
           },
           labelText: 'cancel'.t(context: context),
