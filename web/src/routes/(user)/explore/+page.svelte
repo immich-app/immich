@@ -122,21 +122,17 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid grid-flow-col grid-auto-fill-28 gap-x-4 md:grid-auto-fill-36">
-        {#snippet children({ itemCount })}
-          {#each recents.slice(0, itemCount) as item (item.data.id)}
-            <a class="relative" href={Route.viewAsset({ id: item.data.id })} draggable="false">
-              <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
-                <img
-                  src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
-                  alt={$getAltText(toTimelineAsset(item.data))}
-                  class="aspect-square w-full object-cover"
-                />
-              </div>
-            </a>
-          {/each}
-        {/snippet}
-      </SingleGridRow>
+      <div class="flex h-16 flex-wrap gap-x-4 overflow-hidden md:h-24">
+        {#each recents as item (item.data.id)}
+          <a class="relative h-full flex-auto" href={Route.viewAsset({ id: item.data.id })} draggable="false">
+            <img
+              src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+              alt={$getAltText(toTimelineAsset(item.data))}
+              class="size-full min-w-max rounded-xl object-cover"
+            />
+          </a>
+        {/each}
+      </div>
     </div>
   {/if}
 
