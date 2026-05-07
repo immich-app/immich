@@ -145,6 +145,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if [[ $IS_MAIN == 'true' ]]; then
             flutter build apk --release
@@ -176,7 +177,7 @@ jobs:
 
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
 
-            GitHub login required. Downloads as a zip containing a single `app-release.apk` — extract and install. Signed with the release keystore (same applicationId `app.alextran.immich` as the Play Store version), so uninstall the Play Store build first.
+            GitHub login required. Downloads as a zip containing a single `app-release.apk` — extract and install. Installs as a separate app (applicationId `app.alextran.immich.pr${{ github.event.pull_request.number }}`), so it coexists with the Play Store version and any other PR builds.
 
       - name: Save Gradle Cache
         id: cache-gradle-save

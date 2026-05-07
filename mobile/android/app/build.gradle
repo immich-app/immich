@@ -66,6 +66,12 @@ android {
     release {
       signingConfig signingConfigs.release
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+      def prNumber = System.getenv("PR_NUMBER")
+      if (prNumber) {
+        applicationIdSuffix ".pr${prNumber}"
+        versionNameSuffix "-pr${prNumber}"
+      }
     }
   }
   namespace 'app.alextran.immich'
