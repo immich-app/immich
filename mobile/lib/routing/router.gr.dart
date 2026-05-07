@@ -1225,6 +1225,22 @@ class FolderRouteArgs {
 }
 
 /// generated route for
+/// [GuestGalleryPage]
+class GuestGalleryRoute extends PageRouteInfo<void> {
+  const GuestGalleryRoute({List<PageRouteInfo>? children})
+    : super(GuestGalleryRoute.name, initialChildren: children);
+
+  static const String name = 'GuestGalleryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const GuestGalleryPage();
+    },
+  );
+}
+
+/// generated route for
 /// [HeaderSettingsPage]
 class HeaderSettingsRoute extends PageRouteInfo<void> {
   const HeaderSettingsRoute({List<PageRouteInfo>? children})

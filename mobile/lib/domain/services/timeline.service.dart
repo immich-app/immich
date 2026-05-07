@@ -56,6 +56,8 @@ class TimelineFactory {
   TimelineService localAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.localAlbum(albumId, groupBy));
 
+  TimelineService allLocal() => TimelineService(_timelineRepository.allLocal(groupBy));
+
   TimelineService remoteAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 

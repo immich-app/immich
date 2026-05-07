@@ -63,6 +63,7 @@ import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/edit/drift_edit.page.dart';
+import 'package:immich_mobile/presentation/pages/guest_gallery.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.page.dart';
 import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
@@ -114,6 +115,7 @@ class AppRouter extends RootStackRouter {
   @override
   late final List<AutoRoute> routes = [
     AutoRoute(page: SplashScreenRoute.page, initial: true),
+    AutoRoute(page: GuestGalleryRoute.page),
     AutoRoute(page: LoginRoute.page),
     AutoRoute(page: ChangePasswordRoute.page),
     AutoRoute(
