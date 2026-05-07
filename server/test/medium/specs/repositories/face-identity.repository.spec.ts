@@ -905,6 +905,7 @@ describe(FaceIdentityRepository.name, () => {
         expect(result).toEqual({
           detectedFaceCount: 3,
           assignedVisibleFaceCount: 1,
+          namedVisiblePersonCount: 1,
           assignedHiddenFaceCount: 1,
           unassignedFaceCount: 1,
         });
@@ -946,6 +947,7 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(user.id, { minimumFaceCount: 1 })).resolves.toEqual({
           detectedFaceCount: 1,
           assignedVisibleFaceCount: 1,
+          namedVisiblePersonCount: 1,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 0,
         });
@@ -964,6 +966,7 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(user.id, { minimumFaceCount: 2 })).resolves.toEqual({
           detectedFaceCount: 1,
           assignedVisibleFaceCount: 0,
+          namedVisiblePersonCount: 0,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 1,
         });
@@ -987,6 +990,7 @@ describe(FaceIdentityRepository.name, () => {
         expect(first).toEqual({
           detectedFaceCount: 2,
           assignedVisibleFaceCount: 0,
+          namedVisiblePersonCount: 0,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 2,
         });
@@ -1021,6 +1025,7 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(user.id, { minimumFaceCount: 1 })).resolves.toEqual({
           detectedFaceCount: 1,
           assignedVisibleFaceCount: 0,
+          namedVisiblePersonCount: 0,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 1,
         });
@@ -1066,6 +1071,7 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(member.id, { minimumFaceCount: 1 })).resolves.toEqual({
           detectedFaceCount: 1,
           assignedVisibleFaceCount: 1,
+          namedVisiblePersonCount: 1,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 0,
         });
@@ -1075,6 +1081,7 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(member.id, { minimumFaceCount: 1 })).resolves.toEqual({
           detectedFaceCount: 0,
           assignedVisibleFaceCount: 0,
+          namedVisiblePersonCount: 0,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 0,
         });
@@ -1122,6 +1129,7 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(member.id, { minimumFaceCount: 1 })).resolves.toEqual({
           detectedFaceCount: 2,
           assignedVisibleFaceCount: 1,
+          namedVisiblePersonCount: 1,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 1,
         });
@@ -1135,11 +1143,39 @@ describe(FaceIdentityRepository.name, () => {
         await expect(sut.getAccessiblePeopleFaceStatistics(member.id, { minimumFaceCount: 1 })).resolves.toEqual({
           detectedFaceCount: 1,
           assignedVisibleFaceCount: 0,
+          namedVisiblePersonCount: 0,
           assignedHiddenFaceCount: 0,
           unassignedFaceCount: 1,
         });
       } finally {
         await ctx.database.deleteFrom('user').where('id', 'in', [source.id, member.id]).execute();
+      }
+    });
+
+    it('counts distinct named visible accessible identities', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      try {
+        const named = await newIdentityFace(ctx, sut, { ownerId: user.id, name: 'Alice' });
+        const { assetFace: secondNamedFace } = await ctx.newAssetFace({
+          assetId: named.asset.id,
+          personId: named.person.id,
+        });
+        await sut.linkFace({
+          assetFaceId: secondNamedFace.id,
+          identityId: named.identity.id,
+          source: 'owner-person',
+        });
+        await newIdentityFace(ctx, sut, { ownerId: user.id, name: 'Hidden', isHidden: true });
+        await newIdentityFace(ctx, sut, { ownerId: user.id, name: '' });
+        await newIdentityFace(ctx, sut, { ownerId: user.id, name: '   ' });
+
+        await expect(sut.getAccessiblePeopleFaceStatistics(user.id, { minimumFaceCount: 1 })).resolves.toMatchObject({
+          namedVisiblePersonCount: 1,
+        });
+      } finally {
+        await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
       }
     });
   });

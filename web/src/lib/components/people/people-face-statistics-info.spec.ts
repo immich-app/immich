@@ -23,6 +23,7 @@ const statistics = (overrides: Partial<PeopleFaceStatisticsResponseDto> = {}): P
   assignedHiddenFaceCount: 3456,
   assignedVisibleFaceCount: 2345,
   detectedFaceCount: 1234,
+  namedVisiblePersonCount: 154,
   unassignedFaceCount: 4567,
   ...overrides,
 });
@@ -157,6 +158,8 @@ describe('PeopleFaceStatisticsInfo', () => {
     expect(screen.getByText('1,234')).toBeInTheDocument();
     expect(screen.getByText('Assigned to visible people')).toBeInTheDocument();
     expect(screen.getByText('2,345')).toBeInTheDocument();
+    expect(screen.getByText('Named visible people')).toBeInTheDocument();
+    expect(screen.getByText('154')).toBeInTheDocument();
     expect(screen.getByText('Assigned to hidden people')).toBeInTheDocument();
     expect(screen.getByText('3,456')).toBeInTheDocument();
     expect(screen.getByText('Unassigned')).toBeInTheDocument();

@@ -52,6 +52,7 @@ export interface PeopleOverviewStatistics {
 export interface PeopleFaceStatistics {
   detectedFaceCount: number;
   assignedVisibleFaceCount: number;
+  namedVisiblePersonCount: number;
   assignedHiddenFaceCount: number;
   unassignedFaceCount: number;
 }
@@ -591,10 +592,12 @@ export class PersonRepository {
       "detected_faces" AS (
         SELECT
           "eligible_faces"."assetFaceId",
+          "person"."id" AS "personId",
+          NULLIF(BTRIM("person"."name"), '') IS NOT NULL AS "isNamed",
           CASE
             WHEN "person"."id" IS NOT NULL
               AND (
-                "person"."name" != ''
+                NULLIF(BTRIM("person"."name"), '') IS NOT NULL
                 OR "person_face_counts"."assetCount" >= ${minimumFaceCount}
               )
             THEN "person"."isHidden"
@@ -610,6 +613,7 @@ export class PersonRepository {
       SELECT
         COUNT(DISTINCT "assetFaceId")::int AS "detectedFaceCount",
         COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isHidden" = false)::int AS "assignedVisibleFaceCount",
+        COUNT(DISTINCT "personId") FILTER (WHERE "isHidden" = false AND "isNamed" = true)::int AS "namedVisiblePersonCount",
         COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isHidden" = true)::int AS "assignedHiddenFaceCount",
         COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isHidden" IS NULL)::int AS "unassignedFaceCount"
       FROM "detected_faces"
@@ -619,6 +623,7 @@ export class PersonRepository {
     return {
       detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
       assignedVisibleFaceCount: Number(row?.assignedVisibleFaceCount ?? 0),
+      namedVisiblePersonCount: Number(row?.namedVisiblePersonCount ?? 0),
       assignedHiddenFaceCount: Number(row?.assignedHiddenFaceCount ?? 0),
       unassignedFaceCount: Number(row?.unassignedFaceCount ?? 0),
     };

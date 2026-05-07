@@ -27,18 +27,23 @@ const expectStats = (
   result: {
     detectedFaceCount: number;
     assignedVisibleFaceCount: number;
+    namedVisiblePersonCount?: number;
     assignedHiddenFaceCount: number;
     unassignedFaceCount: number;
   },
   expected: {
     detectedFaceCount: number;
     assignedVisibleFaceCount: number;
+    namedVisiblePersonCount?: number;
     assignedHiddenFaceCount: number;
     unassignedFaceCount: number;
   },
 ) => {
   expect(Number(result.detectedFaceCount)).toBe(expected.detectedFaceCount);
   expect(Number(result.assignedVisibleFaceCount)).toBe(expected.assignedVisibleFaceCount);
+  if (expected.namedVisiblePersonCount !== undefined) {
+    expect(Number(result.namedVisiblePersonCount)).toBe(expected.namedVisiblePersonCount);
+  }
   expect(Number(result.assignedHiddenFaceCount)).toBe(expected.assignedHiddenFaceCount);
   expect(Number(result.unassignedFaceCount)).toBe(expected.unassignedFaceCount);
 };
@@ -2258,6 +2263,60 @@ describe(SharedSpaceRepository.name, () => {
         detectedFaceCount: 1,
         assignedVisibleFaceCount: 1,
         assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 0,
+      });
+    });
+
+    it('getPeopleFaceStatisticsBySpaceId counts distinct named visible people in the selected space scope', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const { space: otherSpace } = await ctx.newSharedSpace({ createdById: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { asset: otherAsset } = await ctx.newAsset({ ownerId: otherUser.id, visibility: AssetVisibility.Timeline });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      await ctx.newSharedSpaceAsset({ spaceId: otherSpace.id, assetId: otherAsset.id });
+
+      const { assetFace: namedFaceA } = await ctx.newAssetFace({ assetId: asset.id });
+      const { assetFace: namedFaceB } = await ctx.newAssetFace({ assetId: asset.id });
+      const { assetFace: hiddenFace } = await ctx.newAssetFace({ assetId: asset.id });
+      const { assetFace: unnamedFace } = await ctx.newAssetFace({ assetId: asset.id });
+      const { assetFace: whitespaceFace } = await ctx.newAssetFace({ assetId: asset.id });
+      const { assetFace: otherSpaceFace } = await ctx.newAssetFace({ assetId: otherAsset.id });
+      const namedPerson = await sut.createPerson({ spaceId: space.id, name: 'Alice', representativeFaceId: null });
+      const otherNamedPerson = await sut.createPerson({ spaceId: space.id, name: 'Bob', representativeFaceId: null });
+      const hiddenPerson = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Hidden',
+        isHidden: true,
+        representativeFaceId: null,
+      });
+      const unnamedPerson = await sut.createPerson({ spaceId: space.id, name: '', representativeFaceId: null });
+      const whitespacePerson = await sut.createPerson({ spaceId: space.id, name: '   ', representativeFaceId: null });
+      const outOfScopePerson = await sut.createPerson({
+        spaceId: otherSpace.id,
+        name: 'Other Space',
+        representativeFaceId: null,
+      });
+      await sut.addPersonFaces(
+        [
+          { personId: namedPerson.id, assetFaceId: namedFaceA.id },
+          { personId: namedPerson.id, assetFaceId: namedFaceB.id },
+          { personId: otherNamedPerson.id, assetFaceId: namedFaceB.id },
+          { personId: hiddenPerson.id, assetFaceId: hiddenFace.id },
+          { personId: unnamedPerson.id, assetFaceId: unnamedFace.id },
+          { personId: whitespacePerson.id, assetFaceId: whitespaceFace.id },
+          { personId: outOfScopePerson.id, assetFaceId: otherSpaceFace.id },
+        ],
+        { skipRecount: true },
+      );
+
+      expectStats(await sut.getPeopleFaceStatisticsBySpaceId(space.id, {}), {
+        detectedFaceCount: 5,
+        assignedVisibleFaceCount: 4,
+        namedVisiblePersonCount: 2,
+        assignedHiddenFaceCount: 1,
         unassignedFaceCount: 0,
       });
     });

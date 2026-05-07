@@ -718,7 +718,8 @@ export class FaceIdentityRepository {
           "identityId",
           bool_or("isHidden" = false) AS "hasVisibleProfile",
           bool_or("isHidden" = true) AS "hasHiddenProfile",
-          bool_or(NULLIF(name, '') IS NOT NULL) AS "hasNamedProfile"
+          bool_or(NULLIF(BTRIM(name), '') IS NOT NULL) AS "hasNamedProfile",
+          bool_or("isHidden" = false AND NULLIF(BTRIM(name), '') IS NOT NULL) AS "hasNamedVisibleProfile"
         FROM accessible_profiles
         GROUP BY "identityId"
       ),
@@ -726,7 +727,8 @@ export class FaceIdentityRepository {
         SELECT
           identity_visibility."identityId",
           identity_visibility."hasVisibleProfile",
-          identity_visibility."hasHiddenProfile"
+          identity_visibility."hasHiddenProfile",
+          identity_visibility."hasNamedVisibleProfile"
         FROM identity_visibility
         INNER JOIN identity_counts ON identity_counts."identityId" = identity_visibility."identityId"
         WHERE identity_visibility."hasNamedProfile" = true
@@ -745,6 +747,7 @@ export class FaceIdentityRepository {
       SELECT
         COUNT(DISTINCT "assetFaceId")::int AS "detectedFaceCount",
         COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isAssignedVisible" = true)::int AS "assignedVisibleFaceCount",
+        (SELECT COUNT(*)::int FROM eligible_identities WHERE "hasNamedVisibleProfile" = true) AS "namedVisiblePersonCount",
         COUNT(DISTINCT "assetFaceId") FILTER (
           WHERE "isAssignedVisible" = false AND "isAssignedHidden" = true
         )::int AS "assignedHiddenFaceCount",
@@ -758,6 +761,7 @@ export class FaceIdentityRepository {
     return {
       detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
       assignedVisibleFaceCount: Number(row?.assignedVisibleFaceCount ?? 0),
+      namedVisiblePersonCount: Number(row?.namedVisiblePersonCount ?? 0),
       assignedHiddenFaceCount: Number(row?.assignedHiddenFaceCount ?? 0),
       unassignedFaceCount: Number(row?.unassignedFaceCount ?? 0),
     };

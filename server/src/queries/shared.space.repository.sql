@@ -612,6 +612,35 @@ WITH
       "face_assignments"
     WHERE
       "hasMatchingAssignment" = true
+  ),
+  "matching_person_rows" AS (
+    SELECT DISTINCT
+      COALESCE(
+        "shared_space_person"."identityId",
+        "shared_space_person"."id"
+      ) AS "personKey",
+      "shared_space_person"."isHidden",
+      "shared_space_person"."name"
+    FROM
+      "detected_faces"
+      INNER JOIN "shared_space_person_face" ON "shared_space_person_face"."assetFaceId" = "detected_faces"."assetFaceId"
+      INNER JOIN "shared_space_person" ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+      AND "shared_space_person"."spaceId" = $11
+    WHERE
+      true
+      AND "shared_space_person"."name" ILIKE $12 ESCAPE '\'
+  ),
+  "matching_person_keys" AS (
+    SELECT
+      "personKey",
+      BOOL_OR(
+        "isHidden" = false
+        AND NULLIF(BTRIM("name"), '') IS NOT NULL
+      ) AS "hasNamedVisiblePerson"
+    FROM
+      "matching_person_rows"
+    GROUP BY
+      "personKey"
   )
 SELECT
   COUNT(*)::int AS "detectedFaceCount",
@@ -619,6 +648,14 @@ SELECT
     WHERE
       "hasMatchingVisibleAssignment" = true
   )::int AS "assignedVisibleFaceCount",
+  (
+    SELECT
+      COUNT(*)::int
+    FROM
+      "matching_person_keys"
+    WHERE
+      "hasNamedVisiblePerson" = true
+  ) AS "namedVisiblePersonCount",
   COUNT(*) FILTER (
     WHERE
       "hasMatchingVisibleAssignment" = false

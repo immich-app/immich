@@ -4489,6 +4489,7 @@ describe(SharedSpaceService.name, () => {
       (mocks.sharedSpace as any).getPeopleFaceStatisticsBySpaceId.mockResolvedValue({
         detectedFaceCount: 1201,
         assignedVisibleFaceCount: 1100,
+        namedVisiblePersonCount: 152,
         assignedHiddenFaceCount: 75,
         unassignedFaceCount: 26,
       });
@@ -4505,6 +4506,7 @@ describe(SharedSpaceService.name, () => {
       expect(result).toEqual({
         detectedFaceCount: 1201,
         assignedVisibleFaceCount: 1100,
+        namedVisiblePersonCount: 152,
         assignedHiddenFaceCount: 75,
         unassignedFaceCount: 26,
       });
@@ -4527,6 +4529,7 @@ describe(SharedSpaceService.name, () => {
       await expect(sut.getSpacePeopleFaceStatistics(auth, spaceId)).resolves.toEqual({
         detectedFaceCount: 0,
         assignedVisibleFaceCount: 0,
+        namedVisiblePersonCount: 0,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 0,
       });

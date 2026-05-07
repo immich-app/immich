@@ -92,6 +92,7 @@ function makeFaceStatistics(overrides: Partial<PeopleFaceStatisticsResponseDto> 
     assignedHiddenFaceCount: 3456,
     assignedVisibleFaceCount: 2345,
     detectedFaceCount: 1234,
+    namedVisiblePersonCount: 154,
     unassignedFaceCount: 4567,
     ...overrides,
   };
@@ -206,6 +207,7 @@ describe('Global people page', () => {
       makeFaceStatistics({
         detectedFaceCount: 1234,
         assignedVisibleFaceCount: 2345,
+        namedVisiblePersonCount: 154,
         assignedHiddenFaceCount: 3456,
         unassignedFaceCount: 4567,
       }),
@@ -219,6 +221,8 @@ describe('Global people page', () => {
     expect(screen.getByText('1,234')).toBeInTheDocument();
     expect(screen.getByText('assigned_to_visible_people')).toBeInTheDocument();
     expect(screen.getByText('2,345')).toBeInTheDocument();
+    expect(screen.getByText('named_visible_people')).toBeInTheDocument();
+    expect(screen.getByText('154')).toBeInTheDocument();
     expect(screen.getByText('assigned_to_hidden_people')).toBeInTheDocument();
     expect(screen.getByText('3,456')).toBeInTheDocument();
     expect(screen.getByText('unassigned')).toBeInTheDocument();

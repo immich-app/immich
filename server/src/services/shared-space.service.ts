@@ -853,6 +853,7 @@ export class SharedSpaceService extends BaseService {
       return {
         detectedFaceCount: 0,
         assignedVisibleFaceCount: 0,
+        namedVisiblePersonCount: 0,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 0,
       };

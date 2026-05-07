@@ -129,6 +129,7 @@ describe(PersonController.name, () => {
       service.getPeopleFaceStatistics.mockResolvedValue({
         detectedFaceCount: 23,
         assignedVisibleFaceCount: 18,
+        namedVisiblePersonCount: 9,
         assignedHiddenFaceCount: 3,
         unassignedFaceCount: 2,
       });
@@ -146,6 +147,7 @@ describe(PersonController.name, () => {
       expect(body).toEqual({
         detectedFaceCount: 23,
         assignedVisibleFaceCount: 18,
+        namedVisiblePersonCount: 9,
         assignedHiddenFaceCount: 3,
         unassignedFaceCount: 2,
       });

@@ -1560,6 +1560,8 @@ export type PeopleFaceStatisticsResponseDto = {
     assignedVisibleFaceCount: number;
     /** Number of detected faces in the accessible people scope */
     detectedFaceCount: number;
+    /** Number of named visible people in the accessible people scope */
+    namedVisiblePersonCount: number;
     /** Number of detected faces not assigned to people in this scope */
     unassignedFaceCount: number;
 };

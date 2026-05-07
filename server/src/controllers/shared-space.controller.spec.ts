@@ -113,6 +113,7 @@ describe(SharedSpaceController.name, () => {
       service.getSpacePeopleFaceStatistics.mockResolvedValue({
         detectedFaceCount: 19,
         assignedVisibleFaceCount: 15,
+        namedVisiblePersonCount: 7,
         assignedHiddenFaceCount: 1,
         unassignedFaceCount: 3,
       });
@@ -131,6 +132,7 @@ describe(SharedSpaceController.name, () => {
       expect(body).toEqual({
         detectedFaceCount: 19,
         assignedVisibleFaceCount: 15,
+        namedVisiblePersonCount: 7,
         assignedHiddenFaceCount: 1,
         unassignedFaceCount: 3,
       });

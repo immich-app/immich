@@ -943,10 +943,34 @@ export class SharedSpaceRepository {
         SELECT *
         FROM "face_assignments"
         ${includeFaceFilter}
+      ),
+      "matching_person_rows" AS (
+        SELECT DISTINCT
+          COALESCE("shared_space_person"."identityId", "shared_space_person"."id") AS "personKey",
+          "shared_space_person"."isHidden",
+          "shared_space_person"."name"
+        FROM "detected_faces"
+        INNER JOIN "shared_space_person_face"
+          ON "shared_space_person_face"."assetFaceId" = "detected_faces"."assetFaceId"
+        INNER JOIN "shared_space_person"
+          ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+          AND "shared_space_person"."spaceId" = ${spaceId}
+        WHERE true
+          ${petPersonFilter}
+          ${namedPersonFilter}
+          ${namePersonFilter}
+      ),
+      "matching_person_keys" AS (
+        SELECT
+          "personKey",
+          BOOL_OR("isHidden" = false AND NULLIF(BTRIM("name"), '') IS NOT NULL) AS "hasNamedVisiblePerson"
+        FROM "matching_person_rows"
+        GROUP BY "personKey"
       )
       SELECT
         COUNT(*)::int AS "detectedFaceCount",
         COUNT(*) FILTER (WHERE "hasMatchingVisibleAssignment" = true)::int AS "assignedVisibleFaceCount",
+        (SELECT COUNT(*)::int FROM "matching_person_keys" WHERE "hasNamedVisiblePerson" = true) AS "namedVisiblePersonCount",
         COUNT(*) FILTER (
           WHERE "hasMatchingVisibleAssignment" = false
             AND "hasMatchingHiddenAssignment" = true
@@ -962,6 +986,7 @@ export class SharedSpaceRepository {
     return {
       detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
       assignedVisibleFaceCount: Number(row?.assignedVisibleFaceCount ?? 0),
+      namedVisiblePersonCount: Number(row?.namedVisiblePersonCount ?? 0),
       assignedHiddenFaceCount: Number(row?.assignedHiddenFaceCount ?? 0),
       unassignedFaceCount: Number(row?.unassignedFaceCount ?? 0),
     };

@@ -261,6 +261,7 @@ const PeopleFaceStatisticsResponseSchema = z
   .object({
     detectedFaceCount: z.int().min(0).describe('Number of detected faces in the accessible people scope'),
     assignedVisibleFaceCount: z.int().min(0).describe('Number of detected faces assigned to visible people'),
+    namedVisiblePersonCount: z.int().min(0).describe('Number of named visible people in the accessible people scope'),
     assignedHiddenFaceCount: z.int().min(0).describe('Number of detected faces assigned to hidden people'),
     unassignedFaceCount: z.int().min(0).describe('Number of detected faces not assigned to people in this scope'),
   })

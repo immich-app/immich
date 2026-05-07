@@ -16,6 +16,7 @@ class PeopleFaceStatisticsResponseDto {
     required this.assignedHiddenFaceCount,
     required this.assignedVisibleFaceCount,
     required this.detectedFaceCount,
+    required this.namedVisiblePersonCount,
     required this.unassignedFaceCount,
   });
 
@@ -37,6 +38,12 @@ class PeopleFaceStatisticsResponseDto {
   /// Maximum value: 9007199254740991
   int detectedFaceCount;
 
+  /// Number of named visible people in the accessible people scope
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int namedVisiblePersonCount;
+
   /// Number of detected faces not assigned to people in this scope
   ///
   /// Minimum value: 0
@@ -48,6 +55,7 @@ class PeopleFaceStatisticsResponseDto {
     other.assignedHiddenFaceCount == assignedHiddenFaceCount &&
     other.assignedVisibleFaceCount == assignedVisibleFaceCount &&
     other.detectedFaceCount == detectedFaceCount &&
+    other.namedVisiblePersonCount == namedVisiblePersonCount &&
     other.unassignedFaceCount == unassignedFaceCount;
 
   @override
@@ -56,16 +64,18 @@ class PeopleFaceStatisticsResponseDto {
     (assignedHiddenFaceCount.hashCode) +
     (assignedVisibleFaceCount.hashCode) +
     (detectedFaceCount.hashCode) +
+    (namedVisiblePersonCount.hashCode) +
     (unassignedFaceCount.hashCode);
 
   @override
-  String toString() => 'PeopleFaceStatisticsResponseDto[assignedHiddenFaceCount=$assignedHiddenFaceCount, assignedVisibleFaceCount=$assignedVisibleFaceCount, detectedFaceCount=$detectedFaceCount, unassignedFaceCount=$unassignedFaceCount]';
+  String toString() => 'PeopleFaceStatisticsResponseDto[assignedHiddenFaceCount=$assignedHiddenFaceCount, assignedVisibleFaceCount=$assignedVisibleFaceCount, detectedFaceCount=$detectedFaceCount, namedVisiblePersonCount=$namedVisiblePersonCount, unassignedFaceCount=$unassignedFaceCount]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assignedHiddenFaceCount'] = this.assignedHiddenFaceCount;
       json[r'assignedVisibleFaceCount'] = this.assignedVisibleFaceCount;
       json[r'detectedFaceCount'] = this.detectedFaceCount;
+      json[r'namedVisiblePersonCount'] = this.namedVisiblePersonCount;
       json[r'unassignedFaceCount'] = this.unassignedFaceCount;
     return json;
   }
@@ -82,6 +92,7 @@ class PeopleFaceStatisticsResponseDto {
         assignedHiddenFaceCount: mapValueOfType<int>(json, r'assignedHiddenFaceCount')!,
         assignedVisibleFaceCount: mapValueOfType<int>(json, r'assignedVisibleFaceCount')!,
         detectedFaceCount: mapValueOfType<int>(json, r'detectedFaceCount')!,
+        namedVisiblePersonCount: mapValueOfType<int>(json, r'namedVisiblePersonCount')!,
         unassignedFaceCount: mapValueOfType<int>(json, r'unassignedFaceCount')!,
       );
     }
@@ -133,6 +144,7 @@ class PeopleFaceStatisticsResponseDto {
     'assignedHiddenFaceCount',
     'assignedVisibleFaceCount',
     'detectedFaceCount',
+    'namedVisiblePersonCount',
     'unassignedFaceCount',
   };
 }

@@ -24165,6 +24165,12 @@
             "minimum": 0,
             "type": "integer"
           },
+          "namedVisiblePersonCount": {
+            "description": "Number of named visible people in the accessible people scope",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
           "unassignedFaceCount": {
             "description": "Number of detected faces not assigned to people in this scope",
             "maximum": 9007199254740991,
@@ -24176,6 +24182,7 @@
           "assignedHiddenFaceCount",
           "assignedVisibleFaceCount",
           "detectedFaceCount",
+          "namedVisiblePersonCount",
           "unassignedFaceCount"
         ],
         "type": "object"

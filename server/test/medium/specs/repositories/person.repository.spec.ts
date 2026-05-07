@@ -157,6 +157,7 @@ describe(PersonRepository.name, () => {
       expect(details).toEqual({
         detectedFaceCount: 5,
         assignedVisibleFaceCount: 2,
+        namedVisiblePersonCount: 1,
         assignedHiddenFaceCount: 1,
         unassignedFaceCount: 2,
       });
@@ -186,6 +187,7 @@ describe(PersonRepository.name, () => {
       expect(first).toEqual({
         detectedFaceCount: 2,
         assignedVisibleFaceCount: 0,
+        namedVisiblePersonCount: 0,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 2,
       });
@@ -199,6 +201,7 @@ describe(PersonRepository.name, () => {
       await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
         detectedFaceCount: 0,
         assignedVisibleFaceCount: 0,
+        namedVisiblePersonCount: 0,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 0,
       });
@@ -233,6 +236,7 @@ describe(PersonRepository.name, () => {
       await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
         detectedFaceCount: 1,
         assignedVisibleFaceCount: 1,
+        namedVisiblePersonCount: 1,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 0,
       });
@@ -250,8 +254,42 @@ describe(PersonRepository.name, () => {
       await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
         detectedFaceCount: 1,
         assignedVisibleFaceCount: 0,
+        namedVisiblePersonCount: 0,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 1,
+      });
+    });
+
+    it('counts distinct named visible people with eligible visible faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { asset: archivedAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive });
+      const { asset: otherAsset } = await ctx.newAsset({ ownerId: otherUser.id, visibility: AssetVisibility.Timeline });
+      const { person: namedVisible } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', isHidden: false });
+      const { person: duplicateNamedVisible } = await ctx.newPerson({
+        ownerId: user.id,
+        name: 'Alice Duplicate',
+        isHidden: false,
+      });
+      const { person: hiddenNamed } = await ctx.newPerson({ ownerId: user.id, name: 'Hidden', isHidden: true });
+      const { person: unnamedVisible } = await ctx.newPerson({ ownerId: user.id, name: '', isHidden: false });
+      const { person: whitespaceVisible } = await ctx.newPerson({ ownerId: user.id, name: '   ', isHidden: false });
+      const { person: outOfScopeNamed } = await ctx.newPerson({ ownerId: user.id, name: 'Archived', isHidden: false });
+      const { person: otherNamed } = await ctx.newPerson({ ownerId: otherUser.id, name: 'Other', isHidden: false });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: namedVisible.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: namedVisible.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: duplicateNamedVisible.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: hiddenNamed.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: unnamedVisible.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: whitespaceVisible.id });
+      await ctx.newAssetFace({ assetId: archivedAsset.id, personId: outOfScopeNamed.id });
+      await ctx.newAssetFace({ assetId: otherAsset.id, personId: otherNamed.id });
+
+      await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toMatchObject({
+        namedVisiblePersonCount: 2,
       });
     });
 
@@ -267,6 +305,7 @@ describe(PersonRepository.name, () => {
       await expect(sut.getPeopleFaceStatistics(user.id, { minimumFaceCount: 3 })).resolves.toEqual({
         detectedFaceCount: 2,
         assignedVisibleFaceCount: 0,
+        namedVisiblePersonCount: 0,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 2,
       });

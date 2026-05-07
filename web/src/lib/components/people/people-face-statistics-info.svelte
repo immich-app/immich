@@ -147,6 +147,8 @@
           <dd class="font-medium tabular-nums">{formatNumber(statistics.detectedFaceCount)}</dd>
           <dt class="text-gray-500 dark:text-gray-300">{$t('assigned_to_visible_people')}</dt>
           <dd class="font-medium tabular-nums">{formatNumber(statistics.assignedVisibleFaceCount)}</dd>
+          <dt class="text-gray-500 dark:text-gray-300">{$t('named_visible_people')}</dt>
+          <dd class="font-medium tabular-nums">{formatNumber(statistics.namedVisiblePersonCount)}</dd>
           <dt class="text-gray-500 dark:text-gray-300">{$t('assigned_to_hidden_people')}</dt>
           <dd class="font-medium tabular-nums">{formatNumber(statistics.assignedHiddenFaceCount)}</dd>
           <dt class="text-gray-500 dark:text-gray-300">{$t('unassigned')}</dt>

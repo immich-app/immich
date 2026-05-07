@@ -438,10 +438,12 @@ WITH
   "detected_faces" AS (
     SELECT
       "eligible_faces"."assetFaceId",
+      "person"."id" AS "personId",
+      NULLIF(BTRIM("person"."name"), '') IS NOT NULL AS "isNamed",
       CASE
         WHEN "person"."id" IS NOT NULL
         AND (
-          "person"."name" != ''
+          NULLIF(BTRIM("person"."name"), '') IS NOT NULL
           OR "person_face_counts"."assetCount" >= $3
         ) THEN "person"."isHidden"
         ELSE NULL
@@ -458,6 +460,11 @@ SELECT
     WHERE
       "isHidden" = false
   )::int AS "assignedVisibleFaceCount",
+  COUNT(DISTINCT "personId") FILTER (
+    WHERE
+      "isHidden" = false
+      AND "isNamed" = true
+  )::int AS "namedVisiblePersonCount",
   COUNT(DISTINCT "assetFaceId") FILTER (
     WHERE
       "isHidden" = true
