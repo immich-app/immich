@@ -736,6 +736,25 @@ class NativeSyncApi {
     return pigeonVar_replyValue! as bool;
   }
 
+  Future<bool> manageMediaPermission() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.manageMediaPermission$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as bool;
+  }
+
   Future<bool> moveToTrash(List<String> mediaUrls) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NativeSyncApi.moveToTrash$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(

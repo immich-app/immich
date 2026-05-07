@@ -141,6 +141,9 @@ abstract class NativeSyncApi {
   bool requestManageMediaPermission();
 
   @async
+  bool manageMediaPermission();
+
+  @async
   bool moveToTrash(List<String> mediaUrls);
 
   @async

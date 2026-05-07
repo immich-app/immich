@@ -42,6 +42,14 @@ class MediaTrashDelegate(context: Context) : PluginRegistry.ActivityResultListen
       return
     }
 
+    openManageMediaPermissionSettings(callback)
+  }
+
+  fun manageMediaPermission(callback: (Result<Boolean>) -> Unit) {
+    openManageMediaPermissionSettings(callback)
+  }
+
+  private fun openManageMediaPermissionSettings(callback: (Result<Boolean>) -> Unit) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
       callback(Result.success(false))
       return

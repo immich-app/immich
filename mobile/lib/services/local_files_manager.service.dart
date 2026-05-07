@@ -60,7 +60,7 @@ class LocalFilesManagerService {
 
   Future<bool> manageMediaPermission() async {
     try {
-      return await _nativeSyncApi.requestManageMediaPermission();
+      return await _nativeSyncApi.manageMediaPermission();
     } catch (e, s) {
       _logger.warning('Error requesting manage media permission settings', e, s);
       return false;

@@ -539,6 +539,7 @@ protocol NativeSyncApi {
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
   func hasManageMediaPermission() throws -> Bool
   func requestManageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void)
+    func manageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void)
   func moveToTrash(mediaUrls: [String], completion: @escaping (Result<Bool, Error>) -> Void)
   func restoreFromTrash(fileName: String?, mediaId: String?, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
@@ -753,6 +754,23 @@ class NativeSyncApiSetup {
     } else {
       requestManageMediaPermissionChannel.setMessageHandler(nil)
     }
+      let manageMediaPermissionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.manageMediaPermission\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      if let api = api {
+          manageMediaPermissionChannel.setMessageHandler {
+              _, reply in
+              api.manageMediaPermission {
+                  result in
+                  switch result {
+                  case .success(let res):
+                      reply(wrapResult(res))
+                  case .failure(let error):
+                      reply(wrapError(error))
+                  }
+              }
+          }
+      } else {
+          manageMediaPermissionChannel.setMessageHandler(nil)
+      }
     let moveToTrashChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.moveToTrash\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       moveToTrashChannel.setMessageHandler { message, reply in

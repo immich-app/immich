@@ -555,6 +555,7 @@ interface NativeSyncApi {
   fun getTrashedAssets(): Map<String, List<PlatformAsset>>
   fun hasManageMediaPermission(): Boolean
   fun requestManageMediaPermission(callback: (Result<Boolean>) -> Unit)
+  fun manageMediaPermission(callback: (Result<Boolean>) -> Unit)
   fun moveToTrash(mediaUrls: List<String>, callback: (Result<Boolean>) -> Unit)
   fun restoreFromTrash(fileName: String?, mediaId: String?, type: Long, callback: (Result<Boolean>) -> Unit)
   fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult>
@@ -771,6 +772,24 @@ interface NativeSyncApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.requestManageMediaPermission{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.manageMediaPermission$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.manageMediaPermission{ result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(MessagesPigeonUtils.wrapError(error))
