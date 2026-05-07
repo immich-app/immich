@@ -32,6 +32,8 @@ onlyBuiltDependencies:
 overrides:
   canvas: 2.11.2
   sharp: ^0.34.5
+  # pending docusaurus 3.10.1
+  webpackbar: ^7.0.0
 packageExtensions:
   nestjs-kysely:
     dependencies:

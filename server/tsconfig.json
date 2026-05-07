@@ -24,7 +24,9 @@
     "rootDir": ".",
     "jsx": "react",
     "types": ["vitest/globals"],
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "noErrorTruncation": true
   },
+  "include": ["src", "test"],
   "exclude": ["dist", "node_modules", "upload"]
 }

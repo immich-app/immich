@@ -1,5 +1,3 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { TreeNode } from '$lib/utils/tree-utils';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,
@@ -8,6 +6,8 @@ import {
    */
   type AssetResponseDto,
 } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { TreeNode } from '$lib/utils/tree-utils';
 
 type AssetCache = {
   [path: string]: AssetResponseDto[];

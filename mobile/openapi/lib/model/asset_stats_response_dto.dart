@@ -19,12 +19,21 @@ class AssetStatsResponseDto {
   });
 
   /// Number of images
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int images;
 
   /// Total number of assets
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int total;
 
   /// Number of videos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int videos;
 
   @override

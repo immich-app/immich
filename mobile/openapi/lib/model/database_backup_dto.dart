@@ -18,10 +18,16 @@ class DatabaseBackupDto {
     required this.timezone,
   });
 
+  /// Backup filename
   String filename;
 
-  num filesize;
+  /// Backup file size
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int filesize;
 
+  /// Backup timezone
   String timezone;
 
   @override
@@ -58,7 +64,7 @@ class DatabaseBackupDto {
 
       return DatabaseBackupDto(
         filename: mapValueOfType<String>(json, r'filename')!,
-        filesize: num.parse('${json[r'filesize']}'),
+        filesize: mapValueOfType<int>(json, r'filesize')!,
         timezone: mapValueOfType<String>(json, r'timezone')!,
       );
     }

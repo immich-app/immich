@@ -1,19 +1,22 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
-import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/providers/folder.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
-import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 RecursiveFolder? _findFolderInStructure(RootFolder rootFolder, RecursiveFolder targetFolder) {
@@ -136,8 +139,8 @@ class FolderContent extends HookConsumerWidget {
         FolderPath(currentFolder: folder!, root: root),
         Expanded(
           child: folderRenderlist.when(
-            data: (list) {
-              if (folder!.subfolders.isEmpty && list.isEmpty) {
+            data: (folderAssets) {
+              if (folder!.subfolders.isEmpty && folderAssets.isEmpty) {
                 return Center(child: const Text("empty_folder").tr());
               }
 
@@ -164,32 +167,33 @@ class FolderContent extends HookConsumerWidget {
                         onTap: () => context.pushRoute(FolderRoute(folder: subfolder)),
                       ),
                     ),
-                  if (!list.isEmpty && list.allAssets != null && list.allAssets!.isNotEmpty)
-                    ...list.allAssets!.map(
-                      (asset) => LargeLeadingTile(
+                  if (folderAssets.isNotEmpty)
+                    ...folderAssets.mapIndexed(
+                      (index, asset) => LargeLeadingTile(
                         onTap: () {
-                          ref.read(currentAssetProvider.notifier).set(asset);
+                          AssetViewer.setAsset(ref, asset);
                           context.pushRoute(
-                            GalleryViewerRoute(renderList: list, initialIndex: list.allAssets!.indexOf(asset)),
+                            AssetViewerRoute(
+                              initialIndex: index,
+                              timelineService: ref
+                                  .read(timelineFactoryProvider)
+                                  .fromAssets(folderAssets, TimelineOrigin.folder),
+                            ),
                           );
                         },
                         leading: ClipRRect(
                           borderRadius: const BorderRadius.all(Radius.circular(15)),
-                          child: SizedBox(
-                            width: 80,
-                            height: 80,
-                            child: ThumbnailImage(asset: asset, showStorageIndicator: false),
-                          ),
+                          child: SizedBox(width: 80, height: 80, child: ThumbnailTile(asset)),
                         ),
                         title: Text(
-                          asset.fileName,
+                          asset.name,
                           maxLines: 2,
                           softWrap: false,
                           overflow: TextOverflow.ellipsis,
                           style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          "${asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo?.fileSize ?? 0) : ""} • ${DateFormat.yMMMd().format(asset.fileCreatedAt)}",
+                          "${asset.exifInfo.fileSize != null ? formatBytes(asset.exifInfo.fileSize ?? 0) : ""} • ${DateFormat.yMMMd().format(asset.createdAt)}",
                           style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                         ),
                       ),

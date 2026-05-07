@@ -120,7 +120,9 @@ class SharedLinkEditDto {
     //  json[r'description'] = null;
     }
     if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
+      json[r'expiresAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.expiresAt!.millisecondsSinceEpoch
+        : this.expiresAt!.toUtc().toIso8601String();
     } else {
     //  json[r'expiresAt'] = null;
     }
@@ -155,7 +157,7 @@ class SharedLinkEditDto {
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        expiresAt: mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
         slug: mapValueOfType<String>(json, r'slug'),

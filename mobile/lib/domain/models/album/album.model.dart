@@ -8,6 +8,7 @@ enum AlbumUserRole {
   // do not change this order!
   editor,
   viewer,
+  owner,
 }
 
 // Model for an album stored in the server

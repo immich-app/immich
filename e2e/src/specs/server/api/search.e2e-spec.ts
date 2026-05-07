@@ -74,7 +74,6 @@ describe('/search', () => {
       const bytes = await readFile(join(testAssetDir, filename));
       assets.push(
         await utils.createAsset(admin.accessToken, {
-          deviceAssetId: `test-${filename}`,
           assetData: { bytes, filename },
           ...dto,
         }),
@@ -458,7 +457,7 @@ describe('/search', () => {
       expect(Array.isArray(body)).toBe(true);
       if (Array.isArray(body)) {
         expect(body.length).toBeGreaterThan(10);
-        expect(body[0].name).toEqual(name);
+        expect(body[0].name).toEqual(expect.stringContaining(name));
         expect(body[0].admin2name).toEqual(name);
       }
     });

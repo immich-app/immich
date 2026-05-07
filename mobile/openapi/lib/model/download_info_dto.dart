@@ -31,6 +31,7 @@ class DownloadInfoDto {
   /// Archive size limit in bytes
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
