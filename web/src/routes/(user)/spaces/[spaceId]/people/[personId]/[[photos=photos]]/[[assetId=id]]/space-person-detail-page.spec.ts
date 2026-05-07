@@ -4,6 +4,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import {
   RepresentativeFaceSource,
   SharedSpaceRole,
+  type PersonStatisticsResponseDto,
   type SharedSpaceMemberResponseDto,
   type SharedSpacePersonResponseDto,
   type SharedSpaceResponseDto,
@@ -18,24 +19,53 @@ import type { Component } from 'svelte';
 import { load } from './+page';
 import SpacePersonDetailPage from './+page.svelte';
 
-const { gotoMock, invalidateAllMock, authenticateMock, mockAssetMultiSelectManager } = vi.hoisted(() => ({
-  gotoMock: vi.fn(),
-  invalidateAllMock: vi.fn(),
-  authenticateMock: vi.fn(),
-  mockAssetMultiSelectManager: {
-    selectionActive: false,
-    assets: [],
-    clear: vi.fn(),
-    isAllUserOwned: true,
-    isAllFavorite: false,
-    isAllArchived: false,
-  },
-}));
+const { gotoMock, invalidateAllMock, authenticateMock, formatMessage, mockAssetMultiSelectManager } = vi.hoisted(() => {
+  const formatCount = (count: unknown, singular: string, plural: string) => {
+    const value = Number(count);
+    return `${value.toLocaleString('en-US')} ${value === 1 ? singular : plural}`;
+  };
+
+  const formatMessage = (key: string, options?: { values?: Record<string, unknown> }) => {
+    if (key === 'assets_count') {
+      return formatCount(options?.values?.count, 'asset', 'assets');
+    }
+
+    if (key === 'faces_count') {
+      return formatCount(options?.values?.count, 'face', 'faces');
+    }
+
+    return key;
+  };
+
+  return {
+    gotoMock: vi.fn(),
+    invalidateAllMock: vi.fn(),
+    authenticateMock: vi.fn(),
+    formatMessage,
+    mockAssetMultiSelectManager: {
+      selectionActive: false,
+      assets: [],
+      clear: vi.fn(),
+      isAllUserOwned: true,
+      isAllFavorite: false,
+      isAllArchived: false,
+    },
+  };
+});
 
 vi.mock('$app/navigation', () => ({ goto: gotoMock, invalidateAll: invalidateAllMock }));
 vi.mock('$lib/utils/auth', () => ({ authenticate: authenticateMock }));
 vi.mock('$lib/managers/asset-multi-select-manager.svelte', () => ({
   assetMultiSelectManager: mockAssetMultiSelectManager,
+}));
+
+vi.mock('svelte-i18n', () => ({
+  t: {
+    subscribe: (run: (formatter: typeof formatMessage) => void) => {
+      run(formatMessage);
+      return () => {};
+    },
+  },
 }));
 
 vi.mock('@immich/ui', async (importOriginal) => {
@@ -111,11 +141,13 @@ function makePerson(overrides: Partial<SharedSpacePersonResponseDto> = {}): Shar
 function renderPage({
   members = [makeMember()],
   person = makePerson(),
+  statistics = { assets: person.assetCount, faces: person.faceCount },
   action = null,
   previousRoute = null,
 }: {
   members?: SharedSpaceMemberResponseDto[];
   person?: SharedSpacePersonResponseDto;
+  statistics?: PersonStatisticsResponseDto;
   action?: string | null;
   previousRoute?: string | null;
 } = {}) {
@@ -128,6 +160,7 @@ function renderPage({
       space: makeSpace(),
       members,
       person,
+      statistics,
       action,
       previousRoute,
       meta: { title: 'Alice - Test Space' },
@@ -220,6 +253,37 @@ describe('Spaces person detail page', () => {
       withStacked: true,
     });
     expect(screen.queryByTestId('person-asset-asset-1')).not.toBeInTheDocument();
+  });
+
+  it('renders space-scoped asset and face counts in the person header', () => {
+    renderPage({
+      person: makePerson({ assetCount: 999, faceCount: 999 }),
+      statistics: { assets: 5, faces: 10 },
+    });
+
+    expect(screen.getByText('5 assets')).toBeInTheDocument();
+    expect(screen.getByText('10 faces')).toBeInTheDocument();
+    expect(screen.queryByText('999 assets')).not.toBeInTheDocument();
+  });
+
+  it('updates the displayed space-scoped asset count after removing selected assets', async () => {
+    mockAssetMultiSelectManager.selectionActive = true;
+    mockAssetMultiSelectManager.assets = [{ id: 'asset-1' }, { id: 'asset-2' }] as never[];
+    vi.mocked(modalManager.showDialog).mockResolvedValue(true);
+
+    renderPage({ statistics: { assets: 5, faces: 10 } });
+
+    await userEvent.click(screen.getByLabelText('remove_from_space'));
+
+    await waitFor(() => {
+      expect(sdkMock.removeAssets).toHaveBeenCalledWith({
+        id: 'space-1',
+        sharedSpaceAssetRemoveDto: { assetIds: ['asset-1', 'asset-2'] },
+      });
+    });
+    expect(await screen.findByText('3 assets')).toBeInTheDocument();
+    expect(screen.getByText('10 faces')).toBeInTheDocument();
+    expect(invalidateAllMock).toHaveBeenCalled();
   });
 
   it('does not expose person actions to viewers', () => {

@@ -48,9 +48,16 @@ describe(PersonService.name, () => {
     ({ sut, mocks } = newTestService(PersonService));
     mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'identity-1' } as any);
     (mocks.faceIdentity as any).getAccessiblePeople ??= vi.fn();
+    (mocks.faceIdentity as any).getAccessiblePeopleStatistics ??= vi.fn();
+    (mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics ??= vi.fn();
     (mocks.faceIdentity as any).getAccessiblePersonByProfileId ??= vi.fn();
+    (mocks.faceIdentity as any).getAccessiblePersonStatistics ??= vi.fn();
+    (mocks.faceIdentity as any).getAccessibleProfileIdentityId ??= vi.fn();
     (mocks.faceIdentity as any).hasBackfillWork ??= vi.fn();
+    (mocks.person as any).getPeopleOverviewStatistics ??= vi.fn();
+    (mocks.person as any).getPeopleFaceStatistics ??= vi.fn();
     (mocks.faceIdentity as any).getAccessiblePersonByProfileId.mockResolvedValue(void 0);
+    (mocks.faceIdentity as any).getAccessibleProfileIdentityId.mockResolvedValue(void 0);
     mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled.mockResolvedValue([]);
   });
 
@@ -196,6 +203,140 @@ describe(PersonService.name, () => {
         minimumFaceCount: 3,
         withHidden: false,
       });
+    });
+  });
+
+  describe('getPeopleStatistics', () => {
+    it('uses identity-grouped global scope when withSharedSpaces is true', async () => {
+      const auth = AuthFactory.create();
+      (mocks.faceIdentity as any).getAccessiblePeopleStatistics.mockResolvedValue({
+        total: 3,
+        hidden: 1,
+        detectedFaceCount: 11,
+      });
+
+      await expect(
+        sut.getPeopleStatistics(auth, { withSharedSpaces: true, page: 4, size: 10 } as any),
+      ).resolves.toEqual({
+        total: 3,
+        hidden: 1,
+        detectedFaceCount: 11,
+      });
+
+      expect((mocks.faceIdentity as any).getAccessiblePeopleStatistics).toHaveBeenCalledWith(auth.user.id, {
+        minimumFaceCount: 3,
+      });
+      expect((mocks.person as any).getPeopleOverviewStatistics).not.toHaveBeenCalled();
+    });
+
+    it('uses personal-only scope when withSharedSpaces is omitted', async () => {
+      const auth = AuthFactory.create();
+      (mocks.person as any).getPeopleOverviewStatistics.mockResolvedValue({
+        total: 2,
+        hidden: 0,
+        detectedFaceCount: 5,
+      });
+
+      await expect(sut.getPeopleStatistics(auth, { page: 1, size: 50 } as any)).resolves.toEqual({
+        total: 2,
+        hidden: 0,
+        detectedFaceCount: 5,
+      });
+
+      expect((mocks.person as any).getPeopleOverviewStatistics).toHaveBeenCalledWith(auth.user.id);
+      expect((mocks.faceIdentity as any).getAccessiblePeopleStatistics).not.toHaveBeenCalled();
+    });
+
+    it('rejects closest-person filters instead of returning misleading unfiltered totals', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(
+        sut.getPeopleStatistics(auth, { closestPersonId: newUuid(), page: 1, size: 50 } as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect((mocks.person as any).getPeopleOverviewStatistics).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getAccessiblePeopleStatistics).not.toHaveBeenCalled();
+    });
+
+    it('rejects closest-asset filters instead of returning misleading unfiltered totals', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(
+        sut.getPeopleStatistics(auth, { closestAssetId: newUuid(), page: 1, size: 50 } as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect((mocks.person as any).getPeopleOverviewStatistics).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getAccessiblePeopleStatistics).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getPeopleFaceStatistics', () => {
+    it('uses identity-grouped global scope when withSharedSpaces is true', async () => {
+      const auth = AuthFactory.create();
+      (mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics.mockResolvedValue({
+        detectedFaceCount: 11,
+        assignedVisibleFaceCount: 7,
+        assignedHiddenFaceCount: 2,
+        unassignedFaceCount: 2,
+      });
+
+      await expect(
+        sut.getPeopleFaceStatistics(auth, { withSharedSpaces: true, page: 4, size: 10 } as any),
+      ).resolves.toEqual({
+        detectedFaceCount: 11,
+        assignedVisibleFaceCount: 7,
+        assignedHiddenFaceCount: 2,
+        unassignedFaceCount: 2,
+      });
+
+      expect((mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics).toHaveBeenCalledWith(auth.user.id, {
+        minimumFaceCount: 3,
+      });
+      expect((mocks.person as any).getPeopleFaceStatistics).not.toHaveBeenCalled();
+    });
+
+    it('uses personal-only scope when withSharedSpaces is omitted', async () => {
+      const auth = AuthFactory.create();
+      (mocks.person as any).getPeopleFaceStatistics.mockResolvedValue({
+        detectedFaceCount: 5,
+        assignedVisibleFaceCount: 4,
+        assignedHiddenFaceCount: 1,
+        unassignedFaceCount: 0,
+      });
+
+      await expect(sut.getPeopleFaceStatistics(auth, { page: 1, size: 50 } as any)).resolves.toEqual({
+        detectedFaceCount: 5,
+        assignedVisibleFaceCount: 4,
+        assignedHiddenFaceCount: 1,
+        unassignedFaceCount: 0,
+      });
+
+      expect((mocks.person as any).getPeopleFaceStatistics).toHaveBeenCalledWith(auth.user.id, {
+        minimumFaceCount: 3,
+      });
+      expect((mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics).not.toHaveBeenCalled();
+    });
+
+    it('rejects closest-person filters instead of returning misleading unfiltered totals', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(
+        sut.getPeopleFaceStatistics(auth, { closestPersonId: newUuid(), page: 1, size: 50 } as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect((mocks.person as any).getPeopleFaceStatistics).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics).not.toHaveBeenCalled();
+    });
+
+    it('rejects closest-asset filters instead of returning misleading unfiltered totals', async () => {
+      const auth = AuthFactory.create();
+
+      await expect(
+        sut.getPeopleFaceStatistics(auth, { closestAssetId: newUuid(), page: 1, size: 50 } as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect((mocks.person as any).getPeopleFaceStatistics).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics).not.toHaveBeenCalled();
     });
   });
 
@@ -2386,15 +2527,62 @@ describe(PersonService.name, () => {
   });
 
   describe('getStatistics', () => {
-    it('should get correct number of person', async () => {
+    it('returns personal person asset and face counts for a legacy owned person', async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create();
+      const person = PersonFactory.create({ identityId: null });
 
       mocks.person.getById.mockResolvedValue(person);
-      mocks.person.getStatistics.mockResolvedValue({ assets: 3 });
+      mocks.person.getStatistics.mockResolvedValue({ assets: 3, faces: 4 });
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
-      await expect(sut.getStatistics(auth, person.id)).resolves.toEqual({ assets: 3 });
-      expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
+
+      await expect(sut.getStatistics(auth, person.id)).resolves.toEqual({ assets: 3, faces: 4 });
+      expect(mocks.person.getStatistics).toHaveBeenCalledWith(person.id);
+      expect((mocks.faceIdentity as any).getAccessiblePersonStatistics).not.toHaveBeenCalled();
+    });
+
+    it('returns accessible identity statistics for an owned identity-backed person', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ identityId: 'identity-1' });
+
+      mocks.person.getById.mockResolvedValue(person);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      (mocks.faceIdentity as any).getAccessiblePersonStatistics.mockResolvedValue({ assets: 7, faces: 9 });
+
+      await expect(sut.getStatistics(auth, person.id)).resolves.toEqual({ assets: 7, faces: 9 });
+      expect((mocks.faceIdentity as any).getAccessiblePersonStatistics).toHaveBeenCalledWith(
+        auth.user.id,
+        'identity-1',
+      );
+      expect(mocks.person.getStatistics).not.toHaveBeenCalled();
+    });
+
+    it('returns accessible identity statistics for an accessible space-person route id', async () => {
+      const auth = AuthFactory.create();
+      const personId = newUuid();
+
+      mocks.person.getById.mockResolvedValue(void 0);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      (mocks.faceIdentity as any).getAccessibleProfileIdentityId.mockResolvedValue('identity-from-space');
+      (mocks.faceIdentity as any).getAccessiblePersonStatistics.mockResolvedValue({ assets: 11, faces: 13 });
+
+      await expect(sut.getStatistics(auth, personId)).resolves.toEqual({ assets: 11, faces: 13 });
+      expect((mocks.faceIdentity as any).getAccessibleProfileIdentityId).toHaveBeenCalledWith(auth.user.id, personId);
+      expect((mocks.faceIdentity as any).getAccessiblePersonStatistics).toHaveBeenCalledWith(
+        auth.user.id,
+        'identity-from-space',
+      );
+    });
+
+    it('rejects an inaccessible space-person route id before reading statistics', async () => {
+      const auth = AuthFactory.create();
+      const personId = newUuid();
+
+      mocks.person.getById.mockResolvedValue(void 0);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set());
+      (mocks.faceIdentity as any).getAccessibleProfileIdentityId.mockResolvedValue(void 0);
+
+      await expect(sut.getStatistics(auth, personId)).rejects.toThrow('Not found or no person.read access');
+      expect((mocks.faceIdentity as any).getAccessiblePersonStatistics).not.toHaveBeenCalled();
     });
 
     it('should require person.read permission', async () => {

@@ -10,6 +10,7 @@ import {
 } from 'src/dtos/person.dto';
 import { AssetVisibility, SharedSpaceRole, SourceType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import type { PeopleFaceStatistics, PersonStatistics } from 'src/repositories/person.repository';
 import { DB } from 'src/schema';
 import { FaceIdentityFaceSource, FaceIdentityFaceTable } from 'src/schema/tables/face-identity-face.table';
 import { FaceIdentityTable } from 'src/schema/tables/face-identity.table';
@@ -126,6 +127,10 @@ type AccessiblePeopleIdentityPageRow = {
 type AccessiblePeopleCountRow = {
   total: string | number | null;
   hidden: string | number | null;
+};
+
+type AccessiblePeopleStatisticsRow = AccessiblePeopleCountRow & {
+  detectedFaceCount: string | number | null;
 };
 
 type HydratedAccessiblePersonRow = {
@@ -506,6 +511,334 @@ export class FaceIdentityRepository {
       hasNextPage: rows.length > size,
       people,
     };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { minimumFaceCount: 3 }] })
+  async getAccessiblePeopleStatistics(
+    userId: string,
+    options: { minimumFaceCount?: number },
+  ): Promise<{ total: number; hidden: number; detectedFaceCount: number }> {
+    const minimumFaceCount = options.minimumFaceCount ?? 1;
+    const result = await sql<AccessiblePeopleStatisticsRow>`
+      WITH timeline_spaces AS (
+        SELECT "spaceId"
+        FROM shared_space_member
+        WHERE "userId" = ${userId}
+          AND "showInTimeline" = true
+      ),
+      accessible_detected_faces AS (
+        SELECT
+          asset_face.id AS "assetFaceId",
+          asset_face."assetId"
+        FROM asset_face
+        INNER JOIN asset ON asset.id = asset_face."assetId"
+        WHERE asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+          AND asset."deletedAt" IS NULL
+          AND asset."isOffline" = false
+          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND (
+            asset."ownerId" = ${userId}
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_asset
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_asset."spaceId"
+              WHERE shared_space_asset."assetId" = asset.id
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_library
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_library."spaceId"
+              WHERE shared_space_library."libraryId" = asset."libraryId"
+            )
+          )
+      ),
+      accessible_faces AS (
+        SELECT
+          face_identity_face."identityId",
+          accessible_detected_faces."assetId"
+        FROM accessible_detected_faces
+        INNER JOIN face_identity_face ON face_identity_face."assetFaceId" = accessible_detected_faces."assetFaceId"
+      ),
+      identity_counts AS (
+        SELECT
+          accessible_faces."identityId",
+          COUNT(DISTINCT accessible_faces."assetId") AS "visibleAssetCount"
+        FROM accessible_faces
+        GROUP BY accessible_faces."identityId"
+      ),
+      accessible_profiles AS (
+        SELECT person."identityId", person."isHidden", person.name
+        FROM person
+        WHERE person."ownerId" = ${userId}
+          AND person."identityId" IS NOT NULL
+          AND EXISTS (SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = person."identityId")
+        UNION ALL
+        SELECT
+          shared_space_person."identityId",
+          shared_space_person."isHidden",
+          COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name
+        FROM shared_space_person
+        INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
+        LEFT JOIN shared_space_person_alias
+          ON shared_space_person_alias."personId" = shared_space_person.id
+          AND shared_space_person_alias."userId" = ${userId}
+        WHERE shared_space_person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1
+            FROM shared_space_person_face
+            INNER JOIN asset_face AS profile_face
+              ON profile_face.id = shared_space_person_face."assetFaceId"
+            WHERE shared_space_person_face."personId" = shared_space_person.id
+              AND profile_face."deletedAt" IS NULL
+              AND profile_face."isVisible" = true
+          )
+          AND EXISTS (
+            SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = shared_space_person."identityId"
+          )
+      ),
+      identity_visibility AS (
+        SELECT
+          "identityId",
+          bool_or("isHidden" = false) AS "hasVisibleProfile",
+          bool_or(NULLIF(name, '') IS NOT NULL) AS "hasNamedProfile"
+        FROM accessible_profiles
+        GROUP BY "identityId"
+      ),
+      eligible_identities AS (
+        SELECT
+          identity_visibility."identityId",
+          identity_visibility."hasVisibleProfile"
+        FROM identity_visibility
+        INNER JOIN identity_counts ON identity_counts."identityId" = identity_visibility."identityId"
+        WHERE identity_visibility."hasNamedProfile" = true
+          OR identity_counts."visibleAssetCount" >= ${minimumFaceCount}
+      )
+      SELECT
+        (SELECT COUNT(*) FROM eligible_identities) AS total,
+        (SELECT COUNT(*) FROM eligible_identities WHERE "hasVisibleProfile" = false) AS hidden,
+        (SELECT COUNT(DISTINCT "assetFaceId") FROM accessible_detected_faces) AS "detectedFaceCount"
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      total: Number(row?.total ?? 0),
+      hidden: Number(row?.hidden ?? 0),
+      detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
+    };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { minimumFaceCount: 3 }] })
+  async getAccessiblePeopleFaceStatistics(
+    userId: string,
+    options: { minimumFaceCount?: number },
+  ): Promise<PeopleFaceStatistics> {
+    const minimumFaceCount = options.minimumFaceCount ?? 1;
+    const result = await sql<PeopleFaceStatistics>`
+      WITH timeline_spaces AS (
+        SELECT "spaceId"
+        FROM shared_space_member
+        WHERE "userId" = ${userId}
+          AND "showInTimeline" = true
+      ),
+      accessible_detected_faces AS (
+        SELECT
+          asset_face.id AS "assetFaceId",
+          asset_face."assetId"
+        FROM asset_face
+        INNER JOIN asset ON asset.id = asset_face."assetId"
+        WHERE asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+          AND asset."deletedAt" IS NULL
+          AND asset."isOffline" = false
+          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND (
+            asset."ownerId" = ${userId}
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_asset
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_asset."spaceId"
+              WHERE shared_space_asset."assetId" = asset.id
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_library
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_library."spaceId"
+              WHERE shared_space_library."libraryId" = asset."libraryId"
+            )
+          )
+      ),
+      accessible_faces AS (
+        SELECT DISTINCT
+          face_identity_face."identityId",
+          accessible_detected_faces."assetFaceId",
+          accessible_detected_faces."assetId"
+        FROM accessible_detected_faces
+        INNER JOIN face_identity_face ON face_identity_face."assetFaceId" = accessible_detected_faces."assetFaceId"
+      ),
+      identity_counts AS (
+        SELECT
+          accessible_faces."identityId",
+          COUNT(DISTINCT accessible_faces."assetId") AS "visibleAssetCount"
+        FROM accessible_faces
+        GROUP BY accessible_faces."identityId"
+      ),
+      accessible_profiles AS (
+        SELECT person."identityId", person."isHidden", person.name
+        FROM person
+        WHERE person."ownerId" = ${userId}
+          AND person."identityId" IS NOT NULL
+          AND EXISTS (SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = person."identityId")
+        UNION ALL
+        SELECT
+          shared_space_person."identityId",
+          shared_space_person."isHidden",
+          COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name
+        FROM shared_space_person
+        INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
+        LEFT JOIN shared_space_person_alias
+          ON shared_space_person_alias."personId" = shared_space_person.id
+          AND shared_space_person_alias."userId" = ${userId}
+        WHERE shared_space_person."identityId" IS NOT NULL
+          AND EXISTS (
+            SELECT 1
+            FROM shared_space_person_face
+            INNER JOIN asset_face AS profile_face
+              ON profile_face.id = shared_space_person_face."assetFaceId"
+            WHERE shared_space_person_face."personId" = shared_space_person.id
+              AND profile_face."deletedAt" IS NULL
+              AND profile_face."isVisible" = true
+          )
+          AND EXISTS (
+            SELECT 1 FROM accessible_faces WHERE accessible_faces."identityId" = shared_space_person."identityId"
+          )
+      ),
+      identity_visibility AS (
+        SELECT
+          "identityId",
+          bool_or("isHidden" = false) AS "hasVisibleProfile",
+          bool_or("isHidden" = true) AS "hasHiddenProfile",
+          bool_or(NULLIF(name, '') IS NOT NULL) AS "hasNamedProfile"
+        FROM accessible_profiles
+        GROUP BY "identityId"
+      ),
+      eligible_identities AS (
+        SELECT
+          identity_visibility."identityId",
+          identity_visibility."hasVisibleProfile",
+          identity_visibility."hasHiddenProfile"
+        FROM identity_visibility
+        INNER JOIN identity_counts ON identity_counts."identityId" = identity_visibility."identityId"
+        WHERE identity_visibility."hasNamedProfile" = true
+          OR identity_counts."visibleAssetCount" >= ${minimumFaceCount}
+      ),
+      face_classification AS (
+        SELECT
+          accessible_detected_faces."assetFaceId",
+          bool_or(COALESCE(eligible_identities."hasVisibleProfile", false)) AS "isAssignedVisible",
+          bool_or(COALESCE(eligible_identities."hasHiddenProfile", false)) AS "isAssignedHidden"
+        FROM accessible_detected_faces
+        LEFT JOIN accessible_faces ON accessible_faces."assetFaceId" = accessible_detected_faces."assetFaceId"
+        LEFT JOIN eligible_identities ON eligible_identities."identityId" = accessible_faces."identityId"
+        GROUP BY accessible_detected_faces."assetFaceId"
+      )
+      SELECT
+        COUNT(DISTINCT "assetFaceId")::int AS "detectedFaceCount",
+        COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isAssignedVisible" = true)::int AS "assignedVisibleFaceCount",
+        COUNT(DISTINCT "assetFaceId") FILTER (
+          WHERE "isAssignedVisible" = false AND "isAssignedHidden" = true
+        )::int AS "assignedHiddenFaceCount",
+        COUNT(DISTINCT "assetFaceId") FILTER (
+          WHERE "isAssignedVisible" = false AND "isAssignedHidden" = false
+        )::int AS "unassignedFaceCount"
+      FROM face_classification
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
+      assignedVisibleFaceCount: Number(row?.assignedVisibleFaceCount ?? 0),
+      assignedHiddenFaceCount: Number(row?.assignedHiddenFaceCount ?? 0),
+      unassignedFaceCount: Number(row?.unassignedFaceCount ?? 0),
+    };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getAccessiblePersonStatistics(userId: string, identityId: string): Promise<PersonStatistics> {
+    const result = await sql<PersonStatistics>`
+      WITH timeline_spaces AS (
+        SELECT "spaceId"
+        FROM shared_space_member
+        WHERE "userId" = ${userId}
+          AND "showInTimeline" = true
+      ),
+      selected_faces AS (
+        SELECT DISTINCT
+          asset_face.id AS "faceId",
+          asset_face."assetId"
+        FROM face_identity_face
+        INNER JOIN asset_face ON asset_face.id = face_identity_face."assetFaceId"
+        INNER JOIN asset ON asset.id = asset_face."assetId"
+        WHERE face_identity_face."identityId" = ${identityId}
+          AND asset_face."deletedAt" IS NULL
+          AND asset_face."isVisible" = true
+          AND asset."deletedAt" IS NULL
+          AND asset."isOffline" = false
+          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND (
+            asset."ownerId" = ${userId}
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_asset
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_asset."spaceId"
+              WHERE shared_space_asset."assetId" = asset.id
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM shared_space_library
+              INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_library."spaceId"
+              WHERE shared_space_library."libraryId" = asset."libraryId"
+            )
+          )
+      )
+      SELECT
+        COUNT(DISTINCT "assetId")::int AS assets,
+        COUNT(DISTINCT "faceId")::int AS faces
+      FROM selected_faces
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      assets: Number(row?.assets ?? 0),
+      faces: Number(row?.faces ?? 0),
+    };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getAccessibleProfileIdentityId(userId: string, profileId: string): Promise<string | undefined> {
+    const result = await sql<{ identityId: string }>`
+      SELECT shared_space_person."identityId"
+      FROM shared_space_person
+      INNER JOIN shared_space_member
+        ON shared_space_member."spaceId" = shared_space_person."spaceId"
+        AND shared_space_member."userId" = ${userId}
+        AND shared_space_member."showInTimeline" = true
+      WHERE shared_space_person.id = ${profileId}
+        AND shared_space_person."identityId" IS NOT NULL
+        AND shared_space_person."isHidden" = false
+        AND EXISTS (
+          SELECT 1
+          FROM shared_space_person_face
+          INNER JOIN asset_face AS profile_face
+            ON profile_face.id = shared_space_person_face."assetFaceId"
+          WHERE shared_space_person_face."personId" = shared_space_person.id
+            AND profile_face."deletedAt" IS NULL
+            AND profile_face."isVisible" = true
+        )
+      LIMIT 1
+    `.execute(this.db);
+
+    return result.rows[0]?.identityId ?? undefined;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -913,6 +1246,7 @@ export class FaceIdentityRepository {
         WHERE asset_face."deletedAt" IS NULL
           AND asset_face."isVisible" = true
           AND asset."deletedAt" IS NULL
+          AND asset."isOffline" = false
           AND asset.visibility = ${AssetVisibility.Timeline}
           AND (
             asset."ownerId" = ${input.userId}
@@ -1040,6 +1374,7 @@ export class FaceIdentityRepository {
         WHERE asset_face."deletedAt" IS NULL
           AND asset_face."isVisible" = true
           AND asset."deletedAt" IS NULL
+          AND asset."isOffline" = false
           AND asset.visibility = ${AssetVisibility.Timeline}
           AND (
             asset."ownerId" = ${userId}
@@ -1150,6 +1485,7 @@ export class FaceIdentityRepository {
         WHERE asset_face."deletedAt" IS NULL
           AND asset_face."isVisible" = true
           AND asset."deletedAt" IS NULL
+          AND asset."isOffline" = false
           AND asset.visibility = ${AssetVisibility.Timeline}
           AND (
             asset."ownerId" = ${input.userId}

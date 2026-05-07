@@ -33,6 +33,19 @@ const collectIdentityQueryText = () => {
   return files.map((path) => readFileSync(path, 'utf8')).join('\n');
 };
 
+const collectGeneratedFaceIdentitySqlMethod = (methodName: string) => {
+  const file = join(process.cwd(), 'src/queries/face.identity.repository.sql');
+  const sqlText = existsSync(file) ? readFileSync(file, 'utf8') : '';
+  const marker = `-- ${methodName}`;
+  const start = sqlText.indexOf(marker);
+  if (start === -1) {
+    return '';
+  }
+
+  const next = sqlText.indexOf('\n-- ', start + marker.length);
+  return sqlText.slice(start, next === -1 ? undefined : next);
+};
+
 describe('Face identity query shape', () => {
   it('pages identity ids before hydrating scoped people rows', async () => {
     const { ctx, sut } = setup();
@@ -78,6 +91,9 @@ describe('Face identity query shape', () => {
     const sqlText = collectIdentityQueryText();
     const identityOnlyText = [
       /async getAccessiblePeopleIdentityPage[\s\S]*?async getAccessiblePeopleCounts/.exec(sqlText)?.[0] ?? '',
+      /async getAccessiblePeopleStatistics[\s\S]*?async getAccessiblePeopleIdentityPage/.exec(sqlText)?.[0] ?? '',
+      /async getAccessiblePeopleFaceStatistics[\s\S]*?async getAccessiblePersonByProfileId/.exec(sqlText)?.[0] ?? '',
+      /async getAccessiblePersonStatistics[\s\S]*?async getAccessibleProfileIdentityId/.exec(sqlText)?.[0] ?? '',
       /async hydrateAccessiblePeople[\s\S]*?private mapAccessiblePerson/.exec(sqlText)?.[0] ?? '',
       /async getAccessiblePersonFilterSuggestions[\s\S]*?async getAccessiblePeople/.exec(sqlText)?.[0] ?? '',
       /async searchAccessiblePeople[\s\S]*?async getAccessiblePersonFilterSuggestions/.exec(sqlText)?.[0] ?? '',
@@ -86,9 +102,24 @@ describe('Face identity query shape', () => {
     ].join('\n');
 
     expect(identityOnlyText).toContain('face_identity_face');
+    expect(identityOnlyText).toContain('getAccessiblePeopleFaceStatistics');
     expect(identityOnlyText).not.toContain('<=>');
     expect(identityOnlyText).not.toContain('face_search.embedding');
     expect(identityOnlyText).not.toContain('clip_index');
+  });
+
+  it('does not run vector similarity for person detail statistics generated SQL', () => {
+    const personStatisticsSql = collectGeneratedFaceIdentitySqlMethod(
+      'FaceIdentityRepository.getAccessiblePersonStatistics',
+    );
+
+    expect(personStatisticsSql).toContain('FaceIdentityRepository.getAccessiblePersonStatistics');
+    expect(personStatisticsSql).toContain('face_identity_face');
+    expect(personStatisticsSql).not.toContain('<=>');
+    expect(personStatisticsSql).not.toContain('face_search.embedding');
+    expect(personStatisticsSql).not.toContain('clip_index');
+    expect(personStatisticsSql).not.toMatch(/\bcosine\b/i);
+    expect(personStatisticsSql).not.toMatch(/\bembedding\b/i);
   });
 
   it('keeps pagination in the identity page query instead of hydrating all identities first', () => {

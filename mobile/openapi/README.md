@@ -201,6 +201,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**deletePerson**](doc//PeopleApi.md#deleteperson) | **DELETE** /people/{id} | Delete person
 *PeopleApi* | [**detachScopedPerson**](doc//PeopleApi.md#detachscopedperson) | **POST** /people/detach-profile | Detach a scoped person profile
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | Get all people
+*PeopleApi* | [**getPeopleFaceStatistics**](doc//PeopleApi.md#getpeoplefacestatistics) | **GET** /people/face-statistics | Get people face statistics
+*PeopleApi* | [**getPeopleStatistics**](doc//PeopleApi.md#getpeoplestatistics) | **GET** /people/statistics | Get people statistics
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | Get a person
 *PeopleApi* | [**getPersonFaceThumbnail**](doc//PeopleApi.md#getpersonfacethumbnail) | **GET** /people/{id}/faces/{faceId}/thumbnail | Get person face thumbnail
 *PeopleApi* | [**getPersonFaces**](doc//PeopleApi.md#getpersonfaces) | **GET** /people/{id}/faces | Get person faces
@@ -276,11 +278,13 @@ Class | Method | HTTP request | Description
 *SharedSpacesApi* | [**getSpaceActivities**](doc//SharedSpacesApi.md#getspaceactivities) | **GET** /shared-spaces/{id}/activities | Get space activity feed
 *SharedSpacesApi* | [**getSpaceMapMarkers**](doc//SharedSpacesApi.md#getspacemapmarkers) | **GET** /shared-spaces/{id}/map-markers | Get map markers for a shared space
 *SharedSpacesApi* | [**getSpacePeople**](doc//SharedSpacesApi.md#getspacepeople) | **GET** /shared-spaces/{id}/people | Get people in a shared space
+*SharedSpacesApi* | [**getSpacePeopleFaceStatistics**](doc//SharedSpacesApi.md#getspacepeoplefacestatistics) | **GET** /shared-spaces/{id}/people/face-statistics | Get people face statistics in a shared space
 *SharedSpacesApi* | [**getSpacePeopleStatistics**](doc//SharedSpacesApi.md#getspacepeoplestatistics) | **GET** /shared-spaces/{id}/people/statistics | Get people statistics in a shared space
 *SharedSpacesApi* | [**getSpacePerson**](doc//SharedSpacesApi.md#getspaceperson) | **GET** /shared-spaces/{id}/people/{personId} | Get a person in a shared space
 *SharedSpacesApi* | [**getSpacePersonAssets**](doc//SharedSpacesApi.md#getspacepersonassets) | **GET** /shared-spaces/{id}/people/{personId}/assets | Get assets for a person in a shared space
 *SharedSpacesApi* | [**getSpacePersonFaceThumbnail**](doc//SharedSpacesApi.md#getspacepersonfacethumbnail) | **GET** /shared-spaces/{id}/people/{personId}/faces/{faceId}/thumbnail | Get space person face thumbnail
 *SharedSpacesApi* | [**getSpacePersonFaces**](doc//SharedSpacesApi.md#getspacepersonfaces) | **GET** /shared-spaces/{id}/people/{personId}/faces | Get space person faces
+*SharedSpacesApi* | [**getSpacePersonStatistics**](doc//SharedSpacesApi.md#getspacepersonstatistics) | **GET** /shared-spaces/{id}/people/{personId}/statistics | Get space person statistics
 *SharedSpacesApi* | [**getSpacePersonThumbnail**](doc//SharedSpacesApi.md#getspacepersonthumbnail) | **GET** /shared-spaces/{id}/people/{personId}/thumbnail | Get a space person thumbnail
 *SharedSpacesApi* | [**linkLibrary**](doc//SharedSpacesApi.md#linklibrary) | **PUT** /shared-spaces/{id}/libraries | Link a library to a shared space
 *SharedSpacesApi* | [**markSpaceViewed**](doc//SharedSpacesApi.md#markspaceviewed) | **PATCH** /shared-spaces/{id}/view | Mark space as viewed
@@ -536,8 +540,10 @@ Class | Method | HTTP request | Description
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [PartnerUpdateDto](doc//PartnerUpdateDto.md)
+ - [PeopleFaceStatisticsResponseDto](doc//PeopleFaceStatisticsResponseDto.md)
  - [PeopleResponse](doc//PeopleResponse.md)
  - [PeopleResponseDto](doc//PeopleResponseDto.md)
+ - [PeopleStatisticsResponseDto](doc//PeopleStatisticsResponseDto.md)
  - [PeopleUpdate](doc//PeopleUpdate.md)
  - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)

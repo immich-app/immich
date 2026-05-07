@@ -324,6 +324,220 @@ class PeopleApi {
     return null;
   }
 
+  /// Get people face statistics
+  ///
+  /// Retrieve detailed detected-face counts for the authenticated user people scope.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] closestAssetId:
+  ///   Closest asset ID for similarity search
+  ///
+  /// * [String] closestPersonId:
+  ///   Closest person ID for similarity search
+  ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  ///
+  /// * [bool] withHidden:
+  ///   Include hidden people
+  ///
+  /// * [bool] withSharedSpaces:
+  ///   Include identity-grouped people from timeline-enabled shared spaces
+  Future<Response> getPeopleFaceStatisticsWithHttpInfo({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, bool? withSharedSpaces, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/people/face-statistics';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (closestAssetId != null) {
+      queryParams.addAll(_queryParams('', 'closestAssetId', closestAssetId));
+    }
+    if (closestPersonId != null) {
+      queryParams.addAll(_queryParams('', 'closestPersonId', closestPersonId));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
+    if (withSharedSpaces != null) {
+      queryParams.addAll(_queryParams('', 'withSharedSpaces', withSharedSpaces));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get people face statistics
+  ///
+  /// Retrieve detailed detected-face counts for the authenticated user people scope.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] closestAssetId:
+  ///   Closest asset ID for similarity search
+  ///
+  /// * [String] closestPersonId:
+  ///   Closest person ID for similarity search
+  ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  ///
+  /// * [bool] withHidden:
+  ///   Include hidden people
+  ///
+  /// * [bool] withSharedSpaces:
+  ///   Include identity-grouped people from timeline-enabled shared spaces
+  Future<PeopleFaceStatisticsResponseDto?> getPeopleFaceStatistics({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, bool? withSharedSpaces, }) async {
+    final response = await getPeopleFaceStatisticsWithHttpInfo( closestAssetId: closestAssetId, closestPersonId: closestPersonId, page: page, size: size, withHidden: withHidden, withSharedSpaces: withSharedSpaces, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PeopleFaceStatisticsResponseDto',) as PeopleFaceStatisticsResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Get people statistics
+  ///
+  /// Retrieve people and detected-face counts for the authenticated user people scope.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] closestAssetId:
+  ///   Closest asset ID for similarity search
+  ///
+  /// * [String] closestPersonId:
+  ///   Closest person ID for similarity search
+  ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  ///
+  /// * [bool] withHidden:
+  ///   Include hidden people
+  ///
+  /// * [bool] withSharedSpaces:
+  ///   Include identity-grouped people from timeline-enabled shared spaces
+  Future<Response> getPeopleStatisticsWithHttpInfo({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, bool? withSharedSpaces, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/people/statistics';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (closestAssetId != null) {
+      queryParams.addAll(_queryParams('', 'closestAssetId', closestAssetId));
+    }
+    if (closestPersonId != null) {
+      queryParams.addAll(_queryParams('', 'closestPersonId', closestPersonId));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (withHidden != null) {
+      queryParams.addAll(_queryParams('', 'withHidden', withHidden));
+    }
+    if (withSharedSpaces != null) {
+      queryParams.addAll(_queryParams('', 'withSharedSpaces', withSharedSpaces));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get people statistics
+  ///
+  /// Retrieve people and detected-face counts for the authenticated user people scope.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] closestAssetId:
+  ///   Closest asset ID for similarity search
+  ///
+  /// * [String] closestPersonId:
+  ///   Closest person ID for similarity search
+  ///
+  /// * [num] page:
+  ///   Page number for pagination
+  ///
+  /// * [num] size:
+  ///   Number of items per page
+  ///
+  /// * [bool] withHidden:
+  ///   Include hidden people
+  ///
+  /// * [bool] withSharedSpaces:
+  ///   Include identity-grouped people from timeline-enabled shared spaces
+  Future<PeopleStatisticsResponseDto?> getPeopleStatistics({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, bool? withSharedSpaces, }) async {
+    final response = await getPeopleStatisticsWithHttpInfo( closestAssetId: closestAssetId, closestPersonId: closestPersonId, page: page, size: size, withHidden: withHidden, withSharedSpaces: withSharedSpaces, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PeopleStatisticsResponseDto',) as PeopleStatisticsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Get a person
   ///
   /// Retrieve a person by id.

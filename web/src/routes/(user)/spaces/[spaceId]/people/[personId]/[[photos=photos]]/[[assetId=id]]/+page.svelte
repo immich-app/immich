@@ -43,6 +43,7 @@
     updateSpacePerson,
     type PersonFaceResponseDto,
     type PersonResponseDto,
+    type PersonStatisticsResponseDto,
     type ScopedPersonProfileRefDto,
     type SharedSpaceMemberResponseDto,
     type SharedSpacePersonResponseDto,
@@ -77,6 +78,11 @@
   let personOverride = $state<SharedSpacePersonResponseDto>();
   let personOverrideKey = $state('');
   const person = $derived(personOverrideKey === routeStateKey && personOverride ? personOverride : data.person);
+  let statisticsOverride = $state<PersonStatisticsResponseDto>();
+  let statisticsOverrideKey = $state('');
+  const statistics = $derived(
+    statisticsOverrideKey === routeStateKey && statisticsOverride ? statisticsOverride : data.statistics,
+  );
   const previousRoute = $derived(data.previousRoute ?? `/spaces/${space.id}/people`);
   const previousRouteParams = $derived(data.previousRoute ? { previousRoute: data.previousRoute } : undefined);
   let isEditingName = $state(false);
@@ -112,6 +118,11 @@
   const setPerson = (updatedPerson: SharedSpacePersonResponseDto) => {
     personOverride = updatedPerson;
     personOverrideKey = routeStateKey;
+  };
+
+  const setStatistics = (updatedStatistics: PersonStatisticsResponseDto) => {
+    statisticsOverride = updatedStatistics;
+    statisticsOverrideKey = routeStateKey;
   };
 
   const setAction = (updatedAction: string | null) => {
@@ -306,8 +317,10 @@
   };
 
   const handleRemoveAssets = async (assetIds: string[]) => {
+    const removedAssetCount = new Set(assetIds).size;
     timelineManager.removeAssets(assetIds);
-    setPerson({ ...person, assetCount: Math.max(0, person.assetCount - assetIds.length) });
+    setPerson({ ...person, assetCount: Math.max(0, person.assetCount - removedAssetCount) });
+    setStatistics({ ...statistics, assets: Math.max(0, statistics.assets - removedAssetCount) });
     await invalidateAll();
   };
 
@@ -530,7 +543,10 @@
               <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
             {/if}
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              {$t('assets_count', { values: { count: person.assetCount } })}
+              {$t('assets_count', { values: { count: statistics.assets } })}
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              {$t('faces_count', { values: { count: statistics.faces } })}
             </p>
             {#if person.birthDate}
               <p class="text-sm text-gray-500 dark:text-gray-400">

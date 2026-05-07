@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetVisibility } from 'src/enum';
 import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -24,6 +24,255 @@ beforeAll(async () => {
 });
 
 describe(PersonRepository.name, () => {
+  describe('getPeopleOverviewStatistics', () => {
+    it('counts visible and hidden personal people and all detected timeline faces in owned assets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { asset: otherAsset } = await ctx.newAsset({ ownerId: otherUser.id, visibility: AssetVisibility.Timeline });
+      const { person: visiblePerson } = await ctx.newPerson({ ownerId: user.id, isHidden: false });
+      const { person: hiddenPerson } = await ctx.newPerson({ ownerId: user.id, isHidden: true });
+      const { person: otherPerson } = await ctx.newPerson({ ownerId: otherUser.id });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: visiblePerson.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: hiddenPerson.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+      await ctx.newAssetFace({ assetId: otherAsset.id, personId: otherPerson.id });
+
+      await expect(sut.getPeopleOverviewStatistics(user.id)).resolves.toEqual({
+        total: 2,
+        hidden: 1,
+        detectedFaceCount: 3,
+      });
+    });
+
+    it('returns zero visible people when all personal people are hidden', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { person } = await ctx.newPerson({ ownerId: user.id, isHidden: true });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      const result = await sut.getPeopleOverviewStatistics(user.id);
+
+      expect(result).toEqual({ total: 1, hidden: 1, detectedFaceCount: 1 });
+      expect(result.total - result.hidden).toBe(0);
+    });
+
+    it('excludes out-of-scope assets and non-visible or deleted faces from detectedFaceCount', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: validAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { person } = await ctx.newPerson({ ownerId: user.id, isHidden: false });
+
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id });
+
+      const { asset: deletedAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        deletedAt: new Date(),
+      });
+      const { asset: offlineAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        isOffline: true,
+      });
+      const { asset: lockedAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      const { asset: archiveAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive });
+
+      await ctx.newAssetFace({ assetId: deletedAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: offlineAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: lockedAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: archiveAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id, isVisible: false });
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id, deletedAt: new Date() });
+
+      await expect(sut.getPeopleOverviewStatistics(user.id)).resolves.toEqual({
+        total: 1,
+        hidden: 0,
+        detectedFaceCount: 1,
+      });
+    });
+
+    it('excludes people whose only faces are on offline or non-owned assets from personal totals', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset: validAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { asset: offlineAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        isOffline: true,
+      });
+      const { asset: otherOwnerAsset } = await ctx.newAsset({
+        ownerId: otherUser.id,
+        visibility: AssetVisibility.Timeline,
+      });
+      const { person: validPerson } = await ctx.newPerson({ ownerId: user.id });
+      const { person: offlineOnlyPerson } = await ctx.newPerson({ ownerId: user.id, isHidden: true });
+      const { person: otherOwnerAssetOnlyPerson } = await ctx.newPerson({ ownerId: user.id });
+
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: validPerson.id });
+      await ctx.newAssetFace({ assetId: offlineAsset.id, personId: offlineOnlyPerson.id });
+      await ctx.newAssetFace({ assetId: otherOwnerAsset.id, personId: otherOwnerAssetOnlyPerson.id });
+
+      await expect(sut.getPeopleOverviewStatistics(user.id)).resolves.toEqual({
+        total: 1,
+        hidden: 0,
+        detectedFaceCount: 1,
+      });
+    });
+
+    it('returns zeroes for an empty personal library', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      await expect(sut.getPeopleOverviewStatistics(user.id)).resolves.toEqual({
+        total: 0,
+        hidden: 0,
+        detectedFaceCount: 0,
+      });
+    });
+  });
+
+  describe('getPeopleFaceStatistics', () => {
+    it('splits owned timeline faces into visible, hidden, and unassigned buckets', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { person: visiblePerson } = await ctx.newPerson({ ownerId: user.id, isHidden: false });
+      const { person: hiddenPerson } = await ctx.newPerson({ ownerId: user.id, isHidden: true });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: visiblePerson.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: visiblePerson.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: hiddenPerson.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+
+      const details = await sut.getPeopleFaceStatistics(user.id);
+      const overview = await sut.getPeopleOverviewStatistics(user.id);
+
+      expect(details).toEqual({
+        detectedFaceCount: 5,
+        assignedVisibleFaceCount: 2,
+        assignedHiddenFaceCount: 1,
+        unassignedFaceCount: 2,
+      });
+      expect(details.detectedFaceCount).toBe(overview.detectedFaceCount);
+      expect(details.detectedFaceCount).toBe(
+        details.assignedVisibleFaceCount + details.assignedHiddenFaceCount + details.unassignedFaceCount,
+      );
+    });
+
+    it('returns all personal faces as unassigned when no eligible people are assigned and is deterministic', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+
+      await expect(sut.getPeopleOverviewStatistics(user.id)).resolves.toEqual({
+        total: 0,
+        hidden: 0,
+        detectedFaceCount: 2,
+      });
+
+      const first = await sut.getPeopleFaceStatistics(user.id);
+      const second = await sut.getPeopleFaceStatistics(user.id);
+
+      expect(first).toEqual({
+        detectedFaceCount: 2,
+        assignedVisibleFaceCount: 0,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 2,
+      });
+      expect(second).toEqual(first);
+    });
+
+    it('returns zeroes for an empty personal library', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
+        detectedFaceCount: 0,
+        assignedVisibleFaceCount: 0,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 0,
+      });
+    });
+
+    it('excludes deleted assets, offline assets, locked assets, archived assets, non-visible faces, and deleted faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, isHidden: false });
+      const { asset: validAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { asset: deletedAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        deletedAt: new Date(),
+      });
+      const { asset: offlineAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        visibility: AssetVisibility.Timeline,
+        isOffline: true,
+      });
+      const { asset: lockedAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      const { asset: archivedAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive });
+
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: deletedAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: offlineAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: lockedAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: archivedAsset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id, isVisible: false });
+      await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id, deletedAt: new Date() });
+
+      await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
+        detectedFaceCount: 1,
+        assignedVisibleFaceCount: 1,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 0,
+      });
+    });
+
+    it("treats a face assigned to another user's person on the current user's owned asset as unassigned", async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { person: otherPerson } = await ctx.newPerson({ ownerId: otherUser.id, isHidden: false });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: otherPerson.id });
+
+      await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
+        detectedFaceCount: 1,
+        assignedVisibleFaceCount: 0,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 1,
+      });
+    });
+
+    it('counts a current-user unnamed person below the minimum face threshold as unassigned', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: '', isHidden: false });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      await expect(sut.getPeopleFaceStatistics(user.id, { minimumFaceCount: 3 })).resolves.toEqual({
+        detectedFaceCount: 2,
+        assignedVisibleFaceCount: 0,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 2,
+      });
+    });
+  });
+
   describe('getBirthdaysForDay', () => {
     it('should only return visible named people whose birthday matches the target month and day', async () => {
       const { ctx, sut } = setup();
@@ -138,6 +387,29 @@ describe(PersonRepository.name, () => {
           previewPath: 'preview_unedited.jpg',
         }),
       );
+    });
+  });
+
+  describe('getStatistics', () => {
+    it('counts distinct visible timeline assets and visible faces for a personal person', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice' });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { assetFace: firstFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id, isVisible: false });
+
+      await expect(sut.getStatistics(person.id)).resolves.toEqual({ assets: 1, faces: 2 });
+      expect(firstFace.personId).toBe(person.id);
+    });
+
+    it('returns zero asset and face counts for a personal person with no accessible faces', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Empty' });
+
+      await expect(sut.getStatistics(person.id)).resolves.toEqual({ assets: 0, faces: 0 });
     });
   });
 

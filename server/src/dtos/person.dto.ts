@@ -236,7 +236,8 @@ const AssetFaceDeleteSchema = z
 
 const PersonStatisticsResponseSchema = z
   .object({
-    assets: z.int().describe('Number of assets'),
+    assets: z.int().min(0).describe('Number of assets'),
+    faces: z.int().min(0).describe('Number of faces assigned to this person in the current accessible scope'),
   })
   .meta({ id: 'PersonStatisticsResponseDto' });
 
@@ -245,6 +246,27 @@ export class FaceDto extends createZodDto(FaceSchema) {}
 export class AssetFaceCreateDto extends createZodDto(AssetFaceCreateSchema) {}
 export class AssetFaceDeleteDto extends createZodDto(AssetFaceDeleteSchema) {}
 export class PersonStatisticsResponseDto extends createZodDto(PersonStatisticsResponseSchema) {}
+
+const PeopleStatisticsResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of people'),
+    hidden: z.int().min(0).describe('Number of hidden people'),
+    detectedFaceCount: z.int().min(0).describe('Number of detected faces in the accessible people scope'),
+  })
+  .meta({ id: 'PeopleStatisticsResponseDto' });
+
+export class PeopleStatisticsResponseDto extends createZodDto(PeopleStatisticsResponseSchema) {}
+
+const PeopleFaceStatisticsResponseSchema = z
+  .object({
+    detectedFaceCount: z.int().min(0).describe('Number of detected faces in the accessible people scope'),
+    assignedVisibleFaceCount: z.int().min(0).describe('Number of detected faces assigned to visible people'),
+    assignedHiddenFaceCount: z.int().min(0).describe('Number of detected faces assigned to hidden people'),
+    unassignedFaceCount: z.int().min(0).describe('Number of detected faces not assigned to people in this scope'),
+  })
+  .meta({ id: 'PeopleFaceStatisticsResponseDto' });
+
+export class PeopleFaceStatisticsResponseDto extends createZodDto(PeopleFaceStatisticsResponseSchema) {}
 
 const PeopleResponseSchema = z
   .object({

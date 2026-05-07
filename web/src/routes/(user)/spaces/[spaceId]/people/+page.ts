@@ -8,7 +8,7 @@ export const load = (async ({ url, params }) => {
     getSpace({ id: params.spaceId }),
     getMembers({ id: params.spaceId }),
     getSpacePeople({ id: params.spaceId, limit: 100 }),
-    getSpacePeopleStatistics({ id: params.spaceId }),
+    getSpacePeopleStatistics({ id: params.spaceId }).catch(() => null),
   ]);
 
   return {

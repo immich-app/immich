@@ -329,16 +329,18 @@ where
 
 -- PersonRepository.getStatistics
 select
-  count(distinct ("asset"."id")) as "count"
+  count(distinct ("asset"."id")) as "assets",
+  count(distinct ("asset_face"."id")) as "faces"
 from
   "asset_face"
-  left join "asset" on "asset"."id" = "asset_face"."assetId"
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
 where
-  "asset_face"."deletedAt" is null
+  "asset"."visibility" = 'timeline'
+  and "asset"."deletedAt" is null
+  and "asset"."isOffline" = $1
+  and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  and "asset_face"."personId" = $1
+  and "asset_face"."personId" = $2
 
 -- PersonRepository.getNumberOfPeople
 select
@@ -372,6 +374,100 @@ where
       )
   )
   and "person"."ownerId" = $3
+
+-- PersonRepository.getPeopleOverviewStatistics
+select
+  count(distinct ("person"."id")) as "total",
+  count(distinct ("person"."id")) filter (
+    where
+      "person"."isHidden" = $1
+  ) as "hidden"
+from
+  "person"
+  inner join "asset_face" on "asset_face"."personId" = "person"."id"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+where
+  "person"."ownerId" = $2
+  and "asset"."ownerId" = $3
+  and "asset"."deletedAt" is null
+  and "asset"."isOffline" = $4
+  and "asset"."visibility" = 'timeline'
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+select
+  count(distinct ("asset_face"."id")) as "detectedFaceCount"
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+where
+  "asset"."ownerId" = $1
+  and "asset"."deletedAt" is null
+  and "asset"."isOffline" = $2
+  and "asset"."visibility" = 'timeline'
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
+
+-- PersonRepository.getPeopleFaceStatistics
+WITH
+  "eligible_faces" AS (
+    SELECT
+      "asset_face"."id" AS "assetFaceId",
+      "asset_face"."personId"
+    FROM
+      "asset_face"
+      INNER JOIN "asset" ON "asset"."id" = "asset_face"."assetId"
+    WHERE
+      "asset"."ownerId" = $1
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" = $2
+      AND "asset_face"."deletedAt" IS NULL
+      AND "asset_face"."isVisible" = true
+  ),
+  "person_face_counts" AS (
+    SELECT
+      "personId",
+      COUNT(DISTINCT "assetFaceId")::int AS "assetCount"
+    FROM
+      "eligible_faces"
+    WHERE
+      "personId" IS NOT NULL
+    GROUP BY
+      "personId"
+  ),
+  "detected_faces" AS (
+    SELECT
+      "eligible_faces"."assetFaceId",
+      CASE
+        WHEN "person"."id" IS NOT NULL
+        AND (
+          "person"."name" != ''
+          OR "person_face_counts"."assetCount" >= $3
+        ) THEN "person"."isHidden"
+        ELSE NULL
+      END AS "isHidden"
+    FROM
+      "eligible_faces"
+      LEFT JOIN "person" ON "person"."id" = "eligible_faces"."personId"
+      AND "person"."ownerId" = $4
+      LEFT JOIN "person_face_counts" ON "person_face_counts"."personId" = "person"."id"
+  )
+SELECT
+  COUNT(DISTINCT "assetFaceId")::int AS "detectedFaceCount",
+  COUNT(DISTINCT "assetFaceId") FILTER (
+    WHERE
+      "isHidden" = false
+  )::int AS "assignedVisibleFaceCount",
+  COUNT(DISTINCT "assetFaceId") FILTER (
+    WHERE
+      "isHidden" = true
+  )::int AS "assignedHiddenFaceCount",
+  COUNT(DISTINCT "assetFaceId") FILTER (
+    WHERE
+      "isHidden" IS NULL
+  )::int AS "unassignedFaceCount"
+FROM
+  "detected_faces"
 
 -- PersonRepository.refreshFaces
 with

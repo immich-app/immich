@@ -20,6 +20,7 @@
     use?: ActionArray;
     actions?: Array<HeaderButtonActionItem | MenuItemType>;
     leading?: Snippet;
+    descriptionTrailing?: Snippet;
     sidebar?: Snippet;
     buttons?: Snippet;
     children?: Snippet;
@@ -33,6 +34,7 @@
     use = [],
     actions = [],
     leading,
+    descriptionTrailing,
     sidebar,
     buttons,
     children,
@@ -74,13 +76,25 @@
 
     {#if !hideNavbar && (title || buttons)}
       <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
-        <div class="flex gap-2 items-center">
+        <div class="flex min-w-0 flex-1 gap-2 items-center overflow-hidden" data-testid="page-header-title-row">
           {@render leading?.()}
           {#if title}
-            <div class="outline-none pe-8" tabindex="-1" id={headerId} data-testid="page-header">{title}</div>
+            <div class="min-w-0 truncate outline-none pe-8" tabindex="-1" id={headerId} data-testid="page-header">
+              {title}
+            </div>
           {/if}
           {#if description}
-            <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>
+            <p
+              class="shrink-0 whitespace-nowrap text-sm text-gray-400 dark:text-gray-600"
+              data-testid="page-header-description"
+            >
+              {description}
+            </p>
+          {/if}
+          {#if descriptionTrailing}
+            <div class="shrink-0" data-testid="page-header-description-trailing">
+              {@render descriptionTrailing()}
+            </div>
           {/if}
         </div>
 

@@ -6,7 +6,12 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import type { FilteredMapMarkerDto } from 'src/dtos/gallery-map.dto';
 import type { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { mapNotification } from 'src/dtos/notification.dto';
-import { PersonFacePageQueryDto, PersonFacePageResponseDto } from 'src/dtos/person.dto';
+import {
+  PeopleFaceStatisticsResponseDto,
+  PersonFacePageQueryDto,
+  PersonFacePageResponseDto,
+  PersonStatisticsResponseDto,
+} from 'src/dtos/person.dto';
 import {
   SharedSpacePeopleStatisticsResponseDto,
   SharedSpacePersonAliasDto,
@@ -824,10 +829,36 @@ export class SharedSpaceService extends BaseService {
 
     const space = await this.sharedSpaceRepository.getById(spaceId);
     if (!space?.faceRecognitionEnabled) {
-      return { total: 0, hidden: 0 };
+      return { total: 0, hidden: 0, detectedFaceCount: 0 };
     }
 
     return this.sharedSpaceRepository.countPersonsBySpaceId(spaceId, {
+      petsEnabled: space.petsEnabled,
+      named: query?.named,
+      name: query?.name,
+      takenAfter: query?.takenAfter,
+      takenBefore: query?.takenBefore,
+    });
+  }
+
+  async getSpacePeopleFaceStatistics(
+    auth: AuthDto,
+    spaceId: string,
+    query?: SpacePeopleQueryDto,
+  ): Promise<PeopleFaceStatisticsResponseDto> {
+    await this.requireMembership(auth, spaceId);
+
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space?.faceRecognitionEnabled) {
+      return {
+        detectedFaceCount: 0,
+        assignedVisibleFaceCount: 0,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 0,
+      };
+    }
+
+    return this.sharedSpaceRepository.getPeopleFaceStatisticsBySpaceId(spaceId, {
       petsEnabled: space.petsEnabled,
       named: query?.named,
       name: query?.name,
@@ -936,6 +967,26 @@ export class SharedSpaceService extends BaseService {
     const alias = await this.sharedSpaceRepository.getAlias(personId, auth.user.id);
 
     return this.mapSpacePerson(person, alias?.alias ?? null);
+  }
+
+  async getSpacePersonStatistics(
+    auth: AuthDto,
+    spaceId: string,
+    personId: string,
+  ): Promise<PersonStatisticsResponseDto> {
+    await this.requireMembership(auth, spaceId);
+
+    const person = await this.sharedSpaceRepository.getPersonById(personId);
+    if (!person || person.spaceId !== spaceId) {
+      throw new BadRequestException('Person not found');
+    }
+
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space?.petsEnabled && person.type === 'pet') {
+      throw new BadRequestException('Person not found');
+    }
+
+    return this.sharedSpaceRepository.getSpacePersonStatistics(spaceId, personId);
   }
 
   async getSpacePersonThumbnail(auth: AuthDto, spaceId: string, personId: string): Promise<ImmichMediaResponse> {

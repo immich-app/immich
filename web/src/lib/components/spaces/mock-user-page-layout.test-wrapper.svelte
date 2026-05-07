@@ -6,11 +6,12 @@
     title?: string;
     description?: string;
     leading?: Snippet;
+    descriptionTrailing?: Snippet;
     buttons?: Snippet;
     children?: Snippet;
   }
 
-  let { title, description, leading, buttons, children }: Props = $props();
+  let { title, description, leading, descriptionTrailing, buttons, children }: Props = $props();
 </script>
 
 <TooltipProvider>
@@ -18,6 +19,11 @@
     {#if leading}
       <div data-testid="layout-leading">
         {@render leading()}
+      </div>
+    {/if}
+    {#if descriptionTrailing}
+      <div data-testid="layout-description-trailing">
+        {@render descriptionTrailing()}
       </div>
     {/if}
     {#if buttons}

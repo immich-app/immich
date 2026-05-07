@@ -18,7 +18,12 @@ import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto';
-import { PersonFacePageQueryDto, PersonFacePageResponseDto } from 'src/dtos/person.dto';
+import {
+  PeopleFaceStatisticsResponseDto,
+  PersonFacePageQueryDto,
+  PersonFacePageResponseDto,
+  PersonStatisticsResponseDto,
+} from 'src/dtos/person.dto';
 import {
   SharedSpacePeopleStatisticsResponseDto,
   SharedSpacePersonAliasDto,
@@ -329,6 +334,21 @@ export class SharedSpaceController {
     return this.service.getSpacePeopleStatistics(auth, id, query);
   }
 
+  @Get(':id/people/face-statistics')
+  @Authenticated({ permission: Permission.SharedSpaceRead })
+  @Endpoint({
+    summary: 'Get people face statistics in a shared space',
+    description: 'Retrieve detailed detected-face counts for a shared space.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  getSpacePeopleFaceStatistics(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() query: SpacePeopleQueryDto,
+  ): Promise<PeopleFaceStatisticsResponseDto> {
+    return this.service.getSpacePeopleFaceStatistics(auth, id, query);
+  }
+
   @Post(':id/people/deduplicate')
   @Authenticated({ permission: Permission.SharedSpaceUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -339,6 +359,21 @@ export class SharedSpaceController {
   })
   deduplicateSpacePeople(@Auth() auth: AuthDto, @Param('id') id: string): Promise<void> {
     return this.service.deduplicateSpacePeople(auth, id);
+  }
+
+  @Get(':id/people/:personId/statistics')
+  @Authenticated({ permission: Permission.SharedSpaceRead })
+  @Endpoint({
+    summary: 'Get space person statistics',
+    description: 'Retrieve asset and face statistics for a person in a shared space.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  getSpacePersonStatistics(
+    @Auth() auth: AuthDto,
+    @Param('id') id: string,
+    @Param('personId') personId: string,
+  ): Promise<PersonStatisticsResponseDto> {
+    return this.service.getSpacePersonStatistics(auth, id, personId);
   }
 
   @Get(':id/people/:personId/faces')

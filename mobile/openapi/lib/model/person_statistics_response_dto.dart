@@ -14,29 +14,39 @@ class PersonStatisticsResponseDto {
   /// Returns a new [PersonStatisticsResponseDto] instance.
   PersonStatisticsResponseDto({
     required this.assets,
+    required this.faces,
   });
 
   /// Number of assets
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int assets;
 
+  /// Number of faces assigned to this person in the current accessible scope
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int faces;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonStatisticsResponseDto &&
-    other.assets == assets;
+    other.assets == assets &&
+    other.faces == faces;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assets.hashCode);
+    (assets.hashCode) +
+    (faces.hashCode);
 
   @override
-  String toString() => 'PersonStatisticsResponseDto[assets=$assets]';
+  String toString() => 'PersonStatisticsResponseDto[assets=$assets, faces=$faces]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assets'] = this.assets;
+      json[r'faces'] = this.faces;
     return json;
   }
 
@@ -50,6 +60,7 @@ class PersonStatisticsResponseDto {
 
       return PersonStatisticsResponseDto(
         assets: mapValueOfType<int>(json, r'assets')!,
+        faces: mapValueOfType<int>(json, r'faces')!,
       );
     }
     return null;
@@ -98,6 +109,7 @@ class PersonStatisticsResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assets',
+    'faces',
   };
 }
 

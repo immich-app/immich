@@ -13,9 +13,16 @@ part of openapi.api;
 class SharedSpacePeopleStatisticsResponseDto {
   /// Returns a new [SharedSpacePeopleStatisticsResponseDto] instance.
   SharedSpacePeopleStatisticsResponseDto({
+    required this.detectedFaceCount,
     required this.hidden,
     required this.total,
   });
+
+  /// Number of detected faces in the shared-space people scope
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int detectedFaceCount;
 
   /// Number of hidden people
   ///
@@ -31,20 +38,23 @@ class SharedSpacePeopleStatisticsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedSpacePeopleStatisticsResponseDto &&
+    other.detectedFaceCount == detectedFaceCount &&
     other.hidden == hidden &&
     other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (detectedFaceCount.hashCode) +
     (hidden.hashCode) +
     (total.hashCode);
 
   @override
-  String toString() => 'SharedSpacePeopleStatisticsResponseDto[hidden=$hidden, total=$total]';
+  String toString() => 'SharedSpacePeopleStatisticsResponseDto[detectedFaceCount=$detectedFaceCount, hidden=$hidden, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'detectedFaceCount'] = this.detectedFaceCount;
       json[r'hidden'] = this.hidden;
       json[r'total'] = this.total;
     return json;
@@ -59,6 +69,7 @@ class SharedSpacePeopleStatisticsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SharedSpacePeopleStatisticsResponseDto(
+        detectedFaceCount: mapValueOfType<int>(json, r'detectedFaceCount')!,
         hidden: mapValueOfType<int>(json, r'hidden')!,
         total: mapValueOfType<int>(json, r'total')!,
       );
@@ -108,6 +119,7 @@ class SharedSpacePeopleStatisticsResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'detectedFaceCount',
     'hidden',
     'total',
   };

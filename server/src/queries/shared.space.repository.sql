@@ -449,20 +449,242 @@ limit
   $3
 
 -- SharedSpaceRepository.countPersonsBySpaceId
-select
-  coalesce(count(*), 0) as "total",
-  coalesce(
-    count(*) filter (
-      where
-        "isHidden" = $1
-    ),
-    0
-  ) as "hidden"
-from
-  "shared_space_person"
-where
-  "shared_space_person"."spaceId" = $2
-  and "shared_space_person"."name" ILIKE $3 ESCAPE '\'
+WITH
+  "asset_scope" AS (
+    SELECT
+      "asset"."id" AS "assetId"
+    FROM
+      "shared_space_asset"
+      INNER JOIN "asset" ON "asset"."id" = "shared_space_asset"."assetId"
+    WHERE
+      "shared_space_asset"."spaceId" = $1
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" IN ($2, $3)
+    UNION
+    SELECT
+      "asset"."id" AS "assetId"
+    FROM
+      "shared_space_library"
+      INNER JOIN "asset" ON "asset"."libraryId" = "shared_space_library"."libraryId"
+    WHERE
+      "shared_space_library"."spaceId" = $4
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" IN ($5, $6)
+  ),
+  "person_rows" AS (
+    SELECT
+      COALESCE(
+        "shared_space_person"."identityId",
+        "shared_space_person"."id"
+      ) AS "personKey",
+      "shared_space_person"."isHidden"
+    FROM
+      "shared_space_person"
+    WHERE
+      "shared_space_person"."spaceId" = $7
+      AND "shared_space_person"."name" ILIKE $8 ESCAPE '\'
+  ),
+  "person_keys" AS (
+    SELECT
+      "personKey",
+      BOOL_AND("isHidden") AS "allHidden"
+    FROM
+      "person_rows"
+    GROUP BY
+      "personKey"
+  ),
+  "person_counts" AS (
+    SELECT
+      COUNT(*)::int AS "total",
+      COUNT(*) FILTER (
+        WHERE
+          "allHidden"
+      )::int AS "hidden"
+    FROM
+      "person_keys"
+  ),
+  "face_counts" AS (
+    SELECT
+      COUNT(DISTINCT "asset_face"."id")::int AS "detectedFaceCount"
+    FROM
+      "asset_scope"
+      INNER JOIN "asset_face" ON "asset_face"."assetId" = "asset_scope"."assetId"
+    WHERE
+      "asset_face"."deletedAt" IS NULL
+      AND "asset_face"."isVisible" = true
+      AND EXISTS (
+        SELECT
+          1
+        FROM
+          "shared_space_person_face"
+          INNER JOIN "shared_space_person" ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+        WHERE
+          "shared_space_person_face"."assetFaceId" = "asset_face"."id"
+          AND "shared_space_person"."spaceId" = $9
+          AND "shared_space_person"."name" ILIKE $10 ESCAPE '\'
+      )
+  )
+SELECT
+  "person_counts"."total",
+  "person_counts"."hidden",
+  "face_counts"."detectedFaceCount"
+FROM
+  "person_counts",
+  "face_counts"
+
+-- SharedSpaceRepository.getPeopleFaceStatisticsBySpaceId
+WITH
+  "asset_scope" AS (
+    SELECT
+      "asset"."id" AS "assetId"
+    FROM
+      "shared_space_asset"
+      INNER JOIN "asset" ON "asset"."id" = "shared_space_asset"."assetId"
+    WHERE
+      "shared_space_asset"."spaceId" = $1
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" IN ($2, $3)
+    UNION
+    SELECT
+      "asset"."id" AS "assetId"
+    FROM
+      "shared_space_library"
+      INNER JOIN "asset" ON "asset"."libraryId" = "shared_space_library"."libraryId"
+    WHERE
+      "shared_space_library"."spaceId" = $4
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" IN ($5, $6)
+  ),
+  "detected_faces" AS (
+    SELECT DISTINCT
+      "asset_face"."id" AS "assetFaceId"
+    FROM
+      "asset_scope"
+      INNER JOIN "asset_face" ON "asset_face"."assetId" = "asset_scope"."assetId"
+    WHERE
+      "asset_face"."deletedAt" IS NULL
+      AND "asset_face"."isVisible" = true
+  ),
+  "face_assignments" AS (
+    SELECT
+      "detected_faces"."assetFaceId",
+      COALESCE(
+        BOOL_OR("shared_space_person"."type" = 'pet'),
+        false
+      ) AS "hasPetAssignment",
+      COALESCE(
+        BOOL_OR(
+          "shared_space_person"."id" IS NOT NULL
+          AND "shared_space_person"."name" ILIKE $7 ESCAPE '\'
+        ),
+        false
+      ) AS "hasMatchingAssignment",
+      COALESCE(
+        BOOL_OR(
+          "shared_space_person"."isHidden" = false
+          AND "shared_space_person"."name" ILIKE $8 ESCAPE '\'
+        ),
+        false
+      ) AS "hasMatchingVisibleAssignment",
+      COALESCE(
+        BOOL_OR(
+          "shared_space_person"."isHidden" = true
+          AND "shared_space_person"."name" ILIKE $9 ESCAPE '\'
+        ),
+        false
+      ) AS "hasMatchingHiddenAssignment"
+    FROM
+      "detected_faces"
+      LEFT JOIN "shared_space_person_face" ON "shared_space_person_face"."assetFaceId" = "detected_faces"."assetFaceId"
+      LEFT JOIN "shared_space_person" ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+      AND "shared_space_person"."spaceId" = $10
+    GROUP BY
+      "detected_faces"."assetFaceId"
+  ),
+  "included_faces" AS (
+    SELECT
+      *
+    FROM
+      "face_assignments"
+    WHERE
+      "hasMatchingAssignment" = true
+  )
+SELECT
+  COUNT(*)::int AS "detectedFaceCount",
+  COUNT(*) FILTER (
+    WHERE
+      "hasMatchingVisibleAssignment" = true
+  )::int AS "assignedVisibleFaceCount",
+  COUNT(*) FILTER (
+    WHERE
+      "hasMatchingVisibleAssignment" = false
+      AND "hasMatchingHiddenAssignment" = true
+  )::int AS "assignedHiddenFaceCount",
+  COUNT(*) FILTER (
+    WHERE
+      "hasMatchingVisibleAssignment" = false
+      AND "hasMatchingHiddenAssignment" = false
+  )::int AS "unassignedFaceCount"
+FROM
+  "included_faces"
+
+-- SharedSpaceRepository.getSpacePersonStatistics
+WITH
+  "target_person" AS (
+    SELECT
+      "id"
+    FROM
+      "shared_space_person"
+    WHERE
+      "id" = $1
+      AND "spaceId" = $2
+  ),
+  "asset_scope" AS (
+    SELECT
+      "asset"."id" AS "assetId"
+    FROM
+      "shared_space_asset"
+      INNER JOIN "asset" ON "asset"."id" = "shared_space_asset"."assetId"
+    WHERE
+      "shared_space_asset"."spaceId" = $3
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" IN ($4, $5)
+    UNION
+    SELECT
+      "asset"."id" AS "assetId"
+    FROM
+      "shared_space_library"
+      INNER JOIN "asset" ON "asset"."libraryId" = "shared_space_library"."libraryId"
+    WHERE
+      "shared_space_library"."spaceId" = $6
+      AND "asset"."deletedAt" IS NULL
+      AND "asset"."isOffline" = false
+      AND "asset"."visibility" IN ($7, $8)
+  ),
+  "selected_faces" AS (
+    SELECT DISTINCT
+      "asset_face"."id" AS "assetFaceId",
+      "asset_face"."assetId"
+    FROM
+      "target_person"
+      INNER JOIN "asset_scope" ON true
+      INNER JOIN "asset_face" ON "asset_face"."assetId" = "asset_scope"."assetId"
+      INNER JOIN "shared_space_person_face" ON "shared_space_person_face"."assetFaceId" = "asset_face"."id"
+      AND "shared_space_person_face"."personId" = "target_person"."id"
+    WHERE
+      "asset_face"."deletedAt" IS NULL
+      AND "asset_face"."isVisible" = true
+  )
+SELECT
+  COUNT(DISTINCT "assetId")::int AS "assets",
+  COUNT(DISTINCT "assetFaceId")::int AS "faces"
+FROM
+  "selected_faces"
 
 -- SharedSpaceRepository.getPersonById
 select

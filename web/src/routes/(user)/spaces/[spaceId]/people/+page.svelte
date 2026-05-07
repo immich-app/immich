@@ -4,6 +4,7 @@
   import { QueryParameter, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import PeopleFaceStatisticsInfo from '$lib/components/people/people-face-statistics-info.svelte';
   import PeopleManagementGrid from '$lib/components/people/people-management-grid.svelte';
   import PeopleMergeSelector from '$lib/components/people/people-merge-selector.svelte';
   import type { ManagedPerson } from '$lib/components/people/people-types';
@@ -16,8 +17,10 @@
   import { createUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import { formatPeopleHeaderDescription } from '$lib/utils/people-statistics';
   import {
     getSpacePeople,
+    getSpacePeopleFaceStatistics,
     getSpacePeopleStatistics,
     mergeSpacePeople,
     SharedSpaceRole,
@@ -54,18 +57,42 @@
   const space: SharedSpaceResponseDto = $derived(data.space);
   const members: SharedSpaceMemberResponseDto[] = $derived(data.members);
   let people = $state<SharedSpacePersonResponseDto[]>([]);
-  let peopleStatistics = $state<SharedSpacePeopleStatisticsResponseDto>({ total: 0, hidden: 0 });
+  let peopleStatistics = $state<SharedSpacePeopleStatisticsResponseDto | null>(null);
   let loadedSpaceId = $state('');
   let loading = $state(false);
   let hasMore = $state(false);
   let searchName = $state('');
+  let statisticsSearchName = $state<string | null>(null);
   let showLoadingSpinner = $state(false);
   let abortController: AbortController | null = null;
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   let selectHidden = $state(false);
   const visiblePeople = $derived(people.filter((p) => !p.isHidden));
-  const countVisiblePeople = $derived(peopleStatistics.total - peopleStatistics.hidden);
+  const countVisiblePeople = $derived(peopleStatistics ? peopleStatistics.total - peopleStatistics.hidden : 0);
+  const hasSearchablePeople = $derived(countVisiblePeople > 0 || visiblePeople.length > 0 || !!searchName.trim());
+  const activeSearchFilterName = $derived(
+    searchName.trim() || ($page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE) ?? '').trim(),
+  );
+  const activeStatisticsSearchName = $derived(activeSearchFilterName || null);
+  const headerDescription = $derived(
+    peopleStatistics
+      ? formatPeopleHeaderDescription({
+          visiblePeopleCount: countVisiblePeople,
+          detectedFaceCount: peopleStatistics.detectedFaceCount,
+          locale: $locale,
+          faceSingular: $t('face'),
+          facePlural: $t('faces'),
+          showZeroPeople: !!searchName.trim() || peopleStatistics.detectedFaceCount > 0,
+        })
+      : undefined,
+  );
+  let showFaceStatisticsInfo = $derived(
+    !!peopleStatistics && !!headerDescription && statisticsSearchName === activeStatisticsSearchName,
+  );
+  let spaceFaceStatisticsCacheKey = $derived(
+    `user:${authManager.user.id}:space:${space.id}:people:face-statistics:name=${encodeURIComponent(activeSearchFilterName)}`,
+  );
   let allPeople = $state<SharedSpacePersonResponseDto[]>([]);
   let mergingPerson = $state<SharedSpacePersonResponseDto>();
 
@@ -73,6 +100,7 @@
     if (data.space.id !== loadedSpaceId) {
       people = data.people;
       peopleStatistics = data.peopleStatistics;
+      statisticsSearchName = null;
       hasMore = data.people.length >= PAGE_SIZE;
       mergingPerson = undefined;
       loadedSpaceId = data.space.id;
@@ -82,6 +110,7 @@
   const currentMember = $derived(members.find((m) => m.userId === authManager.user.id));
   const isOwner = $derived(currentMember?.role === SharedSpaceRole.Owner);
   const isEditor = $derived(isOwner || currentMember?.role === SharedSpaceRole.Editor);
+  const canManageVisibility = $derived(isEditor && (peopleStatistics?.total ?? people.length) > 0);
 
   onMount(() => {
     const searchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
@@ -107,15 +136,24 @@
     faceCount: person.faceCount,
   });
 
-  const getPeopleQuery = (query: { limit?: number; offset?: number; withHidden?: boolean } = {}) => {
-    const name = searchName.trim();
-    return { id: space.id, ...(name ? { name } : {}), ...query };
+  const getPeopleQuery = (
+    query: { limit?: number; offset?: number; withHidden?: boolean } = {},
+    searchFilter = searchName,
+    spaceId = space.id,
+  ) => {
+    const name = searchFilter.trim();
+    return { id: spaceId, ...(name ? { name } : {}), ...query };
   };
 
-  const getStatisticsQuery = () => {
-    const name = searchName.trim();
-    return { id: space.id, ...(name ? { name } : {}) };
+  const getStatisticsQuery = (searchFilter = searchName, spaceId = space.id) => {
+    const name = searchFilter.trim();
+    return { id: spaceId, ...(name ? { name } : {}) };
   };
+
+  const statisticsScopeMatches = (spaceId: string, searchFilter: string) =>
+    space.id === spaceId && activeStatisticsSearchName === (searchFilter.trim() || null);
+
+  const loadSpaceFaceStatistics = () => getSpacePeopleFaceStatistics(getStatisticsQuery(statisticsSearchName ?? ''));
 
   const cancelSearchRequest = () => {
     abortController?.abort();
@@ -144,16 +182,31 @@
   }
 
   async function refreshPeople() {
+    const requestSpaceId = space.id;
+    const requestSearchName = searchName.trim();
     try {
       const [newPeople, newStatistics] = await Promise.all([
-        getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE })),
-        getSpacePeopleStatistics(getStatisticsQuery()),
+        getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE }, requestSearchName, requestSpaceId)),
+        getSpacePeopleStatistics(getStatisticsQuery(requestSearchName, requestSpaceId)).catch((error) => {
+          if (statisticsScopeMatches(requestSpaceId, requestSearchName)) {
+            handleError(error, $t('spaces_error_loading_people'));
+          }
+          return null;
+        }),
       ]);
+
+      if (!statisticsScopeMatches(requestSpaceId, requestSearchName)) {
+        return;
+      }
+
       people = newPeople;
       peopleStatistics = newStatistics;
+      statisticsSearchName = requestSearchName || null;
       hasMore = people.length >= PAGE_SIZE;
     } catch (error) {
-      handleError(error, $t('spaces_error_loading_people'));
+      if (statisticsScopeMatches(requestSpaceId, requestSearchName)) {
+        handleError(error, $t('spaces_error_loading_people'));
+      }
     }
   }
 
@@ -161,7 +214,9 @@
     searchName = name ?? searchName;
     await updateSearchQueryParam();
 
-    if (!searchName.trim()) {
+    const requestSpaceId = space.id;
+    const requestSearchName = searchName.trim();
+    if (!requestSearchName) {
       cancelSearchRequest();
       await refreshPeople();
       return;
@@ -174,19 +229,29 @@
 
     try {
       const [newPeople, newStatistics] = await Promise.all([
-        getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE }), { signal: controller.signal }),
-        getSpacePeopleStatistics(getStatisticsQuery(), { signal: controller.signal }),
+        getSpacePeople(getPeopleQuery({ limit: PAGE_SIZE }, requestSearchName, requestSpaceId), {
+          signal: controller.signal,
+        }),
+        getSpacePeopleStatistics(getStatisticsQuery(requestSearchName, requestSpaceId), {
+          signal: controller.signal,
+        }).catch((error) => {
+          if (!controller.signal.aborted && statisticsScopeMatches(requestSpaceId, requestSearchName)) {
+            handleError(error, $t('spaces_error_loading_people'));
+          }
+          return null;
+        }),
       ]);
 
-      if (abortController !== controller) {
+      if (abortController !== controller || !statisticsScopeMatches(requestSpaceId, requestSearchName)) {
         return;
       }
 
       people = newPeople;
       peopleStatistics = newStatistics;
+      statisticsSearchName = requestSearchName || null;
       hasMore = people.length >= PAGE_SIZE;
     } catch (error) {
-      if (controller.signal.aborted) {
+      if (controller.signal.aborted || !statisticsScopeMatches(requestSpaceId, requestSearchName)) {
         return;
       }
       handleError(error, $t('spaces_error_loading_people'));
@@ -334,7 +399,9 @@
       if (idx !== -1) {
         people[idx] = { ...people[idx], isHidden: true };
       }
-      peopleStatistics = { ...peopleStatistics, hidden: peopleStatistics.hidden + 1 };
+      if (peopleStatistics) {
+        peopleStatistics = { ...peopleStatistics, hidden: peopleStatistics.hidden + 1 };
+      }
       toastManager.primary($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
@@ -342,10 +409,13 @@
   }
 </script>
 
-<UserPageLayout
-  title={$t('spaces_people_title')}
-  description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
->
+<UserPageLayout title={$t('spaces_people_title')} description={headerDescription}>
+  {#snippet descriptionTrailing()}
+    {#if showFaceStatisticsInfo}
+      <PeopleFaceStatisticsInfo cacheKey={spaceFaceStatisticsCacheKey} loadStatistics={loadSpaceFaceStatistics} />
+    {/if}
+  {/snippet}
+
   {#snippet leading()}
     <IconButton
       variant="ghost"
@@ -357,9 +427,9 @@
     />
   {/snippet}
   {#snippet buttons()}
-    {#if countVisiblePeople > 0 || searchName || (isEditor && peopleStatistics.total > 0)}
+    {#if hasSearchablePeople || canManageVisibility}
       <div class="flex gap-2 items-center justify-center">
-        {#if countVisiblePeople > 0 || searchName}
+        {#if hasSearchablePeople}
           <div class="hidden sm:block">
             <div class="w-40 lg:w-80 h-10">
               <SearchBar
@@ -372,7 +442,7 @@
             </div>
           </div>
         {/if}
-        {#if isEditor && peopleStatistics.total > 0}
+        {#if canManageVisibility}
           <Button
             leadingIcon={mdiEyeOutline}
             onclick={openVisibilityModal}

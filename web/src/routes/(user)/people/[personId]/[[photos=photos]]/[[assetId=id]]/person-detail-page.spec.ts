@@ -1,7 +1,7 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import TestWrapper from '$lib/components/TestWrapper.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { Type, type PersonResponseDto } from '@immich/sdk';
+import { Type, type PersonResponseDto, type PersonStatisticsResponseDto } from '@immich/sdk';
 import { modalManager } from '@immich/ui';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
@@ -11,24 +11,45 @@ import userEvent from '@testing-library/user-event';
 import type { Component } from 'svelte';
 import PersonDetailPage from './+page.svelte';
 
-const { afterNavigateMock, gotoMock, invalidateAllMock, mockAssetMultiSelectManager, mockPage } = vi.hoisted(() => ({
-  afterNavigateMock: vi.fn(),
-  gotoMock: vi.fn(),
-  invalidateAllMock: vi.fn(),
-  mockAssetMultiSelectManager: {
-    selectionActive: false,
-    assets: [],
-    clear: vi.fn(),
-    isAllUserOwned: true,
-    isAllFavorite: false,
-    isAllArchived: false,
-  },
-  mockPage: {
-    url: new URL('https://gallery.test/people/person-1'),
-    route: { id: '/(user)/people/[personId]/[[photos=photos]]/[[assetId=id]]' },
-    params: { personId: 'person-1' },
-  },
-}));
+const { afterNavigateMock, formatMessage, gotoMock, invalidateAllMock, mockAssetMultiSelectManager, mockPage } =
+  vi.hoisted(() => {
+    const formatCount = (count: unknown, singular: string, plural: string) => {
+      const value = Number(count);
+      return `${value.toLocaleString('en-US')} ${value === 1 ? singular : plural}`;
+    };
+
+    const formatMessage = (key: string, options?: { values?: Record<string, unknown> }) => {
+      if (key === 'assets_count') {
+        return formatCount(options?.values?.count, 'asset', 'assets');
+      }
+
+      if (key === 'faces_count') {
+        return formatCount(options?.values?.count, 'face', 'faces');
+      }
+
+      return key;
+    };
+
+    return {
+      afterNavigateMock: vi.fn(),
+      formatMessage,
+      gotoMock: vi.fn(),
+      invalidateAllMock: vi.fn(),
+      mockAssetMultiSelectManager: {
+        selectionActive: false,
+        assets: [],
+        clear: vi.fn(),
+        isAllUserOwned: true,
+        isAllFavorite: false,
+        isAllArchived: false,
+      },
+      mockPage: {
+        url: new URL('https://gallery.test/people/person-1'),
+        route: { id: '/(user)/people/[personId]/[[photos=photos]]/[[assetId=id]]' },
+        params: { personId: 'person-1' },
+      },
+    };
+  });
 
 vi.mock('$app/navigation', () => ({
   afterNavigate: afterNavigateMock,
@@ -46,6 +67,15 @@ vi.mock('$app/stores', () => ({
   navigating: {
     subscribe: (run: (value: null) => void) => {
       run(null);
+      return () => {};
+    },
+  },
+}));
+
+vi.mock('svelte-i18n', () => ({
+  t: {
+    subscribe: (run: (formatter: typeof formatMessage) => void) => {
+      run(formatMessage);
       return () => {};
     },
   },
@@ -107,14 +137,20 @@ function makePerson(overrides: Partial<PersonResponseDto> = {}): PersonResponseD
   };
 }
 
-function renderPage(person = makePerson()) {
+function renderPage({
+  person = makePerson(),
+  statistics = { assets: 5, faces: 6 },
+}: {
+  person?: PersonResponseDto;
+  statistics?: PersonStatisticsResponseDto;
+} = {}) {
   authManager.setUser(userAdminFactory.build({ id: 'current-user-id' }));
   authManager.setPreferences(preferencesFactory.build());
 
   const props = {
     data: {
       person,
-      statistics: { assets: 5 },
+      statistics,
       meta: { title: person.name || 'Person' },
     },
   };
@@ -150,8 +186,18 @@ describe('Person detail page', () => {
     expect(sdkMock.mergePerson).not.toHaveBeenCalled();
   });
 
+  it('renders asset and face counts in the person header', () => {
+    renderPage({
+      person: makePerson({ name: 'Alice' }),
+      statistics: { assets: 7, faces: 10 },
+    });
+
+    expect(screen.getByText('7 assets')).toBeInTheDocument();
+    expect(screen.getByText('10 faces')).toBeInTheDocument();
+  });
+
   it('keeps the page person as the repair target when a space candidate is promoted by auto-swap', async () => {
-    renderPage(makePerson({ name: '' }));
+    renderPage({ person: makePerson({ name: '' }) });
 
     await userEvent.click(screen.getByText('merge_people'));
     await userEvent.click(screen.getByTestId('merge-swapped-space-candidate'));
@@ -199,13 +245,13 @@ describe('Person detail page', () => {
   });
 
   it('uses the scoped person token for identity-wide shared-space timelines', () => {
-    renderPage(
-      makePerson({
+    renderPage({
+      person: makePerson({
         id: 'space-person-1',
         filterId: 'space-person:space-person-1',
         primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
       }),
-    );
+    });
 
     const options = JSON.parse(screen.getByTestId('timeline-stub').dataset.options ?? '{}');
     expect(options).toEqual(
@@ -218,13 +264,13 @@ describe('Person detail page', () => {
   });
 
   it('uses the shared-space thumbnail for a space-primary identity-wide person page', () => {
-    renderPage(
-      makePerson({
+    renderPage({
+      person: makePerson({
         id: 'space-person-1',
         filterId: 'space-person:space-person-1',
         primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
       }),
-    );
+    });
 
     expect(screen.getByRole('img', { name: 'Alice' }).getAttribute('src')).toContain(
       '/shared-spaces/space-1/people/space-person-1/thumbnail?updatedAt=2026-01-02T00%3A00%3A00.000Z',

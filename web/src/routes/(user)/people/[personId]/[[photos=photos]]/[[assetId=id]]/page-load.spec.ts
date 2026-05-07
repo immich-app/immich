@@ -29,7 +29,7 @@ describe('person detail page load', () => {
     getFormatter.mockResolvedValue((key: string) => key);
   });
 
-  it('uses the identity-wide asset count when the person response provides it', async () => {
+  it('loads person statistics even when the person response provides an identity-wide asset count', async () => {
     const url = new URL('https://gallery.test/people/space-person-1');
     sdkMock.getPerson.mockResolvedValue(
       makePerson({
@@ -39,23 +39,24 @@ describe('person detail page load', () => {
         primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
       }),
     );
+    sdkMock.getPersonStatistics.mockResolvedValue({ assets: 7, faces: 10 });
 
     const result = await load({ params: { personId: 'space-person-1' }, url } as never);
 
     expect(authenticate).toHaveBeenCalledWith(url);
     expect(sdkMock.getPerson).toHaveBeenCalledWith({ id: 'space-person-1' });
-    expect(sdkMock.getPersonStatistics).not.toHaveBeenCalled();
-    expect(result.statistics).toEqual({ assets: 7 });
+    expect(sdkMock.getPersonStatistics).toHaveBeenCalledWith({ id: 'space-person-1' });
+    expect(result.statistics).toEqual({ assets: 7, faces: 10 });
   });
 
   it('falls back to personal person statistics for legacy person responses', async () => {
     const url = new URL('https://gallery.test/people/person-1');
     sdkMock.getPerson.mockResolvedValue(makePerson());
-    sdkMock.getPersonStatistics.mockResolvedValue({ assets: 5 });
+    sdkMock.getPersonStatistics.mockResolvedValue({ assets: 5, faces: 6 });
 
     const result = await load({ params: { personId: 'person-1' }, url } as never);
 
     expect(sdkMock.getPersonStatistics).toHaveBeenCalledWith({ id: 'person-1' });
-    expect(result.statistics).toEqual({ assets: 5 });
+    expect(result.statistics).toEqual({ assets: 5, faces: 6 });
   });
 });

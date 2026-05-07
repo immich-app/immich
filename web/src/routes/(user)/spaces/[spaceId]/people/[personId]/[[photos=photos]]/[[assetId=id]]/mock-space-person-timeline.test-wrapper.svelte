@@ -18,6 +18,13 @@
     children,
     empty,
   }: Props = $props();
+
+  $effect(() => {
+    timelineManager ??= {
+      removeAssets: () => undefined,
+      update: () => undefined,
+    };
+  });
 </script>
 
 <div

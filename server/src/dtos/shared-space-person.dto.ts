@@ -73,6 +73,7 @@ const SharedSpacePeopleStatisticsResponseSchema = z
   .object({
     total: z.int().min(0).describe('Total number of people'),
     hidden: z.int().min(0).describe('Number of hidden people'),
+    detectedFaceCount: z.int().min(0).describe('Number of detected faces in the shared-space people scope'),
   })
   .meta({ id: 'SharedSpacePeopleStatisticsResponseDto' });
 

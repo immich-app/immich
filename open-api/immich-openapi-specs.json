@@ -8501,6 +8501,116 @@
         "x-immich-state": "Stable"
       }
     },
+    "/people/face-statistics": {
+      "get": {
+        "description": "Retrieve detailed detected-face counts for the authenticated user people scope.",
+        "operationId": "getPeopleFaceStatistics",
+        "parameters": [
+          {
+            "name": "closestAssetId",
+            "required": false,
+            "in": "query",
+            "description": "Closest asset ID for similarity search",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "closestPersonId",
+            "required": false,
+            "in": "query",
+            "description": "Closest person ID for similarity search",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 500,
+              "type": "number"
+            }
+          },
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "description": "Include hidden people",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedSpaces",
+            "required": false,
+            "in": "query",
+            "description": "Include identity-grouped people from timeline-enabled shared spaces",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeopleFaceStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get people face statistics",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/people/same-person": {
       "post": {
         "description": "Mark personal and space people as the same person without exposing raw face identity IDs.",
@@ -8547,6 +8657,116 @@
           }
         ],
         "x-immich-permission": "person.merge",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/people/statistics": {
+      "get": {
+        "description": "Retrieve people and detected-face counts for the authenticated user people scope.",
+        "operationId": "getPeopleStatistics",
+        "parameters": [
+          {
+            "name": "closestAssetId",
+            "required": false,
+            "in": "query",
+            "description": "Closest asset ID for similarity search",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "closestPersonId",
+            "required": false,
+            "in": "query",
+            "description": "Closest person ID for similarity search",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 500,
+              "type": "number"
+            }
+          },
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "description": "Include hidden people",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedSpaces",
+            "required": false,
+            "in": "query",
+            "description": "Include identity-grouped people from timeline-enabled shared spaces",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeopleStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get people statistics",
+        "tags": [
+          "People"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "person.read",
         "x-immich-state": "Stable"
       }
     },
@@ -14096,6 +14316,134 @@
         "x-immich-state": "Beta"
       }
     },
+    "/shared-spaces/{id}/people/face-statistics": {
+      "get": {
+        "description": "Retrieve detailed detected-face counts for a shared space.",
+        "operationId": "getSpacePeopleFaceStatistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of people to return (named sorted alphabetically, unnamed by asset count)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Search by person name",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "named",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Number of people to skip",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+              "example": "2024-01-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+              "example": "2024-01-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "withHidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeopleFaceStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get people face statistics in a shared space",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/shared-spaces/{id}/people/statistics": {
       "get": {
         "description": "Retrieve people counts for a shared space.",
@@ -14893,6 +15241,69 @@
           }
         ],
         "x-immich-permission": "sharedSpace.update",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/shared-spaces/{id}/people/{personId}/statistics": {
+      "get": {
+        "description": "Retrieve asset and face statistics for a person in a shared space.",
+        "operationId": "getSpacePersonStatistics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "personId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get space person statistics",
+        "tags": [
+          "Shared Spaces"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "sharedSpace.read",
         "x-immich-state": "Stable"
       }
     },
@@ -23734,6 +24145,41 @@
         ],
         "type": "object"
       },
+      "PeopleFaceStatisticsResponseDto": {
+        "properties": {
+          "assignedHiddenFaceCount": {
+            "description": "Number of detected faces assigned to hidden people",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "assignedVisibleFaceCount": {
+            "description": "Number of detected faces assigned to visible people",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "detectedFaceCount": {
+            "description": "Number of detected faces in the accessible people scope",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "unassignedFaceCount": {
+            "description": "Number of detected faces not assigned to people in this scope",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assignedHiddenFaceCount",
+          "assignedVisibleFaceCount",
+          "detectedFaceCount",
+          "unassignedFaceCount"
+        ],
+        "type": "object"
+      },
       "PeopleResponse": {
         "properties": {
           "enabled": {
@@ -23791,6 +24237,34 @@
         "required": [
           "hidden",
           "people",
+          "total"
+        ],
+        "type": "object"
+      },
+      "PeopleStatisticsResponseDto": {
+        "properties": {
+          "detectedFaceCount": {
+            "description": "Number of detected faces in the accessible people scope",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "hidden": {
+            "description": "Number of hidden people",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "total": {
+            "description": "Total number of people",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "detectedFaceCount",
+          "hidden",
           "total"
         ],
         "type": "object"
@@ -24274,12 +24748,19 @@
           "assets": {
             "description": "Number of assets",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "faces": {
+            "description": "Number of faces assigned to this person in the current accessible scope",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           }
         },
         "required": [
-          "assets"
+          "assets",
+          "faces"
         ],
         "type": "object"
       },
@@ -26895,6 +27376,12 @@
       },
       "SharedSpacePeopleStatisticsResponseDto": {
         "properties": {
+          "detectedFaceCount": {
+            "description": "Number of detected faces in the shared-space people scope",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
           "hidden": {
             "description": "Number of hidden people",
             "maximum": 9007199254740991,
@@ -26909,6 +27396,7 @@
           }
         },
         "required": [
+          "detectedFaceCount",
           "hidden",
           "total"
         ],

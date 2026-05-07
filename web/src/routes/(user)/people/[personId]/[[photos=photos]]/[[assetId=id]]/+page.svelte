@@ -491,6 +491,9 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {$t('faces_count', { values: { count: data.statistics.faces } })}
+                    </p>
                     {#if person.birthDate}
                       <p class="text-sm text-gray-500 dark:text-gray-400">
                         {$t('person_birthdate', {

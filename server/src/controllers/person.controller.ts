@@ -22,7 +22,9 @@ import {
   DetachScopedPersonDto,
   MergePersonDto,
   MergeScopedPeopleDto,
+  PeopleFaceStatisticsResponseDto,
   PeopleResponseDto,
+  PeopleStatisticsResponseDto,
   PeopleUpdateDto,
   PersonCreateDto,
   PersonFacePageQueryDto,
@@ -117,6 +119,31 @@ export class PersonController {
   })
   detachScopedPerson(@Auth() auth: AuthDto, @Body() dto: DetachScopedPersonDto): Promise<void> {
     return this.service.detachScopedPerson(auth, dto);
+  }
+
+  @Get('statistics')
+  @Authenticated({ permission: Permission.PersonRead })
+  @Endpoint({
+    summary: 'Get people statistics',
+    description: 'Retrieve people and detected-face counts for the authenticated user people scope.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  getPeopleStatistics(@Auth() auth: AuthDto, @Query() options: PersonSearchDto): Promise<PeopleStatisticsResponseDto> {
+    return this.service.getPeopleStatistics(auth, options);
+  }
+
+  @Get('face-statistics')
+  @Authenticated({ permission: Permission.PersonRead })
+  @Endpoint({
+    summary: 'Get people face statistics',
+    description: 'Retrieve detailed detected-face counts for the authenticated user people scope.',
+    history: new HistoryBuilder().added('v2').stable('v2'),
+  })
+  getPeopleFaceStatistics(
+    @Auth() auth: AuthDto,
+    @Query() options: PersonSearchDto,
+  ): Promise<PeopleFaceStatisticsResponseDto> {
+    return this.service.getPeopleFaceStatistics(auth, options);
   }
 
   @Get(':id/faces')

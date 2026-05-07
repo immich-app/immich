@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import PeopleFaceStatisticsInfo from '$lib/components/people/people-face-statistics-info.svelte';
   import PeopleManagementGrid from '$lib/components/people/people-management-grid.svelte';
   import type { ManagedPerson } from '$lib/components/people/people-types';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -12,6 +13,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
@@ -21,8 +23,10 @@
   import { getGlobalPersonHref, getGlobalPersonThumbnailUrl } from '$lib/utils/global-person-route';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import { formatPeopleHeaderDescription } from '$lib/utils/people-statistics';
   import {
     getAllPeople,
+    getPeopleFaceStatistics,
     getPerson,
     searchPerson,
     updatePerson,
@@ -238,7 +242,28 @@
   let people = $derived(data.people.people);
 
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
-  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
+  let overviewStatistics = $derived(data.peopleStatistics);
+  let peopleCountStatistics = $derived(overviewStatistics ?? data.people);
+  let hasUnsupportedStatsFilter = $derived(
+    !!$page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE) || !!searchName.trim(),
+  );
+  let countVisiblePeople = $derived(
+    searchName ? searchedPeopleLocal.length : peopleCountStatistics.total - peopleCountStatistics.hidden,
+  );
+  let headerDescription = $derived(
+    formatPeopleHeaderDescription({
+      visiblePeopleCount: countVisiblePeople,
+      detectedFaceCount: overviewStatistics?.detectedFaceCount,
+      locale: $locale,
+      faceSingular: $t('face'),
+      facePlural: $t('faces'),
+      includeFaceCount: !!overviewStatistics && !hasUnsupportedStatsFilter,
+      showZeroPeople: hasUnsupportedStatsFilter || (overviewStatistics?.detectedFaceCount ?? 0) > 0,
+    }),
+  );
+  let showFaceStatisticsInfo = $derived(!!overviewStatistics && !hasUnsupportedStatsFilter && !!headerDescription);
+  let globalFaceStatisticsCacheKey = $derived(`user:${authManager.user.id}:global:people:withSharedSpaces=true`);
+  const loadGlobalFaceStatistics = () => getPeopleFaceStatistics({ withSharedSpaces: true });
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const getPersonHref = (person: PersonResponseDto) => getGlobalPersonHref(person, Route.people());
@@ -366,7 +391,7 @@
 
 <UserPageLayout
   title={$t('people')}
-  description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
+  description={headerDescription}
   use={[
     [
       scrollMemory,
@@ -385,6 +410,12 @@
     ],
   ]}
 >
+  {#snippet descriptionTrailing()}
+    {#if showFaceStatisticsInfo}
+      <PeopleFaceStatisticsInfo cacheKey={globalFaceStatisticsCacheKey} loadStatistics={loadGlobalFaceStatistics} />
+    {/if}
+  {/snippet}
+
   {#snippet buttons()}
     {#if people.length > 0}
       <div class="flex gap-2 items-center justify-center">

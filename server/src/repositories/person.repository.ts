@@ -40,6 +40,24 @@ export interface UpdateFacesData {
 
 export interface PersonStatistics {
   assets: number;
+  faces: number;
+}
+
+export interface PeopleOverviewStatistics {
+  total: number;
+  hidden: number;
+  detectedFaceCount: number;
+}
+
+export interface PeopleFaceStatistics {
+  detectedFaceCount: number;
+  assignedVisibleFaceCount: number;
+  assignedHiddenFaceCount: number;
+  unassignedFaceCount: number;
+}
+
+export interface PeopleFaceStatisticsOptions {
+  minimumFaceCount?: number;
 }
 
 export interface DeleteFacesOptions {
@@ -455,20 +473,20 @@ export class PersonRepository {
   async getStatistics(personId: string): Promise<PersonStatistics> {
     const result = await this.db
       .selectFrom('asset_face')
-      .leftJoin('asset', (join) =>
-        join
-          .onRef('asset.id', '=', 'asset_face.assetId')
-          .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-          .on('asset.deletedAt', 'is', null),
-      )
-      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('assets'))
+      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset_face.id'])).as('faces'))
+      .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.isOffline', '=', false)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .where('asset_face.personId', '=', personId)
       .executeTakeFirst();
 
     return {
-      assets: result ? Number(result.count) : 0,
+      assets: Number(result?.assets ?? 0),
+      faces: Number(result?.faces ?? 0),
     };
   }
 
@@ -499,6 +517,111 @@ export class PersonRepository {
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getPeopleOverviewStatistics(userId: string): Promise<PeopleOverviewStatistics> {
+    const people = await this.db
+      .selectFrom('person')
+      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
+      .select((eb) =>
+        eb.fn
+          .count(eb.fn('distinct', ['person.id']))
+          .filterWhere('person.isHidden', '=', true)
+          .as('hidden'),
+      )
+      .where('person.ownerId', '=', userId)
+      .where('asset.ownerId', '=', userId)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.isOffline', '=', false)
+      .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
+      .executeTakeFirstOrThrow();
+
+    const faceCount = await this.db
+      .selectFrom('asset_face')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset_face.id'])).as('detectedFaceCount'))
+      .where('asset.ownerId', '=', userId)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.isOffline', '=', false)
+      .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
+      .executeTakeFirstOrThrow();
+
+    return {
+      total: Number(people.total),
+      hidden: Number(people.hidden),
+      detectedFaceCount: Number(faceCount.detectedFaceCount),
+    };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { minimumFaceCount: 3 }] })
+  async getPeopleFaceStatistics(
+    userId: string,
+    options: PeopleFaceStatisticsOptions = {},
+  ): Promise<PeopleFaceStatistics> {
+    const minimumFaceCount = options.minimumFaceCount ?? 1;
+    const result = await sql<PeopleFaceStatistics>`
+      WITH "eligible_faces" AS (
+        SELECT
+          "asset_face"."id" AS "assetFaceId",
+          "asset_face"."personId"
+        FROM "asset_face"
+        INNER JOIN "asset" ON "asset"."id" = "asset_face"."assetId"
+        WHERE "asset"."ownerId" = ${userId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND "asset"."visibility" = ${AssetVisibility.Timeline}
+          AND "asset_face"."deletedAt" IS NULL
+          AND "asset_face"."isVisible" = true
+      ),
+      "person_face_counts" AS (
+        SELECT
+          "personId",
+          COUNT(DISTINCT "assetFaceId")::int AS "assetCount"
+        FROM "eligible_faces"
+        WHERE "personId" IS NOT NULL
+        GROUP BY "personId"
+      ),
+      "detected_faces" AS (
+        SELECT
+          "eligible_faces"."assetFaceId",
+          CASE
+            WHEN "person"."id" IS NOT NULL
+              AND (
+                "person"."name" != ''
+                OR "person_face_counts"."assetCount" >= ${minimumFaceCount}
+              )
+            THEN "person"."isHidden"
+            ELSE NULL
+          END AS "isHidden"
+        FROM "eligible_faces"
+        LEFT JOIN "person"
+          ON "person"."id" = "eligible_faces"."personId"
+          AND "person"."ownerId" = ${userId}
+        LEFT JOIN "person_face_counts"
+          ON "person_face_counts"."personId" = "person"."id"
+      )
+      SELECT
+        COUNT(DISTINCT "assetFaceId")::int AS "detectedFaceCount",
+        COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isHidden" = false)::int AS "assignedVisibleFaceCount",
+        COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isHidden" = true)::int AS "assignedHiddenFaceCount",
+        COUNT(DISTINCT "assetFaceId") FILTER (WHERE "isHidden" IS NULL)::int AS "unassignedFaceCount"
+      FROM "detected_faces"
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
+      assignedVisibleFaceCount: Number(row?.assignedVisibleFaceCount ?? 0),
+      assignedHiddenFaceCount: Number(row?.assignedHiddenFaceCount ?? 0),
+      unassignedFaceCount: Number(row?.unassignedFaceCount ?? 0),
+    };
   }
 
   create(person: Insertable<PersonTable>) {

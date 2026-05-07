@@ -4,6 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetType, AssetVisibility, SharedSpaceRole, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import type { PeopleFaceStatistics } from 'src/repositories/person.repository';
 import type { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { SharedSpaceAssetTable } from 'src/schema/tables/shared-space-asset.table';
@@ -16,6 +17,11 @@ import { SharedSpaceTable } from 'src/schema/tables/shared-space.table';
 import { anyUuid, searchAssetBuilder } from 'src/utils/database';
 
 const visibleSpaceAssetVisibilities = [AssetVisibility.Archive, AssetVisibility.Timeline];
+
+type SpacePersonStatistics = {
+  assets: number;
+  faces: number;
+};
 
 export type LinkedSpacePerson = {
   id: string;
@@ -674,6 +680,29 @@ export class SharedSpaceRepository {
               .innerJoin('asset_face as af2', 'af2.id', 'spf2.assetFaceId')
               .innerJoin('asset', 'asset.id', 'af2.assetId')
               .whereRef('spf2.personId', '=', 'shared_space_person.id')
+              .where('af2.deletedAt', 'is', null)
+              .where('af2.isVisible', '=', true)
+              .where('asset.deletedAt', 'is', null)
+              .where('asset.isOffline', '=', false)
+              .where('asset.visibility', 'in', visibleSpaceAssetVisibilities)
+              .where((spaceEb) =>
+                spaceEb.or([
+                  spaceEb.exists(
+                    spaceEb
+                      .selectFrom('shared_space_asset')
+                      .select('shared_space_asset.assetId')
+                      .whereRef('shared_space_asset.assetId', '=', 'asset.id')
+                      .where('shared_space_asset.spaceId', '=', spaceId),
+                  ),
+                  spaceEb.exists(
+                    spaceEb
+                      .selectFrom('shared_space_library')
+                      .select('shared_space_library.libraryId')
+                      .whereRef('shared_space_library.libraryId', '=', 'asset.libraryId')
+                      .where('shared_space_library.spaceId', '=', spaceId),
+                  ),
+                ]),
+              )
               .$if(!!options.takenAfter, (qb2) => qb2.where('asset.fileCreatedAt', '>=', options.takenAfter!))
               .$if(!!options.takenBefore, (qb2) => qb2.where('asset.fileCreatedAt', '<', options.takenBefore!)),
           ),
@@ -692,7 +721,7 @@ export class SharedSpaceRepository {
   @GenerateSql({
     params: [DummyValue.UUID, { petsEnabled: true, named: false, name: 'Alice' }],
   })
-  countPersonsBySpaceId(
+  async countPersonsBySpaceId(
     spaceId: string,
     options: {
       petsEnabled?: boolean;
@@ -707,30 +736,288 @@ export class SharedSpaceRepository {
       .replaceAll('%', String.raw`\%`)
       .replaceAll('_', String.raw`\_`);
     const namePattern = escapedName ? `%${escapedName}%` : undefined;
-    const zero = sql.lit(0);
+    const visibilityFilter = sql`"asset"."visibility" IN (${sql.join(visibleSpaceAssetVisibilities)})`;
+    const takenAfterFilter = options.takenAfter ? sql`AND "asset"."fileCreatedAt" >= ${options.takenAfter}` : sql``;
+    const takenBeforeFilter = options.takenBefore ? sql`AND "asset"."fileCreatedAt" < ${options.takenBefore}` : sql``;
+    const petPersonFilter = options.petsEnabled ? sql`` : sql`AND "shared_space_person"."type" != 'pet'`;
+    const namedPersonFilter = options.named ? sql`AND "shared_space_person"."name" != ''` : sql``;
+    const namePersonFilter = namePattern
+      ? sql`AND "shared_space_person"."name" ILIKE ${namePattern} ESCAPE '\\'`
+      : sql``;
+    const datePersonFilter =
+      options.takenAfter || options.takenBefore
+        ? sql`
+            AND EXISTS (
+              SELECT 1
+              FROM "shared_space_person_face"
+              INNER JOIN "asset_face" ON "asset_face"."id" = "shared_space_person_face"."assetFaceId"
+              INNER JOIN "asset_scope" ON "asset_scope"."assetId" = "asset_face"."assetId"
+              WHERE "shared_space_person_face"."personId" = "shared_space_person"."id"
+                AND "asset_face"."deletedAt" IS NULL
+                AND "asset_face"."isVisible" = true
+            )
+          `
+        : sql``;
+    const hasAssignedPersonFaceFilter = !!options.named || !!namePattern;
+    const assignedPersonFaceFilter = hasAssignedPersonFaceFilter
+      ? sql`
+          AND EXISTS (
+            SELECT 1
+            FROM "shared_space_person_face"
+            INNER JOIN "shared_space_person"
+              ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+            WHERE "shared_space_person_face"."assetFaceId" = "asset_face"."id"
+              AND "shared_space_person"."spaceId" = ${spaceId}
+              ${petPersonFilter}
+              ${namedPersonFilter}
+              ${namePersonFilter}
+          )
+        `
+      : options.petsEnabled
+        ? sql``
+        : sql`
+            AND NOT EXISTS (
+              SELECT 1
+              FROM "shared_space_person_face"
+              INNER JOIN "shared_space_person"
+                ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+              WHERE "shared_space_person_face"."assetFaceId" = "asset_face"."id"
+                AND "shared_space_person"."spaceId" = ${spaceId}
+                AND "shared_space_person"."type" = 'pet'
+            )
+          `;
 
-    return this.db
-      .selectFrom('shared_space_person')
-      .where('shared_space_person.spaceId', '=', spaceId)
-      .$if(!options.petsEnabled, (qb) => qb.where('shared_space_person.type', '!=', 'pet'))
-      .$if(!!options.named, (qb) => qb.where('shared_space_person.name', '!=', ''))
-      .$if(!!namePattern, (qb) => qb.where(() => sql`"shared_space_person"."name" ILIKE ${namePattern} ESCAPE '\\'`))
-      .$if(!!options.takenAfter || !!options.takenBefore, (qb) =>
-        qb.where((eb) =>
-          eb.exists(
-            eb
-              .selectFrom('shared_space_person_face as spf2')
-              .innerJoin('asset_face as af2', 'af2.id', 'spf2.assetFaceId')
-              .innerJoin('asset', 'asset.id', 'af2.assetId')
-              .whereRef('spf2.personId', '=', 'shared_space_person.id')
-              .$if(!!options.takenAfter, (qb2) => qb2.where('asset.fileCreatedAt', '>=', options.takenAfter!))
-              .$if(!!options.takenBefore, (qb2) => qb2.where('asset.fileCreatedAt', '<', options.takenBefore!)),
-          ),
-        ),
+    const result = await sql<{ total: number; hidden: number; detectedFaceCount: number }>`
+      WITH "asset_scope" AS (
+        SELECT "asset"."id" AS "assetId"
+        FROM "shared_space_asset"
+        INNER JOIN "asset" ON "asset"."id" = "shared_space_asset"."assetId"
+        WHERE "shared_space_asset"."spaceId" = ${spaceId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND ${visibilityFilter}
+          ${takenAfterFilter}
+          ${takenBeforeFilter}
+        UNION
+        SELECT "asset"."id" AS "assetId"
+        FROM "shared_space_library"
+        INNER JOIN "asset" ON "asset"."libraryId" = "shared_space_library"."libraryId"
+        WHERE "shared_space_library"."spaceId" = ${spaceId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND ${visibilityFilter}
+          ${takenAfterFilter}
+          ${takenBeforeFilter}
+      ),
+      "person_rows" AS (
+        SELECT
+          COALESCE("shared_space_person"."identityId", "shared_space_person"."id") AS "personKey",
+          "shared_space_person"."isHidden"
+        FROM "shared_space_person"
+        WHERE "shared_space_person"."spaceId" = ${spaceId}
+          ${petPersonFilter}
+          ${namedPersonFilter}
+          ${namePersonFilter}
+          ${datePersonFilter}
+      ),
+      "person_keys" AS (
+        SELECT "personKey", BOOL_AND("isHidden") AS "allHidden"
+        FROM "person_rows"
+        GROUP BY "personKey"
+      ),
+      "person_counts" AS (
+        SELECT
+          COUNT(*)::int AS "total",
+          COUNT(*) FILTER (WHERE "allHidden")::int AS "hidden"
+        FROM "person_keys"
+      ),
+      "face_counts" AS (
+        SELECT COUNT(DISTINCT "asset_face"."id")::int AS "detectedFaceCount"
+        FROM "asset_scope"
+        INNER JOIN "asset_face" ON "asset_face"."assetId" = "asset_scope"."assetId"
+        WHERE "asset_face"."deletedAt" IS NULL
+          AND "asset_face"."isVisible" = true
+          ${assignedPersonFaceFilter}
       )
-      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
-      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
-      .executeTakeFirstOrThrow();
+      SELECT
+        "person_counts"."total",
+        "person_counts"."hidden",
+        "face_counts"."detectedFaceCount"
+      FROM "person_counts", "face_counts"
+    `.execute(this.db);
+
+    return result.rows[0]!;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { petsEnabled: true, named: false, name: 'Alice' }] })
+  async getPeopleFaceStatisticsBySpaceId(
+    spaceId: string,
+    options: {
+      petsEnabled?: boolean;
+      named?: boolean;
+      name?: string;
+      takenAfter?: Date;
+      takenBefore?: Date;
+    },
+  ): Promise<PeopleFaceStatistics> {
+    const escapedName = options.name
+      ?.replaceAll('\\', String.raw`\\`)
+      .replaceAll('%', String.raw`\%`)
+      .replaceAll('_', String.raw`\_`);
+    const namePattern = escapedName ? `%${escapedName}%` : undefined;
+    const visibilityFilter = sql`"asset"."visibility" IN (${sql.join(visibleSpaceAssetVisibilities)})`;
+    const takenAfterFilter = options.takenAfter ? sql`AND "asset"."fileCreatedAt" >= ${options.takenAfter}` : sql``;
+    const takenBeforeFilter = options.takenBefore ? sql`AND "asset"."fileCreatedAt" < ${options.takenBefore}` : sql``;
+    const petPersonFilter = options.petsEnabled ? sql`` : sql`AND "shared_space_person"."type" != 'pet'`;
+    const namedPersonFilter = options.named ? sql`AND "shared_space_person"."name" != ''` : sql``;
+    const namePersonFilter = namePattern
+      ? sql`AND "shared_space_person"."name" ILIKE ${namePattern} ESCAPE '\\'`
+      : sql``;
+    const hasAssignedPersonFaceFilter = !!options.named || !!namePattern;
+    const includeFaceFilter = hasAssignedPersonFaceFilter
+      ? sql`WHERE "hasMatchingAssignment" = true`
+      : options.petsEnabled
+        ? sql``
+        : sql`WHERE "hasPetAssignment" = false`;
+
+    const result = await sql<PeopleFaceStatistics>`
+      WITH "asset_scope" AS (
+        SELECT "asset"."id" AS "assetId"
+        FROM "shared_space_asset"
+        INNER JOIN "asset" ON "asset"."id" = "shared_space_asset"."assetId"
+        WHERE "shared_space_asset"."spaceId" = ${spaceId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND ${visibilityFilter}
+          ${takenAfterFilter}
+          ${takenBeforeFilter}
+        UNION
+        SELECT "asset"."id" AS "assetId"
+        FROM "shared_space_library"
+        INNER JOIN "asset" ON "asset"."libraryId" = "shared_space_library"."libraryId"
+        WHERE "shared_space_library"."spaceId" = ${spaceId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND ${visibilityFilter}
+          ${takenAfterFilter}
+          ${takenBeforeFilter}
+      ),
+      "detected_faces" AS (
+        SELECT DISTINCT "asset_face"."id" AS "assetFaceId"
+        FROM "asset_scope"
+        INNER JOIN "asset_face" ON "asset_face"."assetId" = "asset_scope"."assetId"
+        WHERE "asset_face"."deletedAt" IS NULL
+          AND "asset_face"."isVisible" = true
+      ),
+      "face_assignments" AS (
+        SELECT
+          "detected_faces"."assetFaceId",
+          COALESCE(BOOL_OR("shared_space_person"."type" = 'pet'), false) AS "hasPetAssignment",
+          COALESCE(BOOL_OR(
+            "shared_space_person"."id" IS NOT NULL
+            ${petPersonFilter}
+            ${namedPersonFilter}
+            ${namePersonFilter}
+          ), false) AS "hasMatchingAssignment",
+          COALESCE(BOOL_OR(
+            "shared_space_person"."isHidden" = false
+            ${petPersonFilter}
+            ${namedPersonFilter}
+            ${namePersonFilter}
+          ), false) AS "hasMatchingVisibleAssignment",
+          COALESCE(BOOL_OR(
+            "shared_space_person"."isHidden" = true
+            ${petPersonFilter}
+            ${namedPersonFilter}
+            ${namePersonFilter}
+          ), false) AS "hasMatchingHiddenAssignment"
+        FROM "detected_faces"
+        LEFT JOIN "shared_space_person_face"
+          ON "shared_space_person_face"."assetFaceId" = "detected_faces"."assetFaceId"
+        LEFT JOIN "shared_space_person"
+          ON "shared_space_person"."id" = "shared_space_person_face"."personId"
+          AND "shared_space_person"."spaceId" = ${spaceId}
+        GROUP BY "detected_faces"."assetFaceId"
+      ),
+      "included_faces" AS (
+        SELECT *
+        FROM "face_assignments"
+        ${includeFaceFilter}
+      )
+      SELECT
+        COUNT(*)::int AS "detectedFaceCount",
+        COUNT(*) FILTER (WHERE "hasMatchingVisibleAssignment" = true)::int AS "assignedVisibleFaceCount",
+        COUNT(*) FILTER (
+          WHERE "hasMatchingVisibleAssignment" = false
+            AND "hasMatchingHiddenAssignment" = true
+        )::int AS "assignedHiddenFaceCount",
+        COUNT(*) FILTER (
+          WHERE "hasMatchingVisibleAssignment" = false
+            AND "hasMatchingHiddenAssignment" = false
+        )::int AS "unassignedFaceCount"
+      FROM "included_faces"
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
+      assignedVisibleFaceCount: Number(row?.assignedVisibleFaceCount ?? 0),
+      assignedHiddenFaceCount: Number(row?.assignedHiddenFaceCount ?? 0),
+      unassignedFaceCount: Number(row?.unassignedFaceCount ?? 0),
+    };
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getSpacePersonStatistics(spaceId: string, personId: string): Promise<SpacePersonStatistics> {
+    const result = await sql<SpacePersonStatistics>`
+      WITH "target_person" AS (
+        SELECT
+          "id"
+        FROM "shared_space_person"
+        WHERE "id" = ${personId}
+          AND "spaceId" = ${spaceId}
+      ),
+      "asset_scope" AS (
+        SELECT "asset"."id" AS "assetId"
+        FROM "shared_space_asset"
+        INNER JOIN "asset" ON "asset"."id" = "shared_space_asset"."assetId"
+        WHERE "shared_space_asset"."spaceId" = ${spaceId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND "asset"."visibility" IN (${sql.join(visibleSpaceAssetVisibilities)})
+        UNION
+        SELECT "asset"."id" AS "assetId"
+        FROM "shared_space_library"
+        INNER JOIN "asset" ON "asset"."libraryId" = "shared_space_library"."libraryId"
+        WHERE "shared_space_library"."spaceId" = ${spaceId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND "asset"."visibility" IN (${sql.join(visibleSpaceAssetVisibilities)})
+      ),
+      "selected_faces" AS (
+        SELECT DISTINCT
+          "asset_face"."id" AS "assetFaceId",
+          "asset_face"."assetId"
+        FROM "target_person"
+        INNER JOIN "asset_scope" ON true
+        INNER JOIN "asset_face" ON "asset_face"."assetId" = "asset_scope"."assetId"
+        INNER JOIN "shared_space_person_face"
+          ON "shared_space_person_face"."assetFaceId" = "asset_face"."id"
+          AND "shared_space_person_face"."personId" = "target_person"."id"
+        WHERE "asset_face"."deletedAt" IS NULL
+          AND "asset_face"."isVisible" = true
+      )
+      SELECT
+        COUNT(DISTINCT "assetId")::int AS "assets",
+        COUNT(DISTINCT "assetFaceId")::int AS "faces"
+      FROM "selected_faces"
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      assets: Number(row?.assets ?? 0),
+      faces: Number(row?.faces ?? 0),
+    };
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
