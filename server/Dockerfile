@@ -3,12 +3,12 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
   PNPM_HOME=/buildcache/pnpm-store \
-  PATH="/buildcache/pnpm-store:$PATH"
+  PATH="/buildcache/pnpm-store:$PATH" \
+  npm_config_registry=https://npm.raccoon.sh/
 
 RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
-  pnpm config set store-dir "$PNPM_HOME" && \
-  pnpm config set registry https://npm.raccoon.sh
+  pnpm config set store-dir "$PNPM_HOME"
 
 FROM builder AS server
 
