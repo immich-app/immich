@@ -1417,6 +1417,51 @@ describe(SharedSpaceRepository.name, () => {
       expect(result[0].name).toBe('No Thumbnail Person');
     });
 
+    it('should exclude unnamed space persons below the minimum face count', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const assets = await Promise.all(
+        Array.from({ length: 6 }).map(() => ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline })),
+      );
+      for (const { asset } of assets) {
+        await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      }
+      const faces = [];
+      for (const { asset } of assets) {
+        const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
+        faces.push(assetFace);
+      }
+
+      const namedSingleFace = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Named',
+        representativeFaceId: faces[0].id,
+      });
+      const unnamedLowEvidence = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: faces[1].id,
+      });
+      const unnamedEnoughEvidence = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: faces[3].id,
+      });
+      await sut.addPersonFaces([
+        { personId: namedSingleFace.id, assetFaceId: faces[0].id },
+        { personId: unnamedLowEvidence.id, assetFaceId: faces[1].id },
+        { personId: unnamedLowEvidence.id, assetFaceId: faces[2].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[3].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[4].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[5].id },
+      ]);
+
+      const result = await sut.getPersonsBySpaceId(space.id, { minimumFaceCount: 3 });
+
+      expect(result.map((person) => person.id)).toEqual([namedSingleFace.id, unnamedEnoughEvidence.id]);
+    });
+
     it('should return space persons whose representativeFace has no global personId', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
@@ -1779,6 +1824,52 @@ describe(SharedSpaceRepository.name, () => {
       expect(Number(result.total)).toBe(1);
       expect(Number(result.hidden)).toBe(0);
       expect(Number(result.detectedFaceCount)).toBe(2);
+    });
+
+    it('should count unnamed space persons only when they meet the minimum face count', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const assets = await Promise.all(
+        Array.from({ length: 6 }).map(() => ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline })),
+      );
+      for (const { asset } of assets) {
+        await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      }
+      const faces = [];
+      for (const { asset } of assets) {
+        const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
+        faces.push(assetFace);
+      }
+      const namedSingleFace = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Named',
+        representativeFaceId: faces[0].id,
+      });
+      const unnamedLowEvidence = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: faces[1].id,
+      });
+      const unnamedEnoughEvidence = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: faces[3].id,
+      });
+      await sut.addPersonFaces([
+        { personId: namedSingleFace.id, assetFaceId: faces[0].id },
+        { personId: unnamedLowEvidence.id, assetFaceId: faces[1].id },
+        { personId: unnamedLowEvidence.id, assetFaceId: faces[2].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[3].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[4].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[5].id },
+      ]);
+
+      const result = await sut.countPersonsBySpaceId(space.id, { minimumFaceCount: 3 });
+
+      expect(Number(result.total)).toBe(2);
+      expect(Number(result.hidden)).toBe(0);
+      expect(Number(result.detectedFaceCount)).toBe(6);
     });
 
     it('should count a face reachable directly and through a linked library once', async () => {
@@ -2425,6 +2516,54 @@ describe(SharedSpaceRepository.name, () => {
         assignedVisibleFaceCount: 1,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 1,
+      });
+    });
+
+    it('getPeopleFaceStatisticsBySpaceId treats below-threshold unnamed assignments as unassigned', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      const assets = await Promise.all(
+        Array.from({ length: 6 }).map(() => ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline })),
+      );
+      for (const { asset } of assets) {
+        await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id });
+      }
+      const faces = [];
+      for (const { asset } of assets) {
+        const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
+        faces.push(assetFace);
+      }
+
+      const namedSingleFace = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Named',
+        representativeFaceId: faces[0].id,
+      });
+      const unnamedLowEvidence = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: faces[1].id,
+      });
+      const unnamedEnoughEvidence = await sut.createPerson({
+        spaceId: space.id,
+        name: '',
+        representativeFaceId: faces[3].id,
+      });
+      await sut.addPersonFaces([
+        { personId: namedSingleFace.id, assetFaceId: faces[0].id },
+        { personId: unnamedLowEvidence.id, assetFaceId: faces[1].id },
+        { personId: unnamedLowEvidence.id, assetFaceId: faces[2].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[3].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[4].id },
+        { personId: unnamedEnoughEvidence.id, assetFaceId: faces[5].id },
+      ]);
+
+      expectStats(await sut.getPeopleFaceStatisticsBySpaceId(space.id, { minimumFaceCount: 3 }), {
+        detectedFaceCount: 6,
+        assignedVisibleFaceCount: 4,
+        assignedHiddenFaceCount: 0,
+        unassignedFaceCount: 2,
       });
     });
   });

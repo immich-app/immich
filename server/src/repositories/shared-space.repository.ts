@@ -643,7 +643,10 @@ export class SharedSpaceRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.UUID, { withHidden: false, petsEnabled: true, limit: 50, offset: 0, named: false }],
+    params: [
+      DummyValue.UUID,
+      { withHidden: false, petsEnabled: true, limit: 50, offset: 0, named: false, minimumFaceCount: 3 },
+    ],
   })
   getPersonsBySpaceId(
     spaceId: string,
@@ -656,6 +659,7 @@ export class SharedSpaceRepository {
       name?: string;
       takenAfter?: Date;
       takenBefore?: Date;
+      minimumFaceCount?: number;
     },
   ) {
     const escapedName = options.name
@@ -663,6 +667,7 @@ export class SharedSpaceRepository {
       .replaceAll('%', String.raw`\%`)
       .replaceAll('_', String.raw`\_`);
     const namePattern = escapedName ? `%${escapedName}%` : undefined;
+    const minimumFaceCount = options.minimumFaceCount;
 
     return this.db
       .selectFrom('shared_space_person')
@@ -672,6 +677,14 @@ export class SharedSpaceRepository {
       .$if(!options.petsEnabled, (qb) => qb.where('shared_space_person.type', '!=', 'pet'))
       .$if(!!options.named, (qb) => qb.where('shared_space_person.name', '!=', ''))
       .$if(!!namePattern, (qb) => qb.where(() => sql`"shared_space_person"."name" ILIKE ${namePattern} ESCAPE '\\'`))
+      .$if(minimumFaceCount !== undefined, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb('shared_space_person.name', '!=', ''),
+            eb('shared_space_person.assetCount', '>=', minimumFaceCount!),
+          ]),
+        ),
+      )
       .$if(!!options.takenAfter || !!options.takenBefore, (qb) =>
         qb.where((eb) =>
           eb.exists(
@@ -719,7 +732,7 @@ export class SharedSpaceRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.UUID, { petsEnabled: true, named: false, name: 'Alice' }],
+    params: [DummyValue.UUID, { petsEnabled: true, named: false, name: 'Alice', minimumFaceCount: 3 }],
   })
   async countPersonsBySpaceId(
     spaceId: string,
@@ -729,6 +742,7 @@ export class SharedSpaceRepository {
       name?: string;
       takenAfter?: Date;
       takenBefore?: Date;
+      minimumFaceCount?: number;
     },
   ) {
     const escapedName = options.name
@@ -736,6 +750,7 @@ export class SharedSpaceRepository {
       .replaceAll('%', String.raw`\%`)
       .replaceAll('_', String.raw`\_`);
     const namePattern = escapedName ? `%${escapedName}%` : undefined;
+    const minimumFaceCount = options.minimumFaceCount;
     const visibilityFilter = sql`"asset"."visibility" IN (${sql.join(visibleSpaceAssetVisibilities)})`;
     const takenAfterFilter = options.takenAfter ? sql`AND "asset"."fileCreatedAt" >= ${options.takenAfter}` : sql``;
     const takenBeforeFilter = options.takenBefore ? sql`AND "asset"."fileCreatedAt" < ${options.takenBefore}` : sql``;
@@ -744,6 +759,15 @@ export class SharedSpaceRepository {
     const namePersonFilter = namePattern
       ? sql`AND "shared_space_person"."name" ILIKE ${namePattern} ESCAPE '\\'`
       : sql``;
+    const minimumPersonFilter =
+      minimumFaceCount === undefined
+        ? sql``
+        : sql`
+            AND (
+              "shared_space_person"."name" != ''
+              OR "shared_space_person"."assetCount" >= ${minimumFaceCount}
+            )
+          `;
     const datePersonFilter =
       options.takenAfter || options.takenBefore
         ? sql`
@@ -818,6 +842,7 @@ export class SharedSpaceRepository {
           ${petPersonFilter}
           ${namedPersonFilter}
           ${namePersonFilter}
+          ${minimumPersonFilter}
           ${datePersonFilter}
       ),
       "person_keys" AS (
@@ -849,7 +874,7 @@ export class SharedSpaceRepository {
     return result.rows[0]!;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { petsEnabled: true, named: false, name: 'Alice' }] })
+  @GenerateSql({ params: [DummyValue.UUID, { petsEnabled: true, named: false, name: 'Alice', minimumFaceCount: 3 }] })
   async getPeopleFaceStatisticsBySpaceId(
     spaceId: string,
     options: {
@@ -858,6 +883,7 @@ export class SharedSpaceRepository {
       name?: string;
       takenAfter?: Date;
       takenBefore?: Date;
+      minimumFaceCount?: number;
     },
   ): Promise<PeopleFaceStatistics> {
     const escapedName = options.name
@@ -865,6 +891,7 @@ export class SharedSpaceRepository {
       .replaceAll('%', String.raw`\%`)
       .replaceAll('_', String.raw`\_`);
     const namePattern = escapedName ? `%${escapedName}%` : undefined;
+    const minimumFaceCount = options.minimumFaceCount;
     const visibilityFilter = sql`"asset"."visibility" IN (${sql.join(visibleSpaceAssetVisibilities)})`;
     const takenAfterFilter = options.takenAfter ? sql`AND "asset"."fileCreatedAt" >= ${options.takenAfter}` : sql``;
     const takenBeforeFilter = options.takenBefore ? sql`AND "asset"."fileCreatedAt" < ${options.takenBefore}` : sql``;
@@ -873,6 +900,15 @@ export class SharedSpaceRepository {
     const namePersonFilter = namePattern
       ? sql`AND "shared_space_person"."name" ILIKE ${namePattern} ESCAPE '\\'`
       : sql``;
+    const minimumPersonFilter =
+      minimumFaceCount === undefined
+        ? sql``
+        : sql`
+            AND (
+              "shared_space_person"."name" != ''
+              OR "shared_space_person"."assetCount" >= ${minimumFaceCount}
+            )
+          `;
     const hasAssignedPersonFaceFilter = !!options.named || !!namePattern;
     const includeFaceFilter = hasAssignedPersonFaceFilter
       ? sql`WHERE "hasMatchingAssignment" = true`
@@ -918,18 +954,21 @@ export class SharedSpaceRepository {
             ${petPersonFilter}
             ${namedPersonFilter}
             ${namePersonFilter}
+            ${minimumPersonFilter}
           ), false) AS "hasMatchingAssignment",
           COALESCE(BOOL_OR(
             "shared_space_person"."isHidden" = false
             ${petPersonFilter}
             ${namedPersonFilter}
             ${namePersonFilter}
+            ${minimumPersonFilter}
           ), false) AS "hasMatchingVisibleAssignment",
           COALESCE(BOOL_OR(
             "shared_space_person"."isHidden" = true
             ${petPersonFilter}
             ${namedPersonFilter}
             ${namePersonFilter}
+            ${minimumPersonFilter}
           ), false) AS "hasMatchingHiddenAssignment"
         FROM "detected_faces"
         LEFT JOIN "shared_space_person_face"

@@ -439,6 +439,10 @@ from
 where
   "shared_space_person"."spaceId" = $1
   and "shared_space_person"."isHidden" = $2
+  and (
+    "shared_space_person"."name" != $3
+    or "shared_space_person"."assetCount" >= $4
+  )
 order by
   NULLIF(shared_space_person.name, '') asc nulls last,
   CASE
@@ -446,7 +450,7 @@ order by
   END desc nulls last,
   "shared_space_person"."id"
 limit
-  $3
+  $5
 
 -- SharedSpaceRepository.countPersonsBySpaceId
 WITH
@@ -485,6 +489,10 @@ WITH
     WHERE
       "shared_space_person"."spaceId" = $7
       AND "shared_space_person"."name" ILIKE $8 ESCAPE '\'
+      AND (
+        "shared_space_person"."name" != ''
+        OR "shared_space_person"."assetCount" >= $9
+      )
   ),
   "person_keys" AS (
     SELECT
@@ -522,8 +530,8 @@ WITH
           INNER JOIN "shared_space_person" ON "shared_space_person"."id" = "shared_space_person_face"."personId"
         WHERE
           "shared_space_person_face"."assetFaceId" = "asset_face"."id"
-          AND "shared_space_person"."spaceId" = $9
-          AND "shared_space_person"."name" ILIKE $10 ESCAPE '\'
+          AND "shared_space_person"."spaceId" = $10
+          AND "shared_space_person"."name" ILIKE $11 ESCAPE '\'
       )
   )
 SELECT
@@ -580,20 +588,32 @@ WITH
         BOOL_OR(
           "shared_space_person"."id" IS NOT NULL
           AND "shared_space_person"."name" ILIKE $7 ESCAPE '\'
+          AND (
+            "shared_space_person"."name" != ''
+            OR "shared_space_person"."assetCount" >= $8
+          )
         ),
         false
       ) AS "hasMatchingAssignment",
       COALESCE(
         BOOL_OR(
           "shared_space_person"."isHidden" = false
-          AND "shared_space_person"."name" ILIKE $8 ESCAPE '\'
+          AND "shared_space_person"."name" ILIKE $9 ESCAPE '\'
+          AND (
+            "shared_space_person"."name" != ''
+            OR "shared_space_person"."assetCount" >= $10
+          )
         ),
         false
       ) AS "hasMatchingVisibleAssignment",
       COALESCE(
         BOOL_OR(
           "shared_space_person"."isHidden" = true
-          AND "shared_space_person"."name" ILIKE $9 ESCAPE '\'
+          AND "shared_space_person"."name" ILIKE $11 ESCAPE '\'
+          AND (
+            "shared_space_person"."name" != ''
+            OR "shared_space_person"."assetCount" >= $12
+          )
         ),
         false
       ) AS "hasMatchingHiddenAssignment"
@@ -601,7 +621,7 @@ WITH
       "detected_faces"
       LEFT JOIN "shared_space_person_face" ON "shared_space_person_face"."assetFaceId" = "detected_faces"."assetFaceId"
       LEFT JOIN "shared_space_person" ON "shared_space_person"."id" = "shared_space_person_face"."personId"
-      AND "shared_space_person"."spaceId" = $10
+      AND "shared_space_person"."spaceId" = $13
     GROUP BY
       "detected_faces"."assetFaceId"
   ),
@@ -625,10 +645,10 @@ WITH
       "detected_faces"
       INNER JOIN "shared_space_person_face" ON "shared_space_person_face"."assetFaceId" = "detected_faces"."assetFaceId"
       INNER JOIN "shared_space_person" ON "shared_space_person"."id" = "shared_space_person_face"."personId"
-      AND "shared_space_person"."spaceId" = $11
+      AND "shared_space_person"."spaceId" = $14
     WHERE
       true
-      AND "shared_space_person"."name" ILIKE $12 ESCAPE '\'
+      AND "shared_space_person"."name" ILIKE $15 ESCAPE '\'
   ),
   "matching_person_keys" AS (
     SELECT

@@ -3871,6 +3871,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -3897,6 +3898,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: false,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -3923,6 +3925,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -3952,6 +3955,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -3990,6 +3994,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4025,6 +4030,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4064,6 +4070,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4128,6 +4135,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4153,6 +4161,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4196,6 +4205,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: true,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4220,6 +4230,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: undefined,
@@ -4243,6 +4254,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: 10,
         offset: undefined,
         named: undefined,
@@ -4266,6 +4278,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: 5,
         offset: undefined,
         named: undefined,
@@ -4325,6 +4338,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: true,
         petsEnabled: false,
+        minimumFaceCount: 3,
         limit: 5,
         offset: undefined,
         named: undefined,
@@ -4348,6 +4362,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: 50,
         offset: 10,
         named: undefined,
@@ -4371,6 +4386,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: false,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: true,
@@ -4394,6 +4410,7 @@ describe(SharedSpaceService.name, () => {
       expect(mocks.sharedSpace.getPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         withHidden: true,
         petsEnabled: true,
+        minimumFaceCount: 3,
         limit: undefined,
         offset: undefined,
         named: true,
@@ -4443,6 +4460,7 @@ describe(SharedSpaceService.name, () => {
       expect(result).toEqual({ total: 152, hidden: 3, detectedFaceCount: 1201 });
       expect(mocks.sharedSpace.countPersonsBySpaceId).toHaveBeenCalledWith(spaceId, {
         petsEnabled: false,
+        minimumFaceCount: 3,
         named: undefined,
         name: 'Ali',
         takenAfter,
@@ -4512,6 +4530,7 @@ describe(SharedSpaceService.name, () => {
       });
       expect((mocks.sharedSpace as any).getPeopleFaceStatisticsBySpaceId).toHaveBeenCalledWith(spaceId, {
         petsEnabled: false,
+        minimumFaceCount: 3,
         named: true,
         name: 'Ali',
         takenAfter,

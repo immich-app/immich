@@ -1535,7 +1535,7 @@ describe('/shared-spaces', () => {
       expect(status).toBe(200);
       const ids = (body as Array<{ id: string }>).map((p) => p.id);
       expect(ids).toContain(namedPersonId);
-      expect(ids).toContain(unnamedPersonId);
+      expect(ids).not.toContain(unnamedPersonId);
       expect(ids).toContain(petPersonId);
       // Sanity check: namedPersonId and aliceGlobalId are different UUIDs.
       expect(namedPersonId).not.toBe(aliceGlobalId);
@@ -1561,13 +1561,13 @@ describe('/shared-spaces', () => {
       expect(ids).toContain(hiddenPersonId);
     });
 
-    it('unnamed persons are included in the default listing', async () => {
+    it('below-threshold unnamed persons are excluded from the default listing', async () => {
       const { status, body } = await request(app)
         .get(`/shared-spaces/${spaceId}/people`)
         .set('Authorization', `Bearer ${owner.accessToken}`);
       expect(status).toBe(200);
       const ids = (body as Array<{ id: string }>).map((p) => p.id);
-      expect(ids).toContain(unnamedPersonId);
+      expect(ids).not.toContain(unnamedPersonId);
     });
 
     it('?named=true returns only persons with non-empty names', async () => {

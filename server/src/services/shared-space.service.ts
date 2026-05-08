@@ -802,6 +802,7 @@ export class SharedSpaceService extends BaseService {
       return [];
     }
 
+    const { machineLearning } = await this.getConfig({ withCache: false });
     const persons = await this.sharedSpaceRepository.getPersonsBySpaceId(spaceId, {
       withHidden: query?.withHidden ?? false,
       petsEnabled: space.petsEnabled,
@@ -811,6 +812,7 @@ export class SharedSpaceService extends BaseService {
       name: query?.name,
       takenAfter: query?.takenAfter,
       takenBefore: query?.takenBefore,
+      minimumFaceCount: machineLearning.facialRecognition.minFaces,
     });
 
     const aliases =
@@ -832,12 +834,14 @@ export class SharedSpaceService extends BaseService {
       return { total: 0, hidden: 0, detectedFaceCount: 0 };
     }
 
+    const { machineLearning } = await this.getConfig({ withCache: false });
     return this.sharedSpaceRepository.countPersonsBySpaceId(spaceId, {
       petsEnabled: space.petsEnabled,
       named: query?.named,
       name: query?.name,
       takenAfter: query?.takenAfter,
       takenBefore: query?.takenBefore,
+      minimumFaceCount: machineLearning.facialRecognition.minFaces,
     });
   }
 
@@ -859,12 +863,14 @@ export class SharedSpaceService extends BaseService {
       };
     }
 
+    const { machineLearning } = await this.getConfig({ withCache: false });
     return this.sharedSpaceRepository.getPeopleFaceStatisticsBySpaceId(spaceId, {
       petsEnabled: space.petsEnabled,
       named: query?.named,
       name: query?.name,
       takenAfter: query?.takenAfter,
       takenBefore: query?.takenBefore,
+      minimumFaceCount: machineLearning.facialRecognition.minFaces,
     });
   }
 
