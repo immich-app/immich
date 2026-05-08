@@ -13,7 +13,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserCreateDto } from 'src/dtos/album.dto';
+import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto';
 import { AlbumUserRole } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
@@ -183,98 +183,48 @@ export class AlbumRepository {
     );
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getOwned(ownerId: string) {
+  private buildAlbumBaseQuery(ownerId: string, { isOwned, isShared }: { isOwned?: boolean; isShared?: boolean }) {
     return this.db
       .selectFrom('album')
-      .selectAll('album')
       .innerJoin('album_user', (join) =>
-        join
-          .onRef('album_user.albumId', '=', 'album.id')
-          .on('album_user.userId', '=', ownerId)
-          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner)),
+        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', ownerId),
       )
       .where('album.deletedAt', 'is', null)
+      .$if(isOwned === true, (qb) => qb.where('album_user.role', '=', sql.lit(AlbumUserRole.Owner)))
+      .$if(isOwned === false, (qb) => qb.where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)))
+      .$if(isShared !== undefined, (qb) =>
+        qb.where((eb) => {
+          const isSharedAlbum = eb.or([
+            eb.exists(
+              eb
+                .selectFrom('album_user as au')
+                .whereRef('au.albumId', '=', 'album.id')
+                .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
+            ),
+            eb.exists(eb.selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id')),
+          ]);
+          return isShared ? isSharedAlbum : eb.not(isSharedAlbum);
+        }),
+      );
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { isOwned: true, isShared: true }] })
+  getAll(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<MapAlbumDto[]> {
+    return this.buildAlbumBaseQuery(ownerId, options)
+      .selectAll('album')
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
       .execute();
   }
 
-  /**
-   * Get albums shared with and shared by owner.
-   */
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getShared(ownerId: string) {
-    return this.db
-      .selectFrom('album')
-      .selectAll('album')
-      .innerJoin(
-        (eb) =>
-          eb
-            .selectFrom('album_user')
-            .select('album_user.albumId as id')
-            .where('album_user.userId', '=', ownerId)
-            .where(
-              'album_user.albumId',
-              'in',
-              eb
-                .selectFrom('album_user')
-                .select('album_user.albumId')
-                .where('album_user.role', '!=', sql.lit(AlbumUserRole.Owner)),
-            )
-            .union(
-              eb
-                .selectFrom('shared_link')
-                .where('shared_link.userId', '=', ownerId)
-                .where('shared_link.albumId', 'is not', null)
-                .select('shared_link.albumId as id')
-                .$narrowType<{ id: NotNull }>(),
-            )
-            .as('matching'),
-        (join) => join.onRef('matching.id', '=', 'album.id'),
-      )
-      .innerJoin('album_user', (join) =>
-        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.role', '=', sql.lit(AlbumUserRole.Owner)),
-      )
-      .where('album.deletedAt', 'is', null)
-      .select(withAlbumUsers(ownerId))
-      .select(withSharedLink)
+  @GenerateSql({ params: [DummyValue.UUID, { isOwned: true, isShared: true }] })
+  async getAllIds(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<string[]> {
+    const rows = await this.buildAlbumBaseQuery(ownerId, options)
+      .select('album.id')
       .orderBy('album.createdAt', 'desc')
       .execute();
-  }
-
-  /**
-   * Get albums of owner that are _not_ shared
-   */
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getNotShared(ownerId: string) {
-    return this.db
-      .selectFrom('album')
-      .selectAll('album')
-      .innerJoin('album_user', (join) =>
-        join
-          .onRef('album_user.albumId', '=', 'album.id')
-          .on('album_user.userId', '=', ownerId)
-          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner)),
-      )
-      .where('album.deletedAt', 'is', null)
-      .where(({ not, exists, selectFrom }) =>
-        not(
-          exists(
-            selectFrom('album_user as au')
-              .whereRef('au.albumId', '=', 'album.id')
-              .where('au.role', '!=', sql.lit(AlbumUserRole.Owner)),
-          ),
-        ),
-      )
-      .where(({ not, exists, selectFrom }) =>
-        not(exists(selectFrom('shared_link').whereRef('shared_link.albumId', '=', 'album.id'))),
-      )
-      .select(withSharedLink)
-      .select(withAlbumUsers(ownerId))
-      .orderBy('album.createdAt', 'desc')
-      .execute();
+    return rows.map((r) => r.id);
   }
 
   async restoreAll(userId: string): Promise<void> {

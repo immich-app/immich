@@ -48,11 +48,6 @@ enum StoreKey<T> {
   enableHapticFeedback<bool>._(126),
   customHeaders<String>._(127),
 
-  // theme settings
-  primaryColor<String>._(128),
-  dynamicTheme<bool>._(129),
-  colorfulInterface<bool>._(130),
-
   syncAlbums<bool>._(131),
 
   // Auto endpoint switching
@@ -86,16 +81,18 @@ enum StoreKey<T> {
   shouldResetSync<bool>._(1007),
 
   // Free up space
-  cleanupKeepFavorites<bool>._(1008),
-  cleanupKeepMediaType<int>._(1009),
-  cleanupKeepAlbumIds<String>._(1010),
-  cleanupCutoffDaysAgo<int>._(1011),
-  cleanupDefaultsInitialized<bool>._(1012),
-
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyPrimaryColor<String>._(128),
+  legacyDynamicTheme<bool>._(129),
+  legacyColorfulInterface<bool>._(130),
   legacyThemeMode<String>._(102),
+  legacyCleanupKeepFavorites<bool>._(1008),
+  legacyCleanupKeepMediaType<int>._(1009),
+  legacyCleanupKeepAlbumIds<String>._(1010),
+  legacyCleanupCutoffDaysAgo<int>._(1011),
+  legacyCleanupDefaultsInitialized<bool>._(1012),
   legacyLogLevel<int>._(115);
 
   const StoreKey._(this.id);

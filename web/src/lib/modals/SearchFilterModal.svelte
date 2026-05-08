@@ -54,6 +54,10 @@
       query = searchQuery.originalFileName;
     }
 
+    if ('originalPath' in searchQuery && searchQuery.originalPath) {
+      query = searchQuery.originalPath;
+    }
+
     return {
       query,
       ocr: searchQuery.ocr,
@@ -133,6 +137,7 @@
       ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
+      originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
