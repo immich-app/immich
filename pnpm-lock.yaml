@@ -253,8 +253,8 @@ importers:
         specifier: ^3.4.4
         version: 3.7.2
       orchestration-ui:
-        specifier: 0.1.63
-        version: 0.1.63(svelte@5.55.1)
+        specifier: 0.1.68
+        version: 0.1.68(svelte@5.55.1)
       pg:
         specifier: ^8.11.3
         version: 8.20.0
@@ -524,8 +524,8 @@ importers:
         specifier: ^6.3.3
         version: 6.8.2
       orchestration-api:
-        specifier: 0.1.63
-        version: 0.1.63(@nestjs/platform-express@11.1.17)(class-transformer@0.5.1)(reflect-metadata@0.2.2)
+        specifier: 0.1.68
+        version: 0.1.68(@nestjs/platform-express@11.1.17)(class-transformer@0.5.1)(reflect-metadata@0.2.2)
       pg:
         specifier: ^8.11.3
         version: 8.20.0
@@ -819,8 +819,8 @@ importers:
         specifier: ^5.6.2
         version: 5.21.0
       orchestration-ui:
-        specifier: 0.1.63
-        version: 0.1.63(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)
+        specifier: 0.1.68
+        version: 0.1.68(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)
       pmtiles:
         specifier: ^4.3.0
         version: 4.4.0
@@ -6511,6 +6511,10 @@ packages:
     resolution: {integrity: sha512-fkdfq+b+AHI4cKdhZlppHveI/mgz2qpiYxcm+t5E5TsxX7QrLS1VE0+7GENEk9z0EeGPcpSciGv6ez24duWhwQ==}
     engines: {node: '>=18.x'}
 
+  cronstrue@3.14.0:
+    resolution: {integrity: sha512-XnW4vuK/jPJjmTyDWiej1Zq36Od7ITwxaV2O1pzHZuyMVvdy7NAvyvIBzybt+idqSpfqYuoDG7uf/ocGtJVWxA==}
+    hasBin: true
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -7440,6 +7444,10 @@ packages:
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
+
+  eventsource-client@1.2.0:
+    resolution: {integrity: sha512-kDI75RSzO3TwyG/K9w1ap8XwqSPcwi6jaMkNulfVeZmSeUM49U8kUzk1s+vKNt0tGrXgK47i+620Yasn1ccFiw==}
+    engines: {node: '>=18.0.0'}
 
   eventsource-parser@3.0.6:
     resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
@@ -9679,11 +9687,11 @@ packages:
     resolution: {integrity: sha512-weP+BZ8MVNnlCm8c0Qdc1WSWq4Qn7I+9CJGm7Qali6g44e/PUzbjNqJX5NJ9ljlNMosfJvg1fKEGILklK9cwnw==}
     engines: {node: '>=18'}
 
-  orchestration-api@0.1.63:
-    resolution: {integrity: sha512-WoQedhYvKI7P6/TaxSBJD+K/LrnXZ+ImGLit+VFy2zaXhRLI83q2W6JJP0BE65py0fkpq+6HV4qWdTmJLX34wQ==}
+  orchestration-api@0.1.68:
+    resolution: {integrity: sha512-AU0fBmsR+0ykyxnp22fjheF4Q6SWHyEw6/mk0OJos7xrZlxSJnb+DzzXjSiNm4fCyfODTCkSTWfHRnsPbxqQgA==}
 
-  orchestration-ui@0.1.63:
-    resolution: {integrity: sha512-lOlv2OhWF9b4y8mhEPrgs0fmcPJmYOhGAh19jNW/x8LaGfHu2XmmfZvGhj4bntg4VyYUI9xq0Qa/sUfyMtnHjw==}
+  orchestration-ui@0.1.68:
+    resolution: {integrity: sha512-DFf7zYlWpvIxdfOtKiN+nhkpzKGXpGRLwls6erSuc1ZvAiZW6bc2+5lLktjBWi+ZRfl166Wkbb4c6a3eIiP2Dg==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -12643,8 +12651,8 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
-  yucca-api-client@0.1.63:
-    resolution: {integrity: sha512-AZaqQs0bTp99m0FSHohkq+KjmuhSqiL6TxCJ3PT6u73P0CA+bgzFTHQPYFpv2PnB9YVkh7ZvbOLitCVsVyUdeQ==}
+  yucca-api-client@0.1.68:
+    resolution: {integrity: sha512-1FCFPa4dZ3wr5n+rpb0+rfCm4u9JSko4nXe3b/zYd/XWHzvLZteEYF3W8iO1LevJHgquEo9ZFkH8h/RU5TFKIg==}
 
   yup@1.7.1:
     resolution: {integrity: sha512-GKHFX2nXul2/4Dtfxhozv701jLQHdf6J34YDh2cEkpqoo8le5Mg6/LrdseVLrFarmFygZTlfIhHx/QKfb/QWXw==}
@@ -19127,6 +19135,8 @@ snapshots:
       '@types/luxon': 3.7.1
       luxon: 3.7.2
 
+  cronstrue@3.14.0: {}
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -20218,6 +20228,10 @@ snapshots:
       - bare-abort-controller
 
   events@3.3.0: {}
+
+  eventsource-client@1.2.0:
+    dependencies:
+      eventsource-parser: 3.0.6
 
   eventsource-parser@3.0.6: {}
 
@@ -23013,7 +23027,7 @@ snapshots:
       string-width: 7.2.0
       strip-ansi: 7.2.0
 
-  orchestration-api@0.1.63(@nestjs/platform-express@11.1.17)(class-transformer@0.5.1)(reflect-metadata@0.2.2):
+  orchestration-api@0.1.68(@nestjs/platform-express@11.1.17)(class-transformer@0.5.1)(reflect-metadata@0.2.2):
     dependencies:
       '@futo-org/restic-wrapper': 1.2.0
       '@nestjs/common': 11.1.17(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -23027,6 +23041,7 @@ snapshots:
       cookie: 1.1.1
       cron: 4.4.0
       event-iterator: 2.0.0
+      eventsource-client: 1.2.0
       express: 5.2.1
       kysely: 0.28.2
       nestjs-kysely: 3.1.2(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(kysely@0.28.2)(reflect-metadata@0.2.2)
@@ -23034,7 +23049,7 @@ snapshots:
       rxjs: 7.8.2
       socket.io: 4.8.3
       tail: 2.2.6
-      yucca-api-client: 0.1.63
+      yucca-api-client: 0.1.68
     transitivePeerDependencies:
       - '@nestjs/microservices'
       - '@nestjs/platform-express'
@@ -23044,38 +23059,38 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  orchestration-ui@0.1.63(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1):
+  orchestration-ui@0.1.68(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1):
     dependencies:
       '@immich/ui': 0.59.0(@sveltejs/kit@2.57.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.5(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.55.1)
       '@mdi/js': 7.4.47
       '@oazapfts/runtime': 1.2.0
       '@tanstack/svelte-query': 6.1.9(svelte@5.55.1)
       cron-validate: 1.5.3
-      d3: 7.9.0
+      cronstrue: 3.14.0
       lodash.debounce: 4.0.8
       luxon: 3.7.2
       socket.io-client: 4.8.3
       svelte: 5.55.1
-      yucca-api-client: 0.1.63
+      yucca-api-client: 0.1.68
     transitivePeerDependencies:
       - '@sveltejs/kit'
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  orchestration-ui@0.1.63(svelte@5.55.1):
+  orchestration-ui@0.1.68(svelte@5.55.1):
     dependencies:
       '@immich/ui': 0.59.0(svelte@5.55.1)
       '@mdi/js': 7.4.47
       '@oazapfts/runtime': 1.2.0
       '@tanstack/svelte-query': 6.1.9(svelte@5.55.1)
       cron-validate: 1.5.3
-      d3: 7.9.0
+      cronstrue: 3.14.0
       lodash.debounce: 4.0.8
       luxon: 3.7.2
       socket.io-client: 4.8.3
       svelte: 5.55.1
-      yucca-api-client: 0.1.63
+      yucca-api-client: 0.1.68
     transitivePeerDependencies:
       - '@sveltejs/kit'
       - bufferutil
@@ -26598,7 +26613,7 @@ snapshots:
 
   yoctocolors@2.1.2: {}
 
-  yucca-api-client@0.1.63:
+  yucca-api-client@0.1.68:
     dependencies:
       '@oazapfts/runtime': 1.2.0
 

@@ -15329,35 +15329,19 @@
         "x-immich-state": "Alpha"
       }
     },
-    "/yucca/auth/oidc/callback": {
+    "/yucca/auth/oidc/device": {
       "get": {
-        "operationId": "oidcCallback",
+        "operationId": "oidcDeviceFlow",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Auth"
-        ]
-      }
-    },
-    "/yucca/auth/oidc/login": {
-      "get": {
-        "operationId": "oidcAuthorize",
-        "parameters": [
-          {
-            "name": "next",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceFlowResponseDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -15508,6 +15492,36 @@
       }
     },
     "/yucca/logs/{id}": {
+      "get": {
+        "operationId": "getRun",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunHistory"
+        ]
+      }
+    },
+    "/yucca/logs/{id}/stream": {
       "get": {
         "operationId": "logStreamSse",
         "parameters": [
@@ -15701,6 +15715,27 @@
       }
     },
     "/yucca/repository/{id}": {
+      "delete": {
+        "operationId": "deleteRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
       "patch": {
         "operationId": "updateRepository",
         "parameters": [
@@ -18766,6 +18801,21 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "DeviceFlowResponseDto": {
+        "properties": {
+          "userCode": {
+            "type": "string"
+          },
+          "verificationUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userCode",
+          "verificationUri"
+        ],
         "type": "object"
       },
       "DownloadArchiveDto": {
@@ -22706,6 +22756,9 @@
           "logFilePath": {
             "type": "string"
           },
+          "repositoryId": {
+            "type": "string"
+          },
           "start": {
             "type": "string"
           },
@@ -22715,14 +22768,23 @@
                 "$ref": "#/components/schemas/RunStatus"
               }
             ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
           }
         },
         "required": [
           "end",
           "id",
           "logFilePath",
+          "repositoryId",
           "start",
-          "status"
+          "status",
+          "type"
         ],
         "type": "object"
       },
@@ -22740,11 +22802,29 @@
         ],
         "type": "object"
       },
+      "RunResponseDto": {
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/RunDto"
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "type": "object"
+      },
       "RunStatus": {
         "enum": [
           "incomplete",
           "complete",
           "failed"
+        ],
+        "type": "string"
+      },
+      "RunType": {
+        "enum": [
+          "backup",
+          "restore"
         ],
         "type": "string"
       },
@@ -24221,6 +24301,9 @@
             },
             "type": "array"
           },
+          "summary": {
+            "$ref": "#/components/schemas/SnapshotSummaryDto"
+          },
           "time": {
             "type": "string"
           }
@@ -24229,6 +24312,37 @@
           "id",
           "paths",
           "time"
+        ],
+        "type": "object"
+      },
+      "SnapshotSummaryDto": {
+        "properties": {
+          "dataAdded": {
+            "type": "number"
+          },
+          "filesChanged": {
+            "type": "number"
+          },
+          "filesNew": {
+            "type": "number"
+          },
+          "filesUnmodified": {
+            "type": "number"
+          },
+          "totalBytes": {
+            "type": "number"
+          },
+          "totalFiles": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "dataAdded",
+          "filesChanged",
+          "filesNew",
+          "filesUnmodified",
+          "totalBytes",
+          "totalFiles"
         ],
         "type": "object"
       },
