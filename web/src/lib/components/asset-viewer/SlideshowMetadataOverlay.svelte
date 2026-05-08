@@ -2,6 +2,7 @@
   import { SlideshowMetadataOverlayMode, slideshowStore } from '$lib/stores/slideshow.store';
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { Text } from '@immich/ui';
   import { DateTime } from 'luxon';
 
   type Props = {
@@ -46,17 +47,15 @@
     >
       <div class="flex flex-col gap-2 text-white">
         {#if description}
-          <p class="text-base/relaxed font-medium wrap-break-word whitespace-pre-wrap">
-            {description}
-          </p>
+          <Text fontWeight="medium" class="wrap-break-word whitespace-pre-wrap leading-relaxed">{description}</Text>
         {/if}
         {#if $slideshowMetadataOverlayMode !== SlideshowMetadataOverlayMode.DescriptionOnly}
           <div class="flex flex-col gap-1 text-sm opacity-90">
             {#if dateString}
-              <p>{dateString}</p>
+              <Text>{dateString}</Text>
             {/if}
             {#if locationString}
-              <p>{locationString}</p>
+              <Text>{locationString}</Text>
             {/if}
           </div>
         {/if}
