@@ -111,8 +111,5 @@
     "typescript-eslint": "^8.45.0",
     "vite": "^8.0.0",
     "vitest": "^4.0.0"
-  },
-  "volta": {
-    "node": "24.15.0"
   }
 }

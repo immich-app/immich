@@ -17,6 +17,15 @@ run = "uv run ruff format immich_ml"
 [tasks.check]
 run = "uv run mypy --strict immich_ml/"
 
+[tasks.ci-unit]
+run = [
+  { task = ":install --extra cpu" },
+  { task = ":format" },
+  { task = ":lint --output-format=github" },
+  { task = ":check" },
+  { task = ":test" },
+]
+
 [tasks.checklist]
 run = [
   { task = ":install" },
@@ -25,4 +34,3 @@ run = [
   { task = ":check" },
   { task = ":test" },
 ]
-

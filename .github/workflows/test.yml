@@ -78,28 +78,14 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run package manager install
-        run: pnpm install
-      - name: Run linter
-        run: pnpm lint
-        if: ${{ !cancelled() }}
-      - name: Run formatter
-        run: pnpm format
-        if: ${{ !cancelled() }}
-      - name: Run tsc
-        run: pnpm check
-        if: ${{ !cancelled() }}
-      - name: Run small tests & coverage
-        run: pnpm test
-        if: ${{ !cancelled() }}
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Run ci-unit
+        run: mise run ci-unit
+
   cli-unit-tests:
     name: Unit Test CLI
     needs: pre-job
@@ -122,31 +108,15 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './cli/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Setup typescript-sdk
-        run: pnpm install && pnpm run build
-        working-directory: ./open-api/typescript-sdk
-      - name: Install deps
-        run: pnpm install
-      - name: Run linter
-        run: pnpm lint
-        if: ${{ !cancelled() }}
-      - name: Run formatter
-        run: pnpm format
-        if: ${{ !cancelled() }}
-      - name: Run tsc
-        run: pnpm check
-        if: ${{ !cancelled() }}
-      - name: Run unit tests & coverage
-        run: pnpm test
-        if: ${{ !cancelled() }}
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Run ci-unit
+        run: mise run ci-unit
+
   cli-unit-tests-win:
     name: Unit Test CLI (Windows)
     needs: pre-job
@@ -169,26 +139,33 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
+
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: './cli/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
+
       - name: Install deps
         run: pnpm install --frozen-lockfile
+
       # Skip linter & formatter in Windows test.
+
       - name: Run tsc
         run: pnpm check
         if: ${{ !cancelled() }}
+
       - name: Run unit tests & coverage
         run: pnpm test
         if: ${{ !cancelled() }}
+
   web-lint:
     name: Lint Web
     needs: pre-job
@@ -216,7 +193,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: './web/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Run setup typescript-sdk
@@ -260,7 +237,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: './web/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Run setup typescript-sdk
@@ -298,7 +275,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: './web/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install dependencies
@@ -341,30 +318,16 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Run ci-unit
+        run: mise run ci-unit
         if: ${{ !cancelled() }}
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        if: ${{ !cancelled() }}
-      - name: Run linter
-        run: pnpm lint
-        if: ${{ !cancelled() }}
-      - name: Run formatter
-        run: pnpm format
-        if: ${{ !cancelled() }}
-      - name: Run tsc
-        run: pnpm check
-        if: ${{ !cancelled() }}
+
   server-medium-tests:
     name: Medium Tests (Server)
     needs: pre-job
@@ -388,23 +351,16 @@ jobs:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
           github_token: ${{ steps.token.outputs.token }}
-      - name: Run pnpm install
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
-      - name: Run medium tests
-        run: pnpm test:medium
+
+      - name: Run ci-medium
+        run: mise run ci-medium
         if: ${{ !cancelled() }}
+
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)
     needs: pre-job
@@ -431,52 +387,63 @@ jobs:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
+
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: './e2e/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
         if: ${{ !cancelled() }}
+
       - name: Run setup web
         run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync
         working-directory: ./web
         if: ${{ !cancelled() }}
+
       - name: Run setup cli
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./cli
         if: ${{ !cancelled() }}
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
+
       - name: Start Docker Compose
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
+
       - name: Run e2e tests (api & cli)
         env:
           VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test
         if: ${{ !cancelled() }}
+
       - name: Run e2e tests (maintenance)
         env:
           VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test:maintenance
         if: ${{ !cancelled() }}
+
       - name: Capture Docker logs
         if: always()
         run: docker compose logs --no-color > docker-compose-logs.txt
         working-directory: ./e2e
+
       - name: Archive Docker logs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: e2e-server-docker-logs-${{ matrix.runner }}
           path: e2e/docker-compose-logs.txt
+
   e2e-tests-web:
     name: End-to-End Tests (Web)
     needs: pre-job
@@ -503,70 +470,85 @@ jobs:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
+
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version-file: './e2e/.nvmrc'
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
+
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
+
         if: ${{ !cancelled() }}
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
+
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --only-shell
         if: ${{ !cancelled() }}
+
       - name: Docker build
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
+
       - name: Run e2e tests (web)
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web
         if: ${{ !cancelled() }}
+
       - name: Archive e2e test (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: success() || failure()
         with:
           name: e2e-web-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
+
       - name: Run ui tests (web)
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web:ui
         if: ${{ !cancelled() }}
+
       - name: Archive ui test (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: success() || failure()
         with:
           name: e2e-ui-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
+
       - name: Run maintenance tests
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web:maintenance
         if: ${{ !cancelled() }}
+
       - name: Archive maintenance tests (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: success() || failure()
         with:
           name: e2e-maintenance-isolated-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
+
       - name: Capture Docker logs
         if: always()
         run: docker compose logs --no-color > docker-compose-logs.txt
         working-directory: ./e2e
+
       - name: Archive Docker logs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: e2e-web-docker-logs-${{ matrix.runner }}
           path: e2e/docker-compose-logs.txt
+
   success-check-e2e:
     name: End-to-End Tests Success
     needs: [e2e-tests-server-cli, e2e-tests-web]
@@ -613,9 +595,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      MISE_CEILING_PATHS: ${{ github.workspace }}
-      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}/machine-learning/mise.toml
     defaults:
       run:
         working-directory: ./machine-learning
@@ -635,18 +614,10 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
           github_token: ${{ steps.token.outputs.token }}
-          working_directory: ./machine-learning
 
-      - name: Install dependencies
-        run: mise run install --extra cpu
-      - name: Lint code
-        run: mise run lint --output-format=github
-      - name: Format code
-        run: mise run format
-      - name: Run type checking
-        run: mise run check
-      - name: Run tests and coverage
-        run: mise run test
+      - name: Run ci-unit
+        run: mise run ci-unit
+
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
@@ -669,19 +640,19 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './.github/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Run pnpm install
         run: pnpm install --frozen-lockfile
+
       - name: Run formatter
         run: pnpm format
         if: ${{ !cancelled() }}
+
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
@@ -720,21 +691,22 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
+
       - name: Build the app
         run: pnpm --filter immich build
+
       - name: Run API generation
         run: ./bin/generate-open-api.sh
         working-directory: open-api
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
@@ -743,6 +715,7 @@ jobs:
             mobile/openapi
             open-api/typescript-sdk
             open-api/immich-openapi-specs.json
+
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
@@ -751,6 +724,7 @@ jobs:
           echo "ERROR: Generated files not up to date!"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
+
   sql-schema-up-to-date:
     name: SQL Schema Checks
     runs-on: ubuntu-latest
@@ -782,31 +756,35 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
+
       - name: Build the app
         run: pnpm build
+
       - name: Run existing migrations
         run: pnpm migrations:run
+
       - name: Test npm run schema:reset command works
         run: pnpm schema:reset
+
       - name: Generate new migrations
         continue-on-error: true
         run: pnpm migrations:generate src/TestMigration
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
         with:
           files: |
             server/src
+
       - name: Verify migration files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
@@ -816,16 +794,19 @@ jobs:
           echo "Changed files: ${CHANGED_FILES}"
           cat ./src/*-TestMigration.ts
           exit 1
+
       - name: Run SQL generation
         run: pnpm sync:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-sql-files
         with:
           files: |
             server/src/queries
+
       - name: Verify SQL files have not changed
         if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
         env:

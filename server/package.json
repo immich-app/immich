@@ -167,9 +167,6 @@
     "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0"
   },
-  "volta": {
-    "node": "24.15.0"
-  },
   "overrides": {
     "sharp": "^0.34.5"
   }
