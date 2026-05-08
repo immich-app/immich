@@ -188,28 +188,22 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run //:sdk:install && mise run //:sdk:build
+
       - name: Run pnpm install
-        run: pnpm rebuild && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
       - name: Run linter
         run: pnpm lint
         if: ${{ !cancelled() }}
-      - name: Run formatter
-        run: pnpm format
-        if: ${{ !cancelled() }}
-      - name: Run svelte checks
-        run: pnpm check:svelte
-        if: ${{ !cancelled() }}
+
   web-unit-tests:
     name: Test Web
     needs: pre-job
@@ -232,25 +226,15 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
-      - name: Run npm install
-        run: pnpm install --frozen-lockfile
-      - name: Run tsc
-        run: pnpm check:typescript
-        if: ${{ !cancelled() }}
-      - name: Run unit tests & coverage
-        run: pnpm test
-        if: ${{ !cancelled() }}
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Run ci-unit
+        run: mise run ci-unit
+
   i18n-tests:
     name: Test i18n
     needs: pre-job
@@ -270,24 +254,25 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: '.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Install dependencies
         run: pnpm --filter=immich-i18n install --frozen-lockfile
+
       - name: Format
         run: pnpm --filter=immich-i18n format:fix
+
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
         with:
           files: |
             i18n/**
+
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
@@ -296,6 +281,7 @@ jobs:
           echo "ERROR: i18n files not up to date!"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
+
   e2e-tests-lint:
     name: End-to-End Lint
     needs: pre-job
@@ -397,10 +383,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run setup typescript-sdk
+
+      - name: Setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
-        if: ${{ !cancelled() }}
 
       - name: Run setup web
         run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync

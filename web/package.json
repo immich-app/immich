@@ -14,7 +14,7 @@
     "check:watch": "pnpm run check:svelte --watch",
     "check:code": "pnpm run format && pnpm run lint && pnpm run check:svelte && pnpm run check:typescript",
     "check:all": "pnpm run check:code && pnpm run test:cov",
-    "lint": "eslint . --max-warnings 0 --concurrency 4",
+    "lint": "eslint . --max-warnings 0 --concurrency 6",
     "lint:fix": "pnpm run lint --fix",
     "format": "prettier --cache --check .",
     "format:fix": "prettier --cache --write --list-different .",
