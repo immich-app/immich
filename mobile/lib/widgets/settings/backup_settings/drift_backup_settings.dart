@@ -74,6 +74,7 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
     } catch (_) {
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
+        if (!mounted) return;
         setState(() {
           isAlbumSyncInProgress = false;
         });
