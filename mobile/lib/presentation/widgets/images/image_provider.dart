@@ -177,8 +177,13 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   return provider;
 }
 
-ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnailResolution, bool edited = true}) {
-  if (_shouldUseLocalAsset(asset)) {
+ImageProvider? getThumbnailImageProvider(
+  BaseAsset asset, {
+  Size size = kThumbnailResolution,
+  bool edited = true,
+  bool localFailed = false,
+}) {
+  if (_shouldUseLocalAsset(asset) && !localFailed) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
     return LocalThumbProvider(id: id, size: size, assetType: asset.type);
   }

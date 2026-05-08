@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -18,24 +19,34 @@ class Thumbnail extends StatefulWidget {
   final ImageProvider? imageProvider;
   final ImageProvider? thumbhashProvider;
   final BoxFit fit;
+  final Size size;
+  final BaseAsset? asset;
 
-  const Thumbnail({this.imageProvider, this.fit = BoxFit.cover, this.thumbhashProvider, super.key});
+  const Thumbnail({
+    this.imageProvider,
+    this.fit = BoxFit.cover,
+    this.thumbhashProvider,
+    this.size = kThumbnailResolution,
+    this.asset,
+    super.key,
+  });
 
   Thumbnail.remote({
     required String remoteId,
     required String thumbhash,
     this.fit = BoxFit.cover,
-    Size size = kThumbnailResolution,
+    this.size = kThumbnailResolution,
     super.key,
   }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash),
-       thumbhashProvider = null;
+       thumbhashProvider = null,
+       asset = null;
 
   Thumbnail.fromAsset({
-    required BaseAsset? asset,
+    required this.asset,
     this.fit = BoxFit.cover,
 
     /// The logical UI size of the thumbnail. This is only used to determine the ideal image resolution and does not affect the widget size.
-    Size size = kThumbnailResolution,
+    this.size = kThumbnailResolution,
     super.key,
   }) : thumbhashProvider = switch (asset) {
          RemoteAsset() when asset.thumbHash != null && asset.localId == null => ThumbHashProvider(
@@ -105,9 +116,8 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
     thumbhashStream.addListener(thumbhashStreamListener);
   }
 
-  void _loadFromImageProvider() {
+  void _loadFromImageProvider(ImageProvider? imageProvider) {
     _stopListeningToImageStream();
-    final imageProvider = widget.imageProvider;
     if (imageProvider == null) return;
 
     final imageStream = _imageStream = imageProvider.resolve(ImageConfiguration.empty);
@@ -142,8 +152,18 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
         });
       },
       onError: (exception, stackTrace) {
-        log.severe('Error loading image: $exception', exception, stackTrace);
         _stopListeningToImageStream();
+
+        if (imageProvider is LocalThumbProvider && widget.asset != null) {
+          ImageProvider? nextProvider = getThumbnailImageProvider(widget.asset!, size: widget.size, localFailed: true);
+          if (nextProvider != null && nextProvider != imageProvider) {
+            log.fine('Error loading image, retrying with other provider: $exception', exception, stackTrace);
+            _loadFromImageProvider(nextProvider);
+            return;
+          }
+        }
+
+        log.severe('Error loading image: $exception', exception, stackTrace);
       },
     );
     imageStream.addListener(imageStreamListener);
@@ -180,7 +200,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
         _previousImage?.dispose();
         _previousImage = null;
       }
-      _loadFromImageProvider();
+      _loadFromImageProvider(widget.imageProvider);
     }
 
     if (_providerImage == null && oldWidget.thumbhashProvider != widget.thumbhashProvider) {
@@ -195,7 +215,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
   }
 
   void _loadImage() {
-    _loadFromImageProvider();
+    _loadFromImageProvider(widget.imageProvider);
     _loadFromThumbhashProvider();
   }
 
