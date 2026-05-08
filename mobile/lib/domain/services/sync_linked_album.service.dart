@@ -39,24 +39,35 @@ class SyncLinkedAlbumService {
 
     await Future.wait(
       selectedAlbums.map((localAlbum) async {
-        final linkedRemoteAlbumId = localAlbum.linkedRemoteAlbumId;
-        if (linkedRemoteAlbumId == null) {
-          _log.warning("No linked remote album ID found for local album: ${localAlbum.name}");
-          return;
-        }
+        try {
+          final linkedRemoteAlbumId = localAlbum.linkedRemoteAlbumId;
+          if (linkedRemoteAlbumId == null) {
+            _log.warning("No linked remote album ID found for local album: ${localAlbum.name}");
+            return;
+          }
 
-        final remoteAlbum = await _remoteAlbumRepository.get(linkedRemoteAlbumId);
-        if (remoteAlbum == null) {
-          _log.warning("Linked remote album not found for ID: $linkedRemoteAlbumId");
-          return;
-        }
+          final remoteAlbum = await _remoteAlbumRepository.get(linkedRemoteAlbumId);
+          if (remoteAlbum == null) {
+            _log.warning("Linked remote album not found for ID: $linkedRemoteAlbumId");
+            return;
+          }
 
-        // get assets that are uploaded but not in the remote album
-        final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
-        _log.fine("Syncing ${assetIds.length} assets to remote album: ${remoteAlbum.name}");
-        if (assetIds.isNotEmpty) {
-          final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
-          await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
+          // get assets that are uploaded but not in the remote album
+          final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
+          _log.fine("Syncing ${assetIds.length} assets to remote album: ${remoteAlbum.name}");
+          if (assetIds.isNotEmpty) {
+            final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
+            await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
+          }
+        } on RemoteAlbumNotFoundException catch (e) {
+          // server doesn't have the linked album anymore. drop the cached row;
+          // KeyAction.setNull on LocalAlbumEntity.linkedRemoteAlbumId nulls
+          // the link via FK cascade, and the next manageLinkedAlbums run
+          // will recreate or re-link by name.
+          _log.warning("Pruning stale linked album for ${localAlbum.name} (server returned 'Album not found' for ${e.albumId})");
+          await _remoteAlbumRepository.deleteAlbum(e.albumId);
+        } catch (error, stack) {
+          _log.severe("Linked album sync failed for ${localAlbum.name}", error, stack);
         }
       }),
     );
