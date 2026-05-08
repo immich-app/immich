@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:intl/intl.dart';
 
 class MapTimeRange extends StatelessWidget {
@@ -15,44 +17,49 @@ class MapTimeRange extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ListTile(
-          title: Text("date_after".t(context: context)),
+          title: Text(context.t.date_after),
           subtitle: Text(
-            timeRange.from != null
-                ? DateFormat.yMMMd().add_jm().format(timeRange.from!)
-                : "not_set".t(context: context),
+            timeRange.from.fold((from) => DateFormat.yMMMd().add_jm().format(from), () => context.t.not_set),
           ),
-          trailing: timeRange.from != null
+          trailing: timeRange.from.isSome
               ? IconButton(icon: const Icon(Icons.close), onPressed: () => onChanged(timeRange.clearFrom()))
               : null,
           onTap: () async {
+            final initial = timeRange.from.unwrapOrNull ?? DateTime.now();
+
             final picked = await showDatePicker(
               context: context,
-              initialDate: timeRange.from ?? DateTime.now(),
+              initialDate: initial,
               firstDate: DateTime(1970),
               lastDate: DateTime.now(),
             );
+
             if (picked != null) {
-              onChanged(timeRange.copyWith(from: picked));
+              onChanged(timeRange.copyWith(from: Option.some(picked)));
             }
           },
         ),
+
         ListTile(
-          title: Text("date_before".t(context: context)),
+          title: Text(context.t.date_before),
           subtitle: Text(
-            timeRange.to != null ? DateFormat.yMMMd().add_jm().format(timeRange.to!) : "not_set".t(context: context),
+            timeRange.to.fold<String>((to) => DateFormat.yMMMd().add_jm().format(to), () => context.t.not_set),
           ),
-          trailing: timeRange.to != null
+          trailing: timeRange.to.isSome
               ? IconButton(icon: const Icon(Icons.close), onPressed: () => onChanged(timeRange.clearTo()))
               : null,
           onTap: () async {
+            final initial = timeRange.to.unwrapOrNull ?? DateTime.now();
+
             final picked = await showDatePicker(
               context: context,
-              initialDate: timeRange.to ?? DateTime.now(),
+              initialDate: initial,
               firstDate: DateTime(1970),
               lastDate: DateTime.now(),
             );
+
             if (picked != null) {
-              onChanged(timeRange.copyWith(to: picked));
+              onChanged(timeRange.copyWith(to: Option.some(picked)));
             }
           },
         ),

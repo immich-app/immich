@@ -26,6 +26,21 @@ sealed class Option<T> {
     None() => onNone(),
   };
 
+  Option<U> flatMap<U>(Option<U> Function(T value) f) => switch (this) {
+    Some(:final value) => f(value),
+    None() => const Option.none(),
+  };
+
+  void ifSome(void Function(T value) action) {
+    switch (this) {
+      case Some(:final value):
+        action(value);
+        break;
+      case None():
+        break;
+    }
+  }
+
   @override
   String toString() => switch (this) {
     Some(:final value) => 'Some($value)',

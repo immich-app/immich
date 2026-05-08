@@ -9,12 +9,12 @@ import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class TimeRange {
-  final DateTime? from;
-  final DateTime? to;
+  final Option<DateTime> from;
+  final Option<DateTime> to;
 
-  const TimeRange({this.from, this.to});
+  const TimeRange({this.from = const None(), this.to = const None()});
 
-  TimeRange copyWith({DateTime? from, DateTime? to}) {
+  TimeRange copyWith({Option<DateTime>? from, Option<DateTime>? to}) {
     return TimeRange(from: from ?? this.from, to: to ?? this.to);
   }
 
@@ -74,6 +74,7 @@ class MapState {
     onlyFavorites: onlyFavorites,
     includeArchived: includeArchived,
     withPartners: withPartners,
+    relativeDays: relativeDays,
     timeRange: timeRange,
   );
 }
@@ -132,6 +133,15 @@ class MapStateNotifier extends Notifier<MapState> {
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
+  Option<DateTime> parseDateOption(String s) {
+    try {
+      if (s.trim().isEmpty) return const Option.none();
+      return Option.some(DateTime.parse(s));
+    } catch (_) {
+      return const Option.none();
+    }
+  }
+
   @override
   MapState build() {
     final mapConfig = ref.read(appConfigProvider.select((config) => config.map));
@@ -142,10 +152,8 @@ class MapStateNotifier extends Notifier<MapState> {
       withPartners: mapConfig.withPartners,
       relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
-      timeRange: TimeRange(
-        from: customFrom.isNotEmpty ? DateTime.parse(customFrom) : null,
-        to: customTo.isNotEmpty ? DateTime.parse(customTo) : null,
-      ),
+      relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
+      timeRange: TimeRange(from: customFrom, to: customTo),
     );
   }
 }

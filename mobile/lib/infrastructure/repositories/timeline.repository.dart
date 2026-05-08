@@ -555,20 +555,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    final from = options.timeRange.from;
-    final to = options.timeRange.to;
+    final timeRange = options.timeRange;
 
-    if (from != null || to != null) {
-      // Use custom from/to filters
-      if (from != null) {
+    final hasCustomRange = timeRange.from.isSome || timeRange.to.isSome;
+
+    if (hasCustomRange) {
+      timeRange.from.ifSome((from) {
         query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from));
-      }
-      if (to != null) {
+      });
+
+      timeRange.to.ifSome((to) {
         query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to));
-      }
+      });
     } else if (options.relativeDays > 0) {
-      // Use relative days
       final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
+
       query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
 
@@ -609,20 +610,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    final from = options.timeRange.from;
-    final to = options.timeRange.to;
+    final timeRange = options.timeRange;
 
-    if (from != null || to != null) {
-      // Use custom from/to filters
-      if (from != null) {
+    final hasCustomRange = timeRange.from.isSome || timeRange.to.isSome;
+
+    if (hasCustomRange) {
+      timeRange.from.ifSome((from) {
         query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from));
-      }
-      if (to != null) {
+      });
+
+      timeRange.to.ifSome((to) {
         query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to));
-      }
+      });
     } else if (options.relativeDays > 0) {
-      // Use relative days
       final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
+
       query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
 
