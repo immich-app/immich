@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
-import { AssetVisibility, SharedSpaceRole } from 'src/enum';
+import { AssetVisibility, JobName, SharedSpaceRole } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -65,6 +65,29 @@ const setupSharedSpace = (db?: Kysely<DB>) => {
   jobs.queue.mockResolvedValue();
   jobs.queueAll.mockResolvedValue();
   return { ctx, sut, faceIdentityRepository: ctx.get(FaceIdentityRepository), jobs };
+};
+
+const drainSharedSpaceFaceJobs = async (sharedSpaceService: SharedSpaceService, jobs: Mocked<JobRepository>) => {
+  let cursor = 0;
+  while (cursor < jobs.queue.mock.calls.length) {
+    const queued = jobs.queue.mock.calls.slice(cursor).map(([job]) => job);
+    cursor = jobs.queue.mock.calls.length;
+
+    for (const job of queued) {
+      if (job.name === JobName.SharedSpaceFaceMatchAll) {
+        await sharedSpaceService.handleSharedSpaceFaceMatchAll(job.data);
+      }
+      if (job.name === JobName.SharedSpaceFaceMatchPage) {
+        await sharedSpaceService.handleSharedSpaceFaceMatchPage(job.data);
+      }
+      if (job.name === JobName.SharedSpacePersonDedup) {
+        await sharedSpaceService.handleSharedSpacePersonDedup(job.data);
+      }
+      if (job.name === JobName.SharedSpaceIdentityReconciliation) {
+        await sharedSpaceService.handleSharedSpaceIdentityReconciliation(job.data);
+      }
+    }
+  }
 };
 
 const setupSearch = (db?: Kysely<DB>) => {
@@ -871,6 +894,55 @@ describe('People identity RBAC projection', () => {
     expect(afterRemoval).toEqual({ people: [], total: 0, hidden: 0, hasNextPage: false });
   });
 
+  it('materializes one photo independently across ten face-recognition spaces during full rebuilds', async () => {
+    const { ctx, sut: sharedSpaceService, faceIdentityRepository, jobs } = setupSharedSpace();
+    const { user: owner } = await ctx.newUser();
+    const { result: person } = await ctx.newPerson({ ownerId: owner.id, name: 'Ten Space Source' });
+    const { asset } = await ctx.newAsset({ ownerId: owner.id, visibility: AssetVisibility.Timeline });
+    const { result: faceId } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+    await ctx.database.insertInto('face_search').values({ faceId, embedding: newEmbedding() }).execute();
+    const identity = await faceIdentityRepository.ensurePersonIdentity(person.id);
+    await faceIdentityRepository.linkFace({ assetFaceId: faceId, identityId: identity.id, source: 'owner-person' });
+
+    const spaces = [];
+    for (let index = 0; index < 10; index++) {
+      const { space } = await ctx.newSharedSpace({
+        createdById: owner.id,
+        faceRecognitionEnabled: true,
+        name: `Space ${index}`,
+      });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: owner.id, role: SharedSpaceRole.Owner });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: owner.id });
+      spaces.push(space);
+    }
+
+    for (const space of spaces) {
+      await sharedSpaceService.handleSharedSpaceFaceMatchAll({ spaceId: space.id });
+    }
+
+    await drainSharedSpaceFaceJobs(sharedSpaceService, jobs);
+
+    const faceRows = await ctx.database
+      .selectFrom('shared_space_person_face')
+      .innerJoin('shared_space_person', 'shared_space_person.id', 'shared_space_person_face.personId')
+      .select([
+        'shared_space_person.id as personId',
+        'shared_space_person.spaceId as spaceId',
+        'shared_space_person.identityId as identityId',
+      ])
+      .where('shared_space_person_face.assetFaceId', '=', faceId)
+      .execute();
+
+    expect(faceRows).toHaveLength(10);
+    expect(new Set(faceRows.map((row) => row.spaceId))).toEqual(new Set(spaces.map((space) => space.id)));
+    expect(new Set(faceRows.map((row) => row.personId)).size).toBe(10);
+    expect(faceRows).toEqual(
+      expect.arrayContaining(
+        spaces.map((space) => expect.objectContaining({ spaceId: space.id, identityId: identity.id })),
+      ),
+    );
+  });
+
   it('inherits an owner name into a space person and updates global people for later invitees after owner rename', async () => {
     const { ctx, sut, faceIdentityRepository } = setup();
     const { sut: sharedSpaceService } = setupSharedSpace();
@@ -1245,15 +1317,7 @@ describe('People identity RBAC projection', () => {
       }),
     );
 
-    const queuedOnJoin = sharedJobs.queue.mock.calls.map(([job]) => job);
-    for (const job of queuedOnJoin) {
-      if (job.name === 'SharedSpaceFaceMatchAll') {
-        await sharedSpaceService.handleSharedSpaceFaceMatchAll(job.data);
-      }
-      if (job.name === 'SharedSpaceIdentityReconciliation') {
-        await sharedSpaceService.handleSharedSpaceIdentityReconciliation(job.data);
-      }
-    }
+    await drainSharedSpaceFaceJobs(sharedSpaceService, sharedJobs);
 
     const spacePeople = await sharedSpaceService.getSpacePeople(authFor(owner), space.id);
     expect(spacePeople).toEqual([expect.objectContaining({ name: 'Owner Shared Name' })]);

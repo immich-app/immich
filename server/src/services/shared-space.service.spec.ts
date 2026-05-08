@@ -15,6 +15,7 @@ import {
   MetadataKey,
   NotificationLevel,
   NotificationType,
+  QueueName,
   SharedSpaceActivityType,
   SharedSpaceRole,
   UserAvatarColor,
@@ -3749,179 +3750,408 @@ describe(SharedSpaceService.name, () => {
   });
 
   describe('handleSharedSpaceFaceMatchAll', () => {
-    it('should skip when space not found', async () => {
-      mocks.sharedSpace.getById.mockResolvedValue(void 0);
+    it('keeps shared-space face pipeline handlers on the facial-recognition queue', () => {
+      const reflector = new Reflector();
+      const cases = [
+        [sut.handleSharedSpaceFaceMatch, JobName.SharedSpaceFaceMatch],
+        [sut.handleSharedSpaceFaceMatchAll, JobName.SharedSpaceFaceMatchAll],
+        [sut.handleSharedSpaceFaceMatchPage, JobName.SharedSpaceFaceMatchPage],
+        [sut.handleSharedSpaceLibraryFaceSync, JobName.SharedSpaceLibraryFaceSync],
+        [sut.handleSharedSpaceIdentityReconciliation, JobName.SharedSpaceIdentityReconciliation],
+        [sut.handleSharedSpacePersonDedup, JobName.SharedSpacePersonDedup],
+      ] as const;
 
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId: 'space-1' });
-
-      expect(result).toBe(JobStatus.Skipped);
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).not.toHaveBeenCalled();
-      expect(mocks.job.queue).not.toHaveBeenCalledWith(
-        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
-      );
+      for (const [handler, name] of cases) {
+        expect(reflector.get(MetadataKey.JobConfig, handler)).toEqual({ name, queue: QueueName.FacialRecognition });
+      }
     });
 
-    it('should skip when face recognition is disabled', async () => {
-      const space = factory.sharedSpace({ faceRecognitionEnabled: false });
-      mocks.sharedSpace.getById.mockResolvedValue(space);
-
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId: space.id });
-
-      expect(result).toBe(JobStatus.Skipped);
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).not.toHaveBeenCalled();
-      expect(mocks.job.queue).not.toHaveBeenCalledWith(
-        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
-      );
-    });
-
-    it('should process pages sequentially without queueing per-asset child jobs', async () => {
+    it('dispatches the first page without processing assets inline', async () => {
       const spaceId = newUuid();
-      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-
-      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
-      mocks.sharedSpace.getById.mockResolvedValue(space);
-      mocks.sharedSpace.getAssetIdsInSpacePage
-        .mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }])
-        .mockResolvedValueOnce([{ assetId: 'a3' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
-
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
-
-      expect(result).toBe(JobStatus.Success);
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenNthCalledWith(1, spaceId, { limit: 2 });
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenNthCalledWith(2, spaceId, {
-        limit: 2,
-        afterAssetId: 'a2',
-      });
-      expect(processSpy).toHaveBeenNthCalledWith(1, spaceId, 'a1');
-      expect(processSpy).toHaveBeenNthCalledWith(2, spaceId, 'a2');
-      expect(processSpy).toHaveBeenNthCalledWith(3, spaceId, 'a3');
-      expect(mocks.job.queueAll).not.toHaveBeenCalled();
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.SharedSpacePersonDedup,
-        data: { spaceId },
-      });
-    });
-
-    it('should read an empty final page when the first page is exactly the batch size', async () => {
-      const spaceId = newUuid();
-      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-
-      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
-      mocks.sharedSpace.getById.mockResolvedValue(space);
-      mocks.sharedSpace.getAssetIdsInSpacePage
-        .mockResolvedValueOnce([{ assetId: 'asset-1' }, { assetId: 'asset-2' }])
-        .mockResolvedValueOnce([]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
-
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
-
-      expect(result).toBe(JobStatus.Success);
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledTimes(2);
-      expect(processSpy).toHaveBeenCalledTimes(2);
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.SharedSpacePersonDedup,
-        data: { spaceId },
-      });
-    });
-
-    it('should succeed without dedup when there are no assets to process', async () => {
-      const spaceId = newUuid();
-      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-
-      mocks.sharedSpace.getById.mockResolvedValue(space);
-      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValue([{ assetId: 'asset-1' }]);
       const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
 
       const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
 
       expect(result).toBe(JobStatus.Success);
       expect(processSpy).not.toHaveBeenCalled();
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: { spaceId },
+      });
       expect(mocks.job.queue).not.toHaveBeenCalledWith(
         expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
       );
     });
 
-    it('should stop without dedup when face recognition is disabled between pages', async () => {
-      const spaceId = newUuid();
-      const enabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-      const disabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
+    it('does not dispatch pages when the space is missing or disabled', async () => {
+      mocks.sharedSpace.getById.mockResolvedValueOnce(void 0);
+      expect(await sut.handleSharedSpaceFaceMatchAll({ spaceId: 'missing-space' })).toBe(JobStatus.Skipped);
 
-      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
-      mocks.sharedSpace.getById
-        .mockResolvedValueOnce(enabled)
-        .mockResolvedValueOnce(enabled)
-        .mockResolvedValueOnce(disabled);
-      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+      mocks.sharedSpace.getById.mockResolvedValueOnce(factory.sharedSpace({ faceRecognitionEnabled: false }));
+      expect(await sut.handleSharedSpaceFaceMatchAll({ spaceId: 'disabled-space' })).toBe(JobStatus.Skipped);
 
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
-
-      expect(result).toBe(JobStatus.Success);
-      expect(processSpy).toHaveBeenCalledTimes(2);
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledTimes(1);
       expect(mocks.job.queue).not.toHaveBeenCalledWith(
-        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
+        expect.objectContaining({ name: JobName.SharedSpaceFaceMatchPage }),
       );
     });
+  });
 
-    it('should stop without dedup when the space is deleted between pages', async () => {
+  describe('handleSharedSpaceFaceMatchPage', () => {
+    it('processes a final partial page and queues final follow-up once', async () => {
       const spaceId = newUuid();
-      const enabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-
-      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
-      mocks.sharedSpace.getById
-        .mockResolvedValueOnce(enabled)
-        .mockResolvedValueOnce(enabled)
-        .mockResolvedValueOnce(void 0);
-      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
-
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
-
-      expect(result).toBe(JobStatus.Success);
-      expect(processSpy).toHaveBeenCalledTimes(2);
-      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledTimes(1);
-      expect(mocks.job.queue).not.toHaveBeenCalledWith(
-        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
-      );
-    });
-
-    it('should re-check the space before queuing final dedup', async () => {
-      const spaceId = newUuid();
-      const enabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
-      const disabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
-
-      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
-      mocks.sharedSpace.getById
-        .mockResolvedValueOnce(enabled)
-        .mockResolvedValueOnce(enabled)
-        .mockResolvedValueOnce(disabled);
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
       mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }]);
-      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue(['space-person-1']);
 
-      const result = await sut.handleSharedSpaceFaceMatchAll({ spaceId });
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 });
 
       expect(result).toBe(JobStatus.Success);
-      expect(processSpy).toHaveBeenCalledTimes(1);
-      expect(mocks.job.queue).not.toHaveBeenCalledWith(
-        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
-      );
-    });
-
-    it('should queue full-space identity reconciliation after matching all assets', async () => {
-      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: 'space-1', faceRecognitionEnabled: true }));
-      mocks.sharedSpace.getAssetIdsInSpacePage
-        .mockResolvedValueOnce([{ assetId: 'asset-1' }])
-        .mockResolvedValueOnce([]);
-      mockOneAffectedSpacePerson();
-
-      await sut.handleSharedSpaceFaceMatchAll({ spaceId: 'space-1' });
-
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 3 });
+      expect(processSpy).toHaveBeenCalledWith(spaceId, 'a1');
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpacePersonDedup,
+        data: { spaceId },
+      });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.SharedSpaceIdentityReconciliation,
-        data: { spaceId: 'space-1' },
+        data: { spaceId },
       });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceFaceMatchPage }),
+      );
+    });
+
+    it('uses lookahead to queue the next page without processing the lookahead asset', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([
+        { assetId: 'a1' },
+        { assetId: 'a2' },
+        { assetId: 'a3' },
+      ]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(processSpy).toHaveBeenCalledTimes(2);
+      expect(processSpy).toHaveBeenNthCalledWith(1, spaceId, 'a1');
+      expect(processSpy).toHaveBeenNthCalledWith(2, spaceId, 'a2');
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: { spaceId, afterAssetId: 'a2', batchSize: 2 },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
+      );
+    });
+
+    it('treats exactly batchSize assets as the final page', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
+      vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceFaceMatchPage }),
+      );
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpacePersonDedup,
+        data: { spaceId },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId },
+      });
+    });
+
+    it('queues final follow-up once even when retry sees no newly affected people', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }]);
+      vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.job.queue.mock.calls.filter(([job]) => job.name === JobName.SharedSpacePersonDedup)).toHaveLength(1);
+      expect(
+        mocks.job.queue.mock.calls.filter(([job]) => job.name === JobName.SharedSpaceIdentityReconciliation),
+      ).toHaveLength(1);
+    });
+
+    it('clamps an invalid batch size so page jobs cannot loop without processing assets', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 0 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 2 });
+      expect(processSpy).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: { spaceId, afterAssetId: 'a1' },
+      });
+    });
+
+    it('does not queue final follow-up for empty, deleted, or disabled spaces', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValueOnce(
+        factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }),
+      );
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
+
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 })).toBe(JobStatus.Success);
+
+      mocks.sharedSpace.getById.mockResolvedValueOnce(void 0);
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 })).toBe(JobStatus.Skipped);
+
+      mocks.sharedSpace.getById.mockResolvedValueOnce(
+        factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false }),
+      );
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 })).toBe(JobStatus.Skipped);
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceIdentityReconciliation }),
+      );
+    });
+
+    it('re-checks the space before final follow-up', async () => {
+      const spaceId = newUuid();
+      const enabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const disabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
+      mocks.sharedSpace.getById.mockResolvedValueOnce(enabled).mockResolvedValueOnce(disabled);
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }]);
+      vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue(['space-person-1']);
+
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 })).toBe(JobStatus.Success);
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceIdentityReconciliation }),
+      );
+    });
+
+    it('allows an incremental match that ran early to be repaired by the later page rebuild', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'asset-early' }]);
+      const processSpy = vi
+        .spyOn(sut as any, 'processSpaceFaceMatch')
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(['space-person-1']);
+
+      expect(await sut.handleSharedSpaceFaceMatch({ spaceId, assetId: 'asset-early' })).toBe(JobStatus.Success);
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 })).toBe(JobStatus.Success);
+
+      expect(processSpy).toHaveBeenNthCalledWith(1, spaceId, 'asset-early');
+      expect(processSpy).toHaveBeenNthCalledWith(2, spaceId, 'asset-early');
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId },
+      });
+    });
+
+    it('finalizes an empty continuation page', async () => {
+      const spaceId = newUuid();
+      const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      mocks.sharedSpace.getById.mockResolvedValue(space);
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, afterAssetId: 'a2', batchSize: 2 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getById).toHaveBeenCalledTimes(2);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, {
+        limit: 3,
+        afterAssetId: 'a2',
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpacePersonDedup,
+        data: { spaceId },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId },
+      });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceFaceMatchPage }),
+      );
+    });
+
+    it('falls back to the default batch size for NaN', async () => {
+      const spaceId = newUuid();
+      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: Number.NaN });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 3 });
+    });
+
+    it('floors fractional batch sizes and propagates the normalized override', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 1.8 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 2 });
+      expect(processSpy).toHaveBeenCalledTimes(1);
+      expect(processSpy).toHaveBeenCalledWith(spaceId, 'a1');
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: { spaceId, afterAssetId: 'a1', batchSize: 1 },
+      });
+    });
+
+    it('clamps negative batch sizes without propagating the invalid override', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: -5 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 2 });
+      expect(processSpy).toHaveBeenCalledTimes(1);
+      expect(processSpy).toHaveBeenCalledWith(spaceId, 'a1');
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: { spaceId, afterAssetId: 'a1' },
+      });
+    });
+
+    it('falls back to the default batch size for Infinity', async () => {
+      const spaceId = newUuid();
+      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: Number.POSITIVE_INFINITY });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 3 });
+    });
+
+    it('caps huge finite batch sizes at the default page size', async () => {
+      const spaceId = newUuid();
+      (sut as any).sharedSpaceFaceMatchBatchSize = 2;
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 1e100 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenCalledWith(spaceId, { limit: 3 });
+    });
+
+    it('continues a multi-page chain without repeating or skipping assets', async () => {
+      const spaceId = newUuid();
+      mocks.sharedSpace.getById.mockResolvedValue(factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true }));
+      mocks.sharedSpace.getAssetIdsInSpacePage
+        .mockResolvedValueOnce([{ assetId: 'a1' }, { assetId: 'a2' }, { assetId: 'a3' }])
+        .mockResolvedValueOnce([{ assetId: 'a3' }]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 })).toBe(JobStatus.Success);
+      expect(await sut.handleSharedSpaceFaceMatchPage({ spaceId, afterAssetId: 'a2', batchSize: 2 })).toBe(
+        JobStatus.Success,
+      );
+
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenNthCalledWith(1, spaceId, { limit: 3 });
+      expect(mocks.sharedSpace.getAssetIdsInSpacePage).toHaveBeenNthCalledWith(2, spaceId, {
+        limit: 3,
+        afterAssetId: 'a2',
+      });
+      expect(processSpy).toHaveBeenNthCalledWith(1, spaceId, 'a1');
+      expect(processSpy).toHaveBeenNthCalledWith(2, spaceId, 'a2');
+      expect(processSpy).toHaveBeenNthCalledWith(3, spaceId, 'a3');
+      expect(processSpy).toHaveBeenCalledTimes(3);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: { spaceId, afterAssetId: 'a2', batchSize: 2 },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpacePersonDedup,
+        data: { spaceId },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpaceIdentityReconciliation,
+        data: { spaceId },
+      });
+    });
+
+    it('does not queue the next page when the space is disabled before queueing the next page', async () => {
+      const spaceId = newUuid();
+      const enabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      const disabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: false });
+      mocks.sharedSpace.getById.mockResolvedValueOnce(enabled).mockResolvedValueOnce(disabled);
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([
+        { assetId: 'a1' },
+        { assetId: 'a2' },
+        { assetId: 'a3' },
+      ]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(processSpy).toHaveBeenCalledTimes(2);
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceFaceMatchPage }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceIdentityReconciliation }),
+      );
+    });
+
+    it('does not queue the next page when the space is deleted before queueing the next page', async () => {
+      const spaceId = newUuid();
+      const enabled = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
+      mocks.sharedSpace.getById.mockResolvedValueOnce(enabled).mockResolvedValueOnce(void 0);
+      mocks.sharedSpace.getAssetIdsInSpacePage.mockResolvedValueOnce([
+        { assetId: 'a1' },
+        { assetId: 'a2' },
+        { assetId: 'a3' },
+      ]);
+      const processSpy = vi.spyOn(sut as any, 'processSpaceFaceMatch').mockResolvedValue([]);
+
+      const result = await sut.handleSharedSpaceFaceMatchPage({ spaceId, batchSize: 2 });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(processSpy).toHaveBeenCalledTimes(2);
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceFaceMatchPage }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpacePersonDedup }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.SharedSpaceIdentityReconciliation }),
+      );
     });
   });
 

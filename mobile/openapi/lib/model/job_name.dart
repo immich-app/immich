@@ -85,6 +85,7 @@ class JobName {
   static const storageBackendMigrationSingle = JobName._(r'StorageBackendMigrationSingle');
   static const sharedSpaceFaceMatch = JobName._(r'SharedSpaceFaceMatch');
   static const sharedSpaceFaceMatchAll = JobName._(r'SharedSpaceFaceMatchAll');
+  static const sharedSpaceFaceMatchPage = JobName._(r'SharedSpaceFaceMatchPage');
   static const sharedSpaceLibraryFaceSync = JobName._(r'SharedSpaceLibraryFaceSync');
   static const sharedSpaceIdentityReconciliation = JobName._(r'SharedSpaceIdentityReconciliation');
   static const sharedSpacePersonDedup = JobName._(r'SharedSpacePersonDedup');
@@ -157,6 +158,7 @@ class JobName {
     storageBackendMigrationSingle,
     sharedSpaceFaceMatch,
     sharedSpaceFaceMatchAll,
+    sharedSpaceFaceMatchPage,
     sharedSpaceLibraryFaceSync,
     sharedSpaceIdentityReconciliation,
     sharedSpacePersonDedup,
@@ -264,6 +266,7 @@ class JobNameTypeTransformer {
         case r'StorageBackendMigrationSingle': return JobName.storageBackendMigrationSingle;
         case r'SharedSpaceFaceMatch': return JobName.sharedSpaceFaceMatch;
         case r'SharedSpaceFaceMatchAll': return JobName.sharedSpaceFaceMatchAll;
+        case r'SharedSpaceFaceMatchPage': return JobName.sharedSpaceFaceMatchPage;
         case r'SharedSpaceLibraryFaceSync': return JobName.sharedSpaceLibraryFaceSync;
         case r'SharedSpaceIdentityReconciliation': return JobName.sharedSpaceIdentityReconciliation;
         case r'SharedSpacePersonDedup': return JobName.sharedSpacePersonDedup;

@@ -154,6 +154,34 @@ const setupSharedSpaceService = (db?: Kysely<DB>) => {
   return { sut, ctx };
 };
 
+const drainSharedSpaceFaceJobs = async (
+  sharedSpaceService: SharedSpaceService,
+  ctx: ReturnType<typeof setupSharedSpaceService>['ctx'],
+) => {
+  const jobs = ctx.getMock<JobRepository, Mocked<JobRepository>>(JobRepository);
+  let cursor = 0;
+
+  while (cursor < jobs.queue.mock.calls.length) {
+    const queued = jobs.queue.mock.calls.slice(cursor).map(([job]) => job);
+    cursor = jobs.queue.mock.calls.length;
+
+    for (const job of queued) {
+      if (job.name === JobName.SharedSpaceFaceMatchAll) {
+        await sharedSpaceService.handleSharedSpaceFaceMatchAll(job.data);
+      }
+      if (job.name === JobName.SharedSpaceFaceMatchPage) {
+        await sharedSpaceService.handleSharedSpaceFaceMatchPage(job.data);
+      }
+      if (job.name === JobName.SharedSpacePersonDedup) {
+        await sharedSpaceService.handleSharedSpacePersonDedup(job.data);
+      }
+      if (job.name === JobName.SharedSpaceIdentityReconciliation) {
+        await sharedSpaceService.handleSharedSpaceIdentityReconciliation(job.data);
+      }
+    }
+  }
+};
+
 const metadataFaceTags = (name: string) => ({
   RegionInfo: {
     AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
@@ -463,7 +491,7 @@ describe(MetadataService.name, () => {
       await ctx.newSharedSpaceMember({ spaceId: space.id, userId: user.id, role: SharedSpaceRole.Owner });
       await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: user.id });
       const { sut: backfillService, ctx: backfillCtx } = setupFaceIdentityBackfillService(ctx.database);
-      const { sut: sharedSpaceService } = setupSharedSpaceService(ctx.database);
+      const { sut: sharedSpaceService, ctx: sharedSpaceCtx } = setupSharedSpaceService(ctx.database);
 
       await expect(
         ctx.database
@@ -479,6 +507,7 @@ describe(MetadataService.name, () => {
       await expect(sharedSpaceService.handleSharedSpaceFaceMatchAll({ spaceId: space.id })).resolves.toBe(
         JobStatus.Success,
       );
+      await drainSharedSpaceFaceJobs(sharedSpaceService, sharedSpaceCtx);
 
       const identityLinks = await ctx.database
         .selectFrom('face_identity_face')

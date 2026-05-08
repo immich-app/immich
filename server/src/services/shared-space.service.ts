@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { setImmediate } from 'node:timers/promises';
 import { AssetFace, SharedSpacePerson } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -1577,61 +1576,98 @@ export class SharedSpaceService extends BaseService {
 
   @OnJob({ name: JobName.SharedSpaceFaceMatchAll, queue: QueueName.FacialRecognition })
   async handleSharedSpaceFaceMatchAll({ spaceId }: JobOf<JobName.SharedSpaceFaceMatchAll>): Promise<JobStatus> {
-    const batchSize = this.sharedSpaceFaceMatchBatchSize;
-    let processedAny = false;
-    let affectedAny = false;
-    let afterAssetId: string | undefined;
-
-    const initialSpace = await this.sharedSpaceRepository.getById(spaceId);
-    if (!initialSpace || !initialSpace.faceRecognitionEnabled) {
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space || !space.faceRecognitionEnabled) {
       return JobStatus.Skipped;
     }
 
-    while (true) {
-      const currentSpace = await this.sharedSpaceRepository.getById(spaceId);
-      if (!currentSpace || !currentSpace.faceRecognitionEnabled) {
-        return JobStatus.Success;
-      }
+    await this.jobRepository.queue({
+      name: JobName.SharedSpaceFaceMatchPage,
+      data: { spaceId },
+    });
 
-      const assets = await this.sharedSpaceRepository.getAssetIdsInSpacePage(spaceId, {
-        limit: batchSize,
-        ...(afterAssetId ? { afterAssetId } : {}),
-      });
+    return JobStatus.Success;
+  }
 
-      if (assets.length === 0) {
-        break;
-      }
-
-      for (const { assetId } of assets) {
-        const affectedPersonIds = await this.processSpaceFaceMatch(spaceId, assetId);
-        affectedAny ||= affectedPersonIds.length > 0;
-        processedAny = true;
-      }
-
-      afterAssetId = assets.at(-1)?.assetId;
-      if (assets.length < batchSize) {
-        break;
-      }
-
-      await setImmediate();
+  @OnJob({ name: JobName.SharedSpaceFaceMatchPage, queue: QueueName.FacialRecognition })
+  async handleSharedSpaceFaceMatchPage({
+    spaceId,
+    afterAssetId,
+    batchSize,
+  }: JobOf<JobName.SharedSpaceFaceMatchPage>): Promise<JobStatus> {
+    const space = await this.sharedSpaceRepository.getById(spaceId);
+    if (!space || !space.faceRecognitionEnabled) {
+      return JobStatus.Skipped;
     }
 
-    if (processedAny) {
-      const finalSpace = await this.sharedSpaceRepository.getById(spaceId);
-      if (!finalSpace || !finalSpace.faceRecognitionEnabled) {
+    const { pageSize, propagatedBatchSize } = this.getSharedSpaceFaceMatchPageSize(batchSize);
+    const assets = await this.sharedSpaceRepository.getAssetIdsInSpacePage(spaceId, {
+      limit: pageSize + 1,
+      ...(afterAssetId ? { afterAssetId } : {}),
+    });
+
+    if (assets.length === 0) {
+      if (afterAssetId) {
+        await this.queueSharedSpaceFaceMatchFinalFollowUp(spaceId);
+      }
+      return JobStatus.Success;
+    }
+
+    const assetsToProcess = assets.slice(0, pageSize);
+    const hasNextPage = assets.length > pageSize;
+
+    for (const { assetId } of assetsToProcess) {
+      await this.processSpaceFaceMatch(spaceId, assetId);
+    }
+
+    const lastProcessedAssetId = assetsToProcess.at(-1)?.assetId;
+    if (hasNextPage && lastProcessedAssetId) {
+      const nextPageSpace = await this.sharedSpaceRepository.getById(spaceId);
+      if (!nextPageSpace || !nextPageSpace.faceRecognitionEnabled) {
         return JobStatus.Success;
       }
 
       await this.jobRepository.queue({
-        name: JobName.SharedSpacePersonDedup,
-        data: { spaceId },
+        name: JobName.SharedSpaceFaceMatchPage,
+        data: {
+          spaceId,
+          afterAssetId: lastProcessedAssetId,
+          ...(propagatedBatchSize ? { batchSize: propagatedBatchSize } : {}),
+        },
       });
-      if (affectedAny) {
-        await this.queueSpaceIdentityReconciliation({ spaceId });
-      }
+      return JobStatus.Success;
     }
 
+    await this.queueSharedSpaceFaceMatchFinalFollowUp(spaceId);
+
     return JobStatus.Success;
+  }
+
+  private getSharedSpaceFaceMatchPageSize(batchSize: number | undefined): {
+    pageSize: number;
+    propagatedBatchSize?: number;
+  } {
+    const candidate = batchSize ?? this.sharedSpaceFaceMatchBatchSize;
+    const finiteCandidate = Number.isFinite(candidate) ? candidate : this.sharedSpaceFaceMatchBatchSize;
+    const pageSize = Math.min(this.sharedSpaceFaceMatchBatchSize, Math.max(1, Math.floor(finiteCandidate)));
+    const propagatedBatchSize =
+      batchSize !== undefined && Number.isFinite(batchSize) && batchSize > 0 ? pageSize : undefined;
+
+    return { pageSize, propagatedBatchSize };
+  }
+
+  private async queueSharedSpaceFaceMatchFinalFollowUp(spaceId: string): Promise<void> {
+    const finalSpace = await this.sharedSpaceRepository.getById(spaceId);
+    if (!finalSpace || !finalSpace.faceRecognitionEnabled) {
+      return;
+    }
+
+    await this.jobRepository.queue({
+      name: JobName.SharedSpacePersonDedup,
+      data: { spaceId },
+    });
+
+    await this.queueSpaceIdentityReconciliation({ spaceId });
   }
 
   @OnJob({ name: JobName.SharedSpacePersonDedup, queue: QueueName.FacialRecognition })

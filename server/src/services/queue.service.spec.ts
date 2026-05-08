@@ -497,6 +497,54 @@ describe(QueueService.name, () => {
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
+    it('force-starts facial recognition through the coordinator without pre-draining active work', async () => {
+      mocks.job.isActive.mockResolvedValue(true);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.runCommandLegacy(QueueName.FacialRecognition, { command: QueueCommand.Start, force: true });
+
+      expect(mocks.job.empty).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FacialRecognitionQueueAll,
+        data: { force: true },
+      });
+    });
+
+    it('delegates inactive force-start pending replacement to the facial-recognition coordinator', async () => {
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.runCommandLegacy(QueueName.FacialRecognition, { command: QueueCommand.Start, force: true });
+
+      expect(mocks.job.empty).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FacialRecognitionQueueAll,
+        data: { force: true },
+      });
+    });
+
+    it('still rejects non-force facial recognition starts while active', async () => {
+      mocks.job.isActive.mockResolvedValue(true);
+
+      await expect(
+        sut.runCommandLegacy(QueueName.FacialRecognition, { command: QueueCommand.Start, force: false }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.job.empty).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('still rejects active force starts for queues other than facial recognition', async () => {
+      mocks.job.isActive.mockResolvedValue(true);
+
+      await expect(
+        sut.runCommandLegacy(QueueName.VideoConversion, { command: QueueCommand.Start, force: true }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.job.empty).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
     it('should handle a start video conversion command', async () => {
       mocks.job.isActive.mockResolvedValue(false);
       mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
