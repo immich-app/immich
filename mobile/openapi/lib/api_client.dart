@@ -368,6 +368,8 @@ class ApiClient {
           return DatabaseBackupDto.fromJson(value);
         case 'DatabaseBackupListResponseDto':
           return DatabaseBackupListResponseDto.fromJson(value);
+        case 'DeviceFlowResponseDto':
+          return DeviceFlowResponseDto.fromJson(value);
         case 'DownloadArchiveDto':
           return DownloadArchiveDto.fromJson(value);
         case 'DownloadArchiveInfo':
@@ -654,8 +656,12 @@ class ApiClient {
           return RunDto.fromJson(value);
         case 'RunHistoryResponseDto':
           return RunHistoryResponseDto.fromJson(value);
+        case 'RunResponseDto':
+          return RunResponseDto.fromJson(value);
         case 'RunStatus':
           return RunStatusTypeTransformer().decode(value);
+        case 'RunType':
+          return RunTypeTypeTransformer().decode(value);
         case 'RunningTaskDto':
           return RunningTaskDto.fromJson(value);
         case 'RunningTaskListResponse':
@@ -706,8 +712,6 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerStorageResponseDto':
           return ServerStorageResponseDto.fromJson(value);
-        case 'ServerThemeDto':
-          return ServerThemeDto.fromJson(value);
         case 'ServerVersionHistoryResponseDto':
           return ServerVersionHistoryResponseDto.fromJson(value);
         case 'ServerVersionResponseDto':
@@ -744,6 +748,8 @@ class ApiClient {
           return SmartSearchDto.fromJson(value);
         case 'SnapshotDto':
           return SnapshotDto.fromJson(value);
+        case 'SnapshotSummaryDto':
+          return SnapshotSummaryDto.fromJson(value);
         case 'SourceType':
           return SourceTypeTypeTransformer().decode(value);
         case 'StackCreateDto':
@@ -774,6 +780,8 @@ class ApiClient {
           return SyncAlbumUserV1.fromJson(value);
         case 'SyncAlbumV1':
           return SyncAlbumV1.fromJson(value);
+        case 'SyncAlbumV2':
+          return SyncAlbumV2.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
         case 'SyncAssetEditDeleteV1':
@@ -794,6 +802,8 @@ class ApiClient {
           return SyncAssetMetadataV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
+        case 'SyncAssetV2':
+          return SyncAssetV2.fromJson(value);
         case 'SyncAuthUserV1':
           return SyncAuthUserV1.fromJson(value);
         case 'SyncEntityType':

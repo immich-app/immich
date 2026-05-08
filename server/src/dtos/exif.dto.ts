@@ -8,8 +8,8 @@ export const ExifResponseSchema = z
   .object({
     make: z.string().nullish().default(null).describe('Camera make'),
     model: z.string().nullish().default(null).describe('Camera model'),
-    exifImageWidth: z.number().min(0).nullish().default(null).describe('Image width in pixels'),
-    exifImageHeight: z.number().min(0).nullish().default(null).describe('Image height in pixels'),
+    exifImageWidth: z.int().min(0).nullish().default(null).describe('Image width in pixels'),
+    exifImageHeight: z.int().min(0).nullish().default(null).describe('Image height in pixels'),
     fileSizeInByte: z.int().min(0).nullish().default(null).describe('File size in bytes'),
     orientation: z.string().nullish().default(null).describe('Image orientation'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -20,7 +20,7 @@ export const ExifResponseSchema = z
     lensModel: z.string().nullish().default(null).describe('Lens model'),
     fNumber: z.number().nullish().default(null).describe('F-number (aperture)'),
     focalLength: z.number().nullish().default(null).describe('Focal length in mm'),
-    iso: z.number().nullish().default(null).describe('ISO sensitivity'),
+    iso: z.int().nullish().default(null).describe('ISO sensitivity'),
     exposureTime: z.string().nullish().default(null).describe('Exposure time'),
     latitude: z.number().nullish().default(null).describe('GPS latitude'),
     longitude: z.number().nullish().default(null).describe('GPS longitude'),
@@ -29,7 +29,7 @@ export const ExifResponseSchema = z
     country: z.string().nullish().default(null).describe('Country name'),
     description: z.string().nullish().default(null).describe('Image description'),
     projectionType: z.string().nullish().default(null).describe('Projection type'),
-    rating: z.number().nullish().default(null).describe('Rating'),
+    rating: z.int().nullish().default(null).describe('Rating'),
   })
   .describe('EXIF response')
   .meta({ id: 'ExifResponseDto' });

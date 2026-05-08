@@ -1,7 +1,37 @@
 @import 'tailwindcss';
 @import '@immich/ui/theme/default.css';
+
 @source "../node_modules/@immich/ui";
 /* @import '../../../ui/packages/ui/dist/theme/default.css'; */
+
+@custom-variant dark (&:where(.dark, .dark *):not(.light));
+
+@theme inline {
+  --color-immich-primary: rgb(var(--immich-primary));
+  --color-immich-bg: rgb(var(--immich-bg));
+  --color-immich-fg: rgb(var(--immich-fg));
+  --color-immich-gray: rgb(var(--immich-gray));
+
+  --color-immich-dark-primary: rgb(var(--immich-dark-primary));
+  --color-immich-dark-bg: rgb(var(--immich-dark-bg));
+  --color-immich-dark-fg: rgb(var(--immich-dark-fg));
+  --color-immich-dark-gray: rgb(var(--immich-dark-gray));
+}
+
+@theme {
+  --font-sans: 'GoogleSans', sans-serif;
+  --font-mono: 'GoogleSansCode', monospace;
+
+  --spacing-18: 4.5rem;
+
+  --breakpoint-tall: 800px;
+  --breakpoint-2xl: 1535px;
+  --breakpoint-xl: 1279px;
+  --breakpoint-lg: 1023px;
+  --breakpoint-md: 767px;
+  --breakpoint-sm: 639px;
+  --breakpoint-sidebar: 850px;
+}
 
 @utility immich-form-input {
   @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
@@ -32,35 +62,6 @@
 
 @utility grid-auto-fill-* {
   grid-template-columns: repeat(auto-fill, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
-}
-
-@custom-variant dark (&:where(.dark, .dark *):not(.light));
-
-@theme inline {
-  --color-immich-primary: rgb(var(--immich-primary));
-  --color-immich-bg: rgb(var(--immich-bg));
-  --color-immich-fg: rgb(var(--immich-fg));
-  --color-immich-gray: rgb(var(--immich-gray));
-
-  --color-immich-dark-primary: rgb(var(--immich-dark-primary));
-  --color-immich-dark-bg: rgb(var(--immich-dark-bg));
-  --color-immich-dark-fg: rgb(var(--immich-dark-fg));
-  --color-immich-dark-gray: rgb(var(--immich-dark-gray));
-}
-
-@theme {
-  --font-sans: 'GoogleSans', sans-serif;
-  --font-mono: 'GoogleSansCode', monospace;
-
-  --spacing-18: 4.5rem;
-
-  --breakpoint-tall: 800px;
-  --breakpoint-2xl: 1535px;
-  --breakpoint-xl: 1279px;
-  --breakpoint-lg: 1023px;
-  --breakpoint-md: 767px;
-  --breakpoint-sm: 639px;
-  --breakpoint-sidebar: 850px;
 }
 
 @layer base {
@@ -168,7 +169,7 @@
 
 .maplibregl-popup {
   .maplibregl-popup-tip {
-    @apply border-t-subtle! translate-y-[-1px];
+    @apply border-t-subtle! -translate-y-px;
   }
 
   .maplibregl-popup-content {

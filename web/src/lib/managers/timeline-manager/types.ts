@@ -1,5 +1,5 @@
-import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
+import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 
 export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
 
@@ -29,7 +29,7 @@ export type TimelineAsset = {
   isVideo: boolean;
   isImage: boolean;
   stack: AssetStackResponseDto | null;
-  duration: string | null;
+  duration: number | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
   city: string | null;

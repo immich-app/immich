@@ -15,6 +15,7 @@ class SnapshotDto {
   SnapshotDto({
     required this.id,
     this.paths = const [],
+    this.summary,
     required this.time,
   });
 
@@ -22,12 +23,21 @@ class SnapshotDto {
 
   List<String> paths;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  SnapshotSummaryDto? summary;
+
   String time;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SnapshotDto &&
     other.id == id &&
     _deepEquality.equals(other.paths, paths) &&
+    other.summary == summary &&
     other.time == time;
 
   @override
@@ -35,15 +45,21 @@ class SnapshotDto {
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
     (paths.hashCode) +
+    (summary == null ? 0 : summary!.hashCode) +
     (time.hashCode);
 
   @override
-  String toString() => 'SnapshotDto[id=$id, paths=$paths, time=$time]';
+  String toString() => 'SnapshotDto[id=$id, paths=$paths, summary=$summary, time=$time]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
       json[r'paths'] = this.paths;
+    if (this.summary != null) {
+      json[r'summary'] = this.summary;
+    } else {
+    //  json[r'summary'] = null;
+    }
       json[r'time'] = this.time;
     return json;
   }
@@ -61,6 +77,7 @@ class SnapshotDto {
         paths: json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        summary: SnapshotSummaryDto.fromJson(json[r'summary']),
         time: mapValueOfType<String>(json, r'time')!,
       );
     }

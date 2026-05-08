@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/combobox.svelte';
+  import Combobox from '$lib/components/shared-components/Combobox.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getPreferredTimeZone, getTimezones, toIsoDate } from '$lib/modals/timezone-utils';
@@ -61,9 +61,9 @@
   disabled={!date.isValid || !selectedOption}
   size="small"
 >
-  <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
+  <Label for="datetime" class="mb-1 block">{$t('date_and_time')}</Label>
   <DateInput
-    class="immich-form-input w-full mb-2"
+    class="mb-2 immich-form-input w-full"
     id="datetime"
     type="datetime-local"
     bind:value={() => selectedDate, updateSelectedDate}

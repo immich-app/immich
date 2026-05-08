@@ -16,6 +16,46 @@ class RunningTasksApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'POST /yucca/tasks/{parentId}/cancel' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] parentId (required):
+  Future<Response> cancelTaskWithHttpInfo(String parentId,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/yucca/tasks/{parentId}/cancel'
+      .replaceAll('{parentId}', parentId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] parentId (required):
+  Future<void> cancelTask(String parentId,) async {
+    final response = await cancelTaskWithHttpInfo(parentId,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /yucca/tasks' operation and returns the [Response].
   Future<Response> getRunningTasksWithHttpInfo() async {
     // ignore: prefer_const_declarations

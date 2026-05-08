@@ -169,6 +169,9 @@ String parameterToString(dynamic value) {
   if (value is RunStatus) {
     return RunStatusTypeTransformer().encode(value).toString();
   }
+  if (value is RunType) {
+    return RunTypeTypeTransformer().encode(value).toString();
+  }
   if (value is SearchSuggestionType) {
     return SearchSuggestionTypeTypeTransformer().encode(value).toString();
   }

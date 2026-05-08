@@ -16,51 +16,10 @@ class AuthApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /yucca/auth/oidc/login' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] next (required):
-  Future<Response> oidcAuthorizeWithHttpInfo(String next,) async {
+  /// Performs an HTTP 'GET /yucca/auth/oidc/device' operation and returns the [Response].
+  Future<Response> oidcDeviceFlowWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/yucca/auth/oidc/login';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'next', next));
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] next (required):
-  Future<void> oidcAuthorize(String next,) async {
-    final response = await oidcAuthorizeWithHttpInfo(next,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Performs an HTTP 'GET /yucca/auth/oidc/callback' operation and returns the [Response].
-  Future<Response> oidcCallbackWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/yucca/auth/oidc/callback';
+    final apiPath = r'/yucca/auth/oidc/device';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -83,10 +42,18 @@ class AuthApi {
     );
   }
 
-  Future<void> oidcCallback() async {
-    final response = await oidcCallbackWithHttpInfo();
+  Future<DeviceFlowResponseDto?> oidcDeviceFlow() async {
+    final response = await oidcDeviceFlowWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DeviceFlowResponseDto',) as DeviceFlowResponseDto;
+    
+    }
+    return null;
   }
 }

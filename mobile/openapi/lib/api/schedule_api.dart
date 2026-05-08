@@ -16,51 +16,6 @@ class ScheduleApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /yucca/schedule/{id}/{repositoryId}' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] repositoryId (required):
-  Future<Response> addRepositoryToScheduleWithHttpInfo(String id, String repositoryId,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/yucca/schedule/{id}/{repositoryId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{repositoryId}', repositoryId);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] repositoryId (required):
-  Future<void> addRepositoryToSchedule(String id, String repositoryId,) async {
-    final response = await addRepositoryToScheduleWithHttpInfo(id, repositoryId,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Performs an HTTP 'POST /yucca/schedule' operation and returns the [Response].
   /// Parameters:
   ///
@@ -147,51 +102,6 @@ class ScheduleApi {
     
     }
     return null;
-  }
-
-  /// Performs an HTTP 'DELETE /yucca/schedule/{id}/{repositoryId}' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] repositoryId (required):
-  Future<Response> removeRepositoryFromScheduleWithHttpInfo(String id, String repositoryId,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/yucca/schedule/{id}/{repositoryId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{repositoryId}', repositoryId);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] repositoryId (required):
-  Future<void> removeRepositoryFromSchedule(String id, String repositoryId,) async {
-    final response = await removeRepositoryFromScheduleWithHttpInfo(id, repositoryId,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
   }
 
   /// Performs an HTTP 'DELETE /yucca/schedule/{id}' operation and returns the [Response].

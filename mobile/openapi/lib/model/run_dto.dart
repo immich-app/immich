@@ -16,8 +16,10 @@ class RunDto {
     required this.end,
     required this.id,
     required this.logFilePath,
+    required this.repositoryId,
     required this.start,
     required this.status,
+    required this.type,
   });
 
   String end;
@@ -26,17 +28,23 @@ class RunDto {
 
   String logFilePath;
 
+  String repositoryId;
+
   String start;
 
   RunStatus status;
+
+  RunType type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RunDto &&
     other.end == end &&
     other.id == id &&
     other.logFilePath == logFilePath &&
+    other.repositoryId == repositoryId &&
     other.start == start &&
-    other.status == status;
+    other.status == status &&
+    other.type == type;
 
   @override
   int get hashCode =>
@@ -44,19 +52,23 @@ class RunDto {
     (end.hashCode) +
     (id.hashCode) +
     (logFilePath.hashCode) +
+    (repositoryId.hashCode) +
     (start.hashCode) +
-    (status.hashCode);
+    (status.hashCode) +
+    (type.hashCode);
 
   @override
-  String toString() => 'RunDto[end=$end, id=$id, logFilePath=$logFilePath, start=$start, status=$status]';
+  String toString() => 'RunDto[end=$end, id=$id, logFilePath=$logFilePath, repositoryId=$repositoryId, start=$start, status=$status, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'end'] = this.end;
       json[r'id'] = this.id;
       json[r'logFilePath'] = this.logFilePath;
+      json[r'repositoryId'] = this.repositoryId;
       json[r'start'] = this.start;
       json[r'status'] = this.status;
+      json[r'type'] = this.type;
     return json;
   }
 
@@ -72,8 +84,10 @@ class RunDto {
         end: mapValueOfType<String>(json, r'end')!,
         id: mapValueOfType<String>(json, r'id')!,
         logFilePath: mapValueOfType<String>(json, r'logFilePath')!,
+        repositoryId: mapValueOfType<String>(json, r'repositoryId')!,
         start: mapValueOfType<String>(json, r'start')!,
         status: RunStatus.fromJson(json[r'status'])!,
+        type: RunType.fromJson(json[r'type'])!,
       );
     }
     return null;
@@ -124,8 +138,10 @@ class RunDto {
     'end',
     'id',
     'logFilePath',
+    'repositoryId',
     'start',
     'status',
+    'type',
   };
 }
 

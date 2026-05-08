@@ -64,6 +64,7 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
@@ -260,6 +261,7 @@ export type ServiceOverrides = {
   trash: TrashRepository;
   user: UserRepository;
   versionHistory: VersionHistoryRepository;
+  videoStream: VideoStreamRepository;
   view: ViewRepository;
   websocket: WebsocketRepository;
   workflow: WorkflowRepository;
@@ -344,6 +346,7 @@ export const getMocks = () => {
     trash: automock(TrashRepository),
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
+    videoStream: automock(VideoStreamRepository),
     view: automock(ViewRepository),
     // eslint-disable-next-line no-sparse-arrays
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
@@ -408,6 +411,7 @@ export const newTestService = <T extends BaseService>(
     overrides.trash || (mocks.trash as As<TrashRepository>),
     overrides.user || (mocks.user as As<UserRepository>),
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
+    overrides.videoStream || (mocks.videoStream as As<VideoStreamRepository>),
     overrides.view || (mocks.view as As<ViewRepository>),
     overrides.websocket || (mocks.websocket as As<WebsocketRepository>),
     overrides.workflow || (mocks.workflow as As<WorkflowRepository>),
@@ -530,43 +534,6 @@ export const mockDuplex =
 
     return duplex;
   };
-
-export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
-  const stdoutStream = new Readable({
-    read() {
-      this.push(stdout); // write mock data to stdout
-      this.push(null); // end stream
-    },
-  });
-
-  return {
-    stdout: stdoutStream,
-    stderr: new Readable({
-      read() {
-        this.push(stderr); // write mock data to stderr
-        this.push(null); // end stream
-      },
-    }),
-    stdin: new Writable({
-      write(chunk, encoding, callback) {
-        callback();
-      },
-    }),
-    exitCode,
-    on: vitest.fn((event, callback: any) => {
-      if (event === 'close') {
-        stdoutStream.once('end', () => callback(0));
-      }
-      if (event === 'error' && error) {
-        stdoutStream.once('end', () => callback(error));
-      }
-      if (event === 'exit') {
-        stdoutStream.once('end', () => callback(exitCode));
-      }
-    }),
-    kill: vitest.fn(),
-  } as unknown as ChildProcessWithoutNullStreams;
-});
 
 export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
   for (const item of items) {

@@ -33,7 +33,7 @@
 
 <Heading size="large" color="primary" tag="h1">{$t('maintenance_restore_library')}</Heading>
 <Text>{$t('maintenance_restore_library_description')}</Text>
-<div class="bg-white dark:bg-black w-full m-4 p-6 rounded-xl border border-light-300">
+<div class="m-4 w-full rounded-xl border border-light-300 bg-white p-6 dark:bg-black">
   <Stack>
     {#if detectedInstall}
       {#each detectedInstall.storage as { folder, readable, writable } (folder)}
@@ -46,7 +46,7 @@
         {#if folder !== 'backups'}
           <HStack class="items-start">
             <Icon
-              class={`mt-1  ${files ? 'text-success' : folder === 'profile' || folder === 'upload' ? 'text-danger' : 'text-warning'}`}
+              class={`mt-1 ${files ? 'text-success' : folder === 'profile' || folder === 'upload' ? 'text-danger' : 'text-warning'}`}
               icon={files ? mdiCheck : folder === 'profile' || folder === 'upload' ? mdiClose : mdiAlert}
             />
             <Stack gap={0} class="items-start">

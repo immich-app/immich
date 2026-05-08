@@ -148,6 +148,7 @@ enum ActionButtonType {
             context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
+            context.timelineOrigin != TimelineOrigin.trash &&
             !context.isInLockedView && //
             context.isStacked,
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
@@ -271,8 +272,7 @@ enum ActionButtonType {
         onPressed: buildContext == null
             ? null
             : () async {
-                await buildContext.maybePop();
-                await buildContext.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+                await buildContext.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
                 EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
               },
       ),

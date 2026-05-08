@@ -173,6 +173,46 @@ class RepositoryApi {
     return null;
   }
 
+  /// Performs an HTTP 'DELETE /yucca/repository/{id}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deleteRepositoryWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/yucca/repository/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deleteRepository(String id,) async {
+    final response = await deleteRepositoryWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'DELETE /yucca/repository/{id}/snapshots/{snapshot}' operation and returns the [Response].
   /// Parameters:
   ///
