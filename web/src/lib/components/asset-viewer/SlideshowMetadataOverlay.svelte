@@ -47,7 +47,7 @@
     >
       <div class="flex flex-col gap-2 text-white">
         {#if description}
-          <Text fontWeight="medium" class="wrap-break-word whitespace-pre-wrap leading-relaxed">{description}</Text>
+          <Text fontWeight="medium" class="leading-relaxed wrap-break-word whitespace-pre-wrap">{description}</Text>
         {/if}
         {#if $slideshowMetadataOverlayMode !== SlideshowMetadataOverlayMode.DescriptionOnly}
           <div class="flex flex-col gap-1 text-sm opacity-90">
