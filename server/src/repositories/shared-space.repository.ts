@@ -95,6 +95,12 @@ type PetFaceForMatching = {
   type?: string;
 };
 
+export type SpaceFaceAssignment = {
+  personId: string;
+  identityId: string | null;
+  type: string;
+};
+
 @Injectable()
 export class SharedSpaceRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -1745,6 +1751,20 @@ export class SharedSpaceRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  async deleteOrphanedPersonsByIds(spaceId: string, personIds: string[]): Promise<void> {
+    if (personIds.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('shared_space_person')
+      .where('spaceId', '=', spaceId)
+      .where('id', 'in', personIds)
+      .where('id', 'not in', this.db.selectFrom('shared_space_person_face').select('personId'))
+      .execute();
+  }
+
   @GenerateSql({ params: [] })
   async deleteAllOrphanedPersons() {
     await this.db
@@ -2127,6 +2147,43 @@ export class SharedSpaceRepository {
       .limit(1)
       .executeTakeFirst();
     return !!result;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getPersonFaceAssignmentsForSpace(assetFaceId: string, spaceId: string): Promise<SpaceFaceAssignment[]> {
+    return this.db
+      .selectFrom('shared_space_person_face')
+      .innerJoin('shared_space_person', 'shared_space_person.id', 'shared_space_person_face.personId')
+      .select(['shared_space_person_face.personId', 'shared_space_person.identityId', 'shared_space_person.type'])
+      .where('shared_space_person_face.assetFaceId', '=', assetFaceId)
+      .where('shared_space_person.spaceId', '=', spaceId)
+      .orderBy('shared_space_person_face.personId')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async removePersonFaceAssignmentsForSpaceFace(spaceId: string, assetFaceId: string): Promise<string[]> {
+    const assignments = await this.db
+      .selectFrom('shared_space_person_face')
+      .innerJoin('shared_space_person', 'shared_space_person.id', 'shared_space_person_face.personId')
+      .select('shared_space_person_face.personId')
+      .where('shared_space_person_face.assetFaceId', '=', assetFaceId)
+      .where('shared_space_person.spaceId', '=', spaceId)
+      .orderBy('shared_space_person_face.personId')
+      .execute();
+    const personIds = assignments.map(({ personId }) => personId);
+
+    if (personIds.length === 0) {
+      return [];
+    }
+
+    await this.db
+      .deleteFrom('shared_space_person_face')
+      .where('assetFaceId', '=', assetFaceId)
+      .where('personId', 'in', personIds)
+      .execute();
+
+    return personIds;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

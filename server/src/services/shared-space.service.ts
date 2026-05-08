@@ -51,6 +51,7 @@ import {
   SharedSpaceRole,
   UserAvatarColor,
 } from 'src/enum';
+import type { SpaceFaceAssignment } from 'src/repositories/shared-space.repository';
 import {
   buildAutomaticReconciliationClaim,
   chooseAutomaticTargetIdentity,
@@ -76,6 +77,7 @@ type SpacePersonMatchResult = {
   id: string;
   identityId?: string | null;
   sourceIdentityId?: string | null;
+  type?: string | null;
 };
 
 type SharedSpaceIdentityReconciliationClaim = ReconciliationClaim & {
@@ -1886,14 +1888,16 @@ export class SharedSpaceService extends BaseService {
     const spaceAsset = await this.sharedSpaceRepository.getSpaceAssetAdder(spaceId, assetId);
     const assetAdderId = spaceAsset?.addedById ?? null;
     const affectedPersonIds = new Set<string>();
+    const recountPersonIds = new Set<string>();
+    const stalePersonIds = new Set<string>();
     let maxDistance: number | undefined;
 
     const faces = await this.sharedSpaceRepository.getAssetFacesForMatching(assetId);
     for (const face of faces) {
-      const isAssigned = await this.sharedSpaceRepository.isPersonFaceAssigned(face.id, spaceId);
-      if (isAssigned) {
-        continue;
-      }
+      const selectedSpaceAssignments = await this.sharedSpaceRepository.getPersonFaceAssignmentsForSpace(
+        face.id,
+        spaceId,
+      );
 
       // Strict gate: only faces native recognition has already assigned to a global
       // person are eligible to join a space-person. This guarantees every face in a
@@ -1909,14 +1913,46 @@ export class SharedSpaceService extends BaseService {
 
       let spacePerson: SpacePersonMatchResult;
       if (face.identityId) {
-        spacePerson = await this.findOrCreateSpacePersonForFace({
+        const type = face.type ?? 'person';
+        const identitySpacePerson = await this.findOrCreateCompatibleSpacePersonForIdentity({
           spaceId,
           faceId: face.id,
           personId: face.personId,
           identityId: face.identityId,
-          type: face.type ?? 'person',
+          type,
         });
+
+        if (
+          identitySpacePerson &&
+          this.isExactSelectedSpaceAssignment(selectedSpaceAssignments, {
+            personId: identitySpacePerson.id,
+            identityId: face.identityId,
+            type,
+          })
+        ) {
+          continue;
+        }
+
+        if (selectedSpaceAssignments.length > 0) {
+          const removedPersonIds = await this.sharedSpaceRepository.removePersonFaceAssignmentsForSpaceFace(
+            spaceId,
+            face.id,
+          );
+          for (const personId of removedPersonIds) {
+            recountPersonIds.add(personId);
+            stalePersonIds.add(personId);
+          }
+        }
+
+        if (!identitySpacePerson) {
+          continue;
+        }
+
+        spacePerson = identitySpacePerson;
       } else {
+        if (selectedSpaceAssignments.length > 0) {
+          continue;
+        }
         if (!face.embedding) {
           continue;
         }
@@ -1953,37 +1989,60 @@ export class SharedSpaceService extends BaseService {
         await this.inheritSpacePersonMetadata(spaceId, spacePerson.id, inheritedIdentityId, assetAdderId);
       }
       affectedPersonIds.add(spacePerson.id);
+      recountPersonIds.add(spacePerson.id);
     }
 
     // Process pet faces (detected by pet detection, no embeddings)
     const petFaces = await this.sharedSpaceRepository.getPetFacesForAsset(assetId);
     for (const petFace of petFaces) {
-      const isAssigned = await this.sharedSpaceRepository.isPersonFaceAssigned(petFace.id, spaceId);
-      if (isAssigned) {
-        continue;
-      }
+      const selectedSpaceAssignments = await this.sharedSpaceRepository.getPersonFaceAssignmentsForSpace(
+        petFace.id,
+        spaceId,
+      );
 
       if (!petFace.personId) {
         continue;
       }
 
-      let spacePerson = petFace.identityId
-        ? await this.sharedSpaceRepository.getSpacePersonByIdentity(spaceId, petFace.identityId)
-        : undefined;
-      if (!spacePerson && petFace.identityId) {
-        const representativeFaceId = await this.getNewSpacePersonRepresentativeFaceId({
+      let spacePerson: SpacePersonMatchResult | undefined;
+      if (petFace.identityId) {
+        spacePerson = await this.findOrCreateCompatibleSpacePersonForIdentity({
           spaceId,
-          fallbackFaceId: petFace.id,
-          personalPersonId: petFace.personId,
-        });
-        spacePerson = await this.sharedSpaceRepository.createPerson({
-          spaceId,
+          faceId: petFace.id,
+          personId: petFace.personId,
           identityId: petFace.identityId,
-          name: '',
-          representativeFaceId,
           type: 'pet',
         });
-      } else if (!spacePerson) {
+
+        if (
+          spacePerson &&
+          this.isExactSelectedSpaceAssignment(selectedSpaceAssignments, {
+            personId: spacePerson.id,
+            identityId: petFace.identityId,
+            type: 'pet',
+          })
+        ) {
+          continue;
+        }
+
+        if (selectedSpaceAssignments.length > 0) {
+          const removedPersonIds = await this.sharedSpaceRepository.removePersonFaceAssignmentsForSpaceFace(
+            spaceId,
+            petFace.id,
+          );
+          for (const personId of removedPersonIds) {
+            recountPersonIds.add(personId);
+            stalePersonIds.add(personId);
+          }
+        }
+
+        if (!spacePerson) {
+          continue;
+        }
+      } else {
+        if (selectedSpaceAssignments.length > 0) {
+          continue;
+        }
         const existingSpacePerson = await this.sharedSpaceRepository.findSpacePersonByLinkedPersonId(
           spaceId,
           petFace.personId,
@@ -2012,10 +2071,14 @@ export class SharedSpaceService extends BaseService {
         await this.inheritSpacePersonMetadata(spaceId, spacePerson.id, spacePerson.identityId, assetAdderId);
       }
       affectedPersonIds.add(spacePerson.id);
+      recountPersonIds.add(spacePerson.id);
     }
 
-    if (affectedPersonIds.size > 0) {
-      await this.sharedSpaceRepository.recountPersons([...affectedPersonIds]);
+    if (recountPersonIds.size > 0) {
+      await this.sharedSpaceRepository.recountPersons([...recountPersonIds]);
+    }
+    if (stalePersonIds.size > 0) {
+      await this.sharedSpaceRepository.deleteOrphanedPersonsByIds(spaceId, [...stalePersonIds]);
     }
     return [...affectedPersonIds];
   }
@@ -2027,11 +2090,29 @@ export class SharedSpaceService extends BaseService {
     identityId: string;
     type: string;
   }): Promise<SpacePersonMatchResult> {
+    const spacePerson = await this.findOrCreateCompatibleSpacePersonForIdentity(input);
+    if (!spacePerson) {
+      throw new Error(`Identity ${input.identityId} is already attached to a different space person type`);
+    }
+
+    return spacePerson;
+  }
+
+  private async findOrCreateCompatibleSpacePersonForIdentity(input: {
+    spaceId: string;
+    faceId: string;
+    personId: string;
+    identityId: string;
+    type: string;
+  }): Promise<SpacePersonMatchResult | undefined> {
     const existingByIdentity = await this.sharedSpaceRepository.getSpacePersonByIdentity(
       input.spaceId,
       input.identityId,
     );
     if (existingByIdentity) {
+      if (existingByIdentity.type && existingByIdentity.type !== input.type) {
+        return undefined;
+      }
       return existingByIdentity;
     }
 
@@ -2048,6 +2129,18 @@ export class SharedSpaceService extends BaseService {
       representativeFaceId,
       type: input.type,
     });
+  }
+
+  private isExactSelectedSpaceAssignment(
+    assignments: SpaceFaceAssignment[],
+    target: { personId: string; identityId: string; type: string },
+  ): boolean {
+    return (
+      assignments.length === 1 &&
+      assignments[0].personId === target.personId &&
+      assignments[0].identityId === target.identityId &&
+      assignments[0].type === target.type
+    );
   }
 
   private async findOrCreateSpacePersonForLegacyFace(input: {

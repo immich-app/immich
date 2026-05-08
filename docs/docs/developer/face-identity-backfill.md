@@ -44,6 +44,18 @@ This means upgraded installs should not require users to reset face recognition.
 
 Admins can also start this repair from the **People identity maintenance** queue on the admin Jobs page. The queue start action enqueues the `FaceIdentityBackfill` root job and shows progress alongside the other queue stats.
 
+## Shared Space Face Link Repair
+
+Global People and Space People do not read the same assignment table. Global People uses `face_identity_face` links in the viewer's accessible timeline scope. A selected Shared Space uses `shared_space_person_face` links for the selected space's direct assets and linked-library assets.
+
+When an identity-backed face is processed by `SharedSpaceFaceMatch`, `SharedSpaceLibraryFaceSync`, or `SharedSpaceFaceMatchAll`, Gallery repairs the selected-space face link if it is missing, points at a space person with no identity, points at a different identity, or points at a type-incompatible space person. The repair deletes only the selected face's selected-space assignment rows, inserts the identity-correct assignment when a compatible space person exists or can be created, recounts affected space people, and removes stale selected-space people that became orphaned.
+
+The repair is intentionally selected-space scoped. The same asset face can be linked into multiple spaces, and repairing one space must not rewrite another space's person rows.
+
+For existing drift, queue `SharedSpaceFaceMatchAll` for the affected space. The existing operator route is to toggle face recognition off and back on for that space; enabling face recognition queues the full-space rematch. Linking or relinking an external library queues `SharedSpaceLibraryFaceSync` for that library, and adding individual assets queues `SharedSpaceFaceMatch` for those assets.
+
+Archived assets are a known scope difference. Selected Space People currently counts linked-library assets whose visibility is archive or timeline, while Global People uses timeline-visible assets. Matching detected-face totals are only expected when the compared scopes have the same visibility and membership rules.
+
 ## Metadata Backfill
 
 `SharedSpacePersonMetadataBackfill` recalculates inherited names and birth dates for identity-backed Space People. It does not merge identities and it does not overwrite manual space metadata.

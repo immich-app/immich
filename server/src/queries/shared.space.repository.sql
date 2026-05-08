@@ -1261,6 +1261,18 @@ where
       "shared_space_person_face"
   )
 
+-- SharedSpaceRepository.deleteOrphanedPersonsByIds
+delete from "shared_space_person"
+where
+  "spaceId" = $1
+  and "id" in ($2)
+  and "id" not in (
+    select
+      "personId"
+    from
+      "shared_space_person_face"
+  )
+
 -- SharedSpaceRepository.deleteAllOrphanedPersons
 delete from "shared_space_person"
 where
@@ -1587,6 +1599,32 @@ where
   and "shared_space_person"."spaceId" = $2
 limit
   $3
+
+-- SharedSpaceRepository.getPersonFaceAssignmentsForSpace
+select
+  "shared_space_person_face"."personId",
+  "shared_space_person"."identityId",
+  "shared_space_person"."type"
+from
+  "shared_space_person_face"
+  inner join "shared_space_person" on "shared_space_person"."id" = "shared_space_person_face"."personId"
+where
+  "shared_space_person_face"."assetFaceId" = $1
+  and "shared_space_person"."spaceId" = $2
+order by
+  "shared_space_person_face"."personId"
+
+-- SharedSpaceRepository.removePersonFaceAssignmentsForSpaceFace
+select
+  "shared_space_person_face"."personId"
+from
+  "shared_space_person_face"
+  inner join "shared_space_person" on "shared_space_person"."id" = "shared_space_person_face"."personId"
+where
+  "shared_space_person_face"."assetFaceId" = $1
+  and "shared_space_person"."spaceId" = $2
+order by
+  "shared_space_person_face"."personId"
 
 -- SharedSpaceRepository.getPetFacesForAsset
 select
