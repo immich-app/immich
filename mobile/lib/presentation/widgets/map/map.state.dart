@@ -7,15 +7,16 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class TimeRange {
-  final DateTime? from;
-  final DateTime? to;
+  final Option<DateTime> from;
+  final Option<DateTime> to;
 
-  const TimeRange({this.from, this.to});
+  const TimeRange({this.from = const None(), this.to = const None()});
 
-  TimeRange copyWith({DateTime? from, DateTime? to}) {
+  TimeRange copyWith({Option<DateTime>? from, Option<DateTime>? to}) {
     return TimeRange(from: from ?? this.from, to: to ?? this.to);
   }
 
@@ -75,6 +76,7 @@ class MapState {
     onlyFavorites: onlyFavorites,
     includeArchived: includeArchived,
     withPartners: withPartners,
+    relativeDays: relativeDays,
     timeRange: timeRange,
   );
 }
@@ -123,31 +125,40 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void setTimeRange(TimeRange range) {
-    ref
-        .read(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.mapCustomFrom, range.from == null ? "" : range.from!.toIso8601String());
-    ref
-        .read(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.mapCustomTo, range.to == null ? "" : range.to!.toIso8601String());
+    final from = range.from.unwrapOrNull;
+    final to = range.to.unwrapOrNull;
+
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapCustomFrom, from?.toIso8601String() ?? "");
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapCustomTo, to?.toIso8601String() ?? "");
+
     state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
+  Option<DateTime> parseDateOption(String s) {
+    try {
+      if (s.trim().isEmpty) return const Option.none();
+      return Option.some(DateTime.parse(s));
+    } catch (_) {
+      return const Option.none();
+    }
   }
 
   @override
   MapState build() {
     final appSettingsService = ref.read(appSettingsServiceProvider);
-    final customFrom = appSettingsService.getSetting(AppSettingsEnum.mapCustomFrom);
-    final customTo = appSettingsService.getSetting(AppSettingsEnum.mapCustomTo);
+
+    final customFrom = appSettingsService.getSetting(AppSettingsEnum.mapCustomFrom).toOption().flatMap(parseDateOption);
+    final customTo = appSettingsService.getSetting(AppSettingsEnum.mapCustomTo).toOption().flatMap(parseDateOption);
+
     return MapState(
       themeMode: ThemeMode.values[appSettingsService.getSetting(AppSettingsEnum.mapThemeMode)],
       onlyFavorites: appSettingsService.getSetting(AppSettingsEnum.mapShowFavoriteOnly),
       includeArchived: appSettingsService.getSetting(AppSettingsEnum.mapIncludeArchived),
       withPartners: appSettingsService.getSetting(AppSettingsEnum.mapwithPartners),
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
-      timeRange: TimeRange(
-        from: customFrom.isNotEmpty ? DateTime.parse(customFrom) : null,
-        to: customTo.isNotEmpty ? DateTime.parse(customTo) : null,
-      ),
+      relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
+      timeRange: TimeRange(from: customFrom, to: customTo),
     );
   }
 }

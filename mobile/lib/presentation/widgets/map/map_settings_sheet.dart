@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_custom_time_range.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_settings_list_tile.dart';
@@ -22,7 +23,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
     super.initState();
     final mapState = ref.read(mapStateProvider);
     final timeRange = mapState.timeRange;
-    useCustomRange = timeRange.from != null || timeRange.to != null;
+    useCustomRange = timeRange.from.isSome || timeRange.to.isSome;
   }
 
   @override
@@ -78,7 +79,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
                       ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
                     }),
-                    child: Text("remove_custom_date_range".t(context: context)),
+                    child: Text(context.t.remove_custom_date_range),
                   ),
                 ),
               ] else ...[
@@ -94,7 +95,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
                       ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
                     }),
-                    child: Text("use_custom_date_range".t(context: context)),
+                    child: Text(context.t.use_custom_date_range),
                   ),
                 ),
               ],
