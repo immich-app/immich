@@ -256,6 +256,8 @@ select
   ) as "hidden"
 from
   "person"
+  left join "user_metadata" on "user_metadata"."userId" = "person"."ownerId"
+  and "user_metadata"."key" = 'preferences'
 where
   exists (
     select
@@ -274,6 +276,13 @@ where
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
       )
+    group by
+      "asset_face"."personId"
+    having
+      count("asset_face"."assetId") >= COALESCE(
+        user_metadata.value -> 'people' ->> 'minimumFaces',
+        '3'
+      )::int
   )
   and "person"."ownerId" = $3
 
