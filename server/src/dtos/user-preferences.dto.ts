@@ -139,6 +139,7 @@ const PeopleResponseSchema = z
   .object({
     enabled: z.boolean().describe('Whether people are enabled'),
     sidebarWeb: z.boolean().describe('Whether people appear in web sidebar'),
+    minimumFaces: z.int().min(1).optional().describe('People face threshold'),
   })
   .meta({ id: 'PeopleResponse' });
 
