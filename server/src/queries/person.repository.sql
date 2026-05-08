@@ -391,7 +391,7 @@ where
   and "asset"."ownerId" = $3
   and "asset"."deletedAt" is null
   and "asset"."isOffline" = $4
-  and "asset"."visibility" = 'timeline'
+  and "asset"."visibility" in ($5, $6)
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 select
@@ -403,7 +403,7 @@ where
   "asset"."ownerId" = $1
   and "asset"."deletedAt" is null
   and "asset"."isOffline" = $2
-  and "asset"."visibility" = 'timeline'
+  and "asset"."visibility" in ($3, $4)
   and "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 
@@ -420,7 +420,7 @@ WITH
       "asset"."ownerId" = $1
       AND "asset"."deletedAt" IS NULL
       AND "asset"."isOffline" = false
-      AND "asset"."visibility" = $2
+      AND "asset"."visibility" IN ($2, $3)
       AND "asset_face"."deletedAt" IS NULL
       AND "asset_face"."isVisible" = true
   ),
@@ -444,14 +444,14 @@ WITH
         WHEN "person"."id" IS NOT NULL
         AND (
           NULLIF(BTRIM("person"."name"), '') IS NOT NULL
-          OR "person_face_counts"."assetCount" >= $3
+          OR "person_face_counts"."assetCount" >= $4
         ) THEN "person"."isHidden"
         ELSE NULL
       END AS "isHidden"
     FROM
       "eligible_faces"
       LEFT JOIN "person" ON "person"."id" = "eligible_faces"."personId"
-      AND "person"."ownerId" = $4
+      AND "person"."ownerId" = $5
       LEFT JOIN "person_face_counts" ON "person_face_counts"."personId" = "person"."id"
   )
 SELECT

@@ -472,9 +472,9 @@ WITH
       AND asset_face."isVisible" = true
       AND asset."deletedAt" IS NULL
       AND asset."isOffline" = false
-      AND asset.visibility = $2
+      AND asset.visibility IN ($2, $3)
       AND (
-        asset."ownerId" = $3
+        asset."ownerId" = $4
         OR EXISTS (
           SELECT
             1
@@ -520,7 +520,7 @@ WITH
     FROM
       person
     WHERE
-      person."ownerId" = $4
+      person."ownerId" = $5
       AND person."identityId" IS NOT NULL
       AND EXISTS (
         SELECT
@@ -543,7 +543,7 @@ WITH
       shared_space_person
       INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
       LEFT JOIN shared_space_person_alias ON shared_space_person_alias."personId" = shared_space_person.id
-      AND shared_space_person_alias."userId" = $5
+      AND shared_space_person_alias."userId" = $6
     WHERE
       shared_space_person."identityId" IS NOT NULL
       AND EXISTS (
@@ -585,7 +585,7 @@ WITH
       INNER JOIN identity_counts ON identity_counts."identityId" = identity_visibility."identityId"
     WHERE
       identity_visibility."hasNamedProfile" = true
-      OR identity_counts."visibleAssetCount" >= $6
+      OR identity_counts."visibleAssetCount" >= $7
   )
 SELECT
   (
@@ -632,9 +632,9 @@ WITH
       AND asset_face."isVisible" = true
       AND asset."deletedAt" IS NULL
       AND asset."isOffline" = false
-      AND asset.visibility = $2
+      AND asset.visibility IN ($2, $3)
       AND (
-        asset."ownerId" = $3
+        asset."ownerId" = $4
         OR EXISTS (
           SELECT
             1
@@ -681,7 +681,7 @@ WITH
     FROM
       person
     WHERE
-      person."ownerId" = $4
+      person."ownerId" = $5
       AND person."identityId" IS NOT NULL
       AND EXISTS (
         SELECT
@@ -704,7 +704,7 @@ WITH
       shared_space_person
       INNER JOIN timeline_spaces ON timeline_spaces."spaceId" = shared_space_person."spaceId"
       LEFT JOIN shared_space_person_alias ON shared_space_person_alias."personId" = shared_space_person.id
-      AND shared_space_person_alias."userId" = $5
+      AND shared_space_person_alias."userId" = $6
     WHERE
       shared_space_person."identityId" IS NOT NULL
       AND EXISTS (
@@ -753,7 +753,7 @@ WITH
       INNER JOIN identity_counts ON identity_counts."identityId" = identity_visibility."identityId"
     WHERE
       identity_visibility."hasNamedProfile" = true
-      OR identity_counts."visibleAssetCount" >= $6
+      OR identity_counts."visibleAssetCount" >= $7
   ),
   face_classification AS (
     SELECT

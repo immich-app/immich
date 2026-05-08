@@ -1159,6 +1159,42 @@ describe(SharedSpaceRepository.name, () => {
 
       expect(result.map((f) => f.id)).toEqual([visibleFace.id]);
     });
+
+    it('returns the face identity link instead of a stale person identity', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const [staleIdentity, currentFaceIdentity] = await ctx.database
+        .insertInto('face_identity')
+        .values([{ type: 'person' }, { type: 'person' }])
+        .returningAll()
+        .execute();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      await ctx.database
+        .updateTable('person')
+        .set({ identityId: staleIdentity.id })
+        .where('id', '=', person.id)
+        .execute();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id, isVisible: true });
+      await ctx.database
+        .insertInto('face_search')
+        .values({ faceId: assetFace.id, embedding: newEmbedding() })
+        .execute();
+      await ctx.database
+        .insertInto('face_identity_face')
+        .values({ assetFaceId: assetFace.id, identityId: currentFaceIdentity.id, source: 'owner-person' })
+        .execute();
+
+      const result = await sut.getAssetFacesForMatching(asset.id);
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: assetFace.id,
+          personId: person.id,
+          identityId: currentFaceIdentity.id,
+        }),
+      ]);
+    });
   });
 
   describe('recountPersons with filters', () => {

@@ -1962,11 +1962,12 @@ export class SharedSpaceRepository {
       .selectFrom('asset_face')
       .leftJoin('face_search', 'face_search.faceId', 'asset_face.id')
       .leftJoin('person', 'person.id', 'asset_face.personId')
+      .leftJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
       .select([
         'asset_face.id',
         'asset_face.assetId',
         'asset_face.personId',
-        'person.identityId',
+        'face_identity_face.identityId',
         'person.type',
         'face_search.embedding',
       ])

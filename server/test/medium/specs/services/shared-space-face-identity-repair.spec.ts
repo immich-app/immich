@@ -6,6 +6,7 @@ import { FaceIdentityRepository } from 'src/repositories/face-identity.repositor
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { SearchRepository } from 'src/repositories/search.repository';
 import { SharedSpaceRepository } from 'src/repositories/shared-space.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { DB } from 'src/schema';
@@ -27,6 +28,7 @@ const setup = (db?: Kysely<DB>) => {
       PersonRepository,
       ConfigRepository,
       SystemMetadataRepository,
+      SearchRepository,
     ],
     mock: [LoggingRepository, JobRepository],
   });
@@ -40,6 +42,29 @@ const setup = (db?: Kysely<DB>) => {
     sharedSpaceRepository: ctx.get(SharedSpaceRepository),
     jobs,
   };
+};
+
+const drainSharedSpaceFaceJobs = async (sharedSpaceService: SharedSpaceService, jobs: Mocked<JobRepository>) => {
+  let cursor = 0;
+  while (cursor < jobs.queue.mock.calls.length) {
+    const queued = jobs.queue.mock.calls.slice(cursor).map(([job]) => job);
+    cursor = jobs.queue.mock.calls.length;
+
+    for (const job of queued) {
+      if (job.name === JobName.SharedSpaceFaceMatchAll) {
+        await sharedSpaceService.handleSharedSpaceFaceMatchAll(job.data);
+      }
+      if (job.name === JobName.SharedSpaceFaceMatchPage) {
+        await sharedSpaceService.handleSharedSpaceFaceMatchPage(job.data);
+      }
+      if (job.name === JobName.SharedSpacePersonDedup) {
+        await sharedSpaceService.handleSharedSpacePersonDedup(job.data);
+      }
+      if (job.name === JobName.SharedSpaceIdentityReconciliation) {
+        await sharedSpaceService.handleSharedSpaceIdentityReconciliation(job.data);
+      }
+    }
+  }
 };
 
 beforeAll(async () => {
@@ -163,7 +188,7 @@ describe('SharedSpaceService linked-library face identity repair', () => {
   });
 
   it('full-space rematch repairs stale selected-space face assignments from linked libraries', async () => {
-    const { ctx, sut, faceIdentityRepository, sharedSpaceRepository } = setup();
+    const { ctx, sut, faceIdentityRepository, sharedSpaceRepository, jobs } = setup();
     const { user } = await ctx.newUser();
     const { space } = await ctx.newSharedSpace({ createdById: user.id, faceRecognitionEnabled: true });
     await ctx.newSharedSpaceMember({ spaceId: space.id, userId: user.id, role: SharedSpaceRole.Owner });
@@ -185,6 +210,7 @@ describe('SharedSpaceService linked-library face identity repair', () => {
     });
 
     await expect(sut.handleSharedSpaceFaceMatchAll({ spaceId: space.id })).resolves.toBe(JobStatus.Success);
+    await drainSharedSpaceFaceJobs(sut, jobs);
 
     const correctPerson = await ctx.database
       .selectFrom('shared_space_person')
@@ -341,7 +367,7 @@ describe('SharedSpaceService linked-library face identity repair', () => {
   });
 
   it('full-space rematch removes type-incompatible assignments without inflating stats', async () => {
-    const { ctx, sut, faceIdentityRepository, sharedSpaceRepository } = setup();
+    const { ctx, sut, faceIdentityRepository, sharedSpaceRepository, jobs } = setup();
     const { user } = await ctx.newUser();
     const { space } = await ctx.newSharedSpace({ createdById: user.id, faceRecognitionEnabled: true });
     await ctx.newSharedSpaceMember({ spaceId: space.id, userId: user.id, role: SharedSpaceRole.Owner });
@@ -364,6 +390,7 @@ describe('SharedSpaceService linked-library face identity repair', () => {
     });
 
     await expect(sut.handleSharedSpaceFaceMatchAll({ spaceId: space.id })).resolves.toBe(JobStatus.Success);
+    await drainSharedSpaceFaceJobs(sut, jobs);
 
     await expect(sharedSpaceRepository.getPersonFaceAssignmentsForSpace(face.assetFace.id, space.id)).resolves.toEqual(
       [],

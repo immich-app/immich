@@ -712,6 +712,27 @@ describe(FaceIdentityRepository.name, () => {
       }
     });
 
+    it('includes archived owned identity faces in global people overview statistics', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+
+      try {
+        const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Archived Person' });
+        const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive });
+        const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+        const identity = await sut.ensurePersonIdentity(person.id);
+        await sut.linkFace({ assetFaceId: assetFace.id, identityId: identity.id, source: 'owner-person' });
+
+        await expect(sut.getAccessiblePeopleStatistics(user.id, { minimumFaceCount: 1 })).resolves.toEqual({
+          total: 1,
+          hidden: 0,
+          detectedFaceCount: 1,
+        });
+      } finally {
+        await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+      }
+    });
+
     it('dedupes an identity represented by both personal and space-person rows', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
@@ -1037,19 +1058,20 @@ describe(FaceIdentityRepository.name, () => {
       }
     });
 
-    it('excludes invalid global assets and face rows', async () => {
+    it('includes archived assets but excludes invalid global assets and face rows', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
 
       try {
         const valid = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
         await ctx.newAssetFace({ assetId: valid.asset.id });
+        const archived = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive });
+        await ctx.newAssetFace({ assetId: archived.asset.id });
 
         const invalidAssets = await Promise.all([
           ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline, deletedAt: new Date() }),
           ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline, isOffline: true }),
           ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked }),
-          ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Archive }),
         ]);
         for (const { asset } of invalidAssets) {
           await ctx.newAssetFace({ assetId: asset.id });
@@ -1060,11 +1082,11 @@ describe(FaceIdentityRepository.name, () => {
         await ctx.newAssetFace({ assetId: invalidFaceAsset.asset.id, deletedAt: new Date() });
 
         await expect(sut.getAccessiblePeopleFaceStatistics(user.id, { minimumFaceCount: 1 })).resolves.toEqual({
-          detectedFaceCount: 1,
+          detectedFaceCount: 2,
           assignedVisibleFaceCount: 0,
           namedVisiblePersonCount: 0,
           assignedHiddenFaceCount: 0,
-          unassignedFaceCount: 1,
+          unassignedFaceCount: 2,
         });
       } finally {
         await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();

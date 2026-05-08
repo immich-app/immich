@@ -1417,13 +1417,14 @@ select
   "asset_face"."id",
   "asset_face"."assetId",
   "asset_face"."personId",
-  "person"."identityId",
+  "face_identity_face"."identityId",
   "person"."type",
   "face_search"."embedding"
 from
   "asset_face"
   left join "face_search" on "face_search"."faceId" = "asset_face"."id"
   left join "person" on "person"."id" = "asset_face"."personId"
+  left join "face_identity_face" on "face_identity_face"."assetFaceId" = "asset_face"."id"
 where
   "asset_face"."assetId" = $1
   and "asset_face"."deletedAt" is null

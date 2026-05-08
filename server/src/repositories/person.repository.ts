@@ -61,6 +61,8 @@ export interface PeopleFaceStatisticsOptions {
   minimumFaceCount?: number;
 }
 
+const peopleAssetVisibilities = [AssetVisibility.Archive, AssetVisibility.Timeline];
+
 export interface DeleteFacesOptions {
   sourceType: SourceType;
 }
@@ -537,7 +539,7 @@ export class PersonRepository {
       .where('asset.ownerId', '=', userId)
       .where('asset.deletedAt', 'is', null)
       .where('asset.isOffline', '=', false)
-      .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+      .where('asset.visibility', 'in', peopleAssetVisibilities)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .executeTakeFirstOrThrow();
@@ -549,7 +551,7 @@ export class PersonRepository {
       .where('asset.ownerId', '=', userId)
       .where('asset.deletedAt', 'is', null)
       .where('asset.isOffline', '=', false)
-      .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+      .where('asset.visibility', 'in', peopleAssetVisibilities)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .executeTakeFirstOrThrow();
@@ -577,7 +579,7 @@ export class PersonRepository {
         WHERE "asset"."ownerId" = ${userId}
           AND "asset"."deletedAt" IS NULL
           AND "asset"."isOffline" = false
-          AND "asset"."visibility" = ${AssetVisibility.Timeline}
+          AND "asset"."visibility" IN (${sql.join(peopleAssetVisibilities)})
           AND "asset_face"."deletedAt" IS NULL
           AND "asset_face"."isVisible" = true
       ),

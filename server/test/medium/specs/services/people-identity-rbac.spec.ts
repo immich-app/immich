@@ -894,7 +894,7 @@ describe('People identity RBAC projection', () => {
     expect(afterRemoval).toEqual({ people: [], total: 0, hidden: 0, hasNextPage: false });
   });
 
-  it('materializes one photo independently across ten face-recognition spaces during full rebuilds', async () => {
+  it('materializes one photo by face identity independently across ten face-recognition spaces during full rebuilds', async () => {
     const { ctx, sut: sharedSpaceService, faceIdentityRepository, jobs } = setupSharedSpace();
     const { user: owner } = await ctx.newUser();
     const { result: person } = await ctx.newPerson({ ownerId: owner.id, name: 'Ten Space Source' });
@@ -903,6 +903,16 @@ describe('People identity RBAC projection', () => {
     await ctx.database.insertInto('face_search').values({ faceId, embedding: newEmbedding() }).execute();
     const identity = await faceIdentityRepository.ensurePersonIdentity(person.id);
     await faceIdentityRepository.linkFace({ assetFaceId: faceId, identityId: identity.id, source: 'owner-person' });
+    const staleIdentity = await ctx.database
+      .insertInto('face_identity')
+      .values({ type: 'person' })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    await ctx.database
+      .updateTable('person')
+      .set({ identityId: staleIdentity.id })
+      .where('id', '=', person.id)
+      .execute();
 
     const spaces = [];
     for (let index = 0; index < 10; index++) {

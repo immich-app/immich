@@ -61,7 +61,7 @@ describe(PersonRepository.name, () => {
       expect(result.total - result.hidden).toBe(0);
     });
 
-    it('excludes out-of-scope assets and non-visible or deleted faces from detectedFaceCount', async () => {
+    it('includes archived assets but excludes other out-of-scope assets and non-visible or deleted faces from detectedFaceCount', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { asset: validAsset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
@@ -92,7 +92,7 @@ describe(PersonRepository.name, () => {
       await expect(sut.getPeopleOverviewStatistics(user.id)).resolves.toEqual({
         total: 1,
         hidden: 0,
-        detectedFaceCount: 1,
+        detectedFaceCount: 2,
       });
     });
 
@@ -207,7 +207,7 @@ describe(PersonRepository.name, () => {
       });
     });
 
-    it('excludes deleted assets, offline assets, locked assets, archived assets, non-visible faces, and deleted faces', async () => {
+    it('includes archived assets but excludes deleted assets, offline assets, locked assets, non-visible faces, and deleted faces', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id, isHidden: false });
@@ -234,8 +234,8 @@ describe(PersonRepository.name, () => {
       await ctx.newAssetFace({ assetId: validAsset.id, personId: person.id, deletedAt: new Date() });
 
       await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toEqual({
-        detectedFaceCount: 1,
-        assignedVisibleFaceCount: 1,
+        detectedFaceCount: 2,
+        assignedVisibleFaceCount: 2,
         namedVisiblePersonCount: 1,
         assignedHiddenFaceCount: 0,
         unassignedFaceCount: 0,
@@ -289,7 +289,7 @@ describe(PersonRepository.name, () => {
       await ctx.newAssetFace({ assetId: otherAsset.id, personId: otherNamed.id });
 
       await expect(sut.getPeopleFaceStatistics(user.id)).resolves.toMatchObject({
-        namedVisiblePersonCount: 2,
+        namedVisiblePersonCount: 3,
       });
     });
 

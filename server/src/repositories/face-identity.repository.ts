@@ -77,6 +77,8 @@ type SpacePersonBackfillIdentityGroup = {
   representativeFaceId: string;
 };
 
+const peopleAssetVisibilities = [AssetVisibility.Archive, AssetVisibility.Timeline];
+
 export type ScopedPersonTokenResolution = {
   identityIds: string[];
   legacyPersonIds: string[];
@@ -536,7 +538,7 @@ export class FaceIdentityRepository {
           AND asset_face."isVisible" = true
           AND asset."deletedAt" IS NULL
           AND asset."isOffline" = false
-          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND asset.visibility IN (${sql.join(peopleAssetVisibilities)})
           AND (
             asset."ownerId" = ${userId}
             OR EXISTS (
@@ -651,7 +653,7 @@ export class FaceIdentityRepository {
           AND asset_face."isVisible" = true
           AND asset."deletedAt" IS NULL
           AND asset."isOffline" = false
-          AND asset.visibility = ${AssetVisibility.Timeline}
+          AND asset.visibility IN (${sql.join(peopleAssetVisibilities)})
           AND (
             asset."ownerId" = ${userId}
             OR EXISTS (
