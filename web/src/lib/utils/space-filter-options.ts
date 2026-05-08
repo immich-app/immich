@@ -28,6 +28,9 @@ export function buildSpaceTimelineOptions(spaceId: string, filters: FilterState)
   if (filters.isFavorite !== undefined) {
     base.isFavorite = filters.isFavorite;
   }
+  if (filters.isNotInAlbum === true) {
+    base.isNotInAlbum = true;
+  }
   if (filters.mediaType !== 'all') {
     base.$type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
   }
@@ -68,6 +71,10 @@ export function handleSpaceRemoveFilter(filters: FilterState, type: string, id?:
     case 'favorites':
     case 'isFavorite': {
       return { ...filters, isFavorite: undefined };
+    }
+    case 'albums':
+    case 'isNotInAlbum': {
+      return { ...filters, isNotInAlbum: undefined };
     }
     case 'timeline': {
       return {

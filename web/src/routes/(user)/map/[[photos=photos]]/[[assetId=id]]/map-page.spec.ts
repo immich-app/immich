@@ -112,6 +112,25 @@ describe('Map page query intersection', () => {
     });
   });
 
+  it('exposes has-no-album in the map filter panel', () => {
+    renderPage();
+
+    expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
+      'data-sections',
+      'timeline,people,location,camera,tags,rating,media,favorites,albums',
+    );
+  });
+
+  it('passes has-no-album to filtered map markers when selected', async () => {
+    renderPage();
+    await fireEvent.click(screen.getByTestId('select-has-no-album-filter'));
+    await flushQueryDebounce();
+
+    await waitFor(() => {
+      expect(sdkMock.getFilteredMapMarkers).toHaveBeenCalledWith(expect.objectContaining({ isNotInAlbum: true }));
+    });
+  });
+
   it('intersects map markers with paginated searchSmart ids when q is present', async () => {
     mockPage.url = new URL('https://gallery.test/map?q=beach');
     sdkMock.getFilteredMapMarkers.mockResolvedValue([

@@ -38,6 +38,12 @@
     }
   }
 
+  function selectHasNoAlbum() {
+    if (filters) {
+      updateFilters({ ...filters, isNotInAlbum: true });
+    }
+  }
+
   function loadCitySuggestions() {
     if (filters) {
       void config?.providers?.cities?.('Germany', buildFilterContext(filters, ['country', 'city']));
@@ -79,12 +85,14 @@
   data-sections={config?.sections.join(',') ?? ''}
   data-country={filters?.country ?? ''}
   data-is-favorite={String(filters?.isFavorite)}
+  data-is-not-in-album={String(filters?.isNotInAlbum)}
   data-time-buckets={JSON.stringify(timeBuckets)}
   data-suggestions={suggestions}
   data-person-names={JSON.stringify([...(personNames?.entries() ?? [])])}
   data-tag-names={JSON.stringify([...(tagNames?.entries() ?? [])])}
 >
   <button type="button" data-testid="select-favorites-filter" onclick={selectFavorites}>Favorites</button>
+  <button type="button" data-testid="select-has-no-album-filter" onclick={selectHasNoAlbum}>Has no album</button>
   <button type="button" data-testid="load-city-suggestions" onclick={loadCitySuggestions}>Load cities</button>
   <button type="button" data-testid="load-camera-model-suggestions" onclick={loadCameraModelSuggestions}>
     Load camera models

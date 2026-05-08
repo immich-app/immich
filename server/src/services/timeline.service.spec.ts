@@ -673,6 +673,18 @@ describe(TimelineService.name, () => {
       expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ tagIds: ['tag-1', 'tag-2'] }));
     });
 
+    it('should pass has-no-album through to asset repository for getTimeBuckets', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { isNotInAlbum: true });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ isNotInAlbum: true }));
+    });
+
+    it('should pass false has-no-album through for getTimeBuckets without enabling the filter', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { isNotInAlbum: false });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(expect.objectContaining({ isNotInAlbum: false }));
+    });
+
     it('should not require tag ownership to filter by tagIds', async () => {
       mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: '2024-01-01', count: 5 }]);
       // user1 filters by tags they do not own — should succeed without TagRead check
@@ -817,6 +829,19 @@ describe(TimelineService.name, () => {
           takenAfter: '2023-08-01T00:00:00.000Z',
           takenBefore: '2023-08-31T23:59:59.999Z',
         }),
+        authStub.admin,
+      );
+    });
+
+    it('should pass has-no-album through for getTimeBucket', async () => {
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
+
+      await sut.getTimeBucket(authStub.admin, { timeBucket: '2023-08-01', isNotInAlbum: true });
+
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        '2023-08-01',
+        expect.objectContaining({ isNotInAlbum: true }),
         authStub.admin,
       );
     });

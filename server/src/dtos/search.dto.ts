@@ -105,6 +105,7 @@ const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
 const SmartSearchFacetsSchema = BaseSearchSchema.pick({
   type: true,
   isFavorite: true,
+  isNotInAlbum: true,
   takenBefore: true,
   takenAfter: true,
   city: true,
@@ -178,6 +179,7 @@ const SearchSuggestionRequestBaseSchema = z.object({
     .describe('Filter by tag IDs'),
   rating: z.coerce.number().int().min(1).max(5).optional().describe('Filter by rating (1-5)'),
   isFavorite: stringToBool.optional().describe('Filter by favorites'),
+  isNotInAlbum: stringToBool.optional().describe('Filter assets not in any album'),
   make: z.string().optional().describe('Filter by camera make'),
   model: z.string().optional().describe('Filter by camera model'),
   lensModel: z.string().optional().describe('Filter by lens model'),
@@ -276,6 +278,7 @@ const FilterSuggestionsRequestBaseSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5).optional().describe('Filter by rating (1-5)'),
   mediaType: AssetTypeSchema.optional().describe('Filter by asset type'),
   isFavorite: stringToBool.optional().describe('Filter by favorites'),
+  isNotInAlbum: stringToBool.optional().describe('Filter assets not in any album'),
   takenAfter: isoDatetimeToDate.optional().describe('Filter by taken date (after)'),
   takenBefore: isoDatetimeToDate.optional().describe('Filter by taken date (before)'),
   albumId: z.uuidv4().optional().describe('Scope to a specific album'),

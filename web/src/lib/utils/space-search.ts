@@ -61,6 +61,9 @@ export function buildSmartSearchParams(args: SmartSearchParamsArgs): SmartSearch
   if (filters.mediaType !== 'all') {
     params.type = filters.mediaType === 'image' ? AssetTypeEnum.Image : AssetTypeEnum.Video;
   }
+  if (filters.isNotInAlbum === true) {
+    params.isNotInAlbum = true;
+  }
   const context = buildFilterContext(filters);
   if (context?.takenAfter) {
     params.takenAfter = context.takenAfter;

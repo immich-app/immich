@@ -25,6 +25,9 @@ function applyCommonMapFilters(base: Record<string, unknown>, filters: FilterSta
   if (filters.isFavorite !== undefined) {
     base.isFavorite = filters.isFavorite;
   }
+  if (filters.isNotInAlbum === true) {
+    base.isNotInAlbum = true;
+  }
   if (filters.city) {
     base.city = filters.city;
   }

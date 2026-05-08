@@ -11,6 +11,7 @@ export const SEARCHABLE_PAGE_FILTER_PARAMS = [
   'model',
   'type',
   'favorite',
+  'album',
   'rating',
   'from',
   'to',
@@ -27,6 +28,7 @@ export type SearchablePageFilterState = Partial<
     | 'model'
     | 'mediaType'
     | 'isFavorite'
+    | 'isNotInAlbum'
     | 'rating'
     | 'dateAfter'
     | 'dateBefore'
@@ -149,6 +151,7 @@ export function getSearchablePageFilterState(url: URL): SearchablePageFilterStat
   const rating = parseRating(url.searchParams.get('rating'));
   const mediaType = parseMediaType(url.searchParams.get('type'));
   const favorite = parseFavorite(url.searchParams.get('favorite'));
+  const isNotInAlbum = parseAlbumFilter(url.searchParams.get('album'));
   const from = parseDateParam(url.searchParams.get('from'));
   const to = parseDateParam(url.searchParams.get('to'));
 
@@ -175,6 +178,9 @@ export function getSearchablePageFilterState(url: URL): SearchablePageFilterStat
   }
   if (favorite !== undefined) {
     result.isFavorite = favorite;
+  }
+  if (isNotInAlbum === true) {
+    result.isNotInAlbum = true;
   }
   if (rating !== undefined) {
     result.rating = rating;
@@ -229,6 +235,9 @@ function appendSearchablePageFilterParams(params: URLSearchParams, filters: Filt
   if (filters.isFavorite !== undefined) {
     params.set('favorite', String(filters.isFavorite));
   }
+  if (filters.isNotInAlbum === true) {
+    params.set('album', 'none');
+  }
   if (filters.rating !== undefined) {
     params.set('rating', String(filters.rating));
   }
@@ -270,6 +279,10 @@ function parseFavorite(value: string | null): boolean | undefined {
     return false;
   }
   return undefined;
+}
+
+function parseAlbumFilter(value: string | null): boolean | undefined {
+  return value === 'none' ? true : undefined;
 }
 
 function parseDateParam(value: string | null): string | undefined {

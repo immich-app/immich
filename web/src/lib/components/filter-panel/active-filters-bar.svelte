@@ -101,6 +101,11 @@
       result.push({ type: 'favorites', label: 'Favorites' });
     }
 
+    // Albums chip
+    if (filters.isNotInAlbum === true) {
+      result.push({ type: 'albums', label: 'Has no album' });
+    }
+
     // Timeline chip
     const customDateLabel = buildCustomDateLabel(filters.dateAfter, filters.dateBefore);
     if (customDateLabel) {

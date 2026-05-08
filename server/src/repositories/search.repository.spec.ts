@@ -413,6 +413,28 @@ describe(SearchRepository.name, () => {
 
       expect(sql).toContain('false');
     });
+
+    it('filters suggestion asset ids to assets without album membership', () => {
+      const sql = compileFilteredAssetIds(sut, { isNotInAlbum: true });
+
+      expect(sql).toContain('"album_asset"');
+      expect(sql).toContain('not exists');
+      expect(sql).toContain('"album_asset"."assetId" = "asset"."id"');
+    });
+
+    it('does not add album exclusion for false has-no-album filters', () => {
+      const sql = compileFilteredAssetIds(sut, { isNotInAlbum: false });
+
+      expect(sql).not.toContain('"album_asset"');
+    });
+
+    it('filters dependent EXIF suggestions to assets without album membership', () => {
+      const sql = compileExifField(sut, 'model', { isNotInAlbum: true });
+
+      expect(sql).toContain('"album_asset"');
+      expect(sql).toContain('not exists');
+      expect(sql).toContain('"album_asset"."assetId" = "asset"."id"');
+    });
   });
 
   describe('album-scoped suggestions', () => {

@@ -17,6 +17,18 @@ describe('buildMapMarkerOptions', () => {
       }),
     );
   });
+
+  it('includes has-no-album in map marker options', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    expect(buildMapMarkerOptions(filters)).toEqual(expect.objectContaining({ isNotInAlbum: true }));
+  });
+
+  it('omits has-no-album from map marker options when false', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: false };
+
+    expect(buildMapMarkerOptions(filters)).not.toHaveProperty('isNotInAlbum');
+  });
 });
 
 describe('buildMapTimeBucketOptions', () => {
@@ -30,6 +42,7 @@ describe('buildMapTimeBucketOptions', () => {
       rating: 4,
       mediaType: 'video' as const,
       isFavorite: true,
+      isNotInAlbum: true,
       selectedYear: 2015,
       selectedMonth: 3,
     };
@@ -43,6 +56,7 @@ describe('buildMapTimeBucketOptions', () => {
       tagIds: ['tag-1'],
       rating: 4,
       isFavorite: true,
+      isNotInAlbum: true,
       $type: AssetTypeEnum.Video,
       takenAfter: '2015-03-01T00:00:00.000Z',
       takenBefore: '2015-04-01T00:00:00.000Z',
@@ -60,6 +74,18 @@ describe('buildMapTimeBucketOptions', () => {
       spaceId: 'space-123',
       country: 'Australia',
       $type: AssetTypeEnum.Image,
+    });
+  });
+
+  it('includes has-no-album in space map time bucket requests', () => {
+    const filters = {
+      ...createFilterState(),
+      isNotInAlbum: true,
+    };
+
+    expect(buildMapTimeBucketOptions(filters, 'space-123')).toEqual({
+      spaceId: 'space-123',
+      isNotInAlbum: true,
     });
   });
 
@@ -91,6 +117,7 @@ describe('buildMapTimelineOptions', () => {
       personIds: ['person-1'],
       tagIds: ['tag-1'],
       rating: 4,
+      isNotInAlbum: true,
       mediaType: 'image' as const,
       selectedYear: 2024,
       selectedMonth: 7,
@@ -105,6 +132,7 @@ describe('buildMapTimelineOptions', () => {
       personIds: ['person-1'],
       tagIds: ['tag-1'],
       rating: 4,
+      isNotInAlbum: true,
       $type: AssetTypeEnum.Image,
       takenAfter: '2024-07-01T00:00:00.000Z',
       takenBefore: '2024-08-01T00:00:00.000Z',
@@ -115,6 +143,7 @@ describe('buildMapTimelineOptions', () => {
     const filters = {
       ...createFilterState(),
       personIds: ['space-person-1'],
+      isNotInAlbum: true,
     };
     const selectedClusterIds = new Set(['asset-1']);
 
@@ -123,6 +152,7 @@ describe('buildMapTimelineOptions', () => {
       spaceId: 'space-1',
       assetFilter: selectedClusterIds,
       spacePersonIds: ['space-person-1'],
+      isNotInAlbum: true,
     });
   });
 

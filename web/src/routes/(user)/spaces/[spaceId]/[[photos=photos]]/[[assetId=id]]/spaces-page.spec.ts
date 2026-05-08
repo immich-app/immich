@@ -332,8 +332,16 @@ describe('Spaces page search URL state', () => {
 
     expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
       'data-sections',
-      'timeline,people,location,camera,tags,rating,media,favorites',
+      'timeline,people,location,camera,tags,rating,media,favorites,albums',
     );
+  });
+
+  it('hydrates has-no-album from the space URL into search results', () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos?q=beach&album=none');
+
+    renderPage();
+
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-not-in-album', 'true');
   });
 
   it('registers current space filters for global sort changes', async () => {
@@ -410,6 +418,27 @@ describe('Spaces page search URL state', () => {
       spaceId: 'space-1',
     });
     expect(sdkMock.searchSmartFacets.mock.calls[1][0].smartSearchFacetsDto).not.toHaveProperty('withSharedSpaces');
+  });
+
+  it('narrows space suggestions and dependent providers to has-no-album when selected', async () => {
+    mockPage.url = new URL('https://gallery.test/spaces/space-1/photos');
+
+    renderPage();
+    await fireEvent.click(screen.getByTestId('select-has-no-album-filter'));
+    await fireEvent.click(screen.getByTestId('load-city-suggestions'));
+    await fireEvent.click(screen.getByTestId('load-camera-model-suggestions'));
+
+    await waitFor(() => {
+      expect(sdkMock.getFilterSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ spaceId: 'space-1', isNotInAlbum: true }),
+      );
+      expect(sdkMock.getSearchSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ country: 'Germany', spaceId: 'space-1', isNotInAlbum: true }),
+      );
+      expect(sdkMock.getSearchSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ make: 'Sony', spaceId: 'space-1', isNotInAlbum: true }),
+      );
+    });
   });
 
   it('fetches smart facets with spaceId for committed space search', async () => {

@@ -51,4 +51,20 @@ describe('TimeBucketDto', () => {
       expect(result.data?.tagIds).toEqual(['3fe388e4-2078-44d7-b36c-39d9dee3a657']);
     });
   });
+
+  describe('isNotInAlbum query param handling', () => {
+    it('should coerce true string to boolean', () => {
+      const result = TimeBucketDto.schema.safeParse({ isNotInAlbum: 'true' });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isNotInAlbum).toBe(true);
+    });
+
+    it('should coerce false string to boolean', () => {
+      const result = TimeBucketDto.schema.safeParse({ isNotInAlbum: 'false' });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isNotInAlbum).toBe(false);
+    });
+  });
 });

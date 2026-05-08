@@ -155,6 +155,7 @@
             ? AssetTypeEnum.Image
             : AssetTypeEnum.Video,
       isFavorite: nextFilters.isFavorite,
+      isNotInAlbum: nextFilters.isNotInAlbum === true ? true : undefined,
       takenAfter: context?.takenAfter,
       takenBefore: context?.takenBefore,
       ...(nextFilters.isFavorite === undefined ? { withSharedSpaces: true } : {}),
@@ -251,7 +252,7 @@
   };
 
   const filterConfig: FilterPanelConfig = {
-    sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'],
+    sections: ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites', 'albums'],
     suggestionsProvider: async (nextFilters: FilterState) => {
       if (!showSearchResults) {
         return loadPhotoFilterSuggestions(nextFilters);

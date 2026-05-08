@@ -18,6 +18,10 @@
     filters = { ...filters, isFavorite: true };
   }
 
+  function selectHasNoAlbum() {
+    filters = { ...filters, isNotInAlbum: true };
+  }
+
   function loadCitySuggestions() {
     void config?.providers?.cities?.('Germany', buildFilterContext(filters, ['country', 'city']));
   }
@@ -32,8 +36,10 @@
   data-testid="filter-panel-stub"
   data-sections={config?.sections.join(',') ?? ''}
   data-is-favorite={String(filters?.isFavorite)}
+  data-is-not-in-album={String(filters?.isNotInAlbum)}
 >
   <button type="button" data-testid="select-favorites-filter" onclick={selectFavorites}>Favorites</button>
+  <button type="button" data-testid="select-has-no-album-filter" onclick={selectHasNoAlbum}>Has no album</button>
   <button type="button" data-testid="load-city-suggestions" onclick={loadCitySuggestions}>Load cities</button>
   <button type="button" data-testid="load-camera-model-suggestions" onclick={loadCameraModelSuggestions}>
     Load camera models

@@ -138,6 +138,24 @@ describe('buildSmartSearchParams', () => {
       expect(result.isFavorite).toBeUndefined();
     });
 
+    it('sets isNotInAlbum when has-no-album is selected', () => {
+      const result = buildSmartSearchParams({
+        query: 'beach',
+        filters: { ...baseFilters, isNotInAlbum: true },
+      });
+
+      expect(result.isNotInAlbum).toBe(true);
+    });
+
+    it('omits isNotInAlbum when has-no-album is false', () => {
+      const result = buildSmartSearchParams({
+        query: 'beach',
+        filters: { ...baseFilters, isNotInAlbum: false },
+      });
+
+      expect(result.isNotInAlbum).toBeUndefined();
+    });
+
     it('builds takenAfter/takenBefore for selectedYear + selectedMonth (January)', () => {
       const result = buildSmartSearchParams({
         query: 'beach',
@@ -195,6 +213,7 @@ describe('buildSmartSearchParams', () => {
           selectedMonth: 3,
           sortOrder: 'desc',
           isFavorite: true,
+          isNotInAlbum: true,
         },
         spaceId: 'space-1',
       });
@@ -212,6 +231,7 @@ describe('buildSmartSearchParams', () => {
       expect(result.takenBefore).toBeDefined();
       expect(result.order).toBe(AssetOrder.Desc);
       expect(result.isFavorite).toBe(true);
+      expect(result.isNotInAlbum).toBe(true);
     });
 
     it('does not include empty string fields', () => {

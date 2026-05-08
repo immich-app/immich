@@ -14,7 +14,17 @@ import {
 } from '@immich/sdk';
 
 export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
-  const sections = ['timeline', 'people', 'location', 'camera', 'tags', 'rating', 'media', 'favorites'] as const;
+  const sections = [
+    'timeline',
+    'people',
+    'location',
+    'camera',
+    'tags',
+    'rating',
+    'media',
+    'favorites',
+    'albums',
+  ] as const;
 
   const suggestionsProvider = async (filters: FilterState) => {
     const context = buildFilterContext(filters);
@@ -33,6 +43,7 @@ export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
             ? AssetTypeEnum.Image
             : AssetTypeEnum.Video,
       isFavorite: filters.isFavorite,
+      isNotInAlbum: filters.isNotInAlbum === true ? true : undefined,
       takenAfter: context?.takenAfter,
       takenBefore: context?.takenBefore,
       ...(spaceId ? { spaceId } : { withSharedSpaces: true }),

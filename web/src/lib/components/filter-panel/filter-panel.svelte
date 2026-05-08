@@ -13,6 +13,7 @@
     mdiStar,
     mdiImage,
     mdiHeart,
+    mdiImageAlbum,
   } from '@mdi/js';
   import { untrack } from 'svelte';
   import type {
@@ -32,6 +33,7 @@
   import RatingFilter from './rating-filter.svelte';
   import MediaTypeFilter from './media-type-filter.svelte';
   import FavoritesFilter from './favorites-filter.svelte';
+  import AlbumsFilter from './albums-filter.svelte';
 
   interface Props {
     config: FilterPanelConfig;
@@ -110,6 +112,7 @@
       rating: filters.rating,
       mediaType: filters.mediaType,
       isFavorite: filters.isFavorite,
+      isNotInAlbum: filters.isNotInAlbum,
       sortOrder: filters.sortOrder,
       dateAfter: filters.dateAfter,
       dateBefore: filters.dateBefore,
@@ -331,6 +334,7 @@
     rating: mdiStar,
     media: mdiImage,
     favorites: mdiHeart,
+    albums: mdiImageAlbum,
   };
 
   const sectionTitles: Record<string, string> = {
@@ -342,6 +346,7 @@
     rating: 'Rating',
     media: 'Media Type',
     favorites: 'Favorites',
+    albums: 'Albums',
   };
 
   const sectionToggleLabels: Record<string, string> = {
@@ -352,7 +357,7 @@
 
   type StoredSectionSet = string[] | { selected?: string[]; known?: string[] };
 
-  const LEGACY_INTRODUCED_SECTIONS = new Set<FilterSectionType>(['favorites']);
+  const LEGACY_INTRODUCED_SECTIONS = new Set<FilterSectionType>(['favorites', 'albums']);
 
   function isFilterSection(value: string, configSections: FilterSectionType[]): value is FilterSectionType {
     return configSections.includes(value as FilterSectionType);
@@ -634,6 +639,9 @@
       case 'favorites': {
         return filters.isFavorite !== undefined;
       }
+      case 'albums': {
+        return filters.isNotInAlbum === true;
+      }
       case 'timeline': {
         return (
           filters.dateAfter !== undefined || filters.dateBefore !== undefined || filters.selectedYear !== undefined
@@ -813,6 +821,13 @@
                 selected={filters.isFavorite}
                 onToggle={(value) => {
                   updateFilters({ ...filters, isFavorite: value });
+                }}
+              />
+            {:else if section === 'albums'}
+              <AlbumsFilter
+                selected={filters.isNotInAlbum}
+                onToggle={(value) => {
+                  updateFilters({ ...filters, isNotInAlbum: value });
                 }}
               />
             {/if}

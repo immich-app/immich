@@ -45,6 +45,12 @@ describe('FilterState utilities', () => {
     expect(getActiveFilterCount(state)).toBe(3);
   });
 
+  it('should count has-no-album as an active filter', () => {
+    const state = { ...createFilterState(), isNotInAlbum: true };
+
+    expect(getActiveFilterCount(state)).toBe(1);
+  });
+
   it('should count selectedYear as an active filter', () => {
     const state = createFilterState();
     state.selectedYear = 2023;
@@ -102,6 +108,15 @@ describe('FilterState utilities', () => {
     expect(cleared.rating).toBeUndefined();
     expect(cleared.sortOrder).toBe('asc'); // preserved!
     expect(cleared.mediaType).toBe('all');
+  });
+
+  it('should clear has-no-album while preserving sortOrder', () => {
+    const state = { ...createFilterState(), isNotInAlbum: true, sortOrder: 'asc' as const };
+
+    const cleared = clearFilters(state);
+
+    expect(cleared.isNotInAlbum).toBeUndefined();
+    expect(cleared.sortOrder).toBe('asc');
   });
 
   it('should preserve relevance sortOrder on clearFilters', () => {
@@ -171,13 +186,21 @@ describe('buildFilterContext', () => {
     state.tagIds = ['tag-1'];
     state.rating = 4;
     state.isFavorite = true;
+    const stateWithAlbums = { ...state, isNotInAlbum: true };
 
-    expect(buildFilterContext(state)).toEqual({
+    expect(buildFilterContext(stateWithAlbums)).toEqual({
       personIds: ['person-1'],
       tagIds: ['tag-1'],
       rating: 4,
       isFavorite: true,
+      isNotInAlbum: true,
     });
+  });
+
+  it('should exclude has-no-album from dependent suggestion context when requested', () => {
+    const state = { ...createFilterState(), isNotInAlbum: true, rating: 4 };
+
+    expect(buildFilterContext(state, ['isNotInAlbum'])).toEqual({ rating: 4 });
   });
 
   it('should exclude requested filters from dependent suggestion context', () => {

@@ -1,4 +1,13 @@
-export type FilterSection = 'timeline' | 'people' | 'location' | 'camera' | 'tags' | 'rating' | 'media' | 'favorites';
+export type FilterSection =
+  | 'timeline'
+  | 'people'
+  | 'location'
+  | 'camera'
+  | 'tags'
+  | 'rating'
+  | 'media'
+  | 'favorites'
+  | 'albums';
 
 export interface PersonOption {
   id: string;
@@ -57,6 +66,7 @@ export interface FilterState {
   rating?: number;
   mediaType: 'all' | 'image' | 'video';
   isFavorite?: boolean;
+  isNotInAlbum?: boolean;
   sortOrder: 'asc' | 'desc' | 'relevance';
   dateAfter?: string;
   dateBefore?: string;
@@ -86,6 +96,7 @@ export function getActiveFilterCount(state: FilterState): number {
     (state.rating === undefined ? 0 : 1) +
     (state.mediaType === 'all' ? 0 : 1) +
     (state.isFavorite === undefined ? 0 : 1) +
+    (state.isNotInAlbum === true ? 1 : 0) +
     (hasTemporalFilter ? 1 : 0)
   );
 }
@@ -97,6 +108,7 @@ export type FilterContext = {
   tagIds?: string[];
   rating?: number;
   isFavorite?: boolean;
+  isNotInAlbum?: boolean;
 };
 
 function hasDateValue(value: string | undefined): value is string {
@@ -162,6 +174,10 @@ export function buildFilterContext(
     context.isFavorite = state.isFavorite;
   }
 
+  if (includes('isNotInAlbum') && state.isNotInAlbum === true) {
+    context.isNotInAlbum = true;
+  }
+
   const validDateAfter = includes('dateAfter') ? dateOnlyToUtcStart(state.dateAfter) : undefined;
   const validDateBefore = includes('dateBefore') ? dateOnlyToExclusiveUtcEnd(state.dateBefore) : undefined;
 
@@ -197,6 +213,7 @@ export function clearFilters(state: FilterState): FilterState {
     rating: undefined,
     mediaType: 'all',
     isFavorite: undefined,
+    isNotInAlbum: undefined,
     dateAfter: undefined,
     dateBefore: undefined,
     selectedYear: undefined,

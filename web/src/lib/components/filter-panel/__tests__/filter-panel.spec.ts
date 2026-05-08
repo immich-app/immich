@@ -134,6 +134,38 @@ describe('FilterPanel', () => {
     expect(onFiltersChange).toHaveBeenCalledWith(expect.objectContaining({ country: 'Germany', city: undefined }));
   });
 
+  it('should update filters when has-no-album is selected', async () => {
+    const onFiltersChange = vi.fn();
+
+    render(FilterPanel, {
+      props: {
+        config: { sections: ['albums' as FilterSection], providers: {} },
+        timeBuckets: [],
+        onFiltersChange,
+      },
+    });
+
+    await fireEvent.click(screen.getByTestId('albums-none'));
+
+    expect(onFiltersChange).toHaveBeenCalledWith(expect.objectContaining({ isNotInAlbum: true }));
+  });
+
+  it('should show active state for has-no-album when collapsed', async () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    render(FilterPanel, {
+      props: {
+        config: { sections: ['albums' as FilterSection], providers: {} },
+        timeBuckets: [],
+        filters,
+      },
+    });
+
+    await fireEvent.click(screen.getByTestId('collapse-panel-btn'));
+
+    expect(screen.getByTestId('collapsed-icon-strip').querySelector('.bg-immich-primary')).toBeTruthy();
+  });
+
   it('should work without onFiltersChange callback', () => {
     const { queryByTestId } = render(FilterPanel, {
       props: {

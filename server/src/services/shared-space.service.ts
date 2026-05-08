@@ -735,6 +735,7 @@ export class SharedSpaceService extends BaseService {
       takenAfter: dto.takenAfter,
       takenBefore: dto.takenBefore,
       isFavorite: dto.isFavorite,
+      isNotInAlbum: dto.isNotInAlbum,
       city: dto.city,
       country: dto.country,
       visibility: AssetVisibility.Timeline,

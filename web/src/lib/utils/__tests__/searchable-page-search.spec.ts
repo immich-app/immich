@@ -55,6 +55,7 @@ describe('typed filter URL state', () => {
       model: 'Z8',
       mediaType: 'image' as const,
       isFavorite: true,
+      isNotInAlbum: true,
       rating: 4,
       dateAfter: '2025-01-01',
       dateBefore: '2026-12-31',
@@ -64,8 +65,15 @@ describe('typed filter URL state', () => {
     const result = buildSearchablePageUrl(url, 'beach', 'asc', filters);
 
     expect(result).toBe(
-      '/photos?view=timeline&q=beach&sort=asc&people=person-1%2Cperson-2&tags=tag-1&city=Berlin&country=Germany&make=Nikon&model=Z8&type=image&favorite=true&rating=4&from=2025-01-01&to=2026-12-31',
+      '/photos?view=timeline&q=beach&sort=asc&people=person-1%2Cperson-2&tags=tag-1&city=Berlin&country=Germany&make=Nikon&model=Z8&type=image&favorite=true&album=none&rating=4&from=2025-01-01&to=2026-12-31',
     );
+  });
+
+  it('omits has-no-album from URLs when false', () => {
+    const url = new URL('https://gallery.test/photos');
+    const filters = { ...createFilterState(), isNotInAlbum: false };
+
+    expect(buildSearchablePageUrl(url, '', 'desc', filters)).toBe('/photos?sort=desc');
   });
 
   it('serializes typed filters into space URLs', () => {
@@ -84,7 +92,7 @@ describe('typed filter URL state', () => {
 
   it('hydrates typed filter params into FilterState', () => {
     const url = new URL(
-      'https://gallery.test/photos?q=beach&people=person-1%2Cperson-2&tags=tag-1&type=video&favorite=false&rating=5&from=2025-01-01&to=2026-12-31',
+      'https://gallery.test/photos?q=beach&people=person-1%2Cperson-2&tags=tag-1&type=video&favorite=false&album=none&rating=5&from=2025-01-01&to=2026-12-31',
     );
 
     expect(getSearchablePageFilterState(url)).toEqual({
@@ -92,6 +100,7 @@ describe('typed filter URL state', () => {
       tagIds: ['tag-1'],
       mediaType: 'video',
       isFavorite: false,
+      isNotInAlbum: true,
       rating: 5,
       dateAfter: '2025-01-01',
       dateBefore: '2026-12-31',
@@ -99,7 +108,9 @@ describe('typed filter URL state', () => {
   });
 
   it('drops invalid typed filter URL params without crashing', () => {
-    const url = new URL('https://gallery.test/photos?type=gif&favorite=maybe&rating=9&from=soon&to=2026-99-01');
+    const url = new URL(
+      'https://gallery.test/photos?type=gif&favorite=maybe&album=all&rating=9&from=soon&to=2026-99-01',
+    );
 
     expect(getSearchablePageFilterState(url)).toEqual({});
   });
@@ -123,7 +134,7 @@ describe('typed filter URL state', () => {
   });
 
   it('clears only typed filter params', () => {
-    const params = new URLSearchParams('q=beach&sort=desc&people=p1&city=Berlin&view=timeline');
+    const params = new URLSearchParams('q=beach&sort=desc&people=p1&city=Berlin&album=none&view=timeline');
 
     clearSearchablePageFilterParams(params);
 

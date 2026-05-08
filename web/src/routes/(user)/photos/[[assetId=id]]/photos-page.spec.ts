@@ -275,7 +275,7 @@ describe('Photos page search URL state', () => {
 
   it('hydrates typed filter URL params into the photos FilterState', () => {
     mockPage.url = new URL(
-      'https://gallery.test/photos?q=beach&people=person-1&tags=tag-1&type=image&favorite=true&rating=4&from=2025-01-01&to=2025-12-31',
+      'https://gallery.test/photos?q=beach&people=person-1&tags=tag-1&type=image&favorite=true&album=none&rating=4&from=2025-01-01&to=2025-12-31',
     );
 
     renderPage();
@@ -285,6 +285,7 @@ describe('Photos page search URL state', () => {
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-tag-ids', 'tag-1');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-media-type', 'image');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-favorite', 'true');
+    expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-not-in-album', 'true');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-rating', '4');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-date-after', '2025-01-01');
     expect(screen.getByTestId('smart-search-results')).toHaveAttribute('data-filter-date-before', '2025-12-31');
@@ -336,8 +337,18 @@ describe('Photos page search URL state', () => {
 
     expect(screen.getByTestId('filter-panel-stub')).toHaveAttribute(
       'data-sections',
-      'timeline,people,location,camera,tags,rating,media,favorites',
+      'timeline,people,location,camera,tags,rating,media,favorites,albums',
     );
+  });
+
+  it('passes has-no-album into photos timeline options when hydrated from the URL', async () => {
+    mockPage.url = new URL('https://gallery.test/photos?album=none');
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(buildPhotosTimelineOptions).toHaveBeenCalledWith(expect.objectContaining({ isNotInAlbum: true }));
+    });
   });
 
   it('registers current photos filters for global sort changes', async () => {
@@ -405,6 +416,27 @@ describe('Photos page search URL state', () => {
     for (const [request] of sdkMock.getSearchSuggestions.mock.calls) {
       expect(request).not.toHaveProperty('withSharedSpaces');
     }
+  });
+
+  it('narrows photos suggestions and dependent providers to has-no-album when selected', async () => {
+    mockPage.url = new URL('https://gallery.test/photos');
+
+    renderPage();
+    await fireEvent.click(screen.getByTestId('select-has-no-album-filter'));
+    await fireEvent.click(screen.getByTestId('load-city-suggestions'));
+    await fireEvent.click(screen.getByTestId('load-camera-model-suggestions'));
+
+    await waitFor(() => {
+      expect(sdkMock.getFilterSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ isNotInAlbum: true, withSharedSpaces: true }),
+      );
+      expect(sdkMock.getSearchSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ country: 'Germany', isNotInAlbum: true }),
+      );
+      expect(sdkMock.getSearchSuggestions).toHaveBeenCalledWith(
+        expect.objectContaining({ make: 'Sony', isNotInAlbum: true }),
+      );
+    });
   });
 
   it('fetches smart facets for committed photos search and passes exact total to results', async () => {

@@ -160,8 +160,56 @@ describe('ActiveFiltersBar', () => {
     expect(removedType).toBe('favorites');
   });
 
+  it('should render chip for has-no-album filter', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    const { getAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    const chips = getAllByTestId('active-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0].textContent).toContain('Has no album');
+  });
+
+  it('should remove has-no-album filter on chip close', async () => {
+    let removedType: string | undefined;
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    const { getByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: (type: string) => {
+          removedType = type;
+        },
+        onClearAll: () => {},
+      },
+    });
+
+    await fireEvent.click(getByTestId('chip-close'));
+    expect(removedType).toBe('albums');
+  });
+
   it('should not render a favorites chip for isFavorite false', () => {
     const filters = { ...createFilterState(), isFavorite: false };
+
+    const { queryAllByTestId } = render(ActiveFiltersBar, {
+      props: {
+        filters,
+        onRemoveFilter: () => {},
+        onClearAll: () => {},
+      },
+    });
+
+    expect(queryAllByTestId('active-chip')).toHaveLength(0);
+  });
+
+  it('should not render a has-no-album chip for false', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: false };
 
     const { queryAllByTestId } = render(ActiveFiltersBar, {
       props: {

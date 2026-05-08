@@ -32,6 +32,7 @@
   data-sort-order={filters?.sortOrder ?? ''}
   data-is-favorite={String(filters?.isFavorite)}
   data-filter-favorite={String(filters?.isFavorite)}
+  data-filter-not-in-album={String(filters?.isNotInAlbum)}
   data-filter-person-ids={filters?.personIds.join(',') ?? ''}
   data-filter-tag-ids={filters?.tagIds.join(',') ?? ''}
   data-filter-media-type={filters?.mediaType ?? ''}

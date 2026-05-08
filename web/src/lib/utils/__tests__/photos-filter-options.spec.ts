@@ -132,6 +132,20 @@ describe('buildPhotosTimelineOptions', () => {
     expect(options).not.toHaveProperty('withSharedSpaces');
   });
 
+  it('should include has-no-album when selected', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+    const options = buildPhotosTimelineOptions(filters);
+
+    expect(options.isNotInAlbum).toBe(true);
+  });
+
+  it('should omit has-no-album when it is false', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: false };
+    const options = buildPhotosTimelineOptions(filters);
+
+    expect(options).not.toHaveProperty('isNotInAlbum');
+  });
+
   it('should handle multiple simultaneous filters', () => {
     const filters = {
       ...createFilterState(),
@@ -142,6 +156,7 @@ describe('buildPhotosTimelineOptions', () => {
       tagIds: ['t1', 't2'],
       rating: 3,
       mediaType: 'image' as const,
+      isNotInAlbum: true,
       sortOrder: 'asc' as const,
       selectedYear: 2023,
     };
@@ -152,6 +167,7 @@ describe('buildPhotosTimelineOptions', () => {
     expect(options.make).toBe('Sony');
     expect(options.tagIds).toEqual(['t1', 't2']);
     expect(options.rating).toBe(3);
+    expect(options.isNotInAlbum).toBe(true);
     expect(options.$type).toBe(AssetTypeEnum.Image);
     expect(options.order).toBe(AssetOrder.Asc);
     expect(options.takenAfter).toBeDefined();
@@ -229,6 +245,13 @@ describe('handlePhotosRemoveFilter', () => {
 
     expect(handlePhotosRemoveFilter(filters, 'favorites').isFavorite).toBeUndefined();
     expect(handlePhotosRemoveFilter(filters, 'isFavorite').isFavorite).toBeUndefined();
+  });
+
+  it('should clear has-no-album filter', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    expect(handlePhotosRemoveFilter(filters, 'albums').isNotInAlbum).toBeUndefined();
+    expect(handlePhotosRemoveFilter(filters, 'isNotInAlbum').isNotInAlbum).toBeUndefined();
   });
 
   it('should preserve sortOrder when removing filters', () => {

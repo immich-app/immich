@@ -8047,6 +8047,7 @@ describe(SharedSpaceService.name, () => {
         country: 'France',
         rating: 4,
         make: 'Canon',
+        isNotInAlbum: true,
       });
 
       expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
@@ -8057,8 +8058,22 @@ describe(SharedSpaceService.name, () => {
           country: 'France',
           rating: 4,
           make: 'Canon',
+          isNotInAlbum: true,
           personMatchAny: true,
           tagMatchAny: true,
+        }),
+      );
+    });
+
+    it('should pass false has-no-album to repository without enabling the filter', async () => {
+      const auth = factory.auth();
+      mocks.sharedSpace.getFilteredMapMarkers.mockResolvedValue([]);
+
+      await sut.getFilteredMapMarkers(auth, { isNotInAlbum: false });
+
+      expect(mocks.sharedSpace.getFilteredMapMarkers).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isNotInAlbum: false,
         }),
       );
     });

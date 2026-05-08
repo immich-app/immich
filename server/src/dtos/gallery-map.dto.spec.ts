@@ -82,4 +82,27 @@ describe('FilteredMapMarkerDto', () => {
       expect(result.data?.country).toBeUndefined();
     });
   });
+
+  describe('isNotInAlbum', () => {
+    it('should coerce true string to boolean', () => {
+      const result = parse({ isNotInAlbum: 'true' });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isNotInAlbum).toBe(true);
+    });
+
+    it('should coerce false string to boolean', () => {
+      const result = parse({ isNotInAlbum: 'false' });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isNotInAlbum).toBe(false);
+    });
+
+    it('should leave undefined when not provided', () => {
+      const result = parse({});
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isNotInAlbum).toBeUndefined();
+    });
+  });
 });

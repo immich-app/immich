@@ -36,6 +36,7 @@ describe('buildMapFilterConfig', () => {
       'rating',
       'media',
       'favorites',
+      'albums',
     ]);
   });
 
@@ -82,6 +83,22 @@ describe('buildMapFilterConfig', () => {
       await config.suggestionsProvider!(emptyFilters);
 
       expect(getFilterSuggestions).toHaveBeenCalledWith(expect.objectContaining({ spaceId: 'space-123' }));
+    });
+
+    it('should pass has-no-album to filter suggestions', async () => {
+      const config = buildMapFilterConfig();
+      await config.suggestionsProvider!({ ...emptyFilters, isNotInAlbum: true });
+
+      expect(getFilterSuggestions).toHaveBeenCalledWith(expect.objectContaining({ isNotInAlbum: true }));
+    });
+
+    it('should omit has-no-album from filter suggestions when false', async () => {
+      const config = buildMapFilterConfig();
+      await config.suggestionsProvider!({ ...emptyFilters, isNotInAlbum: false });
+
+      expect(getFilterSuggestions).toHaveBeenCalledWith(
+        expect.not.objectContaining({ isNotInAlbum: expect.anything() }),
+      );
     });
 
     it('should map people with thumbnail URLs', async () => {

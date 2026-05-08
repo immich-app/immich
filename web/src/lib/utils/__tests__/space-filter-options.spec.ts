@@ -80,6 +80,23 @@ describe('buildSpaceTimelineOptions', () => {
       }),
     );
   });
+
+  it('preserves has-no-album in spaces timeline options', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    expect(buildSpaceTimelineOptions('space-1', filters)).toEqual(
+      expect.objectContaining({
+        spaceId: 'space-1',
+        isNotInAlbum: true,
+      }),
+    );
+  });
+
+  it('omits has-no-album when it is false', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: false };
+
+    expect(buildSpaceTimelineOptions('space-1', filters)).not.toHaveProperty('isNotInAlbum');
+  });
 });
 
 describe('handleSpaceRemoveFilter', () => {
@@ -104,5 +121,12 @@ describe('handleSpaceRemoveFilter', () => {
 
     expect(handleSpaceRemoveFilter(filters, 'favorites').isFavorite).toBeUndefined();
     expect(handleSpaceRemoveFilter(filters, 'isFavorite').isFavorite).toBeUndefined();
+  });
+
+  it('clears has-no-album when removing albums filter', () => {
+    const filters = { ...createFilterState(), isNotInAlbum: true };
+
+    expect(handleSpaceRemoveFilter(filters, 'albums').isNotInAlbum).toBeUndefined();
+    expect(handleSpaceRemoveFilter(filters, 'isNotInAlbum').isNotInAlbum).toBeUndefined();
   });
 });
