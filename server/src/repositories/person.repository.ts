@@ -153,7 +153,7 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .innerJoin('asset_face', 'asset_face.personId', 'person.id')
-      .innerJoin('user_metadata', (join) =>
+      .leftJoin('user_metadata', (join) =>
         join
           .onRef('user_metadata.userId', '=', 'person.ownerId')
           .on('user_metadata.key', '=', sql.lit(UserMetadataKey.Preferences)),
@@ -175,7 +175,7 @@ export class PersonRepository {
           eb(
             (innerEb) => innerEb.fn.count('asset_face.assetId'),
             '>=',
-            sql`COALESCE(user_metadata.value -> 'people' ->> 'minimumFaces', '1')::int `,
+            sql`COALESCE(user_metadata.value -> 'people' ->> 'minimumFaces', '3')::int `,
           ),
         ]),
       )

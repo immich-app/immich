@@ -29,7 +29,7 @@ select
 from
   "person"
   inner join "asset_face" on "asset_face"."personId" = "person"."id"
-  inner join "user_metadata" on "user_metadata"."userId" = "person"."ownerId"
+  left join "user_metadata" on "user_metadata"."userId" = "person"."ownerId"
   and "user_metadata"."key" = 'preferences'
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   and "asset"."visibility" = 'timeline'
@@ -45,7 +45,10 @@ group by
 having
   (
     "person"."name" != $3
-    or count("asset_face"."assetId") >= COALESCE(user_metadata.value ->> 'minimumFaces', '1')::int
+    or count("asset_face"."assetId") >= COALESCE(
+      user_metadata.value -> 'people' ->> 'minimumFaces',
+      '3'
+    )::int
   )
 order by
   "person"."isHidden" asc,
