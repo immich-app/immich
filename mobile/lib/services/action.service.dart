@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -42,6 +43,8 @@ final actionServiceProvider = Provider<ActionService>(
     Logger('ActionService'),
   ),
 );
+
+typedef RemoteTrashResolveResult = ({int displayCount, bool success});
 
 class ActionService {
   final AssetApiRepository _assetApiRepository;
@@ -277,34 +280,41 @@ class ActionService {
     return deletedIds.length;
   }
 
-  Future<int> resolveRemoteTrash(Iterable<String> trashedChecksums, {required bool isSyncApproved}) async {
+  Future<RemoteTrashResolveResult> resolveRemoteTrash(
+    Iterable<String> trashedChecksums, {
+    required bool isSyncApproved,
+  }) async {
     if (!isSyncApproved) {
       await _trashSyncRepository.updateApproves(trashedChecksums, false);
-      return trashedChecksums.length;
+      return (displayCount: trashedChecksums.length, success: true);
     }
-    final assetsToTrash = await _localAssetRepository.getRemoteTrashedLocalAssets(trashedChecksums);
-    if (assetsToTrash.isEmpty) {
+    final assetsByAlbum = await _localAssetRepository.getTrashSyncCandidatesByAlbum(trashedChecksums);
+    if (assetsByAlbum.isEmpty) {
       // No localAssetEntity found; close review to avoid re-showing the same items.
       await _trashSyncRepository.updateApproves(trashedChecksums, true);
-      return 0;
+      return (displayCount: trashedChecksums.length, success: true);
     }
-    final localIds = assetsToTrash.map((item) => item.asset.id).toList();
+
+    final assetsToTrash = assetsByAlbum.entries.expand(
+      (entry) => entry.value.map((candidate) => (albumId: entry.key, candidate: candidate)),
+    );
+    final localIds = assetsToTrash.map((item) => item.candidate.asset.id).toList(growable: false);
     _logger.info("Moving assets to trash: ${localIds.join(", ")}");
     final deletedIds = await _assetMediaRepository.deleteAll(localIds);
     if (deletedIds.isEmpty) {
-      return 0;
+      return (displayCount: 0, success: false);
     }
-    final deletedIdSet = deletedIds.toSet();
-    final deletedAssetsToTrash = assetsToTrash.where((item) => deletedIdSet.contains(item.asset.id)).toList();
+    final deletedAssetsToTrash = assetsToTrash.where((item) => deletedIds.contains(item.candidate.asset.id));
 
-    final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
-      deletedAssetsToTrash.map((e) => MapEntry(e.asset.remoteId!, e.remoteDeletedAt)),
-    );
+    final deletedAssetsByAlbum = groupBy(
+      deletedAssetsToTrash,
+      (item) => item.albumId,
+    ).map((albumId, items) => MapEntry(albumId, items.map((item) => item.candidate)));
+    await _trashedLocalAssetRepository.trashLocalAssets(deletedAssetsByAlbum);
 
-    final assetsByAlbum = await _localAssetRepository.getRemoteTrashCandidatesByAlbum(remoteDeletedAtByRemoteId);
-    await _trashedLocalAssetRepository.trashLocalAssets(assetsByAlbum);
-    await _trashSyncRepository.updateApproves(deletedAssetsToTrash.map((item) => item.asset.checksum!), true);
+    final resolvedChecksums = deletedAssetsToTrash.map((item) => item.candidate.asset.checksum).nonNulls.toSet();
+    await _trashSyncRepository.updateApproves(resolvedChecksums, true);
 
-    return deletedIds.length;
+    return (displayCount: resolvedChecksums.length, success: resolvedChecksums.length == trashedChecksums.length);
   }
 }

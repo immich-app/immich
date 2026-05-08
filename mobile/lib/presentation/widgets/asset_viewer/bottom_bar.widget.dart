@@ -18,7 +18,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -44,13 +43,11 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
-    // Remove if review is only possible in the syncTrash timeline
-    final isWaitingForSyncApproval = ref.watch(isWaitingForTrashApprovalProvider(asset.checksum!)).value == true;
 
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (isSyncTrashTimeline || isWaitingForSyncApproval) ...[
+      if (isSyncTrashTimeline) ...[
         KeepOnDeviceActionButton(
           source: ActionSource.viewer,
           onResult: (result) {

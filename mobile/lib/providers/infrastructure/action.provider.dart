@@ -520,9 +520,8 @@ class ActionNotifier extends Notifier<void> {
       return const ActionResult(count: 0, success: false, error: 'Failed to select asset(s)');
     }
     try {
-      final resolvedCount = await _service.resolveRemoteTrash(selectedChecksums, isSyncApproved: isSyncApproved);
-      final isSuccess = resolvedCount == selectedChecksums.length;
-      return ActionResult(count: resolvedCount, success: isSuccess);
+      final result = await _service.resolveRemoteTrash(selectedChecksums, isSyncApproved: isSyncApproved);
+      return ActionResult(count: result.displayCount, success: result.success);
     } catch (error, stack) {
       _logger.severe('Failed to ${isSyncApproved ? 'allow' : 'deny'} to move assets to trash', error, stack);
       return ActionResult(count: selectedChecksums.length, success: false, error: error.toString());

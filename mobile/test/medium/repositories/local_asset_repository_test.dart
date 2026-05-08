@@ -104,6 +104,79 @@ void main() {
     });
   });
 
+  group('getTrashSyncCandidatesByAlbum', () {
+    test('returns local assets from selected backup albums matched by trash sync checksum', () async {
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      final localAsset = await ctx.newLocalAsset(checksum: 'checksum-1');
+      final selectedAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final unselectedAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.none);
+
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: localAsset.id);
+      await ctx.newLocalAlbumAsset(albumId: unselectedAlbum.id, assetId: localAsset.id);
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(TrashSyncEntityCompanion.insert(checksum: 'checksum-1', remoteDeletedAt: remoteDeletedAt));
+
+      final result = await sut.getTrashSyncCandidatesByAlbum(['checksum-1']);
+
+      expect(result.keys, equals({selectedAlbum.id}));
+      expect(result[selectedAlbum.id], hasLength(1));
+      expect(result[selectedAlbum.id]!.single.asset.id, localAsset.id);
+      expect(result[selectedAlbum.id]!.single.asset.remoteId, isNull);
+      expect(result[selectedAlbum.id]!.single.remoteDeletedAt, remoteDeletedAt);
+    });
+
+    test('excludes non-pending trash sync decisions', () async {
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      final selectedAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+
+      final pendingLocal = await ctx.newLocalAsset(checksum: 'pending-checksum');
+      final rejectedLocal = await ctx.newLocalAsset(checksum: 'rejected-checksum');
+      final approvedLocal = await ctx.newLocalAsset(checksum: 'approved-checksum');
+
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: pendingLocal.id);
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: rejectedLocal.id);
+      await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: approvedLocal.id);
+
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              checksum: 'pending-checksum',
+              remoteDeletedAt: remoteDeletedAt,
+              isSyncApproved: const Value<bool?>(null),
+            ),
+          );
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              checksum: 'rejected-checksum',
+              remoteDeletedAt: remoteDeletedAt,
+              isSyncApproved: const Value(false),
+            ),
+          );
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              checksum: 'approved-checksum',
+              remoteDeletedAt: remoteDeletedAt,
+              isSyncApproved: const Value(true),
+            ),
+          );
+
+      final result = await sut.getTrashSyncCandidatesByAlbum([
+        'pending-checksum',
+        'rejected-checksum',
+        'approved-checksum',
+      ]);
+
+      expect(result.keys, equals({selectedAlbum.id}));
+      expect(result[selectedAlbum.id]!.map((item) => item.asset.id), [pendingLocal.id]);
+    });
+  });
+
   group('getRemovalCandidates', () {
     final cutoffDate = DateTime(2024, 1, 1);
     final beforeCutoff = DateTime(2023, 12, 31);

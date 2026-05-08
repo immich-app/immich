@@ -162,6 +162,45 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return result;
   }
 
+  Future<Map<String, List<RemoteDeletedLocalAsset>>> getTrashSyncCandidatesByAlbum(Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return {};
+    }
+
+    final result = <String, List<RemoteDeletedLocalAsset>>{};
+
+    for (final slice in checksums.slices(kDriftMaxChunk)) {
+      final rows =
+          await (_db.select(_db.localAlbumAssetEntity).join([
+                  innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                  innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                  innerJoin(
+                    _db.trashSyncEntity,
+                    _db.localAssetEntity.checksum.equalsExp(_db.trashSyncEntity.checksum),
+                    useColumns: false,
+                  ),
+                ])
+                ..addColumns([_db.trashSyncEntity.remoteDeletedAt])
+                ..where(
+                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                      _db.localAssetEntity.checksum.isIn(slice) &
+                      _db.trashSyncEntity.isSyncApproved.isNull(),
+                ))
+              .get();
+
+      for (final row in rows) {
+        final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
+        final assetData = row.readTable(_db.localAssetEntity);
+        final remoteDeletedAt = row.read(_db.trashSyncEntity.remoteDeletedAt)!;
+        (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
+          RemoteDeletedLocalAsset(asset: assetData.toDto(), remoteDeletedAt: remoteDeletedAt),
+        );
+      }
+    }
+
+    return result;
+  }
+
   Future<RemovalCandidatesResult> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
@@ -248,50 +287,5 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       updates: {_db.localAssetEntity},
       updateKind: UpdateKind.update,
     );
-  }
-
-  Future<List<RemoteDeletedLocalAsset>> getRemoteTrashedLocalAssets(Iterable<String> checksums) {
-    if (checksums.isEmpty) {
-      return Future.value([]);
-    }
-
-    final selectionQuery =
-        _db.localAlbumAssetEntity.selectOnly().join([
-            innerJoin(
-              _db.localAlbumEntity,
-              _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-              useColumns: false,
-            ),
-          ])
-          ..addColumns([_db.localAlbumAssetEntity.assetId])
-          ..where(
-            _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
-          );
-
-    final query = _db.localAssetEntity
-        .select()
-        .addColumns([_db.remoteAssetEntity.id, _db.remoteAssetEntity.deletedAt])
-        .join([
-          innerJoin(
-            _db.remoteAssetEntity,
-            _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-            useColumns: false,
-          ),
-        ]);
-
-    final whereClause =
-        _db.localAssetEntity.checksum.isIn(checksums) &
-        existsQuery(selectionQuery) &
-        _db.remoteAssetEntity.deletedAt.isNotNull();
-
-    query.where(whereClause);
-
-    return query.map((row) {
-      final remoteId = row.read(_db.remoteAssetEntity.id)!;
-      final asset = row.readTable(_db.localAssetEntity).toDto(remoteId: remoteId);
-      final remoteDeletedAt = row.read(_db.remoteAssetEntity.deletedAt)!;
-      return RemoteDeletedLocalAsset(asset: asset, remoteDeletedAt: remoteDeletedAt);
-    }).get();
   }
 }
