@@ -2,7 +2,7 @@
   import RestoreFlowDetectInstall from './RestoreFlowDetectInstall.svelte';
   import RestoreFlowIntro from './RestoreFlowIntro.svelte';
   import RestoreFlowSelectBackup from './RestoreFlowSelectBackup.svelte';
-  import { OnboardingGate } from 'orchestration-ui';
+  import { ImmichOnboardingRestoreFlow } from 'orchestration-ui';
 
   type Props = {
     end: () => void;
@@ -28,7 +28,7 @@
 {#if stage === 0}
   <RestoreFlowIntro flowToYucca={() => (stage = 1)} flowToDatabase={() => (stage = 2)} {end} />
 {:else if stage === 1}
-  <OnboardingGate flow="immich-restore" onExit={previous} onFinish={() => stage++}></OnboardingGate>
+  <ImmichOnboardingRestoreFlow onExit={previous} onFinish={() => stage++} />
 {:else if stage === 2}
   <RestoreFlowDetectInstall {next} previous={() => (stage = 0)} />
 {:else}

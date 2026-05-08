@@ -10,7 +10,7 @@ import { OrchestrationApiModule } from 'orchestration-api/dist';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { ImmichEnvironment, ImmichWorker } from 'src/enum';
+import { ImmichWorker } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
@@ -60,9 +60,9 @@ const apiMiddleware = [
 ];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, environment, otel } = configRepository.getEnv();
-const isYuccaDevelopmentMode =
-  environment === ImmichEnvironment.Development || environment === ImmichEnvironment.Testing;
+const { bull, cls, database, otel } = configRepository.getEnv();
+// TODO-DEV
+const isYuccaDevelopmentMode = true;
 
 const commonImports = [
   ClsModule.forRoot(cls.config),

@@ -30,6 +30,11 @@
       action: MaintenanceAction.End,
     });
 
+  const startRestore = () =>
+    handleSetMaintenanceMode({
+      action: MaintenanceAction.SelectDatabaseRestore,
+    });
+
   const error = $derived(
     $status?.error
       ?.split('\n')
@@ -89,7 +94,10 @@
               },
             })}
           </p>
-          <Button onclick={end}>{$t('maintenance_end')}</Button>
+          <div class="flex gap-2">
+            <Button color="secondary" onclick={startRestore}>{$t('maintenance_restore_from_backup')}</Button>
+            <Button onclick={end}>{$t('maintenance_end')}</Button>
+          </div>
         {/if}
       {/if}
     </div>

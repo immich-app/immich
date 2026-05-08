@@ -12,11 +12,22 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
+  import { handleSetMaintenanceMode } from '$lib/services/maintenance.service';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { MaintenanceAction } from '@immich/sdk';
   import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
-  import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import {
+    mdiBellBadge,
+    mdiBellOutline,
+    mdiDeleteSweep,
+    mdiMagnify,
+    mdiMenu,
+    mdiProgressWrench,
+    mdiTrayArrowUp,
+  } from '@mdi/js';
+  import { sdk } from 'orchestration-ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../theme-button.svelte';
@@ -99,6 +110,55 @@
             id="search-button"
             class="sm:hidden"
             aria-label={$t('go_to_search')}
+          />
+        {/if}
+
+        <!-- TODO-DEV -->
+        {#if authManager.user.isAdmin}
+          <Button
+            leadingIcon={mdiProgressWrench}
+            onclick={() => handleSetMaintenanceMode({ action: MaintenanceAction.Start })}
+            class="hidden lg:flex"
+            variant="ghost"
+            size="medium"
+            color="danger"
+            >{$t('admin.maintenance_start')}
+          </Button>
+          <IconButton
+            color="danger"
+            shape="round"
+            variant="ghost"
+            size="medium"
+            onclick={() => handleSetMaintenanceMode({ action: MaintenanceAction.Start })}
+            title={$t('admin.maintenance_start')}
+            aria-label={$t('admin.maintenance_start')}
+            icon={mdiProgressWrench}
+            class="lg:hidden"
+          />
+          <Button
+            leadingIcon={mdiDeleteSweep}
+            onclick={async () => {
+              await sdk.resetOrchestrator();
+              globalThis.location.reload();
+            }}
+            class="hidden lg:flex"
+            variant="ghost"
+            size="medium"
+            color="danger">Reset Backups</Button
+          >
+          <IconButton
+            color="danger"
+            shape="round"
+            variant="ghost"
+            size="medium"
+            onclick={async () => {
+              await sdk.resetOrchestrator();
+              globalThis.location.reload();
+            }}
+            title="Reset Backups"
+            aria-label="Reset Backups"
+            icon={mdiDeleteSweep}
+            class="lg:hidden"
           />
         {/if}
 
