@@ -64,7 +64,9 @@ class SyncLinkedAlbumService {
           // KeyAction.setNull on LocalAlbumEntity.linkedRemoteAlbumId nulls
           // the link via FK cascade, and the next manageLinkedAlbums run
           // will recreate or re-link by name.
-          _log.warning("Pruning stale linked album for ${localAlbum.name} (server returned 'Album not found' for ${e.albumId})");
+          _log.warning(
+            "Pruning stale linked album for ${localAlbum.name} (server returned 'Album not found' for ${e.albumId})",
+          );
           await _remoteAlbumRepository.deleteAlbum(e.albumId);
         } catch (error, stack) {
           _log.severe("Linked album sync failed for ${localAlbum.name}", error, stack);
