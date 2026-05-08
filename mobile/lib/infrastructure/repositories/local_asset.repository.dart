@@ -139,6 +139,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
                 ..addColumns([_db.remoteAssetEntity.id])
                 ..where(
                   _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                      //todo should we filter hidden assets?
+                      //_db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
                       _db.remoteAssetEntity.id.isIn(slice) &
                       _db.trashSyncEntity.checksum.isNull(),
                 ))

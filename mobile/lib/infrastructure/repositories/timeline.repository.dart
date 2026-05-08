@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -685,48 +686,69 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchPlaceBucket");
     }
 
-    final assetCountExp = _db.remoteAssetEntity.id.count();
+    return _watchTrashSyncLocalAssets().map((assets) {
+      final bucketCounts = <DateTime, int>{};
 
-    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+      for (final asset in assets) {
+        final localTime = asset.createdAt.toLocal();
+        final bucketDate = switch (groupBy) {
+          GroupAssetsBy.day || GroupAssetsBy.auto => DateTime(localTime.year, localTime.month, localTime.day),
+          GroupAssetsBy.month => DateTime(localTime.year, localTime.month),
+          GroupAssetsBy.none => throw ArgumentError("GroupAssetsBy.none is not supported for date formatting"),
+        };
+        bucketCounts[bucketDate] = (bucketCounts[bucketDate] ?? 0) + 1;
+      }
 
-    final pendingTrashChecksums = _db.trashSyncEntity.selectOnly()
-      ..addColumns([_db.trashSyncEntity.checksum])
-      ..where(_db.trashSyncEntity.isSyncApproved.isNull())
-      ..groupBy([_db.trashSyncEntity.checksum]);
-
-    final query = _db.remoteAssetEntity.selectOnly()
-      ..addColumns([assetCountExp, dateExp])
-      ..where(
-        _db.remoteAssetEntity.deletedAt.isNotNull() &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-            _db.remoteAssetEntity.checksum.isInQuery(pendingTrashChecksums),
-      )
-      ..groupBy([dateExp])
-      ..orderBy([OrderingTerm.desc(dateExp)]);
-
-    return query.map((row) {
-      final timeline = row.read(dateExp)!.truncateDate(groupBy);
-      final assetCount = row.read(assetCountExp)!;
-      return TimeBucket(date: timeline, assetCount: assetCount);
-    }).watch();
+      return bucketCounts.entries.map((entry) => TimeBucket(date: entry.key, assetCount: entry.value)).toList();
+    });
   }
 
-  Future<List<BaseAsset>> _getToTrashSyncBucketAssets({required int offset, required int count}) {
+  Future<List<BaseAsset>> _getToTrashSyncBucketAssets({required int offset, required int count}) async {
+    return _getTrashSyncLocalAssets(offset: offset, count: count);
+  }
+
+  Stream<List<LocalAsset>> _watchTrashSyncLocalAssets() {
+    return _trashSyncLocalAssetsQuery().watch().map((rows) => rows.map((row) => row.toDto()).toList(growable: false));
+  }
+
+  Future<List<LocalAsset>> _getTrashSyncLocalAssets({required int offset, required int count}) {
+    return _trashSyncLocalAssetsQuery(
+      offset: offset,
+      count: count,
+    ).get().then((rows) => rows.map((row) => row.toDto()).toList(growable: false));
+  }
+
+  SimpleSelectStatement<$LocalAssetEntityTable, LocalAssetEntityData> _trashSyncLocalAssetsQuery({
+    int? offset,
+    int? count,
+  }) {
     final pendingTrashChecksums = _db.trashSyncEntity.selectOnly()
       ..addColumns([_db.trashSyncEntity.checksum])
-      ..where(_db.trashSyncEntity.isSyncApproved.isNull())
-      ..groupBy([_db.trashSyncEntity.checksum]);
+      ..where(_db.trashSyncEntity.isSyncApproved.isNull());
 
-    final query = _db.remoteAssetEntity.select()
+    final localTrashedChecksums = _db.trashedLocalAssetEntity.selectOnly()
+      ..addColumns([_db.trashedLocalAssetEntity.checksum])
+      ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
+
+    final representativeId = _db.localAssetEntity.id.min();
+    final representativeIds = _db.localAssetEntity.selectOnly()
+      ..addColumns([representativeId])
       ..where(
-        (tbl) =>
-            tbl.deletedAt.isNotNull() &
-            tbl.visibility.equalsValue(AssetVisibility.timeline) &
-            tbl.checksum.isInQuery(pendingTrashChecksums),
+        _db.localAssetEntity.checksum.isNotNull() &
+            _db.localAssetEntity.checksum.isInQuery(pendingTrashChecksums) &
+            _db.localAssetEntity.checksum.isNotInQuery(localTrashedChecksums),
       )
-      ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)])
-      ..limit(count, offset: offset);
-    return query.map((row) => row.toDto()).get();
+      ..groupBy([_db.localAssetEntity.checksum]);
+
+    final query = _db.localAssetEntity.select()
+      ..where((row) => row.id.isInQuery(representativeIds))
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt), (row) => OrderingTerm.asc(row.id)]);
+
+    if (count != null) {
+      query.limit(count, offset: offset);
+    }
+
+    return query;
   }
 }
 
