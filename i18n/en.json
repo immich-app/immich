@@ -2452,6 +2452,7 @@
   "video": "Video",
   "video_hover_setting": "Play video thumbnail on hover",
   "video_hover_setting_description": "Play video thumbnail when mouse is hovering over item. Even when disabled, playback can be started by hovering over the play icon.",
+  "video_quality": "Video quality",
   "videos": "Videos",
   "videos_count": "{count, plural, one {# Video} other {# Videos}}",
   "videos_only": "Videos only",

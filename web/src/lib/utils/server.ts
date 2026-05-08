@@ -2,6 +2,7 @@ import { defaults } from '@immich/sdk';
 import { memoize } from 'lodash-es';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { initLanguage } from '$lib/utils';
 
@@ -12,6 +13,7 @@ async function _init(fetch: Fetch) {
   // https://kit.svelte.dev/docs/load#making-fetch-requests
   // https://github.com/oazapfts/oazapfts/blob/main/README.md#fetch-options
   defaults.fetch = fetch;
+  mediaCapabilitiesManager.init();
   await initLanguage();
   await serverConfigManager.init();
   await authManager.load();
