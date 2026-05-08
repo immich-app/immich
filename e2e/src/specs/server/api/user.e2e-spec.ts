@@ -233,7 +233,7 @@ describe('/users', () => {
 
     it('should update minimum face count to display people', async () => {
       const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
-      expect(before).toMatchObject({ people: { minimumFaces: 1 } });
+      expect(before).toMatchObject({ people: { minimumFaces: 3 } });
 
       const { status, body } = await request(app)
         .put('/users/me/preferences')

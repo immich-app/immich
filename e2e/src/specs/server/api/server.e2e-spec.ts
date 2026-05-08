@@ -139,6 +139,7 @@ describe('/server', () => {
         maintenanceMode: false,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
+        minFaces: 3,
       });
     });
   });
