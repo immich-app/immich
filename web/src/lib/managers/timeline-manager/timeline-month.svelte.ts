@@ -1,4 +1,4 @@
-import { AssetOrder, OrderingDate, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
@@ -39,7 +39,7 @@ export class TimelineMonth {
 
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
-  #orderingDate: OrderingDate = OrderingDate.Local;
+  #orderBy: AssetOrderBy = AssetOrderBy.TakenAt;
   percent: number = $state(0);
 
   assetsCount: number = $derived(
@@ -59,12 +59,12 @@ export class TimelineMonth {
     initialCount: number,
     loaded: boolean,
     order: AssetOrder = AssetOrder.Desc,
-    orderingDate: OrderingDate = OrderingDate.Local,
+    orderBy: AssetOrderBy = AssetOrderBy.TakenAt,
   ) {
     this.timelineManager = timelineManager;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
-    this.#orderingDate = orderingDate;
+    this.#orderBy = orderBy;
 
     this.yearMonth = { year: yearMonth.year, month: yearMonth.month };
     this.title = formatTimelineMonthTitle(fromTimelinePlainYearMonth(yearMonth));
@@ -235,7 +235,7 @@ export class TimelineMonth {
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
-    const dateTime = getOrderingDate(timelineAsset, this.#orderingDate);
+    const dateTime = getOrderingDate(timelineAsset, this.#orderBy);
 
     const { year, month } = this.yearMonth;
     if (month !== dateTime.month || year !== dateTime.year) {
@@ -248,7 +248,7 @@ export class TimelineMonth {
       addContext.setTimelineDay(timelineDay, dateTime);
     } else {
       const groupTitle = formatGroupTitle(fromTimelinePlainDate(dateTime));
-      timelineDay = new TimelineDay(this, this.timelineDays.length, dateTime.day, groupTitle, this.#orderingDate);
+      timelineDay = new TimelineDay(this, this.timelineDays.length, dateTime.day, groupTitle, this.#orderBy);
       this.timelineDays.push(timelineDay);
       addContext.setTimelineDay(timelineDay, dateTime);
       addContext.newTimelineDays.add(timelineDay);
@@ -378,7 +378,7 @@ export class TimelineMonth {
     let closest = undefined;
     let smallestDiff = Infinity;
     for (const current of this.assetsIterator()) {
-      const currentAssetDate = fromTimelinePlainDateTime(getOrderingDate(current, this.#orderingDate));
+      const currentAssetDate = fromTimelinePlainDateTime(getOrderingDate(current, this.#orderBy));
       const diff = Math.abs(targetDate.diff(currentAssetDate).as('milliseconds'));
       if (diff < smallestDiff) {
         smallestDiff = diff;

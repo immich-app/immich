@@ -294,6 +294,8 @@ class ApiClient {
           return AssetOcrResponseDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
+        case 'AssetOrderBy':
+          return AssetOrderByTypeTransformer().decode(value);
         case 'AssetRejectReason':
           return AssetRejectReasonTypeTransformer().decode(value);
         case 'AssetResponseDto':
@@ -480,8 +482,6 @@ class ApiClient {
           return OnboardingDto.fromJson(value);
         case 'OnboardingResponseDto':
           return OnboardingResponseDto.fromJson(value);
-        case 'OrderingDate':
-          return OrderingDateTypeTransformer().decode(value);
         case 'PartnerCreateDto':
           return PartnerCreateDto.fromJson(value);
         case 'PartnerDirection':

@@ -405,6 +405,7 @@ export const columns = {
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
     'asset.localDateTime',
+    'asset.createdAt',
     'asset.type',
     'asset.deletedAt',
     'asset.visibility',

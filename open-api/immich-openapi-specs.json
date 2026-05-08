@@ -13326,9 +13326,9 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets by (LOCAL for date taken, CREATED for date added)",
+            "description": "Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)",
             "schema": {
-              "$ref": "#/components/schemas/OrderingDate"
+              "$ref": "#/components/schemas/AssetOrderBy"
             }
           },
           {
@@ -13525,9 +13525,9 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets by (LOCAL for date taken, CREATED for date added)",
+            "description": "Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)",
             "schema": {
-              "$ref": "#/components/schemas/OrderingDate"
+              "$ref": "#/components/schemas/AssetOrderBy"
             }
           },
           {
@@ -16634,6 +16634,14 @@
         ],
         "type": "string"
       },
+      "AssetOrderBy": {
+        "description": "Asset sorting property",
+        "enum": [
+          "takenAt",
+          "createdAt"
+        ],
+        "type": "string"
+      },
       "AssetRejectReason": {
         "description": "Rejection reason if rejected",
         "enum": [
@@ -19252,14 +19260,6 @@
           "isOnboarded"
         ],
         "type": "object"
-      },
-      "OrderingDate": {
-        "description": "Date for asset order",
-        "enum": [
-          "local",
-          "created"
-        ],
-        "type": "string"
       },
       "PartnerCreateDto": {
         "properties": {

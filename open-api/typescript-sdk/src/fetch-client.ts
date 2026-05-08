@@ -6339,7 +6339,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
-    orderBy?: OrderingDate;
+    orderBy?: AssetOrderBy;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -6384,7 +6384,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
-    orderBy?: OrderingDate;
+    orderBy?: AssetOrderBy;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -7305,9 +7305,9 @@ export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
 }
-export enum OrderingDate {
-    Local = "local",
-    Created = "created"
+export enum AssetOrderBy {
+    TakenAt = "takenAt",
+    CreatedAt = "createdAt"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",
