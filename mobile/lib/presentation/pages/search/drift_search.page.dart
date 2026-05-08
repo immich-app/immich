@@ -869,6 +869,12 @@ class _QuickLinkList extends StatelessWidget {
             onTap: () => context.pushRoute(const DriftRecentlyTakenRoute()),
           ),
           _QuickLink(
+            title: 'recently_added'.t(context: context),
+            icon: Icons.upload_outlined,
+            isTop: true,
+            onTap: () => context.pushRoute(const DriftRecentlyAddedRoute()),
+          ),
+          _QuickLink(
             title: 'videos'.t(context: context),
             icon: Icons.play_circle_outline_rounded,
             onTap: () => context.pushRoute(const DriftVideoRoute()),

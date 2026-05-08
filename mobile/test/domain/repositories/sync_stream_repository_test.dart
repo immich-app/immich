@@ -34,6 +34,7 @@ SyncAssetV1 _createAsset({
     isFavorite: false,
     fileCreatedAt: DateTime(2024, 1, 1),
     fileModifiedAt: DateTime(2024, 1, 1),
+    createdAt: DateTime(2024, 1, 1),
     localDateTime: DateTime(2024, 1, 1),
     visibility: AssetVisibility.timeline,
     width: width,

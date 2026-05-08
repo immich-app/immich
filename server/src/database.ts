@@ -382,6 +382,7 @@ export const columns = {
     'asset.checksum',
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
+    'asset.createdAt',
     'asset.localDateTime',
     'asset.type',
     'asset.deletedAt',

@@ -3042,6 +3042,8 @@ export type SyncAssetMetadataV1 = {
 export type SyncAssetV1 = {
     /** Checksum */
     checksum: string;
+    /** Uploaded to Immich at */
+    createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
     /** Duration */
@@ -3080,6 +3082,8 @@ export type SyncAssetV1 = {
 export type SyncAssetV2 = {
     /** Checksum */
     checksum: string;
+    /** Uploaded to Immich at */
+    createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
     /** Duration */
