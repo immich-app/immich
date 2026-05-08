@@ -236,7 +236,9 @@
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
-  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+  {#if !page.url.pathname.startsWith('/share/') && !page.url.pathname.startsWith('/s/')}
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+  {/if}
   <meta name="theme-color" content="white" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />
 
