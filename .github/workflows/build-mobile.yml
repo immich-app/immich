@@ -61,7 +61,7 @@ jobs:
         id: check
         uses: immich-app/devtools/actions/pre-job@91f342bb4477c4bc10c576ae739da875d85aa164 # pre-job-action-v2.0.4
         with:
-          github-token: ${{ steps.token.outputs.token || github.token }}
+          github-token: ${{ steps.token.outputs.token }}
           filters: |
             mobile:
               - 'mobile/**'
