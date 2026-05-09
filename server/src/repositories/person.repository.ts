@@ -361,7 +361,7 @@ export class PersonRepository {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
-      .where((eb) => hasFace(eb))
+      .where(hasFace)
       .where('person.ownerId', '=', userId)
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
