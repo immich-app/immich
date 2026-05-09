@@ -82,6 +82,16 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+
+  /*
+   * Sidebar nav links (NavbarItem from @immich/ui) lack focus-visible styles.
+   * Use an inset outline to avoid clipping by overflow containers.
+   */
+  #sidebar a:focus-visible,
+  #admin-sidebar a:focus-visible {
+    outline: 2px solid var(--immich-ui-primary-500, currentColor);
+    outline-offset: -2px;
+  }
 }
 
 @layer utilities {
