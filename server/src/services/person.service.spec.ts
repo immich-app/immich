@@ -2101,7 +2101,7 @@ describe(PersonService.name, () => {
       expect((mocks.faceIdentity as any).deletePendingSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
     });
 
-    it('does not call queueAll for an empty targeted face-match list', async () => {
+    it('queues one metadata backfill when identity work completes without targeted face-match work', async () => {
       mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
       mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
       (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
@@ -2113,6 +2113,11 @@ describe(PersonService.name, () => {
       await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.SharedSpacePersonMetadataBackfill,
+        data: {},
+      });
     });
 
     it('does not write an empty trailing batch for exactly one full chunk', async () => {

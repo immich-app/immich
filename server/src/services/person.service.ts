@@ -569,8 +569,11 @@ export class PersonService extends BaseService {
       affectedSpaceAssets.push(...projectionTargets);
     }
 
-    await this.queueSharedSpaceFaceMatchTargets([...pendingTargets, ...affectedSpaceAssets]);
+    const queuedTargets = await this.queueSharedSpaceFaceMatchTargets([...pendingTargets, ...affectedSpaceAssets]);
     await this.faceIdentityRepository.deletePendingSharedSpaceFaceMatchBackfillTargets(pendingTargets);
+    if (queuedTargets.length === 0) {
+      await this.queueSpacePersonMetadataBackfill();
+    }
 
     return JobStatus.Success;
   }
