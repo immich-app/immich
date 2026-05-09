@@ -74,6 +74,22 @@ upstream-batch-plan:
 upstream-next-batch:
 	$(UPSTREAM_PREFLIGHT) run next-batch
 
+.PHONY: upstream-rolling-start
+upstream-rolling-start:
+	$(UPSTREAM_PREFLIGHT) run rolling-start $(if $(ROLLING_RESUME),-- --resume,)
+
+.PHONY: upstream-rolling-status
+upstream-rolling-status:
+	$(UPSTREAM_PREFLIGHT) run rolling-status
+
+.PHONY: upstream-sync-fork-main
+upstream-sync-fork-main:
+	$(UPSTREAM_PREFLIGHT) run sync-fork-main $(if $(ROLLING_CONTINUE),-- --continue,)
+
+.PHONY: upstream-rolling-final-check
+upstream-rolling-final-check:
+	$(UPSTREAM_PREFLIGHT) run rolling-final-check
+
 .PHONY: upstream-postrebase-audit
 upstream-postrebase-audit:
 	$(UPSTREAM_PREFLIGHT) run postrebase-audit $(if $(BATCH),-- --batch $(BATCH),)

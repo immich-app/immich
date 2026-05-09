@@ -1,14 +1,14 @@
-export type RiskLevel = "low" | "medium" | "high";
+export type RiskLevel = 'low' | 'medium' | 'high';
 export type Domain =
-  | "server"
-  | "web"
-  | "mobile"
-  | "database"
-  | "ci"
-  | "docs"
-  | "e2e"
-  | "ml"
-  | "config";
+  | 'server'
+  | 'web'
+  | 'mobile'
+  | 'database'
+  | 'ci'
+  | 'docs'
+  | 'e2e'
+  | 'ml'
+  | 'config';
 
 export type Manifest = {
   version: 1;
@@ -49,7 +49,7 @@ export type FeatureEntry = {
     drift_versions?: {
       owned: number[];
       shipped: boolean;
-      owner: "gallery";
+      owner: 'gallery';
       expected_callbacks?: Record<number, string[]>;
     };
     paths?: string[];
@@ -59,8 +59,8 @@ export type FeatureEntry = {
 
 export type CheckEntry = {
   command: string;
-  phase: "preflight" | "post-batch" | "preflight-and-post-batch" | "final";
-  cost?: "cheap" | "expensive";
+  phase: 'preflight' | 'post-batch' | 'preflight-and-post-batch' | 'final';
+  cost?: 'cheap' | 'expensive';
   required_for_risk?: RiskLevel[];
   required_for_domains?: Domain[];
 };

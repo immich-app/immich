@@ -1,10 +1,10 @@
-import micromatch from "micromatch";
+import micromatch from 'micromatch';
 import type {
   ClassifiedCommit,
   CoverageClassification,
   Manifest,
-} from "./types";
-import type { FeatureOverlap } from "./report";
+} from './types';
+import type { FeatureOverlap } from './report';
 
 export type ForkSurfaceGroup = {
   count: number;
@@ -156,7 +156,7 @@ export function collectForkSurfaceSignals(
   };
 }
 
-function featureSignalGlobs(feature: Manifest["features"][string]): string[] {
+function featureSignalGlobs(feature: Manifest['features'][string]): string[] {
   return [
     ...(feature.owned_paths ?? []),
     ...(feature.upstream_extension_paths ?? []),

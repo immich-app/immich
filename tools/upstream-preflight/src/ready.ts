@@ -1,10 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 import type {
   AuditResult,
   CoverageClassification,
   ManifestHeadValidation,
-} from "./types";
+} from './types';
 
 export type ReadinessResult = {
   ok: boolean;
@@ -27,17 +27,17 @@ export type ReadinessEvaluationInput = {
 };
 
 const currentForkBlockerAuditTitles = new Set([
-  "Fork-Owned File Survival",
-  "Fork Extension Symbol Survival",
-  "Gallery Migration Count",
-  "Gallery Migration Filename Survival",
-  "Gallery Migration Manifest Coverage",
+  'Fork-Owned File Survival',
+  'Fork Extension Symbol Survival',
+  'Gallery Migration Count',
+  'Gallery Migration Filename Survival',
+  'Gallery Migration Manifest Coverage',
 ]);
 
 const plannedResolutionAuditTitles = new Set([
-  "Mobile Drift Migration Check",
-  "Migration Timestamp Collision Check",
-  "Generated Artifact Review",
+  'Mobile Drift Migration Check',
+  'Migration Timestamp Collision Check',
+  'Generated Artifact Review',
 ]);
 
 export function evaluateReadiness(
@@ -63,7 +63,7 @@ export function evaluateReadiness(
 
   for (const classification of input.broadOptionalOnly ?? []) {
     warnings.push(
-      `Broad optional coverage: ${classification.file} is covered only by ${classification.broadOptionalGlobs.join(", ")}. Add a narrower owned path or upstream extension path when reconciling the manifest.`,
+      `Broad optional coverage: ${classification.file} is covered only by ${classification.broadOptionalGlobs.join(', ')}. Add a narrower owned path or upstream extension path when reconciling the manifest.`,
     );
   }
 
@@ -103,23 +103,23 @@ export function readinessExitCode(result: ReadinessResult): number {
 export function renderReadinessMarkdown(result: ReadinessResult): string {
   return `# Upstream Rebase Readiness
 
-- **Status**: ${result.ok ? "READY" : "BLOCKED"}
+- **Status**: ${result.ok ? 'READY' : 'BLOCKED'}
 
 ## Blockers
 
-${renderList(result.errors, "None")}
+${renderList(result.errors, 'None')}
 
 ## Warnings
 
-${renderList(result.warnings, "None")}
+${renderList(result.warnings, 'None')}
 
 ## Planned Resolutions
 
-${renderList(result.plannedResolutions, "None")}
+${renderList(result.plannedResolutions, 'None')}
 
 ## Reports
 
-${renderList(result.reportPaths, "None")}
+${renderList(result.reportPaths, 'None')}
 `;
 }
 
@@ -128,8 +128,8 @@ export function writeReadinessReports(
   result: ReadinessResult,
 ) {
   fs.mkdirSync(outputDir, { recursive: true });
-  const markdownPath = path.join(outputDir, "readiness.md");
-  const jsonPath = path.join(outputDir, "readiness.json");
+  const markdownPath = path.join(outputDir, 'readiness.md');
+  const jsonPath = path.join(outputDir, 'readiness.json');
   const resultWithPaths = {
     ...result,
     reportPaths: [...new Set([...result.reportPaths, markdownPath, jsonPath])],
@@ -155,7 +155,7 @@ function appendAudit(output: string[], audit: AuditResult) {
 function renderList(items: string[], emptyText: string) {
   return items.length > 0
     ? items
-        .map((item) => (item.startsWith("- ") ? `  ${item}` : `- ${item}`))
-        .join("\n")
+        .map((item) => (item.startsWith('- ') ? `  ${item}` : `- ${item}`))
+        .join('\n')
     : `- ${emptyText}`;
 }

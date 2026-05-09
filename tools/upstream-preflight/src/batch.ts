@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import { getGitPath, isAncestor, revParse } from "./git";
+import fs from 'node:fs';
+import path from 'node:path';
+import { getGitPath, isAncestor, revParse } from './git';
 import type {
   Batch,
   BatchPlan,
@@ -8,7 +8,7 @@ import type {
   CheckEntry,
   ClassifiedCommit,
   RiskLevel,
-} from "./types";
+} from './types';
 
 const riskRank: Record<RiskLevel, number> = { low: 0, medium: 1, high: 2 };
 const fullShaPattern = /^[0-9a-f]{40}$/i;
@@ -36,10 +36,10 @@ export type BatchPlanReportPaths = {
 };
 
 export type NextBatchSelection =
-  | { status: "none"; plan: BatchPlan }
-  | { status: "complete"; plan: BatchPlan; completedBatchCount: number }
+  | { status: 'none'; plan: BatchPlan }
+  | { status: 'complete'; plan: BatchPlan; completedBatchCount: number }
   | {
-      status: "next";
+      status: 'next';
       plan: BatchPlan;
       batch: Batch;
       completedBatchCount: number;
@@ -57,7 +57,7 @@ function batchRisk(commits: ClassifiedCommit[]): RiskLevel {
   return commits.reduce<RiskLevel>(
     (risk, commit) =>
       riskRank[commit.risk] > riskRank[risk] ? commit.risk : risk,
-    "low",
+    'low',
   );
 }
 
@@ -69,11 +69,11 @@ function makeBatch(index: number, commits: ClassifiedCommit[]): Batch {
   const tip = commits.at(-1);
 
   if (!tip) {
-    throw new Error("Cannot create an empty batch");
+    throw new Error('Cannot create an empty batch');
   }
 
   return {
-    id: String(index).padStart(2, "0"),
+    id: String(index).padStart(2, '0'),
     tipSha: tip.sha,
     commits,
     risk: batchRisk(commits),
@@ -87,9 +87,9 @@ function makeBatch(index: number, commits: ClassifiedCommit[]): Batch {
 
 function mustStartOwnBatch(commit: ClassifiedCommit): boolean {
   return (
-    commit.risk === "high" ||
+    commit.risk === 'high' ||
     commit.features.length > 1 ||
-    commit.reasons.some((reason) => reason.includes("openapi-generated"))
+    commit.reasons.some((reason) => reason.includes('openapi-generated'))
   );
 }
 
@@ -138,9 +138,9 @@ export function selectBatchAuditScope(
   if (!batch) {
     const availableBatches = input.batchPlan.batches
       .map((candidate) => candidate.id)
-      .join(", ");
+      .join(', ');
     throw new Error(
-      `Unknown upstream batch ${input.batch}. Available batches: ${availableBatches || "none"}`,
+      `Unknown upstream batch ${input.batch}. Available batches: ${availableBatches || 'none'}`,
     );
   }
 
@@ -159,9 +159,9 @@ export function renderBatchMarkdown(
   const rows = plan.batches
     .map(
       (batch) =>
-        `| ${batch.id} | \`${shortSha(batch.tipSha)}\` | ${batch.commits.length} | ${batch.risk.toUpperCase()} | ${batch.checkpoint ? "yes" : "no"} | ${batch.why.join("; ") || "-"} | ${batch.postBatchChecks.join(", ") || "-"} | ${batch.checkpointChecks.join(", ") || "-"} |`,
+        `| ${batch.id} | \`${shortSha(batch.tipSha)}\` | ${batch.commits.length} | ${batch.risk.toUpperCase()} | ${batch.checkpoint ? 'yes' : 'no'} | ${batch.why.join('; ') || '-'} | ${batch.postBatchChecks.join(', ') || '-'} | ${batch.checkpointChecks.join(', ') || '-'} |`,
     )
-    .join("\n");
+    .join('\n');
   const commands = plan.batches
     .map(
       (batch) => `### Batch ${batch.id}
@@ -170,15 +170,15 @@ export function renderBatchMarkdown(
 ${renderBatchCommands(batch, checks)}
 \`\`\``,
     )
-    .join("\n\n");
+    .join('\n\n');
 
   return `| Batch | Tip SHA | Commits | Risk | Checkpoint | Why | Post-Batch Checks | Checkpoint Checks |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
-${rows || "| - | - | 0 | LOW | - | No incoming upstream commits | - | - |"}
+${rows || '| - | - | 0 | LOW | - | No incoming upstream commits | - | - |'}
 
 ## Batch Commands
 
-${commands || "No upstream batches are required."}
+${commands || 'No upstream batches are required.'}
 `;
 }
 
@@ -188,22 +188,29 @@ export function writeBatchPlanReports(
   checks: Record<string, CheckEntry> = {},
 ): BatchPlanReportPaths {
   fs.mkdirSync(outputDir, { recursive: true });
-  const markdownPath = path.join(outputDir, "batch-plan.md");
-  const jsonPath = path.join(outputDir, "batch-plan.json");
+  const markdownPath = path.join(outputDir, 'batch-plan.md');
+  const jsonPath = path.join(outputDir, 'batch-plan.json');
   fs.writeFileSync(markdownPath, renderBatchMarkdown(plan, checks));
   fs.writeFileSync(jsonPath, `${JSON.stringify(plan, null, 2)}\n`);
 
   return { markdownPath, jsonPath };
 }
 
+export function persistedBatchPlanPath(
+  repoPath: string,
+  outputDir?: string,
+): string {
+  return path.join(
+    persistedBatchPlanDir(repoPath, outputDir),
+    'batch-plan.json',
+  );
+}
+
 export function readPersistedBatchPlan(
   repoPath: string,
   outputDir?: string,
 ): BatchPlan {
-  const jsonPath = path.join(
-    outputDir ?? getGitPath(repoPath, "upstream-preflight"),
-    "batch-plan.json",
-  );
+  const jsonPath = persistedBatchPlanPath(repoPath, outputDir);
 
   if (!fs.existsSync(jsonPath)) {
     throw new Error(
@@ -213,7 +220,7 @@ export function readPersistedBatchPlan(
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+    parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
   } catch (error) {
     throw new Error(
       `Failed to parse persisted batch plan ${jsonPath}: ${errorMessage(error)}`,
@@ -222,6 +229,27 @@ export function readPersistedBatchPlan(
 
   validateBatchPlanShape(parsed, jsonPath);
   return parsed;
+}
+
+export function readPersistedBatchAuditScope(
+  repoPath: string,
+  outputDir: string | undefined,
+  batch?: string,
+): BatchAuditScope {
+  const batchPlan = readPersistedBatchPlan(repoPath, outputDir);
+  const upstreamTouchedFiles = [
+    ...new Set(
+      batchPlan.batches.flatMap((planBatch) =>
+        planBatch.commits.flatMap((commit) => commit.files),
+      ),
+    ),
+  ].sort();
+
+  return selectBatchAuditScope({
+    batch,
+    batchPlan,
+    upstreamTouchedFiles,
+  });
 }
 
 export function validatePersistedBatchPlan(
@@ -249,12 +277,12 @@ export function selectNextBatch(
   repoPath: string,
 ): NextBatchSelection {
   if (plan.batches.length === 0) {
-    return { status: "none", plan };
+    return { status: 'none', plan };
   }
 
-  if (isAncestor(repoPath, plan.metadata.upstreamHead, "HEAD")) {
+  if (isAncestor(repoPath, plan.metadata.upstreamHead, 'HEAD')) {
     return {
-      status: "complete",
+      status: 'complete',
       plan,
       completedBatchCount: plan.batches.length,
     };
@@ -262,21 +290,21 @@ export function selectNextBatch(
 
   let completedBatchIndex = -1;
   for (const [index, batch] of plan.batches.entries()) {
-    if (isAncestor(repoPath, batch.tipSha, "HEAD")) {
+    if (isAncestor(repoPath, batch.tipSha, 'HEAD')) {
       completedBatchIndex = index;
     }
   }
 
   if (completedBatchIndex === plan.batches.length - 1) {
     return {
-      status: "complete",
+      status: 'complete',
       plan,
       completedBatchCount: plan.batches.length,
     };
   }
 
   return {
-    status: "next",
+    status: 'next',
     plan,
     batch: plan.batches[completedBatchIndex + 1],
     completedBatchCount: completedBatchIndex + 1,
@@ -287,18 +315,18 @@ export function renderNextBatchMarkdown(
   selection: NextBatchSelection,
   checks: Record<string, CheckEntry> = {},
 ): string {
-  if (selection.status === "none") {
+  if (selection.status === 'none') {
     return `No upstream batches are required for ${selection.plan.metadata.upstreamRef} (${shortSha(selection.plan.metadata.upstreamHead)}).`;
   }
 
-  if (selection.status === "complete") {
+  if (selection.status === 'complete') {
     return `Upstream rebase already includes ${selection.plan.metadata.upstreamRef} (${selection.plan.metadata.upstreamHead}).
 Completed batches: ${selection.completedBatchCount}
 No rebase command is required.`;
   }
 
   const { batch, completedBatchCount, plan } = selection;
-  const reasons = batch.why.length > 0 ? batch.why.join("\n- ") : "none";
+  const reasons = batch.why.length > 0 ? batch.why.join('\n- ') : 'none';
 
   return `Next upstream batch: ${batch.id}
 Completed batches: ${completedBatchCount}
@@ -357,7 +385,7 @@ export function renderBatchCommands(
     );
   }
 
-  return commands.join("\n");
+  return commands.join('\n');
 }
 
 function validateBatchPlanShape(
@@ -369,13 +397,13 @@ function validateBatchPlanShape(
   const metadata = value.metadata;
 
   for (const key of [
-    "generatedAt",
-    "mergeBase",
-    "upstreamRef",
-    "upstreamHead",
-    "forkRef",
-    "forkHead",
-    "manifestForkBaseline",
+    'generatedAt',
+    'mergeBase',
+    'upstreamRef',
+    'upstreamHead',
+    'forkRef',
+    'forkHead',
+    'manifestForkBaseline',
   ]) {
     assertString(metadata[key], `${source}: metadata.${key}`);
   }
@@ -421,6 +449,7 @@ function validateBatchPlanShape(
       assertRecord(commit, commitLabel);
       assertString(commit.sha, `${commitLabel}.sha`);
       assertFullSha(commit.sha, `${commitLabel}.sha`);
+      assertStringArray(commit.files, `${commitLabel}.files`);
     }
   }
 }
@@ -429,7 +458,7 @@ function assertRecord(
   value: unknown,
   label: string,
 ): asserts value is Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error(
       `Invalid persisted batch plan ${label}: object is required`,
     );
@@ -437,13 +466,13 @@ function assertRecord(
 }
 
 function assertString(value: unknown, label: string): asserts value is string {
-  if (typeof value !== "string" || value.length === 0) {
+  if (typeof value !== 'string' || value.length === 0) {
     throw new Error(`Invalid persisted batch plan ${label} is required`);
   }
 }
 
 function assertNumber(value: unknown, label: string): asserts value is number {
-  if (typeof value !== "number" || Number.isNaN(value)) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
     throw new Error(`Invalid persisted batch plan ${label} is required`);
   }
 }
@@ -452,7 +481,7 @@ function assertBoolean(
   value: unknown,
   label: string,
 ): asserts value is boolean {
-  if (typeof value !== "boolean") {
+  if (typeof value !== 'boolean') {
     throw new Error(`Invalid persisted batch plan ${label} is required`);
   }
 }
@@ -461,7 +490,7 @@ function assertStringArray(
   value: unknown,
   label: string,
 ): asserts value is string[] {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
     throw new Error(
       `Invalid persisted batch plan ${label} must be an array of strings`,
     );
@@ -469,7 +498,7 @@ function assertStringArray(
 }
 
 function assertRisk(value: unknown, label: string): asserts value is RiskLevel {
-  if (value !== "low" && value !== "medium" && value !== "high") {
+  if (value !== 'low' && value !== 'medium' && value !== 'high') {
     throw new Error(
       `Invalid persisted batch plan ${label} must be low, medium, or high`,
     );
@@ -497,17 +526,17 @@ function applyCheckpointPolicy(
     commitsSinceCheckpoint += batch.commits.length;
 
     batch.postBatchChecks = batch.requiredChecks
-      .filter((check) => checkCost(check, checks) === "cheap")
+      .filter((check) => checkCost(check, checks) === 'cheap')
       .sort();
 
     for (const check of batch.requiredChecks) {
-      if (checkCost(check, checks) === "expensive") {
+      if (checkCost(check, checks) === 'expensive') {
         pendingCheckpointChecks.add(check);
       }
     }
 
     batch.checkpoint =
-      batch.risk === "high" || commitsSinceCheckpoint >= softCap || isFinal;
+      batch.risk === 'high' || commitsSinceCheckpoint >= softCap || isFinal;
 
     if (batch.checkpoint) {
       batch.checkpointChecks = [...pendingCheckpointChecks].sort();
@@ -525,7 +554,7 @@ function renderRequiredCheckCommand(
   checks: Record<string, CheckEntry>,
 ): string {
   const command = checks[check]?.command ?? `make ${check}`;
-  if (check === "mobile-drift-rebase-check" && !/\bBATCH=/.test(command)) {
+  if (check === 'mobile-drift-rebase-check' && !/\bBATCH=/.test(command)) {
     return `${command} BATCH=${batchId}`;
   }
 
@@ -535,12 +564,21 @@ function renderRequiredCheckCommand(
 function checkCost(
   check: string,
   checks: Record<string, CheckEntry>,
-): NonNullable<CheckEntry["cost"]> {
-  return checks[check]?.cost ?? "expensive";
+): NonNullable<CheckEntry['cost']> {
+  return checks[check]?.cost ?? 'expensive';
 }
 
 function normalizeBatchId(batch: string): string {
-  return /^\d+$/.test(batch) ? batch.padStart(2, "0") : batch;
+  return /^\d+$/.test(batch) ? batch.padStart(2, '0') : batch;
+}
+
+function persistedBatchPlanDir(repoPath: string, outputDir?: string): string {
+  if (outputDir !== undefined) {
+    return outputDir;
+  }
+
+  const gitPath = getGitPath(repoPath, 'upstream-preflight');
+  return path.isAbsolute(gitPath) ? gitPath : path.resolve(repoPath, gitPath);
 }
 
 function shortSha(sha: string): string {

@@ -271,6 +271,44 @@ pnpm install --no-frozen-lockfile
 
 Review the resulting lockfile diff before continuing.
 
+## Rolling Rebase Branches
+
+Use rolling mode when an upstream sync is expected to live long enough that
+Gallery PRs will continue landing on `origin/main`.
+
+Start from a separate worktree and run the normal readiness flow:
+
+```bash
+make upstream-rebase-ready
+make upstream-rolling-start
+```
+
+Continue upstream batches with `make upstream-next-batch`. Sync new Gallery
+commits only between clean batch boundaries:
+
+```bash
+make upstream-sync-fork-main
+```
+
+Never merge `origin/main` into the rolling branch. The sync command cherry-picks
+the range from the stored `integratedForkHead` to the current fork ref, then runs
+the fork checks and the last completed batch audit.
+
+If checks fail after cherry-picking succeeds, fix the branch and continue:
+
+```bash
+make upstream-sync-fork-main ROLLING_CONTINUE=1
+```
+
+Before any final force-push, run:
+
+```bash
+make upstream-rolling-final-check
+```
+
+If `upstream/main` moves while rolling mode is active, keep working toward the
+approved `upstreamTargetHead`. Do not regenerate completed batches silently.
+
 ## Post-Batch Audits
 
 After every batch, run the post-rebase audit with the batch id:
@@ -448,6 +486,9 @@ Confirm the final branch contains:
 
 Prefer the `push-rebase` skill for the final force push so missing PR commits
 are detected before `origin/main` is updated.
+
+If the branch has rolling state, `make upstream-rolling-final-check` must pass
+before using the `push-rebase` skill.
 
 After pushing, babysit required CI until green. Do not merge or force-push a
 partially verified upstream sync.

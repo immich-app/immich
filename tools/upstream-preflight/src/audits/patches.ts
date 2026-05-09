@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import type { AuditResult, Manifest, PackagePatch } from "../types";
+import fs from 'node:fs';
+import path from 'node:path';
+import type { AuditResult, Manifest, PackagePatch } from '../types';
 
 export function checkPackagePatchText(
   patch: PackagePatch,
@@ -33,15 +33,15 @@ export function runPatchAudits(
   manifest: Manifest,
   cwd = process.cwd(),
 ): AuditResult[] {
-  const patchFiles = listPatchFiles(path.join(cwd, "patches")).map(
+  const patchFiles = listPatchFiles(path.join(cwd, 'patches')).map(
     (file) => `patches/${file}`,
   );
 
   return (manifest.patches ?? []).map((patch) => {
     const sourcePath = path.join(cwd, patch.version_source);
     const sourceText = fs.existsSync(sourcePath)
-      ? fs.readFileSync(sourcePath, "utf8")
-      : "";
+      ? fs.readFileSync(sourcePath, 'utf8')
+      : '';
     return checkPackagePatchText(patch, sourceText, patchFiles);
   });
 }

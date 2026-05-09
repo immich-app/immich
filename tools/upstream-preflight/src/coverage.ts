@@ -1,15 +1,15 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import micromatch from "micromatch";
-import { isAncestor, listChangedFiles, revParse } from "./git";
-import { defaultManifestPath, loadManifest } from "./manifest";
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import micromatch from 'micromatch';
+import { isAncestor, listChangedFiles, revParse } from './git';
+import { defaultManifestPath, loadManifest } from './manifest';
 import type {
   CoverageClassification,
   FeatureEntry,
   Manifest,
   ManifestHeadValidation,
-} from "./types";
+} from './types';
 
 const micromatchOptions = { dot: true };
 
@@ -121,8 +121,8 @@ export function validateManifestForkHead(
   options: ValidateManifestForkHeadOptions | string | undefined,
 ): ManifestHeadValidation {
   const expectedHead =
-    typeof options === "string" ? options : options?.expectedHead;
-  const repoPath = typeof options === "string" ? undefined : options?.repoPath;
+    typeof options === 'string' ? options : options?.expectedHead;
+  const repoPath = typeof options === 'string' ? undefined : options?.repoPath;
 
   if (!expectedHead) {
     return manifestHeadValidation();
@@ -196,13 +196,13 @@ export function runCoverageCli(argv = process.argv.slice(2)) {
     options;
   if (!fileListPath) {
     throw new Error(
-      "Usage: tsx src/coverage.ts <fork-file-list> [manifest-path] [--expected-head <sha>] [--strict-broad-coverage]",
+      'Usage: tsx src/coverage.ts <fork-file-list> [manifest-path] [--expected-head <sha>] [--strict-broad-coverage]',
     );
   }
 
   const manifest = loadManifest(resolveCliPath(manifestPath));
   const files = fs
-    .readFileSync(resolveCliPath(fileListPath), "utf8")
+    .readFileSync(resolveCliPath(fileListPath), 'utf8')
     .split(/\r?\n/)
     .filter(Boolean);
   const uncovered = findUncoveredFiles(files, manifest);
@@ -261,22 +261,22 @@ function resolveCliPath(inputPath: string) {
 }
 
 function parseCoverageArgs(argv: string[]) {
-  const args = argv[0] === "--" ? argv.slice(1) : argv;
+  const args = argv[0] === '--' ? argv.slice(1) : argv;
   const positional: string[] = [];
   let expectedHead: string | undefined;
   let strictBroadCoverage = false;
 
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
-    if (arg === "--expected-head") {
+    if (arg === '--expected-head') {
       if (!args[index + 1]) {
-        throw new Error("--expected-head requires a commit SHA");
+        throw new Error('--expected-head requires a commit SHA');
       }
       expectedHead = args[index + 1];
       index++;
       continue;
     }
-    if (arg === "--strict-broad-coverage") {
+    if (arg === '--strict-broad-coverage') {
       strictBroadCoverage = true;
       continue;
     }
@@ -310,8 +310,8 @@ function matchingGlobs(file: string, globs: string[]): string[] {
 }
 
 function isBroadOptionalGlob(glob: string): boolean {
-  const normalized = glob.replace(/\\/g, "/");
-  return normalized === "**" || normalized.endsWith("/**");
+  const normalized = glob.replace(/\\/g, '/');
+  return normalized === '**' || normalized.endsWith('/**');
 }
 
 function manifestHeadValidation(
@@ -333,13 +333,13 @@ function printBroadCoverageWarnings(
     return;
   }
 
-  write("Ownership manifest broad coverage warning:");
+  write('Ownership manifest broad coverage warning:');
   for (const classification of classifications) {
     write(
-      `- ${classification.file} is covered only by ${classification.broadOptionalGlobs.join(", ")}`,
+      `- ${classification.file} is covered only by ${classification.broadOptionalGlobs.join(', ')}`,
     );
     write(
-      "  Consider adding a narrower owned path or upstream extension path.",
+      '  Consider adding a narrower owned path or upstream extension path.',
     );
   }
 }

@@ -1,35 +1,35 @@
-import fs from "node:fs";
-import YAML from "yaml";
-import type { CheckEntry, Domain, Manifest, RiskLevel } from "./types";
+import fs from 'node:fs';
+import YAML from 'yaml';
+import type { CheckEntry, Domain, Manifest, RiskLevel } from './types';
 
-export const defaultManifestPath = "docs/fork/ownership.yml";
+export const defaultManifestPath = 'docs/fork/ownership.yml';
 
-const validRisks = new Set<RiskLevel>(["low", "medium", "high"]);
+const validRisks = new Set<RiskLevel>(['low', 'medium', 'high']);
 const validDomains = new Set<Domain>([
-  "server",
-  "web",
-  "mobile",
-  "database",
-  "ci",
-  "docs",
-  "e2e",
-  "ml",
-  "config",
+  'server',
+  'web',
+  'mobile',
+  'database',
+  'ci',
+  'docs',
+  'e2e',
+  'ml',
+  'config',
 ]);
-const validCheckPhases = new Set<CheckEntry["phase"]>([
-  "preflight",
-  "post-batch",
-  "preflight-and-post-batch",
-  "final",
+const validCheckPhases = new Set<CheckEntry['phase']>([
+  'preflight',
+  'post-batch',
+  'preflight-and-post-batch',
+  'final',
 ]);
-const validCheckCosts = new Set<NonNullable<CheckEntry["cost"]>>([
-  "cheap",
-  "expensive",
+const validCheckCosts = new Set<NonNullable<CheckEntry['cost']>>([
+  'cheap',
+  'expensive',
 ]);
 
 export function parseManifest(source: string): Manifest {
   const value = YAML.parse(source) as unknown;
-  const root = assertRecord(value, "Ownership manifest must be a YAML object");
+  const root = assertRecord(value, 'Ownership manifest must be a YAML object');
 
   if (root.version !== 1) {
     throw new Error(
@@ -39,14 +39,14 @@ export function parseManifest(source: string): Manifest {
 
   const metadata = assertRecord(
     root.metadata,
-    "Ownership manifest is missing metadata",
+    'Ownership manifest is missing metadata',
   );
   for (const field of [
-    "upstream_remote",
-    "upstream_branch",
-    "fork_remote",
-    "fork_branch",
-    "last_verified_fork_head",
+    'upstream_remote',
+    'upstream_branch',
+    'fork_remote',
+    'fork_branch',
+    'last_verified_fork_head',
   ]) {
     assertString(
       metadata[field],
@@ -55,23 +55,23 @@ export function parseManifest(source: string): Manifest {
   }
   if (!/^[0-9a-f]{40}$/.test(metadata.last_verified_fork_head as string)) {
     throw new Error(
-      "Ownership manifest metadata last_verified_fork_head must be a full commit SHA",
+      'Ownership manifest metadata last_verified_fork_head must be a full commit SHA',
     );
   }
 
   const checks =
     root.checks === undefined
       ? undefined
-      : assertRecord(root.checks, "Ownership manifest checks must be a map");
+      : assertRecord(root.checks, 'Ownership manifest checks must be a map');
   const checkIds = new Set(Object.keys(checks ?? {}));
   validateChecks(checks);
 
   const features = assertRecord(
     root.features,
-    "Ownership manifest must define features",
+    'Ownership manifest must define features',
   );
   if (Object.keys(features).length === 0) {
-    throw new Error("Ownership manifest must define at least one feature");
+    throw new Error('Ownership manifest must define at least one feature');
   }
   validateFeatures(features, checkIds);
 
@@ -79,7 +79,7 @@ export function parseManifest(source: string): Manifest {
   validatePatches(root.patches, checkIds);
   validateRiskPatterns(root.risk_patterns);
   validateForkSurface(root.fork_surface);
-  optionalStringArray(root.coverage_ignore, "coverage_ignore");
+  optionalStringArray(root.coverage_ignore, 'coverage_ignore');
 
   return root as Manifest;
 }
@@ -89,13 +89,13 @@ function validateChecks(checks: Record<string, unknown> | undefined) {
     const check = assertRecord(rawCheck, `Check ${id} must be an object`);
     assertString(check.command, `Check ${id} must define command`);
     const phase = assertString(check.phase, `Check ${id} must define phase`);
-    if (!validCheckPhases.has(phase as CheckEntry["phase"])) {
+    if (!validCheckPhases.has(phase as CheckEntry['phase'])) {
       throw new Error(`Invalid phase for check ${id}: ${phase}`);
     }
     if (check.cost === undefined) {
-      check.cost = "expensive";
+      check.cost = 'expensive';
     }
-    if (!validCheckCosts.has(check.cost as NonNullable<CheckEntry["cost"]>)) {
+    if (!validCheckCosts.has(check.cost as NonNullable<CheckEntry['cost']>)) {
       throw new Error(`Invalid cost for check ${id}: ${String(check.cost)}`);
     }
     validateRiskArray(check.required_for_risk, `Check ${id} required_for_risk`);
@@ -183,7 +183,7 @@ function validateDatabase(value: unknown, featureId: string) {
     ) ?? [];
   const seen = new Set<string>();
   for (const migration of migrations) {
-    if (!migration.endsWith(".ts")) {
+    if (!migration.endsWith('.ts')) {
       throw new Error(
         `Expected migration for feature ${featureId} must be a TypeScript file: ${migration}`,
       );
@@ -225,7 +225,7 @@ function validateMobile(value: unknown, featureId: string) {
       `Feature ${featureId} mobile drift_versions shipped must be boolean`,
     );
   }
-  if (driftVersions.owner !== "gallery") {
+  if (driftVersions.owner !== 'gallery') {
     throw new Error(
       `Feature ${featureId} mobile drift_versions owner must be gallery`,
     );
@@ -247,14 +247,14 @@ function validateCiInvariants(value: unknown) {
     return;
   }
   if (!Array.isArray(value)) {
-    throw new Error("ci_invariants must be an array");
+    throw new Error('ci_invariants must be an array');
   }
   for (const rawInvariant of value) {
     const invariant = assertRecord(
       rawInvariant,
-      "CI invariant must be an object",
+      'CI invariant must be an object',
     );
-    const id = assertString(invariant.id, "CI invariant must define id");
+    const id = assertString(invariant.id, 'CI invariant must define id');
     assertString(invariant.title, `CI invariant ${id} must define title`);
     stringArray(
       invariant.forbidden_patterns,
@@ -271,11 +271,11 @@ function validatePatches(value: unknown, checkIds: Set<string>) {
     return;
   }
   if (!Array.isArray(value)) {
-    throw new Error("patches must be an array");
+    throw new Error('patches must be an array');
   }
   for (const rawPatch of value) {
-    const patch = assertRecord(rawPatch, "Patch must be an object");
-    const id = assertString(patch.id, "Patch must define id");
+    const patch = assertRecord(rawPatch, 'Patch must be an object');
+    const id = assertString(patch.id, 'Patch must define id');
     assertString(patch.package, `Patch ${id} must define package`);
     assertString(
       patch.version_source,
@@ -297,11 +297,11 @@ function validateRiskPatterns(value: unknown) {
     return;
   }
   if (!Array.isArray(value)) {
-    throw new Error("risk_patterns must be an array");
+    throw new Error('risk_patterns must be an array');
   }
   for (const rawPattern of value) {
-    const pattern = assertRecord(rawPattern, "Risk pattern must be an object");
-    const id = assertString(pattern.id, "Risk pattern must define id");
+    const pattern = assertRecord(rawPattern, 'Risk pattern must be an object');
+    const id = assertString(pattern.id, 'Risk pattern must define id');
     const risk = assertString(
       pattern.risk,
       `Risk pattern ${id} must define risk`,
@@ -329,14 +329,14 @@ function validateRiskPatterns(value: unknown) {
 }
 
 function validateForkSurface(value: unknown) {
-  const forkSurface = optionalRecord(value, "fork_surface must be an object");
+  const forkSurface = optionalRecord(value, 'fork_surface must be an object');
   if (!forkSurface) {
     return;
   }
 
   const preferredNamespaces = optionalRecord(
     forkSurface.preferred_namespaces,
-    "fork_surface.preferred_namespaces must be a map",
+    'fork_surface.preferred_namespaces must be a map',
   );
   for (const [domain, rawGlobs] of Object.entries(preferredNamespaces ?? {})) {
     if (!validDomains.has(domain as Domain)) {
@@ -354,7 +354,7 @@ function validateForkSurface(value: unknown) {
           `fork_surface preferred namespace ${domain} contains a blank glob`,
         );
       }
-      if (glob.startsWith("/") || glob.split("/").includes("..")) {
+      if (glob.startsWith('/') || glob.split('/').includes('..')) {
         throw new Error(
           `fork_surface preferred namespace ${domain} contains an unsafe path: ${glob}`,
         );
@@ -387,8 +387,8 @@ function validateDomainValues(domains: string[], message: string) {
   for (const domain of domains) {
     if (!validDomains.has(domain as Domain)) {
       const owner = message
-        .replace(" domains", "")
-        .replace(/^Feature /, "feature ");
+        .replace(' domains', '')
+        .replace(/^Feature /, 'feature ');
       throw new Error(`Invalid domain for ${owner}: ${domain}`);
     }
   }
@@ -397,7 +397,7 @@ function validateDomainValues(domains: string[], message: string) {
 function stringArray(value: unknown, message: string): string[] {
   if (
     !Array.isArray(value) ||
-    !value.every((item) => typeof item === "string")
+    !value.every((item) => typeof item === 'string')
   ) {
     throw new Error(`${message} must be a string array`);
   }
@@ -428,19 +428,19 @@ function assertRecord(
   value: unknown,
   message: string,
 ): Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error(message);
   }
   return value as Record<string, unknown>;
 }
 
 function assertString(value: unknown, message: string): string {
-  if (typeof value !== "string" || value.length === 0) {
+  if (typeof value !== 'string' || value.length === 0) {
     throw new Error(message);
   }
   return value;
 }
 
 export function loadManifest(path = defaultManifestPath): Manifest {
-  return parseManifest(fs.readFileSync(path, "utf8"));
+  return parseManifest(fs.readFileSync(path, 'utf8'));
 }

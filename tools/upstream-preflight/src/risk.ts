@@ -1,23 +1,23 @@
-import micromatch from "micromatch";
+import micromatch from 'micromatch';
 import type {
   ClassifiedCommit,
   Domain,
   GitCommit,
   Manifest,
   RiskLevel,
-} from "./types";
+} from './types';
 
 const riskRank: Record<RiskLevel, number> = { low: 0, medium: 1, high: 2 };
 
 export function detectDomain(file: string): Domain {
-  if (file.startsWith("server/")) return "server";
-  if (file.startsWith("web/")) return "web";
-  if (file.startsWith("mobile/")) return "mobile";
-  if (file.startsWith(".github/")) return "ci";
-  if (file.startsWith("docs/")) return "docs";
-  if (file.startsWith("e2e/")) return "e2e";
-  if (file.startsWith("machine-learning/")) return "ml";
-  return "config";
+  if (file.startsWith('server/')) return 'server';
+  if (file.startsWith('web/')) return 'web';
+  if (file.startsWith('mobile/')) return 'mobile';
+  if (file.startsWith('.github/')) return 'ci';
+  if (file.startsWith('docs/')) return 'docs';
+  if (file.startsWith('e2e/')) return 'e2e';
+  if (file.startsWith('machine-learning/')) return 'ml';
+  return 'config';
 }
 
 function maxRisk(left: RiskLevel, right: RiskLevel): RiskLevel {
@@ -41,7 +41,7 @@ export function classifyCommit(
   const features = new Set<string>();
   const requiredChecks = new Set<string>();
   const reasons: string[] = [];
-  let risk: RiskLevel = overlapFiles.length > 0 ? "medium" : "low";
+  let risk: RiskLevel = overlapFiles.length > 0 ? 'medium' : 'low';
 
   for (const [featureId, feature] of Object.entries(manifest.features)) {
     const ownedMatch = micromatch(commit.files, feature.owned_paths ?? []);

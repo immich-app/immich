@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
-import micromatch from "micromatch";
-import type { AuditResult, Manifest } from "../types";
+import fs from 'node:fs';
+import path from 'node:path';
+import micromatch from 'micromatch';
+import type { AuditResult, Manifest } from '../types';
 
 export type PostRebaseAuditReportInput = {
   date: string;
@@ -18,7 +18,7 @@ export function auditForkOwnedFiles(
 
   for (const feature of Object.values(manifest.features)) {
     for (const file of feature.owned_paths ?? []) {
-      if (file.includes("*")) continue;
+      if (file.includes('*')) continue;
       if (!currentFiles.includes(file)) {
         missing.push(`Missing fork-owned file ${file}`);
       }
@@ -27,11 +27,11 @@ export function auditForkOwnedFiles(
 
   return {
     ok: missing.length === 0,
-    title: "Fork-Owned File Survival",
+    title: 'Fork-Owned File Survival',
     details:
       missing.length > 0
         ? missing
-        : ["All literal fork-owned files are present"],
+        : ['All literal fork-owned files are present'],
   };
 }
 
@@ -49,7 +49,7 @@ export function auditMigrationCount(
 
   return {
     ok: expectedCount === 0 || migrations.length === expectedCount,
-    title: "Gallery Migration Count",
+    title: 'Gallery Migration Count',
     details,
   };
 }
@@ -65,11 +65,11 @@ export function auditExpectedMigrations(
 
   return {
     ok: missing.length === 0,
-    title: "Gallery Migration Filename Survival",
+    title: 'Gallery Migration Filename Survival',
     details:
       missing.length > 0
         ? missing
-        : ["All manifest expected migrations are present"],
+        : ['All manifest expected migrations are present'],
   };
 }
 
@@ -83,7 +83,7 @@ export function auditExtensionSymbols(
     for (const [file, symbols] of Object.entries(
       feature.expected_symbols ?? {},
     )) {
-      const text = fileTextByPath[file] ?? "";
+      const text = fileTextByPath[file] ?? '';
       for (const symbol of symbols) {
         if (!text.includes(symbol)) {
           details.push(`${file} is missing expected symbol ${symbol}`);
@@ -94,11 +94,11 @@ export function auditExtensionSymbols(
 
   return {
     ok: details.length === 0,
-    title: "Fork Extension Symbol Survival",
+    title: 'Fork Extension Symbol Survival',
     details:
       details.length > 0
         ? details
-        : ["All manifest expected symbols are present"],
+        : ['All manifest expected symbols are present'],
   };
 }
 
@@ -118,11 +118,11 @@ export function auditMigrationGlobs(
 
   return {
     ok: details.length === 0,
-    title: "Gallery Migration Manifest Coverage",
+    title: 'Gallery Migration Manifest Coverage',
     details:
       details.length > 0
         ? details
-        : ["All manifest migration globs match current files"],
+        : ['All manifest migration globs match current files'],
   };
 }
 
@@ -139,17 +139,17 @@ export function auditMigrationTimestampCollisions(
     .map((file) => path.basename(file).match(/^(\d+)/)?.[1])
     .filter(
       (value): value is string =>
-        typeof value === "string" && galleryTimestamps.has(value),
+        typeof value === 'string' && galleryTimestamps.has(value),
     )
     .map((timestamp) => `Migration timestamp collision: ${timestamp}`);
 
   return {
     ok: details.length === 0,
-    title: "Migration Timestamp Collision Check",
+    title: 'Migration Timestamp Collision Check',
     details:
       details.length > 0
         ? [...new Set(details)]
-        : ["No upstream migration timestamp collides with Gallery migrations"],
+        : ['No upstream migration timestamp collides with Gallery migrations'],
   };
 }
 
@@ -158,16 +158,16 @@ export function auditGeneratedArtifactSignals(
 ): AuditResult {
   const generatedFiles = micromatch(
     upstreamTouchedFiles,
-    ["open-api/**", "mobile/openapi/**", "server/src/queries/**/*.sql"],
+    ['open-api/**', 'mobile/openapi/**', 'server/src/queries/**/*.sql'],
     { dot: true },
   );
   return {
     ok: generatedFiles.length === 0,
-    title: "Generated Artifact Review",
+    title: 'Generated Artifact Review',
     details:
       generatedFiles.length > 0
         ? generatedFiles.map((file) => `Review regenerated artifact ${file}`)
-        : ["No upstream generated artifact changes require review"],
+        : ['No upstream generated artifact changes require review'],
   };
 }
 
@@ -177,9 +177,9 @@ export function runPostRebaseAudits(
   cwd = process.cwd(),
 ): AuditResult[] {
   const currentFiles = listFiles(cwd);
-  const migrationRoot = path.join(cwd, "server/src/schema/migrations-gallery");
+  const migrationRoot = path.join(cwd, 'server/src/schema/migrations-gallery');
   const migrations = fs.existsSync(migrationRoot)
-    ? fs.readdirSync(migrationRoot).filter((file) => file.endsWith(".ts"))
+    ? fs.readdirSync(migrationRoot).filter((file) => file.endsWith('.ts'))
     : [];
   const galleryMigrationPaths = migrations.map(
     (file) => `server/src/schema/migrations-gallery/${file}`,
@@ -193,12 +193,12 @@ export function runPostRebaseAudits(
       const fullPath = path.join(cwd, file);
       return [
         file,
-        fs.existsSync(fullPath) ? fs.readFileSync(fullPath, "utf8") : "",
+        fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : '',
       ];
     }),
   );
   const upstreamMigrations = micromatch(upstreamTouchedFiles, [
-    "server/src/schema/migrations/**/*.ts",
+    'server/src/schema/migrations/**/*.ts',
   ]);
 
   return [
@@ -221,27 +221,27 @@ export function renderPostRebaseAuditMarkdown(
   const rows = input.results
     .map(
       (result) =>
-        `| ${result.ok ? "OK" : "ISSUE"} | ${result.title} | ${result.details.join("<br>")} |`,
+        `| ${result.ok ? 'OK' : 'ISSUE'} | ${result.title} | ${result.details.join('<br>')} |`,
     )
-    .join("\n");
+    .join('\n');
   const touchedFiles =
     input.upstreamTouchedFiles.length > 0
-      ? input.upstreamTouchedFiles.map((file) => `- \`${file}\``).join("\n")
-      : "- None";
+      ? input.upstreamTouchedFiles.map((file) => `- \`${file}\``).join('\n')
+      : '- None';
   const title = input.batch
     ? `Upstream Post-Rebase Audit - Batch ${input.batch}`
-    : "Upstream Post-Rebase Audit";
+    : 'Upstream Post-Rebase Audit';
 
   return `# ${title}
 
 - **Date**: ${input.date}
-- **Status**: ${input.results.every((result) => result.ok) ? "OK" : "ISSUE"}
+- **Status**: ${input.results.every((result) => result.ok) ? 'OK' : 'ISSUE'}
 
 ## Audit Results
 
 | Status | Check | Details |
 | --- | --- | --- |
-${rows || "| OK | No audit results | - |"}
+${rows || '| OK | No audit results | - |'}
 
 ## Upstream Touched Files
 
@@ -289,13 +289,13 @@ function collectExpectedMigrations(manifest: Manifest): string[] {
 function listFiles(cwd: string): string[] {
   const files: string[] = [];
   const ignored = new Set([
-    ".git",
-    "node_modules",
-    ".svelte-kit",
-    "dist",
-    "build",
+    '.git',
+    'node_modules',
+    '.svelte-kit',
+    'dist',
+    'build',
   ]);
-  const ignoredGlobs = [".claude/**", ".worktrees/**", "docker/library/**"];
+  const ignoredGlobs = ['.claude/**', '.worktrees/**', 'docker/library/**'];
 
   const walk = (directory: string) => {
     let entries: fs.Dirent[];
@@ -310,7 +310,7 @@ function listFiles(cwd: string): string[] {
       const fullPath = path.join(directory, entry.name);
       const relativePath = path
         .relative(cwd, fullPath)
-        .replaceAll(path.sep, "/");
+        .replaceAll(path.sep, '/');
       if (micromatch.isMatch(relativePath, ignoredGlobs, { dot: true })) {
         continue;
       }

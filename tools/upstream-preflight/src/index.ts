@@ -1,47 +1,54 @@
 #!/usr/bin/env node
-import fs from "node:fs";
-import path from "node:path";
-import micromatch from "micromatch";
-import { Command } from "commander";
-import { runCiInvariantAudits } from "./audits/ci-invariants";
-import { runMobileDriftAudit } from "./audits/mobile-drift";
-import { runPatchAudits } from "./audits/patches";
+import fs from 'node:fs';
+import path from 'node:path';
+import micromatch from 'micromatch';
+import { Command } from 'commander';
+import { runCiInvariantAudits } from './audits/ci-invariants';
+import { runMobileDriftAudit } from './audits/mobile-drift';
+import { runPatchAudits } from './audits/patches';
 import {
   runPostRebaseAudits,
   writePostRebaseAuditReport,
-} from "./audits/post-rebase";
+} from './audits/post-rebase';
 import {
   planBatches,
+  readPersistedBatchAuditScope,
   renderBatchMarkdown,
   runNextBatchCommand,
-  selectBatchAuditScope,
   writeBatchPlanReports,
-} from "./batch";
+} from './batch';
 import {
   findBroadOptionalOnlyFiles,
   findUncoveredFiles,
   validateManifestForkHead,
-} from "./coverage";
-import { collectGitRange, getGitPath, getMergeBase, revParse } from "./git";
-import { defaultManifestPath, loadManifest } from "./manifest";
+} from './coverage';
+import { collectGitRange, getGitPath, getMergeBase, revParse } from './git';
+import { defaultManifestPath, loadManifest } from './manifest';
 import {
   evaluateReadiness,
   readinessExitCode,
   renderReadinessMarkdown,
   writeReadinessReports,
-} from "./ready";
-import { renderPreflightMarkdown } from "./report";
-import { classifyCommit, detectDomain } from "./risk";
+} from './ready';
+import { renderPreflightMarkdown } from './report';
+import {
+  assertNoActiveRollingSync,
+  runRollingFinalCheckCommand,
+  runRollingStartCommand,
+  runRollingStatusCommand,
+  runRollingSyncForkMainCommand,
+} from './rolling';
+import { classifyCommit, detectDomain } from './risk';
 import {
   collectExtensionHotspots,
   collectFeatureOverlaps,
   collectForkSurfaceSignals,
-} from "./signals";
-import type { ClassifiedCommit, Manifest } from "./types";
+} from './signals';
+import type { ClassifiedCommit, Manifest } from './types';
 
 const program = new Command()
-  .name("gallery-upstream-preflight")
-  .description("Gallery upstream rebase preflight and audit tooling");
+  .name('gallery-upstream-preflight')
+  .description('Gallery upstream rebase preflight and audit tooling');
 const defaultBatchSoftCap = 10;
 
 function resolveCliPath(inputPath: string) {
@@ -135,7 +142,7 @@ function collectServerTableOverlaps(
   manifest: Manifest,
   upstreamFiles: string[],
 ) {
-  const upstreamText = upstreamFiles.join("\n");
+  const upstreamText = upstreamFiles.join('\n');
   const tables = Object.values(manifest.features).flatMap(
     (feature) => feature.database?.tables ?? [],
   );
@@ -143,7 +150,7 @@ function collectServerTableOverlaps(
     .filter(
       (table) =>
         upstreamText.includes(table) ||
-        upstreamText.includes(table.replaceAll("_", "-")),
+        upstreamText.includes(table.replaceAll('_', '-')),
     )
     .sort();
 }
@@ -153,7 +160,7 @@ function collectBroadRefactorHints(commits: ClassifiedCommit[]): string[] {
     .filter(
       (commit) =>
         commit.files.length >= 25 ||
-        commit.reasons.some((reason) => reason.includes("breaking-refactor")),
+        commit.reasons.some((reason) => reason.includes('breaking-refactor')),
     )
     .map(
       (commit) =>
@@ -181,27 +188,27 @@ function renderPreflightForContext(
       context.classifiedCommits,
     ),
     dependencyChanges: collectSignalFiles(context.upstreamRange.files, [
-      "package.json",
-      "pnpm-lock.yaml",
-      "pnpm-workspace.yaml",
-      "**/package.json",
-      "machine-learning/pyproject.toml",
-      "machine-learning/uv.lock",
+      'package.json',
+      'pnpm-lock.yaml',
+      'pnpm-workspace.yaml',
+      '**/package.json',
+      'machine-learning/pyproject.toml',
+      'machine-learning/uv.lock',
     ]),
     serverMigrationChanges: collectSignalFiles(context.upstreamRange.files, [
-      "server/src/schema/migrations/**",
-      "server/src/schema/tables/**",
+      'server/src/schema/migrations/**',
+      'server/src/schema/tables/**',
     ]),
     serverTableOverlaps: collectServerTableOverlaps(
       context.manifest,
       context.upstreamRange.files,
     ),
     mobileDriftChanges: collectSignalFiles(context.upstreamRange.files, [
-      "mobile/lib/infrastructure/repositories/db.repository.dart",
-      "mobile/drift_schemas/main/**",
+      'mobile/lib/infrastructure/repositories/db.repository.dart',
+      'mobile/drift_schemas/main/**',
     ]),
     ciWorkflowChanges: collectSignalFiles(context.upstreamRange.files, [
-      ".github/workflows/**",
+      '.github/workflows/**',
     ]),
     broadRefactorHints: collectBroadRefactorHints(context.classifiedCommits),
     batchMarkdown: context.batchMarkdown,
@@ -230,7 +237,7 @@ function writePreflightReports(
   fs.mkdirSync(outputDir, { recursive: true });
   const markdown = renderPreflightForContext(context, date);
   const markdownPath = path.join(outputDir, `preflight-${date}.md`);
-  const jsonPath = path.join(outputDir, "preflight.json");
+  const jsonPath = path.join(outputDir, 'preflight.json');
 
   fs.writeFileSync(markdownPath, markdown);
   fs.writeFileSync(
@@ -250,28 +257,28 @@ function writePreflightReports(
 }
 
 program
-  .command("preflight")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
-  .option("--output-dir <path>", "generated report directory")
+  .command('preflight')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
+  .option('--output-dir <path>', 'generated report directory')
   .action((options: { manifest: string; outputDir?: string }) => {
     const context = buildPreflightContext(options.manifest);
     const date = new Date().toISOString().slice(0, 10);
     const outputDir = options.outputDir
       ? resolveCliPath(options.outputDir)
-      : getGitPath(process.cwd(), "upstream-preflight");
+      : getGitPath(process.cwd(), 'upstream-preflight');
 
     const { markdown } = writePreflightReports(outputDir, context, date);
     console.log(markdown);
   });
 
 program
-  .command("ready")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
-  .option("--output-dir <path>", "generated report directory")
+  .command('ready')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
+  .option('--output-dir <path>', 'generated report directory')
   .action((options: { manifest: string; outputDir?: string }) => {
     const outputDir = options.outputDir
       ? resolveCliPath(options.outputDir)
-      : getGitPath(process.cwd(), "upstream-preflight");
+      : getGitPath(process.cwd(), 'upstream-preflight');
     let result = evaluateReadiness({});
 
     try {
@@ -323,14 +330,14 @@ program
   });
 
 program
-  .command("batch-plan")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
-  .option("--output-dir <path>", "generated batch plan directory")
+  .command('batch-plan')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
+  .option('--output-dir <path>', 'generated batch plan directory')
   .action((options: { manifest: string; outputDir?: string }) => {
     const context = buildPreflightContext(options.manifest);
     const outputDir = options.outputDir
       ? resolveCliPath(options.outputDir)
-      : getGitPath(process.cwd(), "upstream-preflight");
+      : getGitPath(process.cwd(), 'upstream-preflight');
     const { markdownPath, jsonPath } = writeBatchPlanReports(
       context.batchPlan,
       outputDir,
@@ -342,107 +349,201 @@ program
   });
 
 program
-  .command("next-batch")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
-  .option("--output-dir <path>", "generated batch plan directory")
+  .command('next-batch')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
+  .option('--output-dir <path>', 'generated batch plan directory')
   .action((options: { manifest: string; outputDir?: string }) => {
+    const outputDir = options.outputDir
+      ? resolveCliPath(options.outputDir)
+      : undefined;
+    try {
+      assertNoActiveRollingSync(process.cwd(), outputDir);
+    } catch (error) {
+      console.error(errorMessage(error));
+      process.exitCode = 1;
+      return;
+    }
+
     const manifest = loadManifest(resolveCliPath(options.manifest));
     process.exitCode = runNextBatchCommand({
       repoPath: process.cwd(),
-      outputDir: options.outputDir
-        ? resolveCliPath(options.outputDir)
-        : undefined,
+      outputDir,
       checks: manifest.checks,
     });
   });
 
 program
-  .command("mobile-drift-check")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
-  .option("--batch <id>", "upstream batch id")
-  .action((options: { manifest: string; batch?: string }) => {
-    const batch = options.batch ?? process.env.BATCH;
-    const context = buildPreflightContext(options.manifest);
-    const auditScope = selectBatchAuditScope({
-      batch,
-      batchPlan: context.batchPlan,
-      upstreamTouchedFiles: context.upstreamRange.files,
+  .command('rolling-start')
+  .option('--output-dir <path>', 'rolling state and batch plan directory')
+  .option('--resume', 'resume an existing rolling state')
+  .action((options: { outputDir?: string; resume?: boolean }) => {
+    process.exitCode = runRollingStartCommand({
+      repoPath: process.cwd(),
+      outputDir: options.outputDir
+        ? resolveCliPath(options.outputDir)
+        : undefined,
+      resume: options.resume,
     });
+  });
+
+program
+  .command('rolling-status')
+  .option('--output-dir <path>', 'rolling state and batch plan directory')
+  .action((options: { outputDir?: string }) => {
+    process.exitCode = runRollingStatusCommand({
+      repoPath: process.cwd(),
+      outputDir: options.outputDir
+        ? resolveCliPath(options.outputDir)
+        : undefined,
+    });
+  });
+
+program
+  .command('sync-fork-main')
+  .option('--output-dir <path>', 'rolling state and batch plan directory')
+  .option('--continue', 'continue a fork sync after checks failed')
+  .action((options: { outputDir?: string; continue?: boolean }) => {
+    process.exitCode = runRollingSyncForkMainCommand({
+      repoPath: process.cwd(),
+      outputDir: options.outputDir
+        ? resolveCliPath(options.outputDir)
+        : undefined,
+      continue: options.continue,
+    });
+  });
+
+program
+  .command('rolling-final-check')
+  .option('--output-dir <path>', 'rolling state and batch plan directory')
+  .action((options: { outputDir?: string }) => {
+    process.exitCode = runRollingFinalCheckCommand({
+      repoPath: process.cwd(),
+      outputDir: options.outputDir
+        ? resolveCliPath(options.outputDir)
+        : undefined,
+    });
+  });
+
+program
+  .command('mobile-drift-check')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
+  .option('--batch <id>', 'upstream batch id')
+  .option('--plan-dir <path>', 'persisted batch plan directory')
+  .action((options: { manifest: string; batch?: string; planDir?: string }) => {
+    const batch = options.batch ?? process.env.BATCH;
+    const auditInput = batch
+      ? {
+          manifest: loadManifest(resolveCliPath(options.manifest)),
+          auditScope: readPersistedBatchAuditScope(
+            process.cwd(),
+            options.planDir ? resolveCliPath(options.planDir) : undefined,
+            batch,
+          ),
+        }
+      : (() => {
+          const context = buildPreflightContext(options.manifest);
+          return {
+            manifest: context.manifest,
+            auditScope: {
+              batch: undefined,
+              upstreamTouchedFiles: context.upstreamRange.files,
+            },
+          };
+        })();
     const result = runMobileDriftAudit(
-      context.manifest,
-      auditScope.upstreamTouchedFiles,
+      auditInput.manifest,
+      auditInput.auditScope.upstreamTouchedFiles,
       repoRoot(),
     );
-    console.log(`${result.ok ? "OK" : "ISSUE"}: ${result.title}`);
+    console.log(`${result.ok ? 'OK' : 'ISSUE'}: ${result.title}`);
     for (const detail of result.details) console.log(`- ${detail}`);
     process.exitCode = result.ok ? 0 : 1;
   });
 
 program
-  .command("ci-invariants-check")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
+  .command('ci-invariants-check')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
   .action((options: { manifest: string }) => {
     const results = runCiInvariantAudits(
       loadManifest(resolveCliPath(options.manifest)),
       repoRoot(),
     );
     for (const result of results) {
-      console.log(`${result.ok ? "OK" : "ISSUE"}: ${result.title}`);
+      console.log(`${result.ok ? 'OK' : 'ISSUE'}: ${result.title}`);
       for (const detail of result.details) console.log(`- ${detail}`);
     }
     process.exitCode = results.every((result) => result.ok) ? 0 : 1;
   });
 
 program
-  .command("fork-patches-check")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
+  .command('fork-patches-check')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
   .action((options: { manifest: string }) => {
     const results = runPatchAudits(
       loadManifest(resolveCliPath(options.manifest)),
       repoRoot(),
     );
     for (const result of results) {
-      console.log(`${result.ok ? "OK" : "ISSUE"}: ${result.title}`);
+      console.log(`${result.ok ? 'OK' : 'ISSUE'}: ${result.title}`);
       for (const detail of result.details) console.log(`- ${detail}`);
     }
     process.exitCode = results.every((result) => result.ok) ? 0 : 1;
   });
 
 program
-  .command("postrebase-audit")
-  .option("--manifest <path>", "ownership manifest path", defaultManifestPath)
-  .option("--batch <id>", "upstream batch id")
-  .option("--output-dir <path>", "post-rebase audit output directory")
+  .command('postrebase-audit')
+  .option('--manifest <path>', 'ownership manifest path', defaultManifestPath)
+  .option('--batch <id>', 'upstream batch id')
+  .option('--plan-dir <path>', 'persisted batch plan directory')
+  .option('--output-dir <path>', 'post-rebase audit output directory')
   .action(
-    (options: { manifest: string; batch?: string; outputDir?: string }) => {
+    (options: {
+      manifest: string;
+      batch?: string;
+      planDir?: string;
+      outputDir?: string;
+    }) => {
       const batch = options.batch ?? process.env.BATCH;
-      const context = buildPreflightContext(options.manifest);
-      const auditScope = selectBatchAuditScope({
-        batch,
-        batchPlan: context.batchPlan,
-        upstreamTouchedFiles: context.upstreamRange.files,
-      });
+      const auditInput = batch
+        ? {
+            manifest: loadManifest(resolveCliPath(options.manifest)),
+            auditScope: readPersistedBatchAuditScope(
+              process.cwd(),
+              options.planDir ? resolveCliPath(options.planDir) : undefined,
+              batch,
+            ),
+          }
+        : (() => {
+            const context = buildPreflightContext(options.manifest);
+            return {
+              manifest: context.manifest,
+              auditScope: {
+                batch: undefined,
+                upstreamTouchedFiles: context.upstreamRange.files,
+              },
+            };
+          })();
       const results = runPostRebaseAudits(
-        context.manifest,
-        auditScope.upstreamTouchedFiles,
+        auditInput.manifest,
+        auditInput.auditScope.upstreamTouchedFiles,
         repoRoot(),
       );
       for (const result of results) {
-        console.log(`${result.ok ? "OK" : "ISSUE"}: ${result.title}`);
+        console.log(`${result.ok ? 'OK' : 'ISSUE'}: ${result.title}`);
         for (const detail of result.details) console.log(`- ${detail}`);
       }
       if (batch || options.outputDir) {
         const outputDir = options.outputDir
           ? resolveCliPath(options.outputDir)
           : path.join(
-              getGitPath(process.cwd(), "upstream-preflight"),
-              "batches",
+              getGitPath(process.cwd(), 'upstream-preflight'),
+              'batches',
             );
         const { markdownPath } = writePostRebaseAuditReport(outputDir, {
           date: new Date().toISOString().slice(0, 10),
-          batch: auditScope.batch,
+          batch: auditInput.auditScope.batch,
           results,
-          upstreamTouchedFiles: auditScope.upstreamTouchedFiles,
+          upstreamTouchedFiles: auditInput.auditScope.upstreamTouchedFiles,
         });
         console.log(`Wrote post-rebase audit report: ${markdownPath}`);
       }

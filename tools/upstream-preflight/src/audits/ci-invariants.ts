@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
-import micromatch from "micromatch";
-import type { AuditResult, CiInvariant, Manifest } from "../types";
+import fs from 'node:fs';
+import path from 'node:path';
+import micromatch from 'micromatch';
+import type { AuditResult, CiInvariant, Manifest } from '../types';
 
 export type TextFile = { path: string; text: string };
 
@@ -39,14 +39,14 @@ export function runCiInvariantAudits(
   manifest: Manifest,
   cwd = process.cwd(),
 ): AuditResult[] {
-  const workflowRoot = path.join(cwd, ".github/workflows");
+  const workflowRoot = path.join(cwd, '.github/workflows');
   const files = fs.existsSync(workflowRoot)
     ? fs
         .readdirSync(workflowRoot)
-        .filter((file) => file.endsWith(".yml") || file.endsWith(".yaml"))
+        .filter((file) => file.endsWith('.yml') || file.endsWith('.yaml'))
         .map((file) => ({
           path: `.github/workflows/${file}`,
-          text: fs.readFileSync(path.join(workflowRoot, file), "utf8"),
+          text: fs.readFileSync(path.join(workflowRoot, file), 'utf8'),
         }))
     : [];
 

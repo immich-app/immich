@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import type { AuditResult, Manifest } from "../types";
+import fs from 'node:fs';
+import path from 'node:path';
+import type { AuditResult, Manifest } from '../types';
 
 export type MobileDriftInput = {
   galleryOwnedVersions: number[];
@@ -35,7 +35,7 @@ export function analyzeMobileDriftFiles(input: MobileDriftInput): AuditResult {
   }
 
   if (schemaVersion === undefined)
-    pushDetail("Could not read mobile schemaVersion");
+    pushDetail('Could not read mobile schemaVersion');
   if (highestSnapshot !== undefined && schemaVersion !== highestSnapshot) {
     pushDetail(
       `schemaVersion ${String(schemaVersion)} does not match highest snapshot v${highestSnapshot}`,
@@ -101,16 +101,16 @@ export function analyzeMobileDriftFiles(input: MobileDriftInput): AuditResult {
         ? input.currentDbRepository.slice(
             callbackStart,
             input.currentDbRepository.indexOf(
-              "from",
+              'from',
               callbackStart + callbackName.length,
             ) >= 0
               ? input.currentDbRepository.indexOf(
-                  "from",
+                  'from',
                   callbackStart + callbackName.length,
                 )
               : undefined,
           )
-        : "";
+        : '';
     for (const marker of expectedMarkers) {
       if (!callbackText.includes(marker)) {
         pushDetail(`${callbackName} is missing Gallery marker ${marker}`);
@@ -120,12 +120,12 @@ export function analyzeMobileDriftFiles(input: MobileDriftInput): AuditResult {
 
   return {
     ok: details.length === 0,
-    title: "Mobile Drift Migration Check",
+    title: 'Mobile Drift Migration Check',
     details:
       details.length > 0
         ? details
         : [
-            "Mobile Drift schemaVersion, snapshots, and Gallery callbacks are consistent",
+            'Mobile Drift schemaVersion, snapshots, and Gallery callbacks are consistent',
           ],
   };
 }
@@ -149,16 +149,16 @@ export function runMobileDriftAudit(
   );
   const repositoryPath = path.join(
     cwd,
-    "mobile/lib/infrastructure/repositories/db.repository.dart",
+    'mobile/lib/infrastructure/repositories/db.repository.dart',
   );
-  const snapshotsPath = path.join(cwd, "mobile/drift_schemas/main");
+  const snapshotsPath = path.join(cwd, 'mobile/drift_schemas/main');
 
   return analyzeMobileDriftFiles({
     galleryOwnedVersions: [...new Set(ownedVersions)],
     galleryVersionsShipped: shipped,
     currentDbRepository: fs.existsSync(repositoryPath)
-      ? fs.readFileSync(repositoryPath, "utf8")
-      : "",
+      ? fs.readFileSync(repositoryPath, 'utf8')
+      : '',
     currentSnapshots: fs.existsSync(snapshotsPath)
       ? fs.readdirSync(snapshotsPath)
       : [],
@@ -168,7 +168,7 @@ export function runMobileDriftAudit(
 }
 
 function countMigrationCallbacks(source: string, callbackName: string): number {
-  return [...source.matchAll(new RegExp(`\\b${callbackName}\\s*:`, "g"))]
+  return [...source.matchAll(new RegExp(`\\b${callbackName}\\s*:`, 'g'))]
     .length;
 }
 
@@ -176,5 +176,5 @@ function formatVersions(versions: number[]): string {
   const uniqueVersions = [...new Set(versions)].sort(
     (left, right) => left - right,
   );
-  return uniqueVersions.map((version) => `v${version}`).join("/");
+  return uniqueVersions.map((version) => `v${version}`).join('/');
 }

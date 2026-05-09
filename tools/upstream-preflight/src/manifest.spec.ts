@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { parseManifest } from "./manifest";
+import { describe, expect, it } from 'vitest';
+import { parseManifest } from './manifest';
 
 const validManifest = `
 version: 1
@@ -59,68 +59,68 @@ fork_surface:
     ci: [.github/workflows/gallery-*.yml]
 `;
 
-describe("parseManifest", () => {
-  it("loads all manifest sections", () => {
+describe('parseManifest', () => {
+  it('loads all manifest sections', () => {
     const manifest = parseManifest(validManifest);
 
-    expect(manifest.features["shared-spaces"].aliases).toEqual([
-      "mobile-shared-space-drift-sync",
+    expect(manifest.features['shared-spaces'].aliases).toEqual([
+      'mobile-shared-space-drift-sync',
     ]);
     expect(
-      manifest.features["shared-spaces"].mobile?.drift_versions?.owned,
+      manifest.features['shared-spaces'].mobile?.drift_versions?.owned,
     ).toEqual([23, 24]);
     expect(
-      manifest.features["shared-spaces"].database?.expected_migrations,
+      manifest.features['shared-spaces'].database?.expected_migrations,
     ).toEqual([
-      "server/src/schema/migrations-gallery/1772230000000-CreateStorageMigrationLogTable.ts",
+      'server/src/schema/migrations-gallery/1772230000000-CreateStorageMigrationLogTable.ts',
     ]);
-    expect(manifest.checks?.["mobile-drift-rebase-check"].command).toBe(
-      "make mobile-drift-rebase-check",
+    expect(manifest.checks?.['mobile-drift-rebase-check'].command).toBe(
+      'make mobile-drift-rebase-check',
     );
-    expect(manifest.checks?.["mobile-drift-rebase-check"].cost).toBe("cheap");
-    expect(manifest.ci_invariants?.[0].id).toBe("no-push-o-matic");
+    expect(manifest.checks?.['mobile-drift-rebase-check'].cost).toBe('cheap');
+    expect(manifest.ci_invariants?.[0].id).toBe('no-push-o-matic');
     expect(manifest.patches?.[0].expected_patch).toBe(
-      "patches/@immich__ui@0.76.2.patch",
+      'patches/@immich__ui@0.76.2.patch',
     );
-    expect(manifest.risk_patterns?.[0].id).toBe("breaking-refactor");
-    expect(manifest.coverage_ignore).toEqual(["docs/superpowers/**"]);
+    expect(manifest.risk_patterns?.[0].id).toBe('breaking-refactor');
+    expect(manifest.coverage_ignore).toEqual(['docs/superpowers/**']);
     expect(manifest.fork_surface?.preferred_namespaces?.server).toEqual([
-      "server/src/gallery/**",
+      'server/src/gallery/**',
     ]);
   });
 
-  it("throws a useful error for unsupported versions", () => {
-    expect(() => parseManifest("version: 2")).toThrow(
-      "Unsupported ownership manifest version: 2",
+  it('throws a useful error for unsupported versions', () => {
+    expect(() => parseManifest('version: 2')).toThrow(
+      'Unsupported ownership manifest version: 2',
     );
   });
 
-  it("rejects invalid enum values", () => {
+  it('rejects invalid enum values', () => {
     expect(() =>
-      parseManifest(validManifest.replace("risk: high", "risk: severe")),
-    ).toThrow("Invalid risk for feature shared-spaces: severe");
-    expect(() =>
-      parseManifest(
-        validManifest.replace(
-          "domains: [server, web, mobile, database, e2e]",
-          "domains: [api]",
-        ),
-      ),
-    ).toThrow("Invalid domain for feature shared-spaces: api");
-  });
-
-  it("rejects duplicate aliases", () => {
+      parseManifest(validManifest.replace('risk: high', 'risk: severe')),
+    ).toThrow('Invalid risk for feature shared-spaces: severe');
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "aliases: [mobile-shared-space-drift-sync]",
-          "aliases: [shared-spaces]",
+          'domains: [server, web, mobile, database, e2e]',
+          'domains: [api]',
         ),
       ),
-    ).toThrow("Duplicate feature alias: shared-spaces");
+    ).toThrow('Invalid domain for feature shared-spaces: api');
   });
 
-  it("supports explicit, defaulted, and missing check cost metadata", () => {
+  it('rejects duplicate aliases', () => {
+    expect(() =>
+      parseManifest(
+        validManifest.replace(
+          'aliases: [mobile-shared-space-drift-sync]',
+          'aliases: [shared-spaces]',
+        ),
+      ),
+    ).toThrow('Duplicate feature alias: shared-spaces');
+  });
+
+  it('supports explicit, defaulted, and missing check cost metadata', () => {
     const manifest = parseManifest(`
 version: 1
 metadata:
@@ -149,95 +149,95 @@ checks:
     phase: post-batch
 `);
 
-    expect(manifest.checks?.["cheap-check"].cost).toBe("cheap");
-    expect(manifest.checks?.["expensive-check"].cost).toBe("expensive");
-    expect(manifest.checks?.["default-check"].cost).toBe("expensive");
-    expect(manifest.features["shared-spaces"].required_checks).toEqual([
-      "missing-manifest-check",
+    expect(manifest.checks?.['cheap-check'].cost).toBe('cheap');
+    expect(manifest.checks?.['expensive-check'].cost).toBe('expensive');
+    expect(manifest.checks?.['default-check'].cost).toBe('expensive');
+    expect(manifest.features['shared-spaces'].required_checks).toEqual([
+      'missing-manifest-check',
     ]);
   });
 
-  it("rejects invalid check cost metadata", () => {
+  it('rejects invalid check cost metadata', () => {
     expect(() =>
-      parseManifest(validManifest.replace("cost: cheap", "cost: medium")),
-    ).toThrow("Invalid cost for check mobile-drift-rebase-check: medium");
+      parseManifest(validManifest.replace('cost: cheap', 'cost: medium')),
+    ).toThrow('Invalid cost for check mobile-drift-rebase-check: medium');
   });
 
-  it("allows missing fork surface metadata", () => {
+  it('allows missing fork surface metadata', () => {
     const manifest = parseManifest(
-      validManifest.replace(/fork_surface:\n(?:  .+\n)+/, ""),
+      validManifest.replace(/fork_surface:\n(?:  .+\n)+/, ''),
     );
 
     expect(manifest.fork_surface).toBeUndefined();
   });
 
-  it("rejects invalid fork surface namespace entries", () => {
+  it('rejects invalid fork surface namespace entries', () => {
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "server: [server/src/gallery/**]",
-          "api: [api/**]",
+          'server: [server/src/gallery/**]',
+          'api: [api/**]',
         ),
       ),
-    ).toThrow("Invalid fork_surface preferred namespace domain: api");
+    ).toThrow('Invalid fork_surface preferred namespace domain: api');
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "server: [server/src/gallery/**]",
+          'server: [server/src/gallery/**]',
           "server: ['']",
         ),
       ),
-    ).toThrow("fork_surface preferred namespace server contains a blank glob");
+    ).toThrow('fork_surface preferred namespace server contains a blank glob');
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "server: [server/src/gallery/**]",
-          "server: [/server/src/gallery/**]",
+          'server: [server/src/gallery/**]',
+          'server: [/server/src/gallery/**]',
         ),
       ),
     ).toThrow(
-      "fork_surface preferred namespace server contains an unsafe path: /server/src/gallery/**",
+      'fork_surface preferred namespace server contains an unsafe path: /server/src/gallery/**',
     );
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "server: [server/src/gallery/**]",
-          "server: [../server/src/gallery/**]",
+          'server: [server/src/gallery/**]',
+          'server: [../server/src/gallery/**]',
         ),
       ),
     ).toThrow(
-      "fork_surface preferred namespace server contains an unsafe path: ../server/src/gallery/**",
+      'fork_surface preferred namespace server contains an unsafe path: ../server/src/gallery/**',
     );
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "server: [server/src/gallery/**]",
-          "server: [server/../gallery/**]",
+          'server: [server/src/gallery/**]',
+          'server: [server/../gallery/**]',
         ),
       ),
     ).toThrow(
-      "fork_surface preferred namespace server contains an unsafe path: server/../gallery/**",
+      'fork_surface preferred namespace server contains an unsafe path: server/../gallery/**',
     );
   });
 
-  it("rejects invalid patch and migration entries", () => {
+  it('rejects invalid patch and migration entries', () => {
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "expected_patch: patches/@immich__ui@0.76.2.patch",
-          "expected_patch: 12",
+          'expected_patch: patches/@immich__ui@0.76.2.patch',
+          'expected_patch: 12',
         ),
       ),
-    ).toThrow("Patch immich-ui-command-patch must define expected_patch");
+    ).toThrow('Patch immich-ui-command-patch must define expected_patch');
     expect(() =>
       parseManifest(
         validManifest.replace(
-          "1772230000000-CreateStorageMigrationLogTable.ts",
-          "1772230000000-CreateStorageMigrationLogTable.sql",
+          '1772230000000-CreateStorageMigrationLogTable.ts',
+          '1772230000000-CreateStorageMigrationLogTable.sql',
         ),
       ),
     ).toThrow(
-      "Expected migration for feature shared-spaces must be a TypeScript file",
+      'Expected migration for feature shared-spaces must be a TypeScript file',
     );
   });
 });
