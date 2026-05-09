@@ -19,7 +19,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import PeoplePage from './+page.svelte';
 
-const { gotoMock, pageStore } = vi.hoisted(() => {
+const { gotoMock, pageStore, featureFlagsMock } = vi.hoisted(() => {
   let pageValue = {
     url: new URL('http://localhost/people'),
     route: { id: '/(user)/people' },
@@ -36,11 +36,15 @@ const { gotoMock, pageStore } = vi.hoisted(() => {
         return () => {};
       },
     },
+    featureFlagsMock: { value: { peopleStatistics: true } },
   };
 });
 
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
 vi.mock('$app/stores', () => ({ page: pageStore }));
+vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
+  featureFlagsManager: featureFlagsMock,
+}));
 
 vi.mock('@immich/ui', async (importOriginal) => {
   const original = await importOriginal<typeof import('@immich/ui')>();
@@ -138,6 +142,7 @@ describe('Global people page', () => {
     gotoMock.mockResolvedValue(undefined);
     sdkMock.searchPerson.mockResolvedValue([]);
     sdkMock.getPeopleFaceStatistics.mockResolvedValue(makeFaceStatistics());
+    featureFlagsMock.value.peopleStatistics = true;
     sdkMock.updatePerson.mockImplementation(({ id, personUpdateDto }) =>
       Promise.resolve(
         makePerson({
@@ -345,6 +350,21 @@ describe('Global people page', () => {
     renderPage([], { total: 0, hidden: 0, detectedFaceCount: 0 });
 
     expect(screen.queryByRole('button', { name: 'view_face_statistics_details' })).not.toBeInTheDocument();
+  });
+
+  it('omits the face count from the header when the peopleStatistics feature flag is disabled', () => {
+    featureFlagsMock.value.peopleStatistics = false;
+    renderPage([makePerson({ id: 'p1' })], { total: 12, hidden: 2, detectedFaceCount: 2901 });
+
+    expect(screen.getByTestId('user-page-layout')).toHaveAttribute('data-description', '(10)');
+  });
+
+  it('hides the face statistics details button when the peopleStatistics feature flag is disabled', () => {
+    featureFlagsMock.value.peopleStatistics = false;
+    renderPage([makePerson({ id: 'p1' })], { total: 12, hidden: 2, detectedFaceCount: 2901 });
+
+    expect(screen.queryByRole('button', { name: 'view_face_statistics_details' })).not.toBeInTheDocument();
+    expect(sdkMock.getPeopleFaceStatistics).not.toHaveBeenCalled();
   });
 
   it('saves global person names through the shared editable footer', async () => {

@@ -30,6 +30,41 @@ It can be found from the app bar when you access the detail view of a person.
 
 <img src={require('./img/facial-recognition-4.webp').default} title='Facial Recognition 4' />
 
+## Face Statistics
+
+Gallery can surface face count totals on the People pages so you can see how face recognition is progressing across your library at a glance.
+
+When enabled, you will see:
+
+- A face count next to the heading on the People page (e.g. `(124) · 8,432 faces`) and on each shared space's People page.
+- A face count next to the assets count on each person's detail page.
+- A small info icon next to the People page heading. Clicking it opens a panel breaking the totals down further:
+  - **Detected faces** — every face the face detection model has found in your library.
+  - **Assigned to visible people** — faces that have been clustered into people you can browse.
+  - **Named visible people** — visible people that you have given a name.
+  - **Assigned to hidden people** — faces clustered into people you have hidden from the People list.
+  - **Unassigned** — faces that haven't been linked to a person yet (they're either still being processed, below the _Minimum Recognized Faces_ threshold, or considered outliers).
+
+These numbers can be useful for confirming that face detection has finished running, deciding when to re-run facial recognition after tuning the settings, or understanding why a particular face hasn't been clustered yet.
+
+### Enabling face statistics
+
+Face statistics are **off by default**. To turn them on, set the `IMMICH_PEOPLE_STATISTICS_ENABLED` environment variable on the Gallery server to `true` and restart the container.
+
+```yaml
+# docker-compose.yml
+services:
+  immich-server:
+    environment:
+      IMMICH_PEOPLE_STATISTICS_ENABLED: 'true'
+```
+
+The setting is a UI toggle only — it controls whether the counts and the info panel are rendered. Turning it off does not delete any data and you can flip it back on at any time.
+
+:::tip
+If you find the totals distracting (for example on a casual family library where the exact face count isn't useful), you can leave the variable unset. The People pages will fall back to just showing the people count.
+:::
+
 ## How Face Detection Works
 
 Face detection sends the generated preview image to the machine learning service for processing. The service checks if it has the relevant model downloaded and downloads it if not. The image is decoded, pre-processed and passed to the face detection model (with hardware acceleration if configured). The bounding boxes and scores outputted from this model are used to crop and preprocess the image once again to be passed to a facial recognition model (also accelerated if configured). The embeddings from the recognition model, together with the bounding boxes and scores from the face detection model, are then sent back to the server to be added to the database. The embeddings in particular are indexed so they can be searched quickly during facial recognition clustering.

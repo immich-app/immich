@@ -32,6 +32,7 @@ export interface EnvData {
   configFile?: string;
   logLevel?: LogLevel;
   logFormat?: LogFormat;
+  peopleStatistics: boolean;
 
   buildMetadata: {
     build?: string;
@@ -275,6 +276,7 @@ const getEnv = (): EnvData => {
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,
     logFormat: dto.IMMICH_LOG_FORMAT || LogFormat.Console,
+    peopleStatistics: dto.IMMICH_PEOPLE_STATISTICS_ENABLED ?? false,
 
     buildMetadata: {
       build: dto.IMMICH_BUILD,

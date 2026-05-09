@@ -118,6 +118,8 @@ const envData: EnvData = {
   },
 
   noColor: false,
+
+  peopleStatistics: false,
 };
 
 type MockEnvOverrides = Omit<Partial<EnvData>, 'storage'> & {

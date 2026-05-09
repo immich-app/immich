@@ -77,6 +77,7 @@ export const EnvSchema = z
     IMMICH_DEMO_MODE: stringBool.optional(),
     IMMICH_DEMO_USER_EMAIL: z.string().optional(),
     IMMICH_DEMO_USER_PASSWORD: z.string().optional(),
+    IMMICH_PEOPLE_STATISTICS_ENABLED: stringBool.optional(),
     IMMICH_TRUSTED_PROXIES: trustedProxiesSchema,
     IMMICH_WORKERS_INCLUDE: z.string().optional(),
     IMMICH_WORKERS_EXCLUDE: z.string().optional(),

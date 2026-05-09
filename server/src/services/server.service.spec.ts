@@ -153,8 +153,15 @@ describe(ServerService.name, () => {
         configFile: false,
         trash: true,
         email: false,
+        peopleStatistics: false,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+
+    it('should report peopleStatistics enabled when IMMICH_PEOPLE_STATISTICS_ENABLED is set', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ peopleStatistics: true }));
+      const features = await sut.getFeatures();
+      expect(features.peopleStatistics).toBe(true);
     });
 
     // Regression guard: getFeatures is called on every web-app page load; must

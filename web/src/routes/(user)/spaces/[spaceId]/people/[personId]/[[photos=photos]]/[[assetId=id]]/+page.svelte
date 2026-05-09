@@ -19,6 +19,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
@@ -545,9 +546,11 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">
               {$t('assets_count', { values: { count: statistics.assets } })}
             </p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              {$t('faces_count', { values: { count: statistics.faces } })}
-            </p>
+            {#if featureFlagsManager.value.peopleStatistics}
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {$t('faces_count', { values: { count: statistics.faces } })}
+              </p>
+            {/if}
             {#if person.birthDate}
               <p class="text-sm text-gray-500 dark:text-gray-400">
                 {$t('person_birthdate', {

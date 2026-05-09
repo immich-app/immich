@@ -28,6 +28,7 @@
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
@@ -491,9 +492,11 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      {$t('faces_count', { values: { count: data.statistics.faces } })}
-                    </p>
+                    {#if featureFlagsManager.value.peopleStatistics}
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        {$t('faces_count', { values: { count: data.statistics.faces } })}
+                      </p>
+                    {/if}
                     {#if person.birthDate}
                       <p class="text-sm text-gray-500 dark:text-gray-400">
                         {$t('person_birthdate', {

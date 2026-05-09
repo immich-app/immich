@@ -12,6 +12,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { createUrl, handlePromiseError } from '$lib/utils';
@@ -75,6 +76,7 @@
     searchName.trim() || ($page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE) ?? '').trim(),
   );
   const activeStatisticsSearchName = $derived(activeSearchFilterName || null);
+  const peopleStatisticsEnabled = $derived(featureFlagsManager.value.peopleStatistics);
   const headerDescription = $derived(
     peopleStatistics
       ? formatPeopleHeaderDescription({
@@ -83,12 +85,16 @@
           locale: $locale,
           faceSingular: $t('face'),
           facePlural: $t('faces'),
-          showZeroPeople: !!searchName.trim() || peopleStatistics.detectedFaceCount > 0,
+          includeFaceCount: peopleStatisticsEnabled,
+          showZeroPeople: !!searchName.trim() || (peopleStatisticsEnabled && peopleStatistics.detectedFaceCount > 0),
         })
       : undefined,
   );
   let showFaceStatisticsInfo = $derived(
-    !!peopleStatistics && !!headerDescription && statisticsSearchName === activeStatisticsSearchName,
+    peopleStatisticsEnabled &&
+      !!peopleStatistics &&
+      !!headerDescription &&
+      statisticsSearchName === activeStatisticsSearchName,
   );
   let spaceFaceStatisticsCacheKey = $derived(
     `user:${authManager.user.id}:space:${space.id}:people:face-statistics:name=${encodeURIComponent(activeSearchFilterName)}`,

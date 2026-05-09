@@ -18,7 +18,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import SpacePeoplePage from '../../../routes/(user)/spaces/[spaceId]/people/+page.svelte';
 
-const { gotoMock, pageStore } = vi.hoisted(() => {
+const { gotoMock, pageStore, featureFlagsMock } = vi.hoisted(() => {
   let pageValue = {
     url: new URL('http://localhost/spaces/space-1/people'),
     route: { id: '/(user)/spaces/[spaceId]/people' },
@@ -35,11 +35,15 @@ const { gotoMock, pageStore } = vi.hoisted(() => {
         return () => {};
       },
     },
+    featureFlagsMock: { value: { peopleStatistics: true } },
   };
 });
 
 vi.mock('$app/navigation', () => ({ goto: gotoMock }));
 vi.mock('$app/stores', () => ({ page: pageStore }));
+vi.mock('$lib/managers/feature-flags-manager.svelte', () => ({
+  featureFlagsManager: featureFlagsMock,
+}));
 
 vi.mock('@immich/ui', async (importOriginal) => {
   const original = await importOriginal<typeof import('@immich/ui')>();
@@ -159,6 +163,7 @@ describe('Spaces people page', () => {
     sdkMock.getSpacePeople.mockResolvedValue([]);
     sdkMock.getSpacePeopleStatistics.mockResolvedValue({ total: 0, hidden: 0, detectedFaceCount: 0 });
     sdkMock.getSpacePeopleFaceStatistics.mockResolvedValue(makeFaceStatistics());
+    featureFlagsMock.value.peopleStatistics = true;
   });
 
   it('shows the visible person count and detected face count next to the heading', () => {
@@ -553,6 +558,27 @@ describe('Spaces people page', () => {
     });
 
     expect(screen.queryByRole('button', { name: 'view_face_statistics_details' })).not.toBeInTheDocument();
+  });
+
+  it('omits the face count from the header when the peopleStatistics feature flag is disabled', () => {
+    featureFlagsMock.value.peopleStatistics = false;
+    renderPage({
+      people: [makePerson({ id: 'p1' })],
+      peopleStatistics: { total: 12, hidden: 2, detectedFaceCount: 1980 },
+    });
+
+    expect(screen.getByTestId('user-page-layout')).toHaveAttribute('data-description', '(10)');
+  });
+
+  it('hides the face statistics details button when the peopleStatistics feature flag is disabled', () => {
+    featureFlagsMock.value.peopleStatistics = false;
+    renderPage({
+      people: [makePerson({ id: 'p1' })],
+      peopleStatistics: { total: 12, hidden: 2, detectedFaceCount: 1980 },
+    });
+
+    expect(screen.queryByRole('button', { name: 'view_face_statistics_details' })).not.toBeInTheDocument();
+    expect(sdkMock.getSpacePeopleFaceStatistics).not.toHaveBeenCalled();
   });
 
   it('searches people within the current space and updates the heading count', async () => {
