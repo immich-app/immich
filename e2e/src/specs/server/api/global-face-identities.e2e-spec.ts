@@ -46,19 +46,29 @@ const setupGlobalFaceIdentityE2E = async (): Promise<GlobalFaceIdentityFixture> 
     utils.createPerson(userA.accessToken, { name: 'Alice Source', birthDate: '1990-01-01' }),
     utils.createPerson(userB.accessToken, { name: 'Space 2 Private Name', birthDate: '1985-05-05' }),
   ]);
-  const [assetA, assetB] = (await Promise.all([
-    utils.createAsset(userA.accessToken),
-    utils.createAsset(userB.accessToken),
-  ])) as [AssetMediaResponseDto, AssetMediaResponseDto];
+  const [assetsA, assetsB] = (await Promise.all([
+    Promise.all(Array.from({ length: 3 }, () => utils.createAsset(userA.accessToken))),
+    Promise.all(Array.from({ length: 3 }, () => utils.createAsset(userB.accessToken))),
+  ])) as [AssetMediaResponseDto[], AssetMediaResponseDto[]];
   await Promise.all([
-    utils.addSpaceAssets(userA.accessToken, space1.id, [assetA.id]),
-    utils.addSpaceAssets(userB.accessToken, space2.id, [assetB.id]),
+    utils.addSpaceAssets(
+      userA.accessToken,
+      space1.id,
+      assetsA.map((asset) => asset.id),
+    ),
+    utils.addSpaceAssets(
+      userB.accessToken,
+      space2.id,
+      assetsB.map((asset) => asset.id),
+    ),
   ]);
 
-  const [faceA, faceB] = await Promise.all([
-    utils.createFace({ assetId: assetA.id, personId: personA.id }),
-    utils.createFace({ assetId: assetB.id, personId: personB.id }),
+  const [facesA, facesB] = await Promise.all([
+    Promise.all(assetsA.map((asset) => utils.createFace({ assetId: asset.id, personId: personA.id }))),
+    Promise.all(assetsB.map((asset) => utils.createFace({ assetId: asset.id, personId: personB.id }))),
   ]);
+  const [faceA] = facesA;
+  const [faceB] = facesB;
 
   await db.query('BEGIN');
   try {
@@ -74,30 +84,32 @@ const setupGlobalFaceIdentityE2E = async (): Promise<GlobalFaceIdentityFixture> 
     ]);
     await db.query(
       `INSERT INTO "face_identity_face" ("assetFaceId", "identityId", "source")
-       VALUES ($1, $3, 'manual'), ($2, $3, 'manual')
+       SELECT unnest($1::uuid[]), $2, 'manual'
        ON CONFLICT ("assetFaceId") DO UPDATE SET
          "identityId" = EXCLUDED."identityId",
          "source" = EXCLUDED."source"`,
-      [faceA, faceB, faceIdentityId],
+      [[...facesA, ...facesB], faceIdentityId],
     );
     const space1Person = await db.query(
       `INSERT INTO "shared_space_person"
          ("spaceId", name, "birthDate", "isHidden", "faceCount", "assetCount", "representativeFaceId", "identityId", "type")
-       VALUES ($1, 'Alice Source', '1990-01-01', false, 1, 1, $2, $3, 'person')
+       VALUES ($1, 'Alice Source', '1990-01-01', false, 3, 3, $2, $3, 'person')
        RETURNING id`,
       [space1.id, faceA, faceIdentityId],
     );
     const space2Person = await db.query(
       `INSERT INTO "shared_space_person"
          ("spaceId", name, "birthDate", "isHidden", "faceCount", "assetCount", "representativeFaceId", "identityId", "type")
-       VALUES ($1, 'Space 2 Private Name', '1985-05-05', false, 1, 1, $2, $3, 'person')
+       VALUES ($1, 'Space 2 Private Name', '1985-05-05', false, 3, 3, $2, $3, 'person')
        RETURNING id`,
       [space2.id, faceB, faceIdentityId],
     );
     await db.query(
       `INSERT INTO "shared_space_person_face" ("personId", "assetFaceId")
-       VALUES ($1, $2), ($3, $4)`,
-      [space1Person.rows[0].id, faceA, space2Person.rows[0].id, faceB],
+       SELECT $1::uuid, unnest($2::uuid[])
+       UNION ALL
+       SELECT $3::uuid, unnest($4::uuid[])`,
+      [space1Person.rows[0].id, facesA, space2Person.rows[0].id, facesB],
     );
     await db.query('COMMIT');
 

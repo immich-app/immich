@@ -308,9 +308,12 @@ export class JobRepository {
         return { jobId: JobName.FacialRecognitionQueueAll, removeOnComplete: true };
       }
       case JobName.FaceIdentityBackfill: {
-        const data = item.data as { stage?: string; cursor?: string };
+        const data = item.data as { stage?: string; cursor?: string; continuationId?: string };
         if (data.cursor) {
           return { jobId: `face-identity-backfill/${data.stage ?? 'person'}/${data.cursor}`, removeOnFail: true };
+        }
+        if (data.continuationId) {
+          return { jobId: `face-identity-backfill/continuation/${data.continuationId}`, removeOnFail: true };
         }
         return { jobId: 'face-identity-backfill/root', removeOnFail: true };
       }
@@ -321,8 +324,12 @@ export class JobRepository {
         return { jobId: `bulk-add-${item.data.spaceId}-${item.data.userId}` };
       }
       case JobName.SharedSpaceFaceMatch: {
+        const prefix =
+          item.data.source === 'identity-backfill'
+            ? 'shared-space-face-match/identity-backfill'
+            : 'shared-space-face-match';
         return {
-          jobId: `shared-space-face-match/${item.data.spaceId}/${item.data.assetId}`,
+          jobId: `${prefix}/${item.data.spaceId}/${item.data.assetId}`,
           removeOnComplete: true,
         };
       }

@@ -1504,13 +1504,19 @@ export class SharedSpaceService extends BaseService {
   }
 
   @OnJob({ name: JobName.SharedSpaceFaceMatch, queue: QueueName.FacialRecognition })
-  async handleSharedSpaceFaceMatch({ spaceId, assetId }: JobOf<JobName.SharedSpaceFaceMatch>): Promise<JobStatus> {
+  async handleSharedSpaceFaceMatch({
+    spaceId,
+    assetId,
+    source,
+  }: JobOf<JobName.SharedSpaceFaceMatch>): Promise<JobStatus> {
     const space = await this.sharedSpaceRepository.getById(spaceId);
     if (!space || !space.faceRecognitionEnabled) {
       return JobStatus.Skipped;
     }
 
-    const affectedPersonIds = await this.processSpaceFaceMatch(spaceId, assetId);
+    const affectedPersonIds = await this.processSpaceFaceMatch(spaceId, assetId, {
+      refreshExactMetadata: source === 'identity-backfill',
+    });
     for (const spacePersonId of affectedPersonIds) {
       await this.queueSpaceIdentityReconciliation({ spaceId, spacePersonId });
     }
@@ -1915,7 +1921,11 @@ export class SharedSpaceService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async processSpaceFaceMatch(spaceId: string, assetId: string): Promise<string[]> {
+  private async processSpaceFaceMatch(
+    spaceId: string,
+    assetId: string,
+    options: { refreshExactMetadata?: boolean } = {},
+  ): Promise<string[]> {
     const isAssetInSpace = await this.sharedSpaceRepository.isAssetInSpace(spaceId, assetId);
     if (!isAssetInSpace) {
       return [];
@@ -1966,6 +1976,9 @@ export class SharedSpaceService extends BaseService {
             type,
           })
         ) {
+          if (options.refreshExactMetadata) {
+            await this.inheritSpacePersonMetadata(spaceId, identitySpacePerson.id, face.identityId, assetAdderId);
+          }
           continue;
         }
 
@@ -2058,6 +2071,9 @@ export class SharedSpaceService extends BaseService {
             type: 'pet',
           })
         ) {
+          if (options.refreshExactMetadata) {
+            await this.inheritSpacePersonMetadata(spaceId, spacePerson.id, petFace.identityId, assetAdderId);
+          }
           continue;
         }
 

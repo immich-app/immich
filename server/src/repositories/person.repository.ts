@@ -493,73 +493,83 @@ export class PersonRepository {
     };
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getNumberOfPeople(userId: string) {
-    const zero = sql.lit(0);
-    return this.db
-      .selectFrom('person')
-      .where((eb) =>
-        eb.exists((eb) =>
-          eb
-            .selectFrom('asset_face')
-            .whereRef('asset_face.personId', '=', 'person.id')
-            .where('asset_face.deletedAt', 'is', null)
-            .where('asset_face.isVisible', '=', true)
-            .where((eb) =>
-              eb.exists((eb) =>
-                eb
-                  .selectFrom('asset')
-                  .whereRef('asset.id', '=', 'asset_face.assetId')
-                  .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-                  .where('asset.deletedAt', 'is', null),
-              ),
-            ),
-        ),
+  @GenerateSql({ params: [DummyValue.UUID, { minimumFaceCount: 3 }] })
+  async getNumberOfPeople(userId: string, options: PeopleFaceStatisticsOptions = {}) {
+    const minimumFaceCount = options.minimumFaceCount ?? 1;
+    const result = await sql<{ total: number; hidden: number }>`
+      WITH "eligible_people" AS (
+        SELECT
+          "person"."id",
+          "person"."isHidden"
+        FROM "person"
+        INNER JOIN "asset_face" ON "asset_face"."personId" = "person"."id"
+        INNER JOIN "asset" ON "asset"."id" = "asset_face"."assetId"
+        WHERE "person"."ownerId" = ${userId}
+          AND "asset"."visibility" = ${AssetVisibility.Timeline}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset_face"."deletedAt" IS NULL
+          AND "asset_face"."isVisible" = true
+        GROUP BY "person"."id"
+        HAVING NULLIF(BTRIM("person"."name"), '') IS NOT NULL
+          OR COUNT("asset_face"."assetId") >= ${minimumFaceCount}
       )
-      .where('person.ownerId', '=', userId)
-      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
-      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
-      .executeTakeFirstOrThrow();
+      SELECT
+        COUNT(*)::int AS "total",
+        COUNT(*) FILTER (WHERE "isHidden" = true)::int AS "hidden"
+      FROM "eligible_people"
+    `.execute(this.db);
+
+    const row = result.rows[0];
+    return {
+      total: Number(row?.total ?? 0),
+      hidden: Number(row?.hidden ?? 0),
+    };
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getPeopleOverviewStatistics(userId: string): Promise<PeopleOverviewStatistics> {
-    const people = await this.db
-      .selectFrom('person')
-      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
-      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
-      .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
-      .select((eb) =>
-        eb.fn
-          .count(eb.fn('distinct', ['person.id']))
-          .filterWhere('person.isHidden', '=', true)
-          .as('hidden'),
+  @GenerateSql({ params: [DummyValue.UUID, { minimumFaceCount: 3 }] })
+  async getPeopleOverviewStatistics(
+    userId: string,
+    options: PeopleFaceStatisticsOptions = {},
+  ): Promise<PeopleOverviewStatistics> {
+    const minimumFaceCount = options.minimumFaceCount ?? 1;
+    const result = await sql<PeopleOverviewStatistics>`
+      WITH "eligible_faces" AS (
+        SELECT
+          "asset_face"."id" AS "assetFaceId",
+          "asset_face"."personId"
+        FROM "asset_face"
+        INNER JOIN "asset" ON "asset"."id" = "asset_face"."assetId"
+        WHERE "asset"."ownerId" = ${userId}
+          AND "asset"."deletedAt" IS NULL
+          AND "asset"."isOffline" = false
+          AND "asset"."visibility" IN (${sql.join(peopleAssetVisibilities)})
+          AND "asset_face"."deletedAt" IS NULL
+          AND "asset_face"."isVisible" = true
+      ),
+      "eligible_people" AS (
+        SELECT
+          "person"."id",
+          "person"."isHidden"
+        FROM "person"
+        INNER JOIN "eligible_faces" ON "eligible_faces"."personId" = "person"."id"
+        WHERE "person"."ownerId" = ${userId}
+        GROUP BY "person"."id"
+        HAVING NULLIF(BTRIM("person"."name"), '') IS NOT NULL
+          OR COUNT(DISTINCT "eligible_faces"."assetFaceId") >= ${minimumFaceCount}
       )
-      .where('person.ownerId', '=', userId)
-      .where('asset.ownerId', '=', userId)
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.isOffline', '=', false)
-      .where('asset.visibility', 'in', peopleAssetVisibilities)
-      .where('asset_face.deletedAt', 'is', null)
-      .where('asset_face.isVisible', 'is', true)
-      .executeTakeFirstOrThrow();
+      SELECT
+        COUNT(DISTINCT "eligible_people"."id")::int AS "total",
+        COUNT(DISTINCT "eligible_people"."id") FILTER (WHERE "eligible_people"."isHidden" = true)::int AS "hidden",
+        COUNT(DISTINCT "eligible_faces"."assetFaceId")::int AS "detectedFaceCount"
+      FROM "eligible_faces"
+      LEFT JOIN "eligible_people" ON "eligible_people"."id" = "eligible_faces"."personId"
+    `.execute(this.db);
 
-    const faceCount = await this.db
-      .selectFrom('asset_face')
-      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
-      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset_face.id'])).as('detectedFaceCount'))
-      .where('asset.ownerId', '=', userId)
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.isOffline', '=', false)
-      .where('asset.visibility', 'in', peopleAssetVisibilities)
-      .where('asset_face.deletedAt', 'is', null)
-      .where('asset_face.isVisible', 'is', true)
-      .executeTakeFirstOrThrow();
-
+    const row = result.rows[0];
     return {
-      total: Number(people.total),
-      hidden: Number(people.hidden),
-      detectedFaceCount: Number(faceCount.detectedFaceCount),
+      total: Number(row?.total ?? 0),
+      hidden: Number(row?.hidden ?? 0),
+      detectedFaceCount: Number(row?.detectedFaceCount ?? 0),
     };
   }
 

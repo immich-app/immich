@@ -179,6 +179,8 @@ describe(JobRepository.name, () => {
     await sut.queueAll([
       { name: JobName.FaceIdentityBackfill, data: {} },
       { name: JobName.FaceIdentityBackfill, data: {} },
+      { name: JobName.FaceIdentityBackfill, data: { continuationId: 'continuation-1' } },
+      { name: JobName.FaceIdentityBackfill, data: { continuationId: 'continuation-2' } },
       { name: JobName.FaceIdentityBackfill, data: { stage: 'person', cursor: 'person-cursor' } },
       { name: JobName.FaceIdentityBackfill, data: { stage: 'space-person', cursor: 'space-cursor' } },
       { name: JobName.SharedSpacePersonMetadataBackfill, data: {} },
@@ -215,6 +217,16 @@ describe(JobRepository.name, () => {
         jobId: 'face-identity-backfill/root',
         removeOnFail: true,
       },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      { continuationId: 'continuation-1' },
+      { jobId: 'face-identity-backfill/continuation/continuation-1', removeOnFail: true },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      { continuationId: 'continuation-2' },
+      { jobId: 'face-identity-backfill/continuation/continuation-2', removeOnFail: true },
     );
     expect(queue.add).toHaveBeenCalledWith(
       JobName.FaceIdentityBackfill,
@@ -536,5 +548,36 @@ describe(JobRepository.name, () => {
     for (const call of queue.add.mock.calls) {
       expect(call[2]).not.toHaveProperty('removeOnFail', true);
     }
+  });
+
+  it('uses distinct stable job ids for identity-backfill shared-space face matches', async () => {
+    const { sut, queue } = setup();
+    setHandlers(sut, [JobName.SharedSpaceFaceMatch]);
+
+    await sut.queueAll([
+      { name: JobName.SharedSpaceFaceMatch, data: { spaceId: 'space-1', assetId: 'asset-1' } },
+      {
+        name: JobName.SharedSpaceFaceMatch,
+        data: { spaceId: 'space-1', assetId: 'asset-1', source: 'identity-backfill' },
+      },
+    ]);
+
+    expect(queue.addBulk).not.toHaveBeenCalled();
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpaceFaceMatch,
+      { spaceId: 'space-1', assetId: 'asset-1' },
+      {
+        jobId: 'shared-space-face-match/space-1/asset-1',
+        removeOnComplete: true,
+      },
+    );
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.SharedSpaceFaceMatch,
+      { spaceId: 'space-1', assetId: 'asset-1', source: 'identity-backfill' },
+      {
+        jobId: 'shared-space-face-match/identity-backfill/space-1/asset-1',
+        removeOnComplete: true,
+      },
+    );
   });
 });

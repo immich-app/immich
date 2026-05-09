@@ -113,6 +113,7 @@ DROP TABLE IF EXISTS "shared_space_activity" CASCADE;
 DROP TABLE IF EXISTS "shared_space_person_alias" CASCADE;
 DROP TABLE IF EXISTS "shared_space_person_face" CASCADE;
 DROP TABLE IF EXISTS "shared_space_person" CASCADE;
+DROP TABLE IF EXISTS "shared_space_face_match_backfill_target" CASCADE;
 DROP TABLE IF EXISTS "shared_space_asset_audit" CASCADE;
 DROP TABLE IF EXISTS "shared_space_member_audit" CASCADE;
 DROP TABLE IF EXISTS "shared_space_audit" CASCADE;
@@ -218,6 +219,7 @@ DELETE FROM "migration_overrides"
    'trigger_face_identity_updatedAt',
    'trigger_library_after_insert',
    'trigger_library_user_delete_after_audit',
+   'trigger_shared_space_face_match_backfill_target_updatedAt',
    'trigger_shared_space_asset_delete_audit',
    'trigger_shared_space_asset_updatedAt',
    'trigger_shared_space_delete_audit',
@@ -344,6 +346,7 @@ DELETE FROM "kysely_migrations"
    '1778400000000-AddFaceIdentities',
    '1778500000000-AddSpacePersonRepresentativeFaceSource',
    '1778600000000-SortSpacePeopleByNameIndex',
+   '1778700000000-AddSharedSpaceFaceMatchBackfillTarget',
 
    -- Post-v2.7.5 upstream migrations pulled in by rebase. Paired with the
    -- schema rollbacks in step 7 above.

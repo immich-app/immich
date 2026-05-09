@@ -135,6 +135,33 @@ describe(PersonRepository.name, () => {
         detectedFaceCount: 0,
       });
     });
+
+    it('counts only people eligible for the personal people list when minimumFaceCount is set', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Timeline });
+      const { person: belowThreshold } = await ctx.newPerson({ ownerId: user.id, name: '' });
+      const { person: eligibleUnnamed } = await ctx.newPerson({ ownerId: user.id, name: '' });
+      const { person: eligibleNamedHidden } = await ctx.newPerson({ ownerId: user.id, name: 'Hidden', isHidden: true });
+
+      await ctx.newAssetFace({ assetId: asset.id, personId: belowThreshold.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: belowThreshold.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: eligibleUnnamed.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: eligibleUnnamed.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: eligibleUnnamed.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: eligibleNamedHidden.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: null });
+
+      await expect(sut.getNumberOfPeople(user.id, { minimumFaceCount: 3 })).resolves.toEqual({
+        total: 2,
+        hidden: 1,
+      });
+      await expect(sut.getPeopleOverviewStatistics(user.id, { minimumFaceCount: 3 })).resolves.toEqual({
+        total: 2,
+        hidden: 1,
+        detectedFaceCount: 7,
+      });
+    });
   });
 
   describe('getPeopleFaceStatistics', () => {

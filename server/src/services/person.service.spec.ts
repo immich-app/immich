@@ -47,13 +47,26 @@ describe(PersonService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(PersonService));
     mocks.faceIdentity.ensurePersonIdentity.mockResolvedValue({ id: 'identity-1' } as any);
-    (mocks.faceIdentity as any).getAccessiblePeople ??= vi.fn();
-    (mocks.faceIdentity as any).getAccessiblePeopleStatistics ??= vi.fn();
-    (mocks.faceIdentity as any).getAccessiblePeopleFaceStatistics ??= vi.fn();
-    (mocks.faceIdentity as any).getAccessiblePersonByProfileId ??= vi.fn();
-    (mocks.faceIdentity as any).getAccessiblePersonStatistics ??= vi.fn();
-    (mocks.faceIdentity as any).getAccessibleProfileIdentityId ??= vi.fn();
-    (mocks.faceIdentity as any).hasBackfillWork ??= vi.fn();
+    const faceIdentityMock = mocks.faceIdentity as any;
+    faceIdentityMock.getAccessiblePeople ??= vi.fn();
+    faceIdentityMock.getAccessiblePeopleStatistics ??= vi.fn();
+    faceIdentityMock.getAccessiblePeopleFaceStatistics ??= vi.fn();
+    faceIdentityMock.getAccessiblePersonByProfileId ??= vi.fn();
+    faceIdentityMock.getAccessiblePersonStatistics ??= vi.fn();
+    faceIdentityMock.getAccessibleProfileIdentityId ??= vi.fn();
+    faceIdentityMock.hasBackfillWork ??= vi.fn();
+    faceIdentityMock.getBackfillWork ??= vi.fn();
+    faceIdentityMock.getBackfillWork.mockResolvedValue({
+      hasPersonalIdentityWork: false,
+      hasSpacePersonIdentityWork: false,
+      hasSharedSpaceProjectionWork: false,
+    });
+    faceIdentityMock.getSharedSpaceFaceMatchBackfillTargets ??= vi.fn();
+    faceIdentityMock.getSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([]);
+    faceIdentityMock.getPendingSharedSpaceFaceMatchBackfillTargets ??= vi.fn();
+    faceIdentityMock.getPendingSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([]);
+    faceIdentityMock.deletePendingSharedSpaceFaceMatchBackfillTargets ??= vi.fn();
+    faceIdentityMock.deletePendingSharedSpaceFaceMatchBackfillTargets.mockResolvedValue(void 0);
     (mocks.person as any).getPeopleOverviewStatistics ??= vi.fn();
     (mocks.person as any).getPeopleFaceStatistics ??= vi.fn();
     (mocks.faceIdentity as any).getAccessiblePersonByProfileId.mockResolvedValue(void 0);
@@ -72,7 +85,10 @@ describe(PersonService.name, () => {
 
       await sut.onBootstrap();
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.FaceIdentityBackfill, data: {} });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: {},
+      });
       expect(mocks.job.searchJobs).toHaveBeenCalledWith('peopleBackfill', expect.any(Object));
     });
 
@@ -92,6 +108,22 @@ describe(PersonService.name, () => {
           name: JobName.FaceIdentityBackfill,
           timestamp: Date.now(),
           data: { stage: 'space-person', cursor: 'space-person-cursor' },
+        },
+      ]);
+
+      await sut.onBootstrap();
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should not queue a new identity backfill root while the root backfill is active', async () => {
+      (mocks.faceIdentity as any).hasBackfillWork.mockResolvedValue(true);
+      mocks.job.searchJobs.mockResolvedValue([
+        {
+          id: 'face-identity-backfill/root',
+          name: JobName.FaceIdentityBackfill,
+          timestamp: Date.now(),
+          data: {},
         },
       ]);
 
@@ -149,6 +181,7 @@ describe(PersonService.name, () => {
 
       expect((mocks.faceIdentity as any).getAccessiblePeople).not.toHaveBeenCalled();
       expect(mocks.person.getAllForUser).toHaveBeenCalled();
+      expect(mocks.person.getNumberOfPeople).toHaveBeenCalledWith(auth.user.id, { minimumFaceCount: 3 });
     });
 
     it('should get all hidden and visible people with thumbnails', async () => {
@@ -176,6 +209,7 @@ describe(PersonService.name, () => {
         minimumFaceCount: 3,
         withHidden: true,
       });
+      expect(mocks.person.getNumberOfPeople).toHaveBeenCalledWith(auth.user.id, { minimumFaceCount: 3 });
     });
 
     it('should get all visible people and favorites should be first in the array', async () => {
@@ -203,6 +237,7 @@ describe(PersonService.name, () => {
         minimumFaceCount: 3,
         withHidden: false,
       });
+      expect(mocks.person.getNumberOfPeople).toHaveBeenCalledWith(auth.user.id, { minimumFaceCount: 3 });
     });
   });
 
@@ -243,7 +278,9 @@ describe(PersonService.name, () => {
         detectedFaceCount: 5,
       });
 
-      expect((mocks.person as any).getPeopleOverviewStatistics).toHaveBeenCalledWith(auth.user.id);
+      expect((mocks.person as any).getPeopleOverviewStatistics).toHaveBeenCalledWith(auth.user.id, {
+        minimumFaceCount: 3,
+      });
       expect((mocks.faceIdentity as any).getAccessiblePeopleStatistics).not.toHaveBeenCalled();
     });
 
@@ -586,8 +623,8 @@ describe(PersonService.name, () => {
       vi.spyOn(sut as any, 'ensureLocalFile').mockResolvedValue({ localPath: '/preview.jpg', cleanup });
       mocks.media.decodeImage.mockResolvedValue({
         data: Buffer.from('decoded-image'),
-        info: { width: 250, height: 250, channels: 3 },
-      } as any);
+        info: { width: 250, height: 250, channels: 3, format: 'jpeg', size: 0, premultiplied: false },
+      });
       mocks.media.generateThumbnail.mockImplementation(async (_input, _options, output) => {
         await writeFile(output, Buffer.from('cropped-face'));
       });
@@ -1488,7 +1525,7 @@ describe(PersonService.name, () => {
     });
 
     describe('force wipes space state', () => {
-      it('should wipe shared_space_person tables and queue SharedSpaceFaceMatchAll per space when force=true', async () => {
+      it('should preserve force face recognition full reset by wiping shared_space_person tables and queueing SharedSpaceFaceMatchAll per space', async () => {
         const face = AssetFaceFactory.from().person().build();
         mocks.job.getJobCounts.mockResolvedValue({
           active: 1,
@@ -1842,57 +1879,381 @@ describe(PersonService.name, () => {
       });
     });
 
-    it('should queue metadata inheritance backfill after shared-space identity links are backfilled', async () => {
-      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 1 });
-      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({
-        processed: 1,
-        conflictCount: 0,
+    it('requeues identity backfill without projection fan-out when identity work remains after final pages', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: true,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
       });
 
       await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: { continuationId: expect.any(String) },
+      });
+      expect((mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ name: JobName.SharedSpaceFaceMatch })]),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
         name: JobName.SharedSpacePersonMetadataBackfill,
         data: {},
       });
     });
 
-    it('should queue space face matching after identity links are backfilled', async () => {
-      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 1 });
-      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({
-        processed: 0,
-        conflictCount: 0,
+    it('alternates bounded continuation ids when identity work remains', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: true,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
       });
-      mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled.mockResolvedValue(['space-1', 'space-2']);
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: { continuationId: 'a' },
+      });
+
+      mocks.job.queue.mockClear();
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person', continuationId: 'a' })).resolves.toBe(
+        JobStatus.Success,
+      );
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: { continuationId: 'b' },
+      });
+    });
+
+    it('does not discover projection targets until paginated personal backfill is complete', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({
+        processed: 1,
+        nextCursor: 'person-cursor',
+        affectedSpaceAssets: [{ spaceId: 'space-1', assetId: 'asset-1' }],
+      });
 
       await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled).toHaveBeenCalled();
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SharedSpaceFaceMatchAll, data: { spaceId: 'space-1' } },
-        { name: JobName.SharedSpaceFaceMatchAll, data: { spaceId: 'space-2' } },
-      ]);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: { stage: 'person', cursor: 'person-cursor' },
+      });
+      expect((mocks.faceIdentity as any).getBackfillWork).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
-    it('should queue space face matching when projection backfill work remains after an idempotent rerun', async () => {
+    it('does not discover projection targets until paginated space-person backfill is complete', async () => {
       mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
       mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({
-        processed: 0,
+        processed: 1,
+        nextCursor: 'space-person-cursor',
         conflictCount: 0,
+        affectedSpaceAssets: [{ spaceId: 'space-1', assetId: 'asset-1' }],
       });
-      mocks.faceIdentity.hasBackfillWork.mockResolvedValue(true);
-      mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled.mockResolvedValue(['space-1']);
 
       await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.faceIdentity.hasBackfillWork).toHaveBeenCalled();
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SharedSpaceFaceMatchAll, data: { spaceId: 'space-1' } },
-      ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: { stage: 'space-person', cursor: 'space-person-cursor' },
+      });
+      expect((mocks.faceIdentity as any).getBackfillWork).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('queues exact deduped projection targets after identity work is clean', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({
+        processed: 1,
+        affectedSpaceAssets: [{ spaceId: 'space-1', assetId: 'asset-1' }],
+      });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({
+        processed: 0,
+        conflictCount: 0,
+        affectedSpaceAssets: [{ spaceId: 'space-1', assetId: 'asset-1' }],
+      });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([
+        { spaceId: 'space-2', assetId: 'asset-2' },
+        { spaceId: 'space-1', assetId: 'asset-1' },
+      ]);
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: 'space-1', assetId: 'asset-1', source: 'identity-backfill' },
+        },
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: 'space-2', assetId: 'asset-2', source: 'identity-backfill' },
+        },
+      ]);
+      expect(mocks.job.queueAll).not.toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ name: JobName.SharedSpaceFaceMatchAll })]),
+      );
+    });
+
+    it('rediscovers earlier-page targets after paginated identity backfill completes', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValueOnce({
+        processed: 1,
+        nextCursor: 'person-cursor',
+        affectedSpaceAssets: [{ spaceId: 'space-1', assetId: 'asset-1' }],
+      });
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect((mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
+
+      mocks.job.queue.mockClear();
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValueOnce({ processed: 1 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValueOnce({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([
+        { spaceId: 'space-1', assetId: 'asset-1' },
+        { spaceId: 'space-1', assetId: 'asset-2' },
+      ]);
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person', cursor: 'person-cursor' })).resolves.toBe(
+        JobStatus.Success,
+      );
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: 'space-1', assetId: 'asset-1', source: 'identity-backfill' },
+        },
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: 'space-1', assetId: 'asset-2', source: 'identity-backfill' },
+        },
+      ]);
+    });
+
+    it('queues durable pending targets from earlier pages after identity work is clean', async () => {
+      const pendingTarget = { spaceId: 'space-1', assetId: 'asset-from-page-1', updatedAt: new Date() };
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValueOnce({
+        processed: 1,
+        nextCursor: 'person-cursor',
+      });
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect((mocks.faceIdentity as any).getPendingSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+
+      mocks.job.queue.mockClear();
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValueOnce({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValueOnce({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
+      });
+      (mocks.faceIdentity as any).getPendingSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([pendingTarget]);
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person', cursor: 'person-cursor' })).resolves.toBe(
+        JobStatus.Success,
+      );
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: pendingTarget.spaceId, assetId: pendingTarget.assetId, source: 'identity-backfill' },
+        },
+      ]);
+      expect((mocks.faceIdentity as any).deletePendingSharedSpaceFaceMatchBackfillTargets).toHaveBeenCalledWith([
+        pendingTarget,
+      ]);
+    });
+
+    it('keeps durable pending targets when queueing targeted face matches fails', async () => {
+      const pendingTarget = { spaceId: 'space-1', assetId: 'asset-1', updatedAt: new Date() };
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
+      });
+      (mocks.faceIdentity as any).getPendingSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([pendingTarget]);
+      mocks.job.queueAll.mockRejectedValueOnce(new Error('redis write failed'));
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).rejects.toThrow('redis write failed');
+
+      expect((mocks.faceIdentity as any).deletePendingSharedSpaceFaceMatchBackfillTargets).not.toHaveBeenCalled();
+    });
+
+    it('does not call queueAll for an empty targeted face-match list', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
+      });
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('does not write an empty trailing batch for exactly one full chunk', async () => {
+      const targets = Array.from({ length: 1000 }, (_, index) => ({
+        spaceId: 'space-1',
+        assetId: `asset-${index.toString().padStart(4, '0')}`,
+      }));
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValue(targets);
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queueAll.mock.calls[0][0]).toHaveLength(1000);
+    });
+
+    it('logs a projection invariant warning instead of falling back to a full rebuild when projection work has no targets', async () => {
+      const warn = vi.spyOn((sut as any).logger, 'warn').mockImplementation(() => {});
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([]);
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('projection backfill work was reported but no targets were found'),
+      );
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+      expect(mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled).not.toHaveBeenCalled();
+    });
+
+    it('regenerates targeted projection work on a later run after a queue write failure', async () => {
+      const target = { spaceId: 'space-1', assetId: 'asset-1' };
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 1 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([target]);
+      mocks.job.queueAll.mockRejectedValueOnce(new Error('redis write failed'));
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).rejects.toThrow('redis write failed');
+
+      mocks.job.queueAll.mockReset();
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { ...target, source: 'identity-backfill' },
+        },
+      ]);
+    });
+
+    it('regenerates only remaining current targets after a later queue batch fails', async () => {
+      const targets = Array.from({ length: 1001 }, (_, index) => ({
+        spaceId: 'space-1',
+        assetId: `asset-${index.toString().padStart(4, '0')}`,
+      }));
+      const remainingTarget = targets.at(-1)!;
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 1 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValueOnce(targets);
+      mocks.job.queueAll.mockResolvedValueOnce().mockRejectedValueOnce(new Error('redis write failed'));
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).rejects.toThrow('redis write failed');
+
+      mocks.job.queueAll.mockReset();
+      (mocks.faceIdentity as any).getSharedSpaceFaceMatchBackfillTargets.mockResolvedValueOnce([remainingTarget]);
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { ...remainingTarget, source: 'identity-backfill' },
+        },
+      ]);
+    });
+
+    it('does not queue global metadata backfill from identity-backfill finalization when targeted face matches are queued', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({
+        processed: 1,
+        affectedSpaceAssets: [{ spaceId: 'space-1', assetId: 'asset-1' }],
+      } as any);
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: false,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
+      });
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SharedSpaceFaceMatch,
+          data: { spaceId: 'space-1', assetId: 'asset-1', source: 'identity-backfill' },
+        },
+      ]);
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
         name: JobName.SharedSpacePersonMetadataBackfill,
         data: {},
       });
+    });
+
+    it('does not queue full shared-space rebuilds when identity backfill is retriggered during face recognition work', async () => {
+      mocks.faceIdentity.backfillPersonalIdentities.mockResolvedValue({ processed: 0 });
+      mocks.faceIdentity.backfillSpacePersonIdentities.mockResolvedValue({ processed: 0, conflictCount: 0 });
+      (mocks.faceIdentity as any).getBackfillWork.mockResolvedValue({
+        hasPersonalIdentityWork: true,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: true,
+      });
+
+      await expect(sut.handleFaceIdentityBackfill({ stage: 'person' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FaceIdentityBackfill,
+        data: { continuationId: expect.any(String) },
+      });
+      expect(mocks.job.queueAll).not.toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ name: JobName.SharedSpaceFaceMatchAll })]),
+      );
     });
   });
 
@@ -3288,6 +3649,7 @@ describe(PersonService.name, () => {
         auth.user.id,
         expect.objectContaining({ closestFaceAssetId: 'face-asset-id' }),
       );
+      expect(mocks.person.getNumberOfPeople).toHaveBeenCalledWith(auth.user.id, { minimumFaceCount: 3 });
     });
 
     it('should throw NotFoundException when closestPersonId is not found', async () => {

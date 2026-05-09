@@ -529,7 +529,12 @@ describe(MetadataService.name, () => {
 
       expect(identityLinks).toEqual([{ assetFaceId: assetFace.id, source: 'backfill' }]);
       expect(backfillCtx.getMock<JobRepository, Mocked<JobRepository>>(JobRepository).queueAll).toHaveBeenCalledWith(
-        expect.arrayContaining([{ name: JobName.SharedSpaceFaceMatchAll, data: { spaceId: space.id } }]),
+        expect.arrayContaining([
+          {
+            name: JobName.SharedSpaceFaceMatch,
+            data: { spaceId: space.id, assetId: asset.id, source: 'identity-backfill' },
+          },
+        ]),
       );
       expect(spacePeople).toEqual([
         expect.objectContaining({
