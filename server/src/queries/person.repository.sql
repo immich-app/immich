@@ -225,7 +225,7 @@ where
           and "asset"."deletedAt" is null
       )
   )
-  and f_unaccent ("person"."name") %>> f_unaccent ($3)
+  and f_unaccent ("person"."name") %> f_unaccent ($3)
 order by
   f_unaccent ("person"."name") <->>> f_unaccent ($4)
 limit
