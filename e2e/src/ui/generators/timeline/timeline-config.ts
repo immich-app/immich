@@ -43,7 +43,7 @@ export type MockTimelineAsset = {
   isTrashed: boolean;
   isVideo: boolean;
   isImage: boolean;
-  duration: string | null;
+  duration: number | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
   city: string | null;

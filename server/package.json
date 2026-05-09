@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "2.7.5",
+  "version": "3.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -46,15 +46,15 @@
     "@nestjs/platform-express": "^11.0.4",
     "@nestjs/platform-socket.io": "^11.0.4",
     "@nestjs/schedule": "^6.0.0",
-    "@nestjs/swagger": "11.2.6",
+    "@nestjs/swagger": "^11.4.2",
     "@nestjs/websockets": "^11.0.4",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.215.0",
     "@opentelemetry/instrumentation-http": "^0.215.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.62.0",
-    "@opentelemetry/instrumentation-nestjs-core": "^0.60.0",
-    "@opentelemetry/instrumentation-pg": "^0.66.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.63.0",
+    "@opentelemetry/instrumentation-nestjs-core": "^0.61.0",
+    "@opentelemetry/instrumentation-pg": "^0.67.0",
     "@opentelemetry/resources": "^2.0.1",
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.215.0",
@@ -72,7 +72,7 @@
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cron": "4.4.0",
-    "exiftool-vendored": "^35.0.0",
+    "exiftool-vendored": "^35.20.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
@@ -93,7 +93,7 @@
     "nest-commander": "^3.16.0",
     "nestjs-cls": "^6.0.0",
     "nestjs-kysely": "3.1.2",
-    "nestjs-otel": "^7.0.0",
+    "nestjs-otel": "^8.0.0",
     "nestjs-zod": "^5.3.0",
     "nodemailer": "^8.0.0",
     "openid-client": "^6.3.3",
@@ -166,9 +166,6 @@
     "unplugin-swc": "^1.4.5",
     "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0"
-  },
-  "volta": {
-    "node": "24.15.0"
   },
   "overrides": {
     "sharp": "^0.34.5"

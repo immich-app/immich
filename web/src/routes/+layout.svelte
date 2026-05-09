@@ -13,7 +13,7 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
+  import { lang, locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
@@ -35,6 +35,8 @@
     toastManager,
     TooltipProvider,
   } from '@immich/ui';
+  import { En } from 'media-chrome/lang/en';
+  import { addTranslation } from 'media-chrome/utils/i18n';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -43,6 +45,38 @@
   interface Props {
     children?: Snippet;
   }
+
+  const MediaChromeDefaultKeys = [
+    'Start airplay',
+    'Stop airplay',
+    'Audio',
+    'Start casting',
+    'Stop casting',
+    'Enter picture in picture mode',
+    'Exit picture in picture mode',
+    'Seek backward',
+    'Seek forward',
+    'audio player',
+    'seek',
+    'audio tracks',
+    'chapter: {chapterName}',
+    'live',
+    'start airplay',
+    'stop airplay',
+    'start casting',
+    'stop casting',
+    'enter picture in picture mode',
+    'exit picture in picture mode',
+    'seek to live',
+    'playing live',
+    'seek back {seekOffset} seconds',
+    'seek forward {seekOffset} seconds',
+    'Encryption Error',
+    'The media is encrypted and there are no keys to decrypt it.',
+  ] as const satisfies Array<keyof typeof En>;
+  const MediaChromeDefaults = Object.fromEntries(MediaChromeDefaultKeys.map((key) => [key, key])) as {
+    [K in (typeof MediaChromeDefaultKeys)[number]]: K;
+  };
 
   $effect(() => {
     setTranslations({
@@ -72,6 +106,58 @@
       toast_danger_title: $t('error'),
       save: $t('save'),
       supporter: $t('supporter'),
+    });
+
+    addTranslation($lang, {
+      ...MediaChromeDefaults,
+      Captions: $t('media_chrome.captions'),
+      'Enable captions': $t('media_chrome.enable_captions'),
+      'Disable captions': $t('media_chrome.disable_captions'),
+      'Enter fullscreen mode': $t('media_chrome.enter_fullscreen_mode'),
+      'Exit fullscreen mode': $t('media_chrome.exit_fullscreen_mode'),
+      Mute: $t('media_chrome.mute'),
+      Unmute: $t('media_chrome.unmute'),
+      Loop: $t('media_chrome.loop'),
+      Play: $t('play'),
+      Pause: $t('pause'),
+      'Playback rate': $t('media_chrome.playback_rate'),
+      'Playback rate {playbackRate}': $t('media_chrome.playback_rate_value'),
+      Quality: $t('media_chrome.quality'),
+      Settings: $t('settings'),
+      Auto: $t('media_chrome.auto'),
+      'video player': $t('media_chrome.video_player'),
+      volume: $t('media_chrome.volume'),
+      'closed captions': $t('media_chrome.closed_captions'),
+      'current playback rate': $t('media_chrome.playback_rate_current'),
+      'playback time': $t('media_chrome.playback_time'),
+      'media loading': $t('media_chrome.media_loading'),
+      settings: $t('settings'),
+      quality: $t('media_chrome.quality'),
+      play: $t('play'),
+      pause: $t('pause'),
+      mute: $t('media_chrome.mute'),
+      unmute: $t('media_chrome.unmute'),
+      Off: $t('media_chrome.captions_off'),
+      'enter fullscreen mode': $t('media_chrome.enter_fullscreen_mode'),
+      'exit fullscreen mode': $t('media_chrome.exit_fullscreen_mode'),
+      'Network Error': $t('media_chrome.network_error'),
+      'Decode Error': $t('media_chrome.decode_error'),
+      'Source Not Supported': $t('media_chrome.not_supported_error'),
+      'A network error caused the media download to fail.': $t('media_chrome.network_error_description'),
+      'A media error caused playback to be aborted. The media could be corrupt or your browser does not support this format.':
+        $t('media_chrome.media_error_description'),
+      'An unsupported error occurred. The server or network failed, or your browser does not support this format.': $t(
+        'media_chrome.unsupported_error_description',
+      ),
+      hour: $t('hour'),
+      hours: $t('hours'),
+      minute: $t('minute'),
+      minutes: $t('minutes'),
+      second: $t('media_chrome.second'),
+      seconds: $t('media_chrome.seconds'),
+      '{time} remaining': $t('media_chrome.time_value_remaining'),
+      '{currentTime} of {totalTime}': $t('media_chrome.time_value_of_total_time'),
+      'video not loaded, unknown time.': $t('media_chrome.video_not_loaded_unknown_time'),
     });
   });
 

@@ -36,7 +36,7 @@ jobs:
     permissions:
       pull-requests: write
     secrets:
-      PUSH_O_MATIC_APP_ID: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
       PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
 
@@ -48,32 +48,27 @@ jobs:
       version: ${{ steps.output.outputs.version }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
-      - name: Generate a token
-        id: generate-token
-        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{ steps.token.outputs.token }}
           persist-credentials: true
           ref: main
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@08c4be7e2e672a47d11bd04269e27e5f3e8529cb # v6.0.0
-
-      - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@01a4d354b70f99a6baf4a1b72827f6d4922e4978 # use-mise-action-v2.0.0
         with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
+      # TODO move to mise
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
 
       - name: Bump version
         env:
@@ -126,7 +121,7 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout

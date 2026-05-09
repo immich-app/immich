@@ -108,14 +108,20 @@ describe('/admin/users', () => {
       expect(body).toEqual(errorDto.forbidden);
     });
 
-    for (const key of ['password', 'email', 'name', 'quotaSizeInBytes', 'shouldChangePassword', 'notify']) {
+    for (const [key, message] of [
+      ['password', 'Invalid input: expected string, received null'],
+      ['email', 'Invalid input: expected email, received object'],
+      ['name', 'Invalid input: expected string, received null'],
+      ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
+      ['notify', 'Invalid input: expected boolean, received null'],
+    ] as const) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
           .post(`/admin/users`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ ...createUserDto.user1, [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
+        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
       });
     }
 
@@ -153,14 +159,19 @@ describe('/admin/users', () => {
       expect(body).toEqual(errorDto.forbidden);
     });
 
-    for (const key of ['password', 'email', 'name', 'shouldChangePassword']) {
+    for (const [key, message] of [
+      ['password', 'Invalid input: expected string, received null'],
+      ['email', 'Invalid input: expected email, received object'],
+      ['name', 'Invalid input: expected string, received null'],
+      ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
+    ] as const) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
           .put(`/admin/users/${uuidDto.notFound}`)
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({ [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
+        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
       });
     }
 

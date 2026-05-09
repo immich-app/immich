@@ -210,7 +210,7 @@
 
 <div
   bind:this={element}
-  class="relative h-full w-full select-none"
+  class="relative size-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
   role="presentation"
@@ -237,15 +237,15 @@
   >
     {#snippet backdrop()}
       {#if blurredSlideshow}
-        <Thumbhash base64ThumbHash={asset.thumbhash!} class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw" />
+        <Thumbhash base64ThumbHash={asset.thumbhash!} class="absolute inset-s-0 top-0 left-0 h-dvh w-dvw" />
       {/if}
     {/snippet}
     {#snippet overlays()}
       <div
-        class="absolute inset-0 pointer-events-none transition-opacity duration-150"
+        class="pointer-events-none absolute inset-0 transition-opacity duration-150"
         style:opacity={isHighlighting ? 1 : 0}
       >
-        <svg class="absolute inset-0 w-full h-full">
+        <svg class="absolute inset-0 size-full">
           <defs>
             <mask id="face-dim-mask">
               <rect width="100%" height="100%" fill="white" />
@@ -261,7 +261,7 @@
         {@const isActive = assetViewerManager.highlightedFaces.some((f) => f.id === boundingbox.id)}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
-          class="absolute pointer-events-auto rounded-lg {isActive && 'border-solid border-white border-3'}"
+          class="pointer-events-auto absolute rounded-lg {isActive && 'border-3 border-solid border-white'}"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
           onpointerenter={() => assetViewerManager.setHighlightedFaces([boundingbox.face])}
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
@@ -269,7 +269,7 @@
           {#if isActive && boundingbox.name}
             <div
               aria-hidden="true"
-              class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap shadow-lg"
+              class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
               style="top: {boundingbox.height + 4}px; right: 0;"
             >
               {boundingbox.name}

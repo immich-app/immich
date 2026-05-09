@@ -119,13 +119,15 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
                 onPressed: () => _toggle(isCasting),
               ),
               const Spacer(),
-              Text(
-                "${position.format()} / ${duration.format()}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                  shadows: VideoControls._controlShadows,
+              IgnorePointer(
+                child: Text(
+                  "${position.format()} / ${duration.format()}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                    shadows: VideoControls._controlShadows,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

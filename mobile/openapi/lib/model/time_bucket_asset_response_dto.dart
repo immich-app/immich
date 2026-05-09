@@ -39,8 +39,8 @@ class TimeBucketAssetResponseDto {
   /// Array of country names extracted from EXIF GPS data
   List<String?> country;
 
-  /// Array of video/gif durations in hh:mm:ss.SSS format (null for static images)
-  List<String?> duration;
+  /// Array of video/gif durations in milliseconds (null for static images)
+  List<int?> duration;
 
   /// Array of file creation timestamps in UTC
   List<String> fileCreatedAt;
@@ -172,7 +172,7 @@ class TimeBucketAssetResponseDto {
             ? (json[r'country'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         duration: json[r'duration'] is Iterable
-            ? (json[r'duration'] as Iterable).cast<String>().toList(growable: false)
+            ? (json[r'duration'] as Iterable).cast<int>().toList(growable: false)
             : const [],
         fileCreatedAt: json[r'fileCreatedAt'] is Iterable
             ? (json[r'fileCreatedAt'] as Iterable).cast<String>().toList(growable: false)

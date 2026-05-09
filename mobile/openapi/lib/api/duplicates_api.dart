@@ -16,9 +16,9 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
-  /// Delete a duplicate
+  /// Dismiss a duplicate group
   ///
-  /// Delete a single duplicate asset specified by its ID.
+  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -51,9 +51,9 @@ class DuplicatesApi {
     );
   }
 
-  /// Delete a duplicate
+  /// Dismiss a duplicate group
   ///
-  /// Delete a single duplicate asset specified by its ID.
+  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
   ///
   /// Parameters:
   ///

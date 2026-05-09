@@ -33,6 +33,8 @@ class MemoryManager {
     if (authManager.authenticated) {
       void this.initialize();
     }
+
+    this.scheduleHourlyRefresh();
   }
 
   ready() {
@@ -131,6 +133,29 @@ class MemoryManager {
   private async load() {
     const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
     this.memories = memories.filter((memory) => memory.assets.length > 0);
+  }
+
+  private scheduleHourlyRefresh() {
+    const now = DateTime.utc();
+    let nextEvent = now.set({ minute: 0, second: 5 });
+
+    if (nextEvent <= now) {
+      nextEvent = nextEvent.plus({ hours: 1 });
+    }
+
+    const initialDelay = nextEvent.diff(now).as('milliseconds');
+
+    setTimeout(() => {
+      this.#loading = this.load();
+
+      // Schedule subsequent events hourly
+      setInterval(
+        () => {
+          this.#loading = this.load();
+        },
+        60 * 60 * 1000,
+      );
+    }, initialDelay);
   }
 }
 

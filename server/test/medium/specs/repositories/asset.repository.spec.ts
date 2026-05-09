@@ -98,10 +98,10 @@ describe(AssetRepository.name, () => {
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ lockedProperties: ['dateTimeOriginal'] });
 
-      await sut.upsertExif(
-        { assetId: asset.id, lockedProperties: ['description'] },
-        { lockedPropertiesBehavior: 'append' },
-      );
+      await sut.upsertExif({
+        exif: { assetId: asset.id, lockedProperties: ['description'] },
+        lockedPropertiesBehavior: 'append',
+      });
 
       await expect(
         ctx.database
@@ -130,10 +130,10 @@ describe(AssetRepository.name, () => {
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ lockedProperties: ['dateTimeOriginal', 'description'] });
 
-      await sut.upsertExif(
-        { assetId: asset.id, lockedProperties: ['description'] },
-        { lockedPropertiesBehavior: 'append' },
-      );
+      await sut.upsertExif({
+        exif: { assetId: asset.id, lockedProperties: ['description'] },
+        lockedPropertiesBehavior: 'append',
+      });
 
       await expect(
         ctx.database

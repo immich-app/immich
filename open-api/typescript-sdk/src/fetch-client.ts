@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.7.5
+ * 3.0.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -614,8 +614,8 @@ export type AssetMetadataUpsertItemDto = {
 export type AssetMediaCreateDto = {
     /** Asset file data */
     assetData: Blob;
-    /** Duration (for videos) */
-    duration?: string;
+    /** Duration in milliseconds (for videos) */
+    duration?: number;
     /** File creation date */
     fileCreatedAt: string;
     /** File modification date */
@@ -854,8 +854,8 @@ export type AssetResponseDto = {
     createdAt: string;
     /** Duplicate group ID */
     duplicateId?: string | null;
-    /** Video/gif duration in hh:mm:ss.SSS format (null for static images) */
-    duration: string | null;
+    /** Video/gif duration in milliseconds (null for static images) */
+    duration: number | null;
     exifInfo?: ExifResponseDto;
     /** The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken. */
     fileCreatedAt: string;
@@ -2673,8 +2673,8 @@ export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country: (string | null)[];
-    /** Array of video/gif durations in hh:mm:ss.SSS format (null for static images) */
-    duration: (string | null)[];
+    /** Array of video/gif durations in milliseconds (null for static images) */
+    duration: (number | null)[];
     /** Array of file creation timestamps in UTC */
     fileCreatedAt: string[];
     /** Array of asset IDs in the time bucket */
@@ -3044,6 +3044,44 @@ export type SyncAssetV1 = {
     deletedAt: string | null;
     /** Duration */
     duration: string | null;
+    /** File created at */
+    fileCreatedAt: string | null;
+    /** File modified at */
+    fileModifiedAt: string | null;
+    /** Asset height */
+    height: number | null;
+    /** Asset ID */
+    id: string;
+    /** Is edited */
+    isEdited: boolean;
+    /** Is favorite */
+    isFavorite: boolean;
+    /** Library ID */
+    libraryId: string | null;
+    /** Live photo video ID */
+    livePhotoVideoId: string | null;
+    /** Local date time */
+    localDateTime: string | null;
+    /** Original file name */
+    originalFileName: string;
+    /** Owner ID */
+    ownerId: string;
+    /** Stack ID */
+    stackId: string | null;
+    /** Thumbhash */
+    thumbhash: string | null;
+    "type": AssetTypeEnum;
+    visibility: AssetVisibility;
+    /** Asset width */
+    width: number | null;
+};
+export type SyncAssetV2 = {
+    /** Checksum */
+    checksum: string;
+    /** Deleted at */
+    deletedAt: string | null;
+    /** Duration */
+    duration: number | null;
     /** File created at */
     fileCreatedAt: string | null;
     /** File modified at */
@@ -3619,16 +3657,18 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, shared }: {
+export function getAllAlbums({ assetId, isOwned, isShared }: {
     assetId?: string;
-    shared?: boolean;
+    isOwned?: boolean;
+    isShared?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
-        shared
+        isOwned,
+        isShared
     }))}`, {
         ...opts
     }));
@@ -4442,7 +4482,7 @@ export function resolveDuplicates({ duplicateResolveDto }: {
     })));
 }
 /**
- * Delete a duplicate
+ * Dismiss a duplicate group
  */
 export function deleteDuplicate({ id }: {
     id: string;
@@ -7109,6 +7149,7 @@ export enum SyncEntityType {
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
+    AssetV2 = "AssetV2",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
     AssetEditV1 = "AssetEditV1",
@@ -7118,7 +7159,9 @@ export enum SyncEntityType {
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
+    PartnerAssetV2 = "PartnerAssetV2",
     PartnerAssetBackfillV1 = "PartnerAssetBackfillV1",
+    PartnerAssetBackfillV2 = "PartnerAssetBackfillV2",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
     PartnerAssetExifV1 = "PartnerAssetExifV1",
     PartnerAssetExifBackfillV1 = "PartnerAssetExifBackfillV1",
@@ -7132,8 +7175,11 @@ export enum SyncEntityType {
     AlbumUserBackfillV1 = "AlbumUserBackfillV1",
     AlbumUserDeleteV1 = "AlbumUserDeleteV1",
     AlbumAssetCreateV1 = "AlbumAssetCreateV1",
+    AlbumAssetCreateV2 = "AlbumAssetCreateV2",
     AlbumAssetUpdateV1 = "AlbumAssetUpdateV1",
+    AlbumAssetUpdateV2 = "AlbumAssetUpdateV2",
     AlbumAssetBackfillV1 = "AlbumAssetBackfillV1",
+    AlbumAssetBackfillV2 = "AlbumAssetBackfillV2",
     AlbumAssetExifCreateV1 = "AlbumAssetExifCreateV1",
     AlbumAssetExifUpdateV1 = "AlbumAssetExifUpdateV1",
     AlbumAssetExifBackfillV1 = "AlbumAssetExifBackfillV1",
@@ -7163,8 +7209,10 @@ export enum SyncRequestType {
     AlbumUsersV1 = "AlbumUsersV1",
     AlbumToAssetsV1 = "AlbumToAssetsV1",
     AlbumAssetsV1 = "AlbumAssetsV1",
+    AlbumAssetsV2 = "AlbumAssetsV2",
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
+    AssetsV2 = "AssetsV2",
     AssetExifsV1 = "AssetExifsV1",
     AssetEditsV1 = "AssetEditsV1",
     AssetMetadataV1 = "AssetMetadataV1",
@@ -7173,6 +7221,7 @@ export enum SyncRequestType {
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     PartnersV1 = "PartnersV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
+    PartnerAssetsV2 = "PartnerAssetsV2",
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     PartnerStacksV1 = "PartnerStacksV1",
     StacksV1 = "StacksV1",

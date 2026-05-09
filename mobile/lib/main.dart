@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
@@ -24,6 +25,7 @@ import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -53,7 +55,7 @@ void main() async {
     await initApp();
     // Warm-up isolate pool for worker manager
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-    await migrateDatabaseIfNeeded();
+    await migrateDatabaseIfNeeded(drift);
 
     runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
   } catch (error, stack) {
@@ -162,6 +164,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+
+    await FlutterLocalNotificationsPlugin().initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@drawable/notification_icon'),
+        iOS: DarwinInitializationSettings(),
+      ),
+    );
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
@@ -241,7 +250,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        themeMode: ref.watch(immichThemeModeProvider),
+        themeMode: ref.watch(appConfigProvider.select((config) => config.theme.mode)),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         builder: (context, child) => ImmichTranslationProvider(

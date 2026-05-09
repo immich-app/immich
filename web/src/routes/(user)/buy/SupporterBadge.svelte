@@ -11,7 +11,7 @@
 </script>
 
 <div
-  class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 rounded-lg bg-clip-padding border border-transparent relative supporter-effect"
+  class="supporter-effect relative mt-2 flex place-items-center gap-1 rounded-lg border border-transparent bg-gray-200/50 bg-clip-padding p-2 dark:bg-immich-dark-primary/10"
   class:place-content-center={centered}
 >
   <Logo variant="icon" size={logoSize === 'sm' ? 'tiny' : 'small'} />

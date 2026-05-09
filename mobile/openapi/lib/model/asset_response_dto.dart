@@ -57,8 +57,11 @@ class AssetResponseDto {
   /// Duplicate group ID
   String? duplicateId;
 
-  /// Video/gif duration in hh:mm:ss.SSS format (null for static images)
-  String? duration;
+  /// Video/gif duration in milliseconds (null for static images)
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 2147483647
+  int? duration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -80,7 +83,8 @@ class AssetResponseDto {
   /// Asset height
   ///
   /// Minimum value: 0
-  num? height;
+  /// Maximum value: 9007199254740991
+  int? height;
 
   /// Asset ID
   String id;
@@ -165,7 +169,8 @@ class AssetResponseDto {
   /// Asset width
   ///
   /// Minimum value: 0
-  num? width;
+  /// Maximum value: 9007199254740991
+  int? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
@@ -341,14 +346,12 @@ class AssetResponseDto {
         checksum: mapValueOfType<String>(json, r'checksum')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        duration: mapValueOfType<String>(json, r'duration'),
+        duration: mapValueOfType<int>(json, r'duration'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
-        height: json[r'height'] == null
-            ? null
-            : num.parse('${json[r'height']}'),
+        height: mapValueOfType<int>(json, r'height'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isEdited: mapValueOfType<bool>(json, r'isEdited')!,
@@ -372,9 +375,7 @@ class AssetResponseDto {
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
-        width: json[r'width'] == null
-            ? null
-            : num.parse('${json[r'width']}'),
+        width: mapValueOfType<int>(json, r'width'),
       );
     }
     return null;

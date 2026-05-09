@@ -20,7 +20,7 @@ beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
-describe(SyncRequestType.PartnerAssetsV1, () => {
+describe(SyncRequestType.PartnerAssetsV2, () => {
   it('should detect and sync the first partner asset', async () => {
     const { auth, ctx } = await setup();
 
@@ -39,13 +39,13 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
       fileModifiedAt: date,
       localDateTime: date,
       deletedAt: null,
-      duration: '0:10:00.00000',
+      duration: 600_000,
       libraryId: null,
     });
 
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -70,13 +70,13 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           width: null,
           height: null,
         },
-        type: SyncEntityType.PartnerAssetV1,
+        type: SyncEntityType.PartnerAssetV2,
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should detect and sync a deleted partner asset', async () => {
@@ -88,7 +88,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
     await assetRepo.remove(asset);
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -101,7 +101,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should not sync a deleted partner asset due to a user delete', async () => {
@@ -112,7 +112,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
     await ctx.newAsset({ ownerId: user2.id });
     await userRepo.delete({ id: user2.id }, true);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should not sync a deleted partner asset due to a partner delete (unshare)', async () => {
@@ -122,12 +122,12 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     const { user: user2 } = await ctx.newUser();
     await ctx.newAsset({ ownerId: user2.id });
     const { partner } = await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
-    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toEqual([
-      expect.objectContaining({ type: SyncEntityType.PartnerAssetV1 }),
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.PartnerAssetV2 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
     await partnerRepo.remove(partner);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should not sync an asset or asset delete for own user', async () => {
@@ -138,19 +138,19 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1])).resolves.toEqual([
-      expect.objectContaining({ type: SyncEntityType.AssetV1 }),
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV2])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetV2 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
 
     await assetRepo.remove(asset);
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1])).resolves.toEqual([
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV2])).resolves.toEqual([
       expect.objectContaining({ type: SyncEntityType.AssetDeleteV1 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should not sync an asset or asset delete for unrelated user', async () => {
@@ -162,19 +162,19 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     const auth2 = factory.auth({ session, user: user2 });
 
-    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetsV1])).resolves.toEqual([
-      expect.objectContaining({ type: SyncEntityType.AssetV1 }),
+    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetsV2])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetV2 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
 
     await assetRepo.remove(asset);
 
-    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetsV1])).resolves.toEqual([
+    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetsV2])).resolves.toEqual([
       expect.objectContaining({ type: SyncEntityType.AssetDeleteV1 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should backfill partner assets when a partner shared their library with you', async () => {
@@ -187,14 +187,14 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     const { asset: assetUser2 } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           id: assetUser2.id,
         }),
-        type: SyncEntityType.PartnerAssetV1,
+        type: SyncEntityType.PartnerAssetV2,
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
@@ -202,17 +202,17 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     await ctx.syncAckAll(auth, response);
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
-    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1]);
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           id: assetUser3.id,
         }),
-        type: SyncEntityType.PartnerAssetBackfillV1,
+        type: SyncEntityType.PartnerAssetBackfillV2,
       },
       {
-        ack: expect.stringContaining(SyncEntityType.PartnerAssetBackfillV1),
+        ack: expect.stringContaining(SyncEntityType.PartnerAssetBackfillV2),
         data: {},
         type: SyncEntityType.SyncAckV1,
       },
@@ -220,7 +220,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 
   it('should only backfill partner assets created prior to the current partner asset checkpoint', async () => {
@@ -235,31 +235,31 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
     const { asset: asset2User3 } = await ctx.newAsset({ ownerId: user3.id });
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           id: assetUser2.id,
         }),
-        type: SyncEntityType.PartnerAssetV1,
+        type: SyncEntityType.PartnerAssetV2,
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
     await ctx.syncAckAll(auth, response);
 
     await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
-    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV1]);
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           id: assetUser3.id,
         }),
-        type: SyncEntityType.PartnerAssetBackfillV1,
+        type: SyncEntityType.PartnerAssetBackfillV2,
       },
       {
-        ack: expect.stringContaining(SyncEntityType.PartnerAssetBackfillV1),
+        ack: expect.stringContaining(SyncEntityType.PartnerAssetBackfillV2),
         data: {},
         type: SyncEntityType.SyncAckV1,
       },
@@ -268,12 +268,12 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
         data: expect.objectContaining({
           id: asset2User3.id,
         }),
-        type: SyncEntityType.PartnerAssetV1,
+        type: SyncEntityType.PartnerAssetV2,
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
 });

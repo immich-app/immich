@@ -11,21 +11,21 @@
   let { title, children, withHeader = true, withBackdrop = true }: Props = $props();
 </script>
 
-<section class="min-w-dvw flex min-h-dvh items-center justify-center relative isolate">
+<section class="relative isolate flex min-h-dvh min-w-dvw items-center justify-center">
   {#if withBackdrop}
-    <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
+    <div class="absolute -z-10 flex size-full place-content-center place-items-center">
       <img
         src={immichLogo}
-        class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
+        class="mx-auto mb-2 h-full max-w-(--breakpoint-md) overflow-hidden antialiased"
         alt="Immich logo"
       />
       <div
-        class="w-full h-[99%] absolute inset-s-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
+        class="absolute inset-s-0 top-0 h-[99%] w-full bg-transparent backdrop-blur-[200px] dark:bg-immich-dark-bg/20"
       ></div>
     </div>
   {/if}
 
-  <Card color="secondary" class="w-full max-w-xl border m-2">
+  <Card color="secondary" class="m-2 w-full max-w-xl border">
     {#if withHeader}
       <CardHeader class="mt-6">
         <VStack>
