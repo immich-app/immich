@@ -26,7 +26,7 @@ void main() {
       final checksum = 'yolo';
       final album = await ctx.newRemoteAlbum(ownerId: user.id);
       final remoteAsset = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
-      await ctx.insertRemoteAlbumAsset(albumId: album.id, assetId: remoteAsset.id);
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: remoteAsset.id);
 
       final localAsset1 = await ctx.newLocalAsset(checksum: checksum);
       final localAsset2 = await ctx.newLocalAsset(checksum: checksum);
