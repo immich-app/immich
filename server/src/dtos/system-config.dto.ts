@@ -7,7 +7,6 @@ import {
   OcrConfigSchema,
 } from 'src/dtos/model-config.dto';
 import {
-  AudioCodec,
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
