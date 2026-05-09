@@ -51,11 +51,13 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       return Future.value();
     }
     return _db.batch((batch) {
-      batch.update(
-        _db.trashSyncEntity,
-        TrashSyncEntityCompanion(isSyncApproved: Value(isSyncApproved)),
-        where: (tbl) => tbl.checksum.isIn(checksums),
-      );
+      for (final slice in checksums.slices(kDriftMaxChunk)) {
+        batch.update(
+          _db.trashSyncEntity,
+          TrashSyncEntityCompanion(isSyncApproved: Value(isSyncApproved)),
+          where: (tbl) => tbl.checksum.isIn(slice),
+        );
+      }
     });
   }
 
