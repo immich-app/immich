@@ -72,7 +72,7 @@
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cron": "4.4.0",
-    "exiftool-vendored": "^35.0.0",
+    "exiftool-vendored": "^35.20.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
@@ -166,9 +166,6 @@
     "unplugin-swc": "^1.4.5",
     "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0"
-  },
-  "volta": {
-    "node": "24.15.0"
   },
   "overrides": {
     "sharp": "^0.34.5"

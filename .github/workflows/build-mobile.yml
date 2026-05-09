@@ -51,6 +51,7 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
@@ -60,7 +61,7 @@ jobs:
         id: check
         uses: immich-app/devtools/actions/pre-job@91f342bb4477c4bc10c576ae739da875d85aa164 # pre-job-action-v2.0.4
         with:
-          github-token: ${{ steps.token.outputs.token }}
+          github-token: ${{ steps.token.outputs.token || github.token }}
           filters: |
             mobile:
               - 'mobile/**'
@@ -73,12 +74,13 @@ jobs:
     needs: pre-job
     permissions:
       contents: read
-    # Skip when PR from a fork
-    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+      pull-requests: write
+    if: ${{ github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
     runs-on: mich
 
     steps:
       - id: token
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
@@ -88,9 +90,10 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
-          token: ${{ steps.token.outputs.token }}
+          token: ${{ steps.token.outputs.token || github.token }}
 
       - name: Create the Keystore
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
@@ -144,19 +147,39 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if [[ $IS_MAIN == 'true' ]]; then
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
-            flutter build apk --debug --split-per-abi --target-platform android-arm64
+            flutter build apk --release
           fi
 
       - name: Publish Android Artifact
+        id: upload-apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
+
+      - name: Comment APK download link on PR
+        if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork }}
+        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APK_URL: ${{ steps.upload-apk.outputs.artifact-url }}
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          message-id: 'mobile-android-apk'
+          message: |
+            📱 **Android release APK (universal)** — `${{ env.HEAD_SHA }}`
+
+            Download: ${{ env.APK_URL }}
+
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
+
+            GitHub login required. Downloads as a zip containing a single `app-release.apk` — extract and install. Installs as a separate app (applicationId `app.alextran.immich.pr${{ github.event.pull_request.number }}`), so it coexists with the Play Store version and any other PR builds.
 
       - name: Save Gradle Cache
         id: cache-gradle-save
