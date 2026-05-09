@@ -11,12 +11,193 @@
   import { Button, IconButton } from '@immich/ui';
   import { mdiPlus, mdiTrashCanOutline } from '@mdi/js';
   import { isEqual } from 'lodash-es';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+
+  type SelectOption = { value: string; text: string };
+  type HuggingFaceModel = { id?: string; modelId?: string };
 
   const disabled = $derived(featureFlagsManager.value.configFile);
   const config = $derived(systemConfigManager.value);
   let configToEdit = $state(systemConfigManager.cloneValue());
+  let isRefreshingModelOptions = $state(false);
+  let isHfConnected = $state(false);
+
+  let clipModelOptions = $state<SelectOption[]>([]);
+  let facialRecognitionModelOptions = $state<SelectOption[]>([]);
+  let ocrModelOptions = $state<SelectOption[]>([]);
+
+  const CLIP_MODEL_DIMENSIONS: Record<string, number> = {
+    RN101__openai: 512,
+    RN101__yfcc15m: 512,
+    'ViT-B-16__laion400m_e31': 512,
+    'ViT-B-16__laion400m_e32': 512,
+    'ViT-B-16__openai': 512,
+    'ViT-B-32__laion2b-s34b-b79k': 512,
+    'ViT-B-32__laion2b_e16': 512,
+    'ViT-B-32__laion400m_e31': 512,
+    'ViT-B-32__laion400m_e32': 512,
+    'ViT-B-32__openai': 512,
+    'XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k': 512,
+    'XLM-Roberta-Large-Vit-B-32': 512,
+    RN50x4__openai: 640,
+    'ViT-B-16-plus-240__laion400m_e31': 640,
+    'ViT-B-16-plus-240__laion400m_e32': 640,
+    'XLM-Roberta-Large-Vit-B-16Plus': 640,
+    'LABSE-Vit-L-14': 768,
+    RN50x16__openai: 768,
+    'ViT-B-16-SigLIP-256__webli': 768,
+    'ViT-B-16-SigLIP-384__webli': 768,
+    'ViT-B-16-SigLIP-512__webli': 768,
+    'ViT-B-16-SigLIP-i18n-256__webli': 768,
+    'ViT-B-16-SigLIP__webli': 768,
+    'ViT-L-14-336__openai': 768,
+    'ViT-L-14-quickgelu__dfn2b': 768,
+    'ViT-L-14__laion2b-s32b-b82k': 768,
+    'ViT-L-14__laion400m_e31': 768,
+    'ViT-L-14__laion400m_e32': 768,
+    'ViT-L-14__openai': 768,
+    'XLM-Roberta-Large-Vit-L-14': 768,
+    'nllb-clip-base-siglip__mrl': 768,
+    'nllb-clip-base-siglip__v1': 768,
+    RN50__cc12m: 1024,
+    RN50__openai: 1024,
+    RN50__yfcc15m: 1024,
+    RN50x64__openai: 1024,
+    'ViT-H-14-378-quickgelu__dfn5b': 1024,
+    'ViT-H-14-quickgelu__dfn5b': 1024,
+    'ViT-H-14__laion2b-s32b-b79k': 1024,
+    'ViT-L-16-SigLIP-256__webli': 1024,
+    'ViT-L-16-SigLIP-384__webli': 1024,
+    'ViT-g-14__laion2b-s12b-b42k': 1024,
+    'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': 1024,
+    'ViT-SO400M-14-SigLIP-384__webli': 1152,
+    'nllb-clip-large-siglip__mrl': 1152,
+    'nllb-clip-large-siglip__v1': 1152,
+    'ViT-B-16-SigLIP2__webli': 768,
+    'ViT-B-32-SigLIP2-256__webli': 768,
+    'ViT-L-16-SigLIP2-256__webli': 1024,
+    'ViT-L-16-SigLIP2-384__webli': 1024,
+    'ViT-L-16-SigLIP2-512__webli': 1024,
+    'ViT-SO400M-14-SigLIP2__webli': 1152,
+    'ViT-SO400M-14-SigLIP2-378__webli': 1152,
+    'ViT-SO400M-16-SigLIP2-256__webli': 1152,
+    'ViT-SO400M-16-SigLIP2-384__webli': 1152,
+    'ViT-SO400M-16-SigLIP2-512__webli': 1152,
+    'ViT-gopt-16-SigLIP2-256__webli': 1536,
+    'ViT-gopt-16-SigLIP2-384__webli': 1536,
+  };
+
+  const getClipModelValueDescription = (modelName: string, dimSize: number): string => {
+    if (modelName.includes('SigLIP2')) {
+      return `${dimSize}d, newest generation`;
+    }
+
+    if (modelName.includes('XLM') || modelName.includes('nllb') || modelName.includes('LABSE')) {
+      return `${dimSize}d, multilingual search`;
+    }
+
+    if (modelName.includes('SigLIP')) {
+      return `${dimSize}d, fast and accurate`;
+    }
+
+    return `${dimSize}d, stable baseline`;
+  };
+
+  const CLIP_MODEL_FALLBACK_OPTIONS: SelectOption[] = Object.entries(CLIP_MODEL_DIMENSIONS).map(([modelName, dimSize]) => ({
+    value: modelName,
+    text: `${modelName} (${getClipModelValueDescription(modelName, dimSize)})`,
+  }));
+
+  const FACIAL_RECOGNITION_FALLBACK_OPTIONS: SelectOption[] = [
+    { value: 'antelopev2', text: 'antelopev2 (best quality, highest memory)' },
+    { value: 'buffalo_l', text: 'buffalo_l (high quality, balanced speed)' },
+    { value: 'buffalo_m', text: 'buffalo_m (balanced quality and memory)' },
+    { value: 'buffalo_s', text: 'buffalo_s (lowest memory, fastest startup)' },
+  ];
+
+  const OCR_MODEL_FALLBACK_OPTIONS: SelectOption[] = [
+    { value: 'PP-OCRv5_server', text: 'PP-OCRv5_server (best OCR quality, highest compute)' },
+    { value: 'PP-OCRv5_mobile', text: 'PP-OCRv5_mobile (balanced quality and speed)' },
+    { value: 'EN__PP-OCRv5_mobile', text: 'EN__PP-OCRv5_mobile (English-only, fastest option)' },
+    { value: 'EL__PP-OCRv5_mobile', text: 'EL__PP-OCRv5_mobile (Greek and English)' },
+    { value: 'KOREAN__PP-OCRv5_mobile', text: 'KOREAN__PP-OCRv5_mobile (Korean and English)' },
+    { value: 'LATIN__PP-OCRv5_mobile', text: 'LATIN__PP-OCRv5_mobile (Latin script languages)' },
+    {
+      value: 'ESLAV__PP-OCRv5_mobile',
+      text: 'ESLAV__PP-OCRv5_mobile (East Slavic and English)',
+    },
+    { value: 'TH__PP-OCRv5_mobile', text: 'TH__PP-OCRv5_mobile (Thai and English)' },
+  ];
+
+  const getModelIdentifier = (model: HuggingFaceModel): string | undefined => {
+    return model.modelId || model.id;
+  };
+
+  const buildClipModelOptionsFromHf = (modelIds: string[]): SelectOption[] => {
+    return modelIds
+      .filter((id) => id in CLIP_MODEL_DIMENSIONS)
+      .sort((left, right) => left.localeCompare(right))
+      .map((modelName) => {
+        const dimSize = CLIP_MODEL_DIMENSIONS[modelName] ?? 0;
+        return {
+          value: modelName,
+          text: `${modelName} (${getClipModelValueDescription(modelName, dimSize)})`,
+        };
+      });
+  };
+
+  const buildFaceModelOptionsFromHf = (modelIds: string[]): SelectOption[] => {
+    return FACIAL_RECOGNITION_FALLBACK_OPTIONS.filter((option) => modelIds.includes(option.value));
+  };
+
+  const buildOcrModelOptionsFromHf = (modelIds: string[]): SelectOption[] => {
+    return OCR_MODEL_FALLBACK_OPTIONS.filter((option) => modelIds.includes(option.value));
+  };
+
+  const refreshModelOptionsFromHf = async () => {
+    isRefreshingModelOptions = true;
+
+    try {
+      const response = await fetch('https://huggingface.co/api/models?author=immich-app&limit=200&full=false');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Hugging Face models: ${response.status}`);
+      }
+
+      const models = (await response.json()) as HuggingFaceModel[];
+      const modelIds = models
+        .map(getModelIdentifier)
+        .filter((id): id is string => Boolean(id))
+        .map((id) => id.replace(/^immich-app\//, ''));
+
+      const uniqueModelIds = [...new Set(modelIds)];
+
+      const dynamicClipOptions = buildClipModelOptionsFromHf(uniqueModelIds);
+      const dynamicFaceOptions = buildFaceModelOptionsFromHf(uniqueModelIds);
+      const dynamicOcrOptions = buildOcrModelOptionsFromHf(uniqueModelIds);
+
+      clipModelOptions = dynamicClipOptions.length > 0 ? dynamicClipOptions : CLIP_MODEL_FALLBACK_OPTIONS;
+      facialRecognitionModelOptions =
+        dynamicFaceOptions.length > 0 ? dynamicFaceOptions : FACIAL_RECOGNITION_FALLBACK_OPTIONS;
+      ocrModelOptions = dynamicOcrOptions.length > 0 ? dynamicOcrOptions : OCR_MODEL_FALLBACK_OPTIONS;
+      isHfConnected = true;
+    } catch {
+      clipModelOptions = CLIP_MODEL_FALLBACK_OPTIONS;
+      facialRecognitionModelOptions = FACIAL_RECOGNITION_FALLBACK_OPTIONS;
+      ocrModelOptions = OCR_MODEL_FALLBACK_OPTIONS;
+      isHfConnected = false;
+    } finally {
+      isRefreshingModelOptions = false;
+    }
+  };
+
+  onMount(() => {
+    clipModelOptions = CLIP_MODEL_FALLBACK_OPTIONS;
+    facialRecognitionModelOptions = FACIAL_RECOGNITION_FALLBACK_OPTIONS;
+    ocrModelOptions = OCR_MODEL_FALLBACK_OPTIONS;
+    void refreshModelOptionsFromHf();
+  });
 </script>
 
 <div class="mt-2">
@@ -128,20 +309,35 @@
             inputType={SettingInputFieldType.TEXT}
             label={$t('admin.machine_learning_clip_model')}
             bind:value={configToEdit.machineLearning.clip.modelName}
-            required={true}
+            description={$t('admin.machine_learning_clip_model_description')}
             disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.clip.enabled}
             isEdited={configToEdit.machineLearning.clip.modelName !== config.machineLearning.clip.modelName}
-          >
-            {#snippet descriptionSnippet()}
-              <p class="pb-2 text-sm immich-form-label">
-                <FormatMessage key="admin.machine_learning_clip_model_description">
-                  {#snippet children({ message })}
-                    <a target="_blank" href="https://huggingface.co/immich-app"><u>{message}</u></a>
-                  {/snippet}
-                </FormatMessage>
-              </p>
-            {/snippet}
-          </SettingInputField>
+          />
+
+          {#if isHfConnected}
+            <SettingSelect
+              label={$t('admin.machine_learning_clip_model')}
+              desc={''}
+              name="clip-model-select"
+              value={configToEdit.machineLearning.clip.modelName}
+              options={clipModelOptions}
+              disabled={disabled || isRefreshingModelOptions || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.clip.enabled}
+              onSelect={(value) => {
+                if (typeof value === 'string') {
+                  configToEdit.machineLearning.clip.modelName = value;
+                }
+              }}
+              isEdited={configToEdit.machineLearning.clip.modelName !== config.machineLearning.clip.modelName}
+            />
+          {/if}
+
+          <p class="pb-2 text-sm immich-form-label">
+            <FormatMessage key="admin.machine_learning_clip_model_description">
+              {#snippet children({ message })}
+                <a target="_blank" href="https://huggingface.co/immich-app"><u>{message}</u></a>
+              {/snippet}
+            </FormatMessage>
+          </p>
         </div>
       </SettingAccordion>
 
@@ -190,23 +386,38 @@
 
           <hr />
 
-          <SettingSelect
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
             label={$t('admin.machine_learning_facial_recognition_model')}
-            desc={$t('admin.machine_learning_facial_recognition_model_description')}
-            name="facial-recognition-model"
+            description={$t('admin.machine_learning_facial_recognition_model_description')}
             bind:value={configToEdit.machineLearning.facialRecognition.modelName}
-            options={[
-              { value: 'antelopev2', text: 'antelopev2' },
-              { value: 'buffalo_l', text: 'buffalo_l' },
-              { value: 'buffalo_m', text: 'buffalo_m' },
-              { value: 'buffalo_s', text: 'buffalo_s' },
-            ]}
             disabled={disabled ||
               !configToEdit.machineLearning.enabled ||
               !configToEdit.machineLearning.facialRecognition.enabled}
             isEdited={configToEdit.machineLearning.facialRecognition.modelName !==
               config.machineLearning.facialRecognition.modelName}
           />
+
+          {#if isHfConnected}
+            <SettingSelect
+              label={$t('admin.machine_learning_facial_recognition_model')}
+              desc={''}
+              name="facial-recognition-model-select"
+              value={configToEdit.machineLearning.facialRecognition.modelName}
+              options={facialRecognitionModelOptions}
+              disabled={disabled ||
+                isRefreshingModelOptions ||
+                !configToEdit.machineLearning.enabled ||
+                !configToEdit.machineLearning.facialRecognition.enabled}
+              onSelect={(value) => {
+                if (typeof value === 'string') {
+                  configToEdit.machineLearning.facialRecognition.modelName = value;
+                }
+              }}
+              isEdited={configToEdit.machineLearning.facialRecognition.modelName !==
+                config.machineLearning.facialRecognition.modelName}
+            />
+          {/if}
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
@@ -269,24 +480,34 @@
 
           <hr />
 
-          <SettingSelect
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
             label={$t('admin.machine_learning_ocr_model')}
-            desc={$t('admin.machine_learning_ocr_model_description')}
-            name="ocr-model"
+            description={$t('admin.machine_learning_ocr_model_description')}
             bind:value={configToEdit.machineLearning.ocr.modelName}
-            options={[
-              { text: 'PP-OCRv5_server (Chinese, Japanese and English)', value: 'PP-OCRv5_server' },
-              { text: 'PP-OCRv5_mobile (Chinese, Japanese and English)', value: 'PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (English-only)', value: 'EN__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Greek and English)', value: 'EL__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Korean and English)', value: 'KOREAN__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Latin script languages)', value: 'LATIN__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Russian, Belarusian, Ukrainian and English)', value: 'ESLAV__PP-OCRv5_mobile' },
-              { text: 'PP-OCRv5_mobile (Thai and English)', value: 'TH__PP-OCRv5_mobile' },
-            ]}
             disabled={disabled || !configToEdit.machineLearning.enabled || !configToEdit.machineLearning.ocr.enabled}
             isEdited={configToEdit.machineLearning.ocr.modelName !== config.machineLearning.ocr.modelName}
           />
+
+          {#if isHfConnected}
+            <SettingSelect
+              label={$t('admin.machine_learning_ocr_model')}
+              desc={''}
+              name="ocr-model-select"
+              value={configToEdit.machineLearning.ocr.modelName}
+              options={ocrModelOptions}
+              disabled={disabled ||
+                isRefreshingModelOptions ||
+                !configToEdit.machineLearning.enabled ||
+                !configToEdit.machineLearning.ocr.enabled}
+              onSelect={(value) => {
+                if (typeof value === 'string') {
+                  configToEdit.machineLearning.ocr.modelName = value;
+                }
+              }}
+              isEdited={configToEdit.machineLearning.ocr.modelName !== config.machineLearning.ocr.modelName}
+            />
+          {/if}
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
