@@ -8,7 +8,7 @@
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import {
     computeDifferingMetadataFields,
-    suggestDuplicate,
+    countDifferingMetadataItems,
     type DifferingMetadataFields,
   } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -18,8 +18,6 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-
-  const INITIAL_VISIBLE_COUNT = 5;
 
   interface Props {
     assets: AssetResponseDto[];
@@ -33,10 +31,11 @@
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  let differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+  const InitialVisibleCount = 5;
 
-  let differingCount = $derived(Object.values(differingMetadataFields).filter(Boolean).length);
-  let hasMore = $derived(differingCount > INITIAL_VISIBLE_COUNT);
+  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+  const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
+  const hasMore = $derived(differingCount > InitialVisibleCount);
   let showMore = $state(false);
 
   onMount(() => {
@@ -180,7 +179,7 @@
           {onViewAsset}
           {differingMetadataFields}
           {showMore}
-          intialVisibleCount={INITIAL_VISIBLE_COUNT}
+          initialVisibleCount={InitialVisibleCount}
         />
       {/each}
     </div>
@@ -192,7 +191,7 @@
         <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
         {showMore
           ? $t('show_less')
-          : $t('show_more_fields', { values: { count: differingCount - INITIAL_VISIBLE_COUNT } })}
+          : $t('show_more_fields', { values: { count: differingCount - InitialVisibleCount } })}
       </Button>
     </div>
   {/if}
