@@ -228,6 +228,8 @@ export class JobRepository {
           }
 
           job.options = action.options;
+        } else if (this.isSharedSpaceFacePipelineJob(item.name)) {
+          await this.removePausedStableJob(queue, job.options.jobId);
         }
 
         promises.push(queue.add(item.name, item.data, job.options));
@@ -381,6 +383,26 @@ export class JobRepository {
     if (state === 'failed') {
       await existingJob.remove();
     }
+  }
+
+  private async removePausedStableJob(queue: Queue, jobId: string) {
+    const existingJob = await queue.getJob(jobId);
+    if (!existingJob) {
+      return;
+    }
+
+    const state = (await existingJob.getState()) as string;
+    if (state === 'paused') {
+      await existingJob.remove();
+    }
+  }
+
+  private isSharedSpaceFacePipelineJob(name: JobName): boolean {
+    return (
+      name === JobName.SharedSpaceFaceMatch ||
+      name === JobName.SharedSpaceFaceMatchAll ||
+      name === JobName.SharedSpaceFaceMatchPage
+    );
   }
 
   private async prepareFacialRecognitionQueueAll(

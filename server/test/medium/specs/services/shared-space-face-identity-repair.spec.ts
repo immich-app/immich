@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetVisibility, JobName, JobStatus, SharedSpaceRole } from 'src/enum';
+import { AssetVisibility, JobName, JobStatus, SharedSpaceRole, SourceType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
@@ -107,6 +107,45 @@ const createIdentityFace = async (
   return { person, identity, asset, assetFace };
 };
 
+const createExifIdentityFace = async (
+  ctx: ReturnType<typeof setup>['ctx'],
+  faceIdentityRepository: FaceIdentityRepository,
+  input: {
+    ownerId: string;
+    libraryId: string;
+    personId?: string;
+    identityId?: string;
+    name?: string;
+  },
+) => {
+  const { result: person } = input.personId
+    ? {
+        result: await ctx.database
+          .selectFrom('person')
+          .selectAll()
+          .where('id', '=', input.personId)
+          .executeTakeFirstOrThrow(),
+      }
+    : await ctx.newPerson({ ownerId: input.ownerId, name: input.name ?? 'Alice EXIF' });
+  const identity =
+    input.identityId === undefined
+      ? await faceIdentityRepository.ensurePersonIdentity(person.id)
+      : { id: input.identityId, type: 'person' };
+  const { asset } = await ctx.newAsset({
+    ownerId: input.ownerId,
+    libraryId: input.libraryId,
+    visibility: AssetVisibility.Timeline,
+  });
+  const { assetFace } = await ctx.newAssetFace({
+    assetId: asset.id,
+    personId: person.id,
+    sourceType: SourceType.Exif,
+  });
+  await faceIdentityRepository.linkFace({ assetFaceId: assetFace.id, identityId: identity.id, source: 'import' });
+
+  return { person, identity, asset, assetFace };
+};
+
 const createLegacyPetFace = async (
   ctx: ReturnType<typeof setup>['ctx'],
   input: {
@@ -131,6 +170,56 @@ const createLegacyPetFace = async (
 };
 
 describe('SharedSpaceService linked-library face identity repair', () => {
+  it('full-space rematch assigns every EXIF identity face in linked libraries without embeddings', async () => {
+    const { ctx, sut, faceIdentityRepository, sharedSpaceRepository, jobs } = setup();
+    const { user } = await ctx.newUser();
+    const { space: firstSpace } = await ctx.newSharedSpace({ createdById: user.id, faceRecognitionEnabled: true });
+    const { space: secondSpace } = await ctx.newSharedSpace({ createdById: user.id, faceRecognitionEnabled: true });
+    await ctx.newSharedSpaceMember({ spaceId: firstSpace.id, userId: user.id, role: SharedSpaceRole.Owner });
+    await ctx.newSharedSpaceMember({ spaceId: secondSpace.id, userId: user.id, role: SharedSpaceRole.Owner });
+    const { library } = await ctx.newLibrary({ ownerId: user.id });
+    await ctx.newSharedSpaceLibrary({ spaceId: firstSpace.id, libraryId: library.id, addedById: user.id });
+    await ctx.newSharedSpaceLibrary({ spaceId: secondSpace.id, libraryId: library.id, addedById: user.id });
+    const first = await createExifIdentityFace(ctx, faceIdentityRepository, {
+      ownerId: user.id,
+      libraryId: library.id,
+      name: 'Alice EXIF',
+    });
+    const second = await createExifIdentityFace(ctx, faceIdentityRepository, {
+      ownerId: user.id,
+      libraryId: library.id,
+      personId: first.person.id,
+      identityId: first.identity.id,
+    });
+
+    await expect(sut.handleSharedSpaceFaceMatchAll({ spaceId: firstSpace.id })).resolves.toBe(JobStatus.Success);
+    await expect(sut.handleSharedSpaceFaceMatchAll({ spaceId: secondSpace.id })).resolves.toBe(JobStatus.Success);
+    await drainSharedSpaceFaceJobs(sut, jobs);
+
+    for (const space of [firstSpace, secondSpace]) {
+      const people = await ctx.database
+        .selectFrom('shared_space_person')
+        .selectAll()
+        .where('spaceId', '=', space.id)
+        .where('identityId', '=', first.identity.id)
+        .execute();
+      expect(people).toHaveLength(1);
+      await expect(
+        sharedSpaceRepository.getPersonFaceAssignmentsForSpace(first.assetFace.id, space.id),
+      ).resolves.toEqual([{ personId: people[0].id, identityId: first.identity.id, type: 'person' }]);
+      await expect(
+        sharedSpaceRepository.getPersonFaceAssignmentsForSpace(second.assetFace.id, space.id),
+      ).resolves.toEqual([{ personId: people[0].id, identityId: first.identity.id, type: 'person' }]);
+      await expect(
+        sharedSpaceRepository.getPeopleFaceStatisticsBySpaceId(space.id, { minimumFaceCount: 1 }),
+      ).resolves.toMatchObject({
+        detectedFaceCount: 2,
+        assignedVisibleFaceCount: 2,
+        unassignedFaceCount: 0,
+      });
+    }
+  });
+
   it('library sync creates one identity-backed space person across multiple linked libraries', async () => {
     const { ctx, sut, faceIdentityRepository, sharedSpaceRepository, jobs } = setup();
     const { user } = await ctx.newUser();

@@ -455,7 +455,8 @@ describe(JobRepository.name, () => {
 
     await sut.queue({ name: JobName.SharedSpaceFaceMatchPage, data: { spaceId: 'space-1' } });
 
-    expect(queue.getJob).not.toHaveBeenCalled();
+    expect(queue.getJob).toHaveBeenCalledWith('shared-space-face-match-page/space-1/start');
+    expect(failedJob.getState).toHaveBeenCalled();
     expect(failedJob.remove).not.toHaveBeenCalled();
     expect(queue.add).toHaveBeenCalledWith(
       JobName.SharedSpaceFaceMatchPage,
@@ -579,5 +580,37 @@ describe(JobRepository.name, () => {
         removeOnComplete: true,
       },
     );
+  });
+
+  it.each([
+    [
+      JobName.SharedSpaceFaceMatch,
+      { spaceId: 'space-1', assetId: 'asset-1', source: 'identity-backfill' },
+      'shared-space-face-match/identity-backfill/space-1/asset-1',
+    ],
+    [JobName.SharedSpaceFaceMatchAll, { spaceId: 'space-1' }, 'shared-space-face-match-all/space-1'],
+    [
+      JobName.SharedSpaceFaceMatchPage,
+      { spaceId: 'space-1', afterAssetId: 'asset-9' },
+      'shared-space-face-match-page/space-1/after/asset-9',
+    ],
+  ])('replaces paused stable %s jobs before requeueing them', async (name, data, jobId) => {
+    const { sut, queue } = setup();
+    const pausedJob = {
+      getState: vi.fn().mockResolvedValue('paused'),
+      remove: vi.fn().mockResolvedValue(void 0),
+    };
+    queue.getJob.mockResolvedValue(pausedJob);
+    setHandlers(sut, [name]);
+
+    await sut.queue({ name, data } as any);
+
+    expect(queue.getJob).toHaveBeenCalledWith(jobId);
+    expect(pausedJob.getState).toHaveBeenCalled();
+    expect(pausedJob.remove).toHaveBeenCalled();
+    expect(queue.add).toHaveBeenCalledWith(name, data, {
+      jobId,
+      removeOnComplete: true,
+    });
   });
 });
