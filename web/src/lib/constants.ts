@@ -42,6 +42,98 @@ export const dateFormats = {
   } satisfies Intl.DateTimeFormatOptions,
 };
 
+type MachineLearningModelOption = {
+  label: string;
+  value: string;
+  description: string;
+  keywords?: string[];
+};
+
+// Frontend snapshot of the supported ML model catalog.
+// Model identifiers were taken from machine-learning/immich_ml/models/constants.py,
+// CLIP embedding dimensions were taken from server/src/constants.ts, and the release
+// dates were copied from the corresponding immich-app Hugging Face model listings/cards.
+export const machineLearningClipModelOptions: MachineLearningModelOption[] = [
+    { label: 'ViT-gopt-16-SigLIP2-256__webli', value: 'ViT-gopt-16-SigLIP2-256__webli', description: '1536d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-gopt-16-SigLIP2-384__webli', value: 'ViT-gopt-16-SigLIP2-384__webli', description: '1536d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-SO400M-14-SigLIP-384__webli', value: 'ViT-SO400M-14-SigLIP-384__webli', description: '1152d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-SO400M-14-SigLIP2-378__webli', value: 'ViT-SO400M-14-SigLIP2-378__webli', description: '1152d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-SO400M-14-SigLIP2__webli', value: 'ViT-SO400M-14-SigLIP2__webli', description: '1152d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-SO400M-16-SigLIP2-256__webli', value: 'ViT-SO400M-16-SigLIP2-256__webli', description: '1152d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-SO400M-16-SigLIP2-384__webli', value: 'ViT-SO400M-16-SigLIP2-384__webli', description: '1152d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-SO400M-16-SigLIP2-512__webli', value: 'ViT-SO400M-16-SigLIP2-512__webli', description: '1152d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'nllb-clip-large-siglip__mrl', value: 'nllb-clip-large-siglip__mrl', description: '1152d embeddings. Multilingual search model. Released Jul 2024.' },
+    { label: 'nllb-clip-large-siglip__v1', value: 'nllb-clip-large-siglip__v1', description: '1152d embeddings. Multilingual search model. Released Dec 2023.' },
+    { label: 'RN50__cc12m', value: 'RN50__cc12m', description: '1024d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'RN50__openai', value: 'RN50__openai', description: '1024d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'RN50__yfcc15m', value: 'RN50__yfcc15m', description: '1024d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'RN50x64__openai', value: 'RN50x64__openai', description: '1024d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'ViT-H-14-378-quickgelu__dfn5b', value: 'ViT-H-14-378-quickgelu__dfn5b', description: '1024d embeddings. General-purpose CLIP model. Released Dec 2023.' },
+    { label: 'ViT-H-14-quickgelu__dfn5b', value: 'ViT-H-14-quickgelu__dfn5b', description: '1024d embeddings. General-purpose CLIP model. Released Dec 2023.' },
+    { label: 'ViT-H-14__laion2b-s32b-b79k', value: 'ViT-H-14__laion2b-s32b-b79k', description: '1024d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-L-16-SigLIP-256__webli', value: 'ViT-L-16-SigLIP-256__webli', description: '1024d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-L-16-SigLIP-384__webli', value: 'ViT-L-16-SigLIP-384__webli', description: '1024d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-L-16-SigLIP2-256__webli', value: 'ViT-L-16-SigLIP2-256__webli', description: '1024d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-L-16-SigLIP2-384__webli', value: 'ViT-L-16-SigLIP2-384__webli', description: '1024d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-L-16-SigLIP2-512__webli', value: 'ViT-L-16-SigLIP2-512__webli', description: '1024d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-g-14__laion2b-s12b-b42k', value: 'ViT-g-14__laion2b-s12b-b42k', description: '1024d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k', value: 'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k', description: '1024d embeddings. Multilingual search model. Released Dec 2023.' },
+    { label: 'LABSE-Vit-L-14', value: 'LABSE-Vit-L-14', description: '768d embeddings. Multilingual search model. Released Oct 2023.' },
+    { label: 'RN50x16__openai', value: 'RN50x16__openai', description: '768d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'ViT-B-16-SigLIP-256__webli', value: 'ViT-B-16-SigLIP-256__webli', description: '768d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-B-16-SigLIP-384__webli', value: 'ViT-B-16-SigLIP-384__webli', description: '768d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-B-16-SigLIP-512__webli', value: 'ViT-B-16-SigLIP-512__webli', description: '768d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-B-16-SigLIP-i18n-256__webli', value: 'ViT-B-16-SigLIP-i18n-256__webli', description: '768d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-B-16-SigLIP2__webli', value: 'ViT-B-16-SigLIP2__webli', description: '768d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-B-16-SigLIP__webli', value: 'ViT-B-16-SigLIP__webli', description: '768d embeddings. Fast and accurate semantic search model. Released Jul 2024.' },
+    { label: 'ViT-B-32-SigLIP2-256__webli', value: 'ViT-B-32-SigLIP2-256__webli', description: '768d embeddings. Newest generation embedding family. Released Mar 2025.' },
+    { label: 'ViT-L-14-336__openai', value: 'ViT-L-14-336__openai', description: '768d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-L-14-quickgelu__dfn2b', value: 'ViT-L-14-quickgelu__dfn2b', description: '768d embeddings. General-purpose CLIP model. Released Dec 2023.' },
+    { label: 'ViT-L-14__laion2b-s32b-b82k', value: 'ViT-L-14__laion2b-s32b-b82k', description: '768d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-L-14__laion400m_e31', value: 'ViT-L-14__laion400m_e31', description: '768d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-L-14__laion400m_e32', value: 'ViT-L-14__laion400m_e32', description: '768d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-L-14__openai', value: 'ViT-L-14__openai', description: '768d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'XLM-Roberta-Large-Vit-L-14', value: 'XLM-Roberta-Large-Vit-L-14', description: '768d embeddings. Multilingual search model. Released Oct 2023.' },
+    { label: 'nllb-clip-base-siglip__mrl', value: 'nllb-clip-base-siglip__mrl', description: '768d embeddings. Multilingual search model. Released Jul 2024.' },
+    { label: 'nllb-clip-base-siglip__v1', value: 'nllb-clip-base-siglip__v1', description: '768d embeddings. Multilingual search model. Released Dec 2023.' },
+    { label: 'RN50x4__openai', value: 'RN50x4__openai', description: '640d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'ViT-B-16-plus-240__laion400m_e31', value: 'ViT-B-16-plus-240__laion400m_e31', description: '640d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-16-plus-240__laion400m_e32', value: 'ViT-B-16-plus-240__laion400m_e32', description: '640d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'XLM-Roberta-Large-Vit-B-16Plus', value: 'XLM-Roberta-Large-Vit-B-16Plus', description: '640d embeddings. Multilingual search model. Released Oct 2023.' },
+    { label: 'RN101__openai', value: 'RN101__openai', description: '512d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'RN101__yfcc15m', value: 'RN101__yfcc15m', description: '512d embeddings. Legacy baseline with broad compatibility. Released Oct 2023.' },
+    { label: 'ViT-B-16__laion400m_e31', value: 'ViT-B-16__laion400m_e31', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-16__laion400m_e32', value: 'ViT-B-16__laion400m_e32', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-16__openai', value: 'ViT-B-16__openai', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-32__laion2b-s34b-b79k', value: 'ViT-B-32__laion2b-s34b-b79k', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-32__laion2b_e16', value: 'ViT-B-32__laion2b_e16', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-32__laion400m_e31', value: 'ViT-B-32__laion400m_e31', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-32__laion400m_e32', value: 'ViT-B-32__laion400m_e32', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'ViT-B-32__openai', value: 'ViT-B-32__openai', description: '512d embeddings. General-purpose CLIP model. Released Oct 2023.' },
+    { label: 'XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k', value: 'XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k', description: '512d embeddings. Multilingual search model. Released Jul 2024.' },
+    { label: 'XLM-Roberta-Large-Vit-B-32', value: 'XLM-Roberta-Large-Vit-B-32', description: '512d embeddings. Multilingual search model. Released Oct 2023.' },
+  ];
+
+export const machineLearningFacialRecognitionModelOptions: MachineLearningModelOption[] = [
+    { label: 'antelopev2', value: 'antelopev2', description: 'Largest face model with the strongest matching quality. Released Nov 2023.' },
+    { label: 'buffalo_l', value: 'buffalo_l', description: 'Large face model with balanced speed and recognition accuracy. Released Nov 2023.' },
+    { label: 'buffalo_m', value: 'buffalo_m', description: 'Medium face model for modest hardware. Released Nov 2023.' },
+    { label: 'buffalo_s', value: 'buffalo_s', description: 'Smallest face model with the lightest runtime footprint. Released Nov 2023.' },
+  ];
+
+export const machineLearningOcrModelOptions: MachineLearningModelOption[] = [
+    { label: 'CH__PP-OCRv5_server', value: 'CH__PP-OCRv5_server', description: 'Largest OCR model for Chinese-heavy workloads.' },
+    { label: 'PP-OCRv5_server', value: 'PP-OCRv5_server', description: 'Large OCR model tuned for highest quality text extraction.' },
+    { label: 'CH__PP-OCRv5_mobile', value: 'CH__PP-OCRv5_mobile', description: 'Medium OCR model for Chinese-heavy workloads.' },
+    { label: 'PP-OCRv5_mobile', value: 'PP-OCRv5_mobile', description: 'Medium OCR model and the default general-purpose choice.' },
+    { label: 'EL__PP-OCRv5_mobile', value: 'EL__PP-OCRv5_mobile', description: 'Compact Greek and English OCR model.' },
+    { label: 'EN__PP-OCRv5_mobile', value: 'EN__PP-OCRv5_mobile', description: 'Compact English OCR model.' },
+    { label: 'ESLAV__PP-OCRv5_mobile', value: 'ESLAV__PP-OCRv5_mobile', description: 'Compact East Slavic OCR model.' },
+    { label: 'KOREAN__PP-OCRv5_mobile', value: 'KOREAN__PP-OCRv5_mobile', description: 'Compact Korean and English OCR model.' },
+    { label: 'LATIN__PP-OCRv5_mobile', value: 'LATIN__PP-OCRv5_mobile', description: 'Compact Latin-script OCR model for broad European language coverage.' },
+    { label: 'TH__PP-OCRv5_mobile', value: 'TH__PP-OCRv5_mobile', description: 'Compact Thai and English OCR model.' },
+  ];
+
 export enum QueryParameter {
   ACTION = 'action',
   ID = 'id',
