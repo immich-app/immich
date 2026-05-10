@@ -67,6 +67,8 @@ describe(PersonService.name, () => {
     faceIdentityMock.getPendingSharedSpaceFaceMatchBackfillTargets.mockResolvedValue([]);
     faceIdentityMock.deletePendingSharedSpaceFaceMatchBackfillTargets ??= vi.fn();
     faceIdentityMock.deletePendingSharedSpaceFaceMatchBackfillTargets.mockResolvedValue(void 0);
+    faceIdentityMock.deleteUnreferencedIdentities ??= vi.fn();
+    faceIdentityMock.deleteUnreferencedIdentities.mockResolvedValue(void 0);
     (mocks.person as any).getPeopleOverviewStatistics ??= vi.fn();
     (mocks.person as any).getPeopleFaceStatistics ??= vi.fn();
     (mocks.faceIdentity as any).getAccessiblePersonByProfileId.mockResolvedValue(void 0);
@@ -1424,6 +1426,30 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({ force: true });
 
       expect(mocks.faceIdentity.unlinkFacesBySourceType).toHaveBeenCalledWith(SourceType.MachineLearning);
+    });
+
+    it('should delete unreferenced identities after force reset removes people and shared-space people', async () => {
+      const face = AssetFaceFactory.from().person().build();
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+      mocks.person.getAllFaces.mockReturnValue(makeStream([face]));
+      mocks.person.getAllWithoutFaces.mockResolvedValue([]);
+      mocks.person.unassignFaces.mockResolvedValue();
+      mocks.sharedSpace.deleteAllPersonFaces.mockResolvedValue(void 0 as any);
+      mocks.sharedSpace.deleteAllPersons.mockResolvedValue(void 0 as any);
+      mocks.sharedSpace.getSpaceIdsWithFaceRecognitionEnabled.mockResolvedValue([]);
+
+      await sut.handleQueueRecognizeFaces({ force: true });
+
+      expect((mocks.faceIdentity as any).deleteUnreferencedIdentities).toHaveBeenCalledOnce();
+      expect(mocks.faceIdentity.unlinkFacesBySourceType.mock.invocationCallOrder[0]).toBeLessThan(
+        (mocks.faceIdentity as any).deleteUnreferencedIdentities.mock.invocationCallOrder[0],
+      );
+      expect(mocks.sharedSpace.deleteAllPersonFaces.mock.invocationCallOrder[0]).toBeLessThan(
+        (mocks.faceIdentity as any).deleteUnreferencedIdentities.mock.invocationCallOrder[0],
+      );
+      expect(mocks.sharedSpace.deleteAllPersons.mock.invocationCallOrder[0]).toBeLessThan(
+        (mocks.faceIdentity as any).deleteUnreferencedIdentities.mock.invocationCallOrder[0],
+      );
     });
 
     it('should run nightly if new face has been added since last run', async () => {
@@ -3471,6 +3497,78 @@ describe(PersonService.name, () => {
       await sut.handleRecognizeFaces({ id: noPerson1.id });
 
       expect(mocks.search.searchFaces).toHaveBeenCalledTimes(2);
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: [noPerson1.id],
+        newPersonId: person.id,
+      });
+    });
+
+    it('should use a relaxed existing-person search before creating a new core person', async () => {
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create();
+      const [noPerson1, noPerson2, noPerson3] = [
+        AssetFaceFactory.create({ assetId: asset.id }),
+        AssetFaceFactory.create(),
+        AssetFaceFactory.create(),
+      ];
+      const faces = [
+        { ...noPerson1, distance: 0 },
+        { ...noPerson2, distance: 0.31 },
+        { ...noPerson3, distance: 0.34 },
+      ] as FaceSearchResult[];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
+      mocks.search.searchFaces
+        .mockResolvedValueOnce(faces)
+        .mockResolvedValueOnce([{ ...noPerson2, personId: person.id, distance: 0.56 }]);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+
+      await sut.handleRecognizeFaces({ id: noPerson1.id });
+
+      expect(mocks.search.searchFaces).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          hasPerson: true,
+          maxDistance: 0.6,
+          numResults: 5,
+        }),
+      );
+      expect(mocks.person.create).not.toHaveBeenCalled();
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: [noPerson1.id],
+        newPersonId: person.id,
+      });
+    });
+
+    it('should attach a deferred small cluster to a relaxed existing-person match', async () => {
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create();
+      const [noPerson1, noPerson2] = [AssetFaceFactory.create({ assetId: asset.id }), AssetFaceFactory.create()];
+      const faces = [
+        { ...noPerson1, distance: 0 },
+        { ...noPerson2, distance: 0.34 },
+      ] as FaceSearchResult[];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
+      mocks.search.searchFaces
+        .mockResolvedValueOnce(faces)
+        .mockResolvedValueOnce([{ ...noPerson2, personId: person.id, distance: 0.56 }]);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+
+      await sut.handleRecognizeFaces({ id: noPerson1.id, deferred: true });
+
+      expect(mocks.search.searchFaces).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          hasPerson: true,
+          maxDistance: 0.6,
+          numResults: 5,
+        }),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.PersonGenerateThumbnail }),
+      );
+      expect(mocks.person.create).not.toHaveBeenCalled();
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: [noPerson1.id],
         newPersonId: person.id,

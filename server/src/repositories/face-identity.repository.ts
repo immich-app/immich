@@ -1990,6 +1990,39 @@ export class FaceIdentityRepository {
       .execute();
   }
 
+  async deleteUnreferencedIdentities(): Promise<void> {
+    await this.db
+      .deleteFrom('face_identity')
+      .where(({ not, exists, selectFrom, ref }) =>
+        not(
+          exists(
+            selectFrom('person')
+              .select(sql`1`.as('one'))
+              .whereRef('person.identityId', '=', ref('face_identity.id')),
+          ),
+        ),
+      )
+      .where(({ not, exists, selectFrom, ref }) =>
+        not(
+          exists(
+            selectFrom('shared_space_person')
+              .select(sql`1`.as('one'))
+              .whereRef('shared_space_person.identityId', '=', ref('face_identity.id')),
+          ),
+        ),
+      )
+      .where(({ not, exists, selectFrom, ref }) =>
+        not(
+          exists(
+            selectFrom('face_identity_face')
+              .select(sql`1`.as('one'))
+              .whereRef('face_identity_face.identityId', '=', ref('face_identity.id')),
+          ),
+        ),
+      )
+      .execute();
+  }
+
   async backfillPersonalIdentities(input: { cursor?: string; limit: number }): Promise<BackfillResult> {
     const people = await this.db
       .selectFrom('person')
