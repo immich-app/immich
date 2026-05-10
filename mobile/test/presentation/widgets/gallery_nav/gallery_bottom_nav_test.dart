@@ -10,7 +10,9 @@ import 'package:immich_mobile/presentation/widgets/gallery_nav/gallery_search_bl
 import 'package:immich_mobile/providers/gallery_nav/bottom_nav_height.provider.dart';
 import 'package:immich_mobile/providers/gallery_nav/gallery_tab_enum.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 
 import '../../../test_helpers/fake_tabs_router.dart';
 
@@ -42,6 +44,18 @@ class _NoOpHaptic extends HapticNotifier {
   dynamic heavyImpact() => null;
   @override
   dynamic vibrate() => null;
+}
+
+class _FakeRemoteAlbumNotifier extends RemoteAlbumNotifier {
+  int refreshCalls = 0;
+
+  @override
+  RemoteAlbumState build() => const RemoteAlbumState(albums: []);
+
+  @override
+  Future<void> refresh() async {
+    refreshCalls++;
+  }
 }
 
 /// Default portrait MediaQueryData (400x900) so tests exercise the pill branch.
@@ -261,13 +275,35 @@ void main() {
 
   testWidgets('tapping a different tab calls tabsRouter.setActiveIndex', (tester) async {
     final router = FakeTabsRouter(initialIndex: GalleryTabEnum.photos.index);
-    await tester.pumpWidget(_wrap(GalleryBottomNav(tabsRouter: router)));
+    await tester.pumpWidget(
+      _wrap(
+        GalleryBottomNav(tabsRouter: router),
+        overrides: [remoteAlbumProvider.overrideWith(_FakeRemoteAlbumNotifier.new)],
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('nav_albums'.tr()));
     await tester.pumpAndSettle();
 
     expect(router.setCalls, contains(GalleryTabEnum.albums.index));
+  });
+
+  testWidgets('tapping Albums refreshes the existing album provider', (tester) async {
+    final router = FakeTabsRouter(initialIndex: GalleryTabEnum.photos.index);
+    final remoteAlbumNotifier = _FakeRemoteAlbumNotifier();
+    await tester.pumpWidget(
+      _wrap(
+        GalleryBottomNav(tabsRouter: router),
+        overrides: [remoteAlbumProvider.overrideWith(() => remoteAlbumNotifier)],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('nav_albums'.tr()));
+    await tester.pumpAndSettle();
+
+    expect(remoteAlbumNotifier.refreshCalls, 1);
   });
 
   testWidgets('readonly landscape rail: Photos destination enabled, others disabled', (tester) async {

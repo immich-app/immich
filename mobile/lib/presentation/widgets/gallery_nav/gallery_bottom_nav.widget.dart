@@ -119,10 +119,9 @@ class _GalleryBottomNavState extends ConsumerState<GalleryBottomNav> {
   }
 
   /// Single entry point for all tab-tap side effects. Mirrors upstream
-  /// `_onNavigationSelected` in `tab_shell.page.dart`: invalidations fire on
+  /// `_onNavigationSelected` in `tab_shell.page.dart`: side effects fire on
   /// EVERY tap (including re-taps of the same tab) — the shell-level
-  /// `tabsRouter.addListener` only fires on index CHANGES, so putting
-  /// invalidations there would regress upstream behaviour.
+  /// `tabsRouter.addListener` only fires on index CHANGES.
   void _onTabTap(GalleryTabEnum tab) {
     final currentIndex = widget.tabsRouter.activeIndex;
 
@@ -135,7 +134,7 @@ class _GalleryBottomNavState extends ConsumerState<GalleryBottomNav> {
         ref.invalidate(driftMemoryFutureProvider);
         break;
       case GalleryTabEnum.albums:
-        ref.invalidate(remoteAlbumProvider);
+        unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
         break;
       case GalleryTabEnum.library:
         ref.invalidate(localAlbumProvider);
