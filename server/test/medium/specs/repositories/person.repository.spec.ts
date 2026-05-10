@@ -24,6 +24,18 @@ beforeAll(async () => {
 });
 
 describe(PersonRepository.name, () => {
+  describe('getByName', () => {
+    it('matches names case-insensitively', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'bob' });
+
+      const result = await sut.getByName(user.id, 'Bob', { withHidden: false });
+
+      expect(result.map((person) => person.id)).toContain(person.id);
+    });
+  });
+
   describe('getPeopleOverviewStatistics', () => {
     it('counts visible and hidden personal people and all detected timeline faces in owned assets', async () => {
       const { ctx, sut } = setup();

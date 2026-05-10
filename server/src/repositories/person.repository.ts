@@ -454,7 +454,10 @@ export class PersonRepository {
       .selectFrom(['similarity_threshold', 'person'])
       .selectAll('person')
       .where('person.ownerId', '=', userId)
-      .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)
+      .where(
+        () =>
+          sql`(f_unaccent("person"."name") ILIKE '%' || f_unaccent(${personName}) || '%' OR f_unaccent("person"."name") %> f_unaccent(${personName}))`,
+      )
       .orderBy(sql`f_unaccent("person"."name") <->>> f_unaccent(${personName})`)
       .limit(100)
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))
