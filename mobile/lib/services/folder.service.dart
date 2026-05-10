@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/repositories/folder_api.repository.dart';
@@ -76,7 +76,7 @@ class FolderService {
     return RootFolder(subfolders: rootSubfolders, path: '/');
   }
 
-  Future<List<Asset>> getFolderAssets(RootFolder folder, SortOrder order) async {
+  Future<List<RemoteAssetExif>> getFolderAssets(RootFolder folder, SortOrder order) async {
     try {
       if (folder is RecursiveFolder) {
         String fullPath = folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
@@ -84,9 +84,9 @@ class FolderService {
         var result = await _folderApiRepository.getAssetsForPath(fullPath);
 
         if (order == SortOrder.desc) {
-          result.sort((a, b) => b.fileCreatedAt.compareTo(a.fileCreatedAt));
+          result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         } else {
-          result.sort((a, b) => a.fileCreatedAt.compareTo(b.fileCreatedAt));
+          result.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         }
 
         return result;

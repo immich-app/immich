@@ -1,58 +1,30 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Library } from 'src/database';
-import { Optional, ValidateUUID } from 'src/validation';
+import { isoDatetimeToDate } from 'src/validation';
+import z from 'zod';
 
-export class CreateLibraryDto {
-  @ValidateUUID({ description: 'Owner user ID' })
-  ownerId!: string;
+const stringArrayMax128 = z
+  .array(z.string())
+  .max(128)
+  .refine((arr) => arr.every((s) => s.trim() !== ''), 'Array items must not be empty')
+  .refine((arr) => new Set(arr).size === arr.length, 'Array must have unique items');
 
-  @ApiPropertyOptional({ description: 'Library name' })
-  @IsString()
-  @Optional()
-  @IsNotEmpty()
-  name?: string;
+const CreateLibrarySchema = z
+  .object({
+    ownerId: z.uuidv4().describe('Owner user ID'),
+    name: z.string().min(1).optional().describe('Library name'),
+    importPaths: stringArrayMax128.optional().describe('Import paths (max 128)'),
+    exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
+  })
+  .meta({ id: 'CreateLibraryDto' });
 
-  @ApiPropertyOptional({ description: 'Import paths (max 128)' })
-  @Optional()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  @ArrayUnique()
-  @ArrayMaxSize(128)
-  importPaths?: string[];
-
-  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)' })
-  @Optional()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  @ArrayUnique()
-  @ArrayMaxSize(128)
-  exclusionPatterns?: string[];
-}
-
-export class UpdateLibraryDto {
-  @ApiPropertyOptional({ description: 'Library name' })
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
-  @ApiPropertyOptional({ description: 'Import paths (max 128)' })
-  @Optional()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  @ArrayUnique()
-  @ArrayMaxSize(128)
-  importPaths?: string[];
-
-  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)' })
-  @Optional()
-  @IsNotEmpty({ each: true })
-  @IsString({ each: true })
-  @ArrayUnique()
-  @ArrayMaxSize(128)
-  exclusionPatterns?: string[];
-}
+const UpdateLibrarySchema = z
+  .object({
+    name: z.string().min(1).optional().describe('Library name'),
+    importPaths: stringArrayMax128.optional().describe('Import paths (max 128)'),
+    exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
+  })
+  .meta({ id: 'UpdateLibraryDto' });
 
 export interface CrawlOptionsDto {
   pathsToCrawl: string[];
@@ -64,81 +36,60 @@ export interface WalkOptionsDto extends CrawlOptionsDto {
   take: number;
 }
 
-export class ValidateLibraryDto {
-  @ApiPropertyOptional({ description: 'Import paths to validate (max 128)' })
-  @Optional()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  @ArrayUnique()
-  @ArrayMaxSize(128)
-  importPaths?: string[];
+const ValidateLibrarySchema = z
+  .object({
+    importPaths: stringArrayMax128.optional().describe('Import paths to validate (max 128)'),
+    exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
+  })
+  .meta({ id: 'ValidateLibraryDto' });
 
-  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)' })
-  @Optional()
-  @IsNotEmpty({ each: true })
-  @IsString({ each: true })
-  @ArrayUnique()
-  @ArrayMaxSize(128)
-  exclusionPatterns?: string[];
-}
+const ValidateLibraryImportPathResponseSchema = z
+  .object({
+    importPath: z.string().describe('Import path'),
+    isValid: z.boolean().describe('Is valid'),
+    message: z.string().optional().describe('Validation message'),
+  })
+  .meta({ id: 'ValidateLibraryImportPathResponseDto' });
 
-export class ValidateLibraryResponseDto {
-  @ApiPropertyOptional({ description: 'Validation results for import paths' })
-  importPaths?: ValidateLibraryImportPathResponseDto[];
-}
+const ValidateLibraryResponseSchema = z
+  .object({
+    importPaths: z
+      .array(ValidateLibraryImportPathResponseSchema)
+      .optional()
+      .describe('Validation results for import paths'),
+  })
+  .meta({ id: 'ValidateLibraryResponseDto' });
 
-export class ValidateLibraryImportPathResponseDto {
-  @ApiProperty({ description: 'Import path' })
-  importPath!: string;
-  @ApiProperty({ description: 'Is valid' })
-  isValid: boolean = false;
-  @ApiPropertyOptional({ description: 'Validation message' })
-  message?: string;
-}
+const LibraryResponseSchema = z
+  .object({
+    id: z.string().describe('Library ID'),
+    ownerId: z.string().describe('Owner user ID'),
+    name: z.string().describe('Library name'),
+    assetCount: z.int().describe('Number of assets'),
+    importPaths: z.array(z.string()).describe('Import paths'),
+    exclusionPatterns: z.array(z.string()).describe('Exclusion patterns'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
+    updatedAt: isoDatetimeToDate.describe('Last update date'),
+    refreshedAt: isoDatetimeToDate.nullable().describe('Last refresh date'),
+  })
+  .meta({ id: 'LibraryResponseDto' });
 
-export class LibrarySearchDto {
-  @ValidateUUID({ optional: true, description: 'Filter by user ID' })
-  userId?: string;
-}
+const LibraryStatsResponseSchema = z
+  .object({
+    photos: z.int().describe('Number of photos'),
+    videos: z.int().describe('Number of videos'),
+    total: z.int().describe('Total number of assets'),
+    usage: z.int().describe('Storage usage in bytes'),
+  })
+  .meta({ id: 'LibraryStatsResponseDto' });
 
-export class LibraryResponseDto {
-  @ApiProperty({ description: 'Library ID' })
-  id!: string;
-  @ApiProperty({ description: 'Owner user ID' })
-  ownerId!: string;
-  @ApiProperty({ description: 'Library name' })
-  name!: string;
-
-  @ApiProperty({ type: 'integer', description: 'Number of assets' })
-  assetCount!: number;
-
-  @ApiProperty({ description: 'Import paths' })
-  importPaths!: string[];
-
-  @ApiProperty({ description: 'Exclusion patterns' })
-  exclusionPatterns!: string[];
-
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ApiProperty({ description: 'Last refresh date' })
-  refreshedAt!: Date | null;
-}
-
-export class LibraryStatsResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Number of photos' })
-  photos = 0;
-
-  @ApiProperty({ type: 'integer', description: 'Number of videos' })
-  videos = 0;
-
-  @ApiProperty({ type: 'integer', description: 'Total number of assets' })
-  total = 0;
-
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage usage in bytes' })
-  usage = 0;
-}
+export class CreateLibraryDto extends createZodDto(CreateLibrarySchema) {}
+export class UpdateLibraryDto extends createZodDto(UpdateLibrarySchema) {}
+export class ValidateLibraryDto extends createZodDto(ValidateLibrarySchema) {}
+export class ValidateLibraryResponseDto extends createZodDto(ValidateLibraryResponseSchema) {}
+export class ValidateLibraryImportPathResponseDto extends createZodDto(ValidateLibraryImportPathResponseSchema) {}
+export class LibraryResponseDto extends createZodDto(LibraryResponseSchema) {}
+export class LibraryStatsResponseDto extends createZodDto(LibraryStatsResponseSchema) {}
 
 export function mapLibrary(entity: Library): LibraryResponseDto {
   let assetCount = 0;

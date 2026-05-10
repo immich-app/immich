@@ -14,3 +14,5 @@ export const cleanClass = (...classNames: unknown[]) => {
       .join(' '),
   );
 };
+
+export const isDefined = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;

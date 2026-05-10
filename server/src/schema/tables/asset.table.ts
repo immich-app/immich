@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import { AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm } from 'src/enum';
+import { asset_checksum_algorithm_enum, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import { asset_delete_audit } from 'src/schema/functions';
 import { LibraryTable } from 'src/schema/tables/library.table';
 import { StackTable } from 'src/schema/tables/stack.table';
@@ -33,20 +33,20 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
   name: ASSET_CHECKSUM_CONSTRAINT,
   columns: ['ownerId', 'checksum'],
   unique: true,
-  where: '("libraryId" IS NULL)',
+  where: '"libraryId" IS NULL',
 })
 @Index({
   columns: ['ownerId', 'libraryId', 'checksum'],
   unique: true,
-  where: '("libraryId" IS NOT NULL)',
+  where: '"libraryId" IS NOT NULL',
 })
 @Index({
   name: 'asset_localDateTime_idx',
-  expression: `(("localDateTime" at time zone 'UTC')::date)`,
+  expression: `("localDateTime" at time zone 'UTC')::date`,
 })
 @Index({
   name: 'asset_localDateTime_month_idx',
-  expression: `(date_trunc('MONTH'::text, ("localDateTime" AT TIME ZONE 'UTC'::text)) AT TIME ZONE 'UTC'::text)`,
+  expression: `date_trunc('MONTH'::text, ("localDateTime" AT TIME ZONE 'UTC'::text)) AT TIME ZONE 'UTC'::text`,
 })
 @Index({ columns: ['originalPath', 'libraryId'] })
 @Index({ columns: ['id', 'stackId'] })
@@ -65,14 +65,8 @@ export class AssetTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  @Column()
-  deviceAssetId!: string;
-
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
-
-  @Column()
-  deviceId!: string;
 
   @Column()
   type!: AssetType;
@@ -89,11 +83,14 @@ export class AssetTable {
   @Column({ type: 'boolean', default: false })
   isFavorite!: Generated<boolean>;
 
-  @Column({ type: 'character varying', nullable: true })
-  duration!: string | null;
+  @Column({ type: 'integer', nullable: true })
+  duration!: number | null;
 
   @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum
+
+  @Column({ enum: asset_checksum_algorithm_enum })
+  checksumAlgorithm!: ChecksumAlgorithm;
 
   @ForeignKeyColumn(() => AssetTable, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   livePhotoVideoId!: string | null;

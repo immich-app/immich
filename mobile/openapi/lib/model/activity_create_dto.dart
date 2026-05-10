@@ -40,7 +40,6 @@ class ActivityCreateDto {
   ///
   String? comment;
 
-  /// Activity type (like or comment)
   ReactionType type;
 
   @override

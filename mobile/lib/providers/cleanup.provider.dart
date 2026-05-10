@@ -1,9 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 
 class CleanupState {
@@ -54,27 +54,25 @@ final cleanupProvider = StateNotifierProvider<CleanupNotifier, CleanupState>((re
   return CleanupNotifier(
     ref.watch(cleanupServiceProvider),
     ref.watch(currentUserProvider)?.id,
-    ref.watch(appSettingsServiceProvider),
+    ref.watch(metadataProvider),
   );
 });
 
 class CleanupNotifier extends StateNotifier<CleanupState> {
   final CleanupService _cleanupService;
   final String? _userId;
-  final AppSettingsService _appSettingsService;
+  final MetadataRepository _metadataRepository;
 
-  CleanupNotifier(this._cleanupService, this._userId, this._appSettingsService) : super(const CleanupState()) {
+  CleanupNotifier(this._cleanupService, this._userId, this._metadataRepository) : super(const CleanupState()) {
     _loadPersistedSettings();
   }
 
   void _loadPersistedSettings() {
-    final keepFavorites = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepFavorites);
-    final keepMediaTypeIndex = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepMediaType);
-    final keepAlbumIdsString = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepAlbumIds);
-    final cutoffDaysAgo = _appSettingsService.getSetting(AppSettingsEnum.cleanupCutoffDaysAgo);
-
-    final keepMediaType = AssetKeepType.values[keepMediaTypeIndex.clamp(0, AssetKeepType.values.length - 1)];
-    final keepAlbumIds = keepAlbumIdsString.isEmpty ? <String>{} : keepAlbumIdsString.split(',').toSet();
+    final cleanup = _metadataRepository.appConfig.cleanup;
+    final keepFavorites = cleanup.keepFavorites;
+    final keepMediaType = cleanup.keepMediaType;
+    final keepAlbumIds = cleanup.keepAlbumIds.toSet();
+    final cutoffDaysAgo = cleanup.cutoffDaysAgo;
     final selectedDate = cutoffDaysAgo >= 0 ? DateTime.now().subtract(Duration(days: cutoffDaysAgo)) : null;
 
     state = state.copyWith(
@@ -89,18 +87,18 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     state = state.copyWith(selectedDate: date, assetsToDelete: []);
     if (date != null) {
       final daysAgo = DateTime.now().difference(date).inDays;
-      _appSettingsService.setSetting(AppSettingsEnum.cleanupCutoffDaysAgo, daysAgo);
+      _metadataRepository.write(.cleanupCutoffDaysAgo, daysAgo);
     }
   }
 
   void setKeepMediaType(AssetKeepType keepMediaType) {
     state = state.copyWith(keepMediaType: keepMediaType, assetsToDelete: []);
-    _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepMediaType, keepMediaType.index);
+    _metadataRepository.write(.cleanupKeepMediaType, keepMediaType);
   }
 
   void setKeepFavorites(bool keepFavorites) {
     state = state.copyWith(keepFavorites: keepFavorites, assetsToDelete: []);
-    _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepFavorites, keepFavorites);
+    _metadataRepository.write(.cleanupKeepFavorites, keepFavorites);
   }
 
   void toggleKeepAlbum(String albumId) {
@@ -120,7 +118,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   }
 
   void _persistExcludedAlbumIds(Set<String> albumIds) {
-    _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepAlbumIds, albumIds.join(','));
+    _metadataRepository.write(.cleanupKeepAlbumIds, albumIds.toList());
   }
 
   void cleanupStaleAlbumIds(Set<String> existingAlbumIds) {
@@ -133,7 +131,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   }
 
   void applyDefaultAlbumSelections(List<(String id, String name)> albums) {
-    final isInitialized = _appSettingsService.getSetting(AppSettingsEnum.cleanupDefaultsInitialized);
+    final isInitialized = _metadataRepository.appConfig.cleanup.defaultsInitialized;
     if (isInitialized) return;
 
     final toKeep = _cleanupService.getDefaultKeepAlbumIds(albums);
@@ -144,7 +142,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
       _persistExcludedAlbumIds(keepAlbumIds);
     }
 
-    _appSettingsService.setSetting(AppSettingsEnum.cleanupDefaultsInitialized, true);
+    _metadataRepository.write(.cleanupDefaultsInitialized, true);
   }
 
   Future<void> scanAssets() async {

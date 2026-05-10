@@ -1,8 +1,3 @@
-import { goto } from '$app/navigation';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { Route } from '$lib/route';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   createWorkflow,
   deleteWorkflow,
@@ -25,6 +20,11 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay, mdiPlus } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export type PickerSubType = 'album-picker' | 'people-picker';
 export type PickerMetadata = AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[];
@@ -397,7 +397,7 @@ export const handleToggleWorkflowEnabled = async (
     });
 
     eventManager.emit('WorkflowUpdate', updated);
-    toastManager.success($t('workflow_updated'));
+    toastManager.primary($t('workflow_updated'));
     return updated;
   } catch (error) {
     handleError(error, $t('errors.unable_to_update_workflow'));
@@ -419,7 +419,7 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
   try {
     await deleteWorkflow({ id: workflow.id });
     eventManager.emit('WorkflowDelete', workflow);
-    toastManager.success($t('workflow_deleted'));
+    toastManager.primary($t('workflow_deleted'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_delete_workflow'));

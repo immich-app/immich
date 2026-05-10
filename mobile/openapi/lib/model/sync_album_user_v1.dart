@@ -21,7 +21,6 @@ class SyncAlbumUserV1 {
   /// Album ID
   String albumId;
 
-  /// Album user role
   AlbumUserRole role;
 
   /// User ID

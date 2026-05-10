@@ -631,7 +631,11 @@ export class PersonService extends BaseService {
       this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
     ]);
 
-    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    const [asset, person] = await Promise.all([
+      this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true }),
+      this.findOrFail(dto.personId),
+    ]);
+
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -689,6 +693,10 @@ export class PersonService extends BaseService {
       boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
+
+    if (!person.faceAssetId) {
+      await this.createNewFeaturePhoto([person.id]);
+    }
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {

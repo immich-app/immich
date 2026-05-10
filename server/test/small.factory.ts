@@ -3,6 +3,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { AssetFileType, Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
+import { expect } from 'vitest';
 
 export const newUuid = () => v4();
 export const newUuids = () =>
@@ -63,12 +64,22 @@ const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
     expiresAt = null,
     userId = newUuid(),
     showExif = true,
+    albumId = null,
     allowUpload = false,
     allowDownload = true,
     password = null,
   } = sharedLink;
 
-  return { id, expiresAt, userId, showExif, allowUpload, allowDownload, password };
+  return {
+    id,
+    albumId,
+    expiresAt,
+    userId,
+    showExif,
+    allowUpload,
+    allowDownload,
+    password,
+  };
 };
 
 const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
@@ -236,9 +247,11 @@ export const factory = {
   date: newDate,
   responses: {
     badRequest: (message: any = null) => ({
-      error: 'Bad Request',
-      statusCode: 400,
       message: message ?? expect.anything(),
+    }),
+    validationError: (errors?: ReadonlyArray<{ path: ReadonlyArray<string | number>; message: string }>) => ({
+      message: 'Validation failed',
+      errors: errors ? expect.arrayContaining(errors.map((e) => expect.objectContaining(e))) : expect.any(Array),
     }),
   },
 };

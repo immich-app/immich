@@ -13,7 +13,7 @@ part of openapi.api;
 class SyncAuthUserV1 {
   /// Returns a new [SyncAuthUserV1] instance.
   SyncAuthUserV1({
-    required this.avatarColor,
+    this.avatarColor,
     required this.deletedAt,
     required this.email,
     required this.hasProfileImage,
@@ -28,7 +28,6 @@ class SyncAuthUserV1 {
     required this.storageLabel,
   });
 
-  /// User avatar color
   UserAvatarColor? avatarColor;
 
   /// User deleted at
@@ -58,8 +57,16 @@ class SyncAuthUserV1 {
   /// User profile changed at
   DateTime profileChangedAt;
 
+  /// Quota size in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
 
+  /// Quota usage in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int quotaUsageInBytes;
 
   /// User storage label
@@ -109,7 +116,9 @@ class SyncAuthUserV1 {
     //  json[r'avatarColor'] = null;
     }
     if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
+      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.deletedAt!.millisecondsSinceEpoch
+        : this.deletedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'deletedAt'] = null;
     }
@@ -124,7 +133,9 @@ class SyncAuthUserV1 {
     } else {
     //  json[r'pinCode'] = null;
     }
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+      json[r'profileChangedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.profileChangedAt.millisecondsSinceEpoch
+        : this.profileChangedAt.toUtc().toIso8601String();
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
@@ -149,7 +160,7 @@ class SyncAuthUserV1 {
 
       return SyncAuthUserV1(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         email: mapValueOfType<String>(json, r'email')!,
         hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
         id: mapValueOfType<String>(json, r'id')!,
@@ -157,7 +168,7 @@ class SyncAuthUserV1 {
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         pinCode: mapValueOfType<String>(json, r'pinCode'),
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
@@ -208,7 +219,6 @@ class SyncAuthUserV1 {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'avatarColor',
     'deletedAt',
     'email',
     'hasProfileImage',

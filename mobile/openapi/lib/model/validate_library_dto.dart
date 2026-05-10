@@ -13,15 +13,15 @@ part of openapi.api;
 class ValidateLibraryDto {
   /// Returns a new [ValidateLibraryDto] instance.
   ValidateLibraryDto({
-    this.exclusionPatterns = const {},
-    this.importPaths = const {},
+    this.exclusionPatterns = const [],
+    this.importPaths = const [],
   });
 
   /// Exclusion patterns (max 128)
-  Set<String> exclusionPatterns;
+  List<String> exclusionPatterns;
 
   /// Import paths to validate (max 128)
-  Set<String> importPaths;
+  List<String> importPaths;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryDto &&
@@ -39,8 +39,8 @@ class ValidateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'exclusionPatterns'] = this.exclusionPatterns.toList(growable: false);
-      json[r'importPaths'] = this.importPaths.toList(growable: false);
+      json[r'exclusionPatterns'] = this.exclusionPatterns;
+      json[r'importPaths'] = this.importPaths;
     return json;
   }
 
@@ -54,11 +54,11 @@ class ValidateLibraryDto {
 
       return ValidateLibraryDto(
         exclusionPatterns: json[r'exclusionPatterns'] is Iterable
-            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toSet()
-            : const {},
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toSet()
-            : const {},
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;

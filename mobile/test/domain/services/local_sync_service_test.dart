@@ -128,7 +128,7 @@ void main() {
         id: 'remote-id',
         name: 'remote.jpg',
         type: AssetType.image.index,
-        durationInSeconds: 0,
+        durationMs: 0,
         orientation: 0,
         isFavorite: false,
         playbackStyle: PlatformAssetPlaybackStyle.image
@@ -210,7 +210,7 @@ void main() {
         id: 'test-id',
         name: 'test.jpg',
         type: AssetType.image.index,
-        durationInSeconds: 0,
+        durationMs: 0,
         orientation: 0,
         isFavorite: false,
         createdAt: 1700000000,

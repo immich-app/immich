@@ -1,6 +1,3 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   changePassword,
   lockAuthSession,
@@ -11,6 +8,9 @@ import {
 import { toastManager, type ActionItem } from '@immich/ui';
 import { mdiLockOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getUserActions = ($t: MessageFormatter) => {
   const LockSession: ActionItem = {
@@ -39,7 +39,7 @@ export const handleResetPinCode = async (dto: PinCodeResetDto) => {
 
   try {
     await resetPinCode({ pinCodeResetDto: dto });
-    toastManager.success($t('pin_code_reset_successfully'));
+    toastManager.primary($t('pin_code_reset_successfully'));
     eventManager.emit('UserPinCodeReset');
     return true;
   } catch (error) {
@@ -52,7 +52,7 @@ export const handleChangePassword = async (dto: ChangePasswordDto) => {
 
   try {
     await changePassword({ changePasswordDto: dto });
-    toastManager.success($t('updated_password'));
+    toastManager.primary($t('updated_password'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_change_password'));

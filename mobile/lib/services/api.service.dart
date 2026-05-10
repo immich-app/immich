@@ -6,6 +6,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
@@ -184,8 +185,8 @@ class ApiService {
     if (externalJson != null) {
       final List<dynamic> list = jsonDecode(externalJson);
       for (final entry in list) {
-        final url = entry['url'] as String?;
-        if (url != null && url.isNotEmpty) urls.add(url);
+        final url = AuxilaryEndpoint.fromJson(entry).url;
+        if (url.isNotEmpty) urls.add(url);
       }
     }
     return urls;

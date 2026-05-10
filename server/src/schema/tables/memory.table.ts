@@ -43,7 +43,7 @@ export class MemoryTable {
   type!: MemoryType;
 
   @Column({ type: 'jsonb' })
-  data!: object;
+  data!: Record<string, unknown>;
 
   /** unless set to true, will be automatically deleted in the future */
   @Column({ type: 'boolean', default: false })

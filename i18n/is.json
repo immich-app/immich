@@ -421,7 +421,7 @@
     "user_successfully_removed": "Notandi {email} hefur verið fjarlægður.",
     "users_page_description": "Síða stjórnunarnotanda",
     "version_check_enabled_description": "Virkja athugun á útgáfu",
-    "version_check_implications": "Þessi athugun hefur lotubundin samskipti við github.com",
+    "version_check_implications": "Þessi athugun hefur lotubundin samskipti við {server}",
     "version_check_settings": "Athugun útgáfu",
     "version_check_settings_description": "Af-/virkja meldingu um nýja útgáfu",
     "video_conversion_job": "Umkóða myndbönd",
