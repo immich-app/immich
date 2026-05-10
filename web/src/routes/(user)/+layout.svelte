@@ -11,7 +11,7 @@
 
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
-  $effect(() => {
+  $effect.pre(() => {
     // Explicitly reference the param to ensure this effect re-runs on param changes
     const assetIdParam = page.params.assetId;
 
