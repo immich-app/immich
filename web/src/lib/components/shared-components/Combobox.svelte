@@ -5,6 +5,8 @@
     id?: string;
     label: string;
     value: string;
+    description?: string;
+    keywords?: string[];
   };
 
   export const asComboboxOptions = (values: string[]) =>
@@ -130,8 +132,31 @@
     openDropdown();
   };
 
+  const normalizeQuery = (value: string) => value.trim().toLowerCase();
+
+  const findMatchingOption = (value: string): ComboBoxOption | undefined => {
+    const normalizedValue = normalizeQuery(value);
+    if (!normalizedValue) {
+      return undefined;
+    }
+
+    return options.find((option) => {
+      return [option.label, option.value].some((candidate) => normalizeQuery(candidate) === normalizedValue);
+    });
+  };
+
   const deactivate = () => {
-    searchQuery = selectedOption ? selectedOption.label : '';
+    const trimmedQuery = searchQuery.trim();
+    const matchingOption = findMatchingOption(trimmedQuery);
+
+    if (allowCreate && trimmedQuery !== '' && (!selectedOption || normalizeQuery(selectedOption.label) !== normalizeQuery(trimmedQuery))) {
+      const nextOption = matchingOption ?? { label: trimmedQuery, value: trimmedQuery };
+      selectedOption = nextOption;
+      onSelect(nextOption);
+      searchQuery = nextOption.label;
+    } else {
+      searchQuery = selectedOption ? selectedOption.label : '';
+    }
     isActive = false;
     closeDropdown();
   };
@@ -255,10 +280,16 @@
   const getInputPosition = () => input?.getBoundingClientRect();
 
   let filteredOptions = $derived.by(() => {
-    const _options = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+    const trimmedQuery = searchQuery.trim();
+    const normalizedQuery = trimmedQuery.toLowerCase();
+    const _options = options.filter((option) => {
+      const haystacks = [option.label, option.value, option.description ?? '', ...(option.keywords ?? [])]
+        .map((value) => value.toLowerCase());
+      return haystacks.some((value) => value.includes(normalizedQuery));
+    });
 
-    if (allowCreate && searchQuery !== '' && _options.filter((option) => option.label === searchQuery).length === 0) {
-      _options.unshift({ label: searchQuery, value: searchQuery });
+    if (allowCreate && trimmedQuery !== '' && !findMatchingOption(trimmedQuery)) {
+      _options.unshift({ label: trimmedQuery, value: trimmedQuery });
     }
 
     return _options;
@@ -415,7 +446,12 @@
           onclick={() => handleSelect(option)}
           role="option"
         >
-          {option.label}
+          <div class="flex flex-col gap-0.5">
+            <span>{option.label}</span>
+            {#if option.description}
+              <span class="text-xs text-gray-500 dark:text-gray-400">{option.description}</span>
+            {/if}
+          </div>
         </li>
       {/each}
     {/if}
