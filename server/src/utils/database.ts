@@ -77,10 +77,7 @@ export const isAssetChecksumConstraint = (error: unknown) => {
   return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
 };
 
-const STALE_ASSET_FOREIGN_KEY_CONSTRAINTS = new Set([
-  'asset_file_assetId_fkey',
-  'asset_job_status_assetId_fkey',
-]);
+const STALE_ASSET_FOREIGN_KEY_CONSTRAINTS = new Set(['asset_file_assetId_fkey', 'asset_job_status_assetId_fkey']);
 
 export const isStaleAssetForeignKeyConstraint = (error: unknown) => {
   const postgresError = error as PostgresError;
