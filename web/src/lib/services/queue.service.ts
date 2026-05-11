@@ -10,10 +10,12 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   emptyQueue,
   getQueue,
+  JobName,
   QueueCommand,
   QueueName,
   runQueueCommandLegacy,
   updateQueue,
+  type QueueJobTypeCountsDto,
   type QueueResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem, type IconLike } from '@immich/ui';
@@ -49,6 +51,30 @@ type QueueItem = {
   icon: IconLike;
   title: string;
   subtitle?: string;
+};
+
+export type QueueJobTypeCounts = QueueJobTypeCountsDto;
+
+export const getQueueJobTypeLabel = (name: JobName) => {
+  switch (name) {
+    case JobName.FacialRecognition:
+    case JobName.FacialRecognitionQueueAll:
+      return 'Facial recognition';
+    case JobName.SharedSpaceFaceMatch:
+    case JobName.SharedSpaceFaceMatchAll:
+    case JobName.SharedSpaceFaceMatchPage:
+      return 'Shared space face matching';
+    case JobName.SharedSpacePersonDedup:
+      return 'Shared space people dedup';
+    case JobName.SharedSpaceIdentityReconciliation:
+      return 'Shared space identity reconciliation';
+    case JobName.SharedSpacePersonMetadataBackfill:
+      return 'Shared space metadata propagation';
+    case JobName.FaceIdentityBackfill:
+      return 'Face identity backfill';
+    default:
+      return name.replaceAll(/([a-z])([A-Z])/g, '$1 $2');
+  }
 };
 
 export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[] | undefined) => {

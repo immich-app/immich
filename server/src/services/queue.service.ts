@@ -175,11 +175,12 @@ export class QueueService extends BaseService {
   }
 
   private async getByName(name: QueueName): Promise<QueueResponseDto> {
-    const [statistics, isPaused] = await Promise.all([
+    const [statistics, isPaused, jobTypes] = await Promise.all([
       this.jobRepository.getJobCounts(name),
       this.jobRepository.isPaused(name),
+      this.jobRepository.getJobTypes(name),
     ]);
-    return { name, isPaused, statistics };
+    return { name, isPaused, statistics, ...(jobTypes.length > 0 ? { jobTypes } : {}) };
   }
 
   private async start(name: QueueName, { force }: QueueCommandDto): Promise<void> {

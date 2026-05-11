@@ -172,6 +172,51 @@ describe(JobRepository.name, () => {
     expect(queue.getJobs).toHaveBeenCalledWith('failed', 0, 0, true);
   });
 
+  it('returns job type counts sampled from active and pending queue jobs', async () => {
+    const { sut, queue } = setup();
+    queue.getJobs.mockImplementation((status) => {
+      const jobs = {
+        active: [{ name: JobName.SharedSpaceFaceMatchPage }, { name: JobName.SharedSpaceFaceMatchPage }],
+        waiting: [{ name: JobName.SharedSpaceFaceMatchPage }, { name: JobName.FacialRecognition }],
+        delayed: [{ name: JobName.FacialRecognition }],
+        paused: [{ name: JobName.FaceIdentityBackfill }],
+      } as Record<string, Array<{ name: JobName }>>;
+
+      return Promise.resolve(jobs[status] ?? []);
+    });
+
+    const result = await sut.getJobTypes(QueueName.FacialRecognition);
+
+    expect(result).toEqual([
+      { name: JobName.SharedSpaceFaceMatchPage, active: 2, waiting: 1, delayed: 0, paused: 0 },
+      { name: JobName.FacialRecognition, active: 0, waiting: 1, delayed: 1, paused: 0 },
+      { name: JobName.FaceIdentityBackfill, active: 0, waiting: 0, delayed: 0, paused: 1 },
+    ]);
+    expect(queue.getJobs).toHaveBeenCalledWith('active', 0, 1000, true);
+    expect(queue.getJobs).toHaveBeenCalledWith('waiting', 0, 1000, true);
+    expect(queue.getJobs).toHaveBeenCalledWith('delayed', 0, 1000, true);
+    expect(queue.getJobs).toHaveBeenCalledWith('paused', 0, 1000, true);
+  });
+
+  it('does not double-count paused jobs that BullMQ also returns as waiting jobs', async () => {
+    const { sut, queue } = setup();
+    const pausedJob = { id: 'paused-job-1', name: JobName.FaceIdentityBackfill, getState: vitest.fn().mockResolvedValue('paused') };
+    queue.getJobs.mockImplementation((status) => {
+      const jobs = {
+        active: [],
+        waiting: [pausedJob],
+        delayed: [],
+        paused: [pausedJob],
+      } as Record<string, Array<typeof pausedJob>>;
+
+      return Promise.resolve(jobs[status] ?? []);
+    });
+
+    await expect(sut.getJobTypes(QueueName.FacialRecognition)).resolves.toEqual([
+      { name: JobName.FaceIdentityBackfill, active: 0, waiting: 0, delayed: 0, paused: 1 },
+    ]);
+  });
+
   it('uses stable job ids for root backfills and unique ids for cursor chunks', async () => {
     const { sut, queue } = setup();
     setHandlers(sut, [JobName.FaceIdentityBackfill, JobName.SharedSpacePersonMetadataBackfill]);
