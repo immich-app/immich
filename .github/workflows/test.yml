@@ -256,10 +256,10 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Install dependencies
-        run: pnpm --filter=immich-i18n install --frozen-lockfile
+        run: pnpm -w install --frozen-lockfile
 
       - name: Format
-        run: pnpm --filter=immich-i18n format:fix
+        run: pnpm format:fix
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4

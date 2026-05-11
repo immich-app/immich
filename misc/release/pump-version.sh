@@ -64,7 +64,6 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
 
   pnpm version "$NEXT_SERVER" --no-git-tag-version
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix server
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix i18n
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/cli
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix web
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix e2e

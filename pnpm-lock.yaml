@@ -16,7 +16,14 @@ pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      prettier:
+        specifier: ^3.8.3
+        version: 3.8.3
+      prettier-plugin-sort-json:
+        specifier: ^4.2.0
+        version: 4.2.0(prettier@3.8.3)
 
   .github:
     devDependencies:
@@ -192,15 +199,6 @@ importers:
       vitest:
         specifier: ^4.0.0
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
-
-  i18n:
-    devDependencies:
-      prettier:
-        specifier: ^3.7.4
-        version: 3.8.3
-      prettier-plugin-sort-json:
-        specifier: ^4.1.1
-        version: 4.2.0(prettier@3.8.3)
 
   packages/cli:
     dependencies:
