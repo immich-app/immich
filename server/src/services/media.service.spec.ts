@@ -1,4 +1,4 @@
-import { NotNull, ShallowDehydrateObject } from 'kysely';
+import { ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
@@ -1937,7 +1937,7 @@ describe(MediaService.name, () => {
 
   describe('handleVideoConversion', () => {
     let asset: ReturnType<typeof AssetFactory.create> & {
-      videoStream: VideoStreamInfo & { timeBase: NotNull };
+      videoStream: VideoStreamInfo & { timeBase: number };
       audioStream: AudioStreamInfo | null;
       format: VideoFormat;
     };

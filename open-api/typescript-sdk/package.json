@@ -2,6 +2,11 @@
   "name": "@immich/sdk",
   "version": "2.7.5",
   "description": "Auto-generated TypeScript SDK for the Immich API",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immich-app/immich.git",
+    "directory": "open-api/typescript-sdk"
+  },
   "type": "module",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -21,13 +26,5 @@
   "devDependencies": {
     "@types/node": "^24.12.2",
     "typescript": "^6.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/immich-app/immich.git",
-    "directory": "open-api/typescript-sdk"
-  },
-  "volta": {
-    "node": "24.15.0"
   }
 }

@@ -55,12 +55,23 @@ run = [
 env._.path = "./node_modules/.bin"
 run = "email dev -p 3050 --dir src/emails"
 
-[tasks.checklist]
+[tasks.ci-unit]
 run = [
   { task = ":install" },
   { task = ":format" },
   { task = ":lint" },
   { task = ":check" },
-  { task = ":test-medium --run" },
   { task = ":test --run" },
+]
+
+[tasks.ci-medium]
+run = [
+  { task = ":install" },
+  { task = ":test-medium --run" },
+]
+
+[tasks.checklist]
+run = [
+  { task = ":ci-unit" },
+  { task = ":ci-medium" },
 ]

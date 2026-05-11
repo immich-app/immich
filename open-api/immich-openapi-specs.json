@@ -1641,7 +1641,7 @@
             "name": "assetId",
             "required": false,
             "in": "query",
-            "description": "Filter albums containing this asset ID (ignores shared parameter)",
+            "description": "Filter albums containing this asset ID (ignores other parameters)",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -1649,10 +1649,19 @@
             }
           },
           {
-            "name": "shared",
+            "name": "isOwned",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
+            "description": "Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isShared",
+            "required": false,
+            "in": "query",
+            "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",
             "schema": {
               "type": "boolean"
             }
@@ -5172,7 +5181,7 @@
     },
     "/duplicates/{id}": {
       "delete": {
-        "description": "Delete a single duplicate asset specified by its ID.",
+        "description": "Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.",
         "operationId": "deleteDuplicate",
         "parameters": [
           {
@@ -5202,7 +5211,7 @@
             "api_key": []
           }
         ],
-        "summary": "Delete a duplicate",
+        "summary": "Dismiss a duplicate group",
         "tags": [
           "Duplicates"
         ],
@@ -14969,7 +14978,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.7.5",
+    "version": "3.0.0",
     "contact": {}
   },
   "tags": [

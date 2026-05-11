@@ -184,6 +184,7 @@
       personIds: $t('people'),
       tagIds: $t('tags'),
       originalFileName: $t('file_name_text'),
+      originalPath: $t('full_path_or_folder'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),

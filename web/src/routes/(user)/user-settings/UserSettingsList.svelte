@@ -26,7 +26,6 @@
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import SettingAccordionState from '$lib/components/shared-components/settings/SettingAccordionState.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import AppSettings from './AppSettings.svelte';
   import ChangePasswordSettings from './ChangePasswordSettings.svelte';
@@ -48,116 +47,114 @@
     $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
 </script>
 
-<SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+<SettingAccordion
+  icon={mdiCogOutline}
+  key="app-settings"
+  title={$t('app_settings')}
+  subtitle={$t('manage_the_app_settings')}
+>
+  <AppSettings />
+</SettingAccordion>
+
+<SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
+  <UserProfileSettings />
+</SettingAccordion>
+
+<SettingAccordion
+  icon={mdiServerOutline}
+  key="user-usage-info"
+  title={$t('user_usage_stats')}
+  subtitle={$t('user_usage_stats_description')}
+>
+  <UserUsageStatistic />
+</SettingAccordion>
+
+<SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
+  <UserApiKeyList bind:keys />
+</SettingAccordion>
+
+<SettingAccordion
+  icon={mdiDevices}
+  key="authorized-devices"
+  title={$t('authorized_devices')}
+  subtitle={$t('manage_your_devices')}
+>
+  <DeviceList bind:devices={sessions} />
+</SettingAccordion>
+
+<SettingAccordion
+  icon={mdiDownload}
+  key="download-settings"
+  title={$t('download_settings')}
+  subtitle={$t('download_settings_description')}
+>
+  <DownloadSettings />
+</SettingAccordion>
+
+<SettingAccordion
+  icon={mdiFeatureSearchOutline}
+  key="feature"
+  title={$t('features')}
+  subtitle={$t('features_setting_description')}
+>
+  <FeatureSettings />
+</SettingAccordion>
+
+<SettingAccordion
+  icon={mdiBellOutline}
+  key={OpenQueryParam.NOTIFICATIONS}
+  title={$t('notifications')}
+  subtitle={$t('notifications_setting_description')}
+>
+  <NotificationsSettings />
+</SettingAccordion>
+
+{#if featureFlagsManager.value.oauth}
   <SettingAccordion
-    icon={mdiCogOutline}
-    key="app-settings"
-    title={$t('app_settings')}
-    subtitle={$t('manage_the_app_settings')}
+    icon={mdiTwoFactorAuthentication}
+    key={OpenQueryParam.OAUTH}
+    title={$t('oauth')}
+    subtitle={$t('manage_your_oauth_connection')}
+    isOpen={oauthOpen || undefined}
   >
-    <AppSettings />
+    <OauthSettings />
   </SettingAccordion>
+{/if}
 
-  <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
-    <UserProfileSettings />
-  </SettingAccordion>
+<SettingAccordion
+  icon={mdiFormTextboxPassword}
+  key="password"
+  title={$t('password')}
+  subtitle={$t('change_your_password')}
+>
+  <ChangePasswordSettings />
+</SettingAccordion>
 
-  <SettingAccordion
-    icon={mdiServerOutline}
-    key="user-usage-info"
-    title={$t('user_usage_stats')}
-    subtitle={$t('user_usage_stats_description')}
-  >
-    <UserUsageStatistic />
-  </SettingAccordion>
+<SettingAccordion
+  icon={mdiAccountGroupOutline}
+  key="partner-sharing"
+  title={$t('partner_sharing')}
+  subtitle={$t('manage_sharing_with_partners')}
+>
+  <PartnerSettings />
+</SettingAccordion>
 
-  <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
-    <UserApiKeyList bind:keys />
-  </SettingAccordion>
+<SettingAccordion
+  icon={mdiLockSmart}
+  key="user-pin-code-settings"
+  title={$t('user_pin_code_settings')}
+  subtitle={$t('user_pin_code_settings_description')}
+  autoScrollTo={true}
+>
+  <ChangePinCodeSettings />
+</SettingAccordion>
 
-  <SettingAccordion
-    icon={mdiDevices}
-    key="authorized-devices"
-    title={$t('authorized_devices')}
-    subtitle={$t('manage_your_devices')}
-  >
-    <DeviceList bind:devices={sessions} />
-  </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiDownload}
-    key="download-settings"
-    title={$t('download_settings')}
-    subtitle={$t('download_settings_description')}
-  >
-    <DownloadSettings />
-  </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiFeatureSearchOutline}
-    key="feature"
-    title={$t('features')}
-    subtitle={$t('features_setting_description')}
-  >
-    <FeatureSettings />
-  </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiBellOutline}
-    key={OpenQueryParam.NOTIFICATIONS}
-    title={$t('notifications')}
-    subtitle={$t('notifications_setting_description')}
-  >
-    <NotificationsSettings />
-  </SettingAccordion>
-
-  {#if featureFlagsManager.value.oauth}
-    <SettingAccordion
-      icon={mdiTwoFactorAuthentication}
-      key={OpenQueryParam.OAUTH}
-      title={$t('oauth')}
-      subtitle={$t('manage_your_oauth_connection')}
-      isOpen={oauthOpen || undefined}
-    >
-      <OauthSettings />
-    </SettingAccordion>
-  {/if}
-
-  <SettingAccordion
-    icon={mdiFormTextboxPassword}
-    key="password"
-    title={$t('password')}
-    subtitle={$t('change_your_password')}
-  >
-    <ChangePasswordSettings />
-  </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiAccountGroupOutline}
-    key="partner-sharing"
-    title={$t('partner_sharing')}
-    subtitle={$t('manage_sharing_with_partners')}
-  >
-    <PartnerSettings />
-  </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiLockSmart}
-    key="user-pin-code-settings"
-    title={$t('user_pin_code_settings')}
-    subtitle={$t('user_pin_code_settings_description')}
-    autoScrollTo={true}
-  >
-    <ChangePinCodeSettings />
-  </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiKeyOutline}
-    key={OpenQueryParam.PURCHASE_SETTINGS}
-    title={$t('user_purchase_settings')}
-    subtitle={$t('user_purchase_settings_description')}
-    autoScrollTo={true}
-  >
-    <UserPurchaseSettings />
-  </SettingAccordion>
-</SettingAccordionState>
+<SettingAccordion
+  icon={mdiKeyOutline}
+  key={OpenQueryParam.PURCHASE_SETTINGS}
+  title={$t('user_purchase_settings')}
+  subtitle={$t('user_purchase_settings_description')}
+  autoScrollTo={true}
+>
+  <UserPurchaseSettings />
+</SettingAccordion>
