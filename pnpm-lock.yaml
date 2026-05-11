@@ -480,11 +480,11 @@ importers:
         specifier: ^9.0.2
         version: 9.0.3
       kysely:
-        specifier: 0.28.16
-        version: 0.28.16
+        specifier: 0.28.17
+        version: 0.28.17
       kysely-postgres-js:
         specifier: ^3.0.0
-        version: 3.0.0(kysely@0.28.16)(postgres@3.4.9)
+        version: 3.0.0(kysely@0.28.17)(postgres@3.4.9)
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
@@ -505,7 +505,7 @@ importers:
         version: 6.2.0(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
         specifier: 3.1.2
-        version: 3.1.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(kysely@0.28.16)(reflect-metadata@0.2.2)
+        version: 3.1.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(kysely@0.28.17)(reflect-metadata@0.2.2)
       nestjs-otel:
         specifier: ^8.0.0
         version: 8.0.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)
@@ -8726,8 +8726,8 @@ packages:
       postgres:
         optional: true
 
-  kysely@0.28.16:
-    resolution: {integrity: sha512-3i5pmOiZvMDj00qhrIVbH0AnioVTx22DMP7Vn5At4yJO46iy+FM8Y/g61ltenLVSo3fiO8h8Q3QOFgf/gQ72ww==}
+  kysely@0.28.17:
+    resolution: {integrity: sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q==}
     engines: {node: '>=20.0.0'}
 
   langium@3.3.1:
@@ -15402,8 +15402,8 @@ snapshots:
     dependencies:
       commander: 14.0.3
       graph-data-structure: 4.5.0
-      kysely: 0.28.16
-      kysely-postgres-js: 3.0.0(kysely@0.28.16)(postgres@3.4.9)
+      kysely: 0.28.17
+      kysely-postgres-js: 3.0.0(kysely@0.28.17)(postgres@3.4.9)
       pg-connection-string: 2.12.0
       postgres: 3.4.9
 
@@ -21735,13 +21735,13 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
-  kysely-postgres-js@3.0.0(kysely@0.28.16)(postgres@3.4.9):
+  kysely-postgres-js@3.0.0(kysely@0.28.17)(postgres@3.4.9):
     dependencies:
-      kysely: 0.28.16
+      kysely: 0.28.17
     optionalDependencies:
       postgres: 3.4.9
 
-  kysely@0.28.16: {}
+  kysely@0.28.17: {}
 
   langium@3.3.1:
     dependencies:
@@ -22814,11 +22814,11 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
 
-  nestjs-kysely@3.1.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(kysely@0.28.16)(reflect-metadata@0.2.2):
+  nestjs-kysely@3.1.2(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(kysely@0.28.17)(reflect-metadata@0.2.2):
     dependencies:
       '@nestjs/common': 11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      kysely: 0.28.16
+      kysely: 0.28.17
       reflect-metadata: 0.2.2
       tslib: 2.8.1
 
