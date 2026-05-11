@@ -1,13 +1,9 @@
-import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
   loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
   loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
-  primaryColor<String>(StoreKey.primaryColor, "primaryColor", defaultColorPresetName),
-  dynamicTheme<bool>(StoreKey.dynamicTheme, "dynamicTheme", false),
-  colorfulInterface<bool>(StoreKey.colorfulInterface, "colorfulInterface", true),
   tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
   dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),
   groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),
@@ -54,12 +50,7 @@ enum AppSettingsEnum<T> {
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
-  cleanupKeepFavorites<bool>(StoreKey.cleanupKeepFavorites, null, true),
-  cleanupKeepMediaType<int>(StoreKey.cleanupKeepMediaType, null, 0),
-  cleanupKeepAlbumIds<String>(StoreKey.cleanupKeepAlbumIds, null, ""),
-  cleanupCutoffDaysAgo<int>(StoreKey.cleanupCutoffDaysAgo, null, -1),
-  cleanupDefaultsInitialized<bool>(StoreKey.cleanupDefaultsInitialized, null, false);
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

@@ -1641,7 +1641,7 @@
             "name": "assetId",
             "required": false,
             "in": "query",
-            "description": "Filter albums containing this asset ID (ignores shared parameter)",
+            "description": "Filter albums containing this asset ID (ignores other parameters)",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -1649,10 +1649,19 @@
             }
           },
           {
-            "name": "shared",
+            "name": "isOwned",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
+            "description": "Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isShared",
+            "required": false,
+            "in": "query",
+            "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",
             "schema": {
               "type": "boolean"
             }

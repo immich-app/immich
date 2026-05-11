@@ -264,4 +264,4 @@ volumes:
   - ./configuration.yml:${IMMICH_CONFIG_FILE}
 ```
 
-::
+:::

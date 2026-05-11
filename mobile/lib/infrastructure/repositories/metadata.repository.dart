@@ -47,7 +47,7 @@ class MetadataRepository extends DriftDatabaseRepository {
 
   T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
 
-  Future<void> write<T extends Object>(MetadataKey<T> key, T value) async {
+  Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
     if (_read(key) == value) return;
 
     await _db
@@ -63,9 +63,9 @@ class MetadataRepository extends DriftDatabaseRepository {
     _updateCache(key, key.defaultValue);
   }
 
-  Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).distinct();
+  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).distinct();
 
-  Stream<SystemConfig> watchSystemConfig() => _watchDomain(MetadataDomain.systemConfig).distinct();
+  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).distinct();
 
   Stream<T> _watchDomain<T extends Object>(MetadataDomain<T> domain) {
     final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));
@@ -100,7 +100,21 @@ extension<T extends Object> on MetadataDomain<T> {
   void rebuild(MetadataRepository repo) {
     switch (this) {
       case .appConfig:
-        repo._appConfig = .new(theme: .new(mode: repo._read(.themeMode)));
+        repo._appConfig = .new(
+          theme: .new(
+            mode: repo._read(.themeMode),
+            primaryColor: repo._read(.themePrimaryColor),
+            dynamicTheme: repo._read(.themeDynamic),
+            colorfulInterface: repo._read(.themeColorfulInterface),
+          ),
+          cleanup: .new(
+            keepFavorites: repo._read(.cleanupKeepFavorites),
+            keepMediaType: repo._read(.cleanupKeepMediaType),
+            keepAlbumIds: repo._read(.cleanupKeepAlbumIds),
+            cutoffDaysAgo: repo._read(.cleanupCutoffDaysAgo),
+            defaultsInitialized: repo._read(.cleanupDefaultsInitialized),
+          ),
+        );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));
     }

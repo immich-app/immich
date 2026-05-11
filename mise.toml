@@ -16,7 +16,7 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-flutter = "3.41.7"
+flutter = "3.41.9"
 pnpm = "10.33.1"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"

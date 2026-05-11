@@ -11,5 +11,6 @@
     "@types/oidc-provider": "^9.0.0",
     "oidc-provider": "^9.0.0",
     "tsx": "^4.20.6"
-  }
+  },
+  "packageManager": "pnpm@10.33.1"
 }
