@@ -950,7 +950,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
         colorspace: Colorspace.Srgb,
-        orientation: ExifOrientation.Rotate90CW,
+        orientation: undefined,
         processInvalidImages: false,
         size: 1440,
       });
@@ -2012,7 +2012,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.convertHeifToJpeg).toHaveBeenCalledWith(data.originalPath, expect.stringContaining('.jpeg'));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
         colorspace: Colorspace.P3,
-        orientation: ExifOrientation.Horizontal,
+        orientation: undefined,
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();

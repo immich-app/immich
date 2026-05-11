@@ -490,10 +490,10 @@ export class MediaService extends BaseService {
 
     try {
       const thumbSource = extracted ? extracted.buffer : (heifFrame?.path ?? inputPath);
-      const shouldApplyOrientation = !!extracted || !!heifFrame;
+      const shouldApplyOrientation = !!extracted;
       const { data, info, colorspace } = await this.decodeImage(
         thumbSource,
-        // only specify orientation to extracted/converted images which don't have EXIF orientation data
+        // only specify orientation to extracted images which don't have EXIF orientation data
         // or it can double rotate the image
         shouldApplyOrientation ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
         convertFullsize ? undefined : image.preview.size,
@@ -668,9 +668,8 @@ export class MediaService extends BaseService {
       const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
         colorspace: image.colorspace,
         processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-        // if this is an extracted or converted image, it may not have orientation metadata
-        orientation:
-          (Buffer.isBuffer(inputImage) || heifFrame) && exifOrientation ? Number(exifOrientation) : undefined,
+        // HEIF conversion normalizes orientation, while embedded RAW previews still need the original EXIF orientation.
+        orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
       });
 
       const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
