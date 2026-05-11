@@ -235,6 +235,9 @@ export class JobRepository {
       case JobName.VersionCheck: {
         return { jobId: JobName.VersionCheck };
       }
+      case JobName.DatabaseBackup: {
+        return { jobId: JobName.DatabaseBackup };
+      }
       default: {
         return null;
       }
