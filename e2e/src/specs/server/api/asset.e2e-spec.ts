@@ -1073,6 +1073,19 @@ describe('/asset', () => {
       expect(asset.exifInfo).toBeDefined();
       expect(asset.exifInfo).toMatchObject(expected.exifInfo);
       expect(asset).toMatchObject(expected);
+
+      if (input === 'formats/heic/IMG_2682.heic') {
+        await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+
+        const { status, body, type } = await request(app)
+          .get(`/assets/${id}/thumbnail?size=thumbnail`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body).toBeInstanceOf(Buffer);
+        expect(body.length).toBeGreaterThan(0);
+        expect(type).toMatch(/^image\//);
+      }
     });
 
     it('should handle a duplicate', async () => {

@@ -49,11 +49,15 @@ const webSupportedImage = {
   '.webp': ['image/webp'],
 };
 
-const webUnsupportedImage = {
-  ...raw,
+const heif = {
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
   '.hif': ['image/hif'],
+};
+
+const webUnsupportedImage = {
+  ...raw,
+  ...heif,
   '.insp': ['image/jpeg'],
   '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
@@ -142,8 +146,10 @@ export const mimeTypes = {
   video,
   raw,
   webUnsupportedImage,
+  heif,
 
   isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
+  isHeif: (filename: string) => isType(filename, heif),
   isImage: (filename: string) => isType(filename, image),
   isWebSupportedImage: (filename: string) => isType(filename, webSupportedImage),
   isPossiblyAnimatedImage: (filename: string) => isType(filename, possiblyAnimatedImage),

@@ -938,6 +938,25 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should convert HEIC through ffmpeg before decoding thumbnails', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'IMG_1234.HEIC', originalPath: '/original/IMG_1234.HEIC' })
+        .exif({ fileSizeInByte: 5000, orientation: ExifOrientation.Rotate90CW.toString() })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.extractFrame).toHaveBeenCalledWith(asset.originalPath, expect.stringContaining('.jpeg'), 0);
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
+        colorspace: Colorspace.Srgb,
+        orientation: ExifOrientation.Rotate90CW,
+        processInvalidImages: false,
+        size: 1440,
+      });
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+    });
+
     it('should not check transparency metadata for raw files without extracted images', async () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
@@ -1195,8 +1214,7 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+      const asset = AssetFactory.from({ originalFileName: 'image.tif' })
         .exif({
           fileSizeInByte: 5000,
           profileDescription: 'Adobe RGB',
@@ -1303,8 +1321,7 @@ describe(MediaService.name, () => {
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+      const asset = AssetFactory.from({ originalFileName: 'image.tif' })
         .exif({
           fileSizeInByte: 5000,
           profileDescription: 'Adobe RGB',
@@ -1343,7 +1360,7 @@ describe(MediaService.name, () => {
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
-      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+      const asset = AssetFactory.from({ originalFileName: 'image.tif' })
         .exif({
           fileSizeInByte: 5000,
           profileDescription: 'Adobe RGB',
@@ -1972,6 +1989,32 @@ describe(MediaService.name, () => {
       await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.media.extract).not.toHaveBeenCalled();
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should convert HEIC through ffmpeg before decoding person thumbnails', async () => {
+      const person = PersonFactory.create();
+      const data = {
+        ...personThumbnailStub.newThumbnailMiddle,
+        originalPath: '/original/IMG_1234.HEIC',
+        previewPath: null,
+      };
+
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(data);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      mocks.media.decodeImage.mockResolvedValue({
+        data: Buffer.from(''),
+        info: { width: 2160, height: 3840 } as OutputInfo,
+      });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.extractFrame).toHaveBeenCalledWith(data.originalPath, expect.stringContaining('.jpeg'), 0);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
+        colorspace: Colorspace.P3,
+        orientation: ExifOrientation.Horizontal,
+        processInvalidImages: false,
+      });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
 

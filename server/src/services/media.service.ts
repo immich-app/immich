@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { createReadStream } from 'node:fs';
-import { unlink } from 'node:fs/promises';
-import { isAbsolute } from 'node:path';
+import { mkdtemp, rm, unlink } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { isAbsolute, join } from 'node:path';
 import { DiskStorageBackend } from 'src/backends/disk-storage.backend';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
@@ -438,6 +439,22 @@ export class MediaService extends BaseService {
     return extracted;
   }
 
+  private async extractHeifFrame(originalPath: string) {
+    const outputDir = await mkdtemp(join(tmpdir(), 'gallery-heif-thumbnail-'));
+    const outputPath = join(outputDir, 'frame.jpeg');
+
+    try {
+      await this.mediaRepository.extractFrame(originalPath, outputPath, 0);
+      return {
+        path: outputPath,
+        cleanup: () => rm(outputDir, { force: true, recursive: true }),
+      };
+    } catch (error) {
+      await rm(outputDir, { force: true, recursive: true });
+      throw error;
+    }
+  }
+
   private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
     const { image } = await this.getConfig({ withCache: true });
     const colorspace = this.isSRGB(exifInfo) ? Colorspace.Srgb : image.colorspace;
@@ -461,35 +478,44 @@ export class MediaService extends BaseService {
     const inputPath = localOriginalPath ?? asset.originalPath;
     const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
     const extracted = extractEmbedded ? await this.extractImage(inputPath, image.preview.size) : null;
+    const heifFrame =
+      !extracted && (mimeTypes.isHeif(asset.originalFileName) || mimeTypes.isHeif(asset.originalPath))
+        ? await this.extractHeifFrame(inputPath)
+        : undefined;
     const generateFullsize =
       ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
         !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
       useEdits;
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    const thumbSource = extracted ? extracted.buffer : inputPath;
-    const { data, info, colorspace } = await this.decodeImage(
-      thumbSource,
-      // only specify orientation to extracted images which don't have EXIF orientation data
-      // or it can double rotate the image
-      extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
-      convertFullsize ? undefined : image.preview.size,
-    );
+    try {
+      const thumbSource = extracted ? extracted.buffer : (heifFrame?.path ?? inputPath);
+      const shouldApplyOrientation = !!extracted || !!heifFrame;
+      const { data, info, colorspace } = await this.decodeImage(
+        thumbSource,
+        // only specify orientation to extracted/converted images which don't have EXIF orientation data
+        // or it can double rotate the image
+        shouldApplyOrientation ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
+        convertFullsize ? undefined : image.preview.size,
+      );
 
-    let isTransparent = false;
-    if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
-      ({ isTransparent } = await this.mediaRepository.getImageMetadata(inputPath));
+      let isTransparent = false;
+      if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
+        ({ isTransparent } = await this.mediaRepository.getImageMetadata(inputPath));
+      }
+
+      return {
+        extracted,
+        data,
+        info,
+        colorspace,
+        convertFullsize,
+        generateFullsize,
+        isTransparent,
+      };
+    } finally {
+      await heifFrame?.cleanup();
     }
-
-    return {
-      extracted,
-      data,
-      info,
-      colorspace,
-      convertFullsize,
-      generateFullsize,
-      isTransparent,
-    };
   }
 
   private async generateImageThumbnails(
@@ -619,6 +645,7 @@ export class MediaService extends BaseService {
     // For S3 assets, download to local temp files for processing
     const originalLocal = await this.ensureLocalFile(originalPath);
     const previewLocal = previewPath ? await this.ensureLocalFile(previewPath) : undefined;
+    let heifFrame: Awaited<ReturnType<MediaService['extractHeifFrame']>> | undefined;
 
     try {
       let inputImage: string | Buffer;
@@ -631,6 +658,9 @@ export class MediaService extends BaseService {
       } else if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
         const extracted = await this.extractImage(originalLocal.localPath, image.preview.size);
         inputImage = extracted ? extracted.buffer : originalLocal.localPath;
+      } else if (mimeTypes.isHeif(originalPath)) {
+        heifFrame = await this.extractHeifFrame(originalLocal.localPath);
+        inputImage = heifFrame.path;
       } else {
         inputImage = originalLocal.localPath;
       }
@@ -638,8 +668,9 @@ export class MediaService extends BaseService {
       const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
         colorspace: image.colorspace,
         processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
-        // if this is an extracted image, it may not have orientation metadata
-        orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
+        // if this is an extracted or converted image, it may not have orientation metadata
+        orientation:
+          (Buffer.isBuffer(inputImage) || heifFrame) && exifOrientation ? Number(exifOrientation) : undefined,
       });
 
       const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
@@ -674,6 +705,7 @@ export class MediaService extends BaseService {
 
       return JobStatus.Success;
     } finally {
+      await heifFrame?.cleanup();
       await originalLocal.cleanup();
       await previewLocal?.cleanup();
     }

@@ -336,6 +336,24 @@ describe(UserService.name, () => {
       });
     });
 
+    it('should convert HEIC profile uploads through ffmpeg before thumbnailing', async () => {
+      const user = factory.userAdmin({ profileImagePath: '' });
+      const file = { path: `/data/profile/${user.id}/temp-file.HEIC` } as Express.Multer.File;
+      mocks.user.get.mockResolvedValue(user);
+      mocks.user.update.mockImplementation((_, update) =>
+        Promise.resolve({ ...user, ...update, profileChangedAt: update.profileChangedAt ?? new Date() } as UserAdmin),
+      );
+
+      await sut.createProfileImage(factory.auth({ user }), file);
+
+      expect(mocks.media.extractFrame).toHaveBeenCalledWith(file.path, expect.stringContaining('.jpeg'), 0);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        expect.stringContaining('.jpeg'),
+        expect.any(Object),
+        expect.any(String),
+      );
+    });
+
     describe('with S3 write backend', () => {
       let mockS3Backend: { put: ReturnType<typeof vitest.fn>; getServeStrategy: ReturnType<typeof vitest.fn> };
 
