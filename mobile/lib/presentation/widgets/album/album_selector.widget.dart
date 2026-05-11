@@ -8,6 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -569,7 +571,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
   }
 }
 
-class _AlbumList extends ConsumerWidget {
+class _AlbumList extends ConsumerStatefulWidget {
   const _AlbumList({required this.albums, required this.userId, required this.onAlbumSelected});
 
   final List<RemoteAlbum> albums;
@@ -577,8 +579,33 @@ class _AlbumList extends ConsumerWidget {
   final AlbumSelectorCallback onAlbumSelected;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (albums.isEmpty) {
+  ConsumerState<_AlbumList> createState() => _AlbumListState();
+}
+
+class _AlbumListState extends ConsumerState<_AlbumList> {
+  bool _enableSwipeToDelete = false;
+  late final StreamSubscription<bool> _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _enableSwipeToDelete = Store.get(StoreKey.enableSwipeToDeleteAlbum, false);
+    _subscription = Store.watch(StoreKey.enableSwipeToDeleteAlbum)
+        .map((v) => v ?? false)
+        .listen((enabled) {
+      if (mounted) setState(() => _enableSwipeToDelete = enabled);
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.albums.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
           child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
@@ -590,10 +617,10 @@ class _AlbumList extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 64),
       sliver: SliverList.builder(
         itemBuilder: (_, index) {
-          final album = albums[index];
-          final isOwner = album.ownerId == userId;
+          final album = widget.albums[index];
+          final isOwner = album.ownerId == widget.userId;
 
-          if (isOwner) {
+          if (isOwner && _enableSwipeToDelete) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Dismissible(
@@ -619,17 +646,17 @@ class _AlbumList extends ConsumerWidget {
                 onDismissed: (direction) async {
                   await ref.read(remoteAlbumProvider.notifier).deleteAlbum(album.id);
                 },
-                child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected),
+                child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: widget.onAlbumSelected),
               ),
             );
           } else {
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: onAlbumSelected),
+              child: AlbumTile(album: album, isOwner: isOwner, onAlbumSelected: widget.onAlbumSelected),
             );
           }
         },
-        itemCount: albums.length,
+        itemCount: widget.albums.length,
       ),
     );
   }

@@ -93,7 +93,10 @@ enum StoreKey<T> {
   legacyCleanupKeepAlbumIds<String>._(1010),
   legacyCleanupCutoffDaysAgo<int>._(1011),
   legacyCleanupDefaultsInitialized<bool>._(1012),
-  legacyLogLevel<int>._(115);
+  legacyLogLevel<int>._(115),
+
+  // Behavior settings
+  enableSwipeToDeleteAlbum<bool>._(1014);
 
   const StoreKey._(this.id);
   final int id;
