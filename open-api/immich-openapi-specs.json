@@ -16271,7 +16271,7 @@
           },
           "duration": {
             "description": "Duration in milliseconds (for videos)",
-            "maximum": 2147483647,
+            "maximum": 9007199254740991,
             "minimum": 0,
             "type": "integer"
           },
