@@ -54,7 +54,7 @@ const extractHeifFrame = async (media: MediaRepository, input: string) => {
   const outputPath = join(outputDir, 'frame.jpeg');
 
   try {
-    await media.extractFrame(input, outputPath, 0);
+    await media.convertHeifToJpeg(input, outputPath);
     return {
       path: outputPath,
       cleanup: () => rm(outputDir, { force: true, recursive: true }),

@@ -15,6 +15,7 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     transcode: vitest.fn(),
     trim: vitest.fn(),
     extractFrame: vitest.fn(),
+    convertHeifToJpeg: vitest.fn(),
     getImageMetadata: vitest.fn(),
   };
 };

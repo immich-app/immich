@@ -336,7 +336,7 @@ describe(UserService.name, () => {
       });
     });
 
-    it('should convert HEIC profile uploads through ffmpeg before thumbnailing', async () => {
+    it('should convert HEIC profile uploads through the HEIF converter before thumbnailing', async () => {
       const user = factory.userAdmin({ profileImagePath: '' });
       const file = { path: `/data/profile/${user.id}/temp-file.HEIC` } as Express.Multer.File;
       mocks.user.get.mockResolvedValue(user);
@@ -346,7 +346,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(factory.auth({ user }), file);
 
-      expect(mocks.media.extractFrame).toHaveBeenCalledWith(file.path, expect.stringContaining('.jpeg'), 0);
+      expect(mocks.media.convertHeifToJpeg).toHaveBeenCalledWith(file.path, expect.stringContaining('.jpeg'));
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         expect.stringContaining('.jpeg'),
         expect.any(Object),

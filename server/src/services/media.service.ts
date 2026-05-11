@@ -444,7 +444,7 @@ export class MediaService extends BaseService {
     const outputPath = join(outputDir, 'frame.jpeg');
 
     try {
-      await this.mediaRepository.extractFrame(originalPath, outputPath, 0);
+      await this.mediaRepository.convertHeifToJpeg(originalPath, outputPath);
       return {
         path: outputPath,
         cleanup: () => rm(outputDir, { force: true, recursive: true }),
