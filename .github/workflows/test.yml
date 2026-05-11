@@ -674,11 +674,8 @@ jobs:
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
 
-      - name: Build the app
-        run: pnpm --filter immich build
-
       - name: Run API generation
-        run: ./bin/generate-open-api.sh
+        run: mise //:open-api
         working-directory: open-api
 
       - name: Find file changes
@@ -770,7 +767,7 @@ jobs:
           exit 1
 
       - name: Run SQL generation
-        run: pnpm sync:sql
+        run: mise //:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 

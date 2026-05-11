@@ -33,9 +33,9 @@ env._.path = "./node_modules/.bin"
 run = "tsc --noEmit"
 
 [tasks.sql]
-run = "node ./dist/bin/sync-open-api.js"
+run = "node ./dist/bin/sync-sql.js"
 
-[tasks."open-api"]
+[tasks."sync-open-api"]
 run = "node ./dist/bin/sync-open-api.js"
 
 [tasks.migrations]

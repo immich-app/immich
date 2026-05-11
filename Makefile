@@ -37,16 +37,11 @@ prod-scale:
 
 .PHONY: open-api
 open-api:
-	cd ./open-api && bash ./bin/generate-open-api.sh
-
-open-api-dart:
-	cd ./open-api && bash ./bin/generate-open-api.sh dart
-
-open-api-typescript:
-	cd ./open-api && bash ./bin/generate-open-api.sh typescript
+	@printf "This command has been removed. Please use:\n\n    mise open-api          # or mise //:open-api from another directory\n\n"\n\n >&2 && exit 1
 
 sql:
-	pnpm --filter immich run sync:sql
+	@printf "This command has been removed. Please use:\n\n    mise sql               # or mise //:sql from another directory\n\n"\n\n >&2 && exit 1
+
 
 renovate:
   LOG_LEVEL=debug pnpm exec renovate --platform=local --repository-cache=reset

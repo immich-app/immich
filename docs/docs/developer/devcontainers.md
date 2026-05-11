@@ -243,8 +243,8 @@ To connect the mobile app to your Dev Container:
 
 - **Server code** (`/server`): Changes trigger automatic restart
 - **Web code** (`/web`): Changes trigger hot module replacement
-- **Database migrations**: Run `pnpm run sync:sql` in the server directory
-- **API changes**: Regenerate TypeScript SDK with `make open-api`
+- **Database migrations**: Run `mise //:sql`
+- **API changes**: Regenerate TypeScript SDK with `mise //:open-api`
 
 ## Testing
 
@@ -289,7 +289,7 @@ make open-api-typescript # Generate TypeScript SDK
 make open-api-dart      # Generate Dart SDK
 
 # Database
-make sql                # Sync database schema
+mise sql                # Sync database schema
 ```
 
 ### Debugging

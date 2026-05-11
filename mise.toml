@@ -40,6 +40,31 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 experimental = true
 pin = true
 
+[tasks.open-api-typescript]
+run = [
+  "pnpm dlx oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas open-api/immich-openapi-specs.json packages/sdk/src/fetch-client.ts",
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
+]
+
+[tasks.open-api-dart]
+dir = "open-api"
+run = "bash ./bin/generate-dart-sdk.sh"
+
+[tasks.open-api]
+env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
+run = [
+  { task = "//server:install" },
+  { task = "//server:build" },
+  { task = "//server:sync-open-api" },
+  { task = ":open-api-typescript"},
+  { task = ":open-api-dart"},
+]
+
+[tasks.sql]
+dir = "server"
+run = "node ./dist/bin/sync-sql.js"
+
 # SDK tasks
 [tasks."sdk:install"]
 dir = "packages/sdk"
