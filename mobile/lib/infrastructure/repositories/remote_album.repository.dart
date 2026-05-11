@@ -360,7 +360,9 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<List<String>> getSortedAlbumIds(List<String> albumIds, {required AssetDateAggregation aggregation}) async {
-    if (albumIds.isEmpty) return [];
+    if (albumIds.isEmpty) {
+      return [];
+    }
 
     final jsonIds = jsonEncode(albumIds);
     final sqlAgg = aggregation == AssetDateAggregation.start ? 'MIN' : 'MAX';

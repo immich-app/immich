@@ -132,7 +132,9 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
 
   void applyDefaultAlbumSelections(List<(String id, String name)> albums) {
     final isInitialized = _metadataRepository.appConfig.cleanup.defaultsInitialized;
-    if (isInitialized) return;
+    if (isInitialized) {
+      return;
+    }
 
     final toKeep = _cleanupService.getDefaultKeepAlbumIds(albums);
 

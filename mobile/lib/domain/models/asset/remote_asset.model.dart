@@ -71,8 +71,12 @@ class RemoteAsset extends BaseAsset {
   // Not checking for localId here
   @override
   bool operator ==(Object other) {
-    if (other is! RemoteAsset) return false;
-    if (identical(this, other)) return true;
+    if (other is! RemoteAsset) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
@@ -158,8 +162,12 @@ class RemoteAssetExif extends RemoteAsset {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RemoteAssetExif) return false;
-    if (identical(this, other)) return true;
+    if (other is! RemoteAssetExif) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other && exifInfo == other.exifInfo;
   }
 

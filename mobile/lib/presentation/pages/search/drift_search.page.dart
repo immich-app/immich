@@ -708,7 +708,9 @@ class _SearchResultGrid extends ConsumerWidget {
   bool _onScrollUpdateNotification(ScrollNotification notification) {
     final metrics = notification.metrics;
 
-    if (metrics.axis != Axis.vertical) return false;
+    if (metrics.axis != Axis.vertical) {
+      return false;
+    }
 
     final isBottomSheet = notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
     final remaining = metrics.maxScrollExtent - metrics.pixels;
@@ -735,7 +737,9 @@ class _SearchResultGrid extends ConsumerWidget {
 
     final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
 
-    if (hasMore) return null;
+    if (hasMore) {
+      return null;
+    }
 
     return SliverToBoxAdapter(
       child: Padding(

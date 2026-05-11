@@ -12,7 +12,9 @@ class DriftAuthUserRepository extends DriftDatabaseRepository {
   Future<UserDto?> get(String id) async {
     final user = await _db.managers.authUserEntity.filter((user) => user.id.equals(id)).getSingleOrNull();
 
-    if (user == null) return null;
+    if (user == null) {
+      return null;
+    }
 
     final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(id));
     final metadata = await query.map((row) => row.toDto()).get();
