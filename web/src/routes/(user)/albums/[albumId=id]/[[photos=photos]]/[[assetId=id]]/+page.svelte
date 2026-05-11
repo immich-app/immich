@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
+  import { page } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
@@ -89,6 +90,7 @@
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
+  let previousRoute = $derived(page.url.searchParams.get('previousRoute') ?? Route.albums());
 
   const timelineMultiSelectManager = new AssetMultiSelectManager();
 
@@ -499,7 +501,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === AlbumPageViewMode.VIEW}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
 

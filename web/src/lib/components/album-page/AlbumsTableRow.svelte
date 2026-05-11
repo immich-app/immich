@@ -12,10 +12,11 @@
 
   interface Props {
     album: AlbumResponseDto;
+    previousRoute?: string | undefined;
     onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
   }
 
-  let { album, onShowContextMenu = undefined }: Props = $props();
+  let { album, previousRoute = undefined, onShowContextMenu = undefined }: Props = $props();
 
   const showContextMenu = (position: ContextMenuPosition) => {
     onShowContextMenu?.(position, album);
@@ -33,7 +34,8 @@
 
 <tr
   class="flex w-full place-items-center border-3 border-transparent p-2 text-center odd:bg-subtle/80 even:bg-subtle/20 hover:cursor-pointer hover:border-immich-primary/75 md:px-5 md:py-2 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75"
-  onclick={() => goto(Route.viewAlbum(album))}
+  onclick={() =>
+    goto(Route.viewAlbum(album) + (previousRoute ? `?previousRoute=${encodeURIComponent(previousRoute)}` : ''))}
   {oncontextmenu}
 >
   <td class="text-md w-8/12 items-center text-start text-ellipsis sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%]">
