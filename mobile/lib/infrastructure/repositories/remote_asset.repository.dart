@@ -164,12 +164,14 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> emptyTrash() async {
-    await _db.remoteAssetEntity.deleteWhere((t) => t.deletedAt.isNotNull());
+  Future<void> emptyTrash(String ownerId) async {
+    await _db.remoteAssetEntity.deleteWhere((t) => t.deletedAt.isNotNull() & t.ownerId.equals(ownerId));
   }
 
-  Future<void> restoreAllTrash() async {
-    await _db.remoteAssetEntity.update().write(const RemoteAssetEntityCompanion(deletedAt: Value(null)));
+  Future<void> restoreAllTrash(String ownerId) async {
+    await (_db.remoteAssetEntity.update()..where((t) => t.deletedAt.isNotNull() & t.ownerId.equals(ownerId))).write(
+      const RemoteAssetEntityCompanion(deletedAt: Value(null)),
+    );
   }
 
   Future<void> delete(List<String> ids) {

@@ -108,15 +108,15 @@ class ActionService {
     await _remoteAssetRepository.restoreTrash(ids);
   }
 
-  Future<int> emptyTrash() async {
+  Future<int> emptyTrash(String userId) async {
     final count = await _assetApiRepository.emptyTrash();
-    await _remoteAssetRepository.emptyTrash();
+    await _remoteAssetRepository.emptyTrash(userId);
     return count;
   }
 
-  Future<int> restoreAllTrash() async {
+  Future<int> restoreAllTrash(String userId) async {
     final count = await _assetApiRepository.restoreAllTrash();
-    await _remoteAssetRepository.restoreAllTrash();
+    await _remoteAssetRepository.restoreAllTrash(userId);
     return count;
   }
 

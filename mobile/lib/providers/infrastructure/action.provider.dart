@@ -239,9 +239,9 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> emptyTrash() async {
+  Future<ActionResult> emptyTrash(String userId) async {
     try {
-      final count = await _service.emptyTrash();
+      final count = await _service.emptyTrash(userId);
       return ActionResult(count: count, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to empty trash', error, stack);
@@ -249,9 +249,9 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> restoreAllTrash() async {
+  Future<ActionResult> restoreAllTrash(String userId) async {
     try {
-      final count = await _service.restoreAllTrash();
+      final count = await _service.restoreAllTrash(userId);
       return ActionResult(count: count, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to restore all trash assets', error, stack);
