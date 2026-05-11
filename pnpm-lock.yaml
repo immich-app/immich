@@ -107,7 +107,7 @@ importers:
         version: link:../packages/cli
       '@immich/e2e-auth-server':
         specifier: workspace:*
-        version: link:../e2e-auth-server
+        version: link:../packages/e2e-auth-server
       '@immich/sdk':
         specifier: workspace:*
         version: link:../packages/sdk
@@ -192,21 +192,6 @@ importers:
       vitest:
         specifier: ^4.0.0
         version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
-
-  e2e-auth-server:
-    devDependencies:
-      '@types/oidc-provider':
-        specifier: ^9.0.0
-        version: 9.5.0
-      jose:
-        specifier: ^6.0.0
-        version: 6.2.2
-      oidc-provider:
-        specifier: ^9.0.0
-        version: 9.8.2
-      tsx:
-        specifier: ^4.20.6
-        version: 4.21.0
 
   i18n:
     devDependencies:
@@ -313,6 +298,21 @@ importers:
       yaml:
         specifier: ^2.3.1
         version: 2.8.3
+
+  packages/e2e-auth-server:
+    devDependencies:
+      '@types/oidc-provider':
+        specifier: ^9.0.0
+        version: 9.5.0
+      jose:
+        specifier: ^6.0.0
+        version: 6.2.2
+      oidc-provider:
+        specifier: ^9.0.0
+        version: 9.8.2
+      tsx:
+        specifier: ^4.20.6
+        version: 4.21.0
 
   packages/sdk:
     dependencies:
