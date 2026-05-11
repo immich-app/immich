@@ -357,6 +357,89 @@ describe(AssetRepository.name, () => {
     });
   });
 
+  describe('stale asset job writes', () => {
+    it('should ignore job status upserts for assets deleted by another worker', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.remove(asset);
+
+      await expect(sut.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() })).resolves.toBe(
+        undefined,
+      );
+      await expect(
+        ctx.database
+          .selectFrom('asset_job_status')
+          .select('assetId')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirst(),
+      ).resolves.toBeUndefined();
+    });
+
+    it('should ignore file upserts for assets deleted by another worker', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.remove(asset);
+
+      await expect(
+        sut.upsertFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' }),
+      ).resolves.toBe(undefined);
+      await expect(
+        ctx.database.selectFrom('asset_file').select('assetId').where('assetId', '=', asset.id).executeTakeFirst(),
+      ).resolves.toBeUndefined();
+    });
+
+    it('should keep valid job status upserts when a bulk write includes a deleted asset', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: deletedAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: existingAsset } = await ctx.newAsset({ ownerId: user.id });
+      const metadataExtractedAt = new Date();
+
+      await sut.remove(deletedAsset);
+
+      await expect(
+        sut.upsertJobStatus(
+          { assetId: deletedAsset.id, metadataExtractedAt },
+          { assetId: existingAsset.id, metadataExtractedAt },
+        ),
+      ).resolves.toBe(undefined);
+      await expect(
+        ctx.database
+          .selectFrom('asset_job_status')
+          .select(['assetId', 'metadataExtractedAt'])
+          .where('assetId', '=', existingAsset.id)
+          .executeTakeFirst(),
+      ).resolves.toEqual({ assetId: existingAsset.id, metadataExtractedAt });
+    });
+
+    it('should keep valid file upserts when a bulk write includes a deleted asset', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: deletedAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: existingAsset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.remove(deletedAsset);
+
+      await expect(
+        sut.upsertFiles([
+          { assetId: deletedAsset.id, type: AssetFileType.Preview, path: 'deleted-preview.jpg' },
+          { assetId: existingAsset.id, type: AssetFileType.Preview, path: 'existing-preview.jpg' },
+        ]),
+      ).resolves.toBe(undefined);
+      await expect(
+        ctx.database
+          .selectFrom('asset_file')
+          .select(['assetId', 'path'])
+          .where('assetId', '=', existingAsset.id)
+          .executeTakeFirst(),
+      ).resolves.toEqual({ assetId: existingAsset.id, path: 'existing-preview.jpg' });
+    });
+  });
+
   describe('unlockProperties', () => {
     it('should unlock one property', async () => {
       const { ctx, sut } = setup();

@@ -444,7 +444,12 @@ export class MediaService extends BaseService {
     const outputPath = join(outputDir, 'frame.jpeg');
 
     try {
-      await this.mediaRepository.extractFrame(originalPath, outputPath, 0);
+      await this.mediaRepository.extractFrame(
+        originalPath,
+        outputPath,
+        0,
+        await this.getHeifColorStreamIndex(originalPath),
+      );
       return {
         path: outputPath,
         cleanup: () => rm(outputDir, { force: true, recursive: true }),
@@ -453,6 +458,15 @@ export class MediaService extends BaseService {
       await rm(outputDir, { force: true, recursive: true });
       throw error;
     }
+  }
+
+  private async getHeifColorStreamIndex(originalPath: string) {
+    const { videoStreams } = await this.mediaRepository.probe(originalPath);
+    const [stream] = videoStreams
+      .filter(({ pixelFormat }) => !pixelFormat.startsWith('gray'))
+      .toSorted((a, b) => b.width * b.height - a.width * a.height);
+
+    return stream?.index;
   }
 
   private async decodeImage(thumbSource: string | Buffer, exifInfo: ThumbnailAsset['exifInfo'], targetSize?: number) {
