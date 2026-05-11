@@ -122,7 +122,7 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <div class="flex h-16 flex-wrap gap-x-4 overflow-hidden md:h-24">
+      <div class="flex h-24 flex-wrap gap-x-1 overflow-hidden md:h-42">
         {#each recents as item (item.data.id)}
           <a class="relative h-full flex-auto" href={Route.viewAsset({ id: item.data.id })} draggable="false">
             <img
