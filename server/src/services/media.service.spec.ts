@@ -938,19 +938,44 @@ describe(MediaService.name, () => {
       });
     });
 
-    it('should convert HEIC through the HEIF converter before decoding thumbnails', async () => {
+    it('should convert HEIC through ffmpeg before decoding thumbnails', async () => {
       const asset = AssetFactory.from({ originalFileName: 'IMG_1234.HEIC', originalPath: '/original/IMG_1234.HEIC' })
         .exif({ fileSizeInByte: 5000, orientation: ExifOrientation.Rotate90CW.toString() })
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.noAudioStreams,
+        videoStreams: [
+          { ...probeStub.videoStream2160p.videoStreams[0], index: 60, pixelFormat: 'gray', width: 2016, height: 1512 },
+          {
+            ...probeStub.videoStream2160p.videoStreams[0],
+            index: 61,
+            pixelFormat: 'yuv420p10le',
+            width: 1024,
+            height: 768,
+          },
+          {
+            ...probeStub.videoStream2160p.videoStreams[0],
+            index: 62,
+            pixelFormat: 'yuvj420p',
+            width: 416,
+            height: 312,
+          },
+        ],
+      });
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.convertHeifToJpeg).toHaveBeenCalledWith(asset.originalPath, expect.stringContaining('.jpeg'));
+      expect(mocks.media.extractFrame).toHaveBeenCalledWith(
+        asset.originalPath,
+        expect.stringContaining('.jpeg'),
+        0,
+        61,
+      );
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
         colorspace: Colorspace.Srgb,
-        orientation: undefined,
+        orientation: ExifOrientation.Rotate90CW,
         processInvalidImages: false,
         size: 1440,
       });
@@ -1992,7 +2017,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
 
-    it('should convert HEIC through the HEIF converter before decoding person thumbnails', async () => {
+    it('should convert HEIC through ffmpeg before decoding person thumbnails', async () => {
       const person = PersonFactory.create();
       const data = {
         ...personThumbnailStub.newThumbnailMiddle,
@@ -2001,6 +2026,19 @@ describe(MediaService.name, () => {
       };
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(data);
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.noAudioStreams,
+        videoStreams: [
+          { ...probeStub.videoStream2160p.videoStreams[0], index: 60, pixelFormat: 'gray', width: 2016, height: 1512 },
+          {
+            ...probeStub.videoStream2160p.videoStreams[0],
+            index: 61,
+            pixelFormat: 'yuv420p10le',
+            width: 1024,
+            height: 768,
+          },
+        ],
+      });
       mocks.media.generateThumbnail.mockResolvedValue();
       mocks.media.decodeImage.mockResolvedValue({
         data: Buffer.from(''),
@@ -2009,10 +2047,10 @@ describe(MediaService.name, () => {
 
       await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.media.convertHeifToJpeg).toHaveBeenCalledWith(data.originalPath, expect.stringContaining('.jpeg'));
+      expect(mocks.media.extractFrame).toHaveBeenCalledWith(data.originalPath, expect.stringContaining('.jpeg'), 0, 61);
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
         colorspace: Colorspace.P3,
-        orientation: undefined,
+        orientation: ExifOrientation.Horizontal,
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();

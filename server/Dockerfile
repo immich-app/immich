@@ -86,10 +86,6 @@ ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
 
-RUN apt-get update && \
-  apt-get install -y --no-install-recommends libheif-examples && \
-  rm -rf /var/lib/apt/lists/*
-
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli

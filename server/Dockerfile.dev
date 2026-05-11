@@ -16,10 +16,6 @@ RUN npm install --global corepack@latest && \
   mkdir -p /buildcache/pnpm-store /buildcache/pnpm-cache /buildcache/node-gyp && \
   chmod -R o+rw /buildcache
 
-RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install -y --no-install-recommends --fix-missing libheif-examples && \
-  rm -rf /var/lib/apt/lists/*
-
 WORKDIR /usr/src/app
 
 ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
