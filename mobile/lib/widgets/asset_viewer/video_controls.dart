@@ -49,7 +49,9 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
   }
 
   void _onHideTimer() {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     if (ref.read(_provider).status == VideoPlaybackStatus.playing) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
@@ -91,7 +93,9 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
     final isFinished = !isCasting && videoStatus == VideoPlaybackStatus.completed;
 
     ref.listen(assetViewerProvider.select((v) => v.showingControls), (prev, showing) {
-      if (showing && prev != showing) _hideTimer.reset();
+      if (showing && prev != showing) {
+        _hideTimer.reset();
+      }
     });
     ref.listen(_provider.select((v) => v.status), (_, __) => _hideTimer.reset());
 

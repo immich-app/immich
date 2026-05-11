@@ -115,12 +115,18 @@ final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
   List<T>? decode(String raw) {
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return null;
+      if (decoded is! List) {
+        return null;
+      }
       final result = <T>[];
       for (final item in decoded) {
-        if (item is! String) return null;
+        if (item is! String) {
+          return null;
+        }
         final element = _elementCodec.decode(item);
-        if (element == null) return null;
+        if (element == null) {
+          return null;
+        }
         result.add(element);
       }
       return result;

@@ -7251,7 +7251,6 @@ export enum TranscodeHWAccel {
 export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
-    Libopus = "libopus",
     Opus = "opus",
     PcmS16Le = "pcm_s16le"
 }

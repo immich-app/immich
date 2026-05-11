@@ -15,7 +15,9 @@ class StarRatingPicker extends HookWidget {
     return RadioGroup(
       groupValue: selectedRating.value?.rating,
       onChanged: (int? newValue) {
-        if (newValue == null) return;
+        if (newValue == null) {
+          return;
+        }
         final newFilter = SearchRatingFilter(rating: newValue);
         selectedRating.value = newFilter;
         onSelect(newFilter);

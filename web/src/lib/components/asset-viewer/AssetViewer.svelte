@@ -49,6 +49,7 @@
   import OcrButton from './OcrButton.svelte';
   import PhotoViewer from './PhotoViewer.svelte';
   import SlideshowBar from './SlideshowBar.svelte';
+  import SlideshowMetadataOverlay from './SlideshowMetadataOverlay.svelte';
   import VideoViewer from './VideoWrapperViewer.svelte';
 
   export type AssetCursor = {
@@ -587,6 +588,10 @@
       <div class="absolute inset-e-0 bottom-0 me-6 mb-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
         <OcrButton />
       </div>
+    {/if}
+
+    {#if $slideshowState !== SlideshowState.None}
+      <SlideshowMetadataOverlay {asset} />
     {/if}
   </div>
 

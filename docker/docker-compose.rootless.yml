@@ -95,6 +95,3 @@ services:
     restart: always
     healthcheck:
       disable: false
-
-volumes:
-  model-cache:

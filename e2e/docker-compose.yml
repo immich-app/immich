@@ -4,7 +4,7 @@ services:
   e2e-auth-server:
     container_name: immich-e2e-auth-server
     build:
-      context: ../e2e-auth-server
+      context: ../packages/e2e-auth-server
     ports:
       - 2286:2286
 

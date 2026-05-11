@@ -205,7 +205,7 @@ When the Dev Container starts, it automatically:
 1. **Runs post-create script** (`container-server-post-create.sh`):
    - Adjusts file permissions for the `node` user
    - Installs dependencies: `pnpm install` in all packages
-   - Builds TypeScript SDK: `pnpm run build` in `open-api/typescript-sdk`
+   - Builds TypeScript SDK: `pnpm --filter @immich/sdk build`
 
 2. **Starts development servers** via VS Code tasks:
    - `Immich API Server (Nest)` - API server with hot-reloading on port 2283

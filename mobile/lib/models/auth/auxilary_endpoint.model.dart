@@ -16,7 +16,9 @@ class AuxilaryEndpoint {
 
   @override
   bool operator ==(covariant AuxilaryEndpoint other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.url == url && other.status == status;
   }
@@ -53,7 +55,9 @@ class AuxCheckStatus {
 
   @override
   bool operator ==(covariant AuxCheckStatus other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.name == name;
   }

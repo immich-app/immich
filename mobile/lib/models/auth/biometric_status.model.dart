@@ -19,7 +19,9 @@ class BiometricStatus {
 
   @override
   bool operator ==(covariant BiometricStatus other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final listEquals = const DeepCollectionEquality().equals;
 
     return listEquals(other.availableBiometrics, availableBiometrics) && other.canAuthenticate == canAuthenticate;
