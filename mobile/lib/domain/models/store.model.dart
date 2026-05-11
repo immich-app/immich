@@ -39,12 +39,6 @@ enum StoreKey<T> {
   readonlyModeEnabled<bool>._(138),
   albumGridView<bool>._(140),
 
-  // Image viewer navigation settings
-  loopVideo<bool>._(117),
-  loadOriginalVideo<bool>._(136),
-  autoPlayVideo<bool>._(139),
-  tapToNavigate<bool>._(141),
-
   // Experimental stuff
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
@@ -52,6 +46,10 @@ enum StoreKey<T> {
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyLoopVideo<bool>._(117),
+  legacyLoadOriginalVideo<bool>._(136),
+  legacyAutoPlayVideo<bool>._(139),
+  legacyTapToNavigate<bool>._(141),
   legacyPreferRemoteImage<bool>._(116),
   legacyLoadOriginal<bool>._(101),
   legacyPrimaryColor<String>._(128),
