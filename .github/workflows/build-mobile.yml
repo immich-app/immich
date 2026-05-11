@@ -175,7 +175,8 @@ jobs:
 
             Download: ${{ env.APK_URL }}
 
-            <details><summary>QR code</summary>
+            <details>
+              <summary>QR code</summary>
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
             </details>
 
