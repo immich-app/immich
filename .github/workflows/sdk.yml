@@ -14,9 +14,6 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    defaults:
-      run:
-        working-directory: ./open-api/typescript-sdk
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
@@ -36,10 +33,10 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: pnpm --filter @immich/sdk install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: pnpm --filter @immich/sdk build
 
       - name: Publish
-        run: pnpm publish --provenance --no-git-checks
+        run: pnpm --filter @immich/sdk publish --provenance --no-git-checks

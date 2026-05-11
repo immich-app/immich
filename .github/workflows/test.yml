@@ -33,14 +33,14 @@ jobs:
             web:
               - 'web/**'
               - 'i18n/**'
-              - 'open-api/typescript-sdk/**'
+              - 'packages/sdk/**'
               - 'pnpm-lock.yaml'
             server:
               - 'server/**'
               - 'pnpm-lock.yaml'
             cli:
               - 'cli/**'
-              - 'open-api/typescript-sdk/**'
+              - 'packages/sdk/**'
               - 'pnpm-lock.yaml'
             e2e:
               - 'e2e/**'
@@ -149,9 +149,9 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+
+      - name: Setup @immich/sdk
+        run: pnpm --filter @immich/sdk install --frozen-lockfile && pnpm --filter @immich/sdk build
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -194,7 +194,7 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Run setup typescript-sdk
+      - name: Run setup @immich/sdk
         run: mise run //:sdk:install && mise run //:sdk:build
 
       - name: Run pnpm install
@@ -384,9 +384,8 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+      - name: Setup @immich/sdk
+        run: pnpm --filter @immich/sdk install --frozen-lockfile && pnpm --filter @immich/sdk build
 
       - name: Run setup web
         run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync
@@ -467,9 +466,8 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+      - name: Run setup @immich/sdk
+        run: pnpm --filter @immich/sdk install --frozen-lockfile && pnpm --filter @immich/sdk build
 
         if: ${{ !cancelled() }}
       - name: Install dependencies
@@ -699,7 +697,7 @@ jobs:
         with:
           files: |
             mobile/openapi
-            open-api/typescript-sdk
+            packages/sdk
             open-api/immich-openapi-specs.json
 
       - name: Verify files have not changed

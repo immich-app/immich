@@ -42,11 +42,11 @@ pin = true
 
 # SDK tasks
 [tasks."sdk:install"]
-dir = "open-api/typescript-sdk"
+dir = "packages/sdk"
 run = "pnpm install --filter @immich/sdk --frozen-lockfile"
 
 [tasks."sdk:build"]
-dir = "open-api/typescript-sdk"
+dir = "packages/sdk"
 run = "pnpm run build"
 
 # i18n tasks

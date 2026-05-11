@@ -68,7 +68,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix cli
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix web
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix e2e
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix open-api/typescript-sdk
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/sdk
 
   # copy version to open-api spec
   pnpm install --frozen-lockfile --prefix server

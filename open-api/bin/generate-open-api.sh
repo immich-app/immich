@@ -30,7 +30,7 @@ function dart {
 }
 
 function typescript {
-  pnpm dlx oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas immich-openapi-specs.json typescript-sdk/src/fetch-client.ts
+  pnpm dlx oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas immich-openapi-specs.json ../packages/sdk/src/fetch-client.ts
   pnpm --filter @immich/sdk install --frozen-lockfile
   pnpm --filter @immich/sdk build
 }

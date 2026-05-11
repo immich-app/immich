@@ -63,7 +63,7 @@ VOLUME_DIRS = \
 	./e2e/node_modules \
 	./docs/node_modules \
 	./server/node_modules \
-	./open-api/typescript-sdk/node_modules \
+	./packages/sdk/node_modules \
 	./.github/node_modules \
 	./node_modules \
 	./cli/node_modules
@@ -77,7 +77,7 @@ MODULES = e2e server web cli sdk docs .github
 #   cli     = @immich/cli
 #   docs    = documentation
 #   e2e     = immich-e2e
-#   open-api/typescript-sdk = @immich/sdk
+#   packages/sdk = @immich/sdk
 #   server  = immich
 #   web     = immich-web
 map-package = $(subst sdk,@immich/sdk,$(subst cli,@immich/cli,$(subst docs,documentation,$(subst e2e,immich-e2e,$(subst server,immich,$(subst web,immich-web,$1))))))

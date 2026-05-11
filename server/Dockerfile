@@ -29,7 +29,7 @@ ENV IMMICH_BUILD=${BUILD_ID}
 WORKDIR /usr/src/app
 COPY ./web ./web/
 COPY ./i18n ./i18n/
-COPY ./open-api ./open-api/
+COPY ./packages ./packages/
 RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
@@ -41,7 +41,7 @@ RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
 FROM builder AS cli
 
 COPY ./cli ./cli/
-COPY ./open-api ./open-api/
+COPY ./packages ./packages/
 RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
