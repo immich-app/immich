@@ -5,7 +5,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/immich-app/immich.git",
-    "directory": "open-api/typescript-sdk"
+    "directory": "packages/sdk"
   },
   "type": "module",
   "main": "./build/index.js",

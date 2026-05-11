@@ -30,7 +30,9 @@ class UserService {
 
   Future<UserDto?> refreshMyUser() async {
     final user = await _userApiRepository.getMyUser();
-    if (user == null) return null;
+    if (user == null) {
+      return null;
+    }
     await _storeService.put(StoreKey.currentUser, user);
     return user;
   }

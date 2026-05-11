@@ -117,7 +117,9 @@ StoreDto: {
 
   @override
   bool operator ==(covariant StoreDto<T> other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.key == key && other.value == value;
   }

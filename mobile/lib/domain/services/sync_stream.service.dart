@@ -318,7 +318,9 @@ class SyncStreamService {
   }
 
   Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) return;
+    if (batchData.isEmpty) {
+      return;
+    }
 
     _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
 
@@ -359,7 +361,9 @@ class SyncStreamService {
   }
 
   Future<void> handleWsAssetUploadReadyV2Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) return;
+    if (batchData.isEmpty) {
+      return;
+    }
 
     _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV2 events');
 

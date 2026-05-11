@@ -11,7 +11,9 @@ final userMetadataRepository = Provider<DriftUserMetadataRepository>(
 final userMetadataProvider = FutureProvider<List<UserMetadata>>((ref) async {
   final repository = ref.watch(userMetadataRepository);
   final user = ref.watch(currentUserProvider);
-  if (user == null) return [];
+  if (user == null) {
+    return [];
+  }
   return repository.getUserMetadata(user.id);
 });
 

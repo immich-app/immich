@@ -201,7 +201,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _restoreAssetPosition(_) {
-    if (_restoreAssetIndex == null) return;
+    if (_restoreAssetIndex == null) {
+      return;
+    }
 
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
@@ -329,7 +331,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _handleDragAssetEnter(TimelineAssetIndex index) {
-    if (_dragAnchorIndex == null || !_dragging) return;
+    if (_dragAnchorIndex == null || !_dragging) {
+      return;
+    }
 
     final timelineService = ref.read(timelineServiceProvider);
     final dragAnchorIndex = _dragAnchorIndex!;
@@ -399,7 +403,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 segments: segments,
                 delegate: SliverChildBuilderDelegate(
                   (ctx, index) {
-                    if (index >= childCount) return null;
+                    if (index >= childCount) {
+                      return null;
+                    }
                     final segment = segments.findByIndex(index);
                     return segment?.builder(ctx, index) ?? const SizedBox.shrink();
                   },
