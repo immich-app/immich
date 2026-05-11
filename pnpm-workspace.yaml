@@ -1,6 +1,5 @@
 packages:
   - packages/**
-  - cli
   - docs
   - e2e
   - e2e-auth-server

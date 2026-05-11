@@ -2,6 +2,11 @@
   "name": "@immich/cli",
   "version": "2.7.5",
   "description": "Command Line Interface (CLI) for Immich",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/immich-app/immich.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "exports": "./dist/index.js",
   "bin": {
@@ -51,11 +56,6 @@
     "format": "prettier --cache --check .",
     "format:fix": "prettier --cache --write --list-different .",
     "check": "tsc --noEmit"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/immich-app/immich.git",
-    "directory": "cli"
   },
   "engines": {
     "node": ">=20.0.0"

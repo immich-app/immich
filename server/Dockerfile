@@ -40,7 +40,6 @@ RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
 
 FROM builder AS cli
 
-COPY ./cli ./cli/
 COPY ./packages ./packages/
 RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \

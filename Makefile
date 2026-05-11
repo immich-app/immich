@@ -66,7 +66,7 @@ VOLUME_DIRS = \
 	./packages/sdk/node_modules \
 	./.github/node_modules \
 	./node_modules \
-	./cli/node_modules
+	./packages/cli/node_modules
 
 # Include .env file if it exists
 -include docker/.env
