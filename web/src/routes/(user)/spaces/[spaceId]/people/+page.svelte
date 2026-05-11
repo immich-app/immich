@@ -336,12 +336,16 @@
       if (name === person.name) {
         return;
       }
-      await updateSpacePerson({
+      const updatedPerson = await updateSpacePerson({
         id: space.id,
         personId: person.id,
         sharedSpacePersonUpdateDto: { name },
       });
-      await refreshPeople();
+      people = people.map((currentPerson) =>
+        currentPerson.id === person.id
+          ? { ...currentPerson, ...updatedPerson, name: updatedPerson.name ?? name }
+          : currentPerson,
+      );
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
     }
