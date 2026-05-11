@@ -65,12 +65,12 @@ class ViewerBottomBar extends ConsumerWidget {
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
 
-      if (!isInLockedView) ...[
-        if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-        // edit sync was added in 2.6.0
-        if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
-          const EditImageActionButton(),
-        if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+        if (!isInLockedView) ...[
+          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+          // edit sync was added in 2.6.0
+          if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
+            const EditImageActionButton(),
+          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
 
           if (isOwner) ...[
             asset.isLocalOnly
