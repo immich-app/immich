@@ -1,6 +1,7 @@
 import { createFilterState } from '$lib/components/filter-panel/filter-panel';
 import {
   buildPhotosTimelineOptions,
+  getPhotosPersonFilterId,
   getPhotosPersonFilterThumbnailUrl,
   handlePhotosRemoveFilter,
 } from '$lib/utils/photos-filter-options';
@@ -309,5 +310,26 @@ describe('getPhotosPersonFilterThumbnailUrl', () => {
         primaryProfile: { type: Type.UserPerson, id: 'person-1' },
       }),
     ).toBe('/api/people/person-1/thumbnail');
+  });
+});
+
+describe('getPhotosPersonFilterId', () => {
+  it('uses the scoped filterId when suggestions include one', () => {
+    expect(
+      getPhotosPersonFilterId({
+        id: 'identity-group-1',
+        filterId: 'person:person-1',
+        primaryProfile: { type: Type.UserPerson, id: 'person-1' },
+      }),
+    ).toBe('person:person-1');
+  });
+
+  it('falls back to a primary profile scoped id', () => {
+    expect(
+      getPhotosPersonFilterId({
+        id: 'identity-group-1',
+        primaryProfile: { type: Type.SpacePerson, id: 'space-person-1', spaceId: 'space-1' },
+      }),
+    ).toBe('space-person:space-person-1');
   });
 });

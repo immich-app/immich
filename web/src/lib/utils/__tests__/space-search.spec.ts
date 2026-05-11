@@ -393,6 +393,36 @@ describe('mapSmartSearchFacetsToFilterSuggestions', () => {
       },
     ]);
   });
+
+  it('maps global smart-search facet people by scoped filter id', () => {
+    const result = mapSmartSearchFacetsToFilterSuggestions({
+      total: 1,
+      timeBuckets: [],
+      countries: [],
+      cities: [],
+      cameraMakes: [],
+      cameraModels: [],
+      tags: [],
+      people: [
+        {
+          id: 'identity-group-1',
+          filterId: 'person:person-1',
+          name: 'Ada',
+          primaryProfile: { type: Type.UserPerson, id: 'person-1' },
+        } as never,
+      ],
+      ratings: [],
+      mediaTypes: [],
+      hasUnnamedPeople: false,
+    });
+
+    expect(result.people[0]).toEqual(
+      expect.objectContaining({
+        id: 'person:person-1',
+        name: 'Ada',
+      }),
+    );
+  });
 });
 
 describe('SEARCH_FILTER_DEBOUNCE_MS', () => {

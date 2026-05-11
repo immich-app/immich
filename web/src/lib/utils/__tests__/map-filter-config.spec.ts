@@ -147,6 +147,35 @@ describe('buildMapFilterConfig', () => {
       });
     });
 
+    it('should map global people by scoped filter id', async () => {
+      vi.mocked(getFilterSuggestions).mockResolvedValueOnce({
+        countries: [],
+        cameraMakes: [],
+        tags: [],
+        people: [
+          {
+            id: 'identity-group-1',
+            filterId: 'person:person-1',
+            name: 'Alice',
+            primaryProfile: { type: Type.UserPerson, id: 'person-1' },
+          },
+        ],
+        ratings: [],
+        mediaTypes: [],
+        hasUnnamedPeople: false,
+      } as never);
+
+      const config = buildMapFilterConfig();
+      const result = await config.suggestionsProvider!(emptyFilters);
+
+      expect(result.people[0]).toEqual(
+        expect.objectContaining({
+          id: 'person:person-1',
+          name: 'Alice',
+        }),
+      );
+    });
+
     it('should map space-scoped people to shared-space thumbnails', async () => {
       vi.mocked(getFilterSuggestions).mockResolvedValueOnce({
         countries: [],

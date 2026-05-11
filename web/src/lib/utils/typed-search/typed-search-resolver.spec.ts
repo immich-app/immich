@@ -48,10 +48,10 @@ describe('resolveTypedSearchFilters', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.queryText).toBe('beach');
-      expect(result.filters.personIds).toEqual(['person-1']);
+      expect(result.filters.personIds).toEqual(['person:person-1']);
       expect(result.filters.tagIds).toEqual(['tag-1']);
       expect(result.filters.make).toBe('Nikon');
-      expect(result.personNames.get('person-1')).toBe('Anna');
+      expect(result.personNames.get('person:person-1')).toBe('Anna');
       expect(result.tagNames.get('tag-1')).toBe('Travel');
     }
   });
@@ -73,6 +73,25 @@ describe('resolveTypedSearchFilters', () => {
       expect(result.filters.personIds).toEqual(['person:person-1']);
       expect(result.filters.personIds).not.toContain('identity-group-1');
       expect(result.personNames.get('person:person-1')).toBe('Anna');
+    }
+  });
+
+  it('prefixes bare global person ids from search results', async () => {
+    vi.mocked(searchPerson).mockResolvedValue([
+      {
+        id: 'b9eab58d-972f-49da-9012-171dbca3cbc3',
+        name: 'a',
+      } as never,
+    ]);
+
+    const result = await resolveTypedSearchFilters(parseTypedSearch('person:a test'), {});
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.queryText).toBe('test');
+      expect(result.filters.personIds).toEqual(['person:b9eab58d-972f-49da-9012-171dbca3cbc3']);
+      expect(result.filters.personIds).not.toContain('b9eab58d-972f-49da-9012-171dbca3cbc3');
+      expect(result.personNames.get('person:b9eab58d-972f-49da-9012-171dbca3cbc3')).toBe('a');
     }
   });
 
@@ -189,10 +208,10 @@ describe('resolveTypedSearchFilters', () => {
     expect(searchPerson).toHaveBeenCalledWith({ name: 'ann', withHidden: false }, { signal: undefined });
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.filters.personIds).toEqual(['person-1', 'person-2']);
+      expect(result.filters.personIds).toEqual(['person-1', 'person:person-2']);
       expect(result.filters.personIds).not.toContain('wrong-raw-person');
       expect(result.personNames.get('person-1')).toBe('Ann Live');
-      expect(result.personNames.get('person-2')).toBe('Ann Search');
+      expect(result.personNames.get('person:person-2')).toBe('Ann Search');
     }
   });
 
@@ -220,7 +239,7 @@ describe('resolveTypedSearchFilters', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.filters.personIds).toEqual(['person-1', 'person-2']);
+      expect(result.filters.personIds).toEqual(['person:person-1', 'person:person-2']);
       expect(result.filters.tagIds).toEqual(['tag-1', 'tag-2']);
     }
   });

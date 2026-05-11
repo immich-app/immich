@@ -4,7 +4,7 @@ import {
   type FilterState,
 } from '$lib/components/filter-panel/filter-panel';
 import { createUrl } from '$lib/utils';
-import { getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
+import { getPhotosPersonFilterId, getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
 import {
   AssetTypeEnum,
   getFilterSuggestions,
@@ -53,7 +53,7 @@ export function buildMapFilterConfig(spaceId?: string): FilterPanelConfig {
       cameraMakes: response.cameraMakes,
       tags: response.tags.map((t: { id: string; value: string }) => ({ id: t.id, name: t.value })),
       people: response.people.map((p: FilterSuggestionsPersonDto) => ({
-        id: p.id,
+        id: spaceId ? p.id : getPhotosPersonFilterId(p),
         name: p.name,
         thumbnailUrl: spaceId
           ? createUrl(`/shared-spaces/${spaceId}/people/${p.primaryProfile?.id ?? p.id}/thumbnail`)

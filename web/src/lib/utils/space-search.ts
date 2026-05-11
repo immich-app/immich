@@ -1,6 +1,6 @@
 import { buildFilterContext, type FilterState } from '$lib/components/filter-panel/filter-panel';
 import { createUrl } from '$lib/utils';
-import { getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
+import { getPhotosPersonFilterId, getPhotosPersonFilterThumbnailUrl } from '$lib/utils/photos-filter-options';
 import {
   AssetOrder,
   AssetTypeEnum,
@@ -121,7 +121,7 @@ export function mapSmartSearchFacetsToFilterSuggestions(
     cameraModels: facets.cameraModels,
     tags: facets.tags.map((tag) => ({ id: tag.id, name: tag.value })),
     people: facets.people.map((person) => ({
-      id: person.id,
+      id: options.spaceId ? person.id : getPhotosPersonFilterId(person),
       name: person.name,
       thumbnailUrl: options.spaceId
         ? createUrl(`/shared-spaces/${options.spaceId}/people/${person.id}/thumbnail`)

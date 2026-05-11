@@ -314,6 +314,10 @@ function getPersonFilterId(person: PersonSuggestion, scope: 'global' | 'space') 
     return `person:${person.primaryProfile.id}`;
   }
 
+  if (!person.id.startsWith('person:') && !person.id.startsWith('space-person:')) {
+    return `person:${person.id}`;
+  }
+
   return person.id;
 }
 

@@ -118,6 +118,35 @@ describe('buildAlbumDetailFilterConfig', () => {
     ]);
   });
 
+  it('maps album people suggestions by scoped filter id', async () => {
+    vi.mocked(getFilterSuggestions).mockResolvedValueOnce({
+      countries: [],
+      cameraMakes: [],
+      tags: [],
+      people: [
+        {
+          id: 'identity-group-1',
+          filterId: 'person:person-1',
+          name: 'Alice',
+          primaryProfile: { type: Type.UserPerson, id: 'person-1' },
+        },
+      ],
+      ratings: [],
+      mediaTypes: [],
+      hasUnnamedPeople: false,
+    } as never);
+
+    const config = buildAlbumDetailFilterConfig('album-1');
+    const result = await config.suggestionsProvider!(createFilterState());
+
+    expect(result.people[0]).toEqual(
+      expect.objectContaining({
+        id: 'person:person-1',
+        name: 'Alice',
+      }),
+    );
+  });
+
   it('passes custom dates to album detail filter suggestions', async () => {
     const config = buildAlbumDetailFilterConfig('album-1');
     await config.suggestionsProvider!({
