@@ -373,6 +373,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   const visibility = options.visibility == null ? AssetVisibility.Timeline : options.visibility;
 
   return kysely
+    .$pickTables<'asset' | 'tag_asset' | 'asset_exif' | 'asset_file' | 'album_asset' | 'ocr_search' | 'smart_search'>()
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('asset')
     .where('asset.visibility', '=', visibility)

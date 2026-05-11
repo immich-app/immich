@@ -766,6 +766,7 @@ export class AssetRepository {
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const order = options.order ?? 'desc';
     const query = this.db
+      .$pickTables<'asset' | 'asset_exif' | 'album_asset' | 'stack'>()
       .with('cte', (qb) =>
         qb
           .selectFrom('asset')
