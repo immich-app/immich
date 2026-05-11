@@ -175,7 +175,9 @@ jobs:
 
             Download: ${{ env.APK_URL }}
 
+            <details><summary>QR code</summary>
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
+            </details>f
 
             Installs as a separate app (applicationId `app.alextran.immich.pr${{ github.event.pull_request.number }}`), so it coexists with the Play Store version and any other PR builds.
 
