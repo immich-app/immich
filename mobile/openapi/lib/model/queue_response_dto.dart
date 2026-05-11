@@ -14,12 +14,16 @@ class QueueResponseDto {
   /// Returns a new [QueueResponseDto] instance.
   QueueResponseDto({
     required this.isPaused,
+    this.jobTypes = const [],
     required this.name,
     required this.statistics,
   });
 
   /// Whether the queue is paused
   bool isPaused;
+
+  /// Sampled job type counts for display purposes
+  List<QueueJobTypeCountsDto> jobTypes;
 
   QueueName name;
 
@@ -28,6 +32,7 @@ class QueueResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueResponseDto &&
     other.isPaused == isPaused &&
+    _deepEquality.equals(other.jobTypes, jobTypes) &&
     other.name == name &&
     other.statistics == statistics;
 
@@ -35,15 +40,17 @@ class QueueResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (isPaused.hashCode) +
+    (jobTypes.hashCode) +
     (name.hashCode) +
     (statistics.hashCode);
 
   @override
-  String toString() => 'QueueResponseDto[isPaused=$isPaused, name=$name, statistics=$statistics]';
+  String toString() => 'QueueResponseDto[isPaused=$isPaused, jobTypes=$jobTypes, name=$name, statistics=$statistics]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'isPaused'] = this.isPaused;
+      json[r'jobTypes'] = this.jobTypes;
       json[r'name'] = this.name;
       json[r'statistics'] = this.statistics;
     return json;
@@ -59,6 +66,7 @@ class QueueResponseDto {
 
       return QueueResponseDto(
         isPaused: mapValueOfType<bool>(json, r'isPaused')!,
+        jobTypes: QueueJobTypeCountsDto.listFromJson(json[r'jobTypes']),
         name: QueueName.fromJson(json[r'name'])!,
         statistics: QueueStatisticsDto.fromJson(json[r'statistics'])!,
       );
