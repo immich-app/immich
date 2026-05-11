@@ -241,8 +241,8 @@
             <input
               id="category-similarity"
               type="range"
-              min="0.15"
-              max="0.45"
+              min="0.01"
+              max="1"
               step="0.01"
               bind:value={formSimilarity}
               {disabled}
@@ -250,6 +250,9 @@
             />
             <span class="text-xs text-gray-500 dark:text-gray-400">Strict</span>
           </div>
+          <Text size="tiny" color="muted" class="mt-1">
+            Start around 0.15-0.30, then lower for broader matches or raise for stricter matches.
+          </Text>
         </div>
 
         <div>

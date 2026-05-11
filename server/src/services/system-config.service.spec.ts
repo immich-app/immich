@@ -309,6 +309,26 @@ describe(SystemConfigService.name, () => {
       expect(result.classification.categories[0].faceExclusion).toBe('off');
     });
 
+    it('should accept low classification similarity thresholds', () => {
+      const result = SystemConfigSchema.parse({
+        ...defaults,
+        classification: {
+          enabled: true,
+          categories: [
+            {
+              name: 'Cars',
+              prompts: ['a car photo'],
+              similarity: 0.01,
+              action: 'tag',
+              enabled: true,
+            },
+          ],
+        },
+      });
+
+      expect(result.classification.categories[0].similarity).toBe(0.01);
+    });
+
     it('should accept all classification faceExclusion modes', () => {
       const result = SystemConfigSchema.parse({
         ...defaults,

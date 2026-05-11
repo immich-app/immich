@@ -194,6 +194,60 @@ describe('ClassificationSettings', () => {
     expect(modalManager.showDialog).not.toHaveBeenCalled();
   });
 
+  it('should allow saving very loose similarity thresholds', async () => {
+    vi.mocked(getConfig).mockResolvedValue(makeConfig([makeCategory({ similarity: 0.28 })]));
+
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText('Screenshots')).toBeInTheDocument();
+    });
+
+    await fireEvent.click(screen.getByLabelText('Edit'));
+
+    const slider = screen.getByRole('slider');
+    expect(slider).toHaveAttribute('min', '0.01');
+    expect(slider).toHaveAttribute('max', '1');
+    expect(
+      screen.getByText('Start around 0.15-0.30, then lower for broader matches or raise for stricter matches.'),
+    ).toBeInTheDocument();
+
+    await fireEvent.input(slider, { target: { value: '0.11' } });
+    await fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(updateConfig).toHaveBeenCalledWith({
+        systemConfigDto: expect.objectContaining({
+          classification: expect.objectContaining({
+            categories: [expect.objectContaining({ similarity: 0.11 })],
+          }),
+        }),
+      });
+    });
+  });
+
+  it('should allow saving very strict similarity thresholds', async () => {
+    vi.mocked(getConfig).mockResolvedValue(makeConfig([makeCategory({ similarity: 0.28 })]));
+
+    render(ClassificationSettings);
+    await waitFor(() => {
+      expect(screen.getByText('Screenshots')).toBeInTheDocument();
+    });
+
+    await fireEvent.click(screen.getByLabelText('Edit'));
+    await fireEvent.input(screen.getByRole('slider'), { target: { value: '0.80' } });
+    await fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(updateConfig).toHaveBeenCalledWith({
+        systemConfigDto: expect.objectContaining({
+          classification: expect.objectContaining({
+            categories: [expect.objectContaining({ similarity: 0.8 })],
+          }),
+        }),
+      });
+    });
+  });
+
   it('should NOT show rescan dialog when creating a new category', async () => {
     render(ClassificationSettings);
     await waitFor(() => {
