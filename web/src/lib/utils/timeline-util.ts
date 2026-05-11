@@ -240,4 +240,4 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
 }
 
 export const getOrderingDate = (asset: TimelineAsset, order: AssetOrderBy) =>
-  order == AssetOrderBy.CreatedAt ? asset.createdAt : asset.localDateTime;
+  order === AssetOrderBy.CreatedAt ? asset.createdAt : asset.localDateTime;

@@ -45,7 +45,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
@@ -168,7 +168,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
@@ -233,7 +233,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
@@ -352,7 +352,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)

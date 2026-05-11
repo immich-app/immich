@@ -13326,7 +13326,7 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
             }
@@ -13525,7 +13525,7 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
             }

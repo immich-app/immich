@@ -24,7 +24,7 @@ const TimeBucketQueryBaseSchema = z
       'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
     ),
     orderBy: AssetOrderBySchema.optional().describe(
-      'Date to group and order assets by (LOCALAT for date taken, CREATEDAT for date added to Immich)',
+      'Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)',
     ),
     visibility: AssetVisibilitySchema.optional().describe(
       'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
