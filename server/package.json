@@ -50,7 +50,7 @@
     "@nestjs/websockets": "^11.0.4",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.0.0",
-    "@opentelemetry/exporter-prometheus": "^0.215.0",
+    "@opentelemetry/exporter-prometheus": "^0.217.0",
     "@opentelemetry/instrumentation-http": "^0.215.0",
     "@opentelemetry/instrumentation-ioredis": "^0.63.0",
     "@opentelemetry/instrumentation-nestjs-core": "^0.61.0",
