@@ -38,7 +38,7 @@ export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyCon
     }),
     log(event) {
       if (event.level === 'error') {
-        if (isAssetChecksumConstraint(event.error)) {
+        if (isAssetChecksumConstraint(event.error) || isStaleAssetForeignKeyConstraint(event.error)) {
           return;
         }
 
@@ -75,6 +75,20 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
 export const isAssetChecksumConstraint = (error: unknown) => {
   return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
+};
+
+const STALE_ASSET_FOREIGN_KEY_CONSTRAINTS = new Set([
+  'asset_file_assetId_fkey',
+  'asset_job_status_assetId_fkey',
+]);
+
+export const isStaleAssetForeignKeyConstraint = (error: unknown) => {
+  const postgresError = error as PostgresError;
+  return (
+    postgresError?.code === '23503' &&
+    postgresError.constraint_name !== undefined &&
+    STALE_ASSET_FOREIGN_KEY_CONSTRAINTS.has(postgresError.constraint_name)
+  );
 };
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {

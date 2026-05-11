@@ -31,6 +31,7 @@ import {
   hasAnyFaceIdentity,
   hasAnyPerson,
   hasAnySpacePerson,
+  isStaleAssetForeignKeyConstraint,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -313,25 +314,38 @@ export class AssetRepository {
 
     type JobStatusColumns = Exclude<keyof AssetJobStatusTable, 'assetId'>;
     const values = jobStatus.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
-    await this.db
-      .insertInto('asset_job_status')
-      .values(values)
-      .onConflict((oc) =>
-        oc.column('assetId').doUpdateSet((eb) =>
-          removeUndefinedKeys(
-            {
-              duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
-              facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
-              metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
-              ocrAt: eb.ref('excluded.ocrAt'),
-              petsDetectedAt: eb.ref('excluded.petsDetectedAt'),
-              classifiedAt: eb.ref('excluded.classifiedAt'),
-            } satisfies Record<JobStatusColumns, unknown>,
-            values[0],
+    try {
+      await this.db
+        .insertInto('asset_job_status')
+        .values(values)
+        .onConflict((oc) =>
+          oc.column('assetId').doUpdateSet((eb) =>
+            removeUndefinedKeys(
+              {
+                duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
+                facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
+                metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
+                ocrAt: eb.ref('excluded.ocrAt'),
+                petsDetectedAt: eb.ref('excluded.petsDetectedAt'),
+                classifiedAt: eb.ref('excluded.classifiedAt'),
+              } satisfies Record<JobStatusColumns, unknown>,
+              values[0],
+            ),
           ),
-        ),
-      )
-      .execute();
+        )
+        .execute();
+    } catch (error) {
+      if (isStaleAssetForeignKeyConstraint(error)) {
+        const existingRows = await this.filterRowsForExistingAssets(jobStatus);
+        if (existingRows.length > 0 && existingRows.length < jobStatus.length) {
+          await this.upsertJobStatus(...existingRows);
+        }
+
+        return;
+      }
+
+      throw error;
+    }
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -1211,15 +1225,23 @@ export class AssetRepository {
       'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
     >,
   ): Promise<void> {
-    await this.db
-      .insertInto('asset_file')
-      .values(file)
-      .onConflict((oc) =>
-        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
-          path: eb.ref('excluded.path'),
-        })),
-      )
-      .execute();
+    try {
+      await this.db
+        .insertInto('asset_file')
+        .values(file)
+        .onConflict((oc) =>
+          oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
+            path: eb.ref('excluded.path'),
+          })),
+        )
+        .execute();
+    } catch (error) {
+      if (isStaleAssetForeignKeyConstraint(error)) {
+        return;
+      }
+
+      throw error;
+    }
   }
 
   async upsertFiles(
@@ -1232,17 +1254,30 @@ export class AssetRepository {
       return;
     }
 
-    await this.db
-      .insertInto('asset_file')
-      .values(files)
-      .onConflict((oc) =>
-        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
-          path: eb.ref('excluded.path'),
-          isProgressive: eb.ref('excluded.isProgressive'),
-          isTransparent: eb.ref('excluded.isTransparent'),
-        })),
-      )
-      .execute();
+    try {
+      await this.db
+        .insertInto('asset_file')
+        .values(files)
+        .onConflict((oc) =>
+          oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
+            path: eb.ref('excluded.path'),
+            isProgressive: eb.ref('excluded.isProgressive'),
+            isTransparent: eb.ref('excluded.isTransparent'),
+          })),
+        )
+        .execute();
+    } catch (error) {
+      if (isStaleAssetForeignKeyConstraint(error)) {
+        const existingFiles = await this.filterRowsForExistingAssets(files);
+        if (existingFiles.length > 0 && existingFiles.length < files.length) {
+          await this.upsertFiles(existingFiles);
+        }
+
+        return;
+      }
+
+      throw error;
+    }
   }
 
   async deleteFile({
@@ -1468,5 +1503,17 @@ export class AssetRepository {
       )
       .where('asset.id', '=', id)
       .executeTakeFirstOrThrow();
+  }
+
+  private async filterRowsForExistingAssets<T extends { assetId: string }>(rows: T[]): Promise<T[]> {
+    const assetIds = [...new Set(rows.map(({ assetId }) => assetId))];
+    const existingAssets = await this.db
+      .selectFrom('asset')
+      .select('id')
+      .where('id', 'in', assetIds)
+      .execute();
+    const existingAssetIds = new Set(existingAssets.map(({ id }) => id));
+
+    return rows.filter(({ assetId }) => existingAssetIds.has(assetId));
   }
 }
