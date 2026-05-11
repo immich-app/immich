@@ -73,7 +73,18 @@ export class TimelineManager extends VirtualScrollManager {
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
   viewportTopMonthIntersection: ViewportTopMonthIntersection | undefined;
-  limitedScroll = $derived(this.maxScrollPercent < 0.5);
+  // True when scrubbing should use overall-percent rather than month-by-month positions.
+  // Triggers for tiny libraries (barely any scrollable content — original behavior) AND
+  // for huge libraries where heavy compression makes month-precision scrubbing imprecise.
+  // The 0.5 threshold can technically flip during a live viewport resize that nudges f
+  // across it — narrow scenario (mid-drag resize on ~200-300k-asset libraries); accepted.
+  limitedScroll = $derived.by(() => {
+    const vh = this.viewportHeight;
+    if (vh > 0 && this.totalViewerHeight < 2 * vh) {
+      return true;
+    }
+    return this.maxScrollPercent < 0.5;
+  });
   initTask = new CancellableTask(
     () => {
       this.isInitialized = true;

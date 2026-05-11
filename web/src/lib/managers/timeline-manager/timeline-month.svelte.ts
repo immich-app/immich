@@ -298,10 +298,11 @@ export class TimelineMonth {
       return;
     }
     if (index < currentIndex || monthBottomViewportRatio < 1) {
-      timelineManager.scrollBy(heightDelta);
+      // heightDelta is in LAYOUT space; scrollBy expects DOM-scroll space.
+      timelineManager.scrollBy(timelineManager.layoutToScroll(heightDelta));
     } else if (index === currentIndex) {
-      const scrollTo = this.top + height * viewportTopRatioInMonth;
-      timelineManager.scrollTo(scrollTo);
+      const scrollToLayoutY = this.top + height * viewportTopRatioInMonth;
+      timelineManager.scrollTo(timelineManager.layoutToScroll(scrollToLayoutY));
     }
   }
 

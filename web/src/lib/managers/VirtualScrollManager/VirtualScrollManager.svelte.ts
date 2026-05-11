@@ -5,16 +5,71 @@ type LayoutOptions = {
   rowHeight: number;
   gap: number;
 };
+
+// Browsers cap the rendered height of a layout/scroll box. Blink's LayoutUnit gives
+// ~33.5M device px, halved on DPR-2 displays to 2^24 = 16,777,216 CSS px; Firefox caps
+// lower (~17.9M at DPR 1). Stay safely under both so #virtual-timeline always fits inside
+// the cap. The timeline keeps a real layout coordinate space larger than the scroll box,
+// mapped to DOM scroll via a compression factor. See immich-app/immich#16788.
+function computeMaxScrollHeight(): number {
+  const dpr = Math.max(1, (globalThis.devicePixelRatio as number | undefined) || 1);
+  return Math.floor(15_000_000 / dpr);
+}
+
 export abstract class VirtualScrollManager {
   topSectionHeight = $state(0);
   bodySectionHeight = $state(0);
   bottomSectionHeight = $state(0);
   totalViewerHeight = $derived.by(() => this.topSectionHeight + this.bodySectionHeight + this.bottomSectionHeight);
 
-  visibleWindow = $derived.by(() => ({
-    top: this.#scrollTop,
-    bottom: this.#scrollTop + this.viewportHeight,
-  }));
+  // Two coordinate spaces:
+  //   Layout space: month/day/asset positions, sum to totalViewerHeight (real, uncapped).
+  //   Scroll space: what the DOM sees on #asset-grid.scrollTop, capped at renderedHeight.
+  // When the timeline fits under the cap, renderedHeight === totalViewerHeight and the
+  // compression factor maxScrollPercent === 1, reducing this to upstream's single space.
+  renderedHeight = $derived.by(() => Math.min(this.totalViewerHeight, computeMaxScrollHeight()));
+
+  // Compression factor: 1 px of DOM scroll = (1 / factor) px of layout movement.
+  // 1.0 when no compression is needed (small/medium libraries).
+  maxScrollPercent = $derived.by(() => {
+    const total = this.totalViewerHeight;
+    const vh = this.viewportHeight;
+    if (total <= vh) {
+      return 1;
+    }
+    const rendered = this.renderedHeight;
+    const numer = rendered - vh;
+    const denom = total - vh;
+    if (numer <= 0 || denom <= 0) {
+      return 1;
+    }
+    return Math.max(0.01, Math.min(1, numer / denom));
+  });
+
+  maxScroll = $derived.by(() => Math.max(0, this.renderedHeight - this.viewportHeight));
+
+  // Anchor offset that lets in-viewport months render at real (1:1) coordinates while the
+  // DOM scroll box stays under the cap. Zero when factor is 1.
+  renderOffset = $derived.by(() => {
+    const f = this.maxScrollPercent;
+    if (f >= 0.999) {
+      return 0;
+    }
+    return this.#scrollTop * (1 / f - 1);
+  });
+
+  // visibleWindow is expressed in LAYOUT space so it compares directly against
+  // month.top / position.top in intersection tests. When factor === 1 this is the
+  // upstream definition: { top: scrollTop, bottom: scrollTop + viewportHeight }.
+  visibleWindow = $derived.by(() => {
+    const f = this.maxScrollPercent;
+    const total = this.totalViewerHeight;
+    const vh = this.viewportHeight;
+    const layoutTop = f >= 0.999 ? this.#scrollTop : this.#scrollTop / f;
+    const maxLayoutTop = Math.max(0, total - vh);
+    const top = Math.max(0, Math.min(layoutTop, maxLayoutTop));
+    return { top, bottom: top + vh };
+  });
 
   #viewportHeight = $state(0);
   #viewportWidth = $state(0);
@@ -45,13 +100,16 @@ export abstract class VirtualScrollManager {
     return this.#justifiedLayoutOptions;
   }
 
-  get maxScrollPercent() {
-    const totalHeight = this.totalViewerHeight;
-    return (totalHeight - this.viewportHeight) / totalHeight;
+  // Convert a layout-space y position to the DOM scrollTop needed to place it at the
+  // viewport top. When factor is 1 this is a no-op.
+  layoutToScroll(layoutCoord: number): number {
+    return layoutCoord * this.maxScrollPercent;
   }
 
-  get maxScroll() {
-    return this.totalViewerHeight - this.viewportHeight;
+  // Convert a DOM scrollTop value to the layout-space y position at the viewport top.
+  scrollToLayout(scrollCoord: number): number {
+    const f = this.maxScrollPercent;
+    return f >= 0.999 ? scrollCoord : scrollCoord / f;
   }
 
   #setHeaderHeight(value: number) {
