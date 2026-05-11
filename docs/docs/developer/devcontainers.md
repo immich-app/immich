@@ -252,20 +252,11 @@ To connect the mobile app to your Dev Container:
 
 The Dev Container supports multiple ways to run tests:
 
-#### Using Make Commands (Recommended)
+#### Using Mise Commands (Recommended)
 
 ```bash
 # Run tests for specific components
-make test-server        # Server unit tests
-make test-web           # Web unit tests
-make test-e2e           # End-to-end tests
-make test-cli           # CLI tests
-
-# Run all tests
-make test-all           # Runs tests for all components
-
-# Medium tests (integration tests)
-make test-medium-dev    # End-to-end tests
+mise run checklist      # in `server/`, `web/`, `packages/cli`
 ```
 
 #### Using PNPM Directly
@@ -289,36 +280,9 @@ pnpm run test           # Run API tests
 pnpm run test:web       # Run web UI tests
 ```
 
-### Code Quality Commands
-
-```bash
-# Linting
-make lint-server        # Lint server code
-make lint-web           # Lint web code
-make lint-all           # Lint all components
-
-# Formatting
-make format-server      # Format server code
-make format-web         # Format web code
-make format-all         # Format all code
-
-# Type checking
-make check-server       # Type check server
-make check-web          # Type check web
-make check-all          # Check all components
-
-# Complete hygiene check
-make hygiene-all        # Run lint, format, check, SQL sync, and audit
-```
-
 ### Additional Make Commands
 
 ```bash
-# Build commands
-make build-server       # Build server
-make build-web          # Build web app
-make build-all          # Build everything
-
 # API generation
 make open-api           # Generate OpenAPI specs
 make open-api-typescript # Generate TypeScript SDK
@@ -326,11 +290,6 @@ make open-api-dart      # Generate Dart SDK
 
 # Database
 make sql                # Sync database schema
-
-# Dependencies
-make install-server     # Install server dependencies
-make install-web        # Install web dependencies
-make install-all        # Install all dependencies
 ```
 
 ### Debugging

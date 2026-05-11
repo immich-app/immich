@@ -84,7 +84,7 @@
     "jose": "^6.0.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
-    "kysely": "0.28.16",
+    "kysely": "0.28.17",
     "kysely-postgres-js": "^3.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
