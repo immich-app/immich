@@ -69,6 +69,7 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
     });
 
     try {
+      await _manageLinkedAlbums();
       await ref.read(backgroundSyncProvider).syncLinkedAlbum();
       await ref.read(backgroundSyncProvider).syncRemote();
     } catch (_) {

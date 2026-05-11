@@ -15,6 +15,11 @@ class DriftAlbumApiRepository extends ApiRepository {
 
   DriftAlbumApiRepository(this._api);
 
+  Future<List<RemoteAlbum>> getAllOwned(UserDto owner) async {
+    final response = await checkNull(_api.getAllAlbums(isOwned: true));
+    return response.map((dto) => dto.toRemoteAlbum(owner)).toList();
+  }
+
   Future<RemoteAlbum> createDriftAlbum(
     String name,
     UserDto owner, {
