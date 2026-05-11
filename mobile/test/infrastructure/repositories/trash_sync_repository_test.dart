@@ -1,8 +1,11 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
@@ -65,13 +68,28 @@ void main() {
         );
   }
 
-  Future<void> insertLocalAsset({required String checksum}) async {
+  Future<void> insertLocalAlbum({
+    required String id,
+    BackupSelection backupSelection = BackupSelection.selected,
+  }) async {
+    await db
+        .into(db.localAlbumEntity)
+        .insert(LocalAlbumEntityCompanion.insert(id: id, name: id, backupSelection: backupSelection));
+  }
+
+  Future<void> insertLocalAlbumAsset({required String albumId, required String assetId}) async {
+    await db
+        .into(db.localAlbumAssetEntity)
+        .insert(LocalAlbumAssetEntityCompanion.insert(albumId: albumId, assetId: assetId));
+  }
+
+  Future<void> insertLocalAsset({required String checksum, String? id}) async {
     final now = DateTime(2025, 1, 1);
     await db
         .into(db.localAssetEntity)
         .insert(
           LocalAssetEntityCompanion.insert(
-            id: 'local-$checksum',
+            id: id ?? 'local-$checksum',
             checksum: Value(checksum),
             name: 'local-$checksum.jpg',
             type: AssetType.image,
@@ -154,6 +172,48 @@ void main() {
 
       expect(byChecksum['rejected-newer']?.isSyncApproved, isFalse);
       expect(byChecksum['rejected-newer']?.remoteDeletedAt, newTime);
+    });
+  });
+
+  group('watch review approval state', () {
+    test('counts only actionable pending approvals from selected backup albums', () async {
+      final now = DateTime(2025, 1, 1);
+
+      await insertLocalAlbum(id: 'selected-album');
+      await insertLocalAlbum(id: 'unselected-album', backupSelection: BackupSelection.none);
+
+      await insertTrashSync(checksum: 'pending-selected', isSyncApproved: null, remoteDeletedAt: now);
+      await insertLocalAsset(checksum: 'pending-selected');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-pending-selected');
+
+      await insertTrashSync(checksum: 'pending-unselected', isSyncApproved: null, remoteDeletedAt: now);
+      await insertLocalAsset(checksum: 'pending-unselected');
+      await insertLocalAlbumAsset(albumId: 'unselected-album', assetId: 'local-pending-unselected');
+
+      await insertTrashSync(checksum: 'pending-no-album', isSyncApproved: null, remoteDeletedAt: now);
+      await insertLocalAsset(checksum: 'pending-no-album');
+
+      await insertTrashSync(checksum: 'pending-local-trash', isSyncApproved: null, remoteDeletedAt: now);
+      await insertLocalAsset(checksum: 'pending-local-trash');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-pending-local-trash');
+      await insertTrashedLocalAsset(checksum: 'pending-local-trash');
+
+      await insertTrashSync(checksum: 'rejected-selected', isSyncApproved: false, remoteDeletedAt: now);
+      await insertLocalAsset(checksum: 'rejected-selected');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-rejected-selected');
+
+      await insertTrashSync(checksum: 'approved-selected', isSyncApproved: true, remoteDeletedAt: now);
+      await insertLocalAsset(checksum: 'approved-selected');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-approved-selected');
+
+      await expectLater(repository.watchPendingApprovalAssetCount(), emits(1));
+
+      await expectLater(repository.watchIsAssetApprovalPending('pending-selected'), emits(true));
+      await expectLater(repository.watchIsAssetApprovalPending('pending-unselected'), emits(false));
+      await expectLater(repository.watchIsAssetApprovalPending('pending-no-album'), emits(false));
+      await expectLater(repository.watchIsAssetApprovalPending('pending-local-trash'), emits(false));
+      await expectLater(repository.watchIsAssetApprovalPending('rejected-selected'), emits(false));
+      await expectLater(repository.watchIsAssetApprovalPending('approved-selected'), emits(false));
     });
   });
 

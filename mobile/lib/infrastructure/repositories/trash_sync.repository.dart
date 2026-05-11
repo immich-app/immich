@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
@@ -143,7 +144,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
     final q = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([countExpr])
-      ..where(_db.trashSyncEntity.isSyncApproved.isNull());
+      ..where(_db.trashSyncEntity.isSyncApproved.isNull() & _hasEligibleLocalAssetForPendingReview());
 
     return q.watchSingle().map((row) => row.read(countExpr) ?? 0).distinct();
   }
@@ -151,9 +152,44 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
   Stream<bool> watchIsAssetApprovalPending(String checksum) {
     final query = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([_db.trashSyncEntity.checksum])
-      ..where((_db.trashSyncEntity.checksum.equals(checksum) & _db.trashSyncEntity.isSyncApproved.isNull()))
+      ..where(
+        _db.trashSyncEntity.checksum.equals(checksum) &
+            _db.trashSyncEntity.isSyncApproved.isNull() &
+            _hasEligibleLocalAssetForPendingReview(),
+      )
       ..limit(1);
     return query.watchSingleOrNull().map((row) => row != null).distinct();
+  }
+
+  Expression<bool> _hasEligibleLocalAssetForPendingReview() {
+    final localTrashedChecksums = _db.selectOnly(_db.trashedLocalAssetEntity)
+      ..addColumns([_db.trashedLocalAssetEntity.checksum])
+      ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
+
+    final selectedAlbumAssets =
+        _db.localAlbumAssetEntity.selectOnly().join([
+            innerJoin(
+              _db.localAlbumEntity,
+              _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAlbumAssetEntity.assetId])
+          ..where(
+            _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
+          );
+
+    final eligibleLocalAssets = _db.localAssetEntity.selectOnly()
+      ..addColumns([_db.localAssetEntity.id])
+      ..where(
+        _db.localAssetEntity.checksum.equalsExp(_db.trashSyncEntity.checksum) &
+            _db.localAssetEntity.checksum.isNotInQuery(localTrashedChecksums) &
+            existsQuery(selectedAlbumAssets),
+      )
+      ..limit(1);
+
+    return existsQuery(eligibleLocalAssets);
   }
 
   Future<int?> _getLastCleanupTimeMillis() async {

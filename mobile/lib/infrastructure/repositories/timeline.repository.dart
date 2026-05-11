@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -722,13 +723,28 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..addColumns([_db.trashedLocalAssetEntity.checksum])
       ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
 
+    final selectedAlbumAssets =
+        _db.localAlbumAssetEntity.selectOnly().join([
+            innerJoin(
+              _db.localAlbumEntity,
+              _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAlbumAssetEntity.assetId])
+          ..where(
+            _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
+          );
+
     final representativeId = _db.localAssetEntity.id.min();
     final representativeIds = _db.localAssetEntity.selectOnly()
       ..addColumns([representativeId])
       ..where(
         _db.localAssetEntity.checksum.isNotNull() &
             _db.localAssetEntity.checksum.isInQuery(pendingTrashChecksums) &
-            _db.localAssetEntity.checksum.isNotInQuery(localTrashedChecksums),
+            _db.localAssetEntity.checksum.isNotInQuery(localTrashedChecksums) &
+            existsQuery(selectedAlbumAssets),
       )
       ..groupBy([_db.localAssetEntity.checksum]);
 
