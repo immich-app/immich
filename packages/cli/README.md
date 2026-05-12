@@ -4,14 +4,9 @@ Please see the [Immich CLI documentation](https://docs.immich.app/features/comma
 
 # For developers
 
-Before building the CLI, you must build the immich server and the open-api client. To build the server run the following in the server folder:
+Before building the CLI, you must build the immich server and the open-api client. You can use the following command:
 
-    $ pnpm install
-    $ pnpm run build
-
-Then, to build the open-api client run the following in the open-api folder:
-
-    $ ./bin/generate-open-api.sh
+    $ mise //:open-api
 
 ## Run from build
 

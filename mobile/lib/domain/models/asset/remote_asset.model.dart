@@ -10,6 +10,7 @@ class RemoteAsset extends BaseAsset {
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
+  final DateTime? uploadedAt;
 
   const RemoteAsset({
     required this.id,
@@ -20,6 +21,7 @@ class RemoteAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    this.uploadedAt,
     super.width,
     super.height,
     super.durationMs,
@@ -55,6 +57,7 @@ class RemoteAsset extends BaseAsset {
     type: $type,
     createdAt: $createdAt,
     updatedAt: $updatedAt,
+    uploadedAt: ${uploadedAt ?? "<NA>"},
     width: ${width ?? "<NA>"},
     height: ${height ?? "<NA>"},
     durationMs: ${durationMs ?? "<NA>"},
@@ -82,7 +85,8 @@ class RemoteAsset extends BaseAsset {
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
-        stackId == other.stackId;
+        stackId == other.stackId &&
+        uploadedAt == other.uploadedAt;
   }
 
   @override
@@ -93,7 +97,8 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
-      stackId.hashCode;
+      stackId.hashCode ^
+      uploadedAt.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -104,6 +109,7 @@ class RemoteAsset extends BaseAsset {
     AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? uploadedAt,
     int? width,
     int? height,
     int? durationMs,
@@ -123,6 +129,7 @@ class RemoteAsset extends BaseAsset {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       width: width ?? this.width,
       height: height ?? this.height,
       durationMs: durationMs ?? this.durationMs,
@@ -148,6 +155,7 @@ class RemoteAssetExif extends RemoteAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    super.uploadedAt,
     super.width,
     super.height,
     super.durationMs,
@@ -184,6 +192,7 @@ class RemoteAssetExif extends RemoteAsset {
     AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? uploadedAt,
     int? width,
     int? height,
     int? durationMs,
@@ -204,6 +213,7 @@ class RemoteAssetExif extends RemoteAsset {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       width: width ?? this.width,
       height: height ?? this.height,
       durationMs: durationMs ?? this.durationMs,

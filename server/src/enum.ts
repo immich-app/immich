@@ -74,6 +74,13 @@ export enum AssetOrder {
 
 export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ id: 'AssetOrder' });
 
+export enum AssetOrderBy {
+  TakenAt = 'takenAt',
+  CreatedAt = 'createdAt',
+}
+
+export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting property').meta({ id: 'AssetOrderBy' });
+
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',

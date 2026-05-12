@@ -118,6 +118,7 @@ describe(TimelineService.name, () => {
       expect(response).toEqual({
         city: [],
         country: [],
+        createdAt: [],
         duration: [],
         id: [],
         visibility: [],

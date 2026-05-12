@@ -24,6 +24,7 @@ enum SyncMigrationTask {
   v20260128_ResetExifV1, // EXIF table has incorrect width and height information.
   v20260128_CopyExifWidthHeightToAsset, // Asset table has incorrect width and height for video ratio calculations.
   v20260128_ResetAssetV1, // Asset v2.5.0 has width and height information that were edited assets.
+  v20260597_ResetAssetV1AssetV2, // Assets didn't include the uploadedAt column.
 }
 
 class SyncStreamService {
@@ -131,6 +132,13 @@ class SyncStreamService {
       if (!migrations.contains(SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name)) {
         migrations.add(SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name);
       }
+    }
+
+    if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name) &&
+        semVer > const SemVer(major: 2, minor: 7, patch: 5)) {
+      _logger.info("Running pre-sync task: v20260597_ResetAssetV1AssetV2");
+      await _syncApiRepository.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]);
+      migrations.add(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name);
     }
   }
 

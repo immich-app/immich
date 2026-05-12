@@ -120,6 +120,13 @@ extension<T extends Object> on MetadataDomain<T> {
             cutoffDaysAgo: repo._read(.cleanupCutoffDaysAgo),
             defaultsInitialized: repo._read(.cleanupDefaultsInitialized),
           ),
+          map: .new(
+            relativeDays: repo._read(.mapRelativeDate),
+            favoritesOnly: repo._read(.mapShowFavoriteOnly),
+            includeArchived: repo._read(.mapIncludeArchived),
+            themeMode: repo._read(.mapThemeMode),
+            withPartners: repo._read(.mapWithPartners),
+          ),
         );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));

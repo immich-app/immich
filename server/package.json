@@ -33,8 +33,6 @@
     "migrations:revert": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} migrations revert",
     "schema:drop": "sql-tools -u ${DB_URL:-postgres://postgres:postgres@localhost:5432/immich} query 'DROP schema public cascade; CREATE schema public;'",
     "schema:reset": "pnpm run schema:drop && pnpm run migrations:run",
-    "sync:open-api": "node ./dist/bin/sync-open-api.js",
-    "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
@@ -84,7 +82,7 @@
     "jose": "^6.0.0",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
-    "kysely": "0.28.16",
+    "kysely": "0.28.17",
     "kysely-postgres-js": "^3.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",

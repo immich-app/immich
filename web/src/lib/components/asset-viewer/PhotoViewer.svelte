@@ -8,6 +8,7 @@
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
@@ -157,13 +158,14 @@
   const faceToNameMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
-    for (const person of asset.people ?? []) {
-      if (person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
+    for (const face of faceManager.data) {
+      if (!face.person) {
         continue;
       }
-      for (const face of person.faces ?? []) {
-        map.set(face, person.name);
+      if (face.person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
+        continue;
       }
+      map.set(face, face.person.name);
     }
     return map;
   });
