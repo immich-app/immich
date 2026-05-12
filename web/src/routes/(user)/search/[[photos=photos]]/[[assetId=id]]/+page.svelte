@@ -247,51 +247,53 @@
 <OnEvents {onAlbumAddAssets} />
 
 {#if terms}
-  <section
-    id="search-chips"
-    class="mt-24 flex w-full flex-wrap place-content-center place-items-center gap-5 px-24 text-center"
-  >
-    {#each getObjectKeys(terms) as searchKey (searchKey)}
-      {@const value = terms[searchKey]}
-      <div class="flex place-content-center place-items-center items-stretch text-xs">
+  <section id="search-chips" class="mx-auto mt-24 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
+    <div class="flex w-full flex-wrap place-content-center place-items-center gap-2.5 sm:gap-3">
+      {#each getObjectKeys(terms) as searchKey (searchKey)}
+        {@const value = terms[searchKey]}
         <div
-          class="flex items-center justify-center bg-immich-primary px-4 py-2 text-white dark:bg-immich-dark-primary dark:text-black"
+          class="inline-flex max-w-full items-center rounded-full bg-primary/10 py-1 ps-1 pe-1 text-xs text-primary ring-1 ring-primary/15 transition-shadow hover:ring-primary/25 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20 dark:hover:ring-immich-dark-primary/30"
         >
-          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+          <span
+            class="shrink-0 rounded-full bg-primary px-3 py-1.5 font-medium text-light dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+          >
+            {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+          </span>
+
+          {#if value !== true}
+            <span class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg">
+              {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
+                {getHumanReadableDate(value)}
+              {:else if searchKey === 'personIds' && Array.isArray(value)}
+                {#await getPersonName(value) then personName}
+                  {personName}
+                {/await}
+              {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
+                {#await getTagNames(value) then tagNames}
+                  {tagNames}
+                {/await}
+              {:else if searchKey === 'rating'}
+                {$t('rating_count', { values: { count: value ?? 0 } })}
+              {:else if value === null || value === ''}
+                {$t('unknown')}
+              {:else}
+                {value}
+              {/if}
+            </span>
+          {/if}
+
+          <button
+            type="button"
+            class="ms-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-primary outline-offset-2 outline-immich-primary transition-colors hover:bg-primary/15 focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary dark:hover:bg-immich-dark-primary/20"
+            aria-label={$t('remove_filter')}
+            title={$t('remove_filter')}
+            onclick={() => removeFilter(searchKey)}
+          >
+            <Icon icon={mdiClose} size="14" />
+          </button>
         </div>
-
-        {#if value !== true}
-          <div class="bg-gray-300 px-4 py-2 dark:bg-gray-800 dark:text-white">
-            {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
-              {getHumanReadableDate(value)}
-            {:else if searchKey === 'personIds' && Array.isArray(value)}
-              {#await getPersonName(value) then personName}
-                {personName}
-              {/await}
-            {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
-              {#await getTagNames(value) then tagNames}
-                {tagNames}
-              {/await}
-            {:else if searchKey === 'rating'}
-              {$t('rating_count', { values: { count: value ?? 0 } })}
-            {:else if value === null || value === ''}
-              {$t('unknown')}
-            {:else}
-              {value}
-            {/if}
-          </div>
-        {/if}
-
-        <button
-          type="button"
-          class="flex items-center justify-center rounded-e-full bg-immich-primary/90 p-2 text-white transition-colors hover:bg-immich-primary/70 dark:bg-immich-dark-primary/90 dark:text-black dark:hover:bg-immich-dark-primary/70"
-          aria-label={$t('remove_filter')}
-          onclick={() => removeFilter(searchKey)}
-        >
-          <Icon icon={mdiClose} size="14" />
-        </button>
-      </div>
-    {/each}
+      {/each}
+    </div>
   </section>
 {/if}
 
