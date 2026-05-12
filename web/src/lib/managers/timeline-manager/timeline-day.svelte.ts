@@ -1,8 +1,8 @@
-import { AssetOrder } from '@immich/sdk';
+import { AssetOrder, AssetOrderBy } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
-import { plainDateTimeCompare } from '$lib/utils/timeline-util';
+import { getOrderingDate, plainDateTimeCompare } from '$lib/utils/timeline-util';
 import type { TimelineMonth } from './timeline-month.svelte';
 import type { Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
@@ -12,6 +12,7 @@ export class TimelineDay {
   readonly index: number;
   readonly groupTitle: string;
   readonly day: number;
+  readonly orderBy: AssetOrderBy;
   viewerAssets: ViewerAsset[] = $state([]);
 
   height = $state(0);
@@ -24,11 +25,12 @@ export class TimelineDay {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(timelineMonth: TimelineMonth, index: number, day: number, groupTitle: string) {
+  constructor(timelineMonth: TimelineMonth, index: number, day: number, groupTitle: string, orderBy: AssetOrderBy) {
     this.index = index;
     this.timelineMonth = timelineMonth;
     this.day = day;
     this.groupTitle = groupTitle;
+    this.orderBy = orderBy;
   }
 
   get top() {
@@ -115,10 +117,10 @@ export class TimelineDay {
         continue;
       }
 
-      const oldTime = { ...asset.localDateTime };
+      const oldTime = { ...getOrderingDate(asset, this.orderBy) };
       const callbackResult = callback(asset);
       let remove = (callbackResult as { remove?: boolean } | undefined)?.remove ?? false;
-      const newTime = asset.localDateTime;
+      const newTime = getOrderingDate(asset, this.orderBy);
       if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
         const { year, month, day } = newTime;
         remove = true;

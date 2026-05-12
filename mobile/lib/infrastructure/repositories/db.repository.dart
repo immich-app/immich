@@ -98,7 +98,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 26;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -272,6 +272,9 @@ class Drift extends $Drift {
             await m.createIndex(v25.idxRemoteAssetOwnerVisibilityDeletedCreated);
             await m.createIndex(v25.idxRemoteExifCity);
             await m.createIndex(v25.idxAssetFaceVisiblePerson);
+          },
+          from25To26: (m, v26) async {
+            await m.addColumn(v26.remoteAssetEntity, v26.remoteAssetEntity.uploadedAt);
           },
         ),
       );

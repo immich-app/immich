@@ -43,7 +43,9 @@ mixin _ExecutorLogger on Mixinable<_Executor> {
   }
 
   void logMessage(String message) {
-    if (log) print(message);
+    if (log) {
+      print(message);
+    }
   }
 }
 
@@ -219,7 +221,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
       _ensureWorkersInitialized();
       return;
     }
-    if (_queue.isEmpty) return;
+    if (_queue.isEmpty) {
+      return;
+    }
     final task = _queue.removeFirst();
 
     availableWorker
@@ -235,7 +239,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
           },
         )
         .whenComplete(() {
-          if (_dynamicSpawning && _queue.isEmpty) availableWorker.kill();
+          if (_dynamicSpawning && _queue.isEmpty) {
+            availableWorker.kill();
+          }
           _schedule();
         });
   }
@@ -249,7 +255,9 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
       targetWorker?.cancelGentle();
     } else {
       targetWorker?.kill();
-      if (!_dynamicSpawning) targetWorker?.initialize();
+      if (!_dynamicSpawning) {
+        targetWorker?.initialize();
+      }
     }
     super._cancel(task);
   }

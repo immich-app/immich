@@ -38,6 +38,8 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
+  DateTimeColumn get uploadedAt => dateTime().nullable()();
+
   TextColumn get livePhotoVideoId => text().nullable()();
 
   IntColumn get visibility => intEnum<AssetVisibility>()();
@@ -61,6 +63,7 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     type: type,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    uploadedAt: uploadedAt,
     durationMs: durationMs,
     isFavorite: isFavorite,
     height: height,

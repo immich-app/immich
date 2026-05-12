@@ -95,7 +95,9 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     return PopScope(
       canPop: !hasUnsavedEdits,
       onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
+        if (didPop) {
+          return;
+        }
         final shouldDiscard = await _showDiscardChangesDialog() ?? false;
         if (shouldDiscard && mounted) {
           Navigator.of(context).pop();

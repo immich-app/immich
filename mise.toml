@@ -4,7 +4,7 @@ experimental_monorepo_root = true
 config_roots = [
   "plugins",
   "server",
-  "cli",
+  "packages/cli",
   "deployment",
   "mobile",
   "e2e",
@@ -16,7 +16,7 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-flutter = "3.41.7"
+flutter = "3.41.9"
 pnpm = "10.33.1"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
@@ -25,7 +25,7 @@ java = "21.0.2"
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"
 bin = "dcm"
-postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
+postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]
 version = "7.1.3-6"
@@ -40,13 +40,38 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 experimental = true
 pin = true
 
+[tasks.open-api-typescript]
+run = [
+  "pnpm dlx oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas open-api/immich-openapi-specs.json packages/sdk/src/fetch-client.ts",
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
+]
+
+[tasks.open-api-dart]
+dir = "open-api"
+run = "bash ./bin/generate-dart-sdk.sh"
+
+[tasks.open-api]
+env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
+run = [
+  { task = "//server:install" },
+  { task = "//server:build" },
+  { task = "//server:sync-open-api" },
+  { task = ":open-api-typescript"},
+  { task = ":open-api-dart"},
+]
+
+[tasks.sql]
+dir = "server"
+run = "node ./dist/bin/sync-sql.js"
+
 # SDK tasks
 [tasks."sdk:install"]
-dir = "open-api/typescript-sdk"
+dir = "packages/sdk"
 run = "pnpm install --filter @immich/sdk --frozen-lockfile"
 
 [tasks."sdk:build"]
-dir = "open-api/typescript-sdk"
+dir = "packages/sdk"
 run = "pnpm run build"
 
 # i18n tasks

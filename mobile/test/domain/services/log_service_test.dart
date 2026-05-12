@@ -40,7 +40,7 @@ void main() {
 
     when(() => mockLogRepo.truncate(limit: any(named: 'limit'))).thenAnswer((_) async => {});
     when(() => mockMetadataRepository.systemConfig).thenReturn(const SystemConfig(logLevel: LogLevel.fine));
-    when(() => mockMetadataRepository.write<LogLevel>(MetadataKey.logLevel, any())).thenAnswer((_) async {});
+    when(() => mockMetadataRepository.write<LogLevel, LogLevel>(MetadataKey.logLevel, any())).thenAnswer((_) async {});
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
@@ -71,7 +71,7 @@ void main() {
 
     test('Updates the log level via metadata repository', () {
       final captured = verify(
-        () => mockMetadataRepository.write<LogLevel>(MetadataKey.logLevel, captureAny()),
+        () => mockMetadataRepository.write<LogLevel, LogLevel>(MetadataKey.logLevel, captureAny()),
       ).captured.firstOrNull;
       expect(captured, LogLevel.shout);
     });

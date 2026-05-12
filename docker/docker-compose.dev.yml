@@ -25,10 +25,10 @@ services:
       - server_node_modules:/usr/src/app/server/node_modules
       - web_node_modules:/usr/src/app/web/node_modules
       - github_node_modules:/usr/src/app/.github/node_modules
-      - cli_node_modules:/usr/src/app/cli/node_modules
+      - cli_node_modules:/usr/src/app/packages/cli/node_modules
       - docs_node_modules:/usr/src/app/docs/node_modules
       - e2e_node_modules:/usr/src/app/e2e/node_modules
-      - sdk_node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - sdk_node_modules:/usr/src/app/packages/sdk/node_modules
       - app_node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
