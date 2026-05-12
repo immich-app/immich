@@ -46,11 +46,13 @@ Future<void> _migrateTo25() async {
 
 Future<void> _migrateTo26(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
   await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, MetadataKey.logLevel, LogLevel.values);
+  // Theme
+  await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
   await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, MetadataKey.themePrimaryColor, ImmichColorPreset.values);
   await migrator.migrateBool(StoreKey.legacyDynamicTheme, MetadataKey.themeDynamic);
   await migrator.migrateBool(StoreKey.legacyColorfulInterface, MetadataKey.themeColorfulInterface);
+  // Cleanup
   final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
   if (cleanupKeepAlbumIds != null) {
     final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
@@ -71,6 +73,12 @@ Future<void> _migrateTo26(Drift drift) async {
   );
   await migrator.migrateInt(StoreKey.legacyCleanupCutoffDaysAgo, MetadataKey.cleanupCutoffDaysAgo);
   await migrator.migrateBool(StoreKey.legacyCleanupDefaultsInitialized, MetadataKey.cleanupDefaultsInitialized);
+  // Map
+  await migrator.migrateBool(StoreKey.legacyMapShowFavoriteOnly, MetadataKey.mapShowFavoriteOnly);
+  await migrator.migrateInt(StoreKey.legacyMapRelativeDate, MetadataKey.mapRelativeDate);
+  await migrator.migrateBool(StoreKey.legacyMapIncludeArchived, MetadataKey.mapIncludeArchived);
+  await migrator.migrateEnumIndex(StoreKey.legacyMapThemeMode, MetadataKey.mapThemeMode, ThemeMode.values);
+  await migrator.migrateBool(StoreKey.legacyMapwithPartners, MetadataKey.mapWithPartners);
   await migrator.complete();
 }
 

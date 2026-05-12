@@ -26,6 +26,13 @@ enum MetadataKey<T extends Object> {
   // Log
   logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values)),
 
+  // Map
+  mapShowFavoriteOnly<bool>(.appConfig, 'map.showFavoriteOnly', false),
+  mapRelativeDate<int>(.appConfig, 'map.relativeDate', 0),
+  mapIncludeArchived<bool>(.appConfig, 'map.includeArchived', false),
+  mapThemeMode<ThemeMode>(.appConfig, 'map.themeMode', .system, _EnumCodec(ThemeMode.values)),
+  mapWithPartners<bool>(.appConfig, 'map.withPartners', false),
+
   // Cleanup
   cleanupKeepFavorites<bool>(.appConfig, 'cleanup.keepFavorites', true),
   cleanupKeepMediaType<AssetKeepType>(

@@ -1893,6 +1893,7 @@
   "remove_assets_title": "Remove assets?",
   "remove_custom_date_range": "Remove custom date range",
   "remove_deleted_assets": "Remove Deleted Assets",
+  "remove_filter": "Remove filter",
   "remove_from_album": "Remove from album",
   "remove_from_album_action_prompt": "{count} removed from the album",
   "remove_from_favorites": "Remove from favorites",

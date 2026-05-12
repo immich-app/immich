@@ -36,15 +36,9 @@ enum StoreKey<T> {
   advancedTroubleshooting<bool>._(114),
   preferRemoteImage<bool>._(116),
   loopVideo<bool>._(117),
-  // map related settings
-  mapShowFavoriteOnly<bool>._(118),
-  mapRelativeDate<int>._(119),
   selfSignedCert<bool>._(120),
-  mapIncludeArchived<bool>._(121),
   ignoreIcloudAssets<bool>._(122),
   selectedAlbumSortReverse<bool>._(123),
-  mapThemeMode<int>._(124),
-  mapwithPartners<bool>._(125),
   enableHapticFeedback<bool>._(126),
   customHeaders<String>._(127),
 
@@ -93,6 +87,11 @@ enum StoreKey<T> {
   legacyCleanupKeepAlbumIds<String>._(1010),
   legacyCleanupCutoffDaysAgo<int>._(1011),
   legacyCleanupDefaultsInitialized<bool>._(1012),
+  legacyMapRelativeDate<int>._(119),
+  legacyMapShowFavoriteOnly<bool>._(118),
+  legacyMapIncludeArchived<bool>._(121),
+  legacyMapThemeMode<int>._(124),
+  legacyMapwithPartners<bool>._(125),
   legacyLogLevel<int>._(115);
 
   const StoreKey._(this.id);
