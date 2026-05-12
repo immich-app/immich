@@ -336,7 +336,7 @@ describe(UserService.name, () => {
       });
     });
 
-    it('should convert HEIC profile uploads through ffmpeg before thumbnailing', async () => {
+    it('should thumbnail HEIC profile uploads through the image pipeline', async () => {
       const user = factory.userAdmin({ profileImagePath: '' });
       const file = { path: `/data/profile/${user.id}/temp-file.HEIC` } as Express.Multer.File;
       mocks.user.get.mockResolvedValue(user);
@@ -346,12 +346,8 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(factory.auth({ user }), file);
 
-      expect(mocks.media.extractFrame).toHaveBeenCalledWith(file.path, expect.stringContaining('.jpeg'), 0);
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        expect.stringContaining('.jpeg'),
-        expect.any(Object),
-        expect.any(String),
-      );
+      expect(mocks.media.extractFrame).not.toHaveBeenCalled();
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(file.path, expect.any(Object), expect.any(String));
     });
 
     describe('with S3 write backend', () => {

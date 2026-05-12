@@ -938,48 +938,54 @@ describe(MediaService.name, () => {
       });
     });
 
-    it('should convert HEIC through ffmpeg before decoding thumbnails', async () => {
+    it('should decode HEIC thumbnails through the image pipeline', async () => {
       const asset = AssetFactory.from({ originalFileName: 'IMG_1234.HEIC', originalPath: '/original/IMG_1234.HEIC' })
         .exif({ fileSizeInByte: 5000, orientation: ExifOrientation.Rotate90CW.toString() })
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
-      mocks.media.probe.mockResolvedValue({
-        ...probeStub.noAudioStreams,
-        videoStreams: [
-          { ...probeStub.videoStream2160p.videoStreams[0], index: 60, pixelFormat: 'gray', width: 2016, height: 1512 },
-          {
-            ...probeStub.videoStream2160p.videoStreams[0],
-            index: 61,
-            pixelFormat: 'yuv420p10le',
-            width: 1024,
-            height: 768,
-          },
-          {
-            ...probeStub.videoStream2160p.videoStreams[0],
-            index: 62,
-            pixelFormat: 'yuvj420p',
-            width: 416,
-            height: 312,
-          },
-        ],
-      });
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.extractFrame).toHaveBeenCalledWith(
-        asset.originalPath,
-        expect.stringContaining('.jpeg'),
-        0,
-        61,
-      );
+      expect(mocks.media.probe).not.toHaveBeenCalled();
+      expect(mocks.media.extractFrame).not.toHaveBeenCalled();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.Srgb,
-        orientation: ExifOrientation.Rotate90CW,
         processInvalidImages: false,
         size: 1440,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+    });
+
+    it('should decode S3-backed HEIC thumbnails from the local temp file through the image pipeline', async () => {
+      const cleanup = vi.fn(async () => {});
+      const ensureLocalFile = vi
+        .spyOn(
+          sut as unknown as {
+            ensureLocalFile: (filePath: string) => Promise<{ localPath: string; cleanup: () => Promise<void> }>;
+          },
+          'ensureLocalFile',
+        )
+        .mockResolvedValue({ localPath: '/tmp/immich-s3-heic.tmp', cleanup });
+      const asset = AssetFactory.from({
+        originalFileName: 'IMG_1234.HEIC',
+        originalPath: 'upload/user/12/34/asset.HEIC',
+      })
+        .exif({ fileSizeInByte: 5000, orientation: ExifOrientation.Rotate90CW.toString() })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(ensureLocalFile).toHaveBeenCalledWith(asset.originalPath);
+      expect(mocks.media.probe).not.toHaveBeenCalled();
+      expect(mocks.media.extractFrame).not.toHaveBeenCalled();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith('/tmp/immich-s3-heic.tmp', {
+        colorspace: Colorspace.Srgb,
+        processInvalidImages: false,
+        size: 1440,
+      });
+      expect(cleanup).toHaveBeenCalled();
     });
 
     it('should not check transparency metadata for raw files without extracted images', async () => {
@@ -2017,7 +2023,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
 
-    it('should convert HEIC through ffmpeg before decoding person thumbnails', async () => {
+    it('should decode HEIC person thumbnails through the image pipeline', async () => {
       const person = PersonFactory.create();
       const data = {
         ...personThumbnailStub.newThumbnailMiddle,
@@ -2026,19 +2032,6 @@ describe(MediaService.name, () => {
       };
 
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(data);
-      mocks.media.probe.mockResolvedValue({
-        ...probeStub.noAudioStreams,
-        videoStreams: [
-          { ...probeStub.videoStream2160p.videoStreams[0], index: 60, pixelFormat: 'gray', width: 2016, height: 1512 },
-          {
-            ...probeStub.videoStream2160p.videoStreams[0],
-            index: 61,
-            pixelFormat: 'yuv420p10le',
-            width: 1024,
-            height: 768,
-          },
-        ],
-      });
       mocks.media.generateThumbnail.mockResolvedValue();
       mocks.media.decodeImage.mockResolvedValue({
         data: Buffer.from(''),
@@ -2047,13 +2040,49 @@ describe(MediaService.name, () => {
 
       await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.media.extractFrame).toHaveBeenCalledWith(data.originalPath, expect.stringContaining('.jpeg'), 0, 61);
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.stringContaining('.jpeg'), {
+      expect(mocks.media.probe).not.toHaveBeenCalled();
+      expect(mocks.media.extractFrame).not.toHaveBeenCalled();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(data.originalPath, {
         colorspace: Colorspace.P3,
-        orientation: ExifOrientation.Horizontal,
         processInvalidImages: false,
       });
       expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should decode S3-backed HEIC person thumbnails from the local temp file through the image pipeline', async () => {
+      const cleanup = vi.fn(async () => {});
+      const ensureLocalFile = vi
+        .spyOn(
+          sut as unknown as {
+            ensureLocalFile: (filePath: string) => Promise<{ localPath: string; cleanup: () => Promise<void> }>;
+          },
+          'ensureLocalFile',
+        )
+        .mockResolvedValue({ localPath: '/tmp/immich-s3-person-heic.tmp', cleanup });
+      const person = PersonFactory.create();
+      const data = {
+        ...personThumbnailStub.newThumbnailMiddle,
+        originalPath: 'upload/user/12/34/asset.HEIC',
+        previewPath: null,
+      };
+
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(data);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      mocks.media.decodeImage.mockResolvedValue({
+        data: Buffer.from(''),
+        info: { width: 2160, height: 3840 } as OutputInfo,
+      });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: person.id })).resolves.toBe(JobStatus.Success);
+
+      expect(ensureLocalFile).toHaveBeenCalledWith(data.originalPath);
+      expect(mocks.media.probe).not.toHaveBeenCalled();
+      expect(mocks.media.extractFrame).not.toHaveBeenCalled();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith('/tmp/immich-s3-person-heic.tmp', {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+      expect(cleanup).toHaveBeenCalled();
     });
 
     it('should not use embedded preview if enabled and raw image if not exists', async () => {

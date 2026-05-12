@@ -14,6 +14,7 @@ import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import sharp from 'sharp';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
@@ -1086,6 +1087,10 @@ describe('/asset', () => {
         expect(body).toBeInstanceOf(Buffer);
         expect(body.length).toBeGreaterThan(0);
         expect(type).toMatch(/^image\//);
+
+        const metadata = await sharp(body).metadata();
+        expect(metadata.width).toBe(333);
+        expect(metadata.height).toBe(250);
       }
     });
 
