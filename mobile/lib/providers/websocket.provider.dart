@@ -29,7 +29,9 @@ class WebsocketState {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is WebsocketState && other.socket == socket && other.isConnected == isConnected;
   }
@@ -58,7 +60,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   /// Connects websocket to server unless already connected
   void connect() {
-    if (state.isConnected) return;
+    if (state.isConnected) {
+      return;
+    }
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {

@@ -93,7 +93,9 @@ class HeaderSettingsPage extends HookConsumerWidget {
       final key = header.key.trim();
       final value = header.value.trim();
 
-      if (key.isEmpty || value.isEmpty) continue;
+      if (key.isEmpty || value.isEmpty) {
+        continue;
+      }
       headersMap[key] = value;
     }
 

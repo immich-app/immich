@@ -51,7 +51,9 @@ class MapState {
 
   @override
   bool operator ==(covariant MapState other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.themeMode == themeMode &&
         other.showFavoriteOnly == showFavoriteOnly &&

@@ -17,11 +17,11 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetVisibility, DatabaseExtension } from 'src/enum';
+import { AssetFileType, AssetOrderBy, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { VectorExtension } from 'src/types';
+import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -97,6 +97,81 @@ export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
     .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
     .$narrowType<{ exifInfo: NotNull }>();
+}
+
+export const dummy = sql`(select 1)`.as('dummy');
+
+export function withAudioStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_audio'>) {
+  return jsonObjectFrom(
+    eb
+      .selectFrom(dummy)
+      .select(['asset_audio.index', 'asset_audio.codecName', 'asset_audio.profile', 'asset_audio.bitrate'])
+      .where('asset_audio.assetId', 'is not', sql.lit(null))
+      .$castTo<AudioStreamInfo | null>(),
+  );
+}
+
+export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_video'>) {
+  return jsonObjectFrom(
+    eb
+      .selectFrom(dummy)
+      .select((eb) => [
+        'asset_video.index',
+        'asset_video.codecName',
+        'asset_video.profile',
+        'asset_video.level',
+        'asset_video.bitrate',
+        'asset_exif.exifImageWidth as width',
+        'asset_exif.exifImageHeight as height',
+        'asset_video.pixelFormat',
+        'asset_video.frameCount',
+        'asset_exif.fps as frameRate',
+        'asset_video.timeBase',
+        eb
+          .case()
+          .when('asset_exif.orientation', '=', sql.lit(ExifOrientation.Rotate90CW.toString()))
+          .then(sql.lit(-90))
+          .when('asset_exif.orientation', '=', sql.lit(ExifOrientation.Rotate270CW.toString()))
+          .then(sql.lit(90))
+          .when('asset_exif.orientation', '=', sql.lit(ExifOrientation.Rotate180.toString()))
+          .then(sql.lit(180))
+          .else(0)
+          .end()
+          .as('rotation'),
+        'asset_video.colorPrimaries',
+        'asset_video.colorMatrix',
+        'asset_video.colorTransfer',
+        'asset_video.dvProfile',
+        'asset_video.dvLevel',
+        'asset_video.dvBlSignalCompatibilityId',
+      ])
+      .where('asset_video.assetId', 'is not', sql.lit(null)),
+  ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();
+}
+
+export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video'>) {
+  return jsonObjectFrom(
+    eb
+      .selectFrom(dummy)
+      .select(['asset_video.formatName', 'asset_video.formatLongName', 'asset.duration', 'asset_video.bitrate'])
+      .where('asset_video.assetId', 'is not', sql.lit(null)),
+  ).$castTo<VideoFormat | null>();
+}
+
+export function withVideoPackets(eb: ExpressionBuilder<DB, 'asset' | 'asset_keyframe'>) {
+  return jsonObjectFrom(
+    eb
+      .selectFrom(dummy)
+      .where('asset_keyframe.assetId', 'is not', sql.lit(null))
+      .select([
+        'asset_keyframe.pts as keyframePts',
+        'asset_keyframe.accDuration as keyframeAccDuration',
+        'asset_keyframe.ownDuration as keyframeOwnDuration',
+        'asset_keyframe.totalDuration',
+        'asset_keyframe.packetCount',
+        'asset_keyframe.outputFrames',
+      ]),
+  ).$castTo<VideoPacketInfo | null>();
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
@@ -223,8 +298,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>() {
-  return sql<O>`date_trunc(${sql.lit('MONTH')}, "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt) {
+  return sql<O>`date_trunc(${sql.lit('MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
@@ -445,5 +520,3 @@ export const updateLockedColumns = <T extends Record<string, unknown> & { locked
   exif.lockedProperties = lockableProperties.filter((property) => property in exif);
   return exif;
 };
-
-export const dummy = sql`(select 1)`.as('dummy');

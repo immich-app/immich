@@ -20,7 +20,9 @@ class RatingDetails extends ConsumerWidget {
         .watch(userMetadataPreferencesProvider)
         .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
-    if (!isRatingEnabled) return const SizedBox.shrink();
+    if (!isRatingEnabled) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.only(left: 16.0, top: 16.0),

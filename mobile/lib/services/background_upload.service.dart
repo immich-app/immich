@@ -82,7 +82,9 @@ class UploadTaskMetadata {
 
   @override
   bool operator ==(covariant UploadTaskMetadata other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.localAssetId == localAssetId &&
         other.isLivePhotos == isLivePhotos &&

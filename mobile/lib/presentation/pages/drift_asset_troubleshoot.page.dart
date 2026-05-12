@@ -191,8 +191,12 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
   }
 
   String _getAssetTypeTitle(BaseAsset asset) {
-    if (asset is LocalAsset) return 'Local Asset';
-    if (asset is RemoteAsset) return 'Remote Asset';
+    if (asset is LocalAsset) {
+      return 'Local Asset';
+    }
+    if (asset is RemoteAsset) {
+      return 'Remote Asset';
+    }
     return 'Base Asset';
   }
 }

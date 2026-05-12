@@ -35,6 +35,7 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
@@ -218,7 +219,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newExif(dto: Insertable<AssetExifTable>) {
-    const result = await this.get(AssetRepository).upsertExif(dto, { lockedPropertiesBehavior: 'override' });
+    const result = await this.get(AssetRepository).upsertExif({ exif: dto, lockedPropertiesBehavior: 'override' });
     return { result };
   }
 
@@ -362,7 +363,14 @@ export class ExifTestContext extends MediumTestContext<MetadataService> {
   constructor(database: Kysely<DB>) {
     super(MetadataService, {
       database,
-      real: [AssetRepository, AssetJobRepository, MetadataRepository, SystemMetadataRepository, TagRepository],
+      real: [
+        AssetRepository,
+        AssetJobRepository,
+        MediaRepository,
+        MetadataRepository,
+        SystemMetadataRepository,
+        TagRepository,
+      ],
       mock: [ConfigRepository, EventRepository, LoggingRepository, MapRepository, StorageRepository],
     });
 
@@ -445,6 +453,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
       return new key(LoggingRepository.create());
     }
 
+    case MediaRepository:
     case MetadataRepository: {
       return new key(LoggingRepository.create());
     }

@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { BBoxSchema } from 'src/dtos/bbox.dto';
-import { AssetOrderSchema, AssetVisibilitySchema } from 'src/enum';
+import { AssetOrderBySchema, AssetOrderSchema, AssetVisibilitySchema } from 'src/enum';
 import { stringToBool } from 'src/validation';
 import z from 'zod';
 
@@ -22,6 +22,9 @@ const TimeBucketQueryBaseSchema = z
     withPartners: stringToBool.optional().describe('Include assets shared by partners'),
     order: AssetOrderSchema.optional().describe(
       'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
+    ),
+    orderBy: AssetOrderBySchema.optional().describe(
+      'Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)',
     ),
     visibility: AssetVisibilitySchema.optional().describe(
       'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
@@ -82,6 +85,9 @@ const TimeBucketAssetResponseSchema = z
     thumbhash: z
       .array(z.string().nullable())
       .describe('Array of BlurHash strings for generating asset previews (base64 encoded)'),
+    createdAt: z
+      .array(z.string())
+      .describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
     fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
     localOffsetHours: z
       .array(z.number())

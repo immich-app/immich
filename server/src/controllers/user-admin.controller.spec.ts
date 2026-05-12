@@ -78,9 +78,9 @@ describe(UserAdminController.name, () => {
         .send(dto);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(
-          expect.arrayContaining(['[quotaSizeInBytes] Invalid input: expected int, received number']),
-        ),
+        errorDto.validationError([
+          { path: ['quotaSizeInBytes'], message: 'Invalid input: expected int, received number' },
+        ]),
       );
     });
 
@@ -98,9 +98,9 @@ describe(UserAdminController.name, () => {
         .send(dto);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(
-          expect.arrayContaining(['[quotaSizeInBytes] Invalid input: expected int, received number']),
-        ),
+        errorDto.validationError([
+          { path: ['quotaSizeInBytes'], message: 'Invalid input: expected int, received number' },
+        ]),
       );
     });
   });
@@ -125,9 +125,9 @@ describe(UserAdminController.name, () => {
         .send({ quotaSizeInBytes: 1.2 });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(
-          expect.arrayContaining(['[quotaSizeInBytes] Invalid input: expected int, received number']),
-        ),
+        errorDto.validationError([
+          { path: ['quotaSizeInBytes'], message: 'Invalid input: expected int, received number' },
+        ]),
       );
     });
 

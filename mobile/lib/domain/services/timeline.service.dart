@@ -35,6 +35,7 @@ enum TimelineOrigin {
   deepLink,
   albumActivities,
   folder,
+  recentlyAdded,
 }
 
 class TimelineFactory {
@@ -60,6 +61,8 @@ class TimelineFactory {
       TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 
   TimelineService remoteAssets(String userId) => TimelineService(_timelineRepository.remote(userId, groupBy));
+
+  TimelineService recentlyAdded(String userId) => TimelineService(_timelineRepository.recentlyAdded(userId, groupBy));
 
   TimelineService favorite(String userId) => TimelineService(_timelineRepository.favorite(userId, groupBy));
 

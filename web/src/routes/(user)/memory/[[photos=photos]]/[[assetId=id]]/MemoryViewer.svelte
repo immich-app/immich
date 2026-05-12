@@ -26,11 +26,11 @@
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
+  import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
-  import { ActionButton, IconButton, toastManager } from '@immich/ui';
+  import { ActionButton, IconButton, Text, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
     mdiChevronDown,
@@ -50,6 +50,7 @@
   } from '@mdi/js';
   import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
+  import 'media-chrome/media-mute-button';
   import { t } from 'svelte-i18n';
   import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
@@ -308,7 +309,6 @@
 
   $effect(() => {
     if (videoPlayer) {
-      videoPlayer.muted = $videoViewerMuted;
       initPlayer();
     }
   });
@@ -380,42 +380,62 @@
         {/if}
       {/snippet}
 
-      <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <div class="dark w-12.5">
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            aria-label={paused ? $t('play_memories') : $t('pause_memories')}
-            icon={paused ? mdiPlay : mdiPause}
-            onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
-          />
-        </div>
+      <div class="dark flex place-content-center place-items-center gap-2">
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          aria-label={paused ? $t('play_memories') : $t('pause_memories')}
+          icon={paused ? mdiPlay : mdiPause}
+          onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
+        />
 
         {#each current.memory.assets as asset, index (asset.id)}
-          <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
+          <a class="relative grow py-2" href={asHref(asset)} aria-label={$t('view')}>
             <span class="absolute inset-s-0 h-0.5 w-full bg-gray-500"></span>
             <span class="absolute inset-s-0 h-0.5 bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
-        <div>
-          <p class="text-small">
-            {(current.assetIndex + 1).toLocaleString($locale)}/{current.memory.assets.length.toLocaleString($locale)}
-          </p>
-        </div>
+        <Text size="small">
+          {$t('x_of_total', {
+            values: {
+              x: (current.assetIndex + 1).toLocaleString($locale),
+              total: current.memory.assets.length.toLocaleString($locale),
+            },
+          })}
+        </Text>
 
         {#if currentTimelineAssets.some((asset) => asset.type === AssetTypeEnum.Video)}
-          <div class="dark w-12.5">
+          <media-mute-button
+            mediacontroller={videoPlayer ? 'memory-video' : ''}
+            disabled={!videoPlayer}
+            class="rounded-full bg-transparent outline-offset-2 outline-dark focus-visible:outline-2"
+            style="--media-focus-box-shadow: none;"
+          >
             <IconButton
+              slot="off"
+              disabled={!videoPlayer}
+              tabindex={-1}
               shape="round"
               variant="ghost"
               color="secondary"
-              aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
-              icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
-              onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+              aria-label={$t('unmute_memories')}
+              icon={mdiVolumeOff}
+              onclick={() => {}}
             />
-          </div>
+            <IconButton
+              slot="high"
+              disabled={!videoPlayer}
+              tabindex={-1}
+              shape="round"
+              variant="ghost"
+              color="secondary"
+              aria-label={$t('mute_memories')}
+              icon={mdiVolumeHigh}
+              onclick={() => {}}
+            />
+          </media-mute-button>
         {/if}
       </div>
     </ControlAppBar>
@@ -487,12 +507,7 @@
           <div class="relative size-full rounded-2xl bg-black">
             {#key current.asset.id}
               {#if current.asset.isVideo}
-                <MemoryVideoViewer
-                  asset={current.asset}
-                  bind:videoPlayer
-                  videoViewerMuted={$videoViewerMuted}
-                  videoViewerVolume={$videoViewerVolume}
-                />
+                <MemoryVideoViewer asset={current.asset} bind:videoPlayer />
               {:else}
                 <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
               {/if}
@@ -511,7 +526,6 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="size-12"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
