@@ -312,6 +312,18 @@ importers:
         specifier: ^4.20.6
         version: 4.21.0
 
+  packages/plugins:
+    devDependencies:
+      '@extism/js-pdk':
+        specifier: ^1.0.1
+        version: 1.1.1
+      esbuild:
+        specifier: ^0.28.0
+        version: 0.28.0
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
   packages/sdk:
     dependencies:
       '@oazapfts/runtime':
@@ -321,18 +333,6 @@ importers:
       '@types/node':
         specifier: ^24.12.2
         version: 24.12.2
-      typescript:
-        specifier: ^6.0.0
-        version: 6.0.3
-
-  plugins:
-    devDependencies:
-      '@extism/js-pdk':
-        specifier: ^1.0.1
-        version: 1.1.1
-      esbuild:
-        specifier: ^0.28.0
-        version: 0.28.0
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
