@@ -239,6 +239,26 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> emptyTrash(String userId) async {
+    try {
+      final count = await _service.emptyTrash(userId);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to empty trash', error, stack);
+      return ActionResult(count: 0, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> restoreAllTrash(String userId) async {
+    try {
+      final count = await _service.restoreAllTrash(userId);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to restore all trash assets', error, stack);
+      return ActionResult(count: 0, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> trashRemoteAndDeleteLocal(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     final localIds = _getLocalIdsForSource(source);
