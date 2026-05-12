@@ -4,8 +4,8 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -48,7 +48,6 @@ class ViewerKebabMenu extends ConsumerWidget {
       source: ActionSource.viewer,
       isCasting: isCasting,
       timelineOrigin: timelineOrigin,
-      originalTheme: originalTheme,
     );
 
     final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context, ref);
@@ -67,10 +66,13 @@ class ViewerKebabMenu extends ConsumerWidget {
       menuChildren: [
         ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 150),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: menuChildren,
+          child: Theme(
+            data: originalTheme ?? context.themeData,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: menuChildren,
+            ),
           ),
         ),
       ],

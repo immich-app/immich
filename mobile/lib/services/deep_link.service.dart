@@ -45,21 +45,12 @@ class DeepLinkService {
     this._currentUser,
   );
 
-  DeepLink _handleColdStart(PageRouteInfo<dynamic> route, bool isColdStart) {
-    return DeepLink([
-      // we need something to segue back to if the app was cold started
-      // TODO: use MainTimelineRoute this when beta is default
-      if (isColdStart) const TabShellRoute(),
-      route,
-    ]);
-  }
-
-  Future<DeepLink> handleScheme(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
+  Future<PageRouteInfo?> handleScheme(PlatformDeepLink link, WidgetRef ref) async {
     // get everything after the scheme, since Uri cannot parse path
     final intent = link.uri.host;
     final queryParams = link.uri.queryParameters;
 
-    PageRouteInfo<dynamic>? deepLinkRoute = switch (intent) {
+    return switch (intent) {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
@@ -67,20 +58,9 @@ class DeepLinkService {
       "activity" => await _buildActivityDeepLink(queryParams['albumId'] ?? ''),
       _ => null,
     };
-
-    // Deep link resolution failed, safely handle it based on the app state
-    if (deepLinkRoute == null) {
-      if (isColdStart) {
-        return DeepLink.defaultPath;
-      }
-
-      return DeepLink.none;
-    }
-
-    return _handleColdStart(deepLinkRoute, isColdStart);
   }
 
-  Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
+  Future<PageRouteInfo?> handleMyImmichApp(PlatformDeepLink link, WidgetRef ref) async {
     final path = link.uri.path;
 
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
@@ -88,29 +68,20 @@ class DeepLinkService {
     final albumRegex = RegExp('/albums/($uuidRegex)');
     final peopleRegex = RegExp('/people/($uuidRegex)');
 
-    PageRouteInfo<dynamic>? deepLinkRoute;
     if (assetRegex.hasMatch(path)) {
       final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
-      deepLinkRoute = await _buildAssetDeepLink(assetId, ref);
-    } else if (albumRegex.hasMatch(path)) {
+      return _buildAssetDeepLink(assetId, ref);
+    }
+    if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
-      deepLinkRoute = await _buildAlbumDeepLink(albumId);
-    } else if (peopleRegex.hasMatch(path)) {
+      return _buildAlbumDeepLink(albumId);
+    }
+    if (peopleRegex.hasMatch(path)) {
       final peopleId = peopleRegex.firstMatch(path)?.group(1) ?? '';
-      deepLinkRoute = await _buildPeopleDeepLink(peopleId);
-    } else if (path == "/memory") {
-      deepLinkRoute = await _buildMemoryDeepLink(null);
+      return _buildPeopleDeepLink(peopleId);
     }
 
-    // Deep link resolution failed, safely handle it based on the app state
-    if (deepLinkRoute == null) {
-      if (isColdStart) {
-        return DeepLink.defaultPath;
-      }
-      return DeepLink.none;
-    }
-
-    return _handleColdStart(deepLinkRoute, isColdStart);
+    return null;
   }
 
   Future<PageRouteInfo?> _buildMemoryDeepLink(String? memoryId) async {

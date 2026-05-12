@@ -12390,13 +12390,11 @@ final class Schema25 extends i0.VersionedSchema {
     idxLocalAssetChecksum,
     idxLocalAssetCloudId,
     idxStackPrimaryAssetId,
-    idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
     idxRemoteAssetStackId,
-    idxRemoteAssetLocalDateTimeDay,
-    idxRemoteAssetLocalDateTimeMonth,
+    idxRemoteAssetOwnerVisibilityDeletedCreated,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
@@ -12414,11 +12412,13 @@ final class Schema25 extends i0.VersionedSchema {
     metadata,
     idxPartnerSharedWithId,
     idxLatLng,
+    idxRemoteExifCity,
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
     idxAssetFacePersonId,
     idxAssetFaceAssetId,
+    idxAssetFaceVisiblePerson,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
@@ -12583,10 +12583,6 @@ final class Schema25 extends i0.VersionedSchema {
     'idx_stack_primary_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)',
   );
-  final i1.Index idxRemoteAssetOwnerChecksum = i1.Index(
-    'idx_remote_asset_owner_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-  );
   final i1.Index uQRemoteAssetsOwnerChecksum = i1.Index(
     'UQ_remote_assets_owner_checksum',
     'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
@@ -12603,13 +12599,9 @@ final class Schema25 extends i0.VersionedSchema {
     'idx_remote_asset_stack_id',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
   );
-  final i1.Index idxRemoteAssetLocalDateTimeDay = i1.Index(
-    'idx_remote_asset_local_date_time_day',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
-  );
-  final i1.Index idxRemoteAssetLocalDateTimeMonth = i1.Index(
-    'idx_remote_asset_local_date_time_month',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+  final i1.Index idxRemoteAssetOwnerVisibilityDeletedCreated = i1.Index(
+    'idx_remote_asset_owner_visibility_deleted_created',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
   );
   late final Shape40 authUserEntity = Shape40(
     source: i0.VersionedTable(
@@ -12883,6 +12875,10 @@ final class Schema25 extends i0.VersionedSchema {
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
   );
+  final i1.Index idxRemoteExifCity = i1.Index(
+    'idx_remote_exif_city',
+    'CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL',
+  );
   final i1.Index idxRemoteAlbumAssetAlbumAsset = i1.Index(
     'idx_remote_album_asset_album_asset',
     'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)',
@@ -12902,6 +12898,10 @@ final class Schema25 extends i0.VersionedSchema {
   final i1.Index idxAssetFaceAssetId = i1.Index(
     'idx_asset_face_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
+  );
+  final i1.Index idxAssetFaceVisiblePerson = i1.Index(
+    'idx_asset_face_visible_person',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL',
   );
   final i1.Index idxTrashedLocalAssetChecksum = i1.Index(
     'idx_trashed_local_asset_checksum',
@@ -12959,13 +12959,11 @@ final class Schema26 extends i0.VersionedSchema {
     idxLocalAssetChecksum,
     idxLocalAssetCloudId,
     idxStackPrimaryAssetId,
-    idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
     idxRemoteAssetStackId,
-    idxRemoteAssetLocalDateTimeDay,
-    idxRemoteAssetLocalDateTimeMonth,
+    idxRemoteAssetOwnerVisibilityDeletedCreated,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
@@ -12983,11 +12981,13 @@ final class Schema26 extends i0.VersionedSchema {
     metadata,
     idxPartnerSharedWithId,
     idxLatLng,
+    idxRemoteExifCity,
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
     idxAssetFacePersonId,
     idxAssetFaceAssetId,
+    idxAssetFaceVisiblePerson,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
@@ -13153,10 +13153,6 @@ final class Schema26 extends i0.VersionedSchema {
     'idx_stack_primary_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)',
   );
-  final i1.Index idxRemoteAssetOwnerChecksum = i1.Index(
-    'idx_remote_asset_owner_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-  );
   final i1.Index uQRemoteAssetsOwnerChecksum = i1.Index(
     'UQ_remote_assets_owner_checksum',
     'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
@@ -13173,13 +13169,9 @@ final class Schema26 extends i0.VersionedSchema {
     'idx_remote_asset_stack_id',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
   );
-  final i1.Index idxRemoteAssetLocalDateTimeDay = i1.Index(
-    'idx_remote_asset_local_date_time_day',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
-  );
-  final i1.Index idxRemoteAssetLocalDateTimeMonth = i1.Index(
-    'idx_remote_asset_local_date_time_month',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+  final i1.Index idxRemoteAssetOwnerVisibilityDeletedCreated = i1.Index(
+    'idx_remote_asset_owner_visibility_deleted_created',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
   );
   late final Shape40 authUserEntity = Shape40(
     source: i0.VersionedTable(
@@ -13453,6 +13445,10 @@ final class Schema26 extends i0.VersionedSchema {
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
   );
+  final i1.Index idxRemoteExifCity = i1.Index(
+    'idx_remote_exif_city',
+    'CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL',
+  );
   final i1.Index idxRemoteAlbumAssetAlbumAsset = i1.Index(
     'idx_remote_album_asset_album_asset',
     'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)',
@@ -13472,6 +13468,10 @@ final class Schema26 extends i0.VersionedSchema {
   final i1.Index idxAssetFaceAssetId = i1.Index(
     'idx_asset_face_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
+  );
+  final i1.Index idxAssetFaceVisiblePerson = i1.Index(
+    'idx_asset_face_visible_person',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL',
   );
   final i1.Index idxTrashedLocalAssetChecksum = i1.Index(
     'idx_trashed_local_asset_checksum',
