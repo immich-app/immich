@@ -6,7 +6,7 @@ settings:
   injectWorkspacePackages: true
 
 overrides:
-  canvas: 2.11.2
+  canvas: 3.2.3
   sharp: ^0.34.5
   webpackbar: ^7.0.0
 
@@ -198,7 +198,7 @@ importers:
         version: 6.1.1(typescript@6.0.3)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
         specifier: ^4.0.0
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/cli:
     dependencies:
@@ -289,7 +289,7 @@ importers:
         version: 8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: ^4.0.0
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest-fetch-mock:
         specifier: ^0.4.0
         version: 0.4.5(vitest@4.1.5)
@@ -663,7 +663,7 @@ importers:
         version: 13.15.10
       '@vitest/coverage-v8':
         specifier: ^3.0.0
-        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@2.11.2))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@3.2.3))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       eslint:
         specifier: ^10.0.0
         version: 10.2.1(jiti@2.6.1)
@@ -717,7 +717,7 @@ importers:
         version: 6.1.1(typescript@6.0.3)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@2.11.2))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@3.2.3))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
 
   web:
     dependencies:
@@ -973,7 +973,7 @@ importers:
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: ^4.0.0
-        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
 packages:
 
@@ -6186,9 +6186,9 @@ packages:
   caniuse-lite@1.0.30001790:
     resolution: {integrity: sha512-bOoxfJPyYo+ds6W0YfptaCWbFnJYjh2Y1Eow5lRv+vI2u8ganPZqNm1JwNh0t2ELQCqIWg4B3dWEusgAmsoyOw==}
 
-  canvas@2.11.2:
-    resolution: {integrity: sha512-ItanGBMrmRV7Py2Z+Xhs7cT+FNt5K0vPL4p9EZ/UX/Mu7hFbkxSjKF2KVtPwX7UYWp7dRKnrTvReflgrItJbdw==}
-    engines: {node: '>=6'}
+  canvas@3.2.3:
+    resolution: {integrity: sha512-PzE5nJZPz72YUAfo8oTp0u3fqqY7IzlTubneAihqDYAUcBk7ryeCmBbdJBEdaH0bptSOe2VT2Zwcb3UaFyaSWw==}
+    engines: {node: ^18.12.0 || >= 20.9.0}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -6968,10 +6968,6 @@ packages:
   decode-named-character-reference@1.2.0:
     resolution: {integrity: sha512-c6fcElNV6ShtZXmsgNgFFV5tVX2PaV4g+MOAkb8eXHvn6sryJBrZa9r0zV6+dtTyoCKxtDy5tyQ5ZwQuidtd+Q==}
 
-  decompress-response@4.2.1:
-    resolution: {integrity: sha512-jOSne2qbyE+/r8G1VU+G/82LBs2Fs4LAsTiLSHOCOMZQl2OKZ6i8i4IyHemTe+/yIXOtTcRQMzPcgyhoFlqPkw==}
-    engines: {node: '>=8'}
-
   decompress-response@6.0.0:
     resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
     engines: {node: '>=10'}
@@ -7571,6 +7567,10 @@ packages:
     resolution: {integrity: sha512-Yn66dSBaWGcUaSbm5Nl4G28rxtceLlWf4PstqJMbLix9sN7w0okWHPEvdudiP56Q5Cjl7v3TLyKKwowUFlbD8g==}
     engines: {node: '>=20.0.0'}
 
+  expand-template@2.0.3:
+    resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
+    engines: {node: '>=6'}
+
   expect-type@1.3.0:
     resolution: {integrity: sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==}
     engines: {node: '>=12.0.0'}
@@ -7872,6 +7872,9 @@ packages:
 
   get-tsconfig@4.13.0:
     resolution: {integrity: sha512-1VKTZJCwBrvbd+Wn3AOgQP/2Av+TfTCOlE4AcRJE72W1ksZXbAx8PPBR9RzgTeSPzlPMHrbANMH3LbltH73wxQ==}
+
+  github-from-package@0.0.0:
+    resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
 
   github-slugger@1.5.0:
     resolution: {integrity: sha512-wIh+gKBI9Nshz2o46B0B3f5k/W+WI9ZAv6y5Dn5WJ5SK1t0TnDimB4WE5rmTD05ZAIn8HALCZVmCsvj0w0v0lw==}
@@ -8598,7 +8601,7 @@ packages:
     resolution: {integrity: sha512-Cvc9WUhxSMEo4McES3P7oK3QaXldCfNWp7pl2NNeiIFlCoLr3kfq9kb1fxftiwk1FLV7CvpvDfonxtzUDeSOPg==}
     engines: {node: '>=18'}
     peerDependencies:
-      canvas: 2.11.2
+      canvas: 3.2.3
     peerDependenciesMeta:
       canvas:
         optional: true
@@ -9320,10 +9323,6 @@ packages:
     resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
     engines: {node: '>=18'}
 
-  mimic-response@2.1.0:
-    resolution: {integrity: sha512-wXqjST+SLt7R009ySCglWBCFpjUygmCIfD790/kVbiGmUgfYGuB14PiTd5DwVxSV4NcYHjzMkoj5LjQZwTQLEA==}
-    engines: {node: '>=8'}
-
   mimic-response@3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
     engines: {node: '>=10'}
@@ -9491,6 +9490,9 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
 
+  napi-build-utils@2.0.0:
+    resolution: {integrity: sha512-GEbrYkbfF7MoNaoh2iGG84Mnf/WZfB0GdGEsM8wz7Expx/LlWf5U8t9nvJKXSp3qr5IsEbK04cBGhol/KwOsWA==}
+
   natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
 
@@ -9563,6 +9565,10 @@ packages:
 
   no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
+
+  node-abi@3.92.0:
+    resolution: {integrity: sha512-KdHvFWZjEKDf0cakgFjebl371GPsISX2oZHcuyKqM7DtogIsHrqKeLTo8wBHxaXRAQlY2PsPlZmfo+9ZCxEREQ==}
+    engines: {node: '>=10'}
 
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
@@ -10511,6 +10517,12 @@ packages:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
     engines: {node: '>=20'}
 
+  prebuild-install@7.1.3:
+    resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
+    engines: {node: '>=10'}
+    deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
+    hasBin: true
+
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -11188,8 +11200,8 @@ packages:
   simple-concat@1.0.1:
     resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
 
-  simple-get@3.1.1:
-    resolution: {integrity: sha512-CQ5LTKGfCpvE1K0n2us+kuMPbk/q0EKl82s4aheV9oXjFEz6W/Y7oQFVJuU6QG77hRT4Ghb5RURteF5vnWjupA==}
+  simple-get@4.0.1:
+    resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
 
   simple-icons@16.17.0:
     resolution: {integrity: sha512-bRrGtzM6NLgxeMWmRcfDdrRksECk101lRrCn6jjj6qzUB6lQ+E5smnr52rqS1kLPmbLpS/g6iF463j50M4BT7A==}
@@ -11897,6 +11909,9 @@ packages:
     resolution: {integrity: sha512-5C1sg4USs1lfG0GFb2RLXsdpXqBSEhAaA/0kPL01wxzpMqLILNxIxIOKiILz+cdg/pLnOUxFYOR5yhHU666wbw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
+
+  tunnel-agent@0.6.0:
+    resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
   tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
@@ -15820,22 +15835,6 @@ snapshots:
 
   '@mapbox/mapbox-gl-rtl-text@0.4.0': {}
 
-  '@mapbox/node-pre-gyp@1.0.11':
-    dependencies:
-      detect-libc: 2.1.2
-      https-proxy-agent: 5.0.1
-      make-dir: 3.1.0
-      node-fetch: 2.7.0
-      nopt: 5.0.0
-      npmlog: 5.0.1
-      rimraf: 3.0.2
-      semver: 7.7.4
-      tar: 6.2.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-    optional: true
-
   '@mapbox/node-pre-gyp@1.0.11(encoding@0.1.13)':
     dependencies:
       detect-libc: 2.1.2
@@ -17269,7 +17268,7 @@ snapshots:
       svelte: 5.55.2
     optionalDependencies:
       vite: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   '@testing-library/user-event@14.6.1(@testing-library/dom@10.4.1)':
     dependencies:
@@ -17985,7 +17984,7 @@ snapshots:
 
   '@vercel/oidc@3.0.5': {}
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@2.11.2))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@3.2.3))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -18000,7 +17999,7 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.2
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@2.11.2))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@3.2.3))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -18016,7 +18015,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -18783,24 +18782,10 @@ snapshots:
 
   caniuse-lite@1.0.30001790: {}
 
-  canvas@2.11.2:
+  canvas@3.2.3:
     dependencies:
-      '@mapbox/node-pre-gyp': 1.0.11
-      nan: 2.26.2
-      simple-get: 3.1.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-    optional: true
-
-  canvas@2.11.2(encoding@0.1.13):
-    dependencies:
-      '@mapbox/node-pre-gyp': 1.0.11(encoding@0.1.13)
-      nan: 2.26.2
-      simple-get: 3.1.1
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
+      node-addon-api: 7.1.1
+      prebuild-install: 7.1.3
     optional: true
 
   ccount@2.0.1: {}
@@ -19603,11 +19588,6 @@ snapshots:
     dependencies:
       character-entities: 2.0.2
 
-  decompress-response@4.2.1:
-    dependencies:
-      mimic-response: 2.1.0
-    optional: true
-
   decompress-response@6.0.0:
     dependencies:
       mimic-response: 3.1.0
@@ -20352,6 +20332,9 @@ snapshots:
     optionalDependencies:
       exiftool-vendored.exe: 13.58.0
 
+  expand-template@2.0.3:
+    optional: true
+
   expect-type@1.3.0: {}
 
   exponential-backoff@3.1.3: {}
@@ -20437,11 +20420,10 @@ snapshots:
 
   fabric@7.3.1:
     optionalDependencies:
-      canvas: 2.11.2
-      jsdom: 26.1.0(canvas@2.11.2)
+      canvas: 3.2.3
+      jsdom: 26.1.0(canvas@3.2.3)
     transitivePeerDependencies:
       - bufferutil
-      - encoding
       - supports-color
       - utf-8-validate
 
@@ -20736,6 +20718,9 @@ snapshots:
   get-tsconfig@4.13.0:
     dependencies:
       resolve-pkg-maps: 1.0.0
+
+  github-from-package@0.0.0:
+    optional: true
 
   github-slugger@1.5.0: {}
 
@@ -21558,7 +21543,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)):
+  jsdom@26.1.0(canvas@3.2.3):
     dependencies:
       cssstyle: 4.6.0
       data-urls: 5.0.0
@@ -21581,37 +21566,7 @@ snapshots:
       ws: 8.20.0
       xml-name-validator: 5.0.0
     optionalDependencies:
-      canvas: 2.11.2(encoding@0.1.13)
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-    optional: true
-
-  jsdom@26.1.0(canvas@2.11.2):
-    dependencies:
-      cssstyle: 4.6.0
-      data-urls: 5.0.0
-      decimal.js: 10.6.0
-      html-encoding-sniffer: 4.0.0
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
-      is-potential-custom-element-name: 1.0.1
-      nwsapi: 2.2.23
-      parse5: 7.3.0
-      rrweb-cssom: 0.8.0
-      saxes: 6.0.0
-      symbol-tree: 3.2.4
-      tough-cookie: 5.1.2
-      w3c-xmlserializer: 5.0.0
-      webidl-conversions: 7.0.0
-      whatwg-encoding: 3.1.1
-      whatwg-mimetype: 4.0.0
-      whatwg-url: 14.2.0
-      ws: 8.20.0
-      xml-name-validator: 5.0.0
-    optionalDependencies:
-      canvas: 2.11.2
+      canvas: 3.2.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -22616,9 +22571,6 @@ snapshots:
 
   mimic-function@5.0.1: {}
 
-  mimic-response@2.1.0:
-    optional: true
-
   mimic-response@3.1.0: {}
 
   mimic-response@4.0.0: {}
@@ -22772,6 +22724,9 @@ snapshots:
 
   nanoid@5.1.9: {}
 
+  napi-build-utils@2.0.0:
+    optional: true
+
   natural-compare-lite@1.4.0: {}
 
   natural-compare@1.4.0: {}
@@ -22844,6 +22799,11 @@ snapshots:
       lower-case: 2.0.2
       tslib: 2.8.1
 
+  node-abi@3.92.0:
+    dependencies:
+      semver: 7.7.4
+    optional: true
+
   node-abort-controller@3.1.1: {}
 
   node-addon-api@4.3.0: {}
@@ -22863,11 +22823,6 @@ snapshots:
       char-regex: 1.0.2
       emojilib: 2.4.0
       skin-tone: 2.0.0
-
-  node-fetch@2.7.0:
-    dependencies:
-      whatwg-url: 5.0.0
-    optional: true
 
   node-fetch@2.7.0(encoding@0.1.13):
     dependencies:
@@ -23835,6 +23790,22 @@ snapshots:
 
   powershell-utils@0.1.0: {}
 
+  prebuild-install@7.1.3:
+    dependencies:
+      detect-libc: 2.1.2
+      expand-template: 2.0.3
+      github-from-package: 0.0.0
+      minimist: 1.2.8
+      mkdirp-classic: 0.5.3
+      napi-build-utils: 2.0.0
+      node-abi: 3.92.0
+      pump: 3.0.4
+      rc: 1.2.8
+      simple-get: 4.0.1
+      tar-fs: 2.1.4
+      tunnel-agent: 0.6.0
+    optional: true
+
   prelude-ls@1.2.1: {}
 
   prettier-linter-helpers@1.0.1:
@@ -24758,9 +24729,9 @@ snapshots:
   simple-concat@1.0.1:
     optional: true
 
-  simple-get@3.1.1:
+  simple-get@4.0.1:
     dependencies:
-      decompress-response: 4.2.1
+      decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
     optional: true
@@ -25602,6 +25573,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  tunnel-agent@0.6.0:
+    dependencies:
+      safe-buffer: 5.2.1
+    optional: true
+
   tweetnacl@0.14.5: {}
 
   type-check@0.4.0:
@@ -26011,9 +25987,9 @@ snapshots:
 
   vitest-fetch-mock@0.4.5(vitest@4.1.5):
     dependencies:
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@2.11.2))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.12.2)(happy-dom@20.9.0)(jiti@2.6.1)(jsdom@26.1.0(canvas@3.2.3))(lightningcss@1.32.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
@@ -26042,7 +26018,7 @@ snapshots:
       '@types/debug': 4.1.12
       '@types/node': 24.12.2
       happy-dom: 20.9.0
-      jsdom: 26.1.0(canvas@2.11.2)
+      jsdom: 26.1.0(canvas@3.2.3)
     transitivePeerDependencies:
       - jiti
       - less
@@ -26057,7 +26033,7 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
+  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -26084,42 +26060,11 @@ snapshots:
       '@types/node': 24.12.2
       '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
       happy-dom: 20.9.0
-      jsdom: 26.1.0(canvas@2.11.2(encoding@0.1.13))
+      jsdom: 26.1.0(canvas@3.2.3)
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
-    dependencies:
-      '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
-      '@vitest/pretty-format': 4.1.5
-      '@vitest/runner': 4.1.5
-      '@vitest/snapshot': 4.1.5
-      '@vitest/spy': 4.1.5
-      '@vitest/utils': 4.1.5
-      es-module-lexer: 2.1.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.1
-      pathe: 2.0.3
-      picomatch: 4.0.4
-      std-env: 4.1.0
-      tinybench: 2.9.0
-      tinyexec: 1.1.1
-      tinyglobby: 0.2.16
-      tinyrainbow: 3.1.0
-      vite: 8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@opentelemetry/api': 1.9.1
-      '@types/node': 24.12.2
-      '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
-      happy-dom: 20.9.0
-      jsdom: 26.1.0(canvas@2.11.2)
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@2.11.2))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
+  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(vite@8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -26146,7 +26091,7 @@ snapshots:
       '@types/node': 25.6.0
       '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
       happy-dom: 20.9.0
-      jsdom: 26.1.0(canvas@2.11.2)
+      jsdom: 26.1.0(canvas@3.2.3)
     transitivePeerDependencies:
       - msw
 
