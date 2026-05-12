@@ -127,18 +127,8 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       ..addColumns([_db.trashedLocalAssetEntity.checksum])
       ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
 
-    final localAssetChecksums = _db.selectOnly(_db.localAssetEntity)
-      ..addColumns([_db.localAssetEntity.checksum])
-      ..where(_db.localAssetEntity.checksum.isNotNull());
-
     final orphanQuery = _db.delete(_db.trashSyncEntity)
-      ..where(
-        (row) =>
-            (row.isSyncApproved.isNotValue(true) &
-                row.checksum.isNotInQuery(localAssetChecksums) &
-                row.checksum.isNotInQuery(localTrashedChecksums)) |
-            (row.isSyncApproved.equals(true) & row.checksum.isNotInQuery(localTrashedChecksums)),
-      );
+      ..where((row) => row.isSyncApproved.equals(true) & row.checksum.isNotInQuery(localTrashedChecksums));
 
     final deletedOrphans = await orphanQuery.go();
 

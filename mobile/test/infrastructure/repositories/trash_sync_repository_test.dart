@@ -344,5 +344,23 @@ void main() {
       expect(firstRun, 0);
       expect(secondRun, 0);
     });
+
+    test('orphaned review cleanup is not throttled', () async {
+      final now = DateTime(2025, 1, 1);
+
+      await repository.cleanupLocalTrashSync();
+
+      await insertTrashSync(checksum: 'pending-orphan', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'rejected-orphan', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'approved-orphan', isSyncApproved: true, remoteDeletedAt: now);
+
+      final deleted = await repository.cleanupLocalTrashSync();
+
+      expect(deleted, 2);
+
+      final remaining = await db.select(db.trashSyncEntity).get();
+      final remainingChecksums = remaining.map((row) => row.checksum).toSet();
+      expect(remainingChecksums, {'approved-orphan'});
+    });
   });
 }
