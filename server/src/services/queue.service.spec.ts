@@ -470,6 +470,15 @@ describe(QueueService.name, () => {
         expect(result[queueName].queueStatus.isPaused).toBe(false);
       }
     });
+
+    it('should not sample job types for legacy queue status polling', async () => {
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+      mocks.job.isPaused.mockResolvedValue(false);
+
+      await sut.getAllLegacy(factory.auth());
+
+      expect(mocks.job.getJobTypes).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleCommand', () => {

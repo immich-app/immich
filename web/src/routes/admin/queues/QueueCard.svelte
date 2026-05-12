@@ -21,6 +21,7 @@
     mdiSelectionSearch,
   } from '@mdi/js';
   import { type Component } from 'svelte';
+  import { SvelteMap } from 'svelte/reactivity';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -41,7 +42,7 @@
   let isIdle = $derived(statistics.active + statistics.waiting === 0 && !queue.isPaused);
   let multipleButtons = $derived(allText || refreshText);
   let jobTypeRows = $derived.by(() => {
-    const rows = new Map<string, Pick<QueueJobTypeCounts, 'active' | 'waiting' | 'delayed' | 'paused'>>();
+    const rows = new SvelteMap<string, Pick<QueueJobTypeCounts, 'active' | 'waiting' | 'delayed' | 'paused'>>();
     for (const jobType of queue.jobTypes ?? []) {
       const label = getQueueJobTypeLabel(jobType.name);
       const row = rows.get(label) ?? { active: 0, waiting: 0, delayed: 0, paused: 0 };
@@ -148,7 +149,9 @@
       </div>
 
       {#if jobTypeRows.length > 0}
-        <div class="mt-2 flex w-full max-w-xl flex-col divide-y divide-gray-200 rounded-lg bg-white/70 text-sm text-gray-700 dark:divide-gray-700 dark:bg-black/20 dark:text-gray-200">
+        <div
+          class="mt-2 flex w-full max-w-xl flex-col divide-y divide-gray-200 rounded-lg bg-white/70 text-sm text-gray-700 dark:divide-gray-700 dark:bg-black/20 dark:text-gray-200"
+        >
           {#each jobTypeRows as row (row.label)}
             <div class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 px-4 py-2">
               <span class="min-w-0 truncate">{row.label}</span>

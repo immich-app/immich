@@ -58,22 +58,29 @@ export type QueueJobTypeCounts = QueueJobTypeCountsDto;
 export const getQueueJobTypeLabel = (name: JobName) => {
   switch (name) {
     case JobName.FacialRecognition:
-    case JobName.FacialRecognitionQueueAll:
+    case JobName.FacialRecognitionQueueAll: {
       return 'Facial recognition';
+    }
     case JobName.SharedSpaceFaceMatch:
     case JobName.SharedSpaceFaceMatchAll:
-    case JobName.SharedSpaceFaceMatchPage:
+    case JobName.SharedSpaceFaceMatchPage: {
       return 'Shared space face matching';
-    case JobName.SharedSpacePersonDedup:
+    }
+    case JobName.SharedSpacePersonDedup: {
       return 'Shared space people dedup';
-    case JobName.SharedSpaceIdentityReconciliation:
+    }
+    case JobName.SharedSpaceIdentityReconciliation: {
       return 'Shared space identity reconciliation';
-    case JobName.SharedSpacePersonMetadataBackfill:
+    }
+    case JobName.SharedSpacePersonMetadataBackfill: {
       return 'Shared space metadata propagation';
-    case JobName.FaceIdentityBackfill:
+    }
+    case JobName.FaceIdentityBackfill: {
       return 'Face identity backfill';
-    default:
+    }
+    default: {
       return name.replaceAll(/([a-z])([A-Z])/g, '$1 $2');
+    }
   }
 };
 
