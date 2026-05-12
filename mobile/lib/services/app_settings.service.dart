@@ -2,19 +2,14 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
-  loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
   uploadErrorNotificationGracePeriod<int>(
     StoreKey.uploadErrorNotificationGracePeriod,
     "uploadErrorNotificationGracePeriod",
     2,
   ),
-  thumbnailCacheSize<int>(StoreKey.thumbnailCacheSize, "thumbnailCacheSize", 10000),
-  imageCacheSize<int>(StoreKey.imageCacheSize, "imageCacheSize", 350),
-  albumThumbnailCacheSize<int>(StoreKey.albumThumbnailCacheSize, "albumThumbnailCacheSize", 200),
   selectedAlbumSortOrder<int>(StoreKey.selectedAlbumSortOrder, "selectedAlbumSortOrder", 2),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
-  preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, "loadOriginalVideo", false),
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),

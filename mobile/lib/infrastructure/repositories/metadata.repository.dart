@@ -132,6 +132,7 @@ extension<T extends Object> on MetadataDomain<T> {
             groupAssetsBy: repo._read(.timelineGroupAssetsBy),
             storageIndicator: repo._read(.timelineStorageIndicator),
           ),
+          image: .new(preferRemote: repo._read(.imagePreferRemote), loadOriginal: repo._read(.imageLoadOriginal)),
         );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));

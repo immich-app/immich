@@ -88,6 +88,9 @@ Future<void> _migrateTo26(Drift drift) async {
     GroupAssetsBy.values,
   );
   await migrator.migrateBool(StoreKey.legacyStorageIndicator, MetadataKey.timelineStorageIndicator);
+  // Image
+  await migrator.migrateBool(StoreKey.legacyPreferRemoteImage, MetadataKey.imagePreferRemote);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginal, MetadataKey.imageLoadOriginal);
   await migrator.complete();
 }
 
