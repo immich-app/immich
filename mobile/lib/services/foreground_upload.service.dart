@@ -5,8 +5,6 @@ import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -321,11 +319,8 @@ class ForegroundUploadService {
       }
 
       final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
-      final deviceId = Store.get(StoreKey.deviceId);
 
       final fields = {
-        'deviceAssetId': asset.localId!,
-        'deviceId': deviceId,
         'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
         'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
         'isFavorite': asset.isFavorite.toString(),
@@ -431,8 +426,6 @@ class ForegroundUploadService {
       final filename = p.basename(file.path);
 
       final fields = {
-        'deviceAssetId': deviceAssetId,
-        'deviceId': Store.get(StoreKey.deviceId),
         'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
         'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
         'isFavorite': 'false',
