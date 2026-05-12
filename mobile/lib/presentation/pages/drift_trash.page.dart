@@ -63,52 +63,36 @@ class DriftTrashPage extends StatelessWidget {
 class _TrashKebabMenu extends ConsumerWidget {
   const _TrashKebabMenu();
 
-  Future<void> _onEmptyTrash(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _confirmAndRun(
+    BuildContext context,
+    WidgetRef ref, {
+    required String title,
+    required String content,
+    required Future<ActionResult> Function(String userId) action,
+    required String Function(int count) successMsg,
+  }) async {
+    await showDialog<bool>(
       context: context,
-      builder: (context) =>
-          ConfirmDialog(title: context.t.empty_trash, content: context.t.empty_trash_confirmation, onOk: () {}),
+      builder: (_) => ConfirmDialog(
+        title: title,
+        content: content,
+        onOk: () async {
+          final user = ref.read(currentUserProvider);
+          if (user == null) {
+            return;
+          }
+          final result = await action(user.id);
+          if (!context.mounted) {
+            return;
+          }
+          ImmichToast.show(
+            context: context,
+            msg: result.success ? successMsg(result.count) : context.t.scaffold_body_error_occurred,
+            toastType: result.success ? ToastType.success : ToastType.error,
+          );
+        },
+      ),
     );
-    if (confirmed == true && context.mounted) {
-      final user = ref.watch(currentUserProvider);
-      if (user == null) {
-        throw Exception('User must be logged in to access stack action');
-      }
-      final result = await ref.read(actionProvider.notifier).emptyTrash(user.id);
-      if (context.mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: result.success
-              ? context.t.assets_permanently_deleted_count(count: result.count)
-              : context.t.scaffold_body_error_occurred,
-          toastType: result.success ? ToastType.success : ToastType.error,
-        );
-      }
-    }
-  }
-
-  Future<void> _onRestoreAll(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) =>
-          ConfirmDialog(title: context.t.restore_all, content: context.t.assets_restore_confirmation, onOk: () {}),
-    );
-    if (confirmed == true && context.mounted) {
-      final user = ref.watch(currentUserProvider);
-      if (user == null) {
-        throw Exception('User must be logged in to access stack action');
-      }
-      final result = await ref.read(actionProvider.notifier).restoreAllTrash(user.id);
-      if (context.mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: result.success
-              ? context.t.assets_restored_count(count: result.count)
-              : context.t.scaffold_body_error_occurred,
-          toastType: result.success ? ToastType.success : ToastType.error,
-        );
-      }
-    }
   }
 
   @override
@@ -128,13 +112,27 @@ class _TrashKebabMenu extends ConsumerWidget {
         BaseActionButton(
           label: context.t.empty_trash,
           iconData: Icons.delete_forever_outlined,
-          onPressed: () => _onEmptyTrash(context, ref),
+          onPressed: () => _confirmAndRun(
+            context,
+            ref,
+            title: context.t.empty_trash,
+            content: context.t.empty_trash_confirmation,
+            action: ref.read(actionProvider.notifier).emptyTrash,
+            successMsg: (count) => context.t.assets_permanently_deleted_count(count: count),
+          ),
           menuItem: true,
         ),
         BaseActionButton(
           label: context.t.restore_all,
           iconData: Icons.restore_outlined,
-          onPressed: () => _onRestoreAll(context, ref),
+          onPressed: () => _confirmAndRun(
+            context,
+            ref,
+            title: context.t.restore_all,
+            content: context.t.assets_restore_confirmation,
+            action: ref.read(actionProvider.notifier).restoreAllTrash,
+            successMsg: (count) => context.t.assets_restored_count(count: count),
+          ),
           menuItem: true,
         ),
       ],
