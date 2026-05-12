@@ -21,6 +21,7 @@ pnpm = "10.33.1"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
 java = "21.0.2"
+"npm:oazapfts" = "7.5.0"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"
@@ -42,7 +43,7 @@ pin = true
 
 [tasks.open-api-typescript]
 run = [
-  "pnpm dlx oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas open-api/immich-openapi-specs.json packages/sdk/src/fetch-client.ts",
+  "oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas open-api/immich-openapi-specs.json packages/sdk/src/fetch-client.ts",
   { task = "//:sdk:install" },
   { task = "//:sdk:build" },
 ]
