@@ -25470,6 +25470,45 @@
         ],
         "type": "string"
       },
+      "QueueJobTypeCountsDto": {
+        "properties": {
+          "active": {
+            "description": "Number of sampled active jobs with this name",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "delayed": {
+            "description": "Number of sampled delayed jobs with this name",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "name": {
+            "$ref": "#/components/schemas/JobName"
+          },
+          "paused": {
+            "description": "Number of sampled paused jobs with this name",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "waiting": {
+            "description": "Number of sampled waiting jobs with this name",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "active",
+          "delayed",
+          "name",
+          "paused",
+          "waiting"
+        ],
+        "type": "object"
+      },
       "QueueName": {
         "description": "Queue name",
         "enum": [
@@ -25503,6 +25542,13 @@
           "isPaused": {
             "description": "Whether the queue is paused",
             "type": "boolean"
+          },
+          "jobTypes": {
+            "description": "Sampled job type counts for display purposes",
+            "items": {
+              "$ref": "#/components/schemas/QueueJobTypeCountsDto"
+            },
+            "type": "array"
           },
           "name": {
             "$ref": "#/components/schemas/QueueName"

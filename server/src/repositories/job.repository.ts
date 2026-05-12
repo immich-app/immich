@@ -9,7 +9,7 @@ import { JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueN
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobCounts, JobItem, JobOf } from 'src/types';
+import { JobCounts, JobItem, JobOf, JobTypeCounts } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
 type JobMapItem = {
@@ -172,6 +172,35 @@ export class JobRepository {
       'waiting',
       'paused',
     ) as unknown as Promise<JobCounts>;
+  }
+
+  async getJobTypes(name: QueueName): Promise<JobTypeCounts[]> {
+    const statuses = ['active', 'waiting', 'delayed', 'paused'] as const;
+    const counts = new Map<JobName, JobTypeCounts>();
+    const seenJobs = new Set<string>();
+
+    for (const status of statuses) {
+      const jobs = await this.getQueue(name).getJobs(status, 0, 1000, true);
+      for (const job of jobs) {
+        const actualStatus = typeof job.getState === 'function' ? await job.getState() : status;
+        if (!statuses.includes(actualStatus as (typeof statuses)[number])) {
+          continue;
+        }
+
+        const jobKey = job.id ?? `${job.name}:${actualStatus}:${seenJobs.size}`;
+        if (seenJobs.has(jobKey)) {
+          continue;
+        }
+        seenJobs.add(jobKey);
+
+        const jobName = job.name as JobName;
+        const count = counts.get(jobName) ?? { name: jobName, active: 0, waiting: 0, delayed: 0, paused: 0 };
+        count[actualStatus as (typeof statuses)[number]]++;
+        counts.set(jobName, count);
+      }
+    }
+
+    return [...counts.values()];
   }
 
   async getTelemetryMetrics(now = Date.now()): Promise<QueueTelemetryMetrics> {

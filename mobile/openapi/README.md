@@ -577,6 +577,7 @@ Class | Method | HTTP request | Description
  - [QueueDeleteDto](doc//QueueDeleteDto.md)
  - [QueueJobResponseDto](doc//QueueJobResponseDto.md)
  - [QueueJobStatus](doc//QueueJobStatus.md)
+ - [QueueJobTypeCountsDto](doc//QueueJobTypeCountsDto.md)
  - [QueueName](doc//QueueName.md)
  - [QueueResponseDto](doc//QueueResponseDto.md)
  - [QueueResponseLegacyDto](doc//QueueResponseLegacyDto.md)

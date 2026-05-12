@@ -270,6 +270,7 @@ part 'model/queue_command_dto.dart';
 part 'model/queue_delete_dto.dart';
 part 'model/queue_job_response_dto.dart';
 part 'model/queue_job_status.dart';
+part 'model/queue_job_type_counts_dto.dart';
 part 'model/queue_name.dart';
 part 'model/queue_response_dto.dart';
 part 'model/queue_response_legacy_dto.dart';

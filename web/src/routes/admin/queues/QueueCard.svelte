@@ -4,7 +4,7 @@
   import QueueCardButton from './QueueCardButton.svelte';
   import Badge from '$lib/elements/Badge.svelte';
   import { Route } from '$lib/route';
-  import { asQueueItem } from '$lib/services/queue.service';
+  import { asQueueItem, getQueueJobTypeLabel, type QueueJobTypeCounts } from '$lib/services/queue.service';
   import { locale } from '$lib/stores/preferences.store';
   import { transformToTitleCase } from '$lib/utils';
   import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
@@ -21,6 +21,7 @@
     mdiSelectionSearch,
   } from '@mdi/js';
   import { type Component } from 'svelte';
+  import { SvelteMap } from 'svelte/reactivity';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -40,6 +41,23 @@
   let waitingCount = $derived(statistics.waiting + statistics.paused + statistics.delayed);
   let isIdle = $derived(statistics.active + statistics.waiting === 0 && !queue.isPaused);
   let multipleButtons = $derived(allText || refreshText);
+  let jobTypeRows = $derived.by(() => {
+    const rows = new SvelteMap<string, Pick<QueueJobTypeCounts, 'active' | 'waiting' | 'delayed' | 'paused'>>();
+    for (const jobType of queue.jobTypes ?? []) {
+      const label = getQueueJobTypeLabel(jobType.name);
+      const row = rows.get(label) ?? { active: 0, waiting: 0, delayed: 0, paused: 0 };
+      row.active += jobType.active;
+      row.waiting += jobType.waiting;
+      row.delayed += jobType.delayed;
+      row.paused += jobType.paused;
+      rows.set(label, row);
+    }
+
+    return [...rows.entries()]
+      .map(([label, row]) => ({ label, ...row, pending: row.waiting + row.delayed + row.paused }))
+      .filter((row) => row.active + row.pending > 0)
+      .sort((a, b) => b.active - a.active || b.pending - a.pending || a.label.localeCompare(b.label));
+  });
 
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
@@ -129,6 +147,20 @@
           <p>{$t('waiting')}</p>
         </div>
       </div>
+
+      {#if jobTypeRows.length > 0}
+        <div
+          class="mt-2 flex w-full max-w-xl flex-col divide-y divide-gray-200 rounded-lg bg-white/70 text-sm text-gray-700 dark:divide-gray-700 dark:bg-black/20 dark:text-gray-200"
+        >
+          {#each jobTypeRows as row (row.label)}
+            <div class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 px-4 py-2">
+              <span class="min-w-0 truncate">{row.label}</span>
+              <span class="tabular-nums">{row.active.toLocaleString($locale)}</span>
+              <span class="tabular-nums text-gray-500 dark:text-gray-400">{row.pending.toLocaleString($locale)}</span>
+            </div>
+          {/each}
+        </div>
+      {/if}
     </div>
   </div>
   <div class="flex w-full flex-row overflow-hidden sm:w-32 sm:flex-col">

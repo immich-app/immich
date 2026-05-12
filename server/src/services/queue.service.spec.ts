@@ -195,6 +195,26 @@ describe(QueueService.name, () => {
         statistics: stats,
       });
     });
+
+    it('should include active and waiting job type details for the queue', async () => {
+      const stats = factory.queueStatistics({ active: 1, waiting: 1 });
+      const jobTypes = [
+        { name: JobName.SharedSpaceFaceMatchPage, active: 1, waiting: 1, delayed: 0, paused: 0 },
+        { name: JobName.FacialRecognition, active: 0, waiting: 5, delayed: 0, paused: 0 },
+      ];
+      mocks.job.getJobCounts.mockResolvedValue(stats);
+      mocks.job.getJobTypes.mockResolvedValue(jobTypes);
+      mocks.job.isPaused.mockResolvedValue(false);
+
+      const result = await sut.get(factory.auth(), QueueName.FacialRecognition);
+
+      expect(result).toEqual({
+        name: QueueName.FacialRecognition,
+        isPaused: false,
+        statistics: stats,
+        jobTypes,
+      });
+    });
   });
 
   describe('update', () => {
@@ -449,6 +469,15 @@ describe(QueueService.name, () => {
         expect(result[queueName].queueStatus.isActive).toBe(false);
         expect(result[queueName].queueStatus.isPaused).toBe(false);
       }
+    });
+
+    it('should not sample job types for legacy queue status polling', async () => {
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+      mocks.job.isPaused.mockResolvedValue(false);
+
+      await sut.getAllLegacy(factory.auth());
+
+      expect(mocks.job.getJobTypes).not.toHaveBeenCalled();
     });
   });
 
