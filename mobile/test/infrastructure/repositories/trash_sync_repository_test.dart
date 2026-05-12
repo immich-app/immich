@@ -206,12 +206,12 @@ void main() {
       await insertLocalAsset(checksum: 'approved-selected');
       await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-approved-selected');
 
-      await expectLater(repository.watchPendingApprovalAssetCount(), emits(1));
+      await expectLater(repository.watchPendingApprovalAssetCount(), emits(2));
 
       await expectLater(repository.watchIsAssetApprovalPending('pending-selected'), emits(true));
       await expectLater(repository.watchIsAssetApprovalPending('pending-unselected'), emits(false));
       await expectLater(repository.watchIsAssetApprovalPending('pending-no-album'), emits(false));
-      await expectLater(repository.watchIsAssetApprovalPending('pending-local-trash'), emits(false));
+      await expectLater(repository.watchIsAssetApprovalPending('pending-local-trash'), emits(true));
       await expectLater(repository.watchIsAssetApprovalPending('rejected-selected'), emits(false));
       await expectLater(repository.watchIsAssetApprovalPending('approved-selected'), emits(false));
     });
@@ -274,33 +274,35 @@ void main() {
     });
   });
 
-  group('deleteLocallyResolved', () {
-    test('removes pending and rejected entries matched by local trash checksums', () async {
+  group('cleanupLocalTrashSync', () {
+    test('removes pending and rejected entries with no live local asset', () async {
       final now = DateTime(2025, 1, 1);
 
       await insertTrashedLocalAsset(checksum: 'local-pending');
       await insertTrashedLocalAsset(checksum: 'local-rejected');
       await insertTrashedLocalAsset(checksum: 'local-approved');
+      await insertTrashedLocalAsset(checksum: 'live-duplicate');
+      await insertLocalAsset(checksum: 'live-duplicate');
 
       await insertTrashSync(checksum: 'local-pending', isSyncApproved: null, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'local-rejected', isSyncApproved: false, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'local-approved', isSyncApproved: true, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'live-duplicate', isSyncApproved: null, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'not-local', isSyncApproved: null, remoteDeletedAt: now);
 
-      final deleted = await repository.deleteLocallyResolved();
+      final deleted = await repository.cleanupLocalTrashSync();
 
-      expect(deleted, 2);
+      expect(deleted, 3);
 
       final remaining = await db.select(db.trashSyncEntity).get();
       final remainingChecksums = remaining.map((row) => row.checksum).toSet();
-      expect(remainingChecksums, containsAll(['local-approved', 'not-local']));
+      expect(remainingChecksums, containsAll(['local-approved', 'live-duplicate']));
       expect(remainingChecksums, isNot(contains('local-pending')));
       expect(remainingChecksums, isNot(contains('local-rejected')));
+      expect(remainingChecksums, isNot(contains('not-local')));
     });
-  });
 
-  group('cleanupOutdatedEntries', () {
-    test('removes matched and orphaned entries', () async {
+    test('removes stale entries', () async {
       final now = DateTime(2025, 1, 1);
 
       await insertRemoteAsset(checksum: 'alive-remote', deletedAt: null);
@@ -320,26 +322,27 @@ void main() {
       await insertTrashSync(checksum: 'approve-orphan', isSyncApproved: true, remoteDeletedAt: now);
       await insertTrashSync(checksum: 'approve-keep', isSyncApproved: true, remoteDeletedAt: now);
 
-      final deleted = await repository.cleanupOutdatedEntries();
+      final deleted = await repository.cleanupLocalTrashSync();
 
-      expect(deleted, 5);
+      expect(deleted, 6);
 
       final remaining = await db.select(db.trashSyncEntity).get();
       final remainingChecksums = remaining.map((row) => row.checksum).toSet();
-      expect(remainingChecksums, containsAll(['local-trashed', 'pending-keep', 'reject-keep', 'approve-keep']));
+      expect(remainingChecksums, containsAll(['pending-keep', 'reject-keep', 'approve-keep']));
       expect(remainingChecksums, isNot(contains('alive-remote')));
       expect(remainingChecksums, isNot(contains('alive-approved')));
+      expect(remainingChecksums, isNot(contains('local-trashed')));
       expect(remainingChecksums, isNot(contains('pending-orphan')));
       expect(remainingChecksums, isNot(contains('reject-orphan')));
       expect(remainingChecksums, isNot(contains('approve-orphan')));
     });
 
-    test('throttled cleanup returns null when min interval has not elapsed', () async {
-      final firstRun = await repository.cleanupOutdatedEntriesThrottled();
-      final secondRun = await repository.cleanupOutdatedEntriesThrottled();
+    test('stale review cleanup is throttled', () async {
+      final firstRun = await repository.cleanupLocalTrashSync();
+      final secondRun = await repository.cleanupLocalTrashSync();
 
       expect(firstRun, 0);
-      expect(secondRun, isNull);
+      expect(secondRun, 0);
     });
   });
 }

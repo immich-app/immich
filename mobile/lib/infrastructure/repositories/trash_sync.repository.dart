@@ -85,30 +85,36 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     return query.go();
   }
 
-  Future<int> deleteLocallyResolved() {
-    final localTrashedChecksums = _db.selectOnly(_db.trashedLocalAssetEntity)
-      ..addColumns([_db.trashedLocalAssetEntity.checksum])
-      ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
+  Future<int> cleanupLocalTrashSync() async {
+    final orphanedReviews = await _deleteOrphanedReviews();
+    final staleReviews = await _deleteStaleReviewsThrottled();
+    return orphanedReviews + staleReviews;
+  }
+
+  Future<int> _deleteOrphanedReviews() {
+    final localAssetChecksums = _db.selectOnly(_db.localAssetEntity)
+      ..addColumns([_db.localAssetEntity.checksum])
+      ..where(_db.localAssetEntity.checksum.isNotNull());
 
     final query = _db.delete(_db.trashSyncEntity)
-      ..where((row) => row.checksum.isInQuery(localTrashedChecksums) & row.isSyncApproved.isNotValue(true));
+      ..where((row) => row.checksum.isNotInQuery(localAssetChecksums) & row.isSyncApproved.isNotValue(true));
 
     return query.go();
   }
 
-  Future<int?> cleanupOutdatedEntriesThrottled({Duration minInterval = const Duration(hours: 8)}) async {
+  Future<int> _deleteStaleReviewsThrottled({Duration minInterval = const Duration(hours: 8)}) async {
     final lastRunMillis = await _getLastCleanupTimeMillis();
     final nowMillis = DateTime.now().millisecondsSinceEpoch;
     if (lastRunMillis != null && nowMillis - lastRunMillis < minInterval.inMilliseconds) {
-      return null;
+      return 0;
     }
 
-    final result = await cleanupOutdatedEntries();
+    final result = await _cleanupOutdatedEntries();
     await _setLastCleanupTimeMillis(nowMillis);
     return result;
   }
 
-  Future<int> cleanupOutdatedEntries() async {
+  Future<int> _cleanupOutdatedEntries() async {
     final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([_db.remoteAssetEntity.checksum])
       ..where(_db.remoteAssetEntity.deletedAt.isNull());
@@ -162,10 +168,6 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
   }
 
   Expression<bool> _hasEligibleLocalAssetForPendingReview() {
-    final localTrashedChecksums = _db.selectOnly(_db.trashedLocalAssetEntity)
-      ..addColumns([_db.trashedLocalAssetEntity.checksum])
-      ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
-
     final selectedAlbumAssets =
         _db.localAlbumAssetEntity.selectOnly().join([
             innerJoin(
@@ -182,11 +184,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
     final eligibleLocalAssets = _db.localAssetEntity.selectOnly()
       ..addColumns([_db.localAssetEntity.id])
-      ..where(
-        _db.localAssetEntity.checksum.equalsExp(_db.trashSyncEntity.checksum) &
-            _db.localAssetEntity.checksum.isNotInQuery(localTrashedChecksums) &
-            existsQuery(selectedAlbumAssets),
-      )
+      ..where(_db.localAssetEntity.checksum.equalsExp(_db.trashSyncEntity.checksum) & existsQuery(selectedAlbumAssets))
       ..limit(1);
 
     return existsQuery(eligibleLocalAssets);

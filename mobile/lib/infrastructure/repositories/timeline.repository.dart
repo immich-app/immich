@@ -719,10 +719,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..addColumns([_db.trashSyncEntity.checksum])
       ..where(_db.trashSyncEntity.isSyncApproved.isNull());
 
-    final localTrashedChecksums = _db.trashedLocalAssetEntity.selectOnly()
-      ..addColumns([_db.trashedLocalAssetEntity.checksum])
-      ..where(_db.trashedLocalAssetEntity.checksum.isNotNull());
-
     final selectedAlbumAssets =
         _db.localAlbumAssetEntity.selectOnly().join([
             innerJoin(
@@ -743,7 +739,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..where(
         _db.localAssetEntity.checksum.isNotNull() &
             _db.localAssetEntity.checksum.isInQuery(pendingTrashChecksums) &
-            _db.localAssetEntity.checksum.isNotInQuery(localTrashedChecksums) &
             existsQuery(selectedAlbumAssets),
       )
       ..groupBy([_db.localAssetEntity.checksum]);

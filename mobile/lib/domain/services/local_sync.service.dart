@@ -55,7 +55,11 @@ class LocalSyncService {
 
       if (full || await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Full sync request from ${full ? "user" : "native"}");
-        return await fullSync();
+        await fullSync();
+        if (CurrentPlatform.isAndroid) {
+          await _cleanupTrashSync();
+        }
+        return;
       }
 
       final delta = await _nativeSyncApi.getMediaChanges();
@@ -77,13 +81,15 @@ class LocalSyncService {
       );
 
       final dbAlbums = await _localAlbumRepository.getAll();
-      // On Android, we need to sync all albums since it is not possible to
-      // detect album deletions from the native side
       if (CurrentPlatform.isAndroid) {
+        // On Android, we need to sync all albums since it is not possible to
+        // detect album deletions from the native side
         for (final album in dbAlbums) {
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
+
+        await _cleanupTrashSync();
       }
 
       if (CurrentPlatform.isIOS) {
@@ -108,6 +114,13 @@ class LocalSyncService {
     } finally {
       stopwatch.stop();
       _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
+    }
+  }
+
+  Future<void> _cleanupTrashSync() async {
+    final deleted = await _trashSyncRepository.cleanupLocalTrashSync();
+    if (deleted > 0) {
+      _log.info("cleanup TrashSync, deleted: $deleted");
     }
   }
 
@@ -366,10 +379,6 @@ class LocalSyncService {
 
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
     await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
-    final locallyResolved = await _trashSyncRepository.deleteLocallyResolved();
-    if (locallyResolved > 0) {
-      _log.info("syncTrashedAssets, locally resolved deleted: $locallyResolved");
-    }
 
     if (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
         Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
@@ -382,11 +391,6 @@ class LocalSyncService {
       } else {
         _log.info("syncTrashedAssets, No remote assets found for restoration");
       }
-    }
-
-    final result = await _trashSyncRepository.cleanupOutdatedEntriesThrottled();
-    if (result != null) {
-      _log.info("syncTrashedAssets, outdated deleted: $result");
     }
   }
 

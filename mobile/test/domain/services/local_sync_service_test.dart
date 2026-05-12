@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
@@ -37,6 +38,9 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(<LocalAsset>[]);
+    registerFallbackValue(<LocalAlbum>[]);
+    registerFallbackValue(<String>[]);
+    registerFallbackValue(<String, List<String>>{});
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
@@ -63,11 +67,11 @@ void main() {
       (_) async => SyncDelta(hasChanges: false, updates: const [], deletes: const [], assetAlbums: const {}),
     );
     when(() => mockNativeSyncApi.getTrashedAssets()).thenAnswer((_) async => {});
+    when(() => mockNativeSyncApi.checkpointSync()).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepository.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any())).thenAnswer((_) async {});
-    when(() => mockTrashSyncRepo.deleteLocallyResolved()).thenAnswer((_) async => 0);
-    when(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).thenAnswer((_) async => 0);
+    when(() => mockTrashSyncRepo.cleanupLocalTrashSync()).thenAnswer((_) async => 0);
 
     sut = LocalSyncService(
       localAlbumRepository: mockLocalAlbumRepository,
@@ -94,7 +98,7 @@ void main() {
 
       verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
       verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
-      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verifyNever(() => mockTrashSyncRepo.cleanupLocalTrashSync());
     });
 
     test('syncs trashed snapshot when store flags are disabled', () async {
@@ -105,7 +109,7 @@ void main() {
 
       verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
       verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
-      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verifyNever(() => mockTrashSyncRepo.cleanupLocalTrashSync());
       verifyNever(() => mockAssetMediaRepository.hasManageMediaPermission());
       verifyNever(() => mockAssetMediaRepository.restoreAssetsFromTrash(any()));
     });
@@ -119,7 +123,7 @@ void main() {
 
       verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
       verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
-      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verifyNever(() => mockTrashSyncRepo.cleanupLocalTrashSync());
       verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
       verifyNever(() => mockAssetMediaRepository.restoreAssetsFromTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
@@ -134,9 +138,41 @@ void main() {
       await sut.processTrashedAssets({});
 
       verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
-      verify(() => mockTrashSyncRepo.deleteLocallyResolved()).called(1);
+      verifyNever(() => mockTrashSyncRepo.cleanupLocalTrashSync());
       verify(() => mockAssetMediaRepository.hasManageMediaPermission()).called(1);
       verifyNever(() => mockAssetMediaRepository.restoreAssetsFromTrash(any()));
+    });
+
+    test('cleans trash sync after Android full sync updates local assets', () async {
+      when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => true);
+      when(() => mockNativeSyncApi.getAlbums()).thenAnswer((_) async => []);
+      when(() => mockLocalAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id})).thenAnswer((_) async => []);
+
+      await sut.sync();
+
+      verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
+      verify(() => mockTrashSyncRepo.cleanupLocalTrashSync()).called(1);
+    });
+
+    test('cleans trash sync after Android delta sync updates local assets', () async {
+      when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
+        (_) async => SyncDelta(hasChanges: true, updates: const [], deletes: const [], assetAlbums: const {}),
+      );
+      when(() => mockNativeSyncApi.getAlbums()).thenAnswer((_) async => []);
+      when(() => mockLocalAlbumRepository.updateAll(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalAlbumRepository.processDelta(
+          updates: any(named: 'updates'),
+          deletes: any(named: 'deletes'),
+          assetAlbums: any(named: 'assetAlbums'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => mockLocalAlbumRepository.getAll()).thenAnswer((_) async => []);
+
+      await sut.sync();
+
+      verify(() => mockNativeSyncApi.getTrashedAssets()).called(1);
+      verify(() => mockTrashSyncRepo.cleanupLocalTrashSync()).called(1);
     });
 
     test('skips syncTrashedAssets on non-Android platforms', () async {
@@ -153,7 +189,7 @@ void main() {
   });
 
   group('LocalSyncService - syncTrashedAssets behavior', () {
-    test('review mode only restores local trash and runs throttled cleanup', () async {
+    test('review mode only restores local trash and does not clean trash sync directly', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
       await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
       expect(Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false), isTrue);
@@ -173,7 +209,7 @@ void main() {
       });
 
       verifyNever(() => mockTrashSyncRepo.upsertReviewCandidates(any()));
-      verify(() => mockTrashSyncRepo.cleanupOutdatedEntriesThrottled()).called(1);
+      verifyNever(() => mockTrashSyncRepo.cleanupLocalTrashSync());
       verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
 
