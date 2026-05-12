@@ -54,7 +54,9 @@ class DeleteActionButton extends ConsumerWidget {
           ],
         ),
       );
-      if (confirm != true) return;
+      if (confirm != true) {
+        return;
+      }
     }
 
     if (source == ActionSource.viewer) {

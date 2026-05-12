@@ -1,6 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { shortcuts } from '$lib/actions/shortcut';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/NextAssetAction.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
@@ -14,6 +15,7 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { getAssetActions } from '$lib/services/asset.service';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -48,6 +50,7 @@
   import OcrButton from './OcrButton.svelte';
   import PhotoViewer from './PhotoViewer.svelte';
   import SlideshowBar from './SlideshowBar.svelte';
+  import SlideshowMetadataOverlay from './SlideshowMetadataOverlay.svelte';
   import VideoViewer from './VideoWrapperViewer.svelte';
 
   export type AssetCursor = {
@@ -246,6 +249,22 @@
     }, $t('error_while_navigating'));
   };
 
+  const navigateStack = (direction: 'previous' | 'next') => {
+    if (!stack || !withStacked || assetViewerManager.isShowEditor) {
+      return;
+    }
+    const assets = stack.assets;
+    const currentIndex = assets.findIndex(({ id }) => id === asset.id);
+    if (currentIndex === -1) {
+      return;
+    }
+    const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
+    if (nextIndex < 0 || nextIndex >= assets.length) {
+      return;
+    }
+    cursor.current = assets[nextIndex];
+  };
+
   /**
    * Slide show mode
    */
@@ -315,6 +334,7 @@
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
         const assetInfo = await getAssetInfo({ id: asset.id });
         cursor.current = { ...asset, people: assetInfo.people };
+        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
@@ -358,11 +378,14 @@
   const refresh = async () => {
     await refreshStack();
     ocrManager.clear();
+    faceManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
         await ocrManager.getAssetOcr(previewStackedAsset.id);
+        await faceManager.getAssetFaces(previewStackedAsset.id);
       }
       await ocrManager.getAssetOcr(asset.id);
+      await faceManager.getAssetFaces(asset.id);
     }
   };
 
@@ -459,6 +482,10 @@
   id="immich-asset-viewer"
   class="fixed inset-s-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
+    { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
+  ]}
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
@@ -566,6 +593,10 @@
       <div class="absolute inset-e-0 bottom-0 me-6 mb-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
         <OcrButton />
       </div>
+    {/if}
+
+    {#if $slideshowState !== SlideshowState.None}
+      <SlideshowMetadataOverlay {asset} />
     {/if}
   </div>
 

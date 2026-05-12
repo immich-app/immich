@@ -35,6 +35,7 @@ RemoteAsset createRemoteAsset({
   AssetType type = AssetType.image,
   DateTime? createdAt,
   DateTime? updatedAt,
+  DateTime? uploadedAt,
   bool isFavorite = false,
 }) {
   return RemoteAsset(
@@ -46,6 +47,7 @@ RemoteAsset createRemoteAsset({
     ownerId: 'owner-id',
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
+    uploadedAt: uploadedAt ?? DateTime.now(),
     isFavorite: isFavorite,
     isEdited: false,
   );

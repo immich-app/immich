@@ -26,18 +26,16 @@ describe(AlbumService.name, () => {
 
   describe('getStatistics', () => {
     it('should get the album count', async () => {
-      mocks.album.getOwned.mockResolvedValue([]);
-      mocks.album.getShared.mockResolvedValue([]);
-      mocks.album.getNotShared.mockResolvedValue([]);
+      mocks.album.getAll.mockResolvedValue([]);
       await expect(sut.getStatistics(authStub.admin)).resolves.toEqual({
         owned: 0,
         shared: 0,
         notShared: 0,
       });
 
-      expect(mocks.album.getOwned).toHaveBeenCalledWith(authStub.admin.user.id);
-      expect(mocks.album.getShared).toHaveBeenCalledWith(authStub.admin.user.id);
-      expect(mocks.album.getNotShared).toHaveBeenCalledWith(authStub.admin.user.id);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { isOwned: true });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { isShared: true });
+      expect(mocks.album.getAll).toHaveBeenCalledWith(authStub.admin.user.id, { isOwned: true, isShared: false });
     });
   });
 
@@ -46,7 +44,7 @@ describe(AlbumService.name, () => {
       const album = AlbumFactory.from().albumUser().build();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       const sharedWithUserAlbum = AlbumFactory.from().owner(owner).albumUser().build();
-      mocks.album.getOwned.mockResolvedValue([getForAlbum(album), getForAlbum(sharedWithUserAlbum)]);
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album), getForAlbum(sharedWithUserAlbum)]);
       mocks.album.getMetadataForIds.mockResolvedValue([
         {
           albumId: album.id,
@@ -68,6 +66,7 @@ describe(AlbumService.name, () => {
       expect(result).toHaveLength(2);
       expect(result[0].id).toEqual(album.id);
       expect(result[1].id).toEqual(sharedWithUserAlbum.id);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { isOwned: undefined, isShared: undefined });
     });
 
     it('gets list of albums that have a specific asset', async () => {
@@ -98,7 +97,7 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are shared', async () => {
       const album = AlbumFactory.from().albumUser().build();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
-      mocks.album.getShared.mockResolvedValue([getForAlbum(album)]);
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
       mocks.album.getMetadataForIds.mockResolvedValue([
         {
           albumId: album.id,
@@ -109,16 +108,16 @@ describe(AlbumService.name, () => {
         },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { shared: true });
+      const result = await sut.getAll(AuthFactory.create(owner), { isShared: true });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(album.id);
-      expect(mocks.album.getShared).toHaveBeenCalledTimes(1);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isShared: true }));
     });
 
     it('gets list of albums that are NOT shared', async () => {
       const album = AlbumFactory.create();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
-      mocks.album.getNotShared.mockResolvedValue([getForAlbum(album)]);
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
       mocks.album.getMetadataForIds.mockResolvedValue([
         {
           albumId: album.id,
@@ -129,17 +128,66 @@ describe(AlbumService.name, () => {
         },
       ]);
 
-      const result = await sut.getAll(AuthFactory.create(owner), { shared: false });
+      const result = await sut.getAll(AuthFactory.create(owner), { isShared: false });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(album.id);
-      expect(mocks.album.getNotShared).toHaveBeenCalledTimes(1);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isShared: false }));
+    });
+
+    it('gets only owned albums when isOwned=true', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
+      mocks.album.getMetadataForIds.mockResolvedValue([
+        { albumId: album.id, assetCount: 0, startDate: null, endDate: null, lastModifiedAssetTimestamp: null },
+      ]);
+
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: true });
+      expect(result).toHaveLength(1);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isOwned: true }));
+    });
+
+    it('gets only shared-with-me albums when isOwned=false', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
+      mocks.album.getMetadataForIds.mockResolvedValue([
+        { albumId: album.id, assetCount: 0, startDate: null, endDate: null, lastModifiedAssetTimestamp: null },
+      ]);
+
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: false });
+      expect(result).toHaveLength(1);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, expect.objectContaining({ isOwned: false }));
+    });
+
+    it('gets owned shared-out albums when isOwned=true and isShared=true', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
+      mocks.album.getMetadataForIds.mockResolvedValue([
+        { albumId: album.id, assetCount: 0, startDate: null, endDate: null, lastModifiedAssetTimestamp: null },
+      ]);
+
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: true, isShared: true });
+      expect(result).toHaveLength(1);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { isOwned: true, isShared: true });
+    });
+
+    it('returns empty list when isOwned=false and isShared=false', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.album.getAll.mockResolvedValue([]);
+
+      const result = await sut.getAll(AuthFactory.create(owner), { isOwned: false, isShared: false });
+      expect(result).toHaveLength(0);
+      expect(mocks.album.getAll).toHaveBeenCalledWith(owner.id, { isOwned: false, isShared: false });
     });
   });
 
   it('counts assets correctly', async () => {
     const album = AlbumFactory.create();
     const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
-    mocks.album.getOwned.mockResolvedValue([getForAlbum(album)]);
+    mocks.album.getAll.mockResolvedValue([getForAlbum(album)]);
     mocks.album.getMetadataForIds.mockResolvedValue([
       {
         albumId: album.id,
@@ -153,7 +201,7 @@ describe(AlbumService.name, () => {
     const result = await sut.getAll(AuthFactory.create(owner), {});
     expect(result).toHaveLength(1);
     expect(result[0].assetCount).toEqual(1);
-    expect(mocks.album.getOwned).toHaveBeenCalledTimes(1);
+    expect(mocks.album.getAll).toHaveBeenCalledTimes(1);
   });
 
   describe('create', () => {

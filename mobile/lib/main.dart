@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
@@ -163,6 +164,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+
+    await FlutterLocalNotificationsPlugin().initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@drawable/notification_icon'),
+        iOS: DarwinInitializationSettings(),
+      ),
+    );
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {

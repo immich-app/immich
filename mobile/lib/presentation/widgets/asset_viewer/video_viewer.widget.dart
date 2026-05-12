@@ -9,8 +9,8 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
@@ -61,7 +61,9 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   void didUpdateWidget(NativeVideoViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.isCurrent == oldWidget.isCurrent || _controller == null) return;
+    if (widget.isCurrent == oldWidget.isCurrent || _controller == null) {
+      return;
+    }
 
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
@@ -85,25 +87,35 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (_shouldPlayOnForeground) await _notifier.play();
+        if (_shouldPlayOnForeground) {
+          await _notifier.play();
+        }
       case AppLifecycleState.paused:
         _shouldPlayOnForeground = await _controller?.isPlaying() ?? true;
-        if (_shouldPlayOnForeground) await _notifier.pause();
+        if (_shouldPlayOnForeground) {
+          await _notifier.pause();
+        }
       default:
     }
   }
 
   Future<VideoSource?> _createSource() async {
-    if (!mounted) return null;
+    if (!mounted) {
+      return null;
+    }
 
     final videoAsset = await ref.read(assetServiceProvider).getAsset(widget.asset) ?? widget.asset;
-    if (!mounted) return null;
+    if (!mounted) {
+      return null;
+    }
 
     try {
       if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
         final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
         final file = await StorageRepository().getFileForAsset(id);
-        if (!mounted) return null;
+        if (!mounted) {
+          return null;
+        }
 
         if (file == null) {
           throw Exception('No file found for the video');
@@ -134,25 +146,35 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   }
 
   void _onPlaybackReady() async {
-    if (!mounted || !widget.isCurrent) return;
+    if (!mounted || !widget.isCurrent) {
+      return;
+    }
 
     _notifier.onNativePlaybackReady();
 
     // onPlaybackReady may be called multiple times, usually when more data
     // loads. If this is not the first time that the player has become ready, we
     // should not autoplay.
-    if (_isVideoReady) return;
+    if (_isVideoReady) {
+      return;
+    }
 
     setState(() => _isVideoReady = true);
 
-    if (ref.read(assetViewerProvider).showingDetails) return;
+    if (ref.read(assetViewerProvider).showingDetails) {
+      return;
+    }
 
     final autoPlayVideo = AppSetting.get(Setting.autoPlayVideo);
-    if (autoPlayVideo || widget.asset.isMotionPhoto) await _notifier.play();
+    if (autoPlayVideo || widget.asset.isMotionPhoto) {
+      await _notifier.play();
+    }
   }
 
   void _onPlaybackEnded() {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     _notifier.onNativePlaybackEnded();
 
@@ -162,12 +184,16 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   }
 
   void _onPlaybackPositionChanged() {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     _notifier.onNativePositionChanged();
   }
 
   void _onPlaybackStatusChanged() {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     _notifier.onNativeStatusChanged();
   }
 
@@ -180,10 +206,14 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   void _loadVideo() async {
     final nc = _controller;
-    if (nc == null || nc.videoSource != null || !mounted) return;
+    if (nc == null || nc.videoSource != null || !mounted) {
+      return;
+    }
 
     final source = await _videoSource;
-    if (source == null || !mounted) return;
+    if (source == null || !mounted) {
+      return;
+    }
 
     await _notifier.load(source);
     final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
@@ -192,7 +222,9 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   }
 
   void _initController(NativeVideoPlayerController nc) {
-    if (_controller != null || !mounted) return;
+    if (_controller != null || !mounted) {
+      return;
+    }
 
     _notifier.attachController(nc);
 
@@ -203,7 +235,9 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
     _controller = nc;
 
-    if (widget.isCurrent) _loadVideo();
+    if (widget.isCurrent) {
+      _loadVideo();
+    }
   }
 
   @override
