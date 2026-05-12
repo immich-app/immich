@@ -9069,10 +9069,6 @@ class DatabaseAtV26 extends GeneratedDatabase {
     'idx_stack_primary_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)',
   );
-  late final Index idxRemoteAssetOwnerChecksum = Index(
-    'idx_remote_asset_owner_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-  );
   late final Index uQRemoteAssetsOwnerChecksum = Index(
     'UQ_remote_assets_owner_checksum',
     'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
@@ -9089,13 +9085,9 @@ class DatabaseAtV26 extends GeneratedDatabase {
     'idx_remote_asset_stack_id',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
   );
-  late final Index idxRemoteAssetLocalDateTimeDay = Index(
-    'idx_remote_asset_local_date_time_day',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
-  );
-  late final Index idxRemoteAssetLocalDateTimeMonth = Index(
-    'idx_remote_asset_local_date_time_month',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+  late final Index idxRemoteAssetOwnerVisibilityDeletedCreated = Index(
+    'idx_remote_asset_owner_visibility_deleted_created',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
   );
   late final AuthUserEntity authUserEntity = AuthUserEntity(this);
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
@@ -9124,6 +9116,10 @@ class DatabaseAtV26 extends GeneratedDatabase {
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
   );
+  late final Index idxRemoteExifCity = Index(
+    'idx_remote_exif_city',
+    'CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL',
+  );
   late final Index idxRemoteAlbumAssetAlbumAsset = Index(
     'idx_remote_album_asset_album_asset',
     'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)',
@@ -9143,6 +9139,10 @@ class DatabaseAtV26 extends GeneratedDatabase {
   late final Index idxAssetFaceAssetId = Index(
     'idx_asset_face_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
+  );
+  late final Index idxAssetFaceVisiblePerson = Index(
+    'idx_asset_face_visible_person',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL',
   );
   late final Index idxTrashedLocalAssetChecksum = Index(
     'idx_trashed_local_asset_checksum',
@@ -9172,13 +9172,11 @@ class DatabaseAtV26 extends GeneratedDatabase {
     idxLocalAssetChecksum,
     idxLocalAssetCloudId,
     idxStackPrimaryAssetId,
-    idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
     idxRemoteAssetStackId,
-    idxRemoteAssetLocalDateTimeDay,
-    idxRemoteAssetLocalDateTimeMonth,
+    idxRemoteAssetOwnerVisibilityDeletedCreated,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
@@ -9196,11 +9194,13 @@ class DatabaseAtV26 extends GeneratedDatabase {
     metadata,
     idxPartnerSharedWithId,
     idxLatLng,
+    idxRemoteExifCity,
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
     idxAssetFacePersonId,
     idxAssetFaceAssetId,
+    idxAssetFaceVisiblePerson,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
