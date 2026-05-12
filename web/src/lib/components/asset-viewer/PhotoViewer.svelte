@@ -263,7 +263,9 @@
         cleanup();
         const drag = ctrlDrag;
         ctrlDrag = null;
-        if (!drag) return;
+        if (!drag) {
+          return;
+        }
         const left = Math.min(drag.start.x, drag.current.x);
         const top = Math.min(drag.start.y, drag.current.y);
         const width = Math.abs(drag.current.x - drag.start.x);
