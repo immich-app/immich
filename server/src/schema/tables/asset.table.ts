@@ -83,8 +83,8 @@ export class AssetTable {
   @Column({ type: 'boolean', default: false })
   isFavorite!: Generated<boolean>;
 
-  @Column({ type: 'character varying', nullable: true })
-  duration!: string | null;
+  @Column({ type: 'integer', nullable: true })
+  duration!: number | null;
 
   @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum

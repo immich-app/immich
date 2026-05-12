@@ -77,7 +77,7 @@
 />
 
 <div class="mt-3 px-4">
-  <div class="flex h-10 w-full items-center justify-between text-sm mt-2">
+  <div class="mt-2 flex h-10 w-full items-center justify-between text-sm">
     <h2>{$t('editor_orientation')}</h2>
   </div>
   <HStack>
@@ -111,16 +111,16 @@
     />
   </HStack>
 
-  <div class="flex h-10 w-full items-center justify-between text-sm mt-6">
+  <div class="mt-6 flex h-10 w-full items-center justify-between text-sm">
     <h2>{$t('crop')}</h2>
   </div>
 
   <!-- Aspect Ratio Grid -->
-  <div class="grid grid-cols-2 mb-4">
+  <div class="mb-4 grid grid-cols-2">
     {#each aspectRatios as ratio (ratio.value)}
       <HStack>
         <Button
-          class="w-14 h-14 m-2"
+          class="m-2 size-14"
           shape="round"
           onclick={() => selectAspectRatio(ratio)}
           aria-label={ratio.label}
@@ -130,14 +130,14 @@
           {#if ratio.isFree}
             <!-- Free crop icon with dashed border -->
             <div
-              class="w-6 h-6 border-2 border-dashed rounded-xs flex-shrink-0 {ratioSelected(ratio)
+              class="size-6 shrink-0 rounded-xs border-2 border-dashed {ratioSelected(ratio)
                 ? 'border-black'
                 : 'border-white'}"
             ></div>
           {:else}
             <!-- Aspect ratio box -->
             <div
-              class="border-2 rounded-xs flex-shrink-0 {ratioSelected(ratio) ? 'border-black' : 'border-white'}"
+              class="shrink-0 rounded-xs border-2 {ratioSelected(ratio) ? 'border-black' : 'border-white'}"
               style="width: {ratio.width}px; height: {ratio.height}px;"
             ></div>
           {/if}

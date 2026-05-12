@@ -105,8 +105,8 @@
   ]}
 />
 
-<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-256 mx-auto mb-4 py-6 px-0.2">
-  <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
+<div class="px-0.2 mx-auto mb-4 max-w-5xl rounded-3xl border border-gray-300 py-6 dark:border-2 dark:border-gray-700">
+  <div class="mb-4 flex w-full flex-wrap place-content-end justify-between gap-y-6 px-6">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
       <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}
@@ -128,7 +128,7 @@
           size="small"
           leadingIcon={mdiCheck}
           color="success"
-          class="flex place-items-center rounded-s-full gap-2"
+          class="flex place-items-center gap-2 rounded-s-full"
           onclick={handleResolve}
         >
           {$t('keep_all')}
@@ -158,7 +158,7 @@
   </div>
 
   <div class="overflow-x-auto p-2">
-    <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
+    <div class="mx-auto flex w-fit min-w-full flex-nowrap place-items-start justify-center gap-1">
       {#each assets as asset (asset.id)}
         <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
       {/each}

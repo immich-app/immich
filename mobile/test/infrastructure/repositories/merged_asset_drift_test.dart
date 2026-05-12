@@ -38,6 +38,7 @@ void main() {
             visibility: AssetVisibility.timeline,
             createdAt: Value(createdAt),
             updatedAt: Value(createdAt),
+            uploadedAt: Value(createdAt),
             localDateTime: const Value(null),
           ),
         );

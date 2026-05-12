@@ -46,19 +46,25 @@ class SyncApiRepository {
         types: [
           SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
-          SyncRequestType.assetsV1,
+          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
+              ? SyncRequestType.assetsV2
+              : SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
           if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetEditsV1,
           SyncRequestType.assetMetadataV1,
           SyncRequestType.partnersV1,
-          SyncRequestType.partnerAssetsV1,
+          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
+              ? SyncRequestType.partnerAssetsV2
+              : SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
           if (serverVersion < const SemVer(major: 3, minor: 0, patch: 0))
             SyncRequestType.albumsV1
           else
             SyncRequestType.albumsV2,
           SyncRequestType.albumUsersV1,
-          SyncRequestType.albumAssetsV1,
+          serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)
+              ? SyncRequestType.albumAssetsV2
+              : SyncRequestType.albumAssetsV1,
           SyncRequestType.albumAssetExifsV1,
           SyncRequestType.albumToAssetsV1,
           SyncRequestType.memoriesV1,
@@ -67,8 +73,9 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
-          if (serverVersion < const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetFacesV1,
-          if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetFacesV2,
+          serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)
+              ? SyncRequestType.assetFacesV2
+              : SyncRequestType.assetFacesV1,
         ],
         reset: shouldReset,
       ).toJson(),
@@ -153,6 +160,7 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
   SyncEntityType.partnerDeleteV1: SyncPartnerDeleteV1.fromJson,
   SyncEntityType.assetV1: SyncAssetV1.fromJson,
+  SyncEntityType.assetV2: SyncAssetV2.fromJson,
   SyncEntityType.assetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.assetExifV1: SyncAssetExifV1.fromJson,
   SyncEntityType.assetEditV1: SyncAssetEditV1.fromJson,
@@ -160,7 +168,9 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.assetMetadataV1: SyncAssetMetadataV1.fromJson,
   SyncEntityType.assetMetadataDeleteV1: SyncAssetMetadataDeleteV1.fromJson,
   SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.partnerAssetV2: SyncAssetV2.fromJson,
   SyncEntityType.partnerAssetBackfillV1: SyncAssetV1.fromJson,
+  SyncEntityType.partnerAssetBackfillV2: SyncAssetV2.fromJson,
   SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
   SyncEntityType.partnerAssetExifBackfillV1: SyncAssetExifV1.fromJson,
@@ -171,8 +181,11 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
   SyncEntityType.albumAssetCreateV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetCreateV2: SyncAssetV2.fromJson,
   SyncEntityType.albumAssetUpdateV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetUpdateV2: SyncAssetV2.fromJson,
   SyncEntityType.albumAssetBackfillV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetBackfillV2: SyncAssetV2.fromJson,
   SyncEntityType.albumAssetExifCreateV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumAssetExifUpdateV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumAssetExifBackfillV1: SyncAssetExifV1.fromJson,

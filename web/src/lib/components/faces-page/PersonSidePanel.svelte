@@ -202,7 +202,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden bg-light p-2 dark:text-immich-dark-fg"
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
@@ -229,7 +229,7 @@
     {/if}
   </div>
 
-  <div class="px-4 py-4 text-sm">
+  <div class="p-4 text-sm">
     <div class="mt-4 flex flex-wrap gap-2">
       {#if isShowLoadingPeople}
         <div class="flex w-full justify-center">
@@ -243,7 +243,7 @@
             <div
               role="button"
               tabindex={index}
-              class="absolute start-0 top-0 h-22.5 w-22.5 cursor-default"
+              class="absolute inset-s-0 top-0 size-22.5 cursor-default"
               onfocus={() => assetViewerManager.setHighlightedFaces([peopleWithFaces[index]])}
               onpointerenter={() => assetViewerManager.setHighlightedFaces([peopleWithFaces[index]])}
               onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
@@ -324,7 +324,7 @@
                 </p>
               {/if}
 
-              <div class="absolute -end-[3px] -top-[3px] h-5 w-5 rounded-full">
+              <div class="absolute inset-e-[-3px] top-[-3px] size-5 rounded-full">
                 {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
                   <IconButton
                     shape="round"
@@ -333,7 +333,7 @@
                     icon={mdiRestart}
                     aria-label={$t('reset')}
                     size="small"
-                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform"
                     onclick={() => handleReset(face.id)}
                   />
                 {:else}
@@ -343,29 +343,29 @@
                     icon={mdiPencil}
                     aria-label={$t('select_new_face')}
                     size="small"
-                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform"
                     onclick={() => handleFacePicker(face)}
                   />
                 {/if}
               </div>
-              <div class="absolute end-8 -top-[3px] h-5 w-5 rounded-full">
+              <div class="absolute inset-e-8 top-[-3px] size-5 rounded-full">
                 {#if !selectedPersonToCreate[face.id] && !selectedPersonToReassign[face.id] && !face.person}
                   <div
-                    class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute inset-s-1/2 top-1/2 flex translate-[-50%] transform place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all"
                   >
                     <Icon color="primary" icon={mdiAccountOff} aria-hidden size="24" />
                   </div>
                 {/if}
               </div>
               {#if face.person != null}
-                <div class="absolute -end-[3px] top-8 h-5 w-5 rounded-full">
+                <div class="absolute inset-e-[-3px] top-8 size-5 rounded-full">
                   <IconButton
                     shape="round"
                     color="danger"
                     icon={mdiTrashCan}
                     aria-label={$t('delete_face')}
                     size="small"
-                    class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
+                    class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform"
                     onclick={() => deleteAssetFace(face)}
                   />
                 </div>

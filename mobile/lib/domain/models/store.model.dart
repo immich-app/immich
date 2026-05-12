@@ -22,7 +22,6 @@ enum StoreKey<T> {
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>._(100),
   loadOriginal<bool>._(101),
-  themeMode<String>._(102),
   tilesPerRow<int>._(103),
   dynamicLayout<bool>._(104),
   groupAssetsBy<int>._(105),
@@ -35,25 +34,13 @@ enum StoreKey<T> {
   albumThumbnailCacheSize<int>._(112),
   selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
-  logLevel<int>._(115),
   preferRemoteImage<bool>._(116),
   loopVideo<bool>._(117),
-  // map related settings
-  mapShowFavoriteOnly<bool>._(118),
-  mapRelativeDate<int>._(119),
   selfSignedCert<bool>._(120),
-  mapIncludeArchived<bool>._(121),
   ignoreIcloudAssets<bool>._(122),
   selectedAlbumSortReverse<bool>._(123),
-  mapThemeMode<int>._(124),
-  mapwithPartners<bool>._(125),
   enableHapticFeedback<bool>._(126),
   customHeaders<String>._(127),
-
-  // theme settings
-  primaryColor<String>._(128),
-  dynamicTheme<bool>._(129),
-  colorfulInterface<bool>._(130),
 
   syncAlbums<bool>._(131),
 
@@ -88,13 +75,24 @@ enum StoreKey<T> {
   shouldResetSync<bool>._(1007),
 
   // Free up space
-  cleanupKeepFavorites<bool>._(1008),
-  cleanupKeepMediaType<int>._(1009),
-  cleanupKeepAlbumIds<String>._(1010),
-  cleanupCutoffDaysAgo<int>._(1011),
-  cleanupDefaultsInitialized<bool>._(1012),
+  syncMigrationStatus<String>._(1013),
 
-  syncMigrationStatus<String>._(1013);
+  // Legacy keys that have been migrated to the new metadata store
+  legacyPrimaryColor<String>._(128),
+  legacyDynamicTheme<bool>._(129),
+  legacyColorfulInterface<bool>._(130),
+  legacyThemeMode<String>._(102),
+  legacyCleanupKeepFavorites<bool>._(1008),
+  legacyCleanupKeepMediaType<int>._(1009),
+  legacyCleanupKeepAlbumIds<String>._(1010),
+  legacyCleanupCutoffDaysAgo<int>._(1011),
+  legacyCleanupDefaultsInitialized<bool>._(1012),
+  legacyMapRelativeDate<int>._(119),
+  legacyMapShowFavoriteOnly<bool>._(118),
+  legacyMapIncludeArchived<bool>._(121),
+  legacyMapThemeMode<int>._(124),
+  legacyMapwithPartners<bool>._(125),
+  legacyLogLevel<int>._(115);
 
   const StoreKey._(this.id);
   final int id;
@@ -118,7 +116,9 @@ StoreDto: {
 
   @override
   bool operator ==(covariant StoreDto<T> other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.key == key && other.value == value;
   }

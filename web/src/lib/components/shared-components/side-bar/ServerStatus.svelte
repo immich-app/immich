@@ -58,16 +58,16 @@
 </script>
 
 <div
-  class="text-sm flex md:flex ps-5 pe-1 place-items-center place-content-center justify-between min-w-52 overflow-hidden dark:text-immich-dark-fg"
+  class="flex min-w-52 place-content-center place-items-center justify-between overflow-hidden ps-5 pe-1 text-sm md:flex dark:text-immich-dark-fg"
 >
   {#if $connected}
-    <div class="flex gap-2 place-items-center place-content-center">
-      <div class="w-1.75 h-1.75 bg-green-500 rounded-full"></div>
+    <div class="flex place-content-center place-items-center gap-2">
+      <div class="size-1.75 rounded-full bg-green-500"></div>
       <p class="dark:text-immich-gray">{$t('server_online')}</p>
     </div>
   {:else}
-    <div class="flex gap-2 place-items-center place-content-center">
-      <div class="w-1.75 h-1.75 bg-red-500 rounded-full"></div>
+    <div class="flex place-content-center place-items-center gap-2">
+      <div class="size-1.75 rounded-full bg-red-500"></div>
       <p class="text-red-500">{$t('server_offline')}</p>
     </div>
   {/if}
@@ -77,7 +77,7 @@
       <button
         type="button"
         onclick={() => info && modalManager.show(ServerAboutModal, { versions, info })}
-        class="dark:text-immich-gray flex gap-1 place-items-center place-content-center"
+        class="flex place-content-center place-items-center gap-1 dark:text-immich-gray"
       >
         {#if isMain}
           <Icon icon={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
@@ -96,17 +96,17 @@
     href={releaseInfo.releaseUrl}
     target="_blank"
     rel="noopener noreferrer"
-    class="mt-3 p-2.5 ms-4 rounded-lg text-sm min-w-52 border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 hover:border-immich-primary/40 dark:hover:border-immich-dark-primary/40 hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/5 transition-all duration-200 group block"
+    class="group ms-4 mt-3 block min-w-52 rounded-lg border border-gray-200/50 bg-white/50 p-2.5 text-sm transition-all duration-200 hover:border-immich-primary/40 hover:bg-immich-primary/5 dark:border-gray-700/50 dark:bg-gray-800/50 dark:hover:border-immich-dark-primary/40 dark:hover:bg-immich-dark-primary/5"
   >
     <div class="flex items-center justify-between gap-2">
       <div class="flex items-center gap-2">
-        <Icon icon={mdiNewBox} size="16" class="text-immich-primary dark:text-immich-dark-primary opacity-80" />
+        <Icon icon={mdiNewBox} size="16" class="text-immich-primary opacity-80 dark:text-immich-dark-primary" />
         <Text size="tiny" fontWeight="medium" class="text-gray-700 dark:text-gray-300">
           {releaseInfo.availableVersion}
         </Text>
       </div>
       <span
-        class="text-[11px] text-gray-500 dark:text-gray-400 group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary transition-colors opacity-70 group-hover:opacity-100"
+        class="text-[11px] text-gray-500 opacity-70 transition-colors group-hover:text-immich-primary group-hover:opacity-100 dark:text-gray-400 dark:group-hover:text-immich-dark-primary"
       >
         {$t('new_update')}!
       </span>

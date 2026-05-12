@@ -41,7 +41,9 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalThumbProvider) {
       return id == other.id;
     }
@@ -148,7 +150,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
     final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
-      if (isCancelled) return;
+      if (isCancelled) {
+        return;
+      }
       throw StateError('Failed to load animated codec for local asset ${key.id}');
     }
     yield codec;
@@ -156,7 +160,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalFullImageProvider) {
       return id == other.id && size == other.size && isAnimated == other.isAnimated;
     }

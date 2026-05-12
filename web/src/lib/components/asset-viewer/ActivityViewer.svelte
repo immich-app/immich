@@ -110,9 +110,9 @@
   };
 </script>
 
-<div class="overflow-y-hidden relative h-full border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
-  <div class="w-full h-full">
-    <div class="flex w-full h-fit dark:text-immich-dark-fg p-2 bg-subtle" bind:clientHeight={activityHeight}>
+<div class="relative h-full overflow-y-hidden border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
+  <div class="size-full">
+    <div class="flex h-fit w-full bg-subtle p-2 dark:text-immich-dark-fg" bind:clientHeight={activityHeight}>
       <div class="flex place-items-center gap-2">
         <IconButton
           shape="round"
@@ -128,21 +128,21 @@
     </div>
     {#if innerHeight}
       <div
-        class="overflow-y-auto immich-scrollbar relative w-full px-2"
+        class="relative w-full overflow-y-auto px-2 immich-scrollbar"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
         {#each activityManager.activities as reaction, index (reaction.id)}
           {#if reaction.type === ReactionType.Comment}
-            <div class="flex dark:bg-gray-800 bg-gray-200 py-3 ps-3 mt-3 rounded-lg gap-4 justify-start">
+            <div class="mt-3 flex justify-start gap-4 rounded-lg bg-gray-200 py-3 ps-3 dark:bg-gray-800">
               <div class="flex items-center">
                 <UserAvatar user={reaction.user} size="sm" />
               </div>
 
-              <div class="w-full leading-4 overflow-hidden self-center wrap-break-word text-sm">{reaction.comment}</div>
+              <div class="w-full self-center overflow-hidden text-sm/4 wrap-break-word">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <a class="aspect-square w-19 h-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
+                <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
                   <img
-                    class="rounded-lg w-19 h-19 object-cover"
+                    class="size-19 rounded-lg object-cover"
                     src={getAssetMediaUrl({ id: reaction.assetId })}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
@@ -170,7 +170,7 @@
 
             {#if (index != activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
               <div
-                class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
                 title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
               >
                 {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
@@ -178,7 +178,7 @@
             {/if}
           {:else if reaction.type === ReactionType.Like}
             <div class="relative">
-              <div class="flex py-3 ps-3 mt-3 gap-4 items-center text-sm">
+              <div class="mt-3 flex items-center gap-4 py-3 ps-3 text-sm">
                 <div class="text-primary"><Icon icon={mdiThumbUp} size="20" /></div>
 
                 <div class="w-full" title={`${reaction.user.name} (${reaction.user.email})`}>
@@ -190,12 +190,9 @@
                   })}
                 </div>
                 {#if assetId === undefined && reaction.assetId}
-                  <a
-                    class="aspect-square w-19 h-19"
-                    href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}
-                  >
+                  <a class="aspect-square size-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
                     <img
-                      class="rounded-lg w-19 h-19 object-cover"
+                      class="size-19 rounded-lg object-cover"
                       src={getAssetMediaUrl({ id: reaction.assetId })}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
@@ -222,7 +219,7 @@
               </div>
               {#if (index != activityManager.activities.length - 1 && isTenMinutesApart(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
                 <div
-                  class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                  class="w-full px-2 pt-1 text-right text-sm text-gray-500 dark:text-gray-300"
                   title={new Date(reaction.createdAt).toLocaleDateString(navigator.language, timeOptions)}
                 >
                   {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
@@ -235,13 +232,13 @@
     {/if}
   </div>
 
-  <div class="absolute w-full bottom-0">
+  <div class="absolute bottom-0 w-full">
     <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
-      <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
+      <div class="flex h-fit w-full gap-4 rounded-3xl bg-gray-200 p-2 text-immich-dark-gray">
         <div>
           <UserAvatar user={authManager.user} size="md" noTitle />
         </div>
-        <form class="flex w-full items-center max-h-56 gap-1" {onsubmit}>
+        <form class="flex max-h-56 w-full items-center gap-1" {onsubmit}>
           <Textarea
             {disabled}
             bind:value={message}
@@ -254,16 +251,16 @@
             }))}
             class="{disabled
               ? 'cursor-not-allowed'
-              : ''} ring-0! w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200 dark:bg-gray-200"
+              : ''} max-h-56 w-full resize-none items-center overflow-y-auto bg-gray-200 pe-2 leading-4 ring-0! outline-none dark:bg-gray-200"
           />
           {#if isSendingMessage}
-            <div class="flex place-items-center pb-2 ms-0">
+            <div class="ms-0 flex place-items-center pb-2">
               <div class="flex w-full place-items-center">
                 <LoadingSpinner size="large" />
               </div>
             </div>
           {:else if message}
-            <div class="flex items-center w-fit ms-0 light">
+            <div class="light ms-0 flex w-fit items-center">
               <IconButton
                 shape="round"
                 aria-label={$t('send_message')}

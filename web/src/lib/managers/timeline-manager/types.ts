@@ -22,6 +22,7 @@ export type TimelineAsset = {
   ratio: number;
   thumbhash: string | null;
   localDateTime: TimelineDateTime;
+  createdAt: TimelineDateTime;
   fileCreatedAt: TimelineDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
@@ -29,7 +30,7 @@ export type TimelineAsset = {
   isVideo: boolean;
   isImage: boolean;
   stack: AssetStackResponseDto | null;
-  duration: string | null;
+  duration: number | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
   city: string | null;

@@ -64,8 +64,15 @@ android {
     }
 
     release {
-      signingConfig signingConfigs.release
+      def hasKeystore = file("../key.jks").exists() && file("../key.jks").length() > 0
+      signingConfig hasKeystore ? signingConfigs.release : signingConfigs.debug
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+      def prNumber = System.getenv("PR_NUMBER")
+      if (prNumber) {
+        applicationIdSuffix ".pr${prNumber}"
+        versionNameSuffix "-pr${prNumber}"
+      }
     }
   }
   namespace 'app.alextran.immich'

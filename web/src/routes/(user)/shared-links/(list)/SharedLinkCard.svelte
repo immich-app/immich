@@ -61,11 +61,11 @@
   <svelte:element
     this={isExpired ? 'div' : 'a'}
     href={isExpired ? undefined : Route.viewSharedLink(sharedLink)}
-    class="flex gap-4 w-full py-4"
+    class="flex w-full gap-4 py-4"
   >
     <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />
 
-    <div class="flex flex-col gap-4 justify-between">
+    <div class="flex flex-col justify-between gap-4">
       <div class="flex flex-col">
         <Text size="tiny" color={isExpired ? 'danger' : 'muted'} fontWeight="medium">
           {#if isExpired}
@@ -102,8 +102,8 @@
       </div>
     </div>
   </svelte:element>
-  <div class="flex flex-auto flex-col place-content-center place-items-end text-end ms-4">
-    <div class="sm:flex hidden">
+  <div class="ms-4 flex flex-auto flex-col place-content-center place-items-end text-end">
+    <div class="hidden sm:flex">
       <ActionButton action={Edit} />
       <ActionButton action={Copy} />
       <ActionButton action={Delete} />

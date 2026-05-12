@@ -42,7 +42,7 @@
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
         <div class="flex items-center justify-between gap-8">
-          <label class="immich-form-label shrink-0 text-sm" for="date-after">{$t('date_after')}</label>
+          <label class="shrink-0 text-sm immich-form-label" for="date-after">{$t('date_after')}</label>
           <DateInput
             class="immich-form-input w-40"
             type="date"
@@ -52,7 +52,7 @@
           />
         </div>
         <div class="flex items-center justify-between gap-8">
-          <label class="immich-form-label shrink-0 text-sm" for="date-before">{$t('date_before')}</label>
+          <label class="shrink-0 text-sm immich-form-label" for="date-before">{$t('date_before')}</label>
           <DateInput class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
         </div>
         <div class="flex justify-center text-xs">

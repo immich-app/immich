@@ -325,7 +325,7 @@
 </script>
 
 {#snippet cardOrder(index: number)}
-  <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border bg-light-50">
+  <div class="flex size-8 shrink-0 place-content-center place-items-center rounded-lg border bg-light-50">
     <Text size="small" class="font-mono font-bold">
       {index + 1}
     </Text>
@@ -338,7 +338,7 @@
       <div class="w-full border-t-2 border-dashed border-light-200"></div>
     </div>
     <div class="relative flex justify-center text-xs uppercase">
-      <Text class="bg-white dark:bg-black px-2" fontWeight="semi-bold" size="tiny" color="muted">{$t('then')}</Text>
+      <Text class="bg-white px-2 dark:bg-black" fontWeight="semi-bold" size="tiny" color="muted">{$t('then')}</Text>
     </div>
   </div>
 {/snippet}
@@ -347,7 +347,7 @@
   <button
     type="button"
     {onclick}
-    class="w-full p-8 rounded-lg border-2 border-dashed hover:border-light-400 hover:bg-light-50 transition-all flex flex-col items-center justify-center gap-2"
+    class="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 transition-all hover:border-light-400 hover:bg-light-50"
   >
     <Icon icon={mdiPlus} size="32" />
     <Text size="small" fontWeight="medium">{title}</Text>
@@ -384,7 +384,7 @@
           <CardBody>
             <VStack gap={4}>
               <div
-                class="relative overflow-hidden border p-4 w-full rounded-xl"
+                class="relative w-full overflow-hidden rounded-xl border p-4"
                 class:bg-primary-50={editWorkflow.enabled}
               >
                 <Field
@@ -468,12 +468,12 @@
                     isDragging: draggedFilterIndex === index,
                     isDragOver: dragOverFilterIndex === index,
                   })}
-                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
+                  class="mb-4 cursor-move rounded-2xl border-2 border-dashed bg-light-50 p-4 transition-all hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
                     <div class="flex-1">
-                      <h1 class="font-bold text-lg mb-3">{filter.title}</h1>
+                      <h1 class="mb-3 text-lg font-bold">{filter.title}</h1>
                       <SchemaFormFields
                         schema={filter.schema}
                         bind:config={filterConfigs}
@@ -537,12 +537,12 @@
                     isDragging: draggedActionIndex === index,
                     isDragOver: dragOverActionIndex === index,
                   })}
-                  class="mb-4 cursor-move rounded-2xl border-2 p-4 transition-all bg-light-50 border-dashed hover:border-light-300"
+                  class="mb-4 cursor-move rounded-2xl border-2 border-dashed bg-light-50 p-4 transition-all hover:border-light-300"
                 >
                   <div class="flex items-start gap-4">
                     {@render cardOrder(index)}
                     <div class="flex-1">
-                      <h1 class="font-bold text-lg mb-3">{action.title}</h1>
+                      <h1 class="mb-3 text-lg font-bold">{action.title}</h1>
                       <SchemaFormFields
                         schema={action.schema}
                         bind:config={actionConfigs}
@@ -587,7 +587,7 @@
 
   {#snippet trailing()}
     <HStack gap={4}>
-      <HStack gap={1} class="border rounded-lg p-1 border-light-300">
+      <HStack gap={1} class="rounded-lg border border-light-300 p-1">
         <Button
           size="small"
           variant={viewMode === 'visual' ? 'outline' : 'ghost'}
