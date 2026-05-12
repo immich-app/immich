@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -79,6 +80,14 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateBool(StoreKey.legacyMapIncludeArchived, MetadataKey.mapIncludeArchived);
   await migrator.migrateEnumIndex(StoreKey.legacyMapThemeMode, MetadataKey.mapThemeMode, ThemeMode.values);
   await migrator.migrateBool(StoreKey.legacyMapwithPartners, MetadataKey.mapWithPartners);
+  // Timeline
+  await migrator.migrateInt(StoreKey.legacyTilesPerRow, MetadataKey.timelineTilesPerRow);
+  await migrator.migrateEnumIndex(
+    StoreKey.legacyGroupAssetsBy,
+    MetadataKey.timelineGroupAssetsBy,
+    GroupAssetsBy.values,
+  );
+  await migrator.migrateBool(StoreKey.legacyStorageIndicator, MetadataKey.timelineStorageIndicator);
   await migrator.complete();
 }
 

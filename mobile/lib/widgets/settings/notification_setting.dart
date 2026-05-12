@@ -8,7 +8,6 @@ import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationSetting extends HookConsumerWidget {
@@ -19,8 +18,6 @@ class NotificationSetting extends HookConsumerWidget {
     final permissionService = ref.watch(notificationPermissionProvider);
 
     final sliderValue = useAppSettingsState(AppSettingsEnum.uploadErrorNotificationGracePeriod);
-    final totalProgressValue = useAppSettingsState(AppSettingsEnum.backgroundBackupTotalProgress);
-    final singleProgressValue = useAppSettingsState(AppSettingsEnum.backgroundBackupSingleProgress);
 
     final hasPermission = permissionService == PermissionStatus.granted;
 
@@ -60,18 +57,6 @@ class NotificationSetting extends HookConsumerWidget {
                 }
               }),
         ),
-      SettingsSwitchListTile(
-        enabled: hasPermission,
-        valueNotifier: totalProgressValue,
-        title: 'setting_notifications_total_progress_title'.tr(),
-        subtitle: 'setting_notifications_total_progress_subtitle'.tr(),
-      ),
-      SettingsSwitchListTile(
-        enabled: hasPermission,
-        valueNotifier: singleProgressValue,
-        title: 'setting_notifications_single_progress_title'.tr(),
-        subtitle: 'setting_notifications_single_progress_subtitle'.tr(),
-      ),
       SettingsSliderListTile(
         enabled: hasPermission,
         valueNotifier: sliderValue,

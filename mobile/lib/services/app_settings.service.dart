@@ -2,23 +2,12 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
-  loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
   loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
-  tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
-  dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),
-  groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),
   uploadErrorNotificationGracePeriod<int>(
     StoreKey.uploadErrorNotificationGracePeriod,
     "uploadErrorNotificationGracePeriod",
     2,
   ),
-  backgroundBackupTotalProgress<bool>(StoreKey.backgroundBackupTotalProgress, "backgroundBackupTotalProgress", true),
-  backgroundBackupSingleProgress<bool>(
-    StoreKey.backgroundBackupSingleProgress,
-    "backgroundBackupSingleProgress",
-    false,
-  ),
-  storageIndicator<bool>(StoreKey.storageIndicator, "storageIndicator", true),
   thumbnailCacheSize<int>(StoreKey.thumbnailCacheSize, "thumbnailCacheSize", 10000),
   imageCacheSize<int>(StoreKey.imageCacheSize, "imageCacheSize", 350),
   albumThumbnailCacheSize<int>(StoreKey.albumThumbnailCacheSize, "albumThumbnailCacheSize", 200),
@@ -31,13 +20,10 @@ enum AppSettingsEnum<T> {
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),
   tapToNavigate<bool>(StoreKey.tapToNavigate, "tapToNavigate", false),
   allowSelfSignedSSLCert<bool>(StoreKey.selfSignedCert, null, false),
-  ignoreIcloudAssets<bool>(StoreKey.ignoreIcloudAssets, null, false),
   selectedAlbumSortReverse<bool>(StoreKey.selectedAlbumSortReverse, null, true),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
   autoEndpointSwitching<bool>(StoreKey.autoEndpointSwitching, null, false),
-  photoManagerCustomFilter<bool>(StoreKey.photoManagerCustomFilter, null, true),
-  betaTimeline<bool>(StoreKey.betaTimeline, null, true),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
   useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
