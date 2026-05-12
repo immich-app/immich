@@ -69,17 +69,15 @@ run = "node ./dist/bin/sync-sql.js"
 # SDK tasks
 [tasks."sdk:install"]
 dir = "packages/sdk"
-run = "pnpm install --filter @immich/sdk --frozen-lockfile"
+run = "pnpm --filter @immich/sdk install --frozen-lockfile"
 
 [tasks."sdk:build"]
 dir = "packages/sdk"
-run = "pnpm run build"
+run = "pnpm build"
 
 # i18n tasks
 [tasks."i18n:format"]
-dir = "i18n"
-run = "pnpm run format"
+run = "pnpm format"
 
 [tasks."i18n:format-fix"]
-dir = "i18n"
-run = "pnpm run format:fix"
+run = "pnpm format:fix"
