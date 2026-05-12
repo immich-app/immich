@@ -80,7 +80,9 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
   bool _isPresetSelected(int? daysAgo) {
     final state = ref.read(cleanupProvider);
-    if (state.selectedDate == null) return false;
+    if (state.selectedDate == null) {
+      return false;
+    }
 
     final expectedDate = daysAgo != null ? DateTime.now().subtract(Duration(days: daysAgo)) : DateTime(2000);
 

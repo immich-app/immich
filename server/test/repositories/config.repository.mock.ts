@@ -54,10 +54,6 @@ export const envData: EnvData = {
   otel: {
     metrics: {
       hostMetrics: false,
-      apiMetrics: {
-        enable: false,
-        ignoreRoutes: [],
-      },
     },
   },
 

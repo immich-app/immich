@@ -1,4 +1,4 @@
-import { NotNull, Selectable, ShallowDehydrateObject } from 'kysely';
+import { Selectable, ShallowDehydrateObject } from 'kysely';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ActivityTable } from 'src/schema/tables/activity.table';
@@ -156,7 +156,7 @@ export const getForGenerateThumbnail = (asset: ReturnType<AssetFactory['build']>
   files: asset.files.map((file) => getDehydrated(file)),
   exifInfo: getDehydrated(asset.exifInfo),
   edits: asset.edits.map(({ action, parameters }) => ({ action, parameters })) as AssetEditActionItem[],
-  videoStream: null as (VideoStreamInfo & { timeBase: NotNull }) | null,
+  videoStream: null as (VideoStreamInfo & { timeBase: number }) | null,
   audioStream: null as AudioStreamInfo | null,
   format: null as VideoFormat | null,
 });

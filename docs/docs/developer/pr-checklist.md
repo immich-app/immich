@@ -34,21 +34,23 @@ Run all web checks with `pnpm run check:all`
 Run all server checks with `pnpm run check:all`
 :::
 
-:::info Auto Fix
+:::tip Auto Fix
 You can use `pnpm run __:fix` to potentially correct some issues automatically for `pnpm run format` and `lint`.
 :::
 
-## Mobile Checks
+## Mobile Checklist
 
-The following commands must be executed from within the mobile app directory of the codebase.
+- [ ] `mise //mobile:codegen` (auto-generate files using build_runner)
+- [ ] `mise //mobile:lint` (static analysis via Dart Analyzer and DCM)
+- [ ] `mise //mobile:format` (formatting via Dart Formatter)
+- [ ] `mise //mobile:test` (unit tests)
 
-- [ ] `make build` (auto-generate files using build_runner)
-- [ ] `make analyze` (static analysis via Dart Analyzer and DCM)
-- [ ] `make format` (formatting via Dart Formatter)
-- [ ] `make test` (unit tests)
+:::tip
+Run all these commands at once with `mise //mobile:checklist`
+:::
 
-:::info Auto Fix
-You can use `dart fix --apply` and `dcm fix lib` to potentially correct some issues automatically for `make analyze`.
+:::tip Auto Fix
+You can use `mise //mobile:lint-fix` to potentially correct some issues automatically for `mise //mobile:lint`.
 :::
 
 ## OpenAPI

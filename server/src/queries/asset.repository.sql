@@ -382,6 +382,7 @@ with
       "asset"."ownerId",
       "asset"."status",
       asset."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
+      asset."createdAt" at time zone 'utc' as "createdAt",
       encode("asset"."thumbhash", 'base64') as "thumbhash",
       "asset_exif"."city",
       "asset_exif"."country",
@@ -442,6 +443,7 @@ with
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
       coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
       coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
+      coalesce(array_agg("createdAt"), '{}') as "createdAt",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
@@ -484,6 +486,22 @@ where
   and "deletedAt" is null
 limit
   $5
+
+-- AssetRepository.getRecentlyCreatedAssetIds
+select
+  "id" as "data",
+  "createdAt" as "value"
+from
+  "asset"
+where
+  "ownerId" = $1::uuid
+  and "asset"."visibility" = $2
+  and "type" = $3
+  and "deletedAt" is null
+order by
+  "value" desc
+limit
+  $4
 
 -- AssetRepository.detectOfflineExternalAssets
 update "asset"

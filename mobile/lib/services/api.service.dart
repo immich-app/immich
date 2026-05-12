@@ -186,7 +186,9 @@ class ApiService {
       final List<dynamic> list = jsonDecode(externalJson);
       for (final entry in list) {
         final url = AuxilaryEndpoint.fromJson(entry).url;
-        if (url.isNotEmpty) urls.add(url);
+        if (url.isNotEmpty) {
+          urls.add(url);
+        }
       }
     }
     return urls;

@@ -40,7 +40,9 @@ class LoginForm extends HookConsumerWidget {
   final log = Logger('LoginForm');
 
   String? _validateUrl(String? url) {
-    if (url == null || url.isEmpty) return null;
+    if (url == null || url.isEmpty) {
+      return null;
+    }
 
     final parsedUrl = Uri.tryParse(url);
     if (parsedUrl == null || !parsedUrl.isAbsolute || !parsedUrl.scheme.startsWith("http") || parsedUrl.host.isEmpty) {
@@ -51,9 +53,15 @@ class LoginForm extends HookConsumerWidget {
   }
 
   String? _validateEmail(String? email) {
-    if (email == null || email == '') return null;
-    if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
-    if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
+    if (email == null || email == '') {
+      return null;
+    }
+    if (email.endsWith(' ')) {
+      return 'login_form_err_trailing_whitespace'.tr();
+    }
+    if (email.startsWith(' ')) {
+      return 'login_form_err_leading_whitespace'.tr();
+    }
     if (email.contains(' ') || !email.contains('@')) {
       return 'login_form_err_invalid_email'.tr();
     }

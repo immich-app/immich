@@ -30,7 +30,7 @@
     trailing,
   }: Props = $props();
 
-  let appBarBorder = $state('bg-light border border-transparent');
+  let appBarBorder = $state('border border-subtle');
 
   const onScroll = () => {
     if (window.scrollY > 80) {
@@ -40,7 +40,7 @@
         appBarBorder = 'border border-gray-600';
       }
     } else {
-      appBarBorder = 'bg-light border border-transparent';
+      appBarBorder = 'border border-subtle';
     }
   };
 
@@ -66,9 +66,9 @@
       !multiRow && 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]',
       'justify-between lg:grid-cols-[25%_50%_25%]',
       appBarBorder,
-      'm-2 place-items-center rounded-lg p-2 transition-all max-md:p-0',
+      'm-2 place-items-center rounded-full p-2 transition-all max-md:p-0',
       tailwindClasses,
-      forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-subtle dark:bg-immich-dark-gray',
+      forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-light-50 dark:bg-immich-dark-gray',
     ]}
   >
     <div class="flex place-items-center justify-self-start sm:gap-6 dark:text-immich-dark-fg {forceDark ? 'dark' : ''}">

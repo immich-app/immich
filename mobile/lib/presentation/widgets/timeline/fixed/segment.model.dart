@@ -53,14 +53,18 @@ class FixedSegment extends Segment {
   @override
   int getMinChildIndexForScrollOffset(double scrollOffset) {
     final adjustedOffset = scrollOffset - gridOffset;
-    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) {
+      return firstIndex;
+    }
     return gridIndex + (adjustedOffset / mainAxisExtend).floor();
   }
 
   @override
   int getMaxChildIndexForScrollOffset(double scrollOffset) {
     final adjustedOffset = scrollOffset - gridOffset;
-    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) {
+      return firstIndex;
+    }
     return gridIndex + (adjustedOffset / mainAxisExtend).ceil() - 1;
   }
 
@@ -162,8 +166,12 @@ class _FixedSegmentRow extends ConsumerWidget {
       // 0.5: width < mean - threshold
       // 1.5: width > mean + threshold
       final arConfiguration = aspectRatios.map((e) {
-        if (e - meanAspectRatio > 0.3) return 1.5;
-        if (e - meanAspectRatio < -0.3) return 0.5;
+        if (e - meanAspectRatio > 0.3) {
+          return 1.5;
+        }
+        if (e - meanAspectRatio < -0.3) {
+          return 0.5;
+        }
         return 1.0;
       });
 

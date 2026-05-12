@@ -33,10 +33,14 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
 Future<void> _migrateTo25() async {
   final accessToken = Store.tryGet(StoreKey.accessToken);
-  if (accessToken == null || accessToken.isEmpty) return;
+  if (accessToken == null || accessToken.isEmpty) {
+    return;
+  }
 
   final serverUrls = ApiService.getServerUrls();
-  if (serverUrls.isEmpty) return;
+  if (serverUrls.isEmpty) {
+    return;
+  }
 
   await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
 }
@@ -104,7 +108,9 @@ class _StoreMigrator {
 
   Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, MetadataKey<T> newKey, List<T> values) async {
     final index = await readLegacyStoreInt(legacyKey.id);
-    if (index == null) return;
+    if (index == null) {
+      return;
+    }
 
     final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
     _cache[newKey] = enumValue;
@@ -117,7 +123,9 @@ class _StoreMigrator {
     List<T> values,
   ) async {
     final name = await readLegacyStoreString(legacyKey.id);
-    if (name == null) return;
+    if (name == null) {
+      return;
+    }
 
     final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
     _cache[newKey] = enumValue;
@@ -126,7 +134,9 @@ class _StoreMigrator {
 
   Future<void> migrateBool(StoreKey<bool> legacyKey, MetadataKey<bool> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) return;
+    if (intValue == null) {
+      return;
+    }
 
     final boolValue = intValue != 0;
     _cache[newKey] = boolValue;
@@ -135,7 +145,9 @@ class _StoreMigrator {
 
   Future<void> migrateInt(StoreKey<int> legacyKey, MetadataKey<int> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) return;
+    if (intValue == null) {
+      return;
+    }
 
     _cache[newKey] = intValue;
     _migratedStoreIds.add(legacyKey.id);
@@ -165,7 +177,9 @@ class _StoreMigrator {
   }
 
   Future<void> deleteLegacyStoreRows(List<int> ids) async {
-    if (ids.isEmpty) return;
+    if (ids.isEmpty) {
+      return;
+    }
     await (_db.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
   }
 }

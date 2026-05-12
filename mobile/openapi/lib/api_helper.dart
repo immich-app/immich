@@ -76,6 +76,9 @@ String parameterToString(dynamic value) {
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
+  if (value is AssetOrderBy) {
+    return AssetOrderByTypeTransformer().encode(value).toString();
+  }
   if (value is AssetRejectReason) {
     return AssetRejectReasonTypeTransformer().encode(value).toString();
   }

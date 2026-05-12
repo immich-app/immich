@@ -11,6 +11,8 @@
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getAltText } from '$lib/utils/thumbnail-util';
 
   interface Props {
     data: PageData;
@@ -24,6 +26,9 @@
   };
 
   let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
+  let recents = $derived(
+    getFieldItems(data.items, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
+  );
   let people = $state(data.response.people);
 
   let hasPeople = $derived(data.response.total > 0);
@@ -107,7 +112,31 @@
     </div>
   {/if}
 
-  {#if !hasPeople && places.length === 0}
+  {#if recents.length > 0}
+    <div class="mt-2 mb-6">
+      <div class="flex justify-between">
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('recently_added')}</p>
+        <a
+          href={Route.recentlyAdded()}
+          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          draggable="false">{$t('view_all')}</a
+        >
+      </div>
+      <div class="flex h-24 flex-wrap gap-x-1 overflow-hidden md:h-42">
+        {#each recents as item (item.data.id)}
+          <a class="relative h-full flex-auto" href={Route.viewAsset({ id: item.data.id })} draggable="false">
+            <img
+              src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+              alt={$getAltText(toTimelineAsset(item.data))}
+              class="size-full min-w-max rounded-xl object-cover"
+            />
+          </a>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  {#if !hasPeople && places.length === 0 && recents.length === 0}
     <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
   {/if}
 </UserPageLayout>

@@ -1,4 +1,4 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBuckets, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -20,6 +20,7 @@ import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websoc
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
+  getOrderingDate,
   isAssetResponseDto,
   setDifference,
   toTimelineAsset,
@@ -252,6 +253,7 @@ export class TimelineManager extends VirtualScrollManager {
         timeBucket.count,
         false,
         this.#options.order,
+        this.#options.orderBy,
       );
     });
     this.albumAssets.clear();
@@ -393,7 +395,10 @@ export class TimelineManager extends VirtualScrollManager {
       return;
     }
 
-    timelineMonth = await this.#loadTimelineMonthAtTime(timelineAsset.localDateTime, { cancelable: false });
+    timelineMonth = await this.#loadTimelineMonthAtTime(
+      getOrderingDate(timelineAsset, this.#options.orderBy || AssetOrderBy.TakenAt),
+      { cancelable: false },
+    );
     if (timelineMonth?.findAssetById({ id })) {
       return timelineMonth;
     }
@@ -462,10 +467,11 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertSegmentForAsset(asset: TimelineAsset) {
-    let month = getTimelineMonthByDate(this, asset.localDateTime);
+    const dateTime = getOrderingDate(asset, this.#options.orderBy || AssetOrderBy.TakenAt);
+    let month = getTimelineMonthByDate(this, dateTime);
 
     if (!month) {
-      month = new TimelineMonth(this, asset.localDateTime, 1, true, this.#options.order);
+      month = new TimelineMonth(this, dateTime, 1, true, this.#options.order, this.#options.orderBy);
       this.months.push(month);
     }
     return month;
