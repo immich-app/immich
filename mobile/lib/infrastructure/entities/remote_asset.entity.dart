@@ -5,9 +5,6 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-@TableIndex.sql(
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-)
 @TableIndex.sql('''
 CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum
 ON remote_asset_entity (owner_id, checksum)
@@ -20,12 +17,10 @@ WHERE (library_id IS NOT NULL);
 ''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)')
-@TableIndex.sql(
-  "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME('%Y-%m-%d', local_date_time))",
-)
-@TableIndex.sql(
-  "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME('%Y-%m', local_date_time))",
-)
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created
+ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)
+''')
 class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 
