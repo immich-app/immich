@@ -565,7 +565,7 @@ jobs:
         run: mise //mobile:codegen:translation
 
       - name: Run tests
-        run: mise //mobile:test -j 1
+        run: mise //mobile:test
 
   ml-unit-tests:
     name: Unit Test ML
