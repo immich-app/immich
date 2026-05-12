@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.da
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
@@ -46,6 +47,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         // https://www.sqlite.org/pragma.html#pragma_foreign_keys
         await _db.customStatement('PRAGMA foreign_keys = OFF');
         await transaction(() async {
+          // FK cascade (ON DELETE SET NULL) does not fire while foreign_keys = OFF,
+          // so null linkedRemoteAlbumId manually to avoid dangling pointers in local_album_entity.
+          await (_db.localAlbumEntity.update()..where((row) => row.linkedRemoteAlbumId.isNotNull())).write(
+            const LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(null)),
+          );
           await _db.assetFaceEntity.deleteAll();
           await _db.memoryAssetEntity.deleteAll();
           await _db.memoryEntity.deleteAll();
