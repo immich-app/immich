@@ -139,7 +139,7 @@ export class QueueService extends BaseService {
     return Promise.all(Object.values(QueueName).map((name) => this.getByName(name)));
   }
 
-  async getAllLegacy(auth: AuthDto): Promise<QueuesResponseLegacyDto> {
+  async getAllLegacy(_auth: AuthDto): Promise<QueuesResponseLegacyDto> {
     const responses = await Promise.all(
       Object.values(QueueName).map((name) => this.getByName(name, { includeJobTypes: false })),
     );
