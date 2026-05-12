@@ -24,10 +24,11 @@
 
   type Props = {
     album: AlbumResponseDto;
+    readOnly?: boolean;
     onClose: () => void;
   };
 
-  let { album, onClose }: Props = $props();
+  let { album, readOnly = false, onClose }: Props = $props();
 
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
@@ -72,14 +73,14 @@
   onAlbumUpdate={(newAlbum) => (album = newAlbum)}
 />
 
-<Modal title={$t('options')} {onClose} size="small">
+<Modal title={readOnly ? $t('album') : $t('options')} {onClose} size="small">
   <ModalBody>
     <Stack gap={6}>
       <div>
         <Text size="medium" fontWeight="semi-bold">{$t('settings')}</Text>
         <div class="mt-2 grid gap-y-3 ps-2">
           {#if album.order}
-            <Field label={$t('display_order')}>
+            <Field label={$t('display_order')} disabled={readOnly}>
               <Select
                 value={album.order}
                 options={[
@@ -90,7 +91,7 @@
               />
             </Field>
           {/if}
-          <Field label={$t('comments_and_likes')} description={$t('let_others_respond')}>
+          <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} disabled={readOnly}>
             <Switch
               checked={album.isActivityEnabled}
               onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
@@ -102,7 +103,9 @@
       <div>
         <HStack fullWidth class="mb-2 justify-between">
           <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
-          <HeaderActionButton action={AddUsers} />
+          {#if !readOnly}
+            <HeaderActionButton action={AddUsers} />
+          {/if}
         </HStack>
         <div class="ps-2">
           {#each album.albumUsers as { user, role } (user.id)}
@@ -113,7 +116,7 @@
                 </div>
                 <Text size="small">{user.name}</Text>
               </div>
-              <Field class="w-32" disabled={role === AlbumUserRole.Owner}>
+              <Field class="w-32" disabled={readOnly || role === AlbumUserRole.Owner}>
                 <Select
                   value={role}
                   options={[
@@ -129,20 +132,22 @@
           {/each}
         </div>
       </div>
-      <div class="mb-4">
-        <HStack class="mb-2 justify-between">
-          <Text size="medium" fontWeight="semi-bold">{$t('shared_links')}</Text>
-          <HeaderActionButton action={CreateSharedLink} />
-        </HStack>
+      {#if !readOnly}
+        <div class="mb-4">
+          <HStack class="mb-2 justify-between">
+            <Text size="medium" fontWeight="semi-bold">{$t('shared_links')}</Text>
+            <HeaderActionButton action={CreateSharedLink} />
+          </HStack>
 
-        <div class="ps-2">
-          <Stack gap={4}>
-            {#each sharedLinks as sharedLink (sharedLink.id)}
-              <AlbumSharedLink {album} {sharedLink} />
-            {/each}
-          </Stack>
+          <div class="ps-2">
+            <Stack gap={4}>
+              {#each sharedLinks as sharedLink (sharedLink.id)}
+                <AlbumSharedLink {album} {sharedLink} />
+              {/each}
+            </Stack>
+          </div>
         </div>
-      </div>
+      {/if}
     </Stack>
   </ModalBody>
 </Modal>

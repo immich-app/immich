@@ -22,10 +22,10 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browse
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
@@ -44,7 +44,6 @@ class ActionButtonContext {
   final ActionSource source;
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
-  final ThemeData? originalTheme;
   final int selectedCount;
 
   const ActionButtonContext({
@@ -59,7 +58,6 @@ class ActionButtonContext {
     required this.source,
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
-    this.originalTheme,
     this.selectedCount = 1,
   });
 }
@@ -244,7 +242,6 @@ enum ActionButtonType {
         origin: context.timelineOrigin,
         iconOnly: iconOnly,
         menuItem: menuItem,
-        iconColor: context.originalTheme?.iconTheme.color,
       ),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(
         assetId: (context.asset as RemoteAsset).id,
@@ -259,14 +256,12 @@ enum ActionButtonType {
       ActionButtonType.openInfo => BaseActionButton(
         label: 'info'.tr(),
         iconData: Icons.info_outline,
-        iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
         onPressed: () => EventStream.shared.emit(const ViewerShowDetailsEvent()),
       ),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),
         iconData: Icons.image_search,
-        iconColor: context.originalTheme?.iconTheme.color,
         iconOnly: iconOnly,
         menuItem: menuItem,
         onPressed: buildContext == null

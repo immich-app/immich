@@ -14,14 +14,14 @@ import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -62,7 +62,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
       _scrollController.snapPosition.snapOffset = _snapOffset;
       if (_showingDetails && _snapOffset > 0) {
         _scrollController.jumpTo(_snapOffset);
@@ -87,7 +89,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _showDetails() {
-    if (!_scrollController.hasClients || _snapOffset <= 0) return;
+    if (!_scrollController.hasClients || _snapOffset <= 0) {
+      return;
+    }
     _viewer.setShowingDetails(true);
     _scrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
   }
@@ -128,7 +132,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _updateDrag(DragUpdateDetails details) {
-    if (_dragStart == null) return;
+    if (_dragStart == null) {
+      return;
+    }
 
     if (_dragIntent == _DragIntent.none) {
       _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
@@ -141,7 +147,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     switch (_dragIntent) {
       case _DragIntent.none:
       case _DragIntent.scroll:
-        if (_drag == null) _startProxyDrag();
+        if (_drag == null) {
+          _startProxyDrag();
+        }
         _drag?.update(details);
 
         _syncShowingDetails();
@@ -151,7 +159,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _endDrag(DragEndDetails details) {
-    if (_dragStart == null) return;
+    if (_dragStart == null) {
+      return;
+    }
 
     final start = _dragStart;
     _dragStart = null;
@@ -188,7 +198,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
-    if (!_showingDetails && _isZoomed) return;
+    if (!_showingDetails && _isZoomed) {
+      return;
+    }
     _beginDrag(details);
   }
 
@@ -215,7 +227,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _onTapUp(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue) {
-    if (_showingDetails || _dragStart != null) return;
+    if (_showingDetails || _dragStart != null) {
+      return;
+    }
 
     final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
     if (!tapToNavigate) {
@@ -247,31 +261,43 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
-      if (_dragStart == null) _viewer.setControls(false);
+      if (_dragStart == null) {
+        _viewer.setControls(false);
+      }
       return;
     }
 
-    if (!_showingDetails) _viewer.setControls(true);
+    if (!_showingDetails) {
+      _viewer.setControls(true);
+    }
   }
 
   void _listenForScaleBoundaries(PhotoViewControllerBase? controller) {
     _scaleBoundarySub?.cancel();
     _scaleBoundarySub = null;
-    if (controller == null || controller.scaleBoundaries != null) return;
+    if (controller == null || controller.scaleBoundaries != null) {
+      return;
+    }
     _scaleBoundarySub = controller.outputStateStream.listen((_) {
       if (controller.scaleBoundaries != null) {
         _scaleBoundarySub?.cancel();
         _scaleBoundarySub = null;
-        if (mounted) setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
   }
 
   double _getImageHeight(double maxWidth, double maxHeight, BaseAsset? asset) {
     final sb = _viewController?.scaleBoundaries;
-    if (sb != null) return sb.childSize.height * sb.initialScale;
+    if (sb != null) {
+      return sb.childSize.height * sb.initialScale;
+    }
 
-    if (asset == null || asset.width == null || asset.height == null) return maxHeight;
+    if (asset == null || asset.width == null || asset.height == null) {
+      return maxHeight;
+    }
 
     final r = asset.width! / asset.height!;
     return math.min(maxWidth / r, maxHeight);

@@ -77,34 +77,20 @@ export class MediaRepository {
    * @returns ExtractResult if succeeded, or null if failed
    */
   async extract(input: string): Promise<ExtractResult | null> {
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next: ${error}`);
+    for (const { tag, format } of [
+      { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
+      { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
+      { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
+      { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
+    ]) {
+      try {
+        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        return { buffer, format };
+      } catch (error: any) {
+        this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);
+      }
     }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JPEG buffer from image, trying PreviewJXL next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
-      return { buffer, format: RawExtractedFormat.Jxl };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract PreviewJXL buffer from image, trying PreviewImage next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract preview buffer from image: ${error}`);
-      return null;
-    }
+    return null;
   }
 
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
@@ -162,49 +148,45 @@ export class MediaRepository {
     }
   }
 
-  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    const pipeline = await this.getImageDecodingPipeline(input, options);
-    return pipeline.raw().toBuffer({ resolveWithObject: true });
+  decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
+    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
   }
 
-  private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
-    const matrix = createAffineMatrix(affineEditOperations);
-
+  private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
     const crop = edits.find((edit) => edit.action === 'crop');
-    const dimensions = await pipeline.metadata();
-
     if (crop) {
       pipeline = pipeline.extract({
-        left: crop ? Math.round(crop.parameters.x) : 0,
-        top: crop ? Math.round(crop.parameters.y) : 0,
-        width: crop ? Math.round(crop.parameters.width) : dimensions.width || 0,
-        height: crop ? Math.round(crop.parameters.height) : dimensions.height || 0,
+        left: Math.round(crop.parameters.x),
+        top: Math.round(crop.parameters.y),
+        width: Math.round(crop.parameters.width),
+        height: Math.round(crop.parameters.height),
       });
     }
 
-    const { a, b, c, d } = matrix;
-    pipeline = pipeline.affine([
-      [a, b],
-      [c, d],
-    ]);
+    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    if (affineEditOperations.length > 0) {
+      const { a, b, c, d } = createAffineMatrix(affineEditOperations);
+      pipeline = pipeline.affine([
+        [a, b],
+        [c, d],
+      ]);
+    }
 
     return pipeline;
   }
 
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    const pipeline = await this.getImageDecodingPipeline(input, options);
-    const decoded = pipeline.toFormat(options.format, {
-      quality: options.quality,
-      // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-      chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-      progressive: options.progressive,
-    });
-
-    await decoded.toFile(output);
+    await this.getImageDecodingPipeline(input, options)
+      .toFormat(options.format, {
+        quality: options.quality,
+        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+        progressive: options.progressive,
+      })
+      .toFile(output);
   }
 
-  private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
+  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
@@ -228,7 +210,7 @@ export class MediaRepository {
     }
 
     if (options.edits && options.edits.length > 0) {
-      pipeline = await this.applyEdits(pipeline, options.edits);
+      pipeline = this.applyEdits(pipeline, options.edits);
     }
 
     if (options.size !== undefined) {
@@ -238,19 +220,18 @@ export class MediaRepository {
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
-    const [{ rgbaToThumbHash }, decodingPipeline] = await Promise.all([
-      import('thumbhash'),
-      this.getImageDecodingPipeline(input, {
-        colorspace: options.colorspace,
-        processInvalidImages: options.processInvalidImages,
-        raw: options.raw,
-        edits: options.edits,
-      }),
-    ]);
+    const { rgbaToThumbHash } = await import('thumbhash');
 
-    const pipeline = decodingPipeline.resize(100, 100, { fit: 'inside', withoutEnlargement: true }).raw().ensureAlpha();
-
-    const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+    const { data, info } = await this.getImageDecodingPipeline(input, {
+      colorspace: options.colorspace,
+      processInvalidImages: options.processInvalidImages,
+      raw: options.raw,
+      edits: options.edits,
+    })
+      .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
+      .raw()
+      .ensureAlpha()
+      .toBuffer({ resolveWithObject: true });
 
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
@@ -274,23 +255,23 @@ export class MediaRepository {
             index: stream.index,
             height,
             width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
-            codecName: stream.codec_name === 'h265' ? 'hevc' : stream.codec_name,
-            profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined),
+            codecName: stream.codec_name === 'h265' ? 'hevc' : (stream.codec_name ?? null),
+            profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined) ?? null,
             level: this.parseOptionalInt(stream.level),
             frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
             frameRate: this.parseFrameRate(stream.avg_frame_rate ?? stream.r_frame_rate),
-            timeBase: this.parseRational(stream.time_base)?.den,
+            timeBase: this.parseRational(stream.time_base)?.den ?? null,
             rotation: this.parseInt(stream.rotation),
             bitrate: this.parseInt(stream.bit_rate),
             pixelFormat: stream.pix_fmt || 'yuv420p',
             colorPrimaries: this.parseEnum(ColorPrimaries, stream.color_primaries) ?? ColorPrimaries.Unknown,
             colorMatrix: this.parseEnum(ColorMatrix, stream.color_space) ?? ColorMatrix.Unknown,
             colorTransfer: this.parseEnum(ColorTransfer, stream.color_transfer) ?? ColorTransfer.Unknown,
-            dvProfile: this.parseOptionalInt(stream.dv_profile) as DvProfile | undefined,
+            dvProfile: this.parseOptionalInt(stream.dv_profile) as DvProfile | null,
             dvLevel: this.parseOptionalInt(stream.dv_level),
-            dvBlSignalCompatibilityId: this.parseOptionalInt(stream.dv_bl_signal_compatibility_id) as
-              | DvSignalCompatibility
-              | undefined,
+            dvBlSignalCompatibilityId: this.parseOptionalInt(
+              stream.dv_bl_signal_compatibility_id,
+            ) as DvSignalCompatibility | null,
           };
         }),
       audioStreams: results.streams
@@ -298,9 +279,9 @@ export class MediaRepository {
         .sort((a, b) => this.compareStreams(a, b))
         .map((stream) => ({
           index: stream.index,
-          codecName: stream.codec_name,
+          codecName: stream.codec_name ?? null,
           profile:
-            stream.codec_name === 'aac' ? this.parseEnum(AacProfile, stream.profile as string | undefined) : undefined,
+            stream.codec_name === 'aac' ? this.parseEnum(AacProfile, stream.profile as string | undefined) : null,
           bitrate: this.parseInt(stream.bit_rate),
         })),
     };
@@ -449,29 +430,29 @@ export class MediaRepository {
     return Number.parseFloat(value as string) || 0;
   }
 
-  private parseOptionalInt(value: string | number | undefined): number | undefined {
+  private parseOptionalInt(value: string | number | undefined): number | null {
     const parsed = Number.parseInt(value as string);
-    return Number.isNaN(parsed) ? undefined : parsed;
+    return Number.isNaN(parsed) ? null : parsed;
   }
 
   private parseEnum<E extends Record<string, number | string>>(enumObj: E, value?: string) {
-    return value ? (enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) : undefined;
+    return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
   }
 
   /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */
-  private parseRational(value: string | undefined): { num: number; den: number } | undefined {
-    if (!value) {
-      return;
+  private parseRational(value: string | undefined): { num: number; den: number } | null {
+    if (value) {
+      const [num, den = 1] = value.split('/').map(Number);
+      if (num && den) {
+        return { num, den };
+      }
     }
-    const [num, den = 1] = value.split('/').map(Number);
-    if (num && den) {
-      return { num, den };
-    }
+    return null;
   }
 
-  private parseFrameRate(value: string | undefined): number | undefined {
+  private parseFrameRate(value: string | undefined): number | null {
     const r = this.parseRational(value);
-    return r ? r.num / r.den : undefined;
+    return r ? r.num / r.den : null;
   }
 
   private getDar(dar: string | undefined): number {
@@ -498,6 +479,7 @@ export class MediaRepository {
         return this.parseEnum(Av1Profile, profile);
       }
     }
+    return null;
   }
 
   private compareStreams(a: FfprobeStream, b: FfprobeStream): number {

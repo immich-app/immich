@@ -65,7 +65,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performResume() async {
     // no need to resume because app was never really paused
-    if (!_wasPaused) return;
+    if (!_wasPaused) {
+      return;
+    }
     _wasPaused = false;
 
     final isAuthenticated = _ref.read(authProvider).isAuthenticated;

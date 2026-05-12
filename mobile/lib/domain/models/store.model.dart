@@ -38,6 +38,7 @@ enum StoreKey<T> {
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
   albumGridView<bool>._(140),
+  loadOriginal<bool>._(101),
 
   // Image viewer navigation settings
   loopVideo<bool>._(117),
@@ -95,7 +96,9 @@ StoreDto: {
 
   @override
   bool operator ==(covariant StoreDto<T> other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.key == key && other.value == value;
   }

@@ -518,7 +518,9 @@ extension on Iterable<RemoteAsset> {
   Iterable<String> toIds() => map((e) => e.id);
 
   Iterable<RemoteAsset> ownedAssets(String? ownerId) {
-    if (ownerId == null) return const [];
+    if (ownerId == null) {
+      return const [];
+    }
     return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
   }
 }

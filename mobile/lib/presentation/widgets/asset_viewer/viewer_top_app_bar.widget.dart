@@ -75,29 +75,41 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       child: AnimatedOpacity(
         opacity: opacity,
         duration: Durations.short2,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: showingDetails
-                ? null
-                : const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.black45, Colors.black12, Colors.transparent],
-                    stops: [0.0, 0.7, 1.0],
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: showingDetails
+                        ? null
+                        : const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.black45, Colors.black12, Colors.transparent],
+                            stops: [0.0, 0.7, 1.0],
+                          ),
                   ),
-          ),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            leading: const _AppBarBackButton(),
-            iconTheme: const IconThemeData(size: 22, color: Colors.white),
-            actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
-            shape: const Border(),
-            actions: showingDetails || isReadonlyModeEnabled
-                ? null
-                : isInLockedView
-                ? lockedViewActions
-                : actions,
-          ),
+                ),
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: SizedBox.square(
+                child: Theme(
+                  data: context.themeData.copyWith(iconTheme: const IconThemeData(size: 22, color: Colors.white)),
+                  child: Row(
+                    children: [
+                      const _AppBarBackButton(),
+                      const Spacer(),
+                      if (!showingDetails && !isReadonlyModeEnabled)
+                        if (isInLockedView) ...lockedViewActions else ...actions,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -113,20 +125,17 @@ class _AppBarBackButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
-    return Padding(
-      padding: const EdgeInsets.only(left: 12.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: showingDetails ? context.colorScheme.surface : Colors.transparent,
-          shape: const CircleBorder(),
-          iconSize: 22,
-          iconColor: showingDetails ? context.colorScheme.onSurface : Colors.white,
-          padding: EdgeInsets.zero,
-          elevation: showingDetails ? 4 : 0,
-        ),
-        onPressed: context.maybePop,
-        child: const Icon(Icons.arrow_back_rounded),
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: showingDetails ? context.colorScheme.surface : Colors.transparent,
+        shape: const CircleBorder(),
+        iconSize: 22,
+        iconColor: showingDetails ? context.colorScheme.onSurface : Colors.white,
+        padding: const EdgeInsets.all(10.0),
+        elevation: showingDetails ? 4 : 0,
       ),
+      onPressed: context.maybePop,
+      child: const Icon(Icons.arrow_back_rounded),
     );
   }
 }

@@ -43,7 +43,9 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is RemoteImageProvider) {
       return url == other.url && edited == other.edited;
     }
@@ -174,7 +176,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is RemoteFullImageProvider) {
       return assetId == other.assetId &&
           thumbhash == other.thumbhash &&

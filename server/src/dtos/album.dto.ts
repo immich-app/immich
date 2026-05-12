@@ -65,10 +65,13 @@ const UpdateAlbumSchema = z
 
 const GetAlbumsSchema = z
   .object({
-    shared: stringToBool
+    isOwned: stringToBool
       .optional()
-      .describe('Filter by shared status: true = only shared, false = not shared, undefined = all owned albums'),
-    assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores shared parameter)'),
+      .describe('Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter'),
+    isShared: stringToBool
+      .optional()
+      .describe('Filter by shared status: true = only shared, false = not shared, undefined = no filter'),
+    assetId: z.uuidv4().optional().describe('Filter albums containing this asset ID (ignores other parameters)'),
   })
   .meta({ id: 'GetAlbumsDto' });
 

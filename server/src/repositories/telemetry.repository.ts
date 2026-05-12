@@ -14,7 +14,7 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic
 import { snakeCase, startCase } from 'lodash';
 import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
-import { serverVersion } from 'src/constants';
+import { excludePaths, serverVersion } from 'src/constants';
 import { ImmichTelemetry, MetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -60,6 +60,9 @@ export const bootstrapTelemetry = (port: number) => {
   if (instance) {
     throw new Error('OpenTelemetry SDK already started');
   }
+
+  const { telemetry } = new ConfigRepository().getEnv();
+
   instance = new NodeSDK({
     resource: resourceFromAttributes({
       [ATTR_SERVICE_NAME]: `immich`,
@@ -68,7 +71,10 @@ export const bootstrapTelemetry = (port: number) => {
     metricReader: new PrometheusExporter({ port }),
     contextManager: new AsyncLocalStorageContextManager(),
     instrumentations: [
-      new HttpInstrumentation(),
+      new HttpInstrumentation({
+        enabled: telemetry.metrics.has(ImmichTelemetry.Api),
+        ignoreIncomingRequestHook: (request) => excludePaths.some((item) => request.url?.startsWith(item)),
+      }),
       new IORedisInstrumentation(),
       new NestInstrumentation(),
       new PgInstrumentation(),
