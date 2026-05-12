@@ -18,9 +18,10 @@
     containerWidth: number;
     containerHeight: number;
     assetId: string;
+    initialRect?: { centerX: number; centerY: number; width: number; height: number };
   };
 
-  let { htmlElement, containerWidth, containerHeight, assetId }: Props = $props();
+  let { htmlElement, containerWidth, containerHeight, assetId, initialRect }: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -67,8 +68,8 @@
       stroke: 'rgb(66,80,175)',
       strokeWidth: 2,
       strokeUniform: true,
-      width: 112,
-      height: 112,
+      width: initialRect?.width ?? 112,
+      height: initialRect?.height ?? 112,
       objectCaching: true,
       rx: 8,
       ry: 8,
@@ -76,7 +77,14 @@
 
     canvas.add(faceRect);
     canvas.setActiveObject(faceRect);
-    setDefaultFaceRectanglePosition(faceRect);
+
+    if (initialRect) {
+      faceRect.set({ left: initialRect.centerX, top: initialRect.centerY });
+      faceRect.setCoords();
+      positionFaceSelector();
+    } else {
+      setDefaultFaceRectanglePosition(faceRect);
+    }
   };
 
   onMount(async () => {
