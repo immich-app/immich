@@ -17,6 +17,15 @@ on:
         description: 'Bump mobile build number'
         required: false
         type: boolean
+      rc:
+        description: 'Release candidate mode'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+          - 'finalize'
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -74,7 +83,8 @@ jobs:
         env:
           SERVER_BUMP: ${{ inputs.serverBump }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+          RC: ${{ inputs.rc }}
+        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}" -r "${RC}"
 
       - id: output
         run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
@@ -108,7 +118,7 @@ jobs:
 
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
-      environment: production
+      environment: ${{ inputs.rc != 'false' && 'rc' || 'production' }}
 
   prepare_release:
     runs-on: ubuntu-latest
@@ -140,6 +150,7 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           draft: true
+          prerelease: ${{ contains(needs.bump_version.outputs.version, '-rc.') }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
