@@ -2612,9 +2612,98 @@ describe(FaceIdentityRepository.name, () => {
       .executeTakeFirstOrThrow();
 
     expect(result).toEqual({ personalProfileConflictCount: 1, spaceProfileConflictCount: 0 });
-    expect(links).toEqual([{ assetFaceId: sourceFace.id, identityId: targetIdentity.id }]);
+    expect(links).toEqual([{ assetFaceId: sourceFace.id, identityId: sourceIdentity.id }]);
     expect(sourceProfile.identityId).toBe(sourceIdentity.id);
-    expect(sourceSpaceProfile.identityId).toBe(targetIdentity.id);
+    expect(sourceSpaceProfile.identityId).toBe(sourceIdentity.id);
+  });
+
+  it('does not leave a source person attached to moved identity faces when a same-owner target person exists', async () => {
+    const { ctx, sut } = setup();
+    const { user } = await ctx.newUser();
+    try {
+      const { person: targetPerson } = await ctx.newPerson({ ownerId: user.id });
+      const { person: sourcePerson } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace: sourceFace } = await ctx.newAssetFace({ assetId: asset.id, personId: sourcePerson.id });
+      const targetIdentity = await sut.ensurePersonIdentity(targetPerson.id);
+      const sourceIdentity = await sut.ensurePersonIdentity(sourcePerson.id);
+      await sut.linkFace({
+        assetFaceId: sourceFace.id,
+        identityId: sourceIdentity.id,
+        source: 'owner-person',
+      });
+
+      await sut
+        .mergeIdentities({
+          targetIdentityId: targetIdentity.id,
+          sourceIdentityIds: [sourceIdentity.id],
+          source: 'shared-space-evidence',
+        })
+        .catch(() => {});
+
+      const faces = await ctx.database
+        .selectFrom('asset_face')
+        .innerJoin('person', 'person.id', 'asset_face.personId')
+        .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+        .select([
+          'asset_face.id as assetFaceId',
+          'asset_face.personId',
+          'person.identityId as personIdentityId',
+          'face_identity_face.identityId as faceIdentityId',
+        ])
+        .where('asset_face.id', '=', sourceFace.id)
+        .execute();
+
+      expect(faces.filter((face) => face.personIdentityId !== face.faceIdentityId)).toEqual([]);
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
+  });
+
+  it('does not leave a source space person attached to moved identity faces when a same-space target profile exists', async () => {
+    const { ctx, sut } = setup();
+    const { user } = await ctx.newUser();
+    try {
+      const { space } = await ctx.newSharedSpace({ createdById: user.id });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: user.id, role: SharedSpaceRole.Owner });
+      const targetSpacePerson = await newSpacePerson(ctx, space.id);
+      const sourceSpacePerson = await newSpacePerson(ctx, space.id);
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace: sourceFace } = await ctx.newAssetFace({ assetId: asset.id });
+      await linkSpaceFace(ctx, sourceSpacePerson.id, sourceFace.id);
+      const targetIdentity = await sut.ensureSpacePersonIdentity(targetSpacePerson.id);
+      const sourceIdentity = await sut.ensureSpacePersonIdentity(sourceSpacePerson.id);
+      await sut.linkFace({
+        assetFaceId: sourceFace.id,
+        identityId: sourceIdentity.id,
+        source: 'shared-space-evidence',
+      });
+
+      await sut
+        .mergeIdentities({
+          targetIdentityId: targetIdentity.id,
+          sourceIdentityIds: [sourceIdentity.id],
+          source: 'shared-space-evidence',
+        })
+        .catch(() => {});
+
+      const faces = await ctx.database
+        .selectFrom('shared_space_person_face')
+        .innerJoin('shared_space_person', 'shared_space_person.id', 'shared_space_person_face.personId')
+        .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'shared_space_person_face.assetFaceId')
+        .select([
+          'shared_space_person_face.assetFaceId as assetFaceId',
+          'shared_space_person_face.personId as spacePersonId',
+          'shared_space_person.identityId as spacePersonIdentityId',
+          'face_identity_face.identityId as faceIdentityId',
+        ])
+        .where('shared_space_person_face.assetFaceId', '=', sourceFace.id)
+        .execute();
+
+      expect(faces.filter((face) => face.spacePersonIdentityId !== face.faceIdentityId)).toEqual([]);
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
   });
 
   it('counts same-owner personal conflicts before identity merge', async () => {

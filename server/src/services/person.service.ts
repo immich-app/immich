@@ -1069,17 +1069,22 @@ export class PersonService extends BaseService {
       return;
     }
 
-    const result = await this.faceIdentityRepository.mergeIdentities({
+    const conflicts = await this.faceIdentityRepository.getMergeConflicts({
+      targetIdentityId: claim.targetIdentityId,
+      sourceIdentityIds: [claim.sourceIdentityId],
+    });
+    if (conflicts.personalProfileConflictCount > 0 || conflicts.spaceProfileConflictCount > 0) {
+      this.logger.warn(
+        `Skipping accessible identity merge due to conflicts: ${conflicts.personalProfileConflictCount} personal, ${conflicts.spaceProfileConflictCount} space`,
+      );
+      return;
+    }
+
+    await this.faceIdentityRepository.mergeIdentities({
       targetIdentityId: claim.targetIdentityId,
       sourceIdentityIds: [claim.sourceIdentityId],
       source: 'shared-space-evidence',
     });
-
-    if (result.personalProfileConflictCount > 0 || result.spaceProfileConflictCount > 0) {
-      this.logger.warn(
-        `Accessible identity merge had conflicts: ${result.personalProfileConflictCount} personal, ${result.spaceProfileConflictCount} space`,
-      );
-    }
 
     await this.queueSpacePersonMetadataBackfill(claim.targetIdentityId);
   }

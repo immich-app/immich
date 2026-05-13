@@ -2333,6 +2333,12 @@ export class FaceIdentityRepository {
         targetIdentityId: input.targetIdentityId,
         sourceIdentityIds,
       });
+      if (personalProfileConflictCount > 0 || spaceProfileConflictCount > 0) {
+        return {
+          personalProfileConflictCount,
+          spaceProfileConflictCount,
+        };
+      }
 
       await trx
         .updateTable('face_identity_face')
