@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/utils/option.dart';
-import 'package:intl/intl.dart';
 
 class MapTimeRange extends StatelessWidget {
   const MapTimeRange({super.key, required this.timeRange, required this.onChanged});
@@ -20,7 +19,7 @@ class MapTimeRange extends StatelessWidget {
           title: Text(context.t.date_after),
           subtitle: Text(
             timeRange.from.fold(
-              (from) => DateFormat.yMMMd(context.locale).add_jm().format(from),
+              (from) => DateFormat.yMMMd(context.locale.toString()).add_jm().format(from),
               () => context.t.not_set,
             ),
           ),
@@ -47,7 +46,7 @@ class MapTimeRange extends StatelessWidget {
           title: Text(context.t.date_before),
           subtitle: Text(
             timeRange.to.fold<String>(
-              (to) => DateFormat.yMMMd(context.locale).add_jm().format(to),
+              (to) => DateFormat.yMMMd(context.locale.toString()).add_jm().format(to),
               () => context.t.not_set,
             ),
           ),
