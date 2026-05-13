@@ -16,8 +16,8 @@
 default_platform(:android)
 
 platform :android do
-  desc "Build Android and Release Testing"
-  lane :beta do
+  desc "Build and Release Android RC to Open Testing"
+  lane :rc do
     gradle(
       task: 'bundle', 
       build_type: 'Release',

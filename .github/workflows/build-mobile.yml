@@ -7,7 +7,7 @@ on:
         required: false
         type: string
       environment:
-        description: 'Target environment'
+        description: 'Target environment (development, rc, or production)'
         required: true
         default: 'development'
         type: string
@@ -298,10 +298,12 @@ jobs:
         run: |
           # Only upload to TestFlight on main branch
           if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-            if [[ "$ENVIRONMENT" == "development" ]]; then
-              bundle exec fastlane gha_testflight_dev
-            else
+            if [[ "$ENVIRONMENT" == "rc" ]]; then
+              bundle exec fastlane gha_testflight_rc
+            elif [[ "$ENVIRONMENT" == "production" ]]; then
               bundle exec fastlane gha_release_prod
+            elif [[ "$ENVIRONMENT" == "development" ]]; then
+              bundle exec fastlane gha_testflight_dev
             fi
           else
             # Build only, no TestFlight upload for non-main branches

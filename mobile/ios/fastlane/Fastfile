@@ -169,6 +169,37 @@ end
     )
   end
 
+  desc "iOS RC Build to public TestFlight"
+  lane :gha_testflight_rc do
+    api_key = get_api_key
+
+    sigh(api_key: api_key, app_identifier: DEV_BUNDLE_ID, force: true)
+    main_profile_name = lane_context[SharedValues::SIGH_NAME]
+
+    sigh(api_key: api_key, app_identifier: "#{DEV_BUNDLE_ID}.ShareExtension", force: true)
+    share_profile_name = lane_context[SharedValues::SIGH_NAME]
+
+    sigh(api_key: api_key, app_identifier: "#{DEV_BUNDLE_ID}.Widget", force: true)
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
+
+    configure_code_signing(
+      base_bundle_id: DEV_BUNDLE_ID,
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
+    )
+
+    build_and_upload(
+      api_key: api_key,
+      base_bundle_id: DEV_BUNDLE_ID,
+      version_number: get_version_from_pubspec.split('-').first,
+      distribute_external: true,
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
+    )
+  end
+
   desc "iOS Release to TestFlight"
   lane :gha_release_prod do
     api_key = get_api_key
