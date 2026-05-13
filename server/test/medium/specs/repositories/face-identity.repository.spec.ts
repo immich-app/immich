@@ -1,11 +1,14 @@
 import { Kysely } from 'kysely';
 import { AssetVisibility, SharedSpaceRole } from 'src/enum';
-import { FaceIdentityRepository } from 'src/repositories/face-identity.repository';
+import {
+  FaceIdentityRepository,
+  type SharedSpaceFaceMatchBackfillTarget,
+} from 'src/repositories/face-identity.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { BaseService } from 'src/services/base.service';
 import { newMediumService } from 'test/medium.factory';
-import { newEmbedding } from 'test/small.factory';
+import { newEmbedding, newUuid } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
@@ -17,6 +20,15 @@ const setup = (db?: Kysely<DB>) => {
     mock: [LoggingRepository],
   });
   return { ctx, sut: ctx.get(FaceIdentityRepository) };
+};
+
+type FaceIdentityRepositoryInternals = {
+  getSharedSpaceFaceMatchTargetsForAssetFaces(
+    assetFaceIds: string[],
+  ): Promise<Array<{ spaceId: string; assetId: string }>>;
+  addPendingSharedSpaceFaceMatchBackfillTargets(
+    targets: SharedSpaceFaceMatchBackfillTarget[],
+  ): Promise<SharedSpaceFaceMatchBackfillTarget[]>;
 };
 
 beforeAll(async () => {
@@ -1113,6 +1125,52 @@ describe(FaceIdentityRepository.name, () => {
     } finally {
       await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
     }
+  });
+
+  it('handles large personal-identity rematch target batches without exceeding the postgres parameter limit', async () => {
+    const { ctx, sut } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+    try {
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      const { space } = await ctx.newSharedSpace({ createdById: user.id, faceRecognitionEnabled: true });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: user.id, role: SharedSpaceRole.Owner });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: user.id });
+      const repository = sut as unknown as FaceIdentityRepositoryInternals;
+      const assetFaceIds = [assetFace.id, ...Array.from({ length: 32_999 }, () => newUuid())];
+
+      await expect(repository.getSharedSpaceFaceMatchTargetsForAssetFaces(assetFaceIds)).resolves.toEqual([
+        { spaceId: space.id, assetId: asset.id },
+      ]);
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
+  });
+
+  it('chunks large pending rematch target inserts below the postgres parameter limit', async () => {
+    const insertedChunks: SharedSpaceFaceMatchBackfillTarget[][] = [];
+    const execute = vi.fn().mockResolvedValue(void 0);
+    const db = {
+      insertInto: vi.fn(() => ({
+        values: vi.fn((values: SharedSpaceFaceMatchBackfillTarget[]) => {
+          insertedChunks.push(values);
+          return {
+            onConflict: vi.fn(() => ({ execute })),
+          };
+        }),
+      })),
+    };
+    const repository = new FaceIdentityRepository(
+      db as unknown as Kysely<DB>,
+    ) as unknown as FaceIdentityRepositoryInternals;
+    const targets = Array.from({ length: 33_000 }, () => ({ spaceId: newUuid(), assetId: newUuid() }));
+
+    await expect(repository.addPendingSharedSpaceFaceMatchBackfillTargets(targets)).resolves.toHaveLength(33_000);
+
+    expect(insertedChunks).toHaveLength(33);
+    expect(insertedChunks.every((chunk) => chunk.length <= 1000)).toBe(true);
+    expect(insertedChunks.reduce((total, chunk) => total + chunk.length, 0)).toBe(33_000);
   });
 
   it('persists personal-identity targets only for unlinked faces when one person has mixed linked faces', async () => {
