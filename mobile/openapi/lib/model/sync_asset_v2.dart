@@ -14,6 +14,7 @@ class SyncAssetV2 {
   /// Returns a new [SyncAssetV2] instance.
   SyncAssetV2({
     required this.checksum,
+    required this.createdAt,
     required this.deletedAt,
     required this.duration,
     required this.fileCreatedAt,
@@ -36,6 +37,9 @@ class SyncAssetV2 {
 
   /// Checksum
   String checksum;
+
+  /// Uploaded to Immich at
+  DateTime? createdAt;
 
   /// Deleted at
   DateTime? deletedAt;
@@ -101,6 +105,7 @@ class SyncAssetV2 {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetV2 &&
     other.checksum == checksum &&
+    other.createdAt == createdAt &&
     other.deletedAt == deletedAt &&
     other.duration == duration &&
     other.fileCreatedAt == fileCreatedAt &&
@@ -124,6 +129,7 @@ class SyncAssetV2 {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
+    (createdAt == null ? 0 : createdAt!.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (duration == null ? 0 : duration!.hashCode) +
     (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
@@ -144,11 +150,18 @@ class SyncAssetV2 {
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'SyncAssetV2[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isEdited=$isEdited, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
+  String toString() => 'SyncAssetV2[checksum=$checksum, createdAt=$createdAt, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isEdited=$isEdited, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
+    if (this.createdAt != null) {
+      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAt!.millisecondsSinceEpoch
+        : this.createdAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'createdAt'] = null;
+    }
     if (this.deletedAt != null) {
       json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.deletedAt!.millisecondsSinceEpoch
@@ -232,6 +245,7 @@ class SyncAssetV2 {
 
       return SyncAssetV2(
         checksum: mapValueOfType<String>(json, r'checksum')!,
+        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         duration: mapValueOfType<int>(json, r'duration'),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
@@ -298,6 +312,7 @@ class SyncAssetV2 {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'checksum',
+    'createdAt',
     'deletedAt',
     'duration',
     'fileCreatedAt',

@@ -29,7 +29,9 @@ class SettingsSwitchListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void onSwitchChanged(bool value) {
-      if (!enabled) return;
+      if (!enabled) {
+        return;
+      }
 
       valueNotifier.value = value;
       onChanged?.call(value);

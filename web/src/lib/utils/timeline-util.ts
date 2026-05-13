@@ -1,4 +1,4 @@
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
@@ -166,6 +166,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   const fileCreatedAt = fromISODateTimeToObject(assetResponse.fileCreatedAt, assetResponse.exifInfo?.timeZone ?? 'UTC');
+  const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);
 
   return {
     id: assetResponse.id,
@@ -174,6 +175,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     ratio,
     thumbhash: assetResponse.thumbhash,
     localDateTime,
+    createdAt,
     fileCreatedAt,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
@@ -236,3 +238,6 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   }
   return result;
 }
+
+export const getOrderingDate = (asset: TimelineAsset, order: AssetOrderBy) =>
+  order === AssetOrderBy.CreatedAt ? asset.createdAt : asset.localDateTime;

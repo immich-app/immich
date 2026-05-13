@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
+import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -89,7 +89,7 @@ export class MetadataRepository {
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
     // Enable exiftool LFS to parse metadata for files larger than 2GB.
-    readArgs: ['-api', 'largefilesupport=1'],
+    readArgs: ['-api', 'largefilesupport=1', '--ICC_Profile:DeviceManufacturer', '--ICC_Profile:DeviceModelName'],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,
   });
@@ -107,8 +107,8 @@ export class MetadataRepository {
   }
 
   readTags(path: string): Promise<ImmichTags> {
-    const args = mimeTypes.isVideo(path) ? ['-ee'] : [];
-    return this.exiftool.read(path, { readArgs: args }).catch((error) => {
+    const options: ReadTaskOptions | undefined = mimeTypes.isVideo(path) ? { readArgs: ['-ee'] } : undefined;
+    return this.exiftool.read(path, options).catch((error) => {
       this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
       return {};
     }) as Promise<ImmichTags>;

@@ -117,20 +117,6 @@ async def preload_models(preload: PreloadModelData) -> None:
             ModelTask.OCR,
         )
 
-    if preload.clip_fallback is not None:
-        log.warning(
-            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__CLIP'. "
-            "Use 'MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL' and "
-            "'MACHINE_LEARNING_PRELOAD__CLIP__VISUAL' instead."
-        )
-
-    if preload.facial_recognition_fallback is not None:
-        log.warning(
-            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION'. "
-            "Use 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION' and "
-            "'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION' instead."
-        )
-
 
 def update_state() -> Iterator[None]:
     global active_requests, last_called

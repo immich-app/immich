@@ -105,6 +105,7 @@ export const Route = {
   locked: () => '/locked',
   trash: () => '/trash',
   viewTrashedAsset: ({ id }: { id: string }) => `/trash/photos/${id}`,
+  recentlyAdded: () => '/recently-added',
 
   // search
   search: (dto?: MetadataSearchDto | SmartSearchDto) => {

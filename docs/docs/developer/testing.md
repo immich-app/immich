@@ -17,15 +17,14 @@ make e2e
 
 Before you can run the tests, you need to run the following commands _once_:
 
-- `pnpm install` (in `e2e/`)
-- `pnpm run build` (in `cli/`)
-- `make open-api` (in the project root `/`)
+- `pnpm install`
+- `pnpm --filter "@immich/*" build`
+- `mise //:open-api`
 
 Once the test environment is running, the e2e tests can be run via:
 
 ```bash
-cd e2e/
-pnpm test
+mise //e2e:test
 ```
 
 The tests check various things including:

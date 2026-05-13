@@ -184,7 +184,9 @@ class RemoteAlbumService {
     List<RemoteAlbum> albums, {
     required AssetDateAggregation aggregation,
   }) async {
-    if (albums.isEmpty) return [];
+    if (albums.isEmpty) {
+      return [];
+    }
 
     final albumIds = albums.map((e) => e.id).toList();
     final sortedIds = await _repository.getSortedAlbumIds(albumIds, aggregation: aggregation);
