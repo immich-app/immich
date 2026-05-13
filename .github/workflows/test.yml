@@ -551,17 +551,22 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
         with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
-      - name: Generate translation file
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Install dependencies
+        run: flutter pub get
         working-directory: ./mobile
+
+      - name: Generate translation files
+        run: mise //mobile:codegen:translation
+
       - name: Run tests
-        working-directory: ./mobile
-        run: flutter test -j 1
+        run: mise //mobile:test
+
   ml-unit-tests:
     name: Unit Test ML
     needs: pre-job
