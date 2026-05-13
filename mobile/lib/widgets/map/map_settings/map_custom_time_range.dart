@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/utils/option.dart';
 
 class MapTimeRange extends StatelessWidget {

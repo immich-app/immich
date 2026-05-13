@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
@@ -9,20 +10,6 @@ import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-
-class TimeRange {
-  final Option<DateTime> from;
-  final Option<DateTime> to;
-
-  const TimeRange({this.from = const None(), this.to = const None()});
-
-  TimeRange copyWith({Option<DateTime>? from, Option<DateTime>? to}) {
-    return TimeRange(from: from ?? this.from, to: to ?? this.to);
-  }
-
-  TimeRange clearFrom() => TimeRange(to: to);
-  TimeRange clearTo() => TimeRange(from: from);
-}
 
 class MapState {
   final ThemeMode themeMode;
