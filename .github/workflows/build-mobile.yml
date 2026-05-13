@@ -116,7 +116,6 @@ jobs:
             ~/.gradle/wrapper
             ~/.android/sdk
             mobile/android/.gradle
-            mobile/.dart_tool
           key: build-mobile-gradle-${{ runner.os }}-main
 
       - name: Setup Android SDK
@@ -189,7 +188,6 @@ jobs:
             ~/.gradle/wrapper
             ~/.android/sdk
             mobile/android/.gradle
-            mobile/.dart_tool
           key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}
 
   build-sign-ios:
