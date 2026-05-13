@@ -4,6 +4,7 @@ import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/option.dart';
 
 class MetadataRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -97,6 +98,17 @@ class MetadataRepository extends DriftDatabaseRepository {
   }
 }
 
+Option<DateTime> _parseDateOption(String s) {
+  if (s.trim().isEmpty) {
+    return const Option.none();
+  }
+  try {
+    return Option.some(DateTime.parse(s));
+  } catch (_) {
+    return const Option.none();
+  }
+}
+
 extension<T extends Object> on MetadataDomain<T> {
   T config(MetadataRepository repo) => switch (this) {
     .appConfig => repo._appConfig as T,
@@ -126,6 +138,8 @@ extension<T extends Object> on MetadataDomain<T> {
             includeArchived: repo._read(.mapIncludeArchived),
             themeMode: repo._read(.mapThemeMode),
             withPartners: repo._read(.mapWithPartners),
+            customFrom: _parseDateOption(repo._read(.mapCustomFrom)),
+            customTo: _parseDateOption(repo._read(.mapCustomTo)),
           ),
           timeline: .new(
             tilesPerRow: repo._read(.timelineTilesPerRow),
