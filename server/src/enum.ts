@@ -915,6 +915,8 @@ export enum DatabaseLock {
   MaintenanceOperation = 621,
   MemoryCreation = 777,
   VersionCheck = 800,
+  FacialRecognition = 900,
+  DuplicateDetection = 1000,
 }
 
 export enum MaintenanceAction {
