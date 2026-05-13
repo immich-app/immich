@@ -10,7 +10,9 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 void showKeepResultToast(BuildContext context, ActionResult result) {
-  if (!context.mounted) return;
+  if (!context.mounted) {
+    return;
+  }
   final message = result.success
       ? 'assets_denied_to_moved_to_trash_count'.t(args: {'count': '${result.count}'})
       : 'scaffold_body_error_occurred'.t();
