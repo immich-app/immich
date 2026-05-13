@@ -5,3 +5,5 @@ The mobile app can be downloaded from the following places:
 - [Apple App Store](https://apps.apple.com/us/app/immich/id1613945652)
 - [F-Droid](https://f-droid.org/packages/app.alextran.immich)
 - [GitHub Releases (apk)](https://github.com/immich-app/immich/releases)
+
+Want to help test the next release before it ships? Join the [Release Candidate channel](/features/release-candidate).
