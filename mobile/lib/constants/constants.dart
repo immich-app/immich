@@ -1,8 +1,6 @@
 import 'dart:io';
 
-const int noDbId = -9223372036854775808; // from Isar
-const double downloadCompleted = -1;
-const double downloadFailed = -2;
+const String kMobileMetadataKey = "mobile-app";
 
 // Number of log entries to retain on app start
 const int kLogTruncateLimit = 2000;
@@ -44,9 +42,6 @@ const List<(String, String)> kWidgetNames = [
   ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiver'),
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiver'),
 ];
-
-const double kUploadStatusFailed = -1.0;
-const double kUploadStatusCanceled = -2.0;
 
 const int kMinMonthsToEnableScrubberSnap = 12;
 

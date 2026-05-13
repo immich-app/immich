@@ -1,261 +1,218 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Selectable } from 'kysely';
-import { DateTime } from 'luxon';
+import { createZodDto } from 'nestjs-zod';
 import { AssetFace, Person } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
+import { HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SourceType } from 'src/enum';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
+import { SourceTypeSchema } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { asDateString } from 'src/utils/date';
-import {
-  IsDateStringFormat,
-  MaxDateString,
-  Optional,
-  ValidateBoolean,
-  ValidateEnum,
-  ValidateHexColor,
-  ValidateUUID,
-} from 'src/validation';
+import { ImageDimensions, MaybeDehydrated } from 'src/types';
+import { asBirthDateString, asDateString } from 'src/utils/date';
+import { transformFaceBoundingBox } from 'src/utils/transform';
+import { emptyStringToNull, hexColor, stringToBool } from 'src/validation';
+import z from 'zod';
 
-export class PersonCreateDto {
-  /**
-   * Person name.
-   */
-  @Optional()
-  @IsString()
-  name?: string;
+const PersonCreateSchema = z
+  .object({
+    name: z.string().optional().describe('Person name'),
+    // Note: the mobile app cannot currently set the birth date to null.
+    birthDate: emptyStringToNull(z.string().meta({ format: 'date' }).nullable())
+      .optional()
+      .refine((val) => (val ? new Date(val) <= new Date() : true), { error: 'Birth date cannot be in the future' })
+      .describe('Person date of birth'),
+    isHidden: z.boolean().optional().describe('Person visibility (hidden)'),
+    isFavorite: z.boolean().optional().describe('Mark as favorite'),
+    color: emptyStringToNull(hexColor.nullable()).optional().describe('Person color (hex)'),
+  })
+  .meta({ id: 'PersonCreateDto' });
 
-  /**
-   * Person date of birth.
-   * Note: the mobile app cannot currently set the birth date to null.
-   */
-  @ApiProperty({ format: 'date' })
-  @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
-  @IsDateStringFormat('yyyy-MM-dd')
-  @Optional({ nullable: true, emptyToNull: true })
-  birthDate?: Date | null;
+const PersonUpdateSchema = PersonCreateSchema.extend({
+  featureFaceAssetId: z.uuidv4().optional().describe('Asset ID used for feature face thumbnail'),
+}).meta({ id: 'PersonUpdateDto' });
 
-  /**
-   * Person visibility
-   */
-  @ValidateBoolean({ optional: true })
-  isHidden?: boolean;
+const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
+  id: z.string().describe('Person ID'),
+}).meta({ id: 'PeopleUpdateItem' });
 
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
+const PeopleUpdateSchema = z
+  .object({
+    people: z.array(PeopleUpdateItemSchema).describe('People to update'),
+  })
+  .meta({ id: 'PeopleUpdateDto' });
 
-  @Optional({ emptyToNull: true, nullable: true })
-  @ValidateHexColor()
-  color?: string | null;
-}
+const MergePersonSchema = z
+  .object({
+    ids: z.array(z.uuidv4()).describe('Person IDs to merge'),
+  })
+  .meta({ id: 'MergePersonDto' });
 
-export class PersonUpdateDto extends PersonCreateDto {
-  /**
-   * Asset is used to get the feature face thumbnail.
-   */
-  @ValidateUUID({ optional: true })
-  featureFaceAssetId?: string;
-}
+const PersonSearchSchema = z
+  .object({
+    withHidden: stringToBool.optional().describe('Include hidden people'),
+    closestPersonId: z.uuidv4().optional().describe('Closest person ID for similarity search'),
+    closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
+    page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
+    size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
+  })
+  .meta({ id: 'PersonSearchDto' });
 
-export class PeopleUpdateDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PeopleUpdateItem)
-  people!: PeopleUpdateItem[];
-}
+export const PersonResponseSchema = z
+  .object({
+    id: z.string().describe('Person ID'),
+    name: z.string().describe('Person name'),
+    // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
+    birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
+    thumbnailPath: z.string().describe('Thumbnail path'),
+    isHidden: z.boolean().describe('Is hidden'),
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    updatedAt: z
+      .string()
+      .meta({ format: 'date-time' })
+      .optional()
+      .describe('Last update date')
+      .meta(new HistoryBuilder().added('v1.107.0').stable('v2').getExtensions()),
+    isFavorite: z
+      .boolean()
+      .optional()
+      .describe('Is favorite')
+      .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
+    color: z
+      .string()
+      .optional()
+      .describe('Person color (hex)')
+      .meta(new HistoryBuilder().added('v1.126.0').stable('v2').getExtensions()),
+  })
+  .meta({ id: 'PersonResponseDto' });
 
-export class PeopleUpdateItem extends PersonUpdateDto {
-  /**
-   * Person id.
-   */
-  @IsString()
-  @IsNotEmpty()
-  id!: string;
-}
+export class PersonCreateDto extends createZodDto(PersonCreateSchema) {}
+export class PersonUpdateDto extends createZodDto(PersonUpdateSchema) {}
+export class PeopleUpdateDto extends createZodDto(PeopleUpdateSchema) {}
+export class MergePersonDto extends createZodDto(MergePersonSchema) {}
+export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
+export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
 
-export class MergePersonDto {
-  @ValidateUUID({ each: true })
-  ids!: string[];
-}
+export const AssetFaceResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Face ID'),
+    imageHeight: z.int().min(0).describe('Image height in pixels'),
+    imageWidth: z.int().min(0).describe('Image width in pixels'),
+    boundingBoxX1: z.int().describe('Bounding box X1 coordinate'),
+    boundingBoxX2: z.int().describe('Bounding box X2 coordinate'),
+    boundingBoxY1: z.int().describe('Bounding box Y1 coordinate'),
+    boundingBoxY2: z.int().describe('Bounding box Y2 coordinate'),
+    sourceType: SourceTypeSchema.optional(),
+    person: PersonResponseSchema.nullable(),
+  })
+  .describe('Asset face with person')
+  .meta({ id: 'AssetFaceResponseDto' });
 
-export class PersonSearchDto {
-  @ValidateBoolean({ optional: true })
-  withHidden?: boolean;
-  @ValidateUUID({ optional: true })
-  closestPersonId?: string;
-  @ValidateUUID({ optional: true })
-  closestAssetId?: string;
+export class AssetFaceResponseDto extends createZodDto(AssetFaceResponseSchema) {}
 
-  /** Page number for pagination */
-  @ApiPropertyOptional()
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  page: number = 1;
+const AssetFaceUpdateItemSchema = z
+  .object({
+    personId: z.uuidv4().describe('Person ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
+  })
+  .meta({ id: 'AssetFaceUpdateItem' });
 
-  /** Number of items per page */
-  @ApiPropertyOptional()
-  @IsInt()
-  @Min(1)
-  @Max(1000)
-  @Type(() => Number)
-  size: number = 500;
-}
+const AssetFaceUpdateSchema = z
+  .object({
+    data: z.array(AssetFaceUpdateItemSchema).describe('Face update items'),
+  })
+  .meta({ id: 'AssetFaceUpdateDto' });
 
-export class PersonResponseDto {
-  id!: string;
-  name!: string;
-  @ApiProperty({ format: 'date' })
-  birthDate!: string | null;
-  thumbnailPath!: string;
-  isHidden!: boolean;
-  @Property({ history: new HistoryBuilder().added('v1.107.0').stable('v2') })
-  updatedAt?: Date;
-  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
-  isFavorite?: boolean;
-  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
-  color?: string;
-}
+const FaceSchema = z
+  .object({
+    id: z.uuidv4().describe('Face ID'),
+  })
+  .meta({ id: 'FaceDto' });
 
-export class PersonWithFacesResponseDto extends PersonResponseDto {
-  faces!: AssetFaceWithoutPersonResponseDto[];
-}
+const AssetFaceCreateSchema = AssetFaceUpdateItemSchema.extend({
+  imageWidth: z.int().describe('Image width in pixels'),
+  imageHeight: z.int().describe('Image height in pixels'),
+  x: z.int().describe('Face bounding box X coordinate'),
+  y: z.int().describe('Face bounding box Y coordinate'),
+  width: z.int().describe('Face bounding box width'),
+  height: z.int().describe('Face bounding box height'),
+}).meta({ id: 'AssetFaceCreateDto' });
 
-export class AssetFaceWithoutPersonResponseDto {
-  @ValidateUUID()
-  id!: string;
-  @ApiProperty({ type: 'integer' })
-  imageHeight!: number;
-  @ApiProperty({ type: 'integer' })
-  imageWidth!: number;
-  @ApiProperty({ type: 'integer' })
-  boundingBoxX1!: number;
-  @ApiProperty({ type: 'integer' })
-  boundingBoxX2!: number;
-  @ApiProperty({ type: 'integer' })
-  boundingBoxY1!: number;
-  @ApiProperty({ type: 'integer' })
-  boundingBoxY2!: number;
-  @ValidateEnum({ enum: SourceType, name: 'SourceType' })
-  sourceType?: SourceType;
-}
+const AssetFaceDeleteSchema = z
+  .object({
+    force: z.boolean().describe('Force delete even if person has other faces'),
+  })
+  .meta({ id: 'AssetFaceDeleteDto' });
 
-export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
-  person!: PersonResponseDto | null;
-}
+const PersonStatisticsResponseSchema = z
+  .object({
+    assets: z.int().describe('Number of assets'),
+  })
+  .meta({ id: 'PersonStatisticsResponseDto' });
 
-export class AssetFaceUpdateDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AssetFaceUpdateItem)
-  data!: AssetFaceUpdateItem[];
-}
+export class AssetFaceUpdateDto extends createZodDto(AssetFaceUpdateSchema) {}
+export class FaceDto extends createZodDto(FaceSchema) {}
+export class AssetFaceCreateDto extends createZodDto(AssetFaceCreateSchema) {}
+export class AssetFaceDeleteDto extends createZodDto(AssetFaceDeleteSchema) {}
+export class PersonStatisticsResponseDto extends createZodDto(PersonStatisticsResponseSchema) {}
 
-export class FaceDto {
-  @ValidateUUID()
-  id!: string;
-}
+const PeopleResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of people'),
+    hidden: z.int().min(0).describe('Number of hidden people'),
+    people: z.array(PersonResponseSchema),
+    // TODO: make required after a few versions
+    hasNextPage: z
+      .boolean()
+      .optional()
+      .describe('Whether there are more pages')
+      .meta(new HistoryBuilder().added('v1.110.0').stable('v2').getExtensions()),
+  })
+  .describe('People response');
+export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 
-export class AssetFaceUpdateItem {
-  @ValidateUUID()
-  personId!: string;
-
-  @ValidateUUID()
-  assetId!: string;
-}
-
-export class AssetFaceCreateDto extends AssetFaceUpdateItem {
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  imageWidth!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  imageHeight!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  x!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  y!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  width!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  height!: number;
-}
-
-export class AssetFaceDeleteDto {
-  @IsNotEmpty()
-  force!: boolean;
-}
-
-export class PersonStatisticsResponseDto {
-  @ApiProperty({ type: 'integer' })
-  assets!: number;
-}
-
-export class PeopleResponseDto {
-  @ApiProperty({ type: 'integer' })
-  total!: number;
-  @ApiProperty({ type: 'integer' })
-  hidden!: number;
-  people!: PersonResponseDto[];
-
-  // TODO: make required after a few versions
-  @Property({ history: new HistoryBuilder().added('v1.110.0').stable('v2') })
-  hasNextPage?: boolean;
-}
-
-export function mapPerson(person: Person): PersonResponseDto {
+export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: asDateString(person.birthDate),
+    birthDate: asBirthDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: person.updatedAt,
+    updatedAt: asDateString(person.updatedAt),
   };
 }
 
-export function mapFacesWithoutPerson(face: Selectable<AssetFaceTable>): AssetFaceWithoutPersonResponseDto {
+function mapFacesWithoutPerson(
+  face: MaybeDehydrated<Selectable<AssetFaceTable>>,
+  edits?: AssetEditActionItem[],
+  assetDimensions?: ImageDimensions,
+) {
   return {
     id: face.id,
-    imageHeight: face.imageHeight,
-    imageWidth: face.imageWidth,
-    boundingBoxX1: face.boundingBoxX1,
-    boundingBoxX2: face.boundingBoxX2,
-    boundingBoxY1: face.boundingBoxY1,
-    boundingBoxY2: face.boundingBoxY2,
+    ...transformFaceBoundingBox(
+      {
+        boundingBoxX1: face.boundingBoxX1,
+        boundingBoxY1: face.boundingBoxY1,
+        boundingBoxX2: face.boundingBoxX2,
+        boundingBoxY2: face.boundingBoxY2,
+        imageWidth: face.imageWidth,
+        imageHeight: face.imageHeight,
+      },
+      edits ?? [],
+      assetDimensions ?? { width: face.imageWidth, height: face.imageHeight },
+    ),
     sourceType: face.sourceType,
   };
 }
 
-export function mapFaces(face: AssetFace, auth: AuthDto): AssetFaceResponseDto {
+export function mapFaces(
+  face: AssetFace,
+  auth: AuthDto,
+  edits?: AssetEditActionItem[],
+  assetDimensions?: ImageDimensions,
+): AssetFaceResponseDto {
   return {
-    id: face.id,
-    imageHeight: face.imageHeight,
-    imageWidth: face.imageWidth,
-    boundingBoxX1: face.boundingBoxX1,
-    boundingBoxX2: face.boundingBoxX2,
-    boundingBoxY1: face.boundingBoxY1,
-    boundingBoxY2: face.boundingBoxY2,
-    sourceType: face.sourceType,
+    ...mapFacesWithoutPerson(face, edits, assetDimensions),
     person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
   };
 }

@@ -7,7 +7,7 @@ const Map<String, Locale> locales = {
   'Arabic (ar)': Locale('ar'),
   'Bulgarian (bg)': Locale('bg'),
   'Catalan (ca)': Locale('ca'),
-  'Chinese Simplified (zh_CN)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'SIMPLIFIED'),
+  'Chinese Simplified (zh_CN)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
   'Chinese Traditional (zh_TW)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   'Croatian (hr)': Locale('hr'),
   'Czech (cs)': Locale('cs'),
@@ -51,4 +51,4 @@ const Map<String, Locale> locales = {
 
 const String translationsPath = 'assets/i18n';
 
-const List<Locale> localesNotSupportedByOverpass = [Locale('el', 'GR'), Locale('sr', 'Cyrl')];
+const List<Locale> localesNotSupportedByAppFont = [Locale('el', 'GR'), Locale('sr', 'Cyrl')];

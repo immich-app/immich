@@ -5,13 +5,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
+import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -31,7 +29,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
-    BackUpState backupState = ref.watch(backupProvider);
+    ServerDiskInfo backupState = ref.watch(backupProvider);
     final theme = context.themeData;
     bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
@@ -51,7 +49,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         child: Stack(
           alignment: Alignment.centerLeft,
           children: [
-            IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close, size: 20)),
+            IconButton(
+              onPressed: () => ContextHelper(context).pop(),
+              icon: Icon(Icons.close, size: 20, color: context.colorScheme.onSurfaceVariant),
+            ),
             Align(
               alignment: Alignment.center,
               child: Padding(
@@ -87,6 +88,14 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
     }
 
+    buildFreeUpSpaceButton() {
+      return buildActionButton(
+        Icons.cleaning_services_outlined,
+        "free_up_space",
+        () => context.pushRoute(SettingsSubRoute(section: SettingSection.freeUpSpace)),
+      );
+    }
+
     buildAppLogButton() {
       return buildActionButton(
         Icons.assignment_outlined,
@@ -116,9 +125,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     isLoggingOut.value = true;
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
-                    ref.read(manualUploadProvider.notifier).cancelBackup();
-                    ref.read(backupProvider.notifier).cancelBackup();
-                    unawaited(ref.read(assetProvider.notifier).clearAllAssets());
                     ref.read(websocketProvider.notifier).disconnect();
                     unawaited(context.replaceRoute(const LoginRoute()));
                   },
@@ -134,9 +140,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     Widget buildStorageInformation() {
-      var percentage = backupState.serverInfo.diskUsagePercentage / 100;
-      var usedDiskSpace = backupState.serverInfo.diskUse;
-      var totalDiskSpace = backupState.serverInfo.diskSize;
+      var percentage = backupState.diskUsagePercentage / 100;
+      var usedDiskSpace = backupState.diskUse;
+      var totalDiskSpace = backupState.diskSize;
 
       if (user != null && user.hasQuota) {
         usedDiskSpace = formatBytes(user.quotaUsageInBytes);
@@ -144,42 +150,23 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         percentage = user.quotaUsageInBytes / user.quotaSizeInBytes;
       }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(color: context.colorScheme.surface),
-          child: ListTile(
-            minLeadingWidth: 50,
-            leading: Icon(Icons.storage_rounded, color: theme.primaryColor),
-            title: Text(
-              "backup_controller_page_server_storage",
-              style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
-            ).tr(),
-            isThreeLine: true,
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: LinearProgressIndicator(
-                      minHeight: 10.0,
-                      value: percentage,
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: const Text(
-                      'backup_controller_page_storage_format',
-                    ).tr(namedArgs: {'used': usedDiskSpace, 'total': totalDiskSpace}),
-                  ),
-                ],
-              ),
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12,
+          children: [
+            Text("backup_controller_page_server_storage".tr(), style: context.textTheme.labelLarge),
+            LinearProgressIndicator(
+              minHeight: 10.0,
+              value: percentage,
+              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
             ),
-          ),
+            Text(
+              'backup_controller_page_storage_format',
+              style: context.textTheme.bodySmall,
+            ).tr(namedArgs: {'used': usedDiskSpace, 'total': totalDiskSpace}),
+          ],
         ),
       );
     }
@@ -192,7 +179,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           children: [
             InkWell(
               onTap: () {
-                context.pop();
+                ContextHelper(context).pop();
                 launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication);
               },
               child: Text("documentation", style: context.textTheme.bodySmall).tr(),
@@ -200,7 +187,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             const SizedBox(width: 20, child: Text("•", textAlign: TextAlign.center)),
             InkWell(
               onTap: () {
-                context.pop();
+                ContextHelper(context).pop();
                 launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication);
               },
               child: Text("profile_drawer_github", style: context.textTheme.bodySmall).tr(),
@@ -208,7 +195,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             const SizedBox(width: 20, child: Text("•", textAlign: TextAlign.center)),
             InkWell(
               onTap: () async {
-                context.pop();
+                ContextHelper(context).pop();
                 final packageInfo = await PackageInfo.fromPlatform();
                 showLicensePage(
                   context: context,
@@ -248,7 +235,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     return Dismissible(
       behavior: HitTestBehavior.translucent,
       direction: DismissDirection.down,
-      onDismissed: (_) => context.pop(),
+      onDismissed: (_) => ContextHelper(context).pop(),
       key: const Key('app_bar_dialog'),
       child: Dialog(
         clipBehavior: Clip.hardEdge,
@@ -266,11 +253,25 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(padding: const EdgeInsets.symmetric(horizontal: 8), child: buildTopRow()),
-                const AppBarProfileInfoBox(),
-                buildStorageInformation(),
-                const AppBarServerInfo(),
-                if (Store.isBetaTimelineEnabled && isReadonlyModeEnabled) buildReadonlyMessage(),
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surface,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                  margin: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+                  child: Column(
+                    children: [
+                      const AppBarProfileInfoBox(),
+                      Divider(thickness: 4, color: context.colorScheme.surfaceContainer),
+                      buildStorageInformation(),
+                      Divider(thickness: 4, color: context.colorScheme.surfaceContainer),
+                      const AppBarServerInfo(),
+                    ],
+                  ),
+                ),
+                if (isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
+                buildFreeUpSpaceButton(),
                 buildSettingButton(),
                 buildSignOutButton(),
                 buildFooter(),

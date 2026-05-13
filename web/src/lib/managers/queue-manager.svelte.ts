@@ -1,7 +1,7 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { QueueSnapshot } from '$lib/types';
 import { getQueues, type QueueResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import type { QueueSnapshot } from '$lib/types';
 
 export class QueueManager {
   #snapshots = $state<QueueSnapshot[]>([]);
@@ -19,7 +19,9 @@ export class QueueManager {
   }
 
   constructor() {
-    eventManager.on('QueueUpdate', () => void this.refresh());
+    eventManager.on({
+      QueueUpdate: () => this.refresh(),
+    });
   }
 
   listen() {

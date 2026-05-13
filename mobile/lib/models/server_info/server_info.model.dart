@@ -20,7 +20,7 @@ enum VersionStatus {
 
 class ServerInfo {
   final ServerVersion serverVersion;
-  final ServerVersion latestVersion;
+  final ServerVersion? latestVersion;
   final ServerFeatures serverFeatures;
   final ServerConfig serverConfig;
   final ServerDiskInfo serverDiskInfo;
@@ -28,7 +28,7 @@ class ServerInfo {
 
   const ServerInfo({
     required this.serverVersion,
-    required this.latestVersion,
+    this.latestVersion,
     required this.serverFeatures,
     required this.serverConfig,
     required this.serverDiskInfo,
@@ -60,7 +60,9 @@ class ServerInfo {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is ServerInfo &&
         other.serverVersion == serverVersion &&

@@ -11,7 +11,15 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
     extract: vitest.fn().mockResolvedValue(null),
     probe: vitest.fn(),
+    probePackets: vitest.fn().mockResolvedValue({
+      totalDuration: 0,
+      packetCount: 0,
+      outputFrames: 0,
+      keyframePts: [],
+      keyframeAccDuration: [],
+      keyframeOwnDuration: [],
+    }),
     transcode: vitest.fn(),
-    getImageDimensions: vitest.fn(),
+    getImageMetadata: vitest.fn(),
   };
 };

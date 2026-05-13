@@ -20,19 +20,26 @@ class WorkflowActionResponseDto {
     required this.workflowId,
   });
 
-  Object? actionConfig;
+  Map<String, Object>? actionConfig;
 
+  /// Action ID
   String id;
 
-  num order;
+  /// Action order
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int order;
 
+  /// Plugin action ID
   String pluginActionId;
 
+  /// Workflow ID
   String workflowId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowActionResponseDto &&
-    other.actionConfig == actionConfig &&
+    _deepEquality.equals(other.actionConfig, actionConfig) &&
     other.id == id &&
     other.order == order &&
     other.pluginActionId == pluginActionId &&
@@ -73,9 +80,9 @@ class WorkflowActionResponseDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowActionResponseDto(
-        actionConfig: mapValueOfType<Object>(json, r'actionConfig'),
+        actionConfig: mapCastOfType<String, Object>(json, r'actionConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: num.parse('${json[r'order']}'),
+        order: mapValueOfType<int>(json, r'order')!,
         pluginActionId: mapValueOfType<String>(json, r'pluginActionId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

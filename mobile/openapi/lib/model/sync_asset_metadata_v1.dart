@@ -15,20 +15,23 @@ class SyncAssetMetadataV1 {
   SyncAssetMetadataV1({
     required this.assetId,
     required this.key,
-    required this.value,
+    this.value = const {},
   });
 
+  /// Asset ID
   String assetId;
 
-  AssetMetadataKey key;
+  /// Key
+  String key;
 
-  Object value;
+  /// Value
+  Map<String, Object> value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetMetadataV1 &&
     other.assetId == assetId &&
     other.key == key &&
-    other.value == value;
+    _deepEquality.equals(other.value, value);
 
   @override
   int get hashCode =>
@@ -58,8 +61,8 @@ class SyncAssetMetadataV1 {
 
       return SyncAssetMetadataV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
-        value: mapValueOfType<Object>(json, r'value')!,
+        key: mapValueOfType<String>(json, r'key')!,
+        value: mapCastOfType<String, Object>(json, r'value')!,
       );
     }
     return null;

@@ -5,9 +5,6 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-@TableIndex.sql(
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-)
 @TableIndex.sql('''
 CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum
 ON remote_asset_entity (owner_id, checksum)
@@ -19,6 +16,11 @@ ON remote_asset_entity (owner_id, library_id, checksum)
 WHERE (library_id IS NOT NULL);
 ''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)')
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)')
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created
+ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)
+''')
 class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 
@@ -36,6 +38,8 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
+  DateTimeColumn get uploadedAt => dateTime().nullable()();
+
   TextColumn get livePhotoVideoId => text().nullable()();
 
   IntColumn get visibility => intEnum<AssetVisibility>()();
@@ -43,6 +47,8 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
   TextColumn get stackId => text().nullable()();
 
   TextColumn get libraryId => text().nullable()();
+
+  BoolColumn get isEdited => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -57,7 +63,8 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     type: type,
     createdAt: createdAt,
     updatedAt: updatedAt,
-    durationInSeconds: durationInSeconds,
+    uploadedAt: uploadedAt,
+    durationMs: durationMs,
     isFavorite: isFavorite,
     height: height,
     width: width,
@@ -66,5 +73,6 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     livePhotoVideoId: livePhotoVideoId,
     localId: localId,
     stackId: stackId,
+    isEdited: isEdited,
   );
 }

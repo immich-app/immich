@@ -1,6 +1,7 @@
+import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
+import { FileMigrationProvider, Kysely, Migrator, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -13,14 +14,15 @@ import {
   VECTOR_VERSION_RANGE,
   VECTORCHORD_LIST_SLACK_FACTOR,
   VECTORCHORD_VERSION_RANGE,
-  VECTORS_VERSION_RANGE,
 } from 'src/constants';
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
 import { DB } from 'src/schema';
-import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
+import { immich_uuid_v7 } from 'src/schema/functions';
+import { ExtensionVersion, VectorExtension } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 
@@ -70,7 +72,7 @@ export class DatabaseRepository {
     return getVectorExtension(this.db);
   }
 
-  @GenerateSql({ params: [[DatabaseExtension.Vectors]] })
+  @GenerateSql({ params: [[DatabaseExtension.Vector]] })
   async getExtensionVersions(extensions: readonly DatabaseExtension[]): Promise<ExtensionVersion[]> {
     const { rows } = await sql<ExtensionVersion>`
       SELECT name, default_version as "availableVersion", installed_version as "installedVersion"
@@ -84,9 +86,6 @@ export class DatabaseRepository {
     switch (extension) {
       case DatabaseExtension.VectorChord: {
         return VECTORCHORD_VERSION_RANGE;
-      }
-      case DatabaseExtension.Vectors: {
-        return VECTORS_VERSION_RANGE;
       }
       case DatabaseExtension.Vector: {
         return VECTOR_VERSION_RANGE;
@@ -122,7 +121,7 @@ export class DatabaseRepository {
     await sql`DROP EXTENSION IF EXISTS ${sql.raw(extension)}`.execute(this.db);
   }
 
-  async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
+  async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<void> {
     const [{ availableVersion, installedVersion }] = await this.getExtensionVersions([extension]);
     if (!installedVersion) {
       throw new Error(`${EXTENSION_NAMES[extension]} extension is not installed`);
@@ -133,10 +132,8 @@ export class DatabaseRepository {
     }
     targetVersion ??= availableVersion;
 
-    let restartRequired = false;
-    const diff = semver.diff(installedVersion, targetVersion);
-    if (!diff) {
-      return { restartRequired: false };
+    if (!semver.diff(installedVersion, targetVersion)) {
+      return;
     }
 
     await Promise.all([
@@ -144,22 +141,8 @@ export class DatabaseRepository {
       this.db.schema.dropIndex(VectorIndex.Face).ifExists().execute(),
     ]);
 
-    await this.db.transaction().execute(async (tx) => {
-      await this.setSearchPath(tx);
-
-      await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
-
-      if (extension === DatabaseExtension.Vectors && (diff === 'major' || diff === 'minor')) {
-        await sql`SELECT pgvectors_upgrade()`.execute(tx);
-        restartRequired = true;
-      }
-    });
-
-    if (!restartRequired) {
-      await Promise.all([this.reindexVectors(VectorIndex.Clip), this.reindexVectors(VectorIndex.Face)]);
-    }
-
-    return { restartRequired };
+    await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(this.db);
+    await Promise.all([this.reindexVectors(VectorIndex.Clip), this.reindexVectors(VectorIndex.Face)]);
   }
 
   async prewarm(index: VectorIndex): Promise<void> {
@@ -191,12 +174,6 @@ export class DatabaseRepository {
       switch (vectorExtension) {
         case DatabaseExtension.Vector: {
           if (!row.indexdef.toLowerCase().includes('using hnsw')) {
-            promises.push(this.reindexVectors(indexName));
-          }
-          break;
-        }
-        case DatabaseExtension.Vectors: {
-          if (!row.indexdef.toLowerCase().includes('using vectors')) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
@@ -246,22 +223,21 @@ export class DatabaseRepository {
     }
     const dimSize = await this.getDimensionSize(table);
     lists ||= this.targetListCount(await this.getRowCount(table));
-    await this.db.schema.dropIndex(indexName).ifExists().execute();
-    if (table === 'smart_search') {
-      await this.db.schema.alterTable(table).dropConstraint('dim_size_constraint').ifExists().execute();
-    }
     await this.db.transaction().execute(async (tx) => {
+      await sql`DROP INDEX IF EXISTS ${sql.raw(indexName)}`.execute(tx);
+      if (table === 'smart_search') {
+        await sql`ALTER TABLE ${sql.raw(table)} DROP CONSTRAINT IF EXISTS dim_size_constraint`.execute(tx);
+      }
       if (!rows.some((row) => row.columnName === 'embedding')) {
         this.logger.warn(`Column 'embedding' does not exist in table '${table}', truncating and adding column.`);
         await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(tx);
         await sql`ALTER TABLE ${sql.raw(table)} ADD COLUMN embedding real[] NOT NULL`.execute(tx);
       }
       await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
-      const schema = vectorExtension === DatabaseExtension.Vectors ? 'vectors.' : '';
       await sql`
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
-        SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
+        SET DATA TYPE vector(${sql.raw(String(dimSize))})`.execute(tx);
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
     try {
@@ -272,13 +248,35 @@ export class DatabaseRepository {
     this.logger.log(`Reindexed ${indexName}`);
   }
 
-  private async setSearchPath(tx: Transaction<DB>): Promise<void> {
-    await sql`SET search_path TO "$user", public, vectors`.execute(tx);
-  }
-
   private async getDatabaseName(): Promise<string> {
     const { rows } = await sql<{ db: string }>`SELECT current_database() as db`.execute(this.db);
     return rows[0].db;
+  }
+
+  getMigrations() {
+    return this.db.selectFrom('kysely_migrations').select(['name', 'timestamp']).orderBy('name', 'asc').execute();
+  }
+
+  async getSchemaDrift() {
+    const source = schemaFromCode({
+      overrides: true,
+      namingStrategy: 'default',
+      uuidFunction: (version) => (version === 7 ? `${immich_uuid_v7.name}()` : 'uuid_generate_v4()'),
+    });
+    const { database } = this.configRepository.getEnv();
+    const target = await schemaFromDatabase({ connection: database.config });
+
+    const drift = schemaDiff(source, target, {
+      tables: { ignoreExtra: true },
+      constraints: { ignoreExtra: false },
+      indexes: { ignoreExtra: true },
+      triggers: { ignoreExtra: true },
+      columns: { ignoreExtra: true },
+      functions: { ignoreExtra: false },
+      parameters: { ignoreExtra: true },
+    });
+
+    return drift;
   }
 
   async getDimensionSize(table: string, column = 'embedding'): Promise<number> {
@@ -358,7 +356,7 @@ export class DatabaseRepository {
   }
 
   async runMigrations(): Promise<void> {
-    this.logger.debug('Running migrations');
+    this.logger.log('Running migrations');
 
     const migrator = this.createMigrator();
 
@@ -379,7 +377,7 @@ export class DatabaseRepository {
       throw error;
     }
 
-    this.logger.debug('Finished running migrations');
+    this.logger.log('Finished running migrations');
   }
 
   async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {
@@ -402,7 +400,6 @@ export class DatabaseRepository {
         .updateTable('asset')
         .set((eb) => ({
           originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
-          encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
         }))
         .execute();
 

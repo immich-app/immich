@@ -17,17 +17,19 @@ class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
 
   @override
   ImageStreamCompleter loadImage(ThumbHashProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(_loadCodec(key, decode), onDispose: cancel);
+    return OneFramePlaceholderImageStreamCompleter(_loadCodec(key, decode), onLastListenerRemoved: cancel);
   }
 
   Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) {
     final request = this.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is ThumbHashProvider) {
       return thumbHash == other.thumbHash;
     }

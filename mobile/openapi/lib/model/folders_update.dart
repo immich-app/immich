@@ -17,6 +17,7 @@ class FoldersUpdate {
     this.sidebarWeb,
   });
 
+  /// Whether folders are enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -25,6 +26,7 @@ class FoldersUpdate {
   ///
   bool? enabled;
 
+  /// Whether folders appear in web sidebar
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

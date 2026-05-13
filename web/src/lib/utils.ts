@@ -1,12 +1,7 @@
-import { defaultLang, langs, locales } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { lang } from '$lib/stores/preferences.store';
-import { handleError } from '$lib/utils/handle-error';
 import {
-  AssetJobName,
   AssetMediaSize,
+  AssetTypeEnum,
   MemoryType,
-  QueueName,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -17,16 +12,22 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type AssetResponseDto,
   type MemoryResponseDto,
   type PersonResponseDto,
   type ServerVersionResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { toastManager } from '@immich/ui';
-import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
+import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
+import { defaultLang, locales } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
+import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+import { handleError } from '$lib/utils/handle-error';
+import { langs } from '$lib/utils/i18n';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -78,17 +79,40 @@ export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+let unsubscribeId = 0;
+const uploads: Record<number, () => void> = {};
+
+const trackUpload = (unsubscribe: () => void) => {
+  const id = unsubscribeId++;
+  uploads[id] = unsubscribe;
+  return () => {
+    delete uploads[id];
+  };
+};
+
+export const cancelUploadRequests = () => {
+  for (const unsubscribe of Object.values(uploads)) {
+    unsubscribe();
+  }
+};
+
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
-
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    const unsubscribe = trackUpload(() => xhr.abort());
 
-    xhr.addEventListener('error', (error) => reject(error));
+    xhr.addEventListener('error', (error) => {
+      unsubscribe();
+      reject(error);
+    });
+
     xhr.addEventListener('load', () => {
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
+        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });
@@ -143,36 +167,10 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getQueueName = derived(t, ($t) => {
-  return (name: QueueName) => {
-    const names: Record<QueueName, string> = {
-      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
-      [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
-      [QueueName.Sidecar]: $t('admin.sidecar_job'),
-      [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
-      [QueueName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
-      [QueueName.FaceDetection]: $t('admin.face_detection'),
-      [QueueName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
-      [QueueName.VideoConversion]: $t('admin.video_conversion_job'),
-      [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
-      [QueueName.Migration]: $t('admin.migration_job'),
-      [QueueName.BackgroundTask]: $t('admin.background_task_job'),
-      [QueueName.Search]: $t('search'),
-      [QueueName.Library]: $t('external_libraries'),
-      [QueueName.Notifications]: $t('notifications'),
-      [QueueName.BackupDatabase]: $t('admin.backup_database'),
-      [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
-      [QueueName.Workflow]: $t('workflow'),
-    };
-
-    return names[name];
-  };
-});
-
 let _sharedLink: SharedLinkResponseDto | undefined;
 
-export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
-export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
+export const setSharedLink = (sharedLink: typeof _sharedLink) => (_sharedLink = sharedLink);
+export const getSharedLink = (): typeof _sharedLink => _sharedLink;
 
 const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   const searchParameters = new URLSearchParams();
@@ -189,30 +187,60 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-type AssetUrlOptions = { id: string; cacheKey?: string | null };
+type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
 
-export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
-  if (typeof options === 'string') {
-    options = { id: options };
+export const getAssetUrl = ({
+  asset,
+  sharedLink,
+  forceOriginal = false,
+}: {
+  asset: AssetResponseDto | undefined;
+  sharedLink?: SharedLinkResponseDto;
+  forceOriginal?: boolean;
+}) => {
+  if (!asset) {
+    return;
   }
-  const { id, cacheKey } = options;
-  return createUrl(getAssetOriginalPath(id), { ...authManager.params, c: cacheKey });
+  const id = asset.id;
+  const cacheKey = asset.thumbhash;
+  if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
+    return getAssetMediaUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+  }
+  const size = targetImageSize(asset, forceOriginal);
+  return getAssetMediaUrl({ id, size, cacheKey });
 };
 
-export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, size, cacheKey } = options;
-  return createUrl(getAssetThumbnailPath(id), { ...authManager.params, size, c: cacheKey });
+export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
+  return {
+    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    preview: getAssetUrl({ asset, sharedLink })!,
+    original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
+  };
+}
+
+const forceUseOriginal = (asset: AssetResponseDto) => {
+  return asset.type === AssetTypeEnum.Image && asset.duration;
 };
 
-export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
-  if (typeof options === 'string') {
-    options = { id: options };
+export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
+  if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
+    return asset.type === AssetTypeEnum.Video || isWebCompatibleImage(asset)
+      ? AssetMediaSize.Original
+      : AssetMediaSize.Fullsize;
   }
-  const { id, cacheKey } = options;
-  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c: cacheKey });
+  return AssetMediaSize.Preview;
+};
+
+export const getAssetMediaUrl = (options: AssetUrlOptions) => {
+  const { id, size, cacheKey: c, edited = true } = options;
+  const isOriginal = size === AssetMediaSize.Original;
+  const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
+  return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
+};
+
+export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
+  const { id, cacheKey: c } = options;
+  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>
@@ -220,43 +248,6 @@ export const getProfileImageUrl = (user: UserResponseDto) =>
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
-
-export const getAssetJobName = derived(t, ($t) => {
-  return (job: AssetJobName) => {
-    const names: Record<AssetJobName, string> = {
-      [AssetJobName.RefreshFaces]: $t('refresh_faces'),
-      [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
-      [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
-      [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
-    };
-
-    return names[job];
-  };
-});
-
-export const getAssetJobMessage = derived(t, ($t) => {
-  return (job: AssetJobName) => {
-    const messages: Record<AssetJobName, string> = {
-      [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
-      [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
-      [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
-      [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
-    };
-
-    return messages[job];
-  };
-});
-
-export const getAssetJobIcon = (job: AssetJobName) => {
-  const names: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: mdiHeadSyncOutline,
-    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
-    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
-    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
-  };
-
-  return names[job];
-};
 
 export const copyToClipboard = async (secret: string) => {
   const $t = get(t);
@@ -403,3 +394,22 @@ export const getReleaseType = (
 };
 
 export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+
+export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
+  actions.map((action) => ({ ...action, icon: undefined }));
+
+export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
+
+export const transformToTitleCase = (text: string) => {
+  if (text.length === 0) {
+    return text;
+  } else if (text.length === 1) {
+    return text.charAt(0).toUpperCase();
+  }
+
+  let result = '';
+  for (const word of text.toLowerCase().split(' ')) {
+    result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
+  }
+  return result.trim();
+};

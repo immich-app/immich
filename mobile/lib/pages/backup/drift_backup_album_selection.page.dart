@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -84,7 +83,9 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     final albumCount = albums.length;
     // Filter albums based on search query
     final filteredAlbums = albums.where((album) {
-      if (_searchQuery.isEmpty) return true;
+      if (_searchQuery.isEmpty) {
+        return true;
+      }
       return album.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
@@ -113,16 +114,15 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             // Waits for hashing to be cancelled before starting a new one
             unawaited(nativeSync.cancelHashing().whenComplete(() => backgroundSync.hashAssets()));
             if (isBackupEnabled) {
+              backupNotifier.stopForegroundBackup();
               unawaited(
-                backupNotifier.cancel().whenComplete(
-                  () => backgroundSync.syncRemote().then((success) {
-                    if (success) {
-                      return backupNotifier.startBackup(user.id);
-                    } else {
-                      Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
-                    }
-                  }),
-                ),
+                backgroundSync.syncRemote().then((success) {
+                  if (success) {
+                    return backupNotifier.startForegroundBackup(user.id);
+                  } else {
+                    Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
+                  }
+                }),
               );
             }
           }
@@ -242,8 +242,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                         ),
                       ),
 
-                      if (Platform.isAndroid)
-                        _SelectAllButton(filteredAlbums: filteredAlbums, selectedBackupAlbums: selectedBackupAlbums),
+                      _SelectAllButton(filteredAlbums: filteredAlbums, selectedBackupAlbums: selectedBackupAlbums),
                     ],
                   ),
                 ),

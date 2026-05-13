@@ -5,13 +5,11 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
@@ -35,18 +33,22 @@ enum TimelineOrigin {
   search,
   deepLink,
   albumActivities,
+  folder,
+  recentlyAdded,
 }
 
 class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
-  final SettingsService _settingsService;
+  final MetadataRepository _metadataRepository;
 
-  const TimelineFactory({required DriftTimelineRepository timelineRepository, required SettingsService settingsService})
-    : _timelineRepository = timelineRepository,
-      _settingsService = settingsService;
+  const TimelineFactory({
+    required DriftTimelineRepository timelineRepository,
+    required MetadataRepository metadataRepository,
+  }) : _timelineRepository = timelineRepository,
+       _metadataRepository = metadataRepository;
 
   GroupAssetsBy get groupBy {
-    final group = GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+    final group = _metadataRepository.appConfig.timeline.groupAssetsBy;
     // We do not support auto grouping in the new timeline yet, fallback to day grouping
     return group == GroupAssetsBy.auto ? GroupAssetsBy.day : group;
   }
@@ -60,6 +62,8 @@ class TimelineFactory {
       TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 
   TimelineService remoteAssets(String userId) => TimelineService(_timelineRepository.remote(userId, groupBy));
+
+  TimelineService recentlyAdded(String userId) => TimelineService(_timelineRepository.recentlyAdded(userId, groupBy));
 
   TimelineService favorite(String userId) => TimelineService(_timelineRepository.favorite(userId, groupBy));
 
@@ -79,8 +83,14 @@ class TimelineFactory {
   TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));
 
-  TimelineService map(String userId, LatLngBounds bounds) =>
-      TimelineService(_timelineRepository.map(userId, bounds, groupBy));
+  TimelineService fromAssetStream(List<BaseAsset> Function() getAssets, Stream<int> assetCount, TimelineOrigin type) =>
+      TimelineService(_timelineRepository.fromAssetStream(getAssets, assetCount, type));
+
+  TimelineService fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin type) =>
+      TimelineService(_timelineRepository.fromAssetsWithBuckets(assets, type));
+
+  TimelineService map(List<String> userIds, TimelineMapOptions options) =>
+      TimelineService(_timelineRepository.map(userIds, options, groupBy));
 }
 
 class TimelineService {
@@ -110,7 +120,7 @@ class TimelineService {
 
         if (totalAssets == 0) {
           _bufferOffset = 0;
-          _buffer.clear();
+          _buffer = [];
         } else {
           final int offset;
           final int count;
@@ -181,8 +191,8 @@ class TimelineService {
     return _buffer.slice(start, start + count);
   }
 
-  // Pre-cache assets around the given index for asset viewer
-  Future<void> preCacheAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+  // Preload assets around the given index for asset viewer
+  Future<void> preloadAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
@@ -223,6 +233,13 @@ class TimelineService {
       return null;
     }
     return _buffer.elementAt(index - _bufferOffset);
+  }
+
+  /// Finds the index of an asset by its heroTag within the current buffer.
+  /// Returns null if the asset is not found in the buffer.
+  int? getIndex(String heroTag) {
+    final index = _buffer.indexWhere((a) => a.heroTag == heroTag);
+    return index >= 0 ? _bufferOffset + index : null;
   }
 
   Future<void> dispose() async {

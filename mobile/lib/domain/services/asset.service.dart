@@ -1,10 +1,8 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
@@ -55,47 +53,6 @@ class AssetService {
 
     final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
     return _remoteAssetRepository.getExif(id);
-  }
-
-  Future<double> getAspectRatio(BaseAsset asset) async {
-    bool isFlipped;
-    double? width;
-    double? height;
-
-    if (asset.hasRemote) {
-      final exif = await getExif(asset);
-      isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else if (asset is LocalAsset) {
-      isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
-      width = asset.width?.toDouble();
-      height = asset.height?.toDouble();
-    } else {
-      isFlipped = false;
-    }
-
-    if (width == null || height == null) {
-      if (asset.hasRemote) {
-        final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
-        final remoteAsset = await _remoteAssetRepository.get(id);
-        width = remoteAsset?.width?.toDouble();
-        height = remoteAsset?.height?.toDouble();
-      } else {
-        final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-        final localAsset = await _localAssetRepository.get(id);
-        width = localAsset?.width?.toDouble();
-        height = localAsset?.height?.toDouble();
-      }
-    }
-
-    final orientedWidth = isFlipped ? height : width;
-    final orientedHeight = isFlipped ? width : height;
-    if (orientedWidth != null && orientedHeight != null && orientedHeight > 0) {
-      return orientedWidth / orientedHeight;
-    }
-
-    return 1.0;
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {

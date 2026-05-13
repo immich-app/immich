@@ -58,6 +58,12 @@ String parameterToString(dynamic value) {
   if (value is AlbumUserRole) {
     return AlbumUserRoleTypeTransformer().encode(value).toString();
   }
+  if (value is AssetEditAction) {
+    return AssetEditActionTypeTransformer().encode(value).toString();
+  }
+  if (value is AssetIdErrorReason) {
+    return AssetIdErrorReasonTypeTransformer().encode(value).toString();
+  }
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
@@ -67,14 +73,20 @@ String parameterToString(dynamic value) {
   if (value is AssetMediaStatus) {
     return AssetMediaStatusTypeTransformer().encode(value).toString();
   }
-  if (value is AssetMetadataKey) {
-    return AssetMetadataKeyTypeTransformer().encode(value).toString();
-  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
+  if (value is AssetOrderBy) {
+    return AssetOrderByTypeTransformer().encode(value).toString();
+  }
+  if (value is AssetRejectReason) {
+    return AssetRejectReasonTypeTransformer().encode(value).toString();
+  }
   if (value is AssetTypeEnum) {
     return AssetTypeEnumTypeTransformer().encode(value).toString();
+  }
+  if (value is AssetUploadAction) {
+    return AssetUploadActionTypeTransformer().encode(value).toString();
   }
   if (value is AssetVisibility) {
     return AssetVisibilityTypeTransformer().encode(value).toString();
@@ -112,6 +124,9 @@ String parameterToString(dynamic value) {
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
   }
+  if (value is MirrorAxis) {
+    return MirrorAxisTypeTransformer().encode(value).toString();
+  }
   if (value is NotificationLevel) {
     return NotificationLevelTypeTransformer().encode(value).toString();
   }
@@ -127,8 +142,11 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
-  if (value is PluginContext) {
-    return PluginContextTypeTransformer().encode(value).toString();
+  if (value is PluginContextType) {
+    return PluginContextTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is PluginJsonSchemaType) {
+    return PluginJsonSchemaTypeTypeTransformer().encode(value).toString();
   }
   if (value is PluginTriggerType) {
     return PluginTriggerTypeTypeTransformer().encode(value).toString();
@@ -156,6 +174,9 @@ String parameterToString(dynamic value) {
   }
   if (value is SourceType) {
     return SourceTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is StorageFolder) {
+    return StorageFolderTypeTransformer().encode(value).toString();
   }
   if (value is SyncEntityType) {
     return SyncEntityTypeTypeTransformer().encode(value).toString();

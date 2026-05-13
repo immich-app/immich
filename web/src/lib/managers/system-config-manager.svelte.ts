@@ -1,13 +1,15 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import { getConfig, getConfigDefaults, type SystemConfigDto } from '@immich/sdk';
 import { cloneDeep } from 'lodash-es';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class SystemConfigManager {
   #value?: SystemConfigDto = $state();
   #defaultValue?: SystemConfigDto = $state();
 
   constructor() {
-    eventManager.on('SystemConfigUpdate', (config) => (this.#value = config));
+    eventManager.on({
+      SystemConfigUpdate: (config) => (this.#value = config),
+    });
   }
 
   async init() {

@@ -1,15 +1,20 @@
+import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { uploadAssetsStore } from '$lib/stores/upload';
-import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
+import { cancelUploadRequests } from '$lib/utils';
 
 class UploadManager {
   mediaTypes = $state<ServerMediaTypesResponseDto>({ image: [], sidecar: [], video: [] });
 
   constructor() {
-    eventManager.on('AppInit', () => void this.#loadExtensions()).on('AuthLogout', () => void this.reset());
+    eventManager.on({
+      AppInit: () => this.#loadExtensions(),
+      AuthLogout: () => this.reset(),
+    });
   }
 
   reset() {
+    cancelUploadRequests();
     uploadAssetsStore.reset();
   }
 

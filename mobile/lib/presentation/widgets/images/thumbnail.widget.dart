@@ -21,9 +21,14 @@ class Thumbnail extends StatefulWidget {
 
   const Thumbnail({this.imageProvider, this.fit = BoxFit.cover, this.thumbhashProvider, super.key});
 
-  Thumbnail.remote({required String remoteId, this.fit = BoxFit.cover, Size size = kThumbnailResolution, super.key})
-    : imageProvider = RemoteThumbProvider(assetId: remoteId),
-      thumbhashProvider = null;
+  Thumbnail.remote({
+    required String remoteId,
+    required String thumbhash,
+    this.fit = BoxFit.cover,
+    Size size = kThumbnailResolution,
+    super.key,
+  }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash),
+       thumbhashProvider = null;
 
   Thumbnail.fromAsset({
     required BaseAsset? asset,
@@ -77,7 +82,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
   void _loadFromThumbhashProvider() {
     _stopListeningToThumbhashStream();
     final thumbhashProvider = widget.thumbhashProvider;
-    if (thumbhashProvider == null || _providerImage != null) return;
+    if (thumbhashProvider == null || _providerImage != null) {
+      return;
+    }
 
     final thumbhashStream = _thumbhashStream = thumbhashProvider.resolve(ImageConfiguration.empty);
     final thumbhashStreamListener = _thumbhashStreamListener = ImageStreamListener(
@@ -103,7 +110,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
   void _loadFromImageProvider() {
     _stopListeningToImageStream();
     final imageProvider = widget.imageProvider;
-    if (imageProvider == null) return;
+    if (imageProvider == null) {
+      return;
+    }
 
     final imageStream = _imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final imageStreamListener = _imageStreamListener = ImageStreamListener(
@@ -196,7 +205,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   bool _isVisible() {
     final renderObject = context.findRenderObject() as RenderBox?;
-    if (renderObject == null || !renderObject.attached) return false;
+    if (renderObject == null || !renderObject.attached) {
+      return false;
+    }
 
     final topLeft = renderObject.localToGlobal(Offset.zero);
     final bottomRight = renderObject.localToGlobal(Offset(renderObject.size.width, renderObject.size.height));
@@ -228,16 +239,6 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
-    final imageProvider = widget.imageProvider;
-    if (imageProvider is CancellableImageProvider) {
-      imageProvider.cancel();
-    }
-
-    final thumbhashProvider = widget.thumbhashProvider;
-    if (thumbhashProvider is CancellableImageProvider) {
-      thumbhashProvider.cancel();
-    }
-
     _fadeController.removeStatusListener(_onAnimationStatusChanged);
     _fadeController.dispose();
     _stopListeningToStream();

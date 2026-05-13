@@ -30,18 +30,6 @@ on:
         required: true
       IOS_CERTIFICATE_PASSWORD:
         required: true
-      IOS_PROVISIONING_PROFILE:
-        required: true
-      IOS_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION:
-        required: true
-      IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION:
-        required: true
       FASTLANE_TEAM_ID:
         required: true
   pull_request:
@@ -63,14 +51,14 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@08bac802a312fc89808e0dd589271ca0974087b5 # pre-job-action-v2.0.0
+        uses: immich-app/devtools/actions/pre-job@91f342bb4477c4bc10c576ae739da875d85aa164 # pre-job-action-v2.0.4
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -85,37 +73,43 @@ jobs:
     needs: pre-job
     permissions:
       contents: read
-    # Skip when PR from a fork
-    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+      pull-requests: write
+    if: ${{ github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
     runs-on: mich
 
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ inputs.ref || github.sha }}
+          ref: ${{ inputs.ref }}
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Create the Keystore
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
         run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
 
-      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5.1.0
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             ~/.gradle/caches
@@ -125,15 +119,8 @@ jobs:
             mobile/.dart_tool
           key: build-mobile-gradle-${{ runner.os }}-main
 
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
-        with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
-          cache: true
-
       - name: Setup Android SDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
         with:
           packages: ''
 
@@ -142,11 +129,10 @@ jobs:
         run: flutter pub get
 
       - name: Generate translation file
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
-        working-directory: ./mobile
+        run: mise //mobile:codegen:translation
 
       - name: Generate platform APIs
-        run: make pigeon
+        run: mise //mobile:codegen:pigeon
         working-directory: ./mobile
 
       - name: Build Android App Bundle
@@ -156,23 +142,46 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if [[ $IS_MAIN == 'true' ]]; then
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
-            flutter build apk --debug --split-per-abi --target-platform android-arm64
+            flutter build apk --release
           fi
 
       - name: Publish Android Artifact
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        id: upload-apk
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
 
+      - name: Comment APK download link on PR
+        if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork }}
+        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APK_URL: ${{ steps.upload-apk.outputs.artifact-url }}
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          message-id: 'mobile-android-apk'
+          message: |
+            📱 **Android release APK (universal)** — `${{ env.HEAD_SHA }}`
+
+            Download: ${{ env.APK_URL }}
+
+            <details>
+              <summary>QR code</summary>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
+            </details>
+
+            Installs as a separate app (applicationId `app.alextran.immich.pr${{ github.event.pull_request.number }}`), so it coexists with the Play Store version and any other PR builds.
+
       - name: Save Gradle Cache
         id: cache-gradle-save
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         if: github.ref == 'refs/heads/main'
         with:
           path: |
@@ -190,36 +199,41 @@ jobs:
       contents: read
     # Run on main branch or workflow_dispatch, or on PRs/other branches (build only, no upload)
     if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
-    runs-on: macos-latest
+    runs-on: macos-15
 
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+
       - name: Checkout code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
         with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
-          cache: true
+          github_token: ${{ steps.token.outputs.token }}
 
       - name: Install Flutter dependencies
         working-directory: ./mobile
         run: flutter pub get
 
       - name: Generate translation files
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
-        working-directory: ./mobile
+        run: mise //mobile:codegen:translation
 
       - name: Generate platform APIs
-        run: make pigeon
-        working-directory: ./mobile
+        run: mise //mobile:codegen:pigeon
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
@@ -240,34 +254,13 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
 
-      - name: Import Certificate and Provisioning Profiles
+      - name: Import Certificate
         env:
           IOS_CERTIFICATE_P12: ${{ secrets.IOS_CERTIFICATE_P12 }}
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
-          IOS_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION }}
-          IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          ENVIRONMENT: ${{ inputs.environment || 'development' }}
         working-directory: ./mobile/ios
         run: |
           # Decode certificate
           echo "$IOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
-
-          # Decode provisioning profiles based on environment
-          if [[ "$ENVIRONMENT" == "development" ]]; then
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE" | base64 --decode > profile_dev.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_dev_share.mobileprovision
-            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_dev_widget.mobileprovision
-            ls -lh profile_dev*.mobileprovision
-          else
-            echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_share.mobileprovision
-            echo "$IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_widget.mobileprovision
-            ls -lh profile*.mobileprovision
-          fi
 
       - name: Create keychain and import certificate
         env:
@@ -299,6 +292,8 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
           BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
           GITHUB_REF: ${{ github.ref }}
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
+          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 6
         working-directory: ./mobile/ios
         run: |
           # Only upload to TestFlight on main branch
@@ -319,7 +314,7 @@ jobs:
           security delete-keychain build.keychain || true
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa

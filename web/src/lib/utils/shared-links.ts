@@ -1,8 +1,8 @@
-import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
+import { getMySharedLink, isHttpError } from '@immich/sdk';
+import { getAssetMediaUrl, getSharedLink as getCachedSharedLink, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
-import { getMySharedLink, isHttpError } from '@immich/sdk';
 
 export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) => {
   const params = new URLSearchParams();
@@ -28,15 +28,20 @@ export const loadSharedLink = async ({
   await authenticate(url, { public: true });
 
   const common = { key, slug };
-
   const $t = await getFormatter();
 
+  const cachedSharedLink = getCachedSharedLink();
+  const sharedLinkPromise =
+    cachedSharedLink && (key === cachedSharedLink.key || slug === cachedSharedLink.slug)
+      ? Promise.resolve(cachedSharedLink)
+      : getMySharedLink({ key, slug });
+
   try {
-    const [sharedLink, asset] = await Promise.all([getMySharedLink({ key, slug }), getAssetInfoFromParam(params)]);
+    const [sharedLink, asset] = await Promise.all([sharedLinkPromise, getAssetInfoFromParam(params)]);
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetPath = assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png';
+    const assetPath = assetId ? getAssetMediaUrl({ id: assetId }) : '/feature-panel.png';
 
     return {
       ...common,
@@ -49,7 +54,7 @@ export const loadSharedLink = async ({
       },
     };
   } catch (error) {
-    if (isHttpError(error) && error.data.message === 'Invalid password') {
+    if (isHttpError(error) && error.data.message === 'Password required') {
       return {
         ...common,
         passwordRequired: true,

@@ -1,4 +1,4 @@
-import { purchaseStore } from '$lib/stores/purchase.store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
@@ -21,7 +21,7 @@ export const load = (async ({ url }) => {
       const response = await activateProduct(licenseKey, activationKey);
       if (response.activatedAt !== '') {
         isActivated = true;
-        purchaseStore.setPurchaseStatus(true);
+        authManager.isPurchased = true;
       }
     }
   } catch (error) {

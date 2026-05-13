@@ -2,41 +2,26 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { Insertable } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { Writable } from 'node:stream';
-import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetDeltaSyncDto,
-  AssetDeltaSyncResponseDto,
-  AssetFullSyncDto,
   SyncAckDeleteDto,
   SyncAckSetDto,
-  SyncAssetV1,
+  syncAlbumV2ToV1,
+  SyncAssetV2,
   SyncItem,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
-import {
-  AssetVisibility,
-  DatabaseAction,
-  EntityType,
-  JobName,
-  Permission,
-  QueueName,
-  SyncEntityType,
-  SyncRequestType,
-} from 'src/enum';
+import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
 import { SyncQueryOptions } from 'src/repositories/sync.repository';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
-import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
-import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
-type AssetLike = Omit<SyncAssetV1, 'checksum' | 'thumbhash'> & {
+type AssetLike = Omit<SyncAssetV2, 'checksum' | 'thumbhash'> & {
   checksum: Buffer<ArrayBufferLike>;
   thumbhash: Buffer<ArrayBufferLike> | null;
 };
@@ -45,7 +30,7 @@ const COMPLETE_ID = 'complete';
 const MAX_DAYS = 30;
 const MAX_DURATION = Duration.fromObject({ days: MAX_DAYS });
 
-const mapSyncAssetV1 = ({ checksum, thumbhash, ...data }: AssetLike): SyncAssetV1 => ({
+const mapSyncAssetV2 = ({ checksum, thumbhash, ...data }: AssetLike): SyncAssetV2 => ({
   ...data,
   checksum: hexOrBufferToBase64(checksum),
   thumbhash: thumbhash ? hexOrBufferToBase64(thumbhash) : null,
@@ -65,17 +50,20 @@ const sendEntityBackfillCompleteAck = (response: Writable, ackType: SyncEntityTy
   send(response, { type: SyncEntityType.SyncAckV1, data: {}, ackType, ids: [id, COMPLETE_ID] });
 };
 
-const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 export const SYNC_TYPES_ORDER = [
   SyncRequestType.AuthUsersV1,
   SyncRequestType.UsersV1,
   SyncRequestType.PartnersV1,
   SyncRequestType.AssetsV1,
+  SyncRequestType.AssetsV2,
   SyncRequestType.StacksV1,
   SyncRequestType.PartnerAssetsV1,
+  SyncRequestType.PartnerAssetsV2,
   SyncRequestType.PartnerStacksV1,
   SyncRequestType.AlbumAssetsV1,
+  SyncRequestType.AlbumAssetsV2,
   SyncRequestType.AlbumsV1,
+  SyncRequestType.AlbumsV2,
   SyncRequestType.AlbumUsersV1,
   SyncRequestType.AlbumToAssetsV1,
   SyncRequestType.AssetExifsV1,
@@ -85,8 +73,10 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.MemoryToAssetsV1,
   SyncRequestType.PeopleV1,
   SyncRequestType.AssetFacesV1,
+  SyncRequestType.AssetFacesV2,
   SyncRequestType.UserMetadataV1,
   SyncRequestType.AssetMetadataV1,
+  SyncRequestType.AssetEditsV1,
 ];
 
 const throwSessionRequired = () => {
@@ -168,18 +158,26 @@ export class SyncService extends BaseService {
     const options: SyncQueryOptions = { nowId, userId: auth.user.id };
 
     const handlers: Record<SyncRequestType, () => Promise<void>> = {
+      // deprecated handlers
+      [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(),
+      [SyncRequestType.AssetFacesV1]: () => this.syncAssetFacesV1(),
+      [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(),
+      [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(),
+
       [SyncRequestType.AuthUsersV1]: () => this.syncAuthUsersV1(options, response, checkpointMap),
       [SyncRequestType.UsersV1]: () => this.syncUsersV1(options, response, checkpointMap),
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(options, response, checkpointMap),
-      [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(options, response, checkpointMap),
+      [SyncRequestType.AssetsV2]: () => this.syncAssetsV2(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
-      [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(options, response, checkpointMap, session.id),
+      [SyncRequestType.AssetEditsV1]: () => this.syncAssetEditsV1(options, response, checkpointMap),
+      [SyncRequestType.PartnerAssetsV2]: () => this.syncPartnerAssetsV2(options, response, checkpointMap, session.id),
       [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(options, response, checkpointMap, auth),
       [SyncRequestType.PartnerAssetExifsV1]: () =>
         this.syncPartnerAssetExifsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumsV1]: () => this.syncAlbumsV1(options, response, checkpointMap),
+      [SyncRequestType.AlbumsV2]: () => this.syncAlbumsV2(options, response, checkpointMap),
       [SyncRequestType.AlbumUsersV1]: () => this.syncAlbumUsersV1(options, response, checkpointMap, session.id),
-      [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(options, response, checkpointMap, session.id),
+      [SyncRequestType.AlbumAssetsV2]: () => this.syncAlbumAssetsV2(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumToAssetsV1]: () => this.syncAlbumToAssetsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumAssetExifsV1]: () =>
         this.syncAlbumAssetExifsV1(options, response, checkpointMap, session.id),
@@ -188,12 +186,12 @@ export class SyncService extends BaseService {
       [SyncRequestType.StacksV1]: () => this.syncStackV1(options, response, checkpointMap),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(options, response, checkpointMap),
-      [SyncRequestType.AssetFacesV1]: async () => this.syncAssetFacesV1(options, response, checkpointMap),
+      [SyncRequestType.AssetFacesV2]: () => this.syncAssetFacesV2(options, response, checkpointMap),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
-    };
+    } as const;
 
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
-      const handler = handlers[type];
+      const handler = handlers[type as keyof typeof handlers];
       await handler();
     }
 
@@ -212,6 +210,7 @@ export class SyncService extends BaseService {
     await this.syncRepository.asset.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.assetFace.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.assetMetadata.cleanupAuditTable(pruneThreshold);
+    await this.syncRepository.assetEdit.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.memory.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.memoryToAsset.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.partner.cleanupAuditTable(pruneThreshold);
@@ -268,21 +267,31 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAssetsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+  private syncAssetsV1(): Promise<void> {
+    throw new BadRequestException('SyncRequestType.AssetsV1 is deprecated, use SyncRequestType.AssetsV2 instead');
+  }
+
+  private async syncAssetsV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const deleteType = SyncEntityType.AssetDeleteV1;
     const deletes = this.syncRepository.asset.getDeletes({ ...options, ack: checkpointMap[deleteType] });
     for await (const { id, ...data } of deletes) {
       send(response, { type: deleteType, ids: [id], data });
     }
 
-    const upsertType = SyncEntityType.AssetV1;
+    const upsertType = SyncEntityType.AssetV2;
     const upserts = this.syncRepository.asset.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV1(data) });
+      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV2(data) });
     }
   }
 
-  private async syncPartnerAssetsV1(
+  private syncPartnerAssetsV1(): Promise<void> {
+    throw new BadRequestException(
+      'SyncRequestType.PartnerAssetsV1 is deprecated, use SyncRequestType.PartnerAssetsV2 instead',
+    );
+  }
+
+  private async syncPartnerAssetsV2(
     options: SyncQueryOptions,
     response: Writable,
     checkpointMap: CheckpointMap,
@@ -294,13 +303,13 @@ export class SyncService extends BaseService {
       send(response, { type: deleteType, ids: [id], data });
     }
 
-    const backfillType = SyncEntityType.PartnerAssetBackfillV1;
+    const backfillType = SyncEntityType.PartnerAssetBackfillV2;
     const backfillCheckpoint = checkpointMap[backfillType];
     const partners = await this.syncRepository.partner.getCreatedAfter({
       ...options,
       afterCreateId: backfillCheckpoint?.updateId,
     });
-    const upsertType = SyncEntityType.PartnerAssetV1;
+    const upsertType = SyncEntityType.PartnerAssetV2;
     const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
@@ -321,7 +330,7 @@ export class SyncService extends BaseService {
           send(response, {
             type: backfillType,
             ids: [createId, updateId],
-            data: mapSyncAssetV1(data),
+            data: mapSyncAssetV2(data),
           });
         }
 
@@ -337,13 +346,28 @@ export class SyncService extends BaseService {
 
     const upserts = this.syncRepository.partnerAsset.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV1(data) });
+      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV2(data) });
     }
   }
 
   private async syncAssetExifsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const upsertType = SyncEntityType.AssetExifV1;
     const upserts = this.syncRepository.assetExif.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncAssetEditsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AssetEditDeleteV1;
+    const deletes = this.syncRepository.assetEdit.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+    const upsertType = SyncEntityType.AssetEditV1;
+    const upserts = this.syncRepository.assetEdit.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
@@ -409,6 +433,21 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AlbumV1;
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
+      const albumUsers = await this.syncRepository.album.getAlbumUsers(data.id);
+      send(response, { type: upsertType, ids: [updateId], data: syncAlbumV2ToV1(data, albumUsers) });
+    }
+  }
+
+  private async syncAlbumsV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.AlbumDeleteV1;
+    const deletes = this.syncRepository.album.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AlbumV2;
+    const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
   }
@@ -468,20 +507,26 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAlbumAssetsV1(
+  private syncAlbumAssetsV1(): Promise<void> {
+    throw new BadRequestException(
+      'SyncRequestType.AlbumAssetsV1 is deprecated, use SyncRequestType.AlbumAssetsV2 instead',
+    );
+  }
+
+  private async syncAlbumAssetsV2(
     options: SyncQueryOptions,
     response: Writable,
     checkpointMap: CheckpointMap,
     sessionId: string,
   ) {
-    const backfillType = SyncEntityType.AlbumAssetBackfillV1;
+    const backfillType = SyncEntityType.AlbumAssetBackfillV2;
     const backfillCheckpoint = checkpointMap[backfillType];
     const albums = await this.syncRepository.album.getCreatedAfter({
       ...options,
       afterCreateId: backfillCheckpoint?.updateId,
     });
-    const updateType = SyncEntityType.AlbumAssetUpdateV1;
-    const createType = SyncEntityType.AlbumAssetCreateV1;
+    const updateType = SyncEntityType.AlbumAssetUpdateV2;
+    const createType = SyncEntityType.AlbumAssetCreateV2;
     const updateCheckpoint = checkpointMap[updateType];
     const createCheckpoint = checkpointMap[createType];
     if (createCheckpoint) {
@@ -500,7 +545,7 @@ export class SyncService extends BaseService {
         );
 
         for await (const { updateId, ...data } of backfill) {
-          send(response, { type: backfillType, ids: [createId, updateId], data: mapSyncAssetV1(data) });
+          send(response, { type: backfillType, ids: [createId, updateId], data: mapSyncAssetV2(data) });
         }
 
         sendEntityBackfillCompleteAck(response, backfillType, createId);
@@ -519,7 +564,7 @@ export class SyncService extends BaseService {
         createCheckpoint,
       );
       for await (const { updateId, ...data } of updates) {
-        send(response, { type: updateType, ids: [updateId], data: mapSyncAssetV1(data) });
+        send(response, { type: updateType, ids: [updateId], data: mapSyncAssetV2(data) });
       }
     }
 
@@ -530,12 +575,12 @@ export class SyncService extends BaseService {
         send(response, {
           type: SyncEntityType.SyncAckV1,
           data: {},
-          ackType: SyncEntityType.AlbumAssetUpdateV1,
+          ackType: SyncEntityType.AlbumAssetUpdateV2,
           ids: [options.nowId],
         });
         first = false;
       }
-      send(response, { type: createType, ids: [updateId], data: mapSyncAssetV1(data) });
+      send(response, { type: createType, ids: [updateId], data: mapSyncAssetV2(data) });
     }
   }
 
@@ -780,14 +825,20 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncAssetFacesV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+  private syncAssetFacesV1(): Promise<void> {
+    throw new BadRequestException(
+      'SyncRequestType.AssetFacesV1 is deprecated, use SyncRequestType.AssetFacesV2 instead',
+    );
+  }
+
+  private async syncAssetFacesV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const deleteType = SyncEntityType.AssetFaceDeleteV1;
     const deletes = this.syncRepository.assetFace.getDeletes({ ...options, ack: checkpointMap[deleteType] });
     for await (const { id, ...data } of deletes) {
       send(response, { type: deleteType, ids: [id], data });
     }
 
-    const upsertType = SyncEntityType.AssetFaceV1;
+    const upsertType = SyncEntityType.AssetFaceV2;
     const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
@@ -850,69 +901,5 @@ export class SyncService extends BaseService {
         }),
       },
     ]);
-  }
-
-  async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
-    // mobile implementation is faster if this is a single id
-    const userId = dto.userId || auth.user.id;
-    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [userId] });
-    const assets = await this.assetRepository.getAllForUserFullSync({
-      ownerId: userId,
-      updatedUntil: dto.updatedUntil,
-      lastId: dto.lastId,
-      limit: dto.limit,
-    });
-    return assets.map((a) => mapAsset(a, { auth, stripMetadata: false, withStack: true }));
-  }
-
-  async getDeltaSync(auth: AuthDto, dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
-    // app has not synced in the last 100 days
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.updatedAfter));
-    if (duration > AUDIT_LOG_MAX_DURATION) {
-      return FULL_SYNC;
-    }
-
-    // app does not have the correct partners synced
-    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
-    const userIds = [auth.user.id, ...partnerIds];
-    if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
-      return FULL_SYNC;
-    }
-
-    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: dto.userIds });
-
-    const limit = 10_000;
-    const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
-
-    // too many changes, need to do a full sync
-    if (upserted.length === limit) {
-      return FULL_SYNC;
-    }
-
-    const deleted = await this.auditRepository.getAfter(dto.updatedAfter, {
-      userIds,
-      entityType: EntityType.Asset,
-      action: DatabaseAction.Delete,
-    });
-
-    const result = {
-      needsFullSync: false,
-      upserted: upserted
-        // do not return archived assets for partner users
-        .filter(
-          (a) =>
-            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.Timeline),
-        )
-        .map((a) =>
-          mapAsset(a, {
-            auth,
-            stripMetadata: false,
-            // ignore stacks for non partner users
-            withStack: a.ownerId === auth.user.id,
-          }),
-        ),
-      deleted,
-    };
-    return result;
   }
 }

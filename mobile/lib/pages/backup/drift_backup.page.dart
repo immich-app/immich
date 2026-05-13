@@ -10,7 +10,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
@@ -45,14 +45,17 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+      final backupNotifier = ref.read(driftBackupProvider.notifier);
+      final syncManager = ref.read(backgroundSyncProvider);
 
-      ref.read(driftBackupProvider.notifier).updateSyncing(true);
-      syncSuccess = await ref.read(backgroundSyncProvider).syncRemote();
-      ref.read(driftBackupProvider.notifier).updateSyncing(false);
+      await backupNotifier.getBackupStatus(currentUser.id);
+
+      backupNotifier.updateSyncing(true);
+      syncSuccess = await syncManager.syncRemote();
+      backupNotifier.updateSyncing(false);
 
       if (mounted) {
-        await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+        await backupNotifier.getBackupStatus(currentUser.id);
       }
     });
   }
@@ -82,9 +85,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       }
 
       if (syncSuccess == null) {
-        ref.read(driftBackupProvider.notifier).updateSyncing(true);
+        backupNotifier.updateSyncing(true);
         syncSuccess = await backupSyncManager.syncRemote();
-        ref.read(driftBackupProvider.notifier).updateSyncing(false);
+        backupNotifier.updateSyncing(false);
       }
 
       await backupNotifier.getBackupStatus(currentUser.id);
@@ -93,11 +96,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         Logger("DriftBackupPage").warning("Remote sync did not complete successfully, skipping backup");
         return;
       }
-      await backupNotifier.startBackup(currentUser.id);
-    }
-
-    Future<void> stopBackup() async {
-      await backupNotifier.cancel();
+      await backupNotifier.startForegroundBackup(currentUser.id);
     }
 
     return Scaffold(
@@ -136,9 +135,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const Divider(),
                   BackupToggleButton(
                     onStart: () async => await startBackup(),
-                    onStop: () async {
+                    onStop: () {
                       syncSuccess = null;
-                      await stopBackup();
+                      backupNotifier.stopForegroundBackup();
                     },
                   ),
                   switch (error) {
@@ -152,10 +151,12 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                         children: [
                           Icon(Icons.warning_rounded, color: context.colorScheme.error, fill: 1),
                           const SizedBox(width: 8),
-                          Text(
-                            IntlKeys.backup_error_sync_failed.t(),
-                            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
-                            textAlign: TextAlign.center,
+                          Flexible(
+                            child: Text(
+                              context.t.backup_error_sync_failed,
+                              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ],
                       ),
@@ -348,6 +349,7 @@ class _RemainderCard extends ConsumerWidget {
                       remainderCount.toString(),
                       style: context.textTheme.titleLarge?.copyWith(
                         color: context.colorScheme.onSurface.withAlpha(syncStatus.isRemoteSyncing ? 50 : 255),
+                        fontFeatures: [const FontFeature.tabularFigures()],
                       ),
                     ),
                     if (syncStatus.isRemoteSyncing)
@@ -416,7 +418,9 @@ class _PreparingStatusState extends ConsumerState {
   }
 
   void _startPollingIfNeeded() {
-    if (_pollingTimer != null) return;
+    if (_pollingTimer != null) {
+      return;
+    }
 
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       final currentUser = ref.read(currentUserProvider);
@@ -487,6 +491,7 @@ class _PreparingStatusState extends ConsumerState {
                     style: context.textTheme.titleMedium?.copyWith(
                       color: context.colorScheme.primary,
                       fontWeight: FontWeight.w600,
+                      fontFeatures: [const FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -511,6 +516,7 @@ class _PreparingStatusState extends ConsumerState {
                   style: context.textTheme.titleMedium?.copyWith(
                     color: context.primaryColor,
                     fontWeight: FontWeight.w600,
+                    fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),
               ],

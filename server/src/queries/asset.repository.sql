@@ -49,6 +49,23 @@ returning
   "dateTimeOriginal",
   "timeZone"
 
+-- AssetRepository.unlockProperties
+update "asset_exif"
+set
+  "lockedProperties" = nullif(
+    array(
+      select distinct
+        property
+      from
+        unnest("asset_exif"."lockedProperties") property
+      where
+        not property = any ($1)
+    ),
+    '{}'
+  )
+where
+  "assetId" = $2
+
 -- AssetRepository.getMetadata
 select
   "key",
@@ -76,6 +93,14 @@ where
   "assetId" = $1
   and "key" = $2
 
+-- AssetRepository.deleteBulkMetadata
+begin
+delete from "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+commit
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
@@ -98,19 +123,18 @@ with
           ) as "year"
       )
     select
-      "a".*,
-      to_json("asset_exif") as "exifInfo"
+      "a".*
     from
       "today"
       inner join lateral (
         select
-          "asset".*
+          "asset"."id",
+          "asset"."localDateTime"
         from
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
         where
-          "asset_job_status"."previewAt" is not null
-          and (asset."localDateTime" at time zone 'UTC')::date = today.date
+          (asset."localDateTime" at time zone 'UTC')::date = today.date
           and "asset"."ownerId" = any ($4::uuid[])
           and "asset"."visibility" = $5
           and exists (
@@ -127,7 +151,6 @@ with
         limit
           $7
       ) as "a" on true
-      inner join "asset_exif" on "a"."id" = "asset_exif"."assetId"
   )
 select
   date_part(
@@ -174,6 +197,7 @@ select
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
       ) as agg
   ) as "faces",
   (
@@ -218,17 +242,6 @@ where
 limit
   $3
 
--- AssetRepository.getAllByDeviceId
-select
-  "deviceAssetId"
-from
-  "asset"
-where
-  "ownerId" = $1::uuid
-  and "deviceId" = $2
-  and "visibility" != $3
-  and "deletedAt" is null
-
 -- AssetRepository.getLivePhotoCount
 select
   count(*) as "count"
@@ -260,7 +273,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -287,9 +301,8 @@ limit
 -- AssetRepository.updateAll
 update "asset"
 set
-  "deviceId" = $1
 where
-  "id" = any ($2::uuid[])
+  "id" = any ($1::uuid[])
 
 -- AssetRepository.getByChecksum
 select
@@ -369,20 +382,17 @@ with
       "asset"."ownerId",
       "asset"."status",
       asset."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
+      asset."createdAt" at time zone 'utc' as "createdAt",
       encode("asset"."thumbhash", 'base64') as "thumbhash",
       "asset_exif"."city",
       "asset_exif"."country",
       "asset_exif"."projectionType",
       coalesce(
         case
-          when asset_exif."exifImageHeight" = 0
-          or asset_exif."exifImageWidth" = 0 then 1
-          when "asset_exif"."orientation" in ('5', '6', '7', '8', '-90', '90') then round(
-            asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric,
-            3
-          )
+          when asset."height" = 0
+          or asset."width" = 0 then 1
           else round(
-            asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric,
+            asset."width"::numeric / asset."height"::numeric,
             3
           )
         end,
@@ -417,6 +427,7 @@ with
           and "stack"."primaryAssetId" != "asset"."id"
       )
     order by
+      (asset."localDateTime" AT TIME ZONE 'UTC')::date desc,
       "asset"."fileCreatedAt" desc
   ),
   "agg" as (
@@ -432,6 +443,7 @@ with
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
       coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
       coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
+      coalesce(array_agg("createdAt"), '{}') as "createdAt",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
@@ -475,60 +487,19 @@ where
 limit
   $5
 
--- AssetRepository.getAllForUserFullSync
+-- AssetRepository.getRecentlyCreatedAssetIds
 select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
+  "id" as "data",
+  "createdAt" as "value"
 from
   "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
-  left join lateral (
-    select
-      "stack".*,
-      count("stacked") as "assetCount"
-    from
-      "asset" as "stacked"
-    where
-      "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
 where
-  "asset"."ownerId" = $1::uuid
-  and "asset"."visibility" != $2
-  and "asset"."updatedAt" <= $3
-  and "asset"."id" > $4
+  "ownerId" = $1::uuid
+  and "asset"."visibility" = $2
+  and "type" = $3
+  and "deletedAt" is null
 order by
-  "asset"."id"
-limit
-  $5
-
--- AssetRepository.getChangedDeltaSync
-select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
-from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
-  left join lateral (
-    select
-      "stack".*,
-      count("stacked") as "assetCount"
-    from
-      "asset" as "stacked"
-    where
-      "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
-where
-  "asset"."ownerId" = any ($1::uuid[])
-  and "asset"."visibility" != $2
-  and "asset"."updatedAt" > $3
+  "value" desc
 limit
   $4
 
@@ -562,3 +533,159 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+-- AssetRepository.getForOriginal
+select
+  "asset"."id",
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" in ($3)
+
+-- AssetRepository.getForOriginals
+select
+  "asset"."id",
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" in ($3)
+
+-- AssetRepository.getForThumbnail
+select
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_file"."path" as "path"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
+where
+  "asset"."id" = $2
+order by
+  "asset_file"."isEdited" desc
+
+-- AssetRepository.getForVideo
+select
+  "asset"."originalPath",
+  (
+    select
+      "asset_file"."path"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'encoded_video'
+      and "asset_file"."isEdited" = false
+  ) as "encodedVideoPath"
+from
+  "asset"
+where
+  "asset"."id" = $1
+  and "asset"."type" = $2
+
+-- AssetRepository.getForOcr
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."orientation"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForEdit
+select
+  "asset"."type",
+  "asset"."livePhotoVideoId",
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."orientation",
+  "asset_exif"."projectionType"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForMetadataExtractionTags
+select
+  "asset_exif"."tags"
+from
+  "asset_exif"
+where
+  "asset_exif"."assetId" = $1
+
+-- AssetRepository.getForFaces
+select
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."orientation",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForUpdateTags
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "tag"."value"
+        from
+          "tag"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+        where
+          "asset"."id" = "tag_asset"."assetId"
+      ) as agg
+  ) as "tags"
+from
+  "asset"
+where
+  "asset"."id" = $1

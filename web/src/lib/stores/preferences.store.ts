@@ -1,15 +1,10 @@
-import { browser } from '$app/environment';
-import { Theme, defaultLang } from '$lib/constants';
-import { getPreferredLocale } from '$lib/utils/i18n';
 import { persisted } from 'svelte-persisted-store';
-
-export interface ThemeSetting {
-  value: Theme;
-  system: boolean;
-}
+import { browser } from '$app/environment';
+import { defaultLang } from '$lib/constants';
+import { getPreferredLocale } from '$lib/utils/i18n';
 
 // Locale to use for formatting dates, numbers, etc.
-export const locale = persisted<string | undefined>('locale', 'default', {
+export const locale = persisted('locale', 'default', {
   serializer: {
     parse: (text) => text || 'default',
     stringify: (object) => object ?? '',
@@ -49,17 +44,12 @@ const defaultMapSettings = {
 const persistedObject = <T>(key: string, defaults: T) =>
   persisted<T>(key, defaults, {
     serializer: {
-      parse: (text) => ({ ...defaultMapSettings, ...JSON.parse(text ?? null) }),
+      parse: (text) => ({ ...defaults, ...JSON.parse(text ?? null) }),
       stringify: JSON.stringify,
     },
   });
 
 export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
-
-export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
-export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});
-
-export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
 export interface AlbumViewSettings {
   view: string;

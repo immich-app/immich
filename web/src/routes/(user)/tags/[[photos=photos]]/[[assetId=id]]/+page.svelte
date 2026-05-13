@@ -1,25 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
-  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
-  import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
-  import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
-  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
-  import TagEditModal from '$lib/modals/TagEditModal.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import Breadcrumbs from '$lib/components/shared-components/tree/Breadcrumbs.svelte';
+  import TreeItemThumbnails from '$lib/components/shared-components/tree/TreeItemThumbnails.svelte';
+  import TreeItems from '$lib/components/shared-components/tree/TreeItems.svelte';
+  import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -31,16 +20,26 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import { preferences, user } from '$lib/stores/user.store';
+  import { AssetAction } from '$lib/constants';
+  import SkipLink from '$lib/elements/SkipLink.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
+  import { getTagActions } from '$lib/services/tag.service';
+  import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
+  import { getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiTag, mdiTagMultiple } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
-
-  const assetInteraction = new AssetInteraction();
 
   let tags = $derived<TagResponseDto[]>(data.tags);
   const tree = $derived(TreeNode.fromTags(tags));
@@ -51,84 +50,43 @@
 
   const handleNavigation = (tag: string) => navigateToView(joinPaths(data.path, tag));
 
-  const getLink = (path: string) => {
-    const url = new URL(AppRoute.TAGS, globalThis.location.href);
-    url.searchParams.set(QueryParameter.PATH, path);
-    return url.href;
-  };
+  const getLink = (path: string) => Route.tags({ path });
 
   const navigateToView = (path: string) => goto(getLink(path));
 
-  const handleCreate = async () => {
-    await modalManager.show(TagCreateModal, { baseTag: tag });
-    tags = await getAllTags();
-  };
-
-  const handleEdit = async () => {
-    if (!tag) {
-      return;
-    }
-
-    await modalManager.show(TagEditModal, { tag });
-    tags = await getAllTags();
-  };
-
-  const handleDelete = async () => {
-    if (!tag) {
-      return;
-    }
-
-    const isConfirm = await modalManager.showDialog({
-      title: $t('delete_tag'),
-      prompt: $t('delete_tag_confirmation_prompt', { values: { tagName: tag.value } }),
-      confirmText: $t('delete'),
-    });
-
-    if (!isConfirm) {
-      return;
-    }
-
-    await deleteTag({ id: tag.id! });
-    tags = await getAllTags();
-
-    // navigate to parent
-    await navigateToView(tag.parent ? tag.parent.path : '');
-  };
-
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
-    assetInteraction.clearMultiselect();
+    assetMultiSelectManager.clear();
   };
+
+  const onRefresh = async () => {
+    tags = await getAllTags();
+  };
+
+  const onTagDelete = async (response: TreeNode) => {
+    if (response.path === tag.path) {
+      await navigateToView(tag.parent ? tag.parent.path : '');
+    }
+
+    await onRefresh();
+  };
+
+  const { Create, Update, Delete } = $derived(getTagActions($t, tag));
 </script>
 
-<UserPageLayout title={data.meta.title}>
+<OnEvents onTagCreate={onRefresh} onTagUpdate={onRefresh} {onTagDelete} />
+
+<UserPageLayout title={data.meta.title} actions={[Create, Update, Delete]}>
   {#snippet sidebar()}
     <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
-        <div class="uppercase text-xs ps-4 mb-2 dark:text-white">{$t('explorer')}</div>
+        <Text class="mb-4 ps-4" size="small">{$t('explorer')}</Text>
         <div class="h-full">
           <TreeItems icons={{ default: mdiTag, active: mdiTag }} {tree} active={tag.path} {getLink} />
         </div>
       </section>
     </Sidebar>
-  {/snippet}
-
-  {#snippet buttons()}
-    <HStack>
-      <Button leadingIcon={mdiPlus} onclick={handleCreate} size="small" variant="ghost" color="secondary">
-        <Text class="hidden md:block">{$t('create_tag')}</Text>
-      </Button>
-
-      {#if tag.path.length > 0}
-        <Button leadingIcon={mdiPencil} onclick={handleEdit} size="small" variant="ghost" color="secondary">
-          <Text class="hidden md:block">{$t('edit_tag')}</Text>
-        </Button>
-        <Button leadingIcon={mdiTrashCanOutline} onclick={handleDelete} size="small" variant="ghost" color="secondary">
-          <Text class="hidden md:block">{$t('delete_tag')}</Text>
-        </Button>
-      {/if}
-    </HStack>
   {/snippet}
 
   <Breadcrumbs node={tag} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
@@ -139,7 +97,7 @@
         enableRouting={true}
         bind:timelineManager
         {options}
-        {assetInteraction}
+        assetInteraction={assetMultiSelectManager}
         removeAction={AssetAction.UNARCHIVE}
       >
         {#snippet empty()}
@@ -153,21 +111,16 @@
 </UserPageLayout>
 
 <section>
-  {#if assetInteraction.selectionActive}
-    <div class="fixed top-0 start-0 w-full">
-      <AssetSelectControlBar
-        ownerId={$user.id}
-        assets={assetInteraction.selectedAssets}
-        clearSelect={() => assetInteraction.clearMultiselect()}
-      >
+  {#if assetMultiSelectManager.selectionActive}
+    <div class="fixed inset-s-0 top-0 w-full">
+      <AssetSelectControlBar>
+        {@const Actions = getAssetBulkActions($t)}
+        <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
         <CreateSharedLink />
-        <SelectAllAssets {timelineManager} {assetInteraction} />
-        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum />
-          <AddToAlbum shared />
-        </ButtonContextMenu>
+        <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+        <ActionButton action={Actions.AddToAlbum} />
         <FavoriteAction
-          removeFavorite={assetInteraction.isAllFavorite}
+          removeFavorite={assetMultiSelectManager.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
         ></FavoriteAction>
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
@@ -179,7 +132,7 @@
             menuItem
             onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
           />
-          {#if $preferences.tags.enabled}
+          {#if authManager.preferences.tags.enabled}
             <TagAction menuItem />
           {/if}
           <DeleteAssets

@@ -16,6 +16,7 @@ class MergePersonDto {
     this.ids = const [],
   });
 
+  /// Person IDs to merge
   List<String> ids;
 
   @override

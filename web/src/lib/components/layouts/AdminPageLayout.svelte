@@ -1,23 +1,12 @@
 <script lang="ts">
-  import PageContent from '$lib/components/layouts/PageContent.svelte';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import AdminSidebar from '$lib/sidebars/AdminSidebar.svelte';
+  import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
+  import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import BottomInfo from '$lib/components/shared-components/side-bar/BottomInfo.svelte';
+  import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
-  import {
-    AppShell,
-    AppShellHeader,
-    AppShellSidebar,
-    Breadcrumbs,
-    Button,
-    ContextMenuButton,
-    HStack,
-    MenuItemType,
-    Scrollable,
-    isMenuItemType,
-    type BreadcrumbItem,
-  } from '@immich/ui';
-  import { mdiSlashForward } from '@mdi/js';
+  import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -27,48 +16,32 @@
     children?: Snippet;
   };
 
-  let { breadcrumbs, actions = [], children }: Props = $props();
+  let { breadcrumbs, actions, children }: Props = $props();
 </script>
 
 <AppShell>
   <AppShellHeader>
-    <NavigationBar showUploadButton={false} noBorder />
+    <NavigationBar noBorder />
   </AppShellHeader>
-  <AppShellSidebar bind:open={sidebarStore.isOpen} class="border-none shadow-none">
-    <AdminSidebar />
+  <AppShellSidebar
+    bind:open={sidebarStore.isOpen}
+    class="flex h-full flex-col justify-between gap-2 border-none shadow-none"
+  >
+    <div class="flex flex-col gap-1 pe-4 pt-8">
+      <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
+      <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
+      <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
+      <NavbarItem title={$t('settings')} href={Route.systemSettings()} icon={mdiCog} />
+      <NavbarItem title={$t('admin.maintenance_settings')} href={Route.systemMaintenance()} icon={mdiWrench} />
+      <NavbarItem title={$t('server_stats')} href={Route.systemStatistics()} icon={mdiServer} />
+    </div>
+
+    <div class="me-4 mb-2">
+      <BottomInfo />
+    </div>
   </AppShellSidebar>
 
-  <div class="h-full flex flex-col">
-    <div class="flex h-16 w-full justify-between items-center border-b py-2 px-4 md:px-2">
-      <Breadcrumbs items={breadcrumbs} separator={mdiSlashForward} />
-
-      {#if actions.length > 0}
-        <div class="hidden md:block">
-          <HStack gap={0}>
-            {#each actions as action, i (i)}
-              {#if !isMenuItemType(action) && (action.$if?.() ?? true)}
-                <Button
-                  variant="ghost"
-                  size="small"
-                  color={action.color ?? 'secondary'}
-                  leadingIcon={action.icon}
-                  onclick={() => action.onAction(action)}
-                  title={action.data?.title}
-                >
-                  {action.title}
-                </Button>
-              {/if}
-            {/each}
-          </HStack>
-        </div>
-
-        <ContextMenuButton aria-label={$t('open')} items={actions} class="md:hidden" />
-      {/if}
-    </div>
-    <Scrollable class="grow">
-      <PageContent>
-        {@render children?.()}
-      </PageContent>
-    </Scrollable>
-  </div>
+  <BreadcrumbActionPage {breadcrumbs} {actions}>
+    {@render children?.()}
+  </BreadcrumbActionPage>
 </AppShell>

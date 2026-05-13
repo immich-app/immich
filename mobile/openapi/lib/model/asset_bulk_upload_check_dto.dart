@@ -16,6 +16,7 @@ class AssetBulkUploadCheckDto {
     this.assets = const [],
   });
 
+  /// Assets to check
   List<AssetBulkUploadCheckItem> assets;
 
   @override

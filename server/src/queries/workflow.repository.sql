@@ -7,6 +7,8 @@ from
   "workflow"
 where
   "id" = $1
+order by
+  "createdAt" desc
 
 -- WorkflowRepository.getWorkflowsByOwner
 select
@@ -16,7 +18,7 @@ from
 where
   "ownerId" = $1
 order by
-  "name"
+  "createdAt" desc
 
 -- WorkflowRepository.getWorkflowsByTrigger
 select

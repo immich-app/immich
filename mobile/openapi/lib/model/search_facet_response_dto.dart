@@ -19,6 +19,7 @@ class SearchFacetResponseDto {
 
   List<SearchFacetCountResponseDto> counts;
 
+  /// Facet field name
   String fieldName;
 
   @override

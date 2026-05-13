@@ -1,23 +1,23 @@
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { UploadState } from '$lib/models/upload-asset';
-import { uploadAssetsStore } from '$lib/stores/upload';
-import { user } from '$lib/stores/user.store';
-import { uploadRequest } from '$lib/utils';
-import { addAssetsToAlbum } from '$lib/utils/asset-utils';
-import { ExecutorQueue } from '$lib/utils/executor-queue';
-import { asQueryString } from '$lib/utils/shared-links';
 import {
-  Action,
   AssetMediaStatus,
+  AssetUploadAction,
   AssetVisibility,
   checkBulkUpload,
   getBaseUrl,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { uploadManager } from '$lib/managers/upload-manager.svelte';
+import { addAssetsToAlbums } from '$lib/services/album.service';
+import { uploadAssetsStore } from '$lib/stores/upload';
+import { UploadState } from '$lib/types';
+import { uploadRequest } from '$lib/utils';
+import { ExecutorQueue } from '$lib/utils/executor-queue';
+import { asQueryString } from '$lib/utils/shared-links';
 import { handleError } from './handle-error';
 
 export const addDummyItems = () => {
@@ -43,19 +43,23 @@ export const addDummyItems = () => {
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
+type FilePickerParam = { multiple?: boolean; extensions?: string[] };
 type FileUploadParam = { multiple?: boolean; albumId?: string };
 
-export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
-  const { albumId, multiple = true } = options;
-  const extensions = uploadManager.getExtensions();
+export const openFilePicker = async (options: FilePickerParam = {}) => {
+  const { multiple = true, extensions } = options;
 
-  return new Promise<string[]>((resolve, reject) => {
+  return new Promise<File[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
 
       fileSelector.type = 'file';
       fileSelector.multiple = multiple;
-      fileSelector.accept = extensions.join(',');
+
+      if (extensions) {
+        fileSelector.accept = extensions.join(',');
+      }
+
       fileSelector.addEventListener(
         'change',
         (e: Event) => {
@@ -63,9 +67,9 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
           if (!target.files) {
             return;
           }
-          const files = Array.from(target.files);
 
-          resolve(fileUploadHandler({ files, albumId }));
+          const files = Array.from(target.files);
+          resolve(files);
         },
         { passive: true },
       );
@@ -76,6 +80,17 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
       reject(error);
     }
   });
+};
+
+export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
+  const { albumId, multiple = true } = options;
+  const extensions = uploadManager.getExtensions();
+  const files = await openFilePicker({
+    multiple,
+    extensions,
+  });
+
+  return fileUploadHandler({ files, albumId });
 };
 
 type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'assetFile'> & {
@@ -95,8 +110,12 @@ export const fileUploadHandler = async ({
       const deviceAssetId = getDeviceAssetId(file);
       uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
       promises.push(
-        uploadExecutionQueue.addTask(() => fileUploader({ assetFile: file, deviceAssetId, albumId, isLockedAssets })),
+        uploadExecutionQueue.addTask(() => fileUploader({ deviceAssetId, assetFile: file, albumId, isLockedAssets })),
       );
+    } else {
+      toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
+        timeout: 10_000,
+      });
     }
   }
 
@@ -108,11 +127,36 @@ function getDeviceAssetId(asset: File) {
   return 'web' + '-' + asset.name + '-' + asset.lastModified;
 }
 
+function hashFile(file: File): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const worker = new Worker(new URL('$lib/workers/hash-file.ts', import.meta.url), { type: 'module' });
+
+    worker.addEventListener('message', ({ data }: MessageEvent<{ result?: string; error?: string }>) => {
+      worker.terminate();
+
+      if (data.error) {
+        reject(new Error(data.error));
+      } else {
+        resolve(data.result!);
+      }
+    });
+
+    worker.addEventListener('error', (event) => {
+      worker.terminate();
+
+      reject(new Error(event.message));
+    });
+
+    worker.postMessage(file);
+  });
+}
+
 type FileUploaderParams = {
   assetFile: File;
   albumId?: string;
   replaceAssetId?: string;
   isLockedAssets?: boolean;
+  // TODO rework the asset uploader and remove this
   deviceAssetId: string;
 };
 
@@ -125,18 +169,16 @@ async function fileUploader({
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
+  const wasInitiallyLoggedIn = !!authManager.authenticated;
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
   try {
     const formData = new FormData();
     for (const [key, value] of Object.entries({
-      deviceAssetId,
-      deviceId: 'WEB',
       fileCreatedAt,
       fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
       isFavorite: 'false',
-      duration: '0:00:00.000000',
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
@@ -147,20 +189,16 @@ async function fileUploader({
     }
 
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
-    if (crypto?.subtle?.digest && !authManager.isSharedLink) {
+    if (!authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
-        const bytes = await assetFile.arrayBuffer();
-        const hash = await crypto.subtle.digest('SHA-1', bytes);
-        const checksum = Array.from(new Uint8Array(hash))
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
+        const checksum = await hashFile(assetFile);
 
         const {
           results: [checkUploadResult],
         } = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: assetFile.name, checksum }] } });
-        if (checkUploadResult.action === Action.Reject && checkUploadResult.assetId) {
+        if (checkUploadResult.action === AssetUploadAction.Reject && checkUploadResult.assetId) {
           responseData = {
             status: AssetMediaStatus.Duplicate,
             id: checkUploadResult.assetId,
@@ -195,9 +233,9 @@ async function fileUploader({
       uploadAssetsStore.track('success');
     }
 
-    if (albumId) {
+    if (albumId && !authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_adding_to_album') });
-      await addAssetsToAlbum(albumId, [responseData.id], false);
+      await addAssetsToAlbums([albumId], [responseData.id], { notify: false });
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_added_to_album') });
     }
 
@@ -215,8 +253,9 @@ async function fileUploader({
 
     return responseData.id;
   } catch (error) {
-    // ignore errors if the user logs out during uploads
-    if (!get(user)) {
+    // If the user store no longer holds a user, it means they have logged out
+    // In this case don't bother reporting any errors.
+    if (wasInitiallyLoggedIn && !authManager.authenticated) {
       return;
     }
 

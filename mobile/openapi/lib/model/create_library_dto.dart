@@ -13,16 +13,19 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
-    this.exclusionPatterns = const {},
-    this.importPaths = const {},
+    this.exclusionPatterns = const [],
+    this.importPaths = const [],
     this.name,
     required this.ownerId,
   });
 
-  Set<String> exclusionPatterns;
+  /// Exclusion patterns (max 128)
+  List<String> exclusionPatterns;
 
-  Set<String> importPaths;
+  /// Import paths (max 128)
+  List<String> importPaths;
 
+  /// Library name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -31,6 +34,7 @@ class CreateLibraryDto {
   ///
   String? name;
 
+  /// Owner user ID
   String ownerId;
 
   @override
@@ -53,8 +57,8 @@ class CreateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'exclusionPatterns'] = this.exclusionPatterns.toList(growable: false);
-      json[r'importPaths'] = this.importPaths.toList(growable: false);
+      json[r'exclusionPatterns'] = this.exclusionPatterns;
+      json[r'importPaths'] = this.importPaths;
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -74,11 +78,11 @@ class CreateLibraryDto {
 
       return CreateLibraryDto(
         exclusionPatterns: json[r'exclusionPatterns'] is Iterable
-            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toSet()
-            : const {},
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toSet()
-            : const {},
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
       );

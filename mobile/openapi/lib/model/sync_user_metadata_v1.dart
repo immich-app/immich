@@ -15,20 +15,22 @@ class SyncUserMetadataV1 {
   SyncUserMetadataV1({
     required this.key,
     required this.userId,
-    required this.value,
+    this.value = const {},
   });
 
   UserMetadataKey key;
 
+  /// User ID
   String userId;
 
-  Object value;
+  /// User metadata value
+  Map<String, Object> value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncUserMetadataV1 &&
     other.key == key &&
     other.userId == userId &&
-    other.value == value;
+    _deepEquality.equals(other.value, value);
 
   @override
   int get hashCode =>
@@ -59,7 +61,7 @@ class SyncUserMetadataV1 {
       return SyncUserMetadataV1(
         key: UserMetadataKey.fromJson(json[r'key'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
-        value: mapValueOfType<Object>(json, r'value')!,
+        value: mapCastOfType<String, Object>(json, r'value')!,
       );
     }
     return null;

@@ -1,8 +1,8 @@
+import { tick } from 'svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
-import { tick } from 'svelte';
 
 const tracker = new InvocationTracker();
 
@@ -21,11 +21,15 @@ export const focusPreviousAsset = () =>
 
 const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
 
+export const focusAsset = (assetId: string) => {
+  const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${assetId}"]`);
+  element?.focus();
+};
+
 export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
   const scrolled = scrollToAsset(asset);
   if (scrolled) {
-    const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
-    element?.focus();
+    focusAsset(asset.id);
   }
 };
 
@@ -71,8 +75,7 @@ export const setFocusTo = async (
     if (!invocation.isStillValid()) {
       return;
     }
-    const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
-    element?.focus();
+    focusAsset(asset.id);
   }
 
   invocation.endInvocation();

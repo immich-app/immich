@@ -1,14 +1,14 @@
+import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
+import { toastManager, type ActionItem } from '@immich/ui';
+import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
+import { isEqual } from 'lodash-es';
+import type { MessageFormatter } from 'svelte-i18n';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { copyToClipboard } from '$lib/utils';
 import { downloadBlob } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
-import { toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
-import { isEqual } from 'lodash-es';
-import type { MessageFormatter } from 'svelte-i18n';
 
 export const getSystemConfigActions = (
   $t: MessageFormatter,
@@ -18,7 +18,6 @@ export const getSystemConfigActions = (
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
     description: $t('admin.copy_config_to_clipboard_description'),
-    type: $t('command'),
     icon: mdiContentCopy,
     onAction: () => handleCopyToClipboard(config),
     shortcuts: { shift: true, key: 'c' },
@@ -27,7 +26,6 @@ export const getSystemConfigActions = (
   const Download: ActionItem = {
     title: $t('export_as_json'),
     description: $t('admin.export_config_as_json_description'),
-    type: $t('command'),
     icon: mdiDownload,
     onAction: () => handleDownloadConfig(config),
     shortcuts: [
@@ -39,7 +37,6 @@ export const getSystemConfigActions = (
   const Upload: ActionItem = {
     title: $t('import_from_json'),
     description: $t('admin.import_config_from_json_description'),
-    type: $t('command'),
     icon: mdiUpload,
     $if: () => !featureFlags.configFile,
     onAction: () => handleUploadConfig(),
@@ -62,7 +59,7 @@ export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) =
     const newConfig = await updateConfig({ systemConfigDto });
 
     eventManager.emit('SystemConfigUpdate', newConfig);
-    toastManager.success($t('settings_saved'));
+    toastManager.primary($t('settings_saved'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_settings'));
   }
@@ -96,7 +93,7 @@ export const handleDownloadConfig = (config: SystemConfigDto) => {
 export const handleUploadConfig = () => {
   const input = globalThis.document.createElement('input');
   input.setAttribute('type', 'file');
-  input.setAttribute('accept', 'json');
+  input.setAttribute('accept', '.json');
   input.setAttribute('style', 'display: none');
 
   input.addEventListener('change', ({ target }) => {
@@ -109,8 +106,10 @@ export const handleUploadConfig = () => {
       const newConfig = JSON.parse(text);
       await handleSystemConfigSave(newConfig);
     };
-    reader().catch((error) => console.error('Error handling JSON config upload', error));
-    globalThis.document.append(input);
+    reader()
+      .catch((error) => console.error('Error handling JSON config upload', error))
+      .finally(() => input.remove());
   });
-  input.remove();
+  globalThis.document.body.append(input);
+  input.click();
 };

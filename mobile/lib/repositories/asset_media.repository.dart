@@ -5,15 +5,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
-import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -23,7 +18,6 @@ final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
-
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
@@ -51,40 +45,13 @@ class AssetMediaRepository {
     return PhotoManager.editor.deleteWithIds(ids);
   }
 
-  Future<asset_entity.Asset?> get(String id) async {
+  Future<AssetEntity?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
-    return toAsset(entity);
-  }
-
-  static asset_entity.Asset? toAsset(AssetEntity? local) {
-    if (local == null) return null;
-    final asset_entity.Asset asset = asset_entity.Asset(
-      checksum: "",
-      localId: local.id,
-      ownerId: fastHash(Store.get(StoreKey.currentUser).id),
-      fileCreatedAt: local.createDateTime,
-      fileModifiedAt: local.modifiedDateTime,
-      updatedAt: local.modifiedDateTime,
-      durationInSeconds: local.duration,
-      type: asset_entity.AssetType.values[local.typeInt],
-      fileName: local.title!,
-      width: local.width,
-      height: local.height,
-      isFavorite: local.isFavorite,
-    );
-    if (asset.fileCreatedAt.year == 1970) {
-      asset.fileCreatedAt = asset.fileModifiedAt;
-    }
-    if (local.latitude != null) {
-      asset.exifInfo = ExifInfo(latitude: local.latitude, longitude: local.longitude);
-    }
-    asset.local = local;
-    return asset;
+    return entity;
   }
 
   Future<String?> getOriginalFilename(String id) async {
     final entity = await AssetEntity.fromId(id);
-
     if (entity == null) {
       return null;
     }
@@ -101,28 +68,53 @@ class AssetMediaRepository {
     }
   }
 
+  /// Deletes temporary files in parallel
+  Future<void> _cleanupTempFiles(List<File> tempFiles) async {
+    await Future.wait(
+      tempFiles.map((file) async {
+        try {
+          await file.delete();
+        } catch (e) {
+          _log.warning("Failed to delete temporary file: ${file.path}", e);
+        }
+      }),
+    );
+  }
+
   // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) async {
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) async {
     final downloadedXFiles = <XFile>[];
     final tempFiles = <File>[];
 
     for (var asset in assets) {
+      if (cancelCompleter != null && cancelCompleter.isCompleted) {
+        // if cancelled, delete any temp files created so far
+        await _cleanupTempFiles(tempFiles);
+        return 0;
+      }
+
       final localId = (asset is LocalAsset)
           ? asset.id
           : asset is RemoteAsset
           ? asset.localId
           : null;
-      if (localId != null) {
+      if (localId != null && !asset.isEdited) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
         if (CurrentPlatform.isIOS) {
           tempFiles.add(f);
         }
-      } else if (asset is RemoteAsset) {
+      } else {
+        final remoteId = (asset is RemoteAsset) ? asset.id : asset.remoteId;
+        if (remoteId == null) {
+          _log.warning("Asset has no remote ID for sharing: $asset");
+          continue;
+        }
+
         final tempDir = await getTemporaryDirectory();
         final name = asset.name;
         final tempFile = await File('${tempDir.path}/$name').create();
-        final res = await _assetApiRepository.downloadAsset(asset.id);
+        final res = await _assetApiRepository.downloadAsset(remoteId, edited: true);
 
         if (res.statusCode != 200) {
           _log.severe("Download for $name failed", res.toLoggerString());
@@ -132,14 +124,16 @@ class AssetMediaRepository {
         await tempFile.writeAsBytes(res.bodyBytes);
         downloadedXFiles.add(XFile(tempFile.path));
         tempFiles.add(tempFile);
-      } else {
-        _log.warning("Asset type not supported for sharing: $asset");
-        continue;
       }
     }
 
     if (downloadedXFiles.isEmpty) {
       _log.warning("No asset can be retrieved for share");
+      return 0;
+    }
+
+    if (cancelCompleter != null && cancelCompleter.isCompleted) {
+      await _cleanupTempFiles(tempFiles);
       return 0;
     }
 
@@ -151,13 +145,7 @@ class AssetMediaRepository {
         downloadedXFiles,
         sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
       ).then((result) async {
-        for (var file in tempFiles) {
-          try {
-            await file.delete();
-          } catch (e) {
-            _log.warning("Failed to delete temporary file: ${file.path}", e);
-          }
-        }
+        await _cleanupTempFiles(tempFiles);
       }),
     );
 

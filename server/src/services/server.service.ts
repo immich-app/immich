@@ -109,14 +109,10 @@ export class ServerService extends BaseService {
     };
   }
 
-  async getTheme() {
-    const { theme } = await this.getConfig({ withCache: false });
-    return theme;
-  }
-
   async getSystemConfig(): Promise<ServerConfigDto> {
+    const { setup } = this.configRepository.getEnv();
     const config = await this.getConfig({ withCache: false });
-    const isInitialized = await this.userRepository.hasAdmin();
+    const isInitialized = !setup.allow || (await this.userRepository.hasAdmin());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
 
     return {
@@ -137,6 +133,12 @@ export class ServerService extends BaseService {
   async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
+    serverStats.photos ??= 0;
+    serverStats.videos ??= 0;
+    serverStats.usage ??= 0;
+    serverStats.usagePhotos ??= 0;
+    serverStats.usageVideos ??= 0;
+    serverStats.usageByUser ??= [];
 
     for (const user of userStats) {
       const usage = new UsageByUserDto();

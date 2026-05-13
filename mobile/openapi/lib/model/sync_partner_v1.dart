@@ -18,10 +18,13 @@ class SyncPartnerV1 {
     required this.sharedWithId,
   });
 
+  /// In timeline
   bool inTimeline;
 
+  /// Shared by ID
   String sharedById;
 
+  /// Shared with ID
   String sharedWithId;
 
   @override

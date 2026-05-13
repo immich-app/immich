@@ -21,12 +21,13 @@ class PersonUpdateDto {
     this.name,
   });
 
-  /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
+  /// Person date of birth
   DateTime? birthDate;
 
+  /// Person color (hex)
   String? color;
 
-  /// Asset is used to get the feature face thumbnail.
+  /// Asset ID used for feature face thumbnail
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -35,6 +36,7 @@ class PersonUpdateDto {
   ///
   String? featureFaceAssetId;
 
+  /// Mark as favorite
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -43,7 +45,7 @@ class PersonUpdateDto {
   ///
   bool? isFavorite;
 
-  /// Person visibility
+  /// Person visibility (hidden)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -52,7 +54,7 @@ class PersonUpdateDto {
   ///
   bool? isHidden;
 
-  /// Person name.
+  /// Person name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

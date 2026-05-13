@@ -10,70 +10,63 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
-import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 
 void main() async {
-  ImmichWidgetsBinding();
-  unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
-  final (isar, drift, logDb) = await Bootstrap.initDB();
-  await Bootstrap.initDomain(isar, drift, logDb);
-  await initApp();
-  // Warm-up isolate pool for worker manager
-  await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-  await migrateDatabaseIfNeeded(isar, drift);
-  HttpSSLOptions.apply();
+  try {
+    ImmichWidgetsBinding();
+    unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
+    await EasyLocalization.ensureInitialized();
+    final (drift, _) = await Bootstrap.initDomain();
+    await initApp();
+    // Warm-up isolate pool for worker manager
+    await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
+    await migrateDatabaseIfNeeded(drift);
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        dbProvider.overrideWithValue(isar),
-        isarProvider.overrideWithValue(isar),
-        driftProvider.overrideWith(driftOverride(drift)),
-      ],
-      child: const MainWidget(),
-    ),
-  );
+    runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
+  } catch (error, stack) {
+    runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
+  }
 }
 
 Future<void> initApp() async {
-  await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
 
-  if (kReleaseMode && Platform.isAndroid) {
+  if (Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
       dPrint(() => "Enabled high refresh mode");
@@ -112,7 +105,7 @@ Future<void> initApp() async {
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
-  await FileDownloader().trackTasks();
+  unawaited(FileDownloader().trackTasks());
 
   LicenseRegistry.addLicense(() async* {
     for (final license in nonPubLicenses.entries) {
@@ -171,7 +164,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
-    await ref.read(localNotificationService).setup();
+
+    await FlutterLocalNotificationsPlugin().initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@drawable/notification_icon'),
+        iOS: DarwinInitializationSettings(),
+      ),
+    );
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
@@ -180,19 +179,32 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
+    PageRouteInfo? route;
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
-
-      return proposedRoute;
+      route = await deepLinkHandler.handleScheme(deepLink, ref);
+    } else if (deepLink.uri.host == "my.immich.app") {
+      route = await deepLinkHandler.handleMyImmichApp(deepLink, ref);
+    } else {
+      return DeepLink.path(deepLink.path);
     }
 
-    if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
-
-      return proposedRoute;
+    if (route == null) {
+      return isColdStart ? DeepLink.defaultPath : DeepLink.none;
     }
 
-    return DeepLink.path(deepLink.path);
+    // We need to replace the route if the destination is the current route
+    if (!isColdStart) {
+      unawaited(
+        ref.read(appRouterProvider).pushAndPopUntil(route, predicate: (r) => r.settings.name != route!.routeName),
+      );
+      return DeepLink.none;
+    }
+
+    return DeepLink([
+      // we need something to segue back to if the app was cold started
+      if (isColdStart) const TabShellRoute(children: [MainTimelineRoute()]),
+      route,
+    ]);
   }
 
   @override
@@ -210,20 +222,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     initApp().then((_) => dPrint(() => "App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      if (Store.isBetaTimelineEnabled) {
-        ref.read(backgroundServiceProvider).disableService();
-        ref.read(backgroundWorkerFgServiceProvider).enable();
-        if (Platform.isAndroid) {
-          ref
-              .read(backgroundWorkerFgServiceProvider)
-              .saveNotificationMessage(
-                IntlKeys.uploading_media.t(),
-                IntlKeys.backup_background_service_default_notification.t(),
-              );
-        }
-      } else {
-        ref.read(backgroundWorkerFgServiceProvider).disable();
-        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      ref.read(backgroundWorkerFgServiceProvider).enable();
+      if (Platform.isAndroid) {
+        ref
+            .read(backgroundWorkerFgServiceProvider)
+            .saveNotificationMessage(
+              StaticTranslations.instance.uploading_media,
+              StaticTranslations.instance.backup_background_service_default_notification,
+            );
       }
     });
 
@@ -234,6 +240,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void reassemble() {
+    if (kDebugMode) {
+      NetworkRepository.init();
+    }
+    super.reassemble();
   }
 
   @override
@@ -249,9 +263,16 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        themeMode: ref.watch(immichThemeModeProvider),
+        themeMode: ref.watch(appConfigProvider.select((config) => config.theme.mode)),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
+        builder: (context, child) => ImmichTranslationProvider(
+          translations: ImmichTranslations(
+            submit: "submit".t(context: context),
+            password: "password".t(context: context),
+          ),
+          child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
+        ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
           navigatorObservers: () => [AppNavigationObserver(ref: ref)],

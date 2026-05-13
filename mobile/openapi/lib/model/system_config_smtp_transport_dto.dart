@@ -21,18 +21,25 @@ class SystemConfigSmtpTransportDto {
     required this.username,
   });
 
+  /// SMTP server hostname
   String host;
 
+  /// Whether to ignore SSL certificate errors
   bool ignoreCert;
 
+  /// SMTP password
   String password;
 
+  /// SMTP server port
+  ///
   /// Minimum value: 0
   /// Maximum value: 65535
-  num port;
+  int port;
 
+  /// Whether to use secure connection (TLS/SSL)
   bool secure;
 
+  /// SMTP username
   String username;
 
   @override
@@ -80,7 +87,7 @@ class SystemConfigSmtpTransportDto {
         host: mapValueOfType<String>(json, r'host')!,
         ignoreCert: mapValueOfType<bool>(json, r'ignoreCert')!,
         password: mapValueOfType<String>(json, r'password')!,
-        port: num.parse('${json[r'port']}'),
+        port: mapValueOfType<int>(json, r'port')!,
         secure: mapValueOfType<bool>(json, r'secure')!,
         username: mapValueOfType<String>(json, r'username')!,
       );

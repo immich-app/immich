@@ -1,47 +1,50 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { User, UserAdmin } from 'src/database';
-import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
-import { UserMetadataItem } from 'src/types';
-import { Optional, PinCode, ValidateBoolean, ValidateEnum, ValidateUUID, toEmail, toSanitized } from 'src/validation';
+import { pinCodeRegex } from 'src/dtos/auth.dto';
+import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
+import { MaybeDehydrated, UserMetadataItem } from 'src/types';
+import { asDateString } from 'src/utils/date';
+import { emptyStringToNull, isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
+import z from 'zod';
 
-export class UserUpdateMeDto {
-  @Optional()
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  email?: string;
+export const UserUpdateMeSchema = z
+  .object({
+    email: toEmail.optional().describe('User email'),
+    password: z
+      .string()
+      .optional()
+      .describe('User password (deprecated, use change password endpoint)')
+      .meta({ deprecated: true }),
+    name: z.string().optional().describe('User name'),
+    avatarColor: UserAvatarColorSchema.nullish(),
+  })
+  .meta({ id: 'UserUpdateMeDto' });
 
-  // TODO: migrate to the other change password endpoint
-  @Optional()
-  @IsNotEmpty()
-  @IsString()
-  password?: string;
+export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
 
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
+export const UserResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('User ID'),
+    name: z.string().describe('User name'),
+    email: toEmail.describe('User email'),
+    profileImagePath: z.string().describe('Profile image path'),
+    avatarColor: UserAvatarColorSchema,
+    // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
+    profileChangedAt: z.string().meta({ format: 'date-time' }).describe('Profile change date'),
+  })
+  .meta({ id: 'UserResponseDto' });
 
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, nullable: true })
-  avatarColor?: UserAvatarColor | null;
-}
+export class UserResponseDto extends createZodDto(UserResponseSchema) {}
 
-export class UserResponseDto {
-  id!: string;
-  name!: string;
-  email!: string;
-  profileImagePath!: string;
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor' })
-  avatarColor!: UserAvatarColor;
-  profileChangedAt!: Date;
-}
+const licenseKeyRegex = /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/;
 
-export class UserLicense {
-  licenseKey!: string;
-  activationKey!: string;
-  activatedAt!: Date;
-}
+export const UserLicenseSchema = z
+  .object({
+    licenseKey: z.string().regex(licenseKeyRegex).describe(`License key (format: ${licenseKeyRegex.toString()})`),
+    activationKey: z.string().describe('Activation key'),
+    activatedAt: isoDatetimeToDate.describe('Activation date'),
+  })
+  .meta({ id: 'UserLicense' });
 
 const emailToAvatarColor = (email: string): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);
@@ -51,122 +54,88 @@ const emailToAvatarColor = (email: string): UserAvatarColor => {
   return values[randomIndex];
 };
 
-export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
+export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponseDto => {
   return {
     id: entity.id,
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
-    profileChangedAt: entity.profileChangedAt,
+    profileChangedAt: asDateString(entity.profileChangedAt),
   };
 };
 
-export class UserAdminSearchDto {
-  @ValidateBoolean({ optional: true })
-  withDeleted?: boolean;
+const UserAdminSearchSchema = z
+  .object({
+    withDeleted: stringToBool.optional().describe('Include deleted users'),
+    id: z.uuidv4().optional().describe('User ID filter'),
+  })
+  .meta({ id: 'UserAdminSearchDto' });
 
-  @ValidateUUID({ optional: true })
-  id?: string;
-}
+export class UserAdminSearchDto extends createZodDto(UserAdminSearchSchema) {}
 
-export class UserAdminCreateDto {
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  email!: string;
+export const UserAdminCreateSchema = z
+  .object({
+    email: toEmail.describe('User email'),
+    password: z.string().describe('User password'),
+    name: z.string().describe('User name'),
+    avatarColor: UserAvatarColorSchema.nullish(),
+    pinCode: emptyStringToNull(z.string().regex(pinCodeRegex).nullable())
+      .optional()
+      .describe('PIN code')
+      .meta({ example: '123456' }),
+    storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
+    quotaSizeInBytes: z.int().min(0).nullish().describe('Storage quota in bytes'),
+    shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
+    notify: z.boolean().optional().describe('Send notification email'),
+    isAdmin: z.boolean().optional().describe('Grant admin privileges'),
+  })
+  .meta({ id: 'UserAdminCreateDto' });
 
-  @IsString()
-  password!: string;
+export class UserAdminCreateDto extends createZodDto(UserAdminCreateSchema) {}
 
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
+const UserAdminUpdateSchema = z
+  .object({
+    email: toEmail.optional().describe('User email'),
+    password: z.string().optional().describe('User password'),
+    pinCode: emptyStringToNull(z.string().regex(pinCodeRegex).nullable())
+      .optional()
+      .describe('PIN code')
+      .meta({ example: '123456' }),
+    name: z.string().optional().describe('User name'),
+    avatarColor: UserAvatarColorSchema.nullish(),
+    storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
+    shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
+    quotaSizeInBytes: z.int().min(0).nullish().describe('Storage quota in bytes'),
+    isAdmin: z.boolean().optional().describe('Grant admin privileges'),
+  })
+  .meta({ id: 'UserAdminUpdateDto' });
 
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, nullable: true })
-  avatarColor?: UserAvatarColor | null;
+export class UserAdminUpdateDto extends createZodDto(UserAdminUpdateSchema) {}
 
-  @Optional({ nullable: true })
-  @IsString()
-  @Transform(toSanitized)
-  storageLabel?: string | null;
+const UserAdminDeleteSchema = z
+  .object({
+    force: z.boolean().optional().describe('Force delete even if user has assets'),
+  })
+  .meta({ id: 'UserAdminDeleteDto' });
 
-  @Optional({ nullable: true })
-  @IsInt()
-  @Min(0)
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  quotaSizeInBytes?: number | null;
+export class UserAdminDeleteDto extends createZodDto(UserAdminDeleteSchema) {}
 
-  @ValidateBoolean({ optional: true })
-  shouldChangePassword?: boolean;
+const UserAdminResponseSchema = UserResponseSchema.extend({
+  storageLabel: z.string().nullable().describe('Storage label'),
+  shouldChangePassword: z.boolean().describe('Require password change on next login'),
+  isAdmin: z.boolean().describe('Is admin user'),
+  createdAt: isoDatetimeToDate.describe('Creation date'),
+  deletedAt: isoDatetimeToDate.nullable().describe('Deletion date'),
+  updatedAt: isoDatetimeToDate.describe('Last update date'),
+  oauthId: z.string().describe('OAuth ID'),
+  quotaSizeInBytes: z.int().min(0).nullable().describe('Storage quota in bytes'),
+  quotaUsageInBytes: z.int().min(0).nullable().describe('Storage usage in bytes'),
+  status: UserStatusSchema,
+  license: UserLicenseSchema.nullable(),
+}).meta({ id: 'UserAdminResponseDto' });
 
-  @ValidateBoolean({ optional: true })
-  notify?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  isAdmin?: boolean;
-}
-
-export class UserAdminUpdateDto {
-  @Optional()
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  email?: string;
-
-  @Optional()
-  @IsNotEmpty()
-  @IsString()
-  password?: string;
-
-  @PinCode({ optional: true, nullable: true, emptyToNull: true })
-  pinCode?: string | null;
-
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, nullable: true })
-  avatarColor?: UserAvatarColor | null;
-
-  @Optional({ nullable: true })
-  @IsString()
-  @Transform(toSanitized)
-  storageLabel?: string | null;
-
-  @ValidateBoolean({ optional: true })
-  shouldChangePassword?: boolean;
-
-  @Optional({ nullable: true })
-  @IsInt()
-  @Min(0)
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  quotaSizeInBytes?: number | null;
-
-  @ValidateBoolean({ optional: true })
-  isAdmin?: boolean;
-}
-
-export class UserAdminDeleteDto {
-  @ValidateBoolean({ optional: true })
-  force?: boolean;
-}
-
-export class UserAdminResponseDto extends UserResponseDto {
-  storageLabel!: string | null;
-  shouldChangePassword!: boolean;
-  isAdmin!: boolean;
-  createdAt!: Date;
-  deletedAt!: Date | null;
-  updatedAt!: Date;
-  oauthId!: string;
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  quotaSizeInBytes!: number | null;
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  quotaUsageInBytes!: number | null;
-  @ValidateEnum({ enum: UserStatus, name: 'UserStatus' })
-  status!: string;
-  license!: UserLicense | null;
-}
+export class UserAdminResponseDto extends createZodDto(UserAdminResponseSchema) {}
 
 export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
   const metadata = entity.metadata || [];
@@ -186,6 +155,6 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
-    license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
+    license: license ? { ...license, activatedAt: new Date(license.activatedAt) } : null,
   };
 }

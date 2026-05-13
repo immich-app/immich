@@ -50,7 +50,7 @@ When a new asset is uploaded it kicks off a series of jobs, which include metada
 
 Additionally, some jobs (such as memories generation) run on a schedule, which is every night at midnight by default. To change when they run or enable/disable a job navigate to System Settings -> [Nightly Tasks Settings](https://my.immich.app/admin/system-settings?isOpen=nightly-tasks).
 
-<img src={require('./img/admin-nightly-tasks.webp').default} width="60%" title="Admin nightly tasks" />
+<img src={require('./img/admin-nightly-tasks.webp').default} width="80%" title="Admin nightly tasks" />
 
 :::note
 Some jobs ([External Libraries](/features/libraries) scanning, Database Dump) are configured in their own sections in System Settings.
@@ -67,7 +67,8 @@ graph TD
     C --> D["Thumbnail Generation (Large, small, blurred and person)"]
     D --> E[Smart Search]
     D --> F[Face Detection]
-    D --> G[Video Transcoding]
-    E --> H[Duplicate Detection]
-    F --> I[Facial Recognition]
+    D --> G[OCR]
+    D --> H[Video Transcoding]
+    E --> I[Duplicate Detection]
+    F --> J[Facial Recognition]
 ```

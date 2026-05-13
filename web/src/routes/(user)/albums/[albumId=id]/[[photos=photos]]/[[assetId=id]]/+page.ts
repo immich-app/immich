@@ -1,18 +1,16 @@
-import { authenticate } from '$lib/utils/auth';
-import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getAlbumInfo } from '@immich/sdk';
+import { authenticate } from '$lib/utils/auth';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params, url }) => {
+export const load = (async ({ params, url, depends }) => {
   await authenticate(url);
-  const [album, asset] = await Promise.all([
-    getAlbumInfo({ id: params.albumId, withoutAssets: true }),
-    getAssetInfoFromParam(params),
-  ]);
+
+  depends('album:data');
+
+  const album = await getAlbumInfo({ id: params.albumId });
 
   return {
     album,
-    asset,
     meta: {
       title: album.albumName,
     },

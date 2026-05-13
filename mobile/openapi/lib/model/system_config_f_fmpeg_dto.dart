@@ -38,52 +38,74 @@ class SystemConfigFFmpegDto {
 
   TranscodeHWAccel accel;
 
+  /// Accelerated decode
   bool accelDecode;
 
+  /// Accepted audio codecs
   List<AudioCodec> acceptedAudioCodecs;
 
+  /// Accepted containers
   List<VideoContainer> acceptedContainers;
 
+  /// Accepted video codecs
   List<VideoCodec> acceptedVideoCodecs;
 
+  /// B-frames
+  ///
   /// Minimum value: -1
   /// Maximum value: 16
   int bframes;
 
   CQMode cqMode;
 
+  /// CRF
+  ///
   /// Minimum value: 0
   /// Maximum value: 51
   int crf;
 
+  /// GOP size
+  ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int gopSize;
 
+  /// Max bitrate
   String maxBitrate;
 
+  /// Preferred hardware device
   String preferredHwDevice;
 
+  /// Preset
   String preset;
 
+  /// References
+  ///
   /// Minimum value: 0
   /// Maximum value: 6
   int refs;
 
   AudioCodec targetAudioCodec;
 
+  /// Target resolution
   String targetResolution;
 
   VideoCodec targetVideoCodec;
 
+  /// Temporal AQ
   bool temporalAQ;
 
+  /// Threads
+  ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int threads;
 
   ToneMapping tonemap;
 
   TranscodePolicy transcode;
 
+  /// Two pass
   bool twoPass;
 
   @override

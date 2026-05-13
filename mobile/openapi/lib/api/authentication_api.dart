@@ -424,6 +424,59 @@ class AuthenticationApi {
     return null;
   }
 
+  /// Backchannel OAuth logout
+  ///
+  /// Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] logoutToken (required):
+  ///   OAuth logout token
+  Future<Response> logoutOAuthWithHttpInfo(String logoutToken,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/oauth/backchannel-logout';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/x-www-form-urlencoded'];
+
+    if (logoutToken != null) {
+      formParams[r'logout_token'] = parameterToString(logoutToken);
+    }
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Backchannel OAuth logout
+  ///
+  /// Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] logoutToken (required):
+  ///   OAuth logout token
+  Future<void> logoutOAuth(String logoutToken,) async {
+    final response = await logoutOAuthWithHttpInfo(logoutToken,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Redirect OAuth to mobile
   ///
   /// Requests to this URL are automatically forwarded to the mobile app, and is used in some cases for OAuth redirecting.

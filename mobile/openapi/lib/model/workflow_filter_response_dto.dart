@@ -20,19 +20,26 @@ class WorkflowFilterResponseDto {
     required this.workflowId,
   });
 
-  Object? filterConfig;
+  Map<String, Object>? filterConfig;
 
+  /// Filter ID
   String id;
 
-  num order;
+  /// Filter order
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int order;
 
+  /// Plugin filter ID
   String pluginFilterId;
 
+  /// Workflow ID
   String workflowId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowFilterResponseDto &&
-    other.filterConfig == filterConfig &&
+    _deepEquality.equals(other.filterConfig, filterConfig) &&
     other.id == id &&
     other.order == order &&
     other.pluginFilterId == pluginFilterId &&
@@ -73,9 +80,9 @@ class WorkflowFilterResponseDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowFilterResponseDto(
-        filterConfig: mapValueOfType<Object>(json, r'filterConfig'),
+        filterConfig: mapCastOfType<String, Object>(json, r'filterConfig'),
         id: mapValueOfType<String>(json, r'id')!,
-        order: num.parse('${json[r'order']}'),
+        order: mapValueOfType<int>(json, r'order')!,
         pluginFilterId: mapValueOfType<String>(json, r'pluginFilterId')!,
         workflowId: mapValueOfType<String>(json, r'workflowId')!,
       );

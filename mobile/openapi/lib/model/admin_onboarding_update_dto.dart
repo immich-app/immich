@@ -16,6 +16,7 @@ class AdminOnboardingUpdateDto {
     required this.isOnboarded,
   });
 
+  /// Is admin onboarded
   bool isOnboarded;
 
   @override

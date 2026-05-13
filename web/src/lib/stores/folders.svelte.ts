@@ -1,5 +1,3 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { TreeNode } from '$lib/utils/tree-utils';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,
@@ -8,6 +6,8 @@ import {
    */
   type AssetResponseDto,
 } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { TreeNode } from '$lib/utils/tree-utils';
 
 type AssetCache = {
   [path: string]: AssetResponseDto[];
@@ -19,17 +19,18 @@ class FoldersStore {
   private assets = $state<AssetCache>({});
 
   constructor() {
-    eventManager.on('AuthLogout', () => this.clearCache());
+    eventManager.on({
+      AuthLogout: () => this.clearCache(),
+    });
   }
 
   async fetchTree(): Promise<TreeNode> {
     if (this.initialized) {
       return this.folders!;
     }
-    this.initialized = true;
-
     this.folders = TreeNode.fromPaths(await getUniqueOriginalPaths());
     this.folders.collapse();
+    this.initialized = true;
     return this.folders;
   }
 

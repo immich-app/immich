@@ -18,11 +18,16 @@ class MachineLearningAvailabilityChecksDto {
     required this.timeout,
   });
 
+  /// Enabled
   bool enabled;
 
-  num interval;
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int interval;
 
-  num timeout;
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int timeout;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MachineLearningAvailabilityChecksDto &&
@@ -58,8 +63,8 @@ class MachineLearningAvailabilityChecksDto {
 
       return MachineLearningAvailabilityChecksDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        interval: num.parse('${json[r'interval']}'),
-        timeout: num.parse('${json[r'timeout']}'),
+        interval: mapValueOfType<int>(json, r'interval')!,
+        timeout: mapValueOfType<int>(json, r'timeout')!,
       );
     }
     return null;

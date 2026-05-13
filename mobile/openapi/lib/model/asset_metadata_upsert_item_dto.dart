@@ -14,17 +14,19 @@ class AssetMetadataUpsertItemDto {
   /// Returns a new [AssetMetadataUpsertItemDto] instance.
   AssetMetadataUpsertItemDto({
     required this.key,
-    required this.value,
+    this.value = const {},
   });
 
-  AssetMetadataKey key;
+  /// Metadata key
+  String key;
 
-  Object value;
+  /// Metadata value (object)
+  Map<String, Object> value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetMetadataUpsertItemDto &&
     other.key == key &&
-    other.value == value;
+    _deepEquality.equals(other.value, value);
 
   @override
   int get hashCode =>
@@ -51,8 +53,8 @@ class AssetMetadataUpsertItemDto {
       final json = value.cast<String, dynamic>();
 
       return AssetMetadataUpsertItemDto(
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
-        value: mapValueOfType<Object>(json, r'value')!,
+        key: mapValueOfType<String>(json, r'key')!,
+        value: mapCastOfType<String, Object>(json, r'value')!,
       );
     }
     return null;

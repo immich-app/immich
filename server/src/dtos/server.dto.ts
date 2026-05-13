@@ -1,179 +1,162 @@
-import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
-import { SemVer } from 'semver';
-import { SystemConfigThemeDto } from 'src/dtos/system-config.dto';
+import { createZodDto } from 'nestjs-zod';
+import type { SemVer } from 'semver';
+import { isoDatetimeToDate } from 'src/validation';
+import z from 'zod';
 
-export class ServerPingResponse {
-  @ApiResponseProperty({ type: String, example: 'pong' })
-  res!: string;
-}
+const ServerPingResponseSchema = z
+  .object({
+    res: z.string().meta({ example: 'pong' }),
+  })
+  .meta({ id: 'ServerPingResponse' });
 
-export class ServerAboutResponseDto {
-  version!: string;
-  versionUrl!: string;
+const ServerAboutResponseSchema = z
+  .object({
+    version: z.string().describe('Server version'),
+    versionUrl: z.string().describe('URL to version information'),
+    repository: z.string().optional().describe('Repository name'),
+    repositoryUrl: z.string().optional().describe('Repository URL'),
+    sourceRef: z.string().optional().describe('Source reference (branch/tag)'),
+    sourceCommit: z.string().optional().describe('Source commit hash'),
+    sourceUrl: z.string().optional().describe('Source URL'),
+    build: z.string().optional().describe('Build identifier'),
+    buildUrl: z.string().optional().describe('Build URL'),
+    buildImage: z.string().optional().describe('Build image name'),
+    buildImageUrl: z.string().optional().describe('Build image URL'),
+    nodejs: z.string().optional().describe('Node.js version'),
+    ffmpeg: z.string().optional().describe('FFmpeg version'),
+    imagemagick: z.string().optional().describe('ImageMagick version'),
+    libvips: z.string().optional().describe('libvips version'),
+    exiftool: z.string().optional().describe('ExifTool version'),
+    licensed: z.boolean().describe('Whether the server is licensed'),
+    thirdPartySourceUrl: z.string().optional().describe('Third-party source URL'),
+    thirdPartyBugFeatureUrl: z.string().optional().describe('Third-party bug/feature URL'),
+    thirdPartyDocumentationUrl: z.string().optional().describe('Third-party documentation URL'),
+    thirdPartySupportUrl: z.string().optional().describe('Third-party support URL'),
+  })
+  .meta({ id: 'ServerAboutResponseDto' });
 
-  repository?: string;
-  repositoryUrl?: string;
+const ServerApkLinksSchema = z
+  .object({
+    arm64v8a: z.string().describe('APK download link for ARM64 v8a architecture'),
+    armeabiv7a: z.string().describe('APK download link for ARM EABI v7a architecture'),
+    universal: z.string().describe('APK download link for universal architecture'),
+    x86_64: z.string().describe('APK download link for x86_64 architecture'),
+  })
+  .meta({ id: 'ServerApkLinksDto' });
 
-  sourceRef?: string;
-  sourceCommit?: string;
-  sourceUrl?: string;
+const ServerStorageResponseSchema = z
+  .object({
+    diskSize: z.string().describe('Total disk size (human-readable format)'),
+    diskUse: z.string().describe('Used disk space (human-readable format)'),
+    diskAvailable: z.string().describe('Available disk space (human-readable format)'),
+    diskSizeRaw: z.int().describe('Total disk size in bytes'),
+    diskUseRaw: z.int().describe('Used disk space in bytes'),
+    diskAvailableRaw: z.int().describe('Available disk space in bytes'),
+    diskUsagePercentage: z.number().meta({ format: 'double' }).describe('Disk usage percentage (0-100)'),
+  })
+  .meta({ id: 'ServerStorageResponseDto' });
 
-  build?: string;
-  buildUrl?: string;
-  buildImage?: string;
-  buildImageUrl?: string;
+const ServerVersionResponseSchema = z
+  .object({
+    major: z.int().describe('Major version number'),
+    minor: z.int().describe('Minor version number'),
+    patch: z.int().describe('Patch version number'),
+  })
+  .meta({ id: 'ServerVersionResponseDto' });
 
-  nodejs?: string;
-  ffmpeg?: string;
-  imagemagick?: string;
-  libvips?: string;
-  exiftool?: string;
+const ServerVersionHistoryResponseSchema = z
+  .object({
+    id: z.string().describe('Version history entry ID'),
+    createdAt: isoDatetimeToDate.describe('When this version was first seen'),
+    version: z.string().describe('Version string'),
+  })
+  .meta({ id: 'ServerVersionHistoryResponseDto' });
 
-  licensed!: boolean;
+const UsageByUserSchema = z
+  .object({
+    userId: z.string().describe('User ID'),
+    userName: z.string().describe('User name'),
+    photos: z.int().describe('Number of photos'),
+    videos: z.int().describe('Number of videos'),
+    usage: z.int().describe('Total storage usage in bytes'),
+    usagePhotos: z.int().describe('Storage usage for photos in bytes'),
+    usageVideos: z.int().describe('Storage usage for videos in bytes'),
+    quotaSizeInBytes: z.int().nullable().describe('User quota size in bytes (null if unlimited)'),
+  })
+  .meta({ id: 'UsageByUserDto' });
 
-  thirdPartySourceUrl?: string;
-  thirdPartyBugFeatureUrl?: string;
-  thirdPartyDocumentationUrl?: string;
-  thirdPartySupportUrl?: string;
-}
+const ServerStatsResponseSchema = z
+  .object({
+    photos: z.int().describe('Total number of photos'),
+    videos: z.int().describe('Total number of videos'),
+    usage: z.int().describe('Total storage usage in bytes'),
+    usagePhotos: z.int().describe('Storage usage for photos in bytes'),
+    usageVideos: z.int().describe('Storage usage for videos in bytes'),
+    usageByUser: z.array(UsageByUserSchema).describe('Array of usage for each user'),
+  })
+  .meta({ id: 'ServerStatsResponseDto' });
 
-export class ServerApkLinksDto {
-  arm64v8a!: string;
-  armeabiv7a!: string;
-  universal!: string;
-  x86_64!: string;
-}
+const ServerMediaTypesResponseSchema = z
+  .object({
+    video: z.array(z.string()).describe('Supported video MIME types'),
+    image: z.array(z.string()).describe('Supported image MIME types'),
+    sidecar: z.array(z.string()).describe('Supported sidecar MIME types'),
+  })
+  .meta({ id: 'ServerMediaTypesResponseDto' });
 
-export class ServerStorageResponseDto {
-  diskSize!: string;
-  diskUse!: string;
-  diskAvailable!: string;
+const ServerConfigSchema = z
+  .object({
+    oauthButtonText: z.string().describe('OAuth button text'),
+    loginPageMessage: z.string().describe('Login page message'),
+    trashDays: z.int().describe('Number of days before trashed assets are permanently deleted'),
+    userDeleteDelay: z.int().describe('Delay in days before deleted users are permanently removed'),
+    isInitialized: z.boolean().describe('Whether the server has been initialized'),
+    isOnboarded: z.boolean().describe('Whether the admin has completed onboarding'),
+    externalDomain: z.string().describe('External domain URL'),
+    publicUsers: z.boolean().describe('Whether public user registration is enabled'),
+    mapDarkStyleUrl: z.string().describe('Map dark style URL'),
+    mapLightStyleUrl: z.string().describe('Map light style URL'),
+    maintenanceMode: z.boolean().describe('Whether maintenance mode is active'),
+  })
+  .meta({ id: 'ServerConfigDto' });
 
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  diskSizeRaw!: number;
+const ServerFeaturesSchema = z
+  .object({
+    smartSearch: z.boolean().describe('Whether smart search is enabled'),
+    duplicateDetection: z.boolean().describe('Whether duplicate detection is enabled'),
+    configFile: z.boolean().describe('Whether config file is available'),
+    facialRecognition: z.boolean().describe('Whether facial recognition is enabled'),
+    map: z.boolean().describe('Whether map feature is enabled'),
+    trash: z.boolean().describe('Whether trash feature is enabled'),
+    reverseGeocoding: z.boolean().describe('Whether reverse geocoding is enabled'),
+    importFaces: z.boolean().describe('Whether face import is enabled'),
+    oauth: z.boolean().describe('Whether OAuth is enabled'),
+    oauthAutoLaunch: z.boolean().describe('Whether OAuth auto-launch is enabled'),
+    passwordLogin: z.boolean().describe('Whether password login is enabled'),
+    sidecar: z.boolean().describe('Whether sidecar files are supported'),
+    search: z.boolean().describe('Whether search is enabled'),
+    email: z.boolean().describe('Whether email notifications are enabled'),
+    ocr: z.boolean().describe('Whether OCR is enabled'),
+  })
+  .meta({ id: 'ServerFeaturesDto' });
 
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  diskUseRaw!: number;
+export class ServerPingResponse extends createZodDto(ServerPingResponseSchema) {}
+export class ServerAboutResponseDto extends createZodDto(ServerAboutResponseSchema) {}
+export class ServerApkLinksDto extends createZodDto(ServerApkLinksSchema) {}
+export class ServerStorageResponseDto extends createZodDto(ServerStorageResponseSchema) {}
 
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  diskAvailableRaw!: number;
-
-  @ApiProperty({ type: 'number', format: 'double' })
-  diskUsagePercentage!: number;
-}
-
-export class ServerVersionResponseDto {
-  @ApiProperty({ type: 'integer' })
-  major!: number;
-  @ApiProperty({ type: 'integer' })
-  minor!: number;
-  @ApiProperty({ type: 'integer' })
-  patch!: number;
-
-  static fromSemVer(value: SemVer) {
+export class ServerVersionResponseDto extends createZodDto(ServerVersionResponseSchema) {
+  static fromSemVer(value: SemVer): z.infer<typeof ServerVersionResponseSchema> {
     return { major: value.major, minor: value.minor, patch: value.patch };
   }
 }
 
-export class ServerVersionHistoryResponseDto {
-  id!: string;
-  createdAt!: Date;
-  version!: string;
-}
-
-export class UsageByUserDto {
-  @ApiProperty({ type: 'string' })
-  userId!: string;
-  @ApiProperty({ type: 'string' })
-  userName!: string;
-  @ApiProperty({ type: 'integer' })
-  photos!: number;
-  @ApiProperty({ type: 'integer' })
-  videos!: number;
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  usage!: number;
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  usagePhotos!: number;
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  usageVideos!: number;
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  quotaSizeInBytes!: number | null;
-}
-
-export class ServerStatsResponseDto {
-  @ApiProperty({ type: 'integer' })
-  photos = 0;
-
-  @ApiProperty({ type: 'integer' })
-  videos = 0;
-
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  usage = 0;
-
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  usagePhotos = 0;
-
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  usageVideos = 0;
-
-  @ApiProperty({
-    isArray: true,
-    type: UsageByUserDto,
-    title: 'Array of usage for each user',
-    example: [
-      {
-        photos: 1,
-        videos: 1,
-        diskUsageRaw: 2,
-        usagePhotos: 1,
-        usageVideos: 1,
-      },
-    ],
-  })
-  usageByUser: UsageByUserDto[] = [];
-}
-
-export class ServerMediaTypesResponseDto {
-  video!: string[];
-  image!: string[];
-  sidecar!: string[];
-}
-
-export class ServerThemeDto extends SystemConfigThemeDto {}
-
-export class ServerConfigDto {
-  oauthButtonText!: string;
-  loginPageMessage!: string;
-  @ApiProperty({ type: 'integer' })
-  trashDays!: number;
-  @ApiProperty({ type: 'integer' })
-  userDeleteDelay!: number;
-  isInitialized!: boolean;
-  isOnboarded!: boolean;
-  externalDomain!: string;
-  publicUsers!: boolean;
-  mapDarkStyleUrl!: string;
-  mapLightStyleUrl!: string;
-  maintenanceMode!: boolean;
-}
-
-export class ServerFeaturesDto {
-  smartSearch!: boolean;
-  duplicateDetection!: boolean;
-  configFile!: boolean;
-  facialRecognition!: boolean;
-  map!: boolean;
-  trash!: boolean;
-  reverseGeocoding!: boolean;
-  importFaces!: boolean;
-  oauth!: boolean;
-  oauthAutoLaunch!: boolean;
-  passwordLogin!: boolean;
-  sidecar!: boolean;
-  search!: boolean;
-  email!: boolean;
-  ocr!: boolean;
-}
+export class ServerVersionHistoryResponseDto extends createZodDto(ServerVersionHistoryResponseSchema) {}
+export class UsageByUserDto extends createZodDto(UsageByUserSchema) {}
+export class ServerStatsResponseDto extends createZodDto(ServerStatsResponseSchema) {}
+export class ServerMediaTypesResponseDto extends createZodDto(ServerMediaTypesResponseSchema) {}
+export class ServerConfigDto extends createZodDto(ServerConfigSchema) {}
+export class ServerFeaturesDto extends createZodDto(ServerFeaturesSchema) {}
 
 export interface ReleaseNotification {
   isAvailable: boolean;

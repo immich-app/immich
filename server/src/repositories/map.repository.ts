@@ -33,12 +33,6 @@ export interface ReverseGeocodeResult {
   city: string | null;
 }
 
-export interface MapMarker extends ReverseGeocodeResult {
-  id: string;
-  lat: number;
-  lon: number;
-}
-
 interface MapDB extends DB {
   geodata_places_tmp: GeodataPlacesTable;
   naturalearth_countries_tmp: NaturalEarthCountriesTable;
@@ -76,29 +70,21 @@ export class MapRepository {
     this.logger.log('Geodata import completed');
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getAlbumMapMarkers(albumId: string) {
+    return this.mapMarkersQuery()
+      .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
+      .where('album_asset.albumId', '=', albumId)
+      .execute();
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
   getMapMarkers(
     ownerIds: string[],
     albumIds: string[],
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
   ) {
-    return this.db
-      .selectFrom('asset')
-      .innerJoin('asset_exif', (builder) =>
-        builder
-          .onRef('asset.id', '=', 'asset_exif.assetId')
-          .on('asset_exif.latitude', 'is not', null)
-          .on('asset_exif.longitude', 'is not', null),
-      )
-      .select([
-        'id',
-        'asset_exif.latitude as lat',
-        'asset_exif.longitude as lon',
-        'asset_exif.city',
-        'asset_exif.state',
-        'asset_exif.country',
-      ])
-      .$narrowType<{ lat: NotNull; lon: NotNull }>()
+    return this.mapMarkersQuery()
       .$if(isArchived === true, (qb) =>
         qb.where((eb) =>
           eb.or([
@@ -113,7 +99,6 @@ export class MapRepository {
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
-      .where('deletedAt', 'is', null)
       .where((eb) => {
         const expression: Expression<SqlBool>[] = [];
 
@@ -134,8 +119,29 @@ export class MapRepository {
 
         return eb.or(expression);
       })
-      .orderBy('fileCreatedAt', 'desc')
       .execute();
+  }
+
+  private mapMarkersQuery() {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (builder) =>
+        builder
+          .onRef('asset.id', '=', 'asset_exif.assetId')
+          .on('asset_exif.latitude', 'is not', null)
+          .on('asset_exif.longitude', 'is not', null),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .orderBy('fileCreatedAt', 'desc')
+      .select([
+        'id',
+        'asset_exif.latitude as lat',
+        'asset_exif.longitude as lon',
+        'asset_exif.city',
+        'asset_exif.state',
+        'asset_exif.country',
+      ])
+      .$narrowType<{ lat: NotNull; lon: NotNull }>();
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {

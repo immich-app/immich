@@ -1,11 +1,10 @@
-import { TUNABLES } from '$lib/utils/tunables';
 import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
-
+import type { AssetResponseDto } from '@immich/sdk';
+import createJustifiedLayout from 'justified-layout';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { isTimelineAsset, isTimelineAssets } from '$lib/utils/timeline-util';
-import type { AssetResponseDto } from '@immich/sdk';
-import createJustifiedLayout from 'justified-layout';
+import { TUNABLES } from '$lib/utils/tunables';
 
 export type getJustifiedLayoutFromAssetsFunction = typeof getJustifiedLayoutFromAssets;
 
@@ -49,8 +48,7 @@ function wasmLayoutFromTimeline(assets: TimelineAsset[], options: LayoutOptions)
 function wasmLayoutFromDto(assets: AssetResponseDto[], options: LayoutOptions) {
   const aspectRatios = new Float32Array(assets.length);
   for (let i = 0; i < assets.length; i++) {
-    const { width, height } = getAssetRatio(assets[i]);
-    aspectRatios[i] = width / height;
+    aspectRatios[i] = getAssetRatio(assets[i]) ?? 1;
   }
   return new JustifiedLayout(aspectRatios, options);
 }
@@ -111,7 +109,7 @@ export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], op
   };
 
   const result = createJustifiedLayout(
-    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : getAssetRatio(asset))),
+    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : (getAssetRatio(asset) ?? 1))),
     adapter,
   );
   return new Adapter(result);

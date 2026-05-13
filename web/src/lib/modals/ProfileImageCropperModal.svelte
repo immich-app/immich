@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { user } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createProfileImage, type AssetResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter, toastManager } from '@immich/ui';
+  import { FormModal, toastManager } from '@immich/ui';
   import domtoimage from 'dom-to-image';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import PhotoViewer from '../components/asset-viewer/photo-viewer.svelte';
+  import PhotoViewer from '../components/asset-viewer/PhotoViewer.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -50,7 +50,7 @@
     return false;
   };
 
-  const handleSetProfilePicture = async () => {
+  const onSubmit = async () => {
     if (!imgElement) {
       return;
     }
@@ -68,28 +68,24 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
-      toastManager.success($t('profile_picture_set'));
-      $user.profileImagePath = profileImagePath;
-      $user.profileChangedAt = profileChangedAt;
+      await createProfileImage({ createProfileImageDto: { file } });
+      toastManager.primary($t('profile_picture_set'));
+
+      await authManager.refresh();
+
+      onClose();
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_profile_picture'));
     }
-    onClose();
   };
 </script>
 
-<Modal size="small" title={$t('set_profile_picture')} {onClose}>
-  <ModalBody>
-    <div class="flex place-items-center items-center justify-center">
-      <div
-        class="relative flex aspect-square w-62.5 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
-      >
-        <PhotoViewer bind:element={imgElement} {asset} />
-      </div>
+<FormModal size="small" title={$t('set_profile_picture')} {onClose} {onSubmit}>
+  <div class="flex place-items-center items-center justify-center">
+    <div
+      class="relative flex aspect-square w-62.5 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
+    >
+      <PhotoViewer bind:element={imgElement} cursor={{ current: asset }} />
     </div>
-  </ModalBody>
-  <ModalFooter>
-    <Button fullWidth shape="round" onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
-  </ModalFooter>
-</Modal>
+  </div>
+</FormModal>

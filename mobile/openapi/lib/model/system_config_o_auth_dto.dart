@@ -13,6 +13,7 @@ part of openapi.api;
 class SystemConfigOAuthDto {
   /// Returns a new [SystemConfigOAuthDto] instance.
   SystemConfigOAuthDto({
+    required this.allowInsecureRequests,
     required this.autoLaunch,
     required this.autoRegister,
     required this.buttonText,
@@ -20,10 +21,12 @@ class SystemConfigOAuthDto {
     required this.clientSecret,
     required this.defaultStorageQuota,
     required this.enabled,
+    required this.endSessionEndpoint,
     required this.issuerUrl,
     required this.mobileOverrideEnabled,
     required this.mobileRedirectUri,
     required this.profileSigningAlgorithm,
+    required this.prompt,
     required this.roleClaim,
     required this.scope,
     required this.signingAlgorithm,
@@ -33,46 +36,77 @@ class SystemConfigOAuthDto {
     required this.tokenEndpointAuthMethod,
   });
 
+  /// Allow insecure requests
+  bool allowInsecureRequests;
+
+  /// Auto launch
   bool autoLaunch;
 
+  /// Auto register
   bool autoRegister;
 
+  /// Button text
   String buttonText;
 
+  /// Client ID
   String clientId;
 
+  /// Client secret
   String clientSecret;
 
+  /// Default storage quota
+  ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int? defaultStorageQuota;
 
+  /// Enabled
   bool enabled;
 
+  /// End session endpoint
+  String endSessionEndpoint;
+
+  /// Issuer URL
   String issuerUrl;
 
+  /// Mobile override enabled
   bool mobileOverrideEnabled;
 
+  /// Mobile redirect URI (set to empty string to disable)
   String mobileRedirectUri;
 
+  /// Profile signing algorithm
   String profileSigningAlgorithm;
 
+  /// OAuth prompt parameter (e.g. select_account, login, consent)
+  String prompt;
+
+  /// Role claim
   String roleClaim;
 
+  /// Scope
   String scope;
 
+  /// Signing algorithm
   String signingAlgorithm;
 
+  /// Storage label claim
   String storageLabelClaim;
 
+  /// Storage quota claim
   String storageQuotaClaim;
 
+  /// Timeout
+  ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int timeout;
 
   OAuthTokenEndpointAuthMethod tokenEndpointAuthMethod;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
+    other.allowInsecureRequests == allowInsecureRequests &&
     other.autoLaunch == autoLaunch &&
     other.autoRegister == autoRegister &&
     other.buttonText == buttonText &&
@@ -80,10 +114,12 @@ class SystemConfigOAuthDto {
     other.clientSecret == clientSecret &&
     other.defaultStorageQuota == defaultStorageQuota &&
     other.enabled == enabled &&
+    other.endSessionEndpoint == endSessionEndpoint &&
     other.issuerUrl == issuerUrl &&
     other.mobileOverrideEnabled == mobileOverrideEnabled &&
     other.mobileRedirectUri == mobileRedirectUri &&
     other.profileSigningAlgorithm == profileSigningAlgorithm &&
+    other.prompt == prompt &&
     other.roleClaim == roleClaim &&
     other.scope == scope &&
     other.signingAlgorithm == signingAlgorithm &&
@@ -95,6 +131,7 @@ class SystemConfigOAuthDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (allowInsecureRequests.hashCode) +
     (autoLaunch.hashCode) +
     (autoRegister.hashCode) +
     (buttonText.hashCode) +
@@ -102,10 +139,12 @@ class SystemConfigOAuthDto {
     (clientSecret.hashCode) +
     (defaultStorageQuota == null ? 0 : defaultStorageQuota!.hashCode) +
     (enabled.hashCode) +
+    (endSessionEndpoint.hashCode) +
     (issuerUrl.hashCode) +
     (mobileOverrideEnabled.hashCode) +
     (mobileRedirectUri.hashCode) +
     (profileSigningAlgorithm.hashCode) +
+    (prompt.hashCode) +
     (roleClaim.hashCode) +
     (scope.hashCode) +
     (signingAlgorithm.hashCode) +
@@ -115,10 +154,11 @@ class SystemConfigOAuthDto {
     (tokenEndpointAuthMethod.hashCode);
 
   @override
-  String toString() => 'SystemConfigOAuthDto[autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
+  String toString() => 'SystemConfigOAuthDto[allowInsecureRequests=$allowInsecureRequests, autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, endSessionEndpoint=$endSessionEndpoint, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, prompt=$prompt, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'allowInsecureRequests'] = this.allowInsecureRequests;
       json[r'autoLaunch'] = this.autoLaunch;
       json[r'autoRegister'] = this.autoRegister;
       json[r'buttonText'] = this.buttonText;
@@ -130,10 +170,12 @@ class SystemConfigOAuthDto {
     //  json[r'defaultStorageQuota'] = null;
     }
       json[r'enabled'] = this.enabled;
+      json[r'endSessionEndpoint'] = this.endSessionEndpoint;
       json[r'issuerUrl'] = this.issuerUrl;
       json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
       json[r'mobileRedirectUri'] = this.mobileRedirectUri;
       json[r'profileSigningAlgorithm'] = this.profileSigningAlgorithm;
+      json[r'prompt'] = this.prompt;
       json[r'roleClaim'] = this.roleClaim;
       json[r'scope'] = this.scope;
       json[r'signingAlgorithm'] = this.signingAlgorithm;
@@ -153,6 +195,7 @@ class SystemConfigOAuthDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigOAuthDto(
+        allowInsecureRequests: mapValueOfType<bool>(json, r'allowInsecureRequests')!,
         autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
         autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
@@ -160,10 +203,12 @@ class SystemConfigOAuthDto {
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
         defaultStorageQuota: mapValueOfType<int>(json, r'defaultStorageQuota'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        endSessionEndpoint: mapValueOfType<String>(json, r'endSessionEndpoint')!,
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
         mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
         mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
         profileSigningAlgorithm: mapValueOfType<String>(json, r'profileSigningAlgorithm')!,
+        prompt: mapValueOfType<String>(json, r'prompt')!,
         roleClaim: mapValueOfType<String>(json, r'roleClaim')!,
         scope: mapValueOfType<String>(json, r'scope')!,
         signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
@@ -218,6 +263,7 @@ class SystemConfigOAuthDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'allowInsecureRequests',
     'autoLaunch',
     'autoRegister',
     'buttonText',
@@ -225,10 +271,12 @@ class SystemConfigOAuthDto {
     'clientSecret',
     'defaultStorageQuota',
     'enabled',
+    'endSessionEndpoint',
     'issuerUrl',
     'mobileOverrideEnabled',
     'mobileRedirectUri',
     'profileSigningAlgorithm',
+    'prompt',
     'roleClaim',
     'scope',
     'signingAlgorithm',

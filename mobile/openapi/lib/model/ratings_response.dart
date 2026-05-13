@@ -13,9 +13,10 @@ part of openapi.api;
 class RatingsResponse {
   /// Returns a new [RatingsResponse] instance.
   RatingsResponse({
-    this.enabled = false,
+    required this.enabled,
   });
 
+  /// Whether ratings are enabled
   bool enabled;
 
   @override

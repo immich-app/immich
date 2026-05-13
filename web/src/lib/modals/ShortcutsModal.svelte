@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -39,11 +40,14 @@
         { key: ['s'], action: $t('stack_selected_photos') },
         { key: ['l'], action: $t('add_to_album') },
         { key: ['t'], action: $t('tag_assets') },
-        { key: ['⇧', 'l'], action: $t('add_to_shared_album') },
+        { key: ['p'], action: $t('tag_people') },
         { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
         { key: ['⇧', 'd'], action: $t('download') },
         { key: ['Space'], action: $t('play_or_pause_video') },
         { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
+        ...(authManager.authenticated && authManager.preferences.ratings.enabled
+          ? [{ key: ['1-5'], action: $t('rate_asset'), info: $t('zero_to_clear_rating') }]
+          : []),
       ],
     },
   }: Props = $props();
@@ -67,7 +71,7 @@
                     </p>
                   {/each}
                 </div>
-                <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+                <p class="my-1 flex">{shortcut.action}</p>
               </div>
             {/each}
           </div>
@@ -89,7 +93,7 @@
                   {/each}
                 </div>
                 <div class="flex items-center gap-2">
-                  <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+                  <p class="my-1 flex">{shortcut.action}</p>
                   {#if shortcut.info}
                     <Icon icon={mdiInformationOutline} title={shortcut.info} />
                   {/if}

@@ -43,17 +43,27 @@ describe(UserController.name, () => {
       expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    for (const key of ['email', 'name']) {
+    for (const [key, message] of [
+      ['email', 'Invalid input: expected email, received object'],
+      ['name', 'Invalid input: expected string, received null'],
+    ] as const) {
       it(`should not allow null ${key}`, async () => {
-        const dto = { [key]: null };
         const { status, body } = await request(ctx.getHttpServer())
           .put(`/users/me`)
           .set('Authorization', `Bearer token`)
-          .send(dto);
+          .send({ [key]: null });
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest());
+        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
       });
     }
+
+    it('should allow an empty avatarColor', async () => {
+      await request(ctx.getHttpServer())
+        .put(`/users/me`)
+        .set('Authorization', `Bearer token`)
+        .send({ avatarColor: null });
+      expect(service.updateMe).toHaveBeenCalledWith(undefined, expect.objectContaining({ avatarColor: null }));
+    });
   });
 
   describe('GET /users/:id', () => {

@@ -16,6 +16,7 @@ class TagUpsertDto {
     this.tags = const [],
   });
 
+  /// Tag names to upsert
   List<String> tags;
 
   @override

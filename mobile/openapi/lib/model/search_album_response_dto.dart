@@ -19,12 +19,20 @@ class SearchAlbumResponseDto {
     required this.total,
   });
 
+  /// Number of albums in this page
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int count;
 
   List<SearchFacetResponseDto> facets;
 
   List<AlbumResponseDto> items;
 
+  /// Total number of matching albums
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int total;
 
   @override

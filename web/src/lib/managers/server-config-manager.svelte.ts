@@ -1,11 +1,13 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import { getServerConfig, type ServerConfigDto } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class ServerConfigManager {
   #value?: ServerConfigDto = $state();
 
   constructor() {
-    eventManager.on('SystemConfigUpdate', () => void this.loadServerConfig());
+    eventManager.on({
+      SystemConfigUpdate: () => this.loadServerConfig(),
+    });
   }
 
   async init() {

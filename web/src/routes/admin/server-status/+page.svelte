@@ -1,7 +1,8 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import ServerStatisticsPanel from '$lib/components/server-statistics/ServerStatisticsPanel.svelte';
-  import { getServerStatistics } from '@immich/sdk';
+  import ServerStatisticsPanel from './ServerStatisticsPanel.svelte';
+  import { getServerStatistics, type ServerStatsResponseDto } from '@immich/sdk';
+  import { Container } from '@immich/ui';
   import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
@@ -11,7 +12,14 @@
 
   const { data }: Props = $props();
 
-  let stats = $state(data.stats);
+  let stats = $state<ServerStatsResponseDto | undefined>(undefined);
+
+  const statsPromise = $derived.by(() => {
+    if (stats) {
+      return Promise.resolve(stats);
+    }
+    return data.statsPromise;
+  });
 
   const updateStatistics = async () => {
     stats = await getServerStatistics();
@@ -25,9 +33,7 @@
 </script>
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
-      <ServerStatisticsPanel {stats} />
-    </section>
-  </section>
+  <Container size="large" center>
+    <ServerStatisticsPanel {statsPromise} users={data.users} />
+  </Container>
 </AdminPageLayout>

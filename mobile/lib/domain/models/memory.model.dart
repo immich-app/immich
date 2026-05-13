@@ -2,7 +2,6 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 enum MemoryTypeEnum {
@@ -36,7 +35,9 @@ class MemoryData {
 
   @override
   bool operator ==(covariant MemoryData other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.year == year;
   }
@@ -132,7 +133,9 @@ class DriftMemory {
 
   @override
   bool operator ==(covariant DriftMemory other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final listEquals = const DeepCollectionEquality().equals;
 
     return other.id == id &&

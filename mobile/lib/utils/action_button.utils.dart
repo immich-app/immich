@@ -18,8 +18,11 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
@@ -41,7 +44,7 @@ class ActionButtonContext {
   final ActionSource source;
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
-  final ThemeData? originalTheme;
+  final int selectedCount;
 
   const ActionButtonContext({
     required this.asset,
@@ -55,7 +58,7 @@ class ActionButtonContext {
     required this.source,
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
-    this.originalTheme,
+    this.selectedCount = 1,
   });
 }
 
@@ -65,10 +68,13 @@ enum ActionButtonType {
   share,
   shareLink,
   cast,
+  setAlbumCover,
   similarPhotos,
+  setProfilePicture,
   viewInTimeline,
   download,
   upload,
+  openInBrowser,
   unstack,
   archive,
   unarchive,
@@ -134,10 +140,16 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.currentAlbum != null,
+      ActionButtonType.setAlbumCover =>
+        !context.isInLockedView && //
+            context.currentAlbum != null && //
+            context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
+            context.timelineOrigin != TimelineOrigin.trash &&
             !context.isInLockedView && //
             context.isStacked,
+      ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
@@ -146,6 +158,10 @@ enum ActionButtonType {
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
             context.asset is RemoteAsset,
+      ActionButtonType.setProfilePicture =>
+        !context.isInLockedView && //
+            context.asset is RemoteAsset && //
+            context.isOwner,
       ActionButtonType.openInfo => true,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
@@ -213,31 +229,45 @@ enum ActionButtonType {
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
+      ActionButtonType.setAlbumCover => SetAlbumCoverActionButton(
+        albumId: context.currentAlbum!.id,
+        source: context.source,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => UnStackActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.openInBrowser => OpenInBrowserActionButton(
+        remoteId: context.asset.remoteId!,
+        origin: context.timelineOrigin,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(
         assetId: (context.asset as RemoteAsset).id,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
+      ActionButtonType.setProfilePicture => SetProfilePictureActionButton(
+        asset: context.asset,
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
       ActionButtonType.openInfo => BaseActionButton(
         label: 'info'.tr(),
         iconData: Icons.info_outline,
-        iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
-        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
+        onPressed: () => EventStream.shared.emit(const ViewerShowDetailsEvent()),
       ),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),
         iconData: Icons.image_search,
-        iconColor: context.originalTheme?.iconTheme.color,
         iconOnly: iconOnly,
         menuItem: menuItem,
         onPressed: buildContext == null
             ? null
             : () async {
-                await buildContext.maybePop();
-                await buildContext.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+                await buildContext.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
                 EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
               },
       ),
@@ -251,7 +281,7 @@ enum ActionButtonType {
   int get kebabMenuGroup => switch (this) {
     // 0: info
     ActionButtonType.openInfo => 0,
-    // 10: move,remove, and delete
+    // 10: move, remove, and delete
     ActionButtonType.trash => 10,
     ActionButtonType.deletePermanent => 10,
     ActionButtonType.removeFromLockFolder => 10,
@@ -285,7 +315,7 @@ class ActionButtonBuilder {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
     final visibleButtons = defaultViewerKebabMenuOrder
         .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
         .toList();
@@ -301,7 +331,7 @@ class ActionButtonBuilder {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, false, true).build(buildContext, ref));
+      result.add(type.buildButton(context, buildContext, false, true));
       lastGroup = type.kebabMenuGroup;
     }
 

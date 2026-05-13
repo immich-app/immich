@@ -1,5 +1,7 @@
 import { Kysely } from 'kysely';
+import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
@@ -16,7 +18,14 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, SearchRepository, PartnerRepository, PersonRepository],
+    real: [
+      AccessRepository,
+      AssetRepository,
+      DatabaseRepository,
+      SearchRepository,
+      PartnerRepository,
+      PersonRepository,
+    ],
     mock: [LoggingRepository],
   });
 };
@@ -51,5 +60,74 @@ describe(SearchService.name, () => {
       expect.objectContaining({ id: assets[0].id }),
       expect.objectContaining({ id: assets[1].id }),
     ]);
+  });
+
+  describe('searchStatistics', () => {
+    it('should return statistics when filtering by personIds', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const result = await sut.searchStatistics(auth, { personIds: [person.id] });
+
+      expect(result).toEqual({ total: 1 });
+    });
+
+    it('should return zero when no assets match the personIds filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const result = await sut.searchStatistics(auth, { personIds: [person.id] });
+
+      expect(result).toEqual({ total: 0 });
+    });
+  });
+
+  describe('withStacked option', () => {
+    it('should exclude stacked assets when withStacked is false', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: primaryAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: stackedAsset } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: unstackedAsset } = await ctx.newAsset({ ownerId: user.id });
+
+      await ctx.newStack({ ownerId: user.id }, [primaryAsset.id, stackedAsset.id]);
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const response = await sut.searchMetadata(auth, { withStacked: false });
+
+      expect(response.assets.items.length).toBe(1);
+      expect(response.assets.items[0].id).toBe(unstackedAsset.id);
+    });
+  });
+
+  describe('getSearchSuggestions', () => {
+    it('should filter out empty search suggestions', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+
+      const { asset: assetWithEmptyMake } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: assetWithEmptyMake.id, make: '' });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const suggestions = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.CAMERA_MAKE,
+        includeNull: true,
+      });
+
+      expect(suggestions).toEqual(['Canon', null]);
+    });
   });
 });

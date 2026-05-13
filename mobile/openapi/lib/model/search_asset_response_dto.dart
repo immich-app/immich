@@ -20,14 +20,23 @@ class SearchAssetResponseDto {
     required this.total,
   });
 
+  /// Number of assets in this page
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int count;
 
   List<SearchFacetResponseDto> facets;
 
   List<AssetResponseDto> items;
 
+  /// Next page token
   String? nextPage;
 
+  /// Total number of matching assets
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int total;
 
   @override

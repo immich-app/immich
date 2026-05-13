@@ -33,14 +33,14 @@ export class SessionService extends BaseService {
     }
 
     const token = this.cryptoRepository.randomBytesAsText(32);
-    const tokenHashed = this.cryptoRepository.hashSha256(token);
+    const hashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.create({
       parentId: auth.session.id,
       userId: auth.user.id,
       expiresAt: dto.duration ? DateTime.now().plus({ seconds: dto.duration }).toJSDate() : null,
       deviceType: dto.deviceType,
       deviceOS: dto.deviceOS,
-      token: tokenHashed,
+      token: hashed,
     });
 
     return { ...mapSession(session), token };
@@ -73,7 +73,7 @@ export class SessionService extends BaseService {
   async deleteAll(auth: AuthDto): Promise<void> {
     const userId = auth.user.id;
     const currentSessionId = auth.session?.id;
-    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
+    await this.sessionRepository.invalidateAll({ userId, excludeId: currentSessionId });
   }
 
   async lock(auth: AuthDto, id: string): Promise<void> {
@@ -83,6 +83,6 @@ export class SessionService extends BaseService {
 
   @OnEvent({ name: 'AuthChangePassword' })
   async onAuthChangePassword({ userId, currentSessionId }: ArgOf<'AuthChangePassword'>): Promise<void> {
-    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
+    await this.sessionRepository.invalidateAll({ userId, excludeId: currentSessionId });
   }
 }

@@ -1,42 +1,23 @@
-<script lang="ts" module>
-  import { createContext } from '$lib/utils/context';
-  import { t } from 'svelte-i18n';
-
-  export interface AssetControlContext {
-    // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => TimelineAsset[]; // All assets includes partners' assets
-    getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
-    clearSelect: () => void;
-  }
-
-  const { get: getAssetControlContext, set: setContext } = createContext<AssetControlContext>();
-  export { getAssetControlContext };
-</script>
-
 <script lang="ts">
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import { t } from 'svelte-i18n';
 
-  interface Props {
-    assets: TimelineAsset[];
-    clearSelect: () => void;
-    ownerId?: string | undefined;
+  type Props = {
     children?: Snippet;
     forceDark?: boolean;
-  }
+  };
 
-  let { assets, clearSelect, ownerId = undefined, children, forceDark }: Props = $props();
+  let { children, forceDark }: Props = $props();
 
-  setContext({
-    getAssets: () => assets,
-    getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
-    clearSelect,
-  });
+  const onClose = () => assetMultiSelectManager.clear();
+
+  const assets = $derived(assetMultiSelectManager.assets);
 </script>
 
-<ControlAppBar onClose={clearSelect} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+<ControlAppBar {onClose} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   {#snippet leading()}
     <div class="font-medium {forceDark ? 'text-immich-dark-primary' : 'text-primary'}">
       <p class="block sm:hidden">{assets.length}</p>

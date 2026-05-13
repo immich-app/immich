@@ -6,17 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
-import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
-import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
@@ -29,16 +27,16 @@ class AdvancedSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    bool isLoggedIn = ref.read(currentUserProvider) != null;
-
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
-    final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
-    final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
-    final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
-    final useAlternatePMFilter = useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
+    final levelId = useState<int>(ref.read(systemConfigProvider).logLevel.index);
+    final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
+    useValueChanged(
+      preferRemote.value,
+      (_, __) => ref.read(metadataProvider).write(.imagePreferRemote, preferRemote.value),
+    );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;
@@ -117,42 +115,64 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_prefer_remote_title".tr(),
         subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
       ),
-      if (!Store.isBetaTimelineEnabled) const LocalStorageSettings(),
-      SettingsSwitchListTile(
-        enabled: !isLoggedIn,
-        valueNotifier: allowSelfSignedSSLCert,
-        title: "advanced_settings_self_signed_ssl_title".tr(),
-        subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: HttpSSLOptions.applyFromSettings,
-      ),
       const CustomProxyHeaderSettings(),
-      SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
-      if (!Store.isBetaTimelineEnabled)
-        SettingsSwitchListTile(
-          valueNotifier: useAlternatePMFilter,
-          title: "advanced_settings_enable_alternate_media_filter_title".tr(),
-          subtitle: "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
-        ),
-      const BetaTimelineListTile(),
-      if (Store.isBetaTimelineEnabled)
-        SettingsSwitchListTile(
-          valueNotifier: readonlyModeEnabled,
-          title: "advanced_settings_readonly_mode_title".tr(),
-          subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
-          onChanged: (value) {
-            readonlyModeEnabled.value = value;
-            ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
+      const SslClientCertSettings(),
+      SettingsSwitchListTile(
+        valueNotifier: readonlyModeEnabled,
+        title: "advanced_settings_readonly_mode_title".tr(),
+        subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
+        onChanged: (value) {
+          readonlyModeEnabled.value = value;
+          ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(
+                (value ? "readonly_mode_enabled" : "readonly_mode_disabled").tr(),
+                style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+              ),
+            ),
+          );
+        },
+      ),
+      ListTile(
+        title: Text("advanced_settings_clear_image_cache".tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
+        leading: const Icon(Icons.playlist_remove_rounded),
+        onTap: () async {
+          final int clearedBytes;
+          try {
+            clearedBytes = await remoteImageApi.clearCache();
+          } catch (e) {
             context.scaffoldMessenger.showSnackBar(
               SnackBar(
                 duration: const Duration(seconds: 2),
                 content: Text(
-                  (value ? "readonly_mode_enabled" : "readonly_mode_disabled").tr(),
-                  style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+                  "advanced_settings_clear_image_cache_error".tr(),
+                  style: context.textTheme.bodyLarge?.copyWith(color: context.themeData.colorScheme.error),
                 ),
               ),
             );
-          },
-        ),
+            return;
+          }
+
+          if (clearedBytes < 0) {
+            return;
+          }
+
+          // iOS always returns a small non-zero value
+          final clearedMB = clearedBytes < (256 * 1024) ? "0 MiB" : formatHumanReadableBytes(clearedBytes, 2);
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(
+                "advanced_settings_clear_image_cache_success".tr(namedArgs: {'size': clearedMB}),
+                style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+              ),
+            ),
+          );
+        },
+      ),
+      const SizedBox(height: 60),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);

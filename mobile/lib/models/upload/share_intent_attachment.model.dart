@@ -7,7 +7,7 @@ import 'package:path/path.dart';
 
 enum ShareIntentAttachmentType { image, video }
 
-enum UploadStatus { enqueued, running, complete, notFound, failed, canceled, waitingToRetry, paused }
+enum UploadStatus { enqueued, running, complete, failed }
 
 class ShareIntentAttachment {
   final String path;
@@ -88,7 +88,9 @@ class ShareIntentAttachment {
 
   @override
   bool operator ==(covariant ShareIntentAttachment other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.path == path && other.type == type;
   }

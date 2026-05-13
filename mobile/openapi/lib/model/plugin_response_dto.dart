@@ -25,24 +25,34 @@ class PluginResponseDto {
     required this.version,
   });
 
+  /// Plugin actions
   List<PluginActionResponseDto> actions;
 
+  /// Plugin author
   String author;
 
+  /// Creation date
   String createdAt;
 
+  /// Plugin description
   String description;
 
+  /// Plugin filters
   List<PluginFilterResponseDto> filters;
 
+  /// Plugin ID
   String id;
 
+  /// Plugin name
   String name;
 
+  /// Plugin title
   String title;
 
+  /// Last update date
   String updatedAt;
 
+  /// Plugin version
   String version;
 
   @override

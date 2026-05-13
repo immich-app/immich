@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { AppRoute, SettingInputFieldType } from '$lib/constants';
+  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { Route } from '$lib/route';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { user } from '$lib/stores/user.store';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
+  import { Heading, Link, LoadingSpinner, Text } from '@immich/ui';
   import handlebar from 'handlebars';
   import * as luxon from 'luxon';
   import { onDestroy } from 'svelte';
@@ -60,6 +60,9 @@
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
       assetIdShort: '56717ccba856',
       album: $t('album_name'),
+      make: 'FUJIFILM',
+      model: 'X-T50',
+      lensModel: 'XF27mm F2.8 R WR',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
@@ -103,29 +106,17 @@
   });
 </script>
 
-<section class="dark:text-immich-dark-fg mt-2">
+<section class="mt-2 dark:text-immich-dark-fg">
   <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
     <p class="text-sm dark:text-immich-dark-fg">
       <FormatMessage key="admin.storage_template_more_details">
         {#snippet children({ tag, message })}
           {#if tag === 'template-link'}
-            <a
-              href="https://docs.immich.app/administration/storage-template"
-              class="underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {message}
-            </a>
+            <Link href="https://docs.immich.app/administration/storage-template">{message}</Link>
           {:else if tag === 'implications-link'}
-            <a
-              href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations"
-              class="underline"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <Link href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations">
               {message}
-            </a>
+            </Link>
           {/if}
         {/snippet}
       </FormatMessage>
@@ -155,7 +146,9 @@
       {#if configToEdit.storageTemplate.enabled}
         <hr />
 
-        <h3 class="text-base font-medium text-primary">{$t('variables')}</h3>
+        <Heading size="tiny" color="primary">
+          {$t('variables')}
+        </Heading>
 
         <section class="support-date">
           {#await getSupportDateTimeFormat()}
@@ -171,17 +164,23 @@
           <SupportedVariablesPanel />
         </section>
 
-        <div class="flex flex-col mt-4">
-          <h3 class="text-base font-medium text-primary">{$t('template')}</h3>
+        <div class="mt-2 flex flex-col">
+          <!-- <h3 class="text-base font-medium text-primary">{$t('template')}</h3> -->
+          <Heading size="tiny" color="primary">
+            {$t('template')}
+          </Heading>
 
-          <div class="my-2 text-sm">
-            <h4 class="uppercase">{$t('preview')}</h4>
+          <div class="my-2">
+            <Text size="small">{$t('preview')}</Text>
           </div>
 
           <p class="text-sm">
             <FormatMessage
               key="admin.storage_template_path_length"
-              values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
+              values={{
+                length: parsedTemplate().length + authManager.user.id.length + 'UPLOAD_LOCATION'.length,
+                limit: 260,
+              }}
             >
               {#snippet children({ message })}
                 <span class="font-semibold text-primary">{message}</span>
@@ -190,27 +189,30 @@
           </p>
 
           <p class="text-sm">
-            <FormatMessage key="admin.storage_template_user_label" values={{ label: $user.storageLabel || $user.id }}>
+            <FormatMessage
+              key="admin.storage_template_user_label"
+              values={{ label: authManager.user.storageLabel || authManager.user.id }}
+            >
               {#snippet children({ message })}
                 <code class="text-primary">{message}</code>
               {/snippet}
             </FormatMessage>
           </p>
 
-          <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
+          <p class="mt-2 rounded-lg bg-gray-200 p-4 py-2 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
             <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-              >UPLOAD_LOCATION/library/{$user.storageLabel || $user.id}</span
+              >UPLOAD_LOCATION/library/{authManager.user.storageLabel || authManager.user.id}</span
             >/{parsedTemplate()}.jpg
           </p>
 
           <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
-            <div class="flex flex-col my-2">
+            <div class="my-2 flex flex-col">
               {#if templateOptions}
-                <label class="font-medium text-primary text-sm" for="preset-select">
+                <label class="text-sm font-medium text-primary" for="preset-select">
                   {$t('preset')}
                 </label>
                 <select
-                  class="immich-form-input p-2 mt-2 text-sm rounded-lg bg-slate-200 hover:cursor-pointer dark:bg-gray-600"
+                  class="mt-2 immich-form-input rounded-lg bg-slate-200 p-2 text-sm hover:cursor-pointer dark:bg-gray-600"
                   disabled={disabled || !configToEdit.storageTemplate.enabled}
                   name="presets"
                   id="preset-select"
@@ -246,7 +248,9 @@
 
             {#if !minified}
               <div id="migration-info" class="mt-2 text-sm">
-                <h3 class="text-base font-medium text-primary">{$t('notes')}</h3>
+                <Heading size="tiny" color="primary">
+                  {$t('notes')}
+                </Heading>
                 <section class="flex flex-col gap-2">
                   <p>
                     <FormatMessage
@@ -254,9 +258,7 @@
                       values={{ job: $t('admin.storage_template_migration_job') }}
                     >
                       {#snippet children({ message })}
-                        <a href={resolve(AppRoute.ADMIN_QUEUES)} class="text-primary">
-                          {message}
-                        </a>
+                        <a href={Route.queues()} class="text-primary">{message}</a>
                       {/snippet}
                     </FormatMessage>
                   </p>

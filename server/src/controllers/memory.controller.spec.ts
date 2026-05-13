@@ -48,8 +48,24 @@ describe(MemoryController.name, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['data.year must be a positive number', 'data.year must be an integer number']),
+        errorDto.validationError([
+          { path: ['data', 'year'], message: 'Invalid input: expected number, received undefined' },
+        ]),
       );
+    });
+
+    it('should accept showAt and hideAt', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/memories')
+        .send({
+          type: 'on_this_day',
+          data: { year: 2020 },
+          memoryAt: new Date(2021).toISOString(),
+          showAt: new Date(2022).toISOString(),
+          hideAt: new Date(2023).toISOString(),
+        });
+
+      expect(status).toBe(201);
     });
   });
 
@@ -69,7 +85,7 @@ describe(MemoryController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/memories/invalid`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 
@@ -82,7 +98,15 @@ describe(MemoryController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/invalid`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
+      );
+    });
+
+    it('should require at least one field', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).put(`/memories/${factory.uuid()}`).send({});
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'At least one field must be provided' }]));
     });
   });
 
@@ -102,7 +126,7 @@ describe(MemoryController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/invalid/assets`).send({ ids: [] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should require a valid asset id', async () => {
@@ -110,7 +134,7 @@ describe(MemoryController.name, () => {
         .put(`/memories/${factory.uuid()}/assets`)
         .send({ ids: ['invalid'] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['each value in ids must be a UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['ids', 0], message: 'Invalid UUID' }]));
     });
   });
 
@@ -123,7 +147,7 @@ describe(MemoryController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/memories/invalid/assets`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['id must be a UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should require a valid asset id', async () => {
@@ -131,7 +155,7 @@ describe(MemoryController.name, () => {
         .delete(`/memories/${factory.uuid()}/assets`)
         .send({ ids: ['invalid'] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['each value in ids must be a UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['ids', 0], message: 'Invalid UUID' }]));
     });
   });
 });

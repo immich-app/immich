@@ -2,7 +2,7 @@ import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 process.env.PUBLIC_IMMICH_BUY_HOST = process.env.PUBLIC_IMMICH_BUY_HOST || 'https://buy.immich.app';
 process.env.PUBLIC_IMMICH_PAY_HOST = process.env.PUBLIC_IMMICH_PAY_HOST || 'https://pay.futo.org';
@@ -15,6 +15,9 @@ const config = {
   },
   preprocess: vitePreprocess(),
   kit: {
+    version: {
+      name: process.env.IMMICH_BUILD || Date.now().toString(),
+    },
     paths: {
       relative: false,
     },
@@ -25,10 +28,18 @@ const config = {
     alias: {
       $lib: 'src/lib',
       '$lib/*': 'src/lib/*',
+      $tests: 'src/../tests',
+      '$tests/*': 'src/../tests/*',
       '@test-data': 'src/test-data',
       $i18n: '../i18n',
       'chromecast-caf-sender': './node_modules/@types/chromecast-caf-sender/index.d.ts',
     },
+  },
+  onwarn: (warning, handler) => {
+    if (warning.code === 'state_referenced_locally') {
+      return;
+    }
+    handler(warning);
   },
 };
 

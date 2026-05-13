@@ -16,6 +16,7 @@ class PartnerUpdateDto {
     required this.inTimeline,
   });
 
+  /// Show partner assets in timeline
   bool inTimeline;
 
   @override

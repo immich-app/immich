@@ -30,34 +30,49 @@ class ServerFeaturesDto {
     required this.trash,
   });
 
+  /// Whether config file is available
   bool configFile;
 
+  /// Whether duplicate detection is enabled
   bool duplicateDetection;
 
+  /// Whether email notifications are enabled
   bool email;
 
+  /// Whether facial recognition is enabled
   bool facialRecognition;
 
+  /// Whether face import is enabled
   bool importFaces;
 
+  /// Whether map feature is enabled
   bool map;
 
+  /// Whether OAuth is enabled
   bool oauth;
 
+  /// Whether OAuth auto-launch is enabled
   bool oauthAutoLaunch;
 
+  /// Whether OCR is enabled
   bool ocr;
 
+  /// Whether password login is enabled
   bool passwordLogin;
 
+  /// Whether reverse geocoding is enabled
   bool reverseGeocoding;
 
+  /// Whether search is enabled
   bool search;
 
+  /// Whether sidecar files are supported
   bool sidecar;
 
+  /// Whether smart search is enabled
   bool smartSearch;
 
+  /// Whether trash feature is enabled
   bool trash;
 
   @override

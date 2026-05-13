@@ -34,7 +34,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     final isOwner = album.ownerId == userId;
 
     void showErrorMessage() {
-      context.pop();
+      ContextHelper(context).pop();
       ImmichToast.show(
         context: context,
         msg: "shared_album_section_people_action_error".t(context: context),
@@ -60,7 +60,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         showErrorMessage();
       }
 
-      context.pop();
+      ContextHelper(context).pop();
     }
 
     Future<void> addUsers() async {
@@ -149,7 +149,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
             }
 
             return ListTile(
-              leading: UserCircleAvatar(user: user, radius: 22),
+              leading: UserCircleAvatar(user: user),
               title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w500)),
               subtitle: Text(user.email, style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
               trailing: Text("owner", style: context.textTheme.labelLarge).t(context: context),
@@ -169,7 +169,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
           itemBuilder: (context, index) {
             final user = sharedUsers[index];
             return ListTile(
-              leading: UserCircleAvatar(user: user, radius: 22),
+              leading: UserCircleAvatar(user: user),
               title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w500)),
               subtitle: Text(user.email, style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
               trailing: userId == user.id || isOwner ? const Icon(Icons.more_horiz_rounded) : const SizedBox(),

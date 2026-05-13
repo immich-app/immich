@@ -1,3 +1,5 @@
+import z from 'zod';
+
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
@@ -20,7 +22,7 @@ export enum ImmichHeader {
   SharedLinkKey = 'x-immich-share-key',
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
-  Cid = 'x-immich-cid',
+  CorrelationId = 'X-Correlation-ID',
 }
 
 export enum ImmichQuery {
@@ -37,6 +39,15 @@ export enum AssetType {
   Other = 'OTHER',
 }
 
+export const AssetTypeSchema = z.enum(AssetType).describe('Asset type').meta({ id: 'AssetTypeEnum' });
+
+export enum ChecksumAlgorithm {
+  /** sha1 checksum of the whole file contents */
+  sha1File = 'sha1',
+  /** sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated */
+  sha1Path = 'sha1-path',
+}
+
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
@@ -45,33 +56,37 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
+  EncodedVideo = 'encoded_video',
 }
 
 export enum AlbumUserRole {
   Editor = 'editor',
+  Owner = 'owner',
   Viewer = 'viewer',
 }
+
+export const AlbumUserRoleSchema = z.enum(AlbumUserRole).describe('Album user role').meta({ id: 'AlbumUserRole' });
 
 export enum AssetOrder {
   Asc = 'asc',
   Desc = 'desc',
 }
 
-export enum DatabaseAction {
-  Create = 'CREATE',
-  Update = 'UPDATE',
-  Delete = 'DELETE',
+export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ id: 'AssetOrder' });
+
+export enum AssetOrderBy {
+  TakenAt = 'takenAt',
+  CreatedAt = 'createdAt',
 }
 
-export enum EntityType {
-  Asset = 'ASSET',
-  Album = 'ALBUM',
-}
+export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting property').meta({ id: 'AssetOrderBy' });
 
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
 }
+
+export const MemoryTypeSchema = z.enum(MemoryType).describe('Memory type').meta({ id: 'MemoryType' });
 
 export enum AssetOrderWithRandom {
   // Include existing values
@@ -80,6 +95,11 @@ export enum AssetOrderWithRandom {
   /** Randomly Ordered */
   Random = 'random',
 }
+
+export const AssetOrderWithRandomSchema = z
+  .enum(AssetOrderWithRandom)
+  .describe('Sort order')
+  .meta({ id: 'MemorySearchOrder' });
 
 export enum Permission {
   All = 'all',
@@ -104,8 +124,12 @@ export enum Permission {
   AssetView = 'asset.view',
   AssetDownload = 'asset.download',
   AssetUpload = 'asset.upload',
-  AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
+  AssetDerive = 'asset.derive',
+
+  AssetEditGet = 'asset.edit.get',
+  AssetEditCreate = 'asset.edit.create',
+  AssetEditDelete = 'asset.edit.delete',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -128,6 +152,11 @@ export enum Permission {
 
   ArchiveRead = 'archive.read',
 
+  BackupList = 'backup.list',
+  BackupDownload = 'backup.download',
+  BackupUpload = 'backup.upload',
+  BackupDelete = 'backup.delete',
+
   DuplicateRead = 'duplicate.read',
   DuplicateDelete = 'duplicate.delete',
 
@@ -135,6 +164,8 @@ export enum Permission {
   FaceRead = 'face.read',
   FaceUpdate = 'face.update',
   FaceDelete = 'face.delete',
+
+  FolderRead = 'folder.read',
 
   JobCreate = 'job.create',
   JobRead = 'job.read',
@@ -149,6 +180,9 @@ export enum Permission {
   TimelineDownload = 'timeline.download',
 
   Maintenance = 'maintenance',
+
+  MapRead = 'map.read',
+  MapSearch = 'map.search',
 
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
@@ -282,6 +316,8 @@ export enum SharedLinkType {
   Individual = 'INDIVIDUAL',
 }
 
+export const SharedLinkTypeSchema = z.enum(SharedLinkType).describe('Shared link type').meta({ id: 'SharedLinkType' });
+
 export enum StorageFolder {
   EncodedVideo = 'encoded-video',
   Library = 'library',
@@ -290,6 +326,8 @@ export enum StorageFolder {
   Thumbnails = 'thumbs',
   Backups = 'backups',
 }
+
+export const StorageFolderSchema = z.enum(StorageFolder).describe('Storage folder').meta({ id: 'StorageFolder' });
 
 export enum SystemMetadataKey {
   MediaLocation = 'MediaLocation',
@@ -310,6 +348,11 @@ export enum UserMetadataKey {
   Onboarding = 'onboarding',
 }
 
+export const UserMetadataKeySchema = z
+  .enum(UserMetadataKey)
+  .describe('User metadata key')
+  .meta({ id: 'UserMetadataKey' });
+
 export enum AssetMetadataKey {
   MobileApp = 'mobile-app',
 }
@@ -327,11 +370,18 @@ export enum UserAvatarColor {
   Amber = 'amber',
 }
 
+export const UserAvatarColorSchema = z
+  .enum(UserAvatarColor)
+  .describe('User avatar color')
+  .meta({ id: 'UserAvatarColor' });
+
 export enum UserStatus {
   Active = 'active',
   Removing = 'removing',
   Deleted = 'deleted',
 }
+
+export const UserStatusSchema = z.enum(UserStatus).describe('User status').meta({ id: 'UserStatus' });
 
 export enum AssetStatus {
   Active = 'active',
@@ -345,6 +395,8 @@ export enum SourceType {
   Manual = 'manual',
 }
 
+export const SourceTypeSchema = z.enum(SourceType).describe('Face detection source type').meta({ id: 'SourceType' });
+
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
   TagCleanup = 'tag-cleanup',
@@ -354,13 +406,11 @@ export enum ManualJobName {
   BackupDatabase = 'backup-database',
 }
 
+export const ManualJobNameSchema = z.enum(ManualJobName).describe('Manual job name').meta({ id: 'ManualJobName' });
+
 export enum AssetPathType {
   Original = 'original',
-  FullSize = 'fullsize',
-  Preview = 'preview',
-  Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
-  Sidecar = 'sidecar',
 }
 
 export enum PersonPathType {
@@ -371,7 +421,7 @@ export enum UserPathType {
   Profile = 'profile',
 }
 
-export type PathType = AssetPathType | PersonPathType | UserPathType;
+export type PathType = AssetFileType | AssetPathType | PersonPathType | UserPathType;
 
 export enum TranscodePolicy {
   All = 'all',
@@ -380,6 +430,11 @@ export enum TranscodePolicy {
   Required = 'required',
   Disabled = 'disabled',
 }
+
+export const TranscodePolicySchema = z
+  .enum(TranscodePolicy)
+  .describe('Transcode policy')
+  .meta({ id: 'TranscodePolicy' });
 
 export enum TranscodeTarget {
   None = 'NONE',
@@ -395,12 +450,22 @@ export enum VideoCodec {
   Av1 = 'av1',
 }
 
+export const VideoCodecSchema = z.enum(VideoCodec).describe('Target video codec').meta({ id: 'VideoCodec' });
+
+export enum VideoSegmentCodec {
+  Av1 = 'av1',
+  Hevc = 'hevc',
+  H264 = 'h264',
+}
+
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  LibOpus = 'libopus',
+  Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
+
+export const AudioCodecSchema = z.enum(AudioCodec).describe('Target audio codec').meta({ id: 'AudioCodec' });
 
 export enum VideoContainer {
   Mov = 'mov',
@@ -408,6 +473,11 @@ export enum VideoContainer {
   Ogg = 'ogg',
   Webm = 'webm',
 }
+
+export const VideoContainerSchema = z
+  .enum(VideoContainer)
+  .describe('Accepted video containers')
+  .meta({ id: 'VideoContainer' });
 
 export enum TranscodeHardwareAcceleration {
   Nvenc = 'nvenc',
@@ -417,6 +487,11 @@ export enum TranscodeHardwareAcceleration {
   Disabled = 'disabled',
 }
 
+export const TranscodeHardwareAccelerationSchema = z
+  .enum(TranscodeHardwareAcceleration)
+  .describe('Transcode hardware acceleration')
+  .meta({ id: 'TranscodeHWAccel' });
+
 export enum ToneMapping {
   Hable = 'hable',
   Mobius = 'mobius',
@@ -424,21 +499,29 @@ export enum ToneMapping {
   Disabled = 'disabled',
 }
 
+export const ToneMappingSchema = z.enum(ToneMapping).describe('Tone mapping').meta({ id: 'ToneMapping' });
+
 export enum CQMode {
   Auto = 'auto',
   Cqp = 'cqp',
   Icq = 'icq',
 }
 
+export const CQModeSchema = z.enum(CQMode).describe('CQ mode').meta({ id: 'CQMode' });
+
 export enum Colorspace {
   Srgb = 'srgb',
   P3 = 'p3',
 }
 
+export const ColorspaceSchema = z.enum(Colorspace).describe('Colorspace').meta({ id: 'Colorspace' });
+
 export enum ImageFormat {
   Jpeg = 'jpeg',
   Webp = 'webp',
 }
+
+export const ImageFormatSchema = z.enum(ImageFormat).describe('Image format').meta({ id: 'ImageFormat' });
 
 export enum RawExtractedFormat {
   Jpeg = 'jpeg',
@@ -454,6 +537,15 @@ export enum LogLevel {
   Fatal = 'fatal',
 }
 
+export const LogLevelSchema = z.enum(LogLevel).describe('Log level').meta({ id: 'LogLevel' });
+
+export enum LogFormat {
+  Console = 'console',
+  Json = 'json',
+}
+
+export const LogFormatSchema = z.enum(LogFormat).describe('Log format').meta({ id: 'LogFormat' });
+
 export enum ApiCustomExtension {
   Permission = 'x-immich-permission',
   AdminOnly = 'x-immich-admin-only',
@@ -463,8 +555,6 @@ export enum ApiCustomExtension {
 
 export enum MetadataKey {
   AuthRoute = 'auth_route',
-  AdminRoute = 'admin_route',
-  SharedRoute = 'shared_route',
   ApiKeySecurity = 'api_key',
   EventConfig = 'event_config',
   JobConfig = 'job_config',
@@ -487,6 +577,11 @@ export enum ImmichEnvironment {
   Testing = 'testing',
   Production = 'production',
 }
+
+export const ImmichEnvironmentSchema = z
+  .enum(ImmichEnvironment)
+  .describe('Immich environment')
+  .meta({ id: 'ImmichEnvironment' });
 
 export enum ImmichWorker {
   Api = 'api',
@@ -513,11 +608,137 @@ export enum ExifOrientation {
   Rotate270CW = 8,
 }
 
+/** ITU-T H.273 colour primaries codes. */
+export enum ColorPrimaries {
+  Reserved = 0,
+  Bt709 = 1,
+  Unknown = 2,
+  Bt470M = 4,
+  Bt470Bg = 5,
+  Smpte170M = 6,
+  Smpte240M = 7,
+  Film = 8,
+  Bt2020 = 9,
+  Smpte428 = 10,
+  Smpte431 = 11,
+  Smpte432 = 12,
+  Ebu3213 = 22,
+}
+
+/** ITU-T H.273 transfer characteristics codes. */
+export enum ColorTransfer {
+  Reserved = 0,
+  Bt709 = 1,
+  Unknown = 2,
+  Bt470M = 4,
+  Bt470Bg = 5,
+  Smpte170M = 6,
+  Smpte240M = 7,
+  Linear = 8,
+  Log100 = 9,
+  Log316 = 10,
+  Iec6196624 = 11,
+  Bt1361E = 12,
+  Iec6196621 = 13,
+  Bt202010 = 14,
+  Bt202012 = 15,
+  Smpte2084 = 16,
+  Smpte428 = 17,
+  AribStdB67 = 18,
+}
+
+/** ITU-T H.273 matrix coefficients codes. */
+export enum ColorMatrix {
+  Gbr = 0,
+  Bt709 = 1,
+  Unknown = 2,
+  Reserved = 3,
+  Fcc = 4,
+  Bt470Bg = 5,
+  Smpte170M = 6,
+  Smpte240M = 7,
+  Ycgco = 8,
+  Bt2020Nc = 9,
+  Bt2020C = 10,
+  Smpte2085 = 11,
+  ChromaDerivedNc = 12,
+  ChromaDerivedC = 13,
+  Ictcp = 14,
+}
+
+/** H.264 `profile_idc` values. */
+// H.264 has a few profiles that have the same value but different names, included so lookup by name works
+export enum H264Profile {
+  ConstrainedBaseline = 66,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  Baseline = 66,
+  Main = 77,
+  Extended = 88,
+  ConstrainedHigh = 100,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  ProgressiveHigh = 100,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  High = 100,
+  High10 = 110,
+  High422 = 122,
+  High444Predictive = 244,
+}
+
+/** HEVC `profile_idc` values. */
+export enum HevcProfile {
+  Main = 1,
+  Main10 = 2,
+  MainStillPicture = 3,
+  Rext = 4,
+}
+
+/** AV1 `seq_profile` values. */
+export enum Av1Profile {
+  Main = 0,
+  High = 1,
+  Professional = 2,
+}
+
+/** MPEG-4 Audio Object Type values for AAC. */
+export enum AacProfile {
+  Main = 1,
+  Lc = 2,
+  Ssr = 3,
+  Ltp = 4,
+  HeAac = 5,
+  Ld = 23,
+  HeAacv2 = 29,
+  Eld = 39,
+  XheAac = 42,
+}
+
+/** Dolby Vision bitstream profile numbers from the DOVI configuration record. */
+export enum DvProfile {
+  Dvhe03 = 3,
+  Dvhe04 = 4,
+  Dvhe05 = 5,
+  Dvhe07 = 7,
+  Dvhe08 = 8,
+  Dvav09 = 9,
+  Dav110 = 10,
+}
+
+/**
+ * Dolby Vision base-layer signal-compatibility ID from the DOVI configuration record.
+ * Identifies what the base HEVC/AVC layer renders as on a non-DV decoder.
+ */
+export enum DvSignalCompatibility {
+  None = 0,
+  Hdr10 = 1,
+  Sdr709 = 2,
+  Hlg = 4,
+  Sdr2020 = 6,
+}
+
 export enum DatabaseExtension {
   Cube = 'cube',
   EarthDistance = 'earthdistance',
   Vector = 'vector',
-  Vectors = 'vectors',
   VectorChord = 'vchord',
 }
 
@@ -550,7 +771,10 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  Editor = 'editor',
 }
+
+export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });
 
 export enum QueueJobStatus {
   Active = 'active',
@@ -561,6 +785,8 @@ export enum QueueJobStatus {
   Paused = 'paused',
 }
 
+export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
+
 export enum JobName {
   AssetDelete = 'AssetDelete',
   AssetDeleteCheck = 'AssetDeleteCheck',
@@ -568,6 +794,7 @@ export enum JobName {
   AssetDetectFaces = 'AssetDetectFaces',
   AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',
   AssetDetectDuplicates = 'AssetDetectDuplicates',
+  AssetEditThumbnailGeneration = 'AssetEditThumbnailGeneration',
   AssetEncodeVideoQueueAll = 'AssetEncodeVideoQueueAll',
   AssetEncodeVideo = 'AssetEncodeVideo',
   AssetEmptyTrash = 'AssetEmptyTrash',
@@ -577,7 +804,6 @@ export enum JobName {
   AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
-  AuditLogCleanup = 'AuditLogCleanup',
   AuditTableCleanup = 'AuditTableCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
@@ -640,6 +866,8 @@ export enum JobName {
   WorkflowRun = 'WorkflowRun',
 }
 
+export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
+
 export enum QueueCommand {
   Start = 'start',
   /** @deprecated Use `updateQueue` instead */
@@ -651,6 +879,11 @@ export enum QueueCommand {
   /** @deprecated Use `emptyQueue` instead */
   ClearFailed = 'clear-failed',
 }
+
+export const QueueCommandSchema = z
+  .enum(QueueCommand)
+  .describe('Queue command to execute')
+  .meta({ id: 'QueueCommand' });
 
 export enum JobStatus {
   Success = 'success',
@@ -679,13 +912,22 @@ export enum DatabaseLock {
   MediaLocation = 700,
   GetSystemConfig = 69,
   BackupDatabase = 42,
+  MaintenanceOperation = 621,
   MemoryCreation = 777,
+  VersionCheck = 800,
 }
 
 export enum MaintenanceAction {
   Start = 'start',
   End = 'end',
+  SelectDatabaseRestore = 'select_database_restore',
+  RestoreDatabase = 'restore_database',
 }
+
+export const MaintenanceActionSchema = z
+  .enum(MaintenanceAction)
+  .describe('Maintenance action')
+  .meta({ id: 'MaintenanceAction' });
 
 export enum ExitCode {
   AppRestart = 7,
@@ -693,26 +935,41 @@ export enum ExitCode {
 
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
+  AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
+  /** @deprecated */
   AlbumAssetsV1 = 'AlbumAssetsV1',
+  AlbumAssetsV2 = 'AlbumAssetsV2',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
+  /** @deprecated */
   AssetsV1 = 'AssetsV1',
+  AssetsV2 = 'AssetsV2',
   AssetExifsV1 = 'AssetExifsV1',
+  AssetEditsV1 = 'AssetEditsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
+  /** @deprecated */
   PartnerAssetsV1 = 'PartnerAssetsV1',
+  PartnerAssetsV2 = 'PartnerAssetsV2',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
+  /** @deprecated */
   AssetFacesV1 = 'AssetFacesV1',
+  AssetFacesV2 = 'AssetFacesV2',
   UserMetadataV1 = 'UserMetadataV1',
 }
+
+export const SyncRequestTypeSchema = z
+  .enum(SyncRequestType)
+  .describe('Sync request type')
+  .meta({ id: 'SyncRequestType' });
 
 export enum SyncEntityType {
   AuthUserV1 = 'AuthUserV1',
@@ -720,17 +977,25 @@ export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
+  /** @deprecated */
   AssetV1 = 'AssetV1',
+  AssetV2 = 'AssetV2',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+  AssetEditV1 = 'AssetEditV1',
+  AssetEditDeleteV1 = 'AssetEditDeleteV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
 
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
 
+  /** @deprecated */
   PartnerAssetV1 = 'PartnerAssetV1',
+  PartnerAssetV2 = 'PartnerAssetV2',
+  /** @deprecated */
   PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
+  PartnerAssetBackfillV2 = 'PartnerAssetBackfillV2',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
   PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
@@ -739,15 +1004,22 @@ export enum SyncEntityType {
   PartnerStackV1 = 'PartnerStackV1',
 
   AlbumV1 = 'AlbumV1',
+  AlbumV2 = 'AlbumV2',
   AlbumDeleteV1 = 'AlbumDeleteV1',
 
   AlbumUserV1 = 'AlbumUserV1',
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
+  /** @deprecated */
   AlbumAssetCreateV1 = 'AlbumAssetCreateV1',
+  AlbumAssetCreateV2 = 'AlbumAssetCreateV2',
+  /** @deprecated */
   AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1',
+  AlbumAssetUpdateV2 = 'AlbumAssetUpdateV2',
+  /** @deprecated */
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
+  AlbumAssetBackfillV2 = 'AlbumAssetBackfillV2',
   AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1',
   AlbumAssetExifUpdateV1 = 'AlbumAssetExifUpdateV1',
   AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
@@ -769,6 +1041,7 @@ export enum SyncEntityType {
   PersonDeleteV1 = 'PersonDeleteV1',
 
   AssetFaceV1 = 'AssetFaceV1',
+  AssetFaceV2 = 'AssetFaceV2',
   AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',
@@ -779,12 +1052,19 @@ export enum SyncEntityType {
   SyncCompleteV1 = 'SyncCompleteV1',
 }
 
+export const SyncEntityTypeSchema = z.enum(SyncEntityType).describe('Sync entity type').meta({ id: 'SyncEntityType' });
+
 export enum NotificationLevel {
   Success = 'success',
   Error = 'error',
   Warning = 'warning',
   Info = 'info',
 }
+
+export const NotificationLevelSchema = z
+  .enum(NotificationLevel)
+  .describe('Notification level')
+  .meta({ id: 'NotificationLevel' });
 
 export enum NotificationType {
   JobFailed = 'JobFailed',
@@ -795,18 +1075,20 @@ export enum NotificationType {
   Custom = 'Custom',
 }
 
+export const NotificationTypeSchema = z
+  .enum(NotificationType)
+  .describe('Notification type')
+  .meta({ id: 'NotificationType' });
+
 export enum OAuthTokenEndpointAuthMethod {
   ClientSecretPost = 'client_secret_post',
   ClientSecretBasic = 'client_secret_basic',
 }
 
-export enum DatabaseSslMode {
-  Disable = 'disable',
-  Allow = 'allow',
-  Prefer = 'prefer',
-  Require = 'require',
-  VerifyFull = 'verify-full',
-}
+export const OAuthTokenEndpointAuthMethodSchema = z
+  .enum(OAuthTokenEndpointAuthMethod)
+  .describe('OAuth token endpoint auth method')
+  .meta({ id: 'OAuthTokenEndpointAuthMethod' });
 
 export enum AssetVisibility {
   Archive = 'archive',
@@ -819,9 +1101,15 @@ export enum AssetVisibility {
   Locked = 'locked',
 }
 
+export const AssetVisibilitySchema = z
+  .enum(AssetVisibility)
+  .describe('Asset visibility')
+  .meta({ id: 'AssetVisibility' });
+
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
+  VersionCheck = 'VersionCheck',
 }
 
 export enum ApiTag {
@@ -831,6 +1119,7 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',
   Duplicates = 'Duplicates',
@@ -869,7 +1158,14 @@ export enum PluginContext {
   Person = 'person',
 }
 
+export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
+
 export enum PluginTriggerType {
   AssetCreate = 'AssetCreate',
   PersonRecognized = 'PersonRecognized',
 }
+
+export const PluginTriggerTypeSchema = z
+  .enum(PluginTriggerType)
+  .describe('Plugin trigger type')
+  .meta({ id: 'PluginTriggerType' });

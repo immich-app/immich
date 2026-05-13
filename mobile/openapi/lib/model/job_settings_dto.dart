@@ -16,7 +16,10 @@ class JobSettingsDto {
     required this.concurrency,
   });
 
+  /// Concurrency
+  ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int concurrency;
 
   @override

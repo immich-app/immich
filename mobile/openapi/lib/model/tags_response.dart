@@ -13,12 +13,14 @@ part of openapi.api;
 class TagsResponse {
   /// Returns a new [TagsResponse] instance.
   TagsResponse({
-    this.enabled = true,
-    this.sidebarWeb = true,
+    required this.enabled,
+    required this.sidebarWeb,
   });
 
+  /// Whether tags are enabled
   bool enabled;
 
+  /// Whether tags appear in web sidebar
   bool sidebarWeb;
 
   @override

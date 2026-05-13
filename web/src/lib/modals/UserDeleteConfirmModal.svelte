@@ -38,7 +38,7 @@
   onClose={handleClose}
   {disabled}
 >
-  {#snippet promptSnippet()}
+  {#snippet prompt()}
     <div class="flex flex-col gap-4">
       <Text>
         {#if force}

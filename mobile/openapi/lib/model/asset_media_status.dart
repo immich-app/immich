@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Upload status
 class AssetMediaStatus {
   /// Instantiate a new enum with the provided [value].
   const AssetMediaStatus._(this.value);
@@ -24,13 +24,11 @@ class AssetMediaStatus {
   String toJson() => value;
 
   static const created = AssetMediaStatus._(r'created');
-  static const replaced = AssetMediaStatus._(r'replaced');
   static const duplicate = AssetMediaStatus._(r'duplicate');
 
   /// List of all possible values in this [enum][AssetMediaStatus].
   static const values = <AssetMediaStatus>[
     created,
-    replaced,
     duplicate,
   ];
 
@@ -71,7 +69,6 @@ class AssetMediaStatusTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'created': return AssetMediaStatus.created;
-        case r'replaced': return AssetMediaStatus.replaced;
         case r'duplicate': return AssetMediaStatus.duplicate;
         default:
           if (!allowNull) {

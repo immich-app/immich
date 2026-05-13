@@ -44,7 +44,7 @@ While this guide focuses on VS Code, you have many options for Dev Container dev
 **Self-Hostable Options:**
 
 - [Coder](https://coder.com) - Enterprise-focused, requires Terraform knowledge, self-managed
-- [DevPod](https://devpod.sh) - Client-only tool with excellent devcontainer.json support, works with any provider (local, cloud, or on-premise)
+- [DevPod](https://devpod.sh) - Client-only tool with excellent devcontainer.json support, works with any provider (local, cloud, or on-premise). Check [quick-start guide](#quick-start-guide-for-devpod-with-docker)
   :::
 
 ## Dev Container Services
@@ -205,7 +205,7 @@ When the Dev Container starts, it automatically:
 1. **Runs post-create script** (`container-server-post-create.sh`):
    - Adjusts file permissions for the `node` user
    - Installs dependencies: `pnpm install` in all packages
-   - Builds TypeScript SDK: `pnpm run build` in `open-api/typescript-sdk`
+   - Builds TypeScript SDK: `pnpm --filter @immich/sdk build`
 
 2. **Starts development servers** via VS Code tasks:
    - `Immich API Server (Nest)` - API server with hot-reloading on port 2283
@@ -243,8 +243,8 @@ To connect the mobile app to your Dev Container:
 
 - **Server code** (`/server`): Changes trigger automatic restart
 - **Web code** (`/web`): Changes trigger hot module replacement
-- **Database migrations**: Run `pnpm run sync:sql` in the server directory
-- **API changes**: Regenerate TypeScript SDK with `make open-api`
+- **Database migrations**: Run `mise //:sql`
+- **API changes**: Regenerate TypeScript SDK with `mise //:open-api`
 
 ## Testing
 
@@ -252,20 +252,11 @@ To connect the mobile app to your Dev Container:
 
 The Dev Container supports multiple ways to run tests:
 
-#### Using Make Commands (Recommended)
+#### Using Mise Commands (Recommended)
 
 ```bash
 # Run tests for specific components
-make test-server        # Server unit tests
-make test-web           # Web unit tests
-make test-e2e           # End-to-end tests
-make test-cli           # CLI tests
-
-# Run all tests
-make test-all           # Runs tests for all components
-
-# Medium tests (integration tests)
-make test-medium-dev    # End-to-end tests
+mise run checklist      # in `server/`, `web/`, `packages/cli`
 ```
 
 #### Using PNPM Directly
@@ -289,48 +280,16 @@ pnpm run test           # Run API tests
 pnpm run test:web       # Run web UI tests
 ```
 
-### Code Quality Commands
-
-```bash
-# Linting
-make lint-server        # Lint server code
-make lint-web           # Lint web code
-make lint-all           # Lint all components
-
-# Formatting
-make format-server      # Format server code
-make format-web         # Format web code
-make format-all         # Format all code
-
-# Type checking
-make check-server       # Type check server
-make check-web          # Type check web
-make check-all          # Check all components
-
-# Complete hygiene check
-make hygiene-all        # Run lint, format, check, SQL sync, and audit
-```
-
 ### Additional Make Commands
 
 ```bash
-# Build commands
-make build-server       # Build server
-make build-web          # Build web app
-make build-all          # Build everything
-
 # API generation
 make open-api           # Generate OpenAPI specs
 make open-api-typescript # Generate TypeScript SDK
 make open-api-dart      # Generate Dart SDK
 
 # Database
-make sql                # Sync database schema
-
-# Dependencies
-make install-server     # Install server dependencies
-make install-web        # Install web dependencies
-make install-all        # Install all dependencies
+mise sql                # Sync database schema
 ```
 
 ### Debugging
@@ -408,7 +367,27 @@ If you encounter issues:
 1. Check container logs: View → Output → Select "Dev Containers"
 2. Rebuild without cache: "Dev Containers: Rebuild Container Without Cache"
 3. Review [common Docker issues](https://docs.docker.com/desktop/troubleshoot/)
-4. Ask in [Discord](https://discord.immich.app) `#help-desk-support` channel
+4. Ask in [Discord](https://discord.immich.app) `#contributing` channel
+
+### Quick-start guide for DevPod with docker
+
+You will need DevPod CLI (check [DevPod CLI installation guide](https://devpod.sh/docs/getting-started/install)) and Docker Desktop.
+
+```sh
+# Step 1: Clone the Repository
+git clone https://github.com/immich-app/immich.git
+cd immich
+
+# Step 2: Prepare DevPod (if you haven't already)
+devpod provider add docker
+devpod provider use docker
+
+# Step 3: Build 'immich-server-dev' docker image first manually
+docker build -f server/Dockerfile.dev -t immich-server-dev .
+
+# Step 4: Now you can start devcontainer
+devpod up .
+```
 
 ## Mobile Development
 

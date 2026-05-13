@@ -17,8 +17,10 @@ class SystemConfigLibraryScanDto {
     required this.enabled,
   });
 
+  /// Cron expression
   String cronExpression;
 
+  /// Enabled
   bool enabled;
 
   @override

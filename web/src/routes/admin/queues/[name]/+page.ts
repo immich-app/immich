@@ -1,9 +1,8 @@
-import { AppRoute } from '$lib/constants';
-import { fromQueueSlug } from '$lib/services/queue.service';
-import { authenticate, requestServerInfo } from '$lib/utils/auth';
-import { getFormatter } from '$lib/utils/i18n';
 import { getQueue, getQueueJobs, QueueJobStatus } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
+import { fromQueueSlug, Route } from '$lib/route';
+import { authenticate, requestServerInfo } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
@@ -12,7 +11,7 @@ export const load = (async ({ params, url }) => {
 
   const name = fromQueueSlug(params.name);
   if (!name) {
-    redirect(302, AppRoute.ADMIN_QUEUES);
+    redirect(307, Route.queues());
   }
 
   const [queue, failedJobs] = await Promise.all([

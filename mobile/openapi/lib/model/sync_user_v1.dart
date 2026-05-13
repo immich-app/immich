@@ -13,7 +13,7 @@ part of openapi.api;
 class SyncUserV1 {
   /// Returns a new [SyncUserV1] instance.
   SyncUserV1({
-    required this.avatarColor,
+    this.avatarColor,
     required this.deletedAt,
     required this.email,
     required this.hasProfileImage,
@@ -24,16 +24,22 @@ class SyncUserV1 {
 
   UserAvatarColor? avatarColor;
 
+  /// User deleted at
   DateTime? deletedAt;
 
+  /// User email
   String email;
 
+  /// User has profile image
   bool hasProfileImage;
 
+  /// User ID
   String id;
 
+  /// User name
   String name;
 
+  /// User profile changed at
   DateTime profileChangedAt;
 
   @override
@@ -68,7 +74,9 @@ class SyncUserV1 {
     //  json[r'avatarColor'] = null;
     }
     if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
+      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.deletedAt!.millisecondsSinceEpoch
+        : this.deletedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'deletedAt'] = null;
     }
@@ -76,7 +84,9 @@ class SyncUserV1 {
       json[r'hasProfileImage'] = this.hasProfileImage;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+      json[r'profileChangedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.profileChangedAt.millisecondsSinceEpoch
+        : this.profileChangedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -90,12 +100,12 @@ class SyncUserV1 {
 
       return SyncUserV1(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
-        deletedAt: mapDateTime(json, r'deletedAt', r''),
+        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         email: mapValueOfType<String>(json, r'email')!,
         hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
       );
     }
     return null;
@@ -143,7 +153,6 @@ class SyncUserV1 {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'avatarColor',
     'deletedAt',
     'email',
     'hasProfileImage',

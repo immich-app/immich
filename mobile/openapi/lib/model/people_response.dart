@@ -13,12 +13,14 @@ part of openapi.api;
 class PeopleResponse {
   /// Returns a new [PeopleResponse] instance.
   PeopleResponse({
-    this.enabled = true,
-    this.sidebarWeb = false,
+    required this.enabled,
+    required this.sidebarWeb,
   });
 
+  /// Whether people are enabled
   bool enabled;
 
+  /// Whether people appear in web sidebar
   bool sidebarWeb;
 
   @override

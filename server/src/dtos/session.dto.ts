@@ -1,46 +1,43 @@
-import { Equals, IsInt, IsPositive, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Session } from 'src/database';
-import { Optional, ValidateBoolean } from 'src/validation';
+import z from 'zod';
 
-export class SessionCreateDto {
-  /**
-   * session duration, in seconds
-   */
-  @IsInt()
-  @IsPositive()
-  @Optional()
-  duration?: number;
+const SessionCreateSchema = z
+  .object({
+    duration: z.int().min(1).optional().describe('Session duration in seconds'),
+    deviceType: z.string().optional().describe('Device type'),
+    deviceOS: z.string().optional().describe('Device OS'),
+  })
+  .meta({ id: 'SessionCreateDto' });
 
-  @IsString()
-  @Optional()
-  deviceType?: string;
+const SessionUpdateSchema = z
+  .object({
+    isPendingSyncReset: z.boolean().optional().describe('Reset pending sync state'),
+  })
+  .meta({ id: 'SessionUpdateDto' });
 
-  @IsString()
-  @Optional()
-  deviceOS?: string;
-}
+const SessionResponseSchema = z
+  .object({
+    id: z.string().describe('Session ID'),
+    createdAt: z.string().describe('Creation date'),
+    updatedAt: z.string().describe('Last update date'),
+    expiresAt: z.string().optional().describe('Expiration date'),
+    current: z.boolean().describe('Is current session'),
+    deviceType: z.string().describe('Device type'),
+    deviceOS: z.string().describe('Device OS'),
+    appVersion: z.string().nullable().describe('App version'),
+    isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
+  })
+  .meta({ id: 'SessionResponseDto' });
 
-export class SessionUpdateDto {
-  @ValidateBoolean({ optional: true })
-  @Equals(true)
-  isPendingSyncReset?: true;
-}
+const SessionCreateResponseSchema = SessionResponseSchema.extend({
+  token: z.string().describe('Session token'),
+}).meta({ id: 'SessionCreateResponseDto' });
 
-export class SessionResponseDto {
-  id!: string;
-  createdAt!: string;
-  updatedAt!: string;
-  expiresAt?: string;
-  current!: boolean;
-  deviceType!: string;
-  deviceOS!: string;
-  appVersion!: string | null;
-  isPendingSyncReset!: boolean;
-}
-
-export class SessionCreateResponseDto extends SessionResponseDto {
-  token!: string;
-}
+export class SessionCreateDto extends createZodDto(SessionCreateSchema) {}
+export class SessionUpdateDto extends createZodDto(SessionUpdateSchema) {}
+export class SessionResponseDto extends createZodDto(SessionResponseSchema) {}
+export class SessionCreateResponseDto extends createZodDto(SessionCreateResponseSchema) {}
 
 export const mapSession = (entity: Session, currentId?: string): SessionResponseDto => ({
   id: entity.id,

@@ -1,11 +1,13 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { DateTime } from 'luxon';
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { calcNewDate } from '$lib/modals/timezone-utils';
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
-import { DateTime } from 'luxon';
+import { userAdminFactory } from '@test-data/factories/user-factory';
 import AssetSelectionChangeDateModal from './AssetSelectionChangeDateModal.svelte';
 
 describe('DateSelectionModal component', () => {
@@ -17,14 +19,16 @@ describe('DateSelectionModal component', () => {
   const getRelativeInputToggle = () => screen.getByTestId('edit-by-offset-switch');
   const getDateInput = () => screen.getByLabelText('date_and_time') as HTMLInputElement;
   const getTimeZoneInput = () => screen.getByLabelText('timezone') as HTMLInputElement;
-  const getCancelButton = () => screen.getByText('cancel');
-  const getConfirmButton = () => screen.getByText('confirm');
+  const getCancelButton = () => screen.getByRole('button', { name: /cancel/i });
+  const getConfirmButton = () => screen.getByRole('button', { name: /confirm/i });
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
     vi.stubGlobal('visualViewport', getVisualViewportMock());
     vi.resetAllMocks();
     Element.prototype.animate = getAnimateMock();
+
+    authManager.setUser(userAdminFactory.build());
   });
 
   afterAll(async () => {
@@ -69,6 +73,34 @@ describe('DateSelectionModal component', () => {
     await fireEvent.click(getCancelButton());
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  test('does not fall back to UTC when datetime-local value has no seconds', async () => {
+    render(AssetSelectionChangeDateModal, {
+      props: { initialDate, initialTimeZone, assets: [], onClose },
+    });
+
+    await fireEvent.input(getDateInput(), { target: { value: '2024-01-01T00:00' } });
+    await fireEvent.blur(getDateInput());
+
+    expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
+
+    await fireEvent.focus(getTimeZoneInput());
+    expect(screen.queryByText('no_results')).not.toBeInTheDocument();
+  });
+
+  test('does not fall back to UTC when datetime-local value has no milliseconds', async () => {
+    render(AssetSelectionChangeDateModal, {
+      props: { initialDate, initialTimeZone, assets: [], onClose },
+    });
+
+    await fireEvent.input(getDateInput(), { target: { value: '2024-01-01T00:00:00' } });
+    await fireEvent.blur(getDateInput());
+
+    expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
+
+    await fireEvent.focus(getTimeZoneInput());
+    expect(screen.queryByText('no_results')).not.toBeInTheDocument();
   });
 
   describe('when date is in daylight saving time', () => {

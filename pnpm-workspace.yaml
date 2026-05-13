@@ -1,14 +1,15 @@
 packages:
-  - cli
+  - packages/**
   - docs
   - e2e
-  - open-api/typescript-sdk
+  - i18n
   - server
   - plugins
   - web
   - .github
 ignoredBuiltDependencies:
   - '@nestjs/core'
+  - '@parcel/watcher'
   - '@scarf/scarf'
   - '@swc/core'
   - canvas
@@ -29,6 +30,8 @@ onlyBuiltDependencies:
 overrides:
   canvas: 2.11.2
   sharp: ^0.34.5
+  # pending docusaurus 3.10.1
+  webpackbar: ^7.0.0
 packageExtensions:
   nestjs-kysely:
     dependencies:

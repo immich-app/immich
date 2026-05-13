@@ -1,13 +1,24 @@
+import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset, AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
+import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
+  AacProfile,
   AssetOrder,
   AssetType,
-  DatabaseSslMode,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  DvProfile,
+  DvSignalCompatibility,
   ExifOrientation,
+  H264Profile,
+  HevcProfile,
   ImageFormat,
   JobName,
   MemoryType,
@@ -21,58 +32,52 @@ import {
   VideoCodec,
 } from 'src/enum';
 
-export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
+export type DeepPartial<T> =
+  T extends Record<string, unknown>
+    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    : T extends Array<infer R>
+      ? DeepPartial<R>[]
+      : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
-export interface FullsizeImageOptions {
+export type FullsizeImageOptions = {
   format: ImageFormat;
   quality: number;
   enabled: boolean;
-}
+  progressive?: boolean;
+};
 
-export interface ImageOptions {
+export type ImageOptions = {
   format: ImageFormat;
   quality: number;
   size: number;
-}
+  progressive?: boolean;
+};
 
-export interface RawImageInfo {
+export type RawImageInfo = {
   width: number;
   height: number;
   channels: 1 | 2 | 3 | 4;
-}
+};
 
-interface DecodeImageOptions {
+type DecodeImageOptions = {
   colorspace: string;
-  crop?: CropOptions;
   processInvalidImages: boolean;
   raw?: RawImageInfo;
-}
+  edits?: AssetEditActionItem[];
+};
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
-
-export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
-
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
 export type GenerateThumbhashOptions = DecodeImageOptions;
-
-export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { raw: RawImageInfo };
 
 export interface GenerateThumbnailsOptions {
   colorspace: string;
-  crop?: CropOptions;
   preview?: ImageOptions;
   processInvalidImages: boolean;
   thumbhash?: boolean;
@@ -84,20 +89,43 @@ export interface VideoStreamInfo {
   height: number;
   width: number;
   rotation: number;
-  codecName?: string;
+  codecName: string | null;
+  profile: H264Profile | HevcProfile | Av1Profile | null;
+  level: number | null;
   frameCount: number;
-  isHDR: boolean;
+  frameRate: number | null;
+  timeBase: number | null;
   bitrate: number;
   pixelFormat: string;
-  colorPrimaries?: string;
-  colorSpace?: string;
-  colorTransfer?: string;
+  colorPrimaries: ColorPrimaries;
+  colorMatrix: ColorMatrix;
+  colorTransfer: ColorTransfer;
+  dvProfile: DvProfile | null;
+  dvLevel: number | null;
+  dvBlSignalCompatibilityId: DvSignalCompatibility | null;
 }
 
 export interface AudioStreamInfo {
   index: number;
-  codecName?: string;
+  codecName: string | null;
+  profile: AacProfile | null;
   bitrate: number;
+}
+
+/** Packet-derived video data needed for accurate HLS playlists. */
+export interface VideoPacketInfo {
+  /** Sum of source packet duration across all packets (includes discard). */
+  totalDuration: number;
+  /** Post-discard packet count. */
+  packetCount: number;
+  /** Output CFR frame count at `packetCount / format.duration`. */
+  outputFrames: number;
+  /** All keyframe PTS in source ticks, including pre-roll discard keyframes. */
+  keyframePts: number[];
+  /** Cumulative packet duration through each keyframe, inclusive. */
+  keyframeAccDuration: number[];
+  /** Each keyframe's own packet duration (needed for VFR). */
+  keyframeOwnDuration: number[];
 }
 
 export interface VideoFormat {
@@ -148,7 +176,7 @@ export interface VideoCodecSWConfig {
   getCommand(
     target: TranscodeTarget,
     videoStream: VideoStreamInfo,
-    audioStream: AudioStreamInfo,
+    audioStream?: AudioStreamInfo,
     format?: VideoFormat,
   ): TranscodeCommand;
 }
@@ -186,7 +214,7 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
-export type JobSource = 'upload' | 'sidecar-write' | 'copy';
+export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
@@ -253,6 +281,7 @@ export interface INotifySignupJob extends IEntityJob {
 
 export interface INotifyAlbumInviteJob extends IEntityJob {
   recipientId: string;
+  senderName: string;
 }
 
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
@@ -324,7 +353,7 @@ export type JobItem =
   // Sidecar Scanning
   | { name: JobName.SidecarQueueAll; data: IBaseJob }
   | { name: JobName.SidecarCheck; data: IEntityJob }
-  | { name: JobName.SidecarWrite; data: ISidecarWriteJob }
+  | { name: JobName.SidecarWrite; data: IEntityJob }
 
   // Facial Recognition
   | { name: JobName.AssetDetectFacesQueueAll; data: IBaseJob }
@@ -350,7 +379,6 @@ export type JobItem =
   | { name: JobName.FileDelete; data: IDeleteFilesJob }
 
   // Cleanup
-  | { name: JobName.AuditLogCleanup; data?: IBaseJob }
   | { name: JobName.SessionCleanup; data?: IBaseJob }
 
   // Tags
@@ -385,35 +413,17 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowRun; data: IWorkflowJob };
+  | { name: JobName.WorkflowRun; data: IWorkflowJob }
+
+  // Editor
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
-
-export type DatabaseConnectionURL = {
-  connectionType: 'url';
-  url: string;
-};
-
-export type DatabaseConnectionParts = {
-  connectionType: 'parts';
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-  ssl?: DatabaseSslMode;
-};
-
-export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
 
 export interface ExtensionVersion {
   name: VectorExtension;
   availableVersion: string | null;
   installedVersion: string | null;
-}
-
-export interface VectorUpdateResult {
-  restartRequired: boolean;
 }
 
 export interface ImmichFile extends Express.Multer.File {
@@ -472,6 +482,9 @@ export type StorageAsset = {
   originalFileName: string;
   fileSizeInByte: number | null;
   files: AssetFile[];
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
 };
 
 export type OnThisDayData = { year: number };
@@ -482,7 +495,9 @@ export interface MemoryData {
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
-export type MaintenanceModeState = { isMaintenanceMode: true; secret: string } | { isMaintenanceMode: false };
+export type MaintenanceModeState =
+  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
+  | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -502,7 +517,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.MemoriesState]: MemoriesState;
 }
 
-export interface UserPreferences {
+export type UserPreferences = {
   albums: {
     defaultAssetOrder: AssetOrder;
   };
@@ -545,7 +560,7 @@ export interface UserPreferences {
   cast: {
     gCastEnabled: boolean;
   };
-}
+};
 
 export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
   key: T;
@@ -557,3 +572,5 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
 }
+
+export type MaybeDehydrated<T> = T | ShallowDehydrateObject<T>;

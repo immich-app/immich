@@ -15,7 +15,7 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
-export interface SystemConfig {
+export type SystemConfig = {
   backup: {
     database: {
       enabled: boolean;
@@ -104,13 +104,16 @@ export interface SystemConfig {
     defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
+    endSessionEndpoint: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    prompt: string;
     scope: string;
     signingAlgorithm: string;
     profileSigningAlgorithm: string;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
     timeout: number;
+    allowInsecureRequests: boolean;
     storageLabelClaim: string;
     storageQuotaClaim: string;
     roleClaim: string;
@@ -187,7 +190,7 @@ export interface SystemConfig {
   user: {
     deleteDelay: number;
   };
-}
+};
 
 export type MachineLearningConfig = SystemConfig['machineLearning'];
 
@@ -206,7 +209,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.Opus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     targetResolution: '720',
     maxBitrate: '0',
@@ -220,7 +223,7 @@ export const defaults = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.Required,
     tonemap: ToneMapping.Hable,
     accel: TranscodeHardwareAcceleration.Disabled,
-    accelDecode: false,
+    accelDecode: true,
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
@@ -236,6 +239,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.Editor]: { concurrency: 2 },
   },
   logging: {
     enabled: true,
@@ -246,7 +250,7 @@ export const defaults = Object.freeze<SystemConfig>({
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
     availabilityChecks: {
       enabled: true,
-      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      timeout: 2000,
       interval: 30_000,
     },
     clip: {
@@ -294,8 +298,10 @@ export const defaults = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    endSessionEndpoint: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
@@ -304,6 +310,7 @@ export const defaults = Object.freeze<SystemConfig>({
     roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
   },
   passwordLogin: {
     enabled: true,
@@ -318,11 +325,13 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Webp,
       size: 250,
       quality: 80,
+      progressive: false,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
+      progressive: false,
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
@@ -330,6 +339,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
       format: ImageFormat.Jpeg,
       quality: 80,
+      progressive: false,
     },
   },
   newVersionCheck: {

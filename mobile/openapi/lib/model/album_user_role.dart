@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Album user role
 class AlbumUserRole {
   /// Instantiate a new enum with the provided [value].
   const AlbumUserRole._(this.value);
@@ -24,11 +24,13 @@ class AlbumUserRole {
   String toJson() => value;
 
   static const editor = AlbumUserRole._(r'editor');
+  static const owner = AlbumUserRole._(r'owner');
   static const viewer = AlbumUserRole._(r'viewer');
 
   /// List of all possible values in this [enum][AlbumUserRole].
   static const values = <AlbumUserRole>[
     editor,
+    owner,
     viewer,
   ];
 
@@ -69,6 +71,7 @@ class AlbumUserRoleTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'editor': return AlbumUserRole.editor;
+        case r'owner': return AlbumUserRole.owner;
         case r'viewer': return AlbumUserRole.viewer;
         default:
           if (!allowNull) {

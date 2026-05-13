@@ -11,9 +11,9 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AppRepository } from 'src/repositories/app.repository';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
-import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -53,6 +53,7 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
@@ -69,8 +70,8 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ApiKeyRepository,
   AppRepository,
   AssetRepository,
+  AssetEditRepository,
   AssetJobRepository,
-  AuditRepository,
   ConfigRepository,
   CronRepository,
   CryptoRepository,
@@ -109,6 +110,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   TrashRepository,
   UserRepository,
   VersionHistoryRepository,
+  VideoStreamRepository,
   ViewRepository,
   WebsocketRepository,
   WorkflowRepository,
@@ -127,8 +129,8 @@ export class BaseService {
     protected apiKeyRepository: ApiKeyRepository,
     protected appRepository: AppRepository,
     protected assetRepository: AssetRepository,
+    protected assetEditRepository: AssetEditRepository,
     protected assetJobRepository: AssetJobRepository,
-    protected auditRepository: AuditRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
     protected cryptoRepository: CryptoRepository,
@@ -167,6 +169,7 @@ export class BaseService {
     protected trashRepository: TrashRepository,
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
+    protected videoStreamRepository: VideoStreamRepository,
     protected viewRepository: ViewRepository,
     protected websocketRepository: WebsocketRepository,
     protected workflowRepository: WorkflowRepository,
@@ -215,7 +218,8 @@ export class BaseService {
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
     const exists = await this.userRepository.getByEmail(dto.email);
     if (exists) {
-      throw new BadRequestException('User exists');
+      this.logger.debug('User creation rejected: user already exists');
+      throw new BadRequestException('Email is not available');
     }
 
     if (!dto.isAdmin) {

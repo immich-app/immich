@@ -1,110 +1,56 @@
-import { Type } from 'class-transformer';
-import {
-  ArrayMinSize,
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsSemVer,
-  IsString,
-  Matches,
-  ValidateNested,
-} from 'class-validator';
-import { PluginContext } from 'src/enum';
-import { JSONSchema } from 'src/types/plugin-schema.types';
-import { ValidateEnum } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import { PluginContextSchema } from 'src/enum';
+import { JSONSchemaSchema } from 'src/types/plugin-schema.types';
+import z from 'zod';
 
-class PluginManifestWasmDto {
-  @IsString()
-  @IsNotEmpty()
-  path!: string;
-}
+const pluginNameRegex = /^[a-z0-9-]+[a-z0-9]$/;
+const semverRegex =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 
-class PluginManifestFilterDto {
-  @IsString()
-  @IsNotEmpty()
-  methodName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
-
-  @IsArray()
-  @ArrayMinSize(1)
-  @IsEnum(PluginContext, { each: true })
-  supportedContexts!: PluginContext[];
-
-  @IsObject()
-  @IsOptional()
-  schema?: JSONSchema;
-}
-
-class PluginManifestActionDto {
-  @IsString()
-  @IsNotEmpty()
-  methodName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
-
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateEnum({ enum: PluginContext, name: 'PluginContext', each: true })
-  supportedContexts!: PluginContext[];
-
-  @IsObject()
-  @IsOptional()
-  schema?: JSONSchema;
-}
-
-export class PluginManifestDto {
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/^[a-z0-9-]+[a-z0-9]$/, {
-    message: 'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
+const PluginManifestWasmSchema = z
+  .object({
+    path: z.string().describe('WASM file path'),
   })
-  name!: string;
+  .meta({ id: 'PluginManifestWasmDto' });
 
-  @IsString()
-  @IsNotEmpty()
-  @IsSemVer()
-  version!: string;
+const PluginManifestFilterSchema = z
+  .object({
+    methodName: z.string().describe('Filter method name'),
+    title: z.string().describe('Filter title'),
+    description: z.string().describe('Filter description'),
+    supportedContexts: z.array(PluginContextSchema).min(1).describe('Supported contexts'),
+    schema: JSONSchemaSchema.optional(),
+  })
+  .meta({ id: 'PluginManifestFilterDto' });
 
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
+const PluginManifestActionSchema = z
+  .object({
+    methodName: z.string().describe('Action method name'),
+    title: z.string().describe('Action title'),
+    description: z.string().describe('Action description'),
+    supportedContexts: z.array(PluginContextSchema).min(1).describe('Supported contexts'),
+    schema: JSONSchemaSchema.optional(),
+  })
+  .meta({ id: 'PluginManifestActionDto' });
 
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
+export const PluginManifestSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1)
+      .regex(
+        pluginNameRegex,
+        'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
+      )
+      .describe('Plugin name (lowercase, numbers, hyphens only)'),
+    version: z.string().regex(semverRegex).describe('Plugin version (semver)'),
+    title: z.string().describe('Plugin title'),
+    description: z.string().describe('Plugin description'),
+    author: z.string().describe('Plugin author'),
+    wasm: PluginManifestWasmSchema,
+    filters: z.array(PluginManifestFilterSchema).optional().describe('Plugin filters'),
+    actions: z.array(PluginManifestActionSchema).optional().describe('Plugin actions'),
+  })
+  .meta({ id: 'PluginManifestDto' });
 
-  @IsString()
-  @IsNotEmpty()
-  author!: string;
-
-  @ValidateNested()
-  @Type(() => PluginManifestWasmDto)
-  wasm!: PluginManifestWasmDto;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PluginManifestFilterDto)
-  @IsOptional()
-  filters?: PluginManifestFilterDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PluginManifestActionDto)
-  @IsOptional()
-  actions?: PluginManifestActionDto[];
-}
+export class PluginManifestDto extends createZodDto(PluginManifestSchema) {}

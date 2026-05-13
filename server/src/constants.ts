@@ -1,12 +1,19 @@
-import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
-import { ApiTag, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+import { ApiTag, AudioCodec, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+
+export const IMMICH_SERVER_START = 'Immich Server is listening';
+
+export const ErrorMessages = {
+  InconsistentMediaLocation:
+    'Detected an inconsistent media location. For more information, see https://docs.immich.app/errors#inconsistent-media-location',
+  SchemaDrift: `Detected schema drift. For more information, see https://docs.immich.app/errors#schema-drift`,
+  TypeOrmUpgrade: 'Invalid upgrade path. For more information, see https://docs.immich.app/errors/#typeorm-upgrade',
+};
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
-export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.6';
-export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
+export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -16,15 +23,10 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',
   earthdistance: 'earthdistance',
   vector: 'pgvector',
-  vectors: 'pgvecto.rs',
   vchord: 'VectorChord',
 } as const;
 
-export const VECTOR_EXTENSIONS = [
-  DatabaseExtension.VectorChord,
-  DatabaseExtension.Vectors,
-  DatabaseExtension.Vector,
-] as const;
+export const VECTOR_EXTENSIONS = [DatabaseExtension.VectorChord, DatabaseExtension.Vector] as const;
 
 export const VECTOR_INDEX_TABLES = {
   [VectorIndex.Clip]: 'smart_search',
@@ -34,6 +36,8 @@ export const VECTOR_INDEX_TABLES = {
 export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 
 export const SALT_ROUNDS = 10;
+// Syntactically valid bcrypt hash used in login() preventing timing-based user enumeration.
+export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde';
 
 export const IWorker = 'IWorker';
 
@@ -42,9 +46,6 @@ const basePath = dirname(__filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
-
-export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
-export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;
@@ -141,6 +142,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to Immich.',
   [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
   [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
+  [ApiTag.DatabaseBackups]: 'Manage backups of the Immich database.',
   [ApiTag.Deprecated]: 'Deprecated endpoints that are planned for removal in the next major release.',
   [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',
   [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',
@@ -192,4 +194,11 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Views]: 'Endpoints for specialized views, such as the folder view.',
   [ApiTag.Workflows]:
     'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
+};
+
+export const AUDIO_ENCODER: Record<AudioCodec, string> = {
+  [AudioCodec.Aac]: 'aac',
+  [AudioCodec.Mp3]: 'mp3',
+  [AudioCodec.Opus]: 'libopus',
+  [AudioCodec.PcmS16le]: 'pcm_s16le',
 };

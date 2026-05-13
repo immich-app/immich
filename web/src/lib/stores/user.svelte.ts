@@ -1,10 +1,10 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import type {
   AlbumResponseDto,
   ServerAboutResponseDto,
   ServerStorageResponseDto,
   ServerVersionHistoryResponseDto,
 } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 interface UserInteractions {
   recentAlbums?: AlbumResponseDto[];
@@ -22,8 +22,17 @@ const defaultUserInteraction: UserInteractions = {
 
 export const userInteraction = $state<UserInteractions>(defaultUserInteraction);
 
+const resetRecentAlbums = () => {
+  userInteraction.recentAlbums = undefined;
+};
+
 const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
 
-eventManager.on('AuthLogout', () => reset());
+eventManager.on({
+  AlbumCreate: () => resetRecentAlbums(),
+  AlbumUpdate: () => resetRecentAlbums(),
+  AlbumDelete: () => resetRecentAlbums(),
+  AuthLogout: () => reset(),
+});

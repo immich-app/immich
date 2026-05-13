@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// User status
 class UserStatus {
   /// Instantiate a new enum with the provided [value].
   const UserStatus._(this.value);
