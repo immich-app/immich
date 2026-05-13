@@ -235,11 +235,23 @@ class RemoteAlbumService {
     final localById = {for (final a in localAssets) a.id: a};
 
     final wrappedCallbacks = UploadCallbacks(
-      onProgress: userCallbacks.onProgress,
-      onICloudProgress: userCallbacks.onICloudProgress,
-      onError: userCallbacks.onError,
+      onProgress: (localId, filename, bytes, totalBytes) => _runUploadCallback(
+        'Upload progress callback failed for $localId',
+        () => userCallbacks.onProgress?.call(localId, filename, bytes, totalBytes),
+      ),
+      onICloudProgress: (localId, progress) => _runUploadCallback(
+        'iCloud progress callback failed for $localId',
+        () => userCallbacks.onICloudProgress?.call(localId, progress),
+      ),
+      onError: (localId, errorMessage) => _runUploadCallback(
+        'Upload error callback failed for $localId',
+        () => userCallbacks.onError?.call(localId, errorMessage),
+      ),
       onSuccess: (localId, remoteId) {
-        userCallbacks.onSuccess?.call(localId, remoteId);
+        _runUploadCallback(
+          'Upload success callback failed for $localId',
+          () => userCallbacks.onSuccess?.call(localId, remoteId),
+        );
         final source = localById[localId];
         if (source == null) {
           _logger.warning('Upload success for $localId but source LocalAsset missing; skipping album link');
@@ -262,6 +274,14 @@ class RemoteAlbumService {
     return addedCount;
   }
 
+  void _runUploadCallback(String message, void Function() callback) {
+    try {
+      callback();
+    } catch (error, stack) {
+      _logger.warning(message, error, stack);
+    }
+  }
+
   /// Links a freshly-uploaded asset to an album, ensuring the local DB
   /// reflects the change without waiting for the next sync. We call the API
   /// (server is the source of truth), then upsert a placeholder
@@ -273,6 +293,7 @@ class RemoteAlbumService {
     if (result.added.isEmpty) {
       return 0;
     }
+
     await _repository.upsertRemoteAssetStub(remoteId: remoteId, ownerId: uploader.id, source: source);
     await _repository.addAssets(albumId, result.added);
     return result.added.length;

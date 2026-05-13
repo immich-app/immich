@@ -157,7 +157,9 @@ class _PendingUploadsSheet extends ConsumerWidget {
     // Auto-dismiss when the queue empties.
     if (pending.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
       });
       return const SizedBox.shrink();
     }
@@ -185,7 +187,7 @@ class _PendingUploadsSheet extends ConsumerWidget {
                     TextButton.icon(
                       onPressed: () => ref.read(pendingAlbumUploadsProvider(albumId).notifier).clearFailed(),
                       icon: const Icon(Icons.clear_rounded, size: 18),
-                      label: Text('Clear failed ($failedCount)'),
+                      label: Text('clear_failed_count'.t(context: context, args: {'count': failedCount})),
                       style: TextButton.styleFrom(foregroundColor: context.colorScheme.error),
                     ),
                 ],

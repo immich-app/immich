@@ -160,7 +160,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         createdAt: Value(album.createdAt),
         updatedAt: Value(album.updatedAt),
         description: Value(album.description),
-        thumbnailAssetId: Value(album.thumbnailAssetId),
+        thumbnailAssetId: Value(album.thumbnailAssetId ?? (assetIds.isNotEmpty ? assetIds.first : null)),
         isActivityEnabled: Value(album.isActivityEnabled),
         order: Value(album.order),
       );
@@ -275,12 +275,23 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<int> addAssets(String albumId, List<String> assetIds) async {
+    if (assetIds.isEmpty) {
+      return 0;
+    }
+
     final albumAssets = assetIds.map(
       (assetId) => RemoteAlbumAssetEntityCompanion(albumId: Value(albumId), assetId: Value(assetId)),
     );
 
-    await _db.batch((batch) {
-      batch.insertAll(_db.remoteAlbumAssetEntity, albumAssets);
+    await _db.transaction(() async {
+      await _db.batch((batch) {
+        batch.insertAll(_db.remoteAlbumAssetEntity, albumAssets);
+      });
+
+      final album = _db.update(_db.remoteAlbumEntity)
+        ..where((row) => row.id.equals(albumId) & row.thumbnailAssetId.isNull());
+
+      await album.write(RemoteAlbumEntityCompanion(thumbnailAssetId: Value(assetIds.first)));
     });
 
     return assetIds.length;
@@ -301,7 +312,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           RemoteAssetEntityCompanion(
             id: Value(remoteId),
             ownerId: Value(ownerId),
-            checksum: Value(source.checksum ?? ''),
+            checksum: Value(source.checksum ?? remoteId),
             name: Value(source.name),
             type: Value(source.type),
             createdAt: Value(source.createdAt),

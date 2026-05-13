@@ -17,6 +17,33 @@ void main() {
     await ctx.dispose();
   });
 
+  group('addAssets', () {
+    test('sets the first added asset as thumbnail when the album has no thumbnail', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+
+      await sut.addAssets(album.id, [asset.id]);
+
+      final updated = await sut.get(album.id);
+      expect(updated?.thumbnailAssetId, asset.id);
+      expect(updated?.assetCount, 1);
+    });
+
+    test('preserves an existing thumbnail when adding assets', () async {
+      final user = await ctx.newUser();
+      final thumbnail = await ctx.newRemoteAsset(ownerId: user.id);
+      final album = await ctx.newRemoteAlbum(ownerId: user.id, thumbnailAssetId: thumbnail.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+
+      await sut.addAssets(album.id, [asset.id]);
+
+      final updated = await sut.get(album.id);
+      expect(updated?.thumbnailAssetId, thumbnail.id);
+      expect(updated?.assetCount, 1);
+    });
+  });
+
   group('getSortedAlbumIds', () {
     late String userId;
 

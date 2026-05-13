@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -108,8 +110,8 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 
   /// Creates an album from a heterogeneous asset selection. Already-remote
-  /// assets seed the album immediately; local-only assets are uploaded and
-  /// linked one-by-one as each upload completes.
+  /// assets seed the album immediately; local-only assets are uploaded in the
+  /// background and linked one-by-one as each upload completes.
   Future<RemoteAlbum?> createAlbumWithAssets({
     required String title,
     String? description,
@@ -122,20 +124,22 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       }
 
       final candidates = RemoteAlbumService.categorizeCandidates(assets);
-      final album = await _remoteAlbumService.createAlbumWithAssets(
+      final album = await _remoteAlbumService.createAlbum(
         title: title,
         owner: currentUser,
         description: description,
-        candidates: candidates,
+        assetIds: candidates.remoteAssetIds,
       );
 
       state = state.copyWith(albums: [...state.albums, album]);
 
-      // The createAlbum API returns the album with its initial asset count, but
-      // any local-only assets are uploaded and linked afterward — re-read to
-      // pick up the post-upload junction rows.
       if (candidates.localAssetsToUpload.isNotEmpty) {
-        await _refreshAlbumInState(album.id);
+        unawaited(
+          addAssetsToAlbum(
+            album.id,
+            candidates.localAssetsToUpload,
+          ).then<void>((_) {}).catchError((Object _, StackTrace _) {}),
+        );
       }
 
       return album;
@@ -236,6 +240,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       }
       return added;
     } catch (error, stack) {
+      if (candidates.localAssetsToUpload.isNotEmpty) {
+        pendingNotifier.markAllFailed();
+      }
       _logger.severe('Failed to add assets to album $albumId', error, stack);
       rethrow;
     }
@@ -246,7 +253,10 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   /// latest junction-table changes without a full `refresh()`.
   Future<void> _refreshAlbumInState(String albumId) async {
     final updated = await _remoteAlbumService.get(albumId);
-    if (updated == null) return;
+    if (updated == null) {
+      return;
+    }
+
     state = state.copyWith(albums: state.albums.map((album) => album.id == albumId ? updated : album).toList());
   }
 
