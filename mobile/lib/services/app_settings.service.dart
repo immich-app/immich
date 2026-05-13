@@ -11,7 +11,6 @@ enum AppSettingsEnum<T> {
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
   reviewOutOfSyncChangesAndroid<bool>(StoreKey.reviewOutOfSyncChangesAndroid, null, false),
-  preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, "loadOriginalVideo", false),
   autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),
