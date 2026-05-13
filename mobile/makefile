@@ -1,55 +1,26 @@
-.PHONY: build watch create_app_icon create_splash build_release_android pigeon test analyze format
+.PHONY: build watch create_app_icon create_splash build_release_android pigeon test analyze format migration translation
 
 build:
-	dart run build_runner build --delete-conflicting-outputs
-# Remove once auto_route updated to 10.1.0
-	dart format lib/routing/router.gr.dart
+	@printf "This command has been removed. Please use:\n\n    mise codegen           # or mise //:mobile:codegen:dart from another directory\n\n" >&2 && exit 1
 
 pigeon:
-	dart run pigeon --input pigeon/native_sync_api.dart
-	dart run pigeon --input pigeon/local_image_api.dart
-	dart run pigeon --input pigeon/remote_image_api.dart
-	dart run pigeon --input pigeon/background_worker_api.dart
-	dart run pigeon --input pigeon/background_worker_lock_api.dart
-	dart run pigeon --input pigeon/connectivity_api.dart
-	dart run pigeon --input pigeon/network_api.dart
-	dart format lib/platform/native_sync_api.g.dart
-	dart format lib/platform/local_image_api.g.dart
-	dart format lib/platform/remote_image_api.g.dart
-	dart format lib/platform/background_worker_api.g.dart
-	dart format lib/platform/background_worker_lock_api.g.dart
-	dart format lib/platform/connectivity_api.g.dart
-	dart format lib/platform/network_api.g.dart
+	@printf "This command has been removed. Please use:\n\n    mise pigeon            # or mise //:mobile:codegen:pigeon from another directory\n\n" >&2 && exit 1
 
-watch:
-	dart run build_runner watch --delete-conflicting-outputs
-
-create_app_icon:
-	flutter pub run flutter_launcher_icons:main
-
-create_splash:
-	flutter pub run flutter_native_splash:create
 
 build_release_android:
-	flutter build appbundle
+	@printf "This command has been removed. Please use:\n\n    mise run build:android      # or mise //:mobile:build:android from another directory\n\n" >&2 && exit 1
 
 migration:
-	dart run drift_dev make-migrations
+	@printf "This command has been removed. Please use:\n\n    mise migration         # or mise //:mobile:drift:migration from another directory\n\n" >&2 && exit 1
 
 translation:
-	pnpm --prefix ../i18n run format:fix
-	dart run easy_localization:generate -S ../i18n
-	dart run bin/generate_keys.dart
-	dart format lib/generated/codegen_loader.g.dart
-	dart format lib/generated/translations.g.dart
+	@printf "This command has been removed. Please use:\n\n    mise translation       # or mise //:mobile:codegen:translation from another directory\n\n" >&2 && exit 1
 
 analyze:
-	dart analyze --fatal-infos
-	dcm analyze lib --fatal-style --fatal-warnings
+	@printf "This command has been removed. Please use:\n\n    mise analyze           # or mise //:mobile:lint from another directory\n\n" >&2 && exit 1
 
 format:
-# Ignore generated files manually until https://github.com/dart-lang/dart_style/issues/864 is resolved
-	dart format --set-exit-if-changed $$(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \))
+	@printf "This command has been removed. Please use:\n\n    mise format            # or mise //:mobile:format from another directory\n\n" >&2 && exit 1
 
 test:
-	flutter test
+	@printf "This command has been removed. Please use:\n\n    mise test              # or mise //:mobile:test from another directory\n\n" >&2 && exit 1

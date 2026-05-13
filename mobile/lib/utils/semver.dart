@@ -63,7 +63,9 @@ class SemVer {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is SemVer && other.major == major && other.minor == minor && other.patch == patch;
   }

@@ -245,7 +245,9 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
   }
 
   Future<void> _handleSave() async {
-    if (formKey.currentState?.validate() != true) return;
+    if (formKey.currentState?.validate() != true) {
+      return;
+    }
 
     try {
       final newTitle = titleController.text.trim();

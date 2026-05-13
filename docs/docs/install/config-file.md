@@ -26,7 +26,7 @@ The default configuration looks like this:
   },
   "ffmpeg": {
     "accel": "disabled",
-    "accelDecode": false,
+    "accelDecode": true,
     "acceptedAudioCodecs": ["aac", "mp3", "opus"],
     "acceptedContainers": ["mov", "ogg", "webm"],
     "acceptedVideoCodecs": ["h264"],
@@ -264,4 +264,4 @@ volumes:
   - ./configuration.yml:${IMMICH_CONFIG_FILE}
 ```
 
-::
+:::

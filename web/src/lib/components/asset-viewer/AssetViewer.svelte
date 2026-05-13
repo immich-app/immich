@@ -15,6 +15,7 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { getAssetActions } from '$lib/services/asset.service';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -49,6 +50,7 @@
   import OcrButton from './OcrButton.svelte';
   import PhotoViewer from './PhotoViewer.svelte';
   import SlideshowBar from './SlideshowBar.svelte';
+  import SlideshowMetadataOverlay from './SlideshowMetadataOverlay.svelte';
   import VideoViewer from './VideoWrapperViewer.svelte';
 
   export type AssetCursor = {
@@ -332,6 +334,7 @@
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
         const assetInfo = await getAssetInfo({ id: asset.id });
         cursor.current = { ...asset, people: assetInfo.people };
+        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
@@ -375,11 +378,14 @@
   const refresh = async () => {
     await refreshStack();
     ocrManager.clear();
+    faceManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
         await ocrManager.getAssetOcr(previewStackedAsset.id);
+        await faceManager.getAssetFaces(previewStackedAsset.id);
       }
       await ocrManager.getAssetOcr(asset.id);
+      await faceManager.getAssetFaces(asset.id);
     }
   };
 
@@ -587,6 +593,10 @@
       <div class="absolute inset-e-0 bottom-0 me-6 mb-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
         <OcrButton />
       </div>
+    {/if}
+
+    {#if $slideshowState !== SlideshowState.None}
+      <SlideshowMetadataOverlay {asset} />
     {/if}
   </div>
 

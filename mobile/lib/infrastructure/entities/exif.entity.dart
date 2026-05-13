@@ -6,6 +6,10 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)')
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_remote_exif_city
+ON remote_exif_entity (city) WHERE city IS NOT NULL
+''')
 class RemoteExifEntity extends Table with DriftDefaultsMixin {
   const RemoteExifEntity();
 

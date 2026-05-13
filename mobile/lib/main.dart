@@ -179,19 +179,32 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
+    PageRouteInfo? route;
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
-
-      return proposedRoute;
+      route = await deepLinkHandler.handleScheme(deepLink, ref);
+    } else if (deepLink.uri.host == "my.immich.app") {
+      route = await deepLinkHandler.handleMyImmichApp(deepLink, ref);
+    } else {
+      return DeepLink.path(deepLink.path);
     }
 
-    if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
-
-      return proposedRoute;
+    if (route == null) {
+      return isColdStart ? DeepLink.defaultPath : DeepLink.none;
     }
 
-    return DeepLink.path(deepLink.path);
+    // We need to replace the route if the destination is the current route
+    if (!isColdStart) {
+      unawaited(
+        ref.read(appRouterProvider).pushAndPopUntil(route, predicate: (r) => r.settings.name != route!.routeName),
+      );
+      return DeepLink.none;
+    }
+
+    return DeepLink([
+      // we need something to segue back to if the app was cold started
+      if (isColdStart) const TabShellRoute(children: [MainTimelineRoute()]),
+      route,
+    ]);
   }
 
   @override
