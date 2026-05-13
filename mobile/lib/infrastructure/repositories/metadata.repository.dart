@@ -133,6 +133,12 @@ extension<T extends Object> on MetadataDomain<T> {
             storageIndicator: repo._read(.timelineStorageIndicator),
           ),
           image: .new(preferRemote: repo._read(.imagePreferRemote), loadOriginal: repo._read(.imageLoadOriginal)),
+          viewer: .new(
+            loopVideo: repo._read(.viewerLoopVideo),
+            loadOriginalVideo: repo._read(.viewerLoadOriginalVideo),
+            autoPlayVideo: repo._read(.viewerAutoPlayVideo),
+            tapToNavigate: repo._read(.viewerTapToNavigate),
+          ),
         );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));
