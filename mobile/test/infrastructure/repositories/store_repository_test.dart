@@ -12,9 +12,8 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import '../../fixtures/user.stub.dart';
 
 const _kTestAccessToken = "#TestToken";
-final _kTestBackupFailed = DateTime(2025, 2, 20, 11, 45);
 const _kTestVersion = 10;
-const _kTestBackupRequireWifi = false;
+const _kTestBackupRequireCharging = false;
 final _kTestUser = UserStub.admin;
 
 Future<void> _populateStore(Drift db) async {
@@ -22,16 +21,8 @@ Future<void> _populateStore(Drift db) async {
     batch.insert(
       db.storeEntity,
       StoreEntityCompanion(
-        id: Value(StoreKey.backupRequireWifi.id),
-        intValue: const Value(_kTestBackupRequireWifi ? 1 : 0),
-        stringValue: const Value(null),
-      ),
-    );
-    batch.insert(
-      db.storeEntity,
-      StoreEntityCompanion(
-        id: Value(StoreKey.backupFailedSince.id),
-        intValue: Value(_kTestBackupFailed.millisecondsSinceEpoch),
+        id: Value(StoreKey.backupRequireCharging.id),
+        intValue: const Value(_kTestBackupRequireCharging ? 1 : 0),
         stringValue: const Value(null),
       ),
     );
@@ -84,20 +75,12 @@ void main() {
       expect(accessToken, _kTestAccessToken);
     });
 
-    test('converts datetime', () async {
-      DateTime? backupFailedSince = await sut.tryGet(StoreKey.backupFailedSince);
-      expect(backupFailedSince, isNull);
-      await sut.upsert(StoreKey.backupFailedSince, _kTestBackupFailed);
-      backupFailedSince = await sut.tryGet(StoreKey.backupFailedSince);
-      expect(backupFailedSince, _kTestBackupFailed);
-    });
-
     test('converts bool', () async {
-      bool? backupRequireWifi = await sut.tryGet(StoreKey.backupRequireWifi);
-      expect(backupRequireWifi, isNull);
-      await sut.upsert(StoreKey.backupRequireWifi, _kTestBackupRequireWifi);
-      backupRequireWifi = await sut.tryGet(StoreKey.backupRequireWifi);
-      expect(backupRequireWifi, _kTestBackupRequireWifi);
+      bool? backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
+      expect(backupRequireCharging, isNull);
+      await sut.upsert(StoreKey.backupRequireCharging, _kTestBackupRequireCharging);
+      backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
+      expect(backupRequireCharging, _kTestBackupRequireCharging);
     });
 
     test('converts user', () async {
@@ -115,11 +98,11 @@ void main() {
     });
 
     test('delete()', () async {
-      bool? backupRequireWifi = await sut.tryGet(StoreKey.backupRequireWifi);
-      expect(backupRequireWifi, isFalse);
-      await sut.delete(StoreKey.backupRequireWifi);
-      backupRequireWifi = await sut.tryGet(StoreKey.backupRequireWifi);
-      expect(backupRequireWifi, isNull);
+      bool? backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
+      expect(backupRequireCharging, isFalse);
+      await sut.delete(StoreKey.backupRequireCharging);
+      backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
+      expect(backupRequireCharging, isNull);
     });
 
     test('deleteAll()', () async {
@@ -164,14 +147,12 @@ void main() {
           emitsInOrder([
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion),
-              StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
-              const StoreDto<Object>(StoreKey.backupRequireWifi, _kTestBackupRequireWifi),
+              const StoreDto<Object>(StoreKey.backupRequireCharging, _kTestBackupRequireCharging),
               const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
             ],
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
-              StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
-              const StoreDto<Object>(StoreKey.backupRequireWifi, _kTestBackupRequireWifi),
+              const StoreDto<Object>(StoreKey.backupRequireCharging, _kTestBackupRequireCharging),
               const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
             ],
           ]),

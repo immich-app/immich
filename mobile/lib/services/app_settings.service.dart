@@ -2,15 +2,9 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
-  uploadErrorNotificationGracePeriod<int>(
-    StoreKey.uploadErrorNotificationGracePeriod,
-    "uploadErrorNotificationGracePeriod",
-    2,
-  ),
   selectedAlbumSortOrder<int>(StoreKey.selectedAlbumSortOrder, "selectedAlbumSortOrder", 2),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
-  allowSelfSignedSSLCert<bool>(StoreKey.selfSignedCert, null, false),
   selectedAlbumSortReverse<bool>(StoreKey.selectedAlbumSortReverse, null, true),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
