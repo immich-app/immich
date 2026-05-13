@@ -66,8 +66,6 @@ import { isFacialRecognitionEnabled } from 'src/utils/misc';
 import { Point, transformPoints } from 'src/utils/transform';
 
 const FACE_IDENTITY_BACKFILL_CHUNK_SIZE = 1000;
-const EXISTING_PERSON_MATCH_DISTANCE_BUFFER = 0.1;
-const EXISTING_PERSON_MATCH_RESULT_LIMIT = 5;
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -967,8 +965,8 @@ export class PersonService extends BaseService {
       const matchWithPerson = await this.searchRepository.searchFaces({
         userIds: [face.asset.ownerId],
         embedding: face.faceSearch.embedding,
-        maxDistance: Math.min(1, machineLearning.facialRecognition.maxDistance + EXISTING_PERSON_MATCH_DISTANCE_BUFFER),
-        numResults: EXISTING_PERSON_MATCH_RESULT_LIMIT,
+        maxDistance: machineLearning.facialRecognition.maxDistance,
+        numResults: 1,
         hasPerson: true,
         minBirthDate: new Date(face.asset.fileCreatedAt),
       });

@@ -3562,9 +3562,9 @@ describe(PersonService.name, () => {
       });
     });
 
-    it('should use a relaxed existing-person search before creating a new core person', async () => {
+    it('should not use a relaxed existing-person search before creating a new core person', async () => {
       const asset = AssetFactory.create();
-      const person = PersonFactory.create();
+      const person = PersonFactory.create({ ownerId: asset.ownerId });
       const [noPerson1, noPerson2, noPerson3] = [
         AssetFaceFactory.create({ assetId: asset.id }),
         AssetFaceFactory.create(),
@@ -3577,10 +3577,9 @@ describe(PersonService.name, () => {
       ] as FaceSearchResult[];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
-      mocks.search.searchFaces
-        .mockResolvedValueOnce(faces)
-        .mockResolvedValueOnce([{ ...noPerson2, personId: person.id, distance: 0.56 }]);
+      mocks.search.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+      mocks.person.create.mockResolvedValue(person);
 
       await sut.handleRecognizeFaces({ id: noPerson1.id });
 
@@ -3588,20 +3587,19 @@ describe(PersonService.name, () => {
         2,
         expect.objectContaining({
           hasPerson: true,
-          maxDistance: 0.6,
-          numResults: 5,
+          maxDistance: 0.5,
+          numResults: 1,
         }),
       );
-      expect(mocks.person.create).not.toHaveBeenCalled();
+      expect(mocks.person.create).toHaveBeenCalledWith({ ownerId: asset.ownerId, faceAssetId: noPerson1.id });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: [noPerson1.id],
         newPersonId: person.id,
       });
     });
 
-    it('should attach a deferred small cluster to a relaxed existing-person match', async () => {
+    it('should not attach a deferred small cluster to a relaxed existing-person match', async () => {
       const asset = AssetFactory.create();
-      const person = PersonFactory.create();
       const [noPerson1, noPerson2] = [AssetFaceFactory.create({ assetId: asset.id }), AssetFaceFactory.create()];
       const faces = [
         { ...noPerson1, distance: 0 },
@@ -3609,9 +3607,7 @@ describe(PersonService.name, () => {
       ] as FaceSearchResult[];
 
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 3 } } });
-      mocks.search.searchFaces
-        .mockResolvedValueOnce(faces)
-        .mockResolvedValueOnce([{ ...noPerson2, personId: person.id, distance: 0.56 }]);
+      mocks.search.searchFaces.mockResolvedValueOnce(faces).mockResolvedValueOnce([]);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
 
       await sut.handleRecognizeFaces({ id: noPerson1.id, deferred: true });
@@ -3620,18 +3616,15 @@ describe(PersonService.name, () => {
         2,
         expect.objectContaining({
           hasPerson: true,
-          maxDistance: 0.6,
-          numResults: 5,
+          maxDistance: 0.5,
+          numResults: 1,
         }),
       );
       expect(mocks.job.queue).not.toHaveBeenCalledWith(
         expect.objectContaining({ name: JobName.PersonGenerateThumbnail }),
       );
       expect(mocks.person.create).not.toHaveBeenCalled();
-      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
-        faceIds: [noPerson1.id],
-        newPersonId: person.id,
-      });
+      expect(mocks.person.reassignFaces).not.toHaveBeenCalled();
     });
 
     it('should handle deferred non-core face with matching person', async () => {
