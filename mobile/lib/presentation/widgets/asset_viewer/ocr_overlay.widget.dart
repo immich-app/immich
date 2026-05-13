@@ -94,33 +94,59 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
         if (data == null || data.isEmpty) {
           return const SizedBox.shrink();
         }
-        return _buildOcrBoxes(data);
+        return _OcrBoxes(
+          ocrData: data,
+          controller: widget.controller,
+          imageSize: widget.imageSize,
+          viewportSize: widget.viewportSize,
+          controllerValue: _controllerValue,
+          selectedBoxIndex: _selectedBoxIndex,
+          onSelectionChanged: (index) => setState(() => _selectedBoxIndex = index),
+        );
       },
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
+}
 
-  Widget _buildOcrBoxes(List<Ocr> ocrData) {
+class _OcrBoxes extends StatelessWidget {
+  final List<Ocr> ocrData;
+  final PhotoViewControllerBase? controller;
+  final Size imageSize;
+  final Size viewportSize;
+  final PhotoViewControllerValue? controllerValue;
+  final int? selectedBoxIndex;
+  final ValueChanged<int?> onSelectionChanged;
+
+  const _OcrBoxes({
+    required this.ocrData,
+    required this.controller,
+    required this.imageSize,
+    required this.viewportSize,
+    required this.controllerValue,
+    required this.selectedBoxIndex,
+    required this.onSelectionChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     // Use the actual decoded image size from PhotoView's scaleBoundaries when
     // available. The image provider may serve a downscaled preview (e.g. Immich
     // serves a ~1440px preview for large originals), so the decoded dimensions
     // can differ significantly from the stored asset dimensions. Using the wrong
     // size would scale every coordinate by the ratio between the two resolutions.
-    final imageSize = widget.controller?.scaleBoundaries?.childSize ?? widget.imageSize;
+    final resolvedImageSize = controller?.scaleBoundaries?.childSize ?? imageSize;
 
     final scale =
-        _controllerValue?.scale ??
-        math.min(widget.viewportSize.width / imageSize.width, widget.viewportSize.height / imageSize.height);
-    final position = _controllerValue?.position ?? Offset.zero;
-    return _buildBoxStack(ocrData, imageSize, scale, position);
-  }
+        controllerValue?.scale ??
+        math.min(viewportSize.width / resolvedImageSize.width, viewportSize.height / resolvedImageSize.height);
+    final position = controllerValue?.position ?? Offset.zero;
 
-  Widget _buildBoxStack(List<Ocr> ocrData, Size imageSize, double scale, Offset position) {
-    final imageWidth = imageSize.width;
-    final imageHeight = imageSize.height;
-    final viewportWidth = widget.viewportSize.width;
-    final viewportHeight = widget.viewportSize.height;
+    final imageWidth = resolvedImageSize.width;
+    final imageHeight = resolvedImageSize.height;
+    final viewportWidth = viewportSize.width;
+    final viewportHeight = viewportSize.height;
 
     // Image center in viewport space, accounting for pan
     final cx = viewportWidth / 2 + position.dx;
@@ -128,11 +154,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: () {
-        setState(() {
-          _selectedBoxIndex = null;
-        });
-      },
+      onTap: () => onSelectionChanged(null),
       child: ClipRect(
         child: Stack(
           children: [
@@ -141,7 +163,6 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
             ...ocrData.asMap().entries.map((entry) {
               final index = entry.key;
               final ocr = entry.value;
-              final isSelected = _selectedBoxIndex == index;
 
               // Map normalized image coords (0–1) to viewport space
               final x1 = cx + (ocr.x1 - 0.5) * imageWidth * scale;
@@ -159,83 +180,125 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
               final minY = [y1, y2, y3, y4].reduce((a, b) => a < b ? a : b);
               final maxY = [y1, y2, y3, y4].reduce((a, b) => a > b ? a : b);
 
-              final angle = math.atan2(y2 - y1, x2 - x1);
-              final centerX = (minX + maxX) / 2;
-              final centerY = (minY + maxY) / 2;
-
-              return Positioned(
+              return _OcrBoxItem(
+                key: ValueKey(index),
+                ocr: ocr,
+                index: index,
+                isSelected: selectedBoxIndex == index,
+                points: [
+                  Offset(x1 - minX, y1 - minY),
+                  Offset(x2 - minX, y2 - minY),
+                  Offset(x3 - minX, y3 - minY),
+                  Offset(x4 - minX, y4 - minY),
+                ],
                 left: minX,
                 top: minY,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedBoxIndex = isSelected ? null : index;
-                    });
-                  },
-                  behavior: HitTestBehavior.translucent,
-                  child: SizedBox(
-                    width: maxX - minX,
-                    height: maxY - minY,
-                    child: Stack(
-                      children: [
-                        CustomPaint(
-                          painter: _OcrBoxPainter(
-                            points: [
-                              Offset(x1 - minX, y1 - minY),
-                              Offset(x2 - minX, y2 - minY),
-                              Offset(x3 - minX, y3 - minY),
-                              Offset(x4 - minX, y4 - minY),
-                            ],
-                            isSelected: isSelected,
-                            colorScheme: context.themeData.colorScheme,
-                          ),
-                          size: Size(maxX - minX, maxY - minY),
-                        ),
-                        if (isSelected)
-                          Positioned(
-                            left: centerX - minX,
-                            top: centerY - minY,
-                            child: FractionalTranslation(
-                              translation: const Offset(-0.5, -0.5),
-                              child: Transform.rotate(
-                                angle: angle,
-                                alignment: Alignment.center,
-                                child: Container(
-                                  margin: const EdgeInsets.all(2),
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[800]?.withValues(alpha: 0.4),
-                                    borderRadius: const BorderRadius.all(Radius.circular(4)),
-                                  ),
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxWidth: math.max(50, maxX - minX),
-                                      maxHeight: math.max(20, maxY - minY),
-                                    ),
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: SelectableText(
-                                        ocr.text,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: math.max(12, (maxY - minY) * 0.6),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
+                width: maxX - minX,
+                height: maxY - minY,
+                angle: math.atan2(y2 - y1, x2 - x1),
+                labelDx: (minX + maxX) / 2 - minX,
+                labelDy: (minY + maxY) / 2 - minY,
+                onSelectionChanged: onSelectionChanged,
               );
             }),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OcrBoxItem extends StatelessWidget {
+  final Ocr ocr;
+  final int index;
+  final bool isSelected;
+  final List<Offset> points;
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+  final double angle;
+  final double labelDx;
+  final double labelDy;
+  final ValueChanged<int?> onSelectionChanged;
+
+  const _OcrBoxItem({
+    super.key,
+    required this.ocr,
+    required this.index,
+    required this.isSelected,
+    required this.points,
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+    required this.angle,
+    required this.labelDx,
+    required this.labelDy,
+    required this.onSelectionChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: left,
+      top: top,
+      child: GestureDetector(
+        onTap: () => onSelectionChanged(isSelected ? null : index),
+        behavior: HitTestBehavior.translucent,
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: Stack(
+            children: [
+              CustomPaint(
+                painter: _OcrBoxPainter(
+                  points: points,
+                  isSelected: isSelected,
+                  colorScheme: context.themeData.colorScheme,
+                ),
+                size: Size(width, height),
+              ),
+              if (isSelected)
+                Positioned(
+                  left: labelDx,
+                  top: labelDy,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Transform.rotate(
+                      angle: angle,
+                      alignment: Alignment.center,
+                      child: Container(
+                        margin: const EdgeInsets.all(2),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800]?.withValues(alpha: 0.4),
+                          borderRadius: const BorderRadius.all(Radius.circular(4)),
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: math.max(50, width),
+                            maxHeight: math.max(20, height),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: SelectableText(
+                              ocr.text,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: math.max(12, height * 0.6),
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -273,6 +336,6 @@ class _OcrBoxPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_OcrBoxPainter oldDelegate) {
-    return oldDelegate.isSelected != isSelected || listEquals(oldDelegate.points, points);
+    return oldDelegate.isSelected != isSelected || !listEquals(oldDelegate.points, points);
   }
 }
