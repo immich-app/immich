@@ -50,8 +50,8 @@ enum MetadataKey<T extends Object> {
   // Map
   mapShowFavoriteOnly<bool>(.appConfig, 'map.showFavoriteOnly', false),
   mapRelativeDate<int>(.appConfig, 'map.relativeDate', 0),
-  mapCustomFrom<String>(.appConfig, 'map.customFrom', ''),
-  mapCustomTo<String>(.appConfig, 'map.customTo', ''),
+  mapCustomFrom<String>(.appConfig, 'map.customFrom', '', _DateStringCodec()),
+  mapCustomTo<String>(.appConfig, 'map.customTo', '', _DateStringCodec()),
   mapIncludeArchived<bool>(.appConfig, 'map.includeArchived', false),
   mapThemeMode<ThemeMode>(.appConfig, 'map.themeMode', .system, _EnumCodec(ThemeMode.values)),
   mapWithPartners<bool>(.appConfig, 'map.withPartners', false),
@@ -163,6 +163,21 @@ final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
     } on FormatException {
       return null;
     }
+  }
+}
+
+final class _DateStringCodec extends _MetadataCodec<String> {
+  const _DateStringCodec();
+
+  @override
+  String encode(String value) => value;
+
+  @override
+  String? decode(String raw) {
+    if (raw.isEmpty) {
+      return raw;
+    }
+    return DateTime.tryParse(raw) != null ? raw : null;
   }
 }
 
