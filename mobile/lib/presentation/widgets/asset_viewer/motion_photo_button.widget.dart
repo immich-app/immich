@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 
 class MotionPhotoPlayButton extends ConsumerWidget {
   const MotionPhotoPlayButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetNotifier);
+    final asset = ref.watch(assetViewerProvider.select((state) => state.currentAsset));
     final isPlaying = ref.watch(isPlayingMotionVideoProvider);
     final showControls = ref.watch(assetViewerProvider.select((state) => state.showingControls));
-    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
+    final isShowingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
 
-    if (asset == null || !asset.isMotionPhoto || isShowingSheet) {
+    if (asset == null || !asset.isMotionPhoto || isShowingDetails) {
       return const SizedBox.shrink();
     }
 
