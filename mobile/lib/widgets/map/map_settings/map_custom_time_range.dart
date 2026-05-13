@@ -19,7 +19,10 @@ class MapTimeRange extends StatelessWidget {
         ListTile(
           title: Text(context.t.date_after),
           subtitle: Text(
-            timeRange.from.fold((from) => DateFormat.yMMMd().add_jm().format(from), () => context.t.not_set),
+            timeRange.from.fold(
+              (from) => DateFormat.yMMMd(context.locale).add_jm().format(from),
+              () => context.t.not_set,
+            ),
           ),
           trailing: timeRange.from.isSome
               ? IconButton(icon: const Icon(Icons.close), onPressed: () => onChanged(timeRange.clearFrom()))
@@ -43,7 +46,10 @@ class MapTimeRange extends StatelessWidget {
         ListTile(
           title: Text(context.t.date_before),
           subtitle: Text(
-            timeRange.to.fold<String>((to) => DateFormat.yMMMd().add_jm().format(to), () => context.t.not_set),
+            timeRange.to.fold<String>(
+              (to) => DateFormat.yMMMd(context.locale).add_jm().format(to),
+              () => context.t.not_set,
+            ),
           ),
           trailing: timeRange.to.isSome
               ? IconButton(icon: const Icon(Icons.close), onPressed: () => onChanged(timeRange.clearTo()))

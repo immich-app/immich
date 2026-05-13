@@ -31,13 +31,9 @@ sealed class Option<T> {
     None() => const Option.none(),
   };
 
-  void ifSome(void Function(T value) action) {
-    switch (this) {
-      case Some(:final value):
-        action(value);
-        break;
-      case None():
-        break;
+  void ifPresent(void Function(T value) f) {
+    if (this case Some(:final value)) {
+      f(value);
     }
   }
 
