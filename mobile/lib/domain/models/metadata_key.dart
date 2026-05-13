@@ -165,15 +165,21 @@ final class _MapCodec<K extends Object, V extends Object> extends _MetadataCodec
   Map<K, V>? decode(String raw) {
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! Map) return null;
+      if (decoded is! Map) {
+        return null;
+      }
       final result = <K, V>{};
       for (final entry in decoded.entries) {
         final rawKey = entry.key;
         final rawValue = entry.value;
-        if (rawKey is! String || rawValue is! String) return null;
+        if (rawKey is! String || rawValue is! String) {
+          return null;
+        }
         final k = _keyCodec.decode(rawKey);
         final v = _valueCodec.decode(rawValue);
-        if (k == null || v == null) return null;
+        if (k == null || v == null) {
+          return null;
+        }
         result[k] = v;
       }
       return result;
@@ -195,12 +201,18 @@ final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
   List<T>? decode(String raw) {
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return null;
+      if (decoded is! List) {
+        return null;
+      }
       final result = <T>[];
       for (final item in decoded) {
-        if (item is! String) return null;
+        if (item is! String) {
+          return null;
+        }
         final element = _elementCodec.decode(item);
-        if (element == null) return null;
+        if (element == null) {
+          return null;
+        }
         result.add(element);
       }
       return result;

@@ -53,7 +53,9 @@ class _RatingBarState extends State<RatingBar> {
     final totalWidth = widget.itemCount * widget.itemSize + (widget.itemCount - 1) * widget.starPadding;
     double dx = localPosition.dx;
 
-    if (isRTL) dx = totalWidth - dx;
+    if (isRTL) {
+      dx = totalWidth - dx;
+    }
 
     double newRating;
 

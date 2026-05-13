@@ -34,7 +34,9 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
 Future<void> _migrateTo25() async {
   final accessToken = Store.tryGet(StoreKey.accessToken);
-  if (accessToken == null || accessToken.isEmpty) return;
+  if (accessToken == null || accessToken.isEmpty) {
+    return;
+  }
 
   final urls = <String>[];
   final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -50,10 +52,14 @@ Future<void> _migrateTo25() async {
     final List<dynamic> list = jsonDecode(externalJson);
     for (final entry in list) {
       final url = AuxilaryEndpoint.fromJson(entry).url;
-      if (url.isNotEmpty) urls.add(url);
+      if (url.isNotEmpty) {
+        urls.add(url);
+      }
     }
   }
-  if (urls.isEmpty) return;
+  if (urls.isEmpty) {
+    return;
+  }
 
   final customHeadersStr = Store.get(StoreKey.legacyCustomHeaders, "");
   final headers = customHeadersStr.isEmpty
@@ -125,7 +131,9 @@ Future<void> _migrateTo26(Drift drift) async {
 
 Future<void> _migrateExternalEndpointList(Drift drift, _StoreMigrator migrator) async {
   final raw = await migrator.readLegacyStoreString(StoreKey.legacyExternalEndpointList.id);
-  if (raw == null) return;
+  if (raw == null) {
+    return;
+  }
 
   final urls = <String>[];
   try {
@@ -133,7 +141,9 @@ Future<void> _migrateExternalEndpointList(Drift drift, _StoreMigrator migrator) 
     if (decoded is List) {
       for (final entry in decoded) {
         final url = AuxilaryEndpoint.fromJson(entry).url;
-        if (url.isNotEmpty) urls.add(url);
+        if (url.isNotEmpty) {
+          urls.add(url);
+        }
       }
     }
   } on FormatException {
@@ -152,14 +162,18 @@ Future<void> _migrateExternalEndpointList(Drift drift, _StoreMigrator migrator) 
 
 Future<void> _migrateCustomHeaders(Drift drift, _StoreMigrator migrator) async {
   final raw = await migrator.readLegacyStoreString(StoreKey.legacyCustomHeaders.id);
-  if (raw == null) return;
+  if (raw == null) {
+    return;
+  }
 
   final headers = <String, String>{};
   try {
     final decoded = jsonDecode(raw);
     if (decoded is Map) {
       decoded.forEach((key, value) {
-        if (key is String && value is String) headers[key] = value;
+        if (key is String && value is String) {
+          headers[key] = value;
+        }
       });
     }
   } on FormatException {
@@ -185,7 +199,9 @@ class _StoreMigrator {
 
   Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, MetadataKey<T> newKey, List<T> values) async {
     final index = await readLegacyStoreInt(legacyKey.id);
-    if (index == null) return;
+    if (index == null) {
+      return;
+    }
 
     final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
     _cache[newKey] = enumValue;
@@ -198,7 +214,9 @@ class _StoreMigrator {
     List<T> values,
   ) async {
     final name = await readLegacyStoreString(legacyKey.id);
-    if (name == null) return;
+    if (name == null) {
+      return;
+    }
 
     final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
     _cache[newKey] = enumValue;
@@ -207,7 +225,9 @@ class _StoreMigrator {
 
   Future<void> migrateBool(StoreKey<bool> legacyKey, MetadataKey<bool> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) return;
+    if (intValue == null) {
+      return;
+    }
 
     final boolValue = intValue != 0;
     _cache[newKey] = boolValue;
@@ -216,7 +236,9 @@ class _StoreMigrator {
 
   Future<void> migrateInt(StoreKey<int> legacyKey, MetadataKey<int> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) return;
+    if (intValue == null) {
+      return;
+    }
 
     _cache[newKey] = intValue;
     _migratedStoreIds.add(legacyKey.id);
@@ -224,7 +246,9 @@ class _StoreMigrator {
 
   Future<void> migrateString(StoreKey<String> legacyKey, MetadataKey<String> newKey) async {
     final value = await readLegacyStoreString(legacyKey.id);
-    if (value == null) return;
+    if (value == null) {
+      return;
+    }
 
     _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
@@ -254,7 +278,9 @@ class _StoreMigrator {
   }
 
   Future<void> deleteLegacyStoreRows(List<int> ids) async {
-    if (ids.isEmpty) return;
+    if (ids.isEmpty) {
+      return;
+    }
     await (_db.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
   }
 }

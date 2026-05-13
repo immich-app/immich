@@ -223,7 +223,7 @@ export const defaults = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.Required,
     tonemap: ToneMapping.Hable,
     accel: TranscodeHardwareAcceleration.Disabled,
-    accelDecode: false,
+    accelDecode: true,
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },

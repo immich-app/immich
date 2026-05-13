@@ -33,7 +33,9 @@ class DeletePermanentActionButton extends ConsumerWidget {
           builder: (context) => PermanentDeleteDialog(count: count),
         ) ??
         false;
-    if (!confirm) return;
+    if (!confirm) {
+      return;
+    }
 
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());

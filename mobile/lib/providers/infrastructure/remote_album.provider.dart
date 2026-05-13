@@ -24,7 +24,9 @@ class RemoteAlbumState {
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final listEquals = const DeepCollectionEquality().equals;
 
     return listEquals(other.albums, albums);

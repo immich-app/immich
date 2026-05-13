@@ -7,7 +7,6 @@ import {
   OcrConfigSchema,
 } from 'src/dtos/model-config.dto';
 import {
-  AudioCodec,
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
@@ -65,10 +64,7 @@ const SystemConfigFFmpegSchema = z
     targetVideoCodec: VideoCodecSchema,
     acceptedVideoCodecs: z.array(VideoCodecSchema).describe('Accepted video codecs'),
     targetAudioCodec: AudioCodecSchema,
-    acceptedAudioCodecs: z
-      .array(AudioCodecSchema)
-      .transform((value): AudioCodec[] => value.map((v) => (v === AudioCodec.Libopus ? AudioCodec.Opus : v)))
-      .describe('Accepted audio codecs'),
+    acceptedAudioCodecs: z.array(AudioCodecSchema).describe('Accepted audio codecs'),
     acceptedContainers: z.array(VideoContainerSchema).describe('Accepted containers'),
     targetResolution: z.string().describe('Target resolution'),
     maxBitrate: z.string().describe('Max bitrate'),

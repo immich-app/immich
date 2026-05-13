@@ -49,7 +49,9 @@ class MetadataRepository extends DriftDatabaseRepository {
   T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
 
   Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
-    if (_read(key) == value) return;
+    if (_read(key) == value) {
+      return;
+    }
 
     await _db
         .into(_db.metadataEntity)
@@ -64,9 +66,9 @@ class MetadataRepository extends DriftDatabaseRepository {
     _updateCache(key, key.defaultValue);
   }
 
-  Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).distinct();
+  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).distinct();
 
-  Stream<SystemConfig> watchSystemConfig() => _watchDomain(MetadataDomain.systemConfig).distinct();
+  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).distinct();
 
   Stream<T> _watchDomain<T extends Object>(MetadataDomain<T> domain) {
     final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));
@@ -80,13 +82,17 @@ class MetadataRepository extends DriftDatabaseRepository {
     final keyMap = MetadataKey.asKeyMap();
     for (final row in rows) {
       final key = keyMap[row.key];
-      if (key == null) continue;
+      if (key == null) {
+        continue;
+      }
       _updateCache(key, key.decode(row.value));
     }
   }
 
   void _updateCache<T extends Object>(MetadataKey<T> key, T value) {
-    if (_cache[key] == value) return;
+    if (_cache[key] == value) {
+      return;
+    }
     _cache[key] = value;
     key.domain.rebuild(this);
   }

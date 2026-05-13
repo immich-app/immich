@@ -1,10 +1,8 @@
 packages:
-  - cli
+  - packages/**
   - docs
   - e2e
-  - e2e-auth-server
   - i18n
-  - open-api/typescript-sdk
   - server
   - plugins
   - web
@@ -30,7 +28,7 @@ onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - bcrypt
 overrides:
-  canvas: 2.11.2
+  canvas: 3.2.3
   sharp: ^0.34.5
   # pending docusaurus 3.10.1
   webpackbar: ^7.0.0

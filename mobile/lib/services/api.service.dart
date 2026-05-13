@@ -183,7 +183,9 @@ class ApiService {
       urls.add(localEndpoint);
     }
     for (final url in network.externalEndpointList) {
-      if (url.isNotEmpty) urls.add(url);
+      if (url.isNotEmpty) {
+        urls.add(url);
+      }
     }
     return urls;
   }

@@ -80,7 +80,9 @@ describe(AssetMediaController.name, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['[metadata] Invalid input: expected JSON string, received string']),
+        factory.responses.validationError([
+          { path: ['metadata'], message: 'Invalid input: expected JSON string, received string' },
+        ]),
       );
     });
 
@@ -91,8 +93,8 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto({ omit: 'fileCreatedAt' }) });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest([
-          '[fileCreatedAt] Invalid input: expected ISO 8601 datetime string, received undefined',
+        factory.responses.validationError([
+          { path: ['fileCreatedAt'], message: 'Invalid input: expected ISO 8601 datetime string, received undefined' },
         ]),
       );
     });
@@ -104,8 +106,8 @@ describe(AssetMediaController.name, () => {
         .field(makeUploadDto({ omit: 'fileModifiedAt' }));
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest([
-          '[fileModifiedAt] Invalid input: expected ISO 8601 datetime string, received undefined',
+        factory.responses.validationError([
+          { path: ['fileModifiedAt'], message: 'Invalid input: expected ISO 8601 datetime string, received undefined' },
         ]),
       );
     });
@@ -117,7 +119,9 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto(), isFavorite: 'not-a-boolean' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['[isFavorite] Invalid option: expected one of "true"|"false"']),
+        factory.responses.validationError([
+          { path: ['isFavorite'], message: 'Invalid option: expected one of "true"|"false"' },
+        ]),
       );
     });
 
@@ -128,7 +132,9 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto(), visibility: 'not-an-option' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest([expect.stringContaining('[visibility] Invalid option: expected one of')]),
+        factory.responses.validationError([
+          { path: ['visibility'], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
       );
     });
 

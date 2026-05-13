@@ -11,6 +11,7 @@
     options: RenderedOption[];
     selectedOption: RenderedOption;
     isEdited?: boolean;
+    disabled?: boolean;
     onToggle: (option: RenderedOption) => void;
     children?: Snippet;
   }
@@ -21,12 +22,13 @@
     options,
     selectedOption = $bindable(),
     isEdited = false,
+    disabled = false,
     onToggle,
     children,
   }: Props = $props();
 </script>
 
-<div class="flex place-items-center justify-between">
+<div class="flex place-items-center justify-between" class:pointer-events-none={disabled} class:opacity-50={disabled}>
   <div>
     <div class="flex h-6.5 place-items-center gap-1">
       <label class="text-sm font-medium" for={title}>
