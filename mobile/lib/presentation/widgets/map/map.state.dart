@@ -8,20 +8,6 @@ import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class TimeRange {
-  final Option<DateTime> from;
-  final Option<DateTime> to;
-
-  const TimeRange({this.from = const None(), this.to = const None()});
-
-  TimeRange copyWith({Option<DateTime>? from, Option<DateTime>? to}) {
-    return TimeRange(from: from ?? this.from, to: to ?? this.to);
-  }
-
-  TimeRange clearFrom() => TimeRange(to: to);
-  TimeRange clearTo() => TimeRange(from: from);
-}
-
 class MapState {
   final ThemeMode themeMode;
   final LatLngBounds bounds;
