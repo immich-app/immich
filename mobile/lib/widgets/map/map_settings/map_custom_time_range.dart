@@ -28,12 +28,13 @@ class MapTimeRange extends StatelessWidget {
               : null,
           onTap: () async {
             final initial = timeRange.from.unwrapOrNull ?? DateTime.now();
+            final currentTo = timeRange.to.unwrapOrNull;
 
             final picked = await showDatePicker(
               context: context,
-              initialDate: initial,
+              initialDate: currentTo != null && initial.isAfter(currentTo) ? currentTo : initial,
               firstDate: DateTime(1970),
-              lastDate: DateTime.now(),
+              lastDate: currentTo ?? DateTime.now(),
             );
 
             if (picked != null) {
@@ -41,7 +42,6 @@ class MapTimeRange extends StatelessWidget {
             }
           },
         ),
-
         ListTile(
           title: Text(context.t.date_before),
           subtitle: Text(
@@ -55,11 +55,12 @@ class MapTimeRange extends StatelessWidget {
               : null,
           onTap: () async {
             final initial = timeRange.to.unwrapOrNull ?? DateTime.now();
+            final currentFrom = timeRange.from.unwrapOrNull;
 
             final picked = await showDatePicker(
               context: context,
-              initialDate: initial,
-              firstDate: DateTime(1970),
+              initialDate: currentFrom != null && initial.isBefore(currentFrom) ? currentFrom : initial,
+              firstDate: currentFrom ?? DateTime(1970),
               lastDate: DateTime.now(),
             );
 
