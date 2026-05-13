@@ -19,7 +19,7 @@ class MapTimeRange extends StatelessWidget {
           title: Text(context.t.date_after),
           subtitle: Text(
             timeRange.from.fold(
-              (from) => DateFormat.yMMMd(context.locale.toString()).add_jm().format(from),
+              (from) => DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(from),
               () => context.t.not_set,
             ),
           ),
@@ -46,7 +46,7 @@ class MapTimeRange extends StatelessWidget {
           title: Text(context.t.date_before),
           subtitle: Text(
             timeRange.to.fold<String>(
-              (to) => DateFormat.yMMMd(context.locale.toString()).add_jm().format(to),
+              (to) => DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(to),
               () => context.t.not_set,
             ),
           ),
