@@ -72,7 +72,9 @@ class StoreService {
 
   /// Stores the [value] for the [key]. Skips write if value hasn't changed.
   Future<void> put<U extends StoreKey<T>, T>(U key, T value) async {
-    if (_cache[key.id] == value) return;
+    if (_cache[key.id] == value) {
+      return;
+    }
     await _storeRepository.upsert(key, value);
     _cache[key.id] = value;
   }

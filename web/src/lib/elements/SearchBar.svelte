@@ -40,7 +40,7 @@
 <div
   class="flex items-center text-sm {roundedBottom
     ? 'rounded-2xl'
-    : 'rounded-t-lg'} bg-gray-200 p-2 dark:bg-immich-dark-gray gap-2 place-items-center h-full"
+    : 'rounded-t-lg'} h-full place-items-center gap-2 bg-gray-200 p-2 dark:bg-immich-dark-gray"
 >
   <IconButton
     shape="round"

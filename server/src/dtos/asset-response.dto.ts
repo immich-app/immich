@@ -5,13 +5,7 @@ import { HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ExifResponseSchema, mapExif } from 'src/dtos/exif.dto';
-import {
-  AssetFaceWithoutPersonResponseSchema,
-  PersonWithFacesResponseDto,
-  PersonWithFacesResponseSchema,
-  mapFacesWithoutPerson,
-  mapPerson,
-} from 'src/dtos/person.dto';
+import { PersonResponseDto, PersonResponseSchema, mapPerson } from 'src/dtos/person.dto';
 import { TagResponseSchema, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
 import {
@@ -22,8 +16,7 @@ import {
   AssetVisibilitySchema,
   ChecksumAlgorithm,
 } from 'src/enum';
-import { ImageDimensions, MaybeDehydrated } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
+import { MaybeDehydrated } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { asDateString } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -47,7 +40,7 @@ const SanitizedAssetResponseSchema = z
       .describe(
         'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
       ),
-    duration: z.string().nullable().describe('Video/gif duration in hh:mm:ss.SSS format (null for static images)'),
+    duration: z.int32().min(0).nullable().describe('Video/gif duration in milliseconds (null for static images)'),
     livePhotoVideoId: z.string().nullish().describe('Live photo video ID'),
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
     width: z.int().min(0).nullable().describe('Asset width'),
@@ -107,8 +100,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     visibility: AssetVisibilitySchema,
     exifInfo: ExifResponseSchema.optional(),
     tags: z.array(TagResponseSchema).optional(),
-    people: z.array(PersonWithFacesResponseSchema).optional(),
-    unassignedFaces: z.array(AssetFaceWithoutPersonResponseSchema).optional(),
+    people: z.array(PersonResponseSchema).optional(),
     checksum: z.string().describe('Base64 encoded SHA1 hash'),
     stack: AssetStackResponseSchema.nullish(),
     duplicateId: z.string().nullish().describe('Duplicate group ID'),
@@ -136,7 +128,7 @@ export type MapAsset = {
   checksum: Buffer<ArrayBufferLike>;
   checksumAlgorithm: ChecksumAlgorithm;
   duplicateId: string | null;
-  duration: string | null;
+  duration: number | null;
   edits?: ShallowDehydrateObject<AssetEditActionItem>[];
   exifInfo?: ShallowDehydrateObject<Selectable<Exif>> | null;
   faces?: ShallowDehydrateObject<AssetFace>[];
@@ -170,33 +162,20 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-const peopleWithFaces = (
-  faces?: MaybeDehydrated<AssetFace>[],
-  edits?: AssetEditActionItem[],
-  assetDimensions?: ImageDimensions,
-): PersonWithFacesResponseDto[] => {
+const peopleFromFaces = (faces?: MaybeDehydrated<AssetFace>[]): PersonResponseDto[] => {
   if (!faces) {
     return [];
   }
 
-  const peopleFaces: Map<string, PersonWithFacesResponseDto> = new Map();
+  const peopleMap: Map<string, PersonResponseDto> = new Map();
 
   for (const face of faces) {
-    if (!face.person) {
-      continue;
+    if (face.person && !peopleMap.has(face.person.id)) {
+      peopleMap.set(face.person.id, mapPerson(face.person));
     }
-
-    if (!peopleFaces.has(face.person.id)) {
-      peopleFaces.set(face.person.id, {
-        ...mapPerson(face.person),
-        faces: [],
-      });
-    }
-    const mappedFace = mapFacesWithoutPerson(face, edits, assetDimensions);
-    peopleFaces.get(face.person.id)!.faces.push(mappedFace);
   }
 
-  return [...peopleFaces.values()];
+  return [...peopleMap.values()];
 };
 
 const mapStack = (entity: { stack?: Stack | null }) => {
@@ -230,8 +209,6 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     return sanitizedAssetResponse as AssetResponseDto;
   }
 
-  const assetDimensions = entity.exifInfo ? getDimensions(entity.exifInfo) : undefined;
-
   return {
     id: entity.id,
     createdAt: asDateString(entity.createdAt),
@@ -255,10 +232,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
-    people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
-    unassignedFaces: entity.faces
-      ?.filter((face) => !face.person)
-      .map((face) => mapFacesWithoutPerson(face, entity.edits, assetDimensions)),
+    people: peopleFromFaces(entity.faces),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,

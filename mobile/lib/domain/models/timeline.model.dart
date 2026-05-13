@@ -2,6 +2,8 @@ enum GroupAssetsBy { day, month, auto, none }
 
 enum HeaderType { none, month, day, monthAndDay }
 
+enum SortAssetsBy { taken, uploaded }
+
 class Bucket {
   final int assetCount;
 

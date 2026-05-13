@@ -54,17 +54,17 @@
 
 {#if featureFlagsManager.value.map}
   <UserPageLayout title={data.meta.title}>
-    <div class="isolate flex h-full w-full flex-col sm:flex-row">
+    <div class="isolate flex size-full flex-col sm:flex-row">
       <div
         class={[
           'min-h-0',
-          isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-2/3 sm:pe-2 sm:pb-0' : 'h-full w-full',
+          isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-2/3 sm:pe-2 sm:pb-0' : 'size-full',
         ]}
       >
         {#await import('$lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
-            <div class="flex items-center justify-center h-full w-full">
+            <div class="flex size-full items-center justify-center">
               <LoadingSpinner />
             </div>
           {/await}

@@ -65,6 +65,7 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
@@ -98,6 +99,7 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
@@ -133,6 +135,7 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
@@ -407,6 +410,7 @@ select
   "asset"."checksum",
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
+  "asset"."createdAt",
   "asset"."localDateTime",
   "asset"."type",
   "asset"."deletedAt",
@@ -737,9 +741,9 @@ select
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."localDateTime",
+  "asset"."createdAt",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -748,14 +752,15 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  $1 as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
 where
-  "asset"."updateId" < $1
-  and "asset"."updateId" <= $2
-  and "asset"."updateId" >= $3
-  and "ownerId" = $4
+  "asset"."updateId" < $2
+  and "asset"."updateId" <= $3
+  and "asset"."updateId" >= $4
+  and "ownerId" = $5
 order by
   "asset"."updateId" asc
 
@@ -789,9 +794,9 @@ select
   "asset"."fileCreatedAt",
   "asset"."fileModifiedAt",
   "asset"."localDateTime",
+  "asset"."createdAt",
   "asset"."type",
   "asset"."deletedAt",
-  "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
   "asset"."livePhotoVideoId",
@@ -800,19 +805,20 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
+  $1 as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
 where
-  "asset"."updateId" < $1
-  and "asset"."updateId" > $2
+  "asset"."updateId" < $2
+  and "asset"."updateId" > $3
   and "ownerId" in (
     select
       "sharedById"
     from
       "partner"
     where
-      "sharedWithId" = $3
+      "sharedWithId" = $4
   )
 order by
   "asset"."updateId" asc

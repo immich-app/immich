@@ -50,7 +50,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
 
       const url = getAssetUrl({ asset });
@@ -65,7 +65,7 @@ describe('utils', () => {
         originalPath: 'image.webp',
         originalMimeType: 'image/webp',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
 
       const url = getAssetUrl({ asset });
@@ -119,7 +119,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
 
@@ -134,7 +134,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
 
@@ -150,7 +150,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
 

@@ -61,11 +61,11 @@
   <TableCell class="w-1/4"><span class="skeleton-loader inline-block h-4 w-24"></span></TableCell>
 {/snippet}
 
-<div class="flex flex-col gap-5 my-4">
+<div class="my-4 flex flex-col gap-5">
   <div>
     <Text class="mb-2" fontWeight="medium">{$t('total_usage')}</Text>
 
-    <div class="hidden justify-between lg:flex gap-4">
+    <div class="hidden justify-between gap-4 lg:flex">
       <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} valuePromise={photosPromise} />
       <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
       <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} valuePromise={storagePromise} />
@@ -81,7 +81,7 @@
 
           <div class="relative text-center font-mono text-2xl font-medium">
             {#await statsPromise}
-              <span class="text-gray-300 dark:text-gray-600 shimmer-text">{zeros(0)}</span>
+              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
             {:then stats}
               <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
             {:catch}
@@ -97,7 +97,7 @@
 
           <div class="relative text-center font-mono text-2xl font-medium">
             {#await statsPromise}
-              <span class="text-gray-300 dark:text-gray-600 shimmer-text">{zeros(0)}</span>
+              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
             {:then stats}
               <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
             {:catch}
@@ -113,15 +113,15 @@
 
           <div class="relative flex text-center font-mono text-2xl font-medium">
             {#await statsPromise}
-              <span class="text-gray-300 dark:text-gray-600 shimmer-text">{zeros(0)}</span>
+              <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros(0)}</span>
             {:then stats}
               {@const storageUsageWithUnit = getStorageUsageWithUnit(stats.usage)}
               <span class="text-light-300">{zeros(storageUsageWithUnit[0])}</span><span class="text-primary"
                 >{storageUsageWithUnit[0]}</span
               >
 
-              <div class="absolute -end-1.5 -bottom-4">
-                <Code color="muted" class="text-xs font-light font-mono">{storageUsageWithUnit[1]}</Code>
+              <div class="absolute -inset-e-1.5 -bottom-4">
+                <Code color="muted" class="font-mono text-xs font-light">{storageUsageWithUnit[1]}</Code>
               </div>
             {:catch}
               <span class="text-gray-300 dark:text-gray-600">{zeros(0)}</span>
@@ -133,7 +133,7 @@
   </div>
 
   <div>
-    <Text class="mb-2 mt-4" fontWeight="medium">{$t('user_usage_detail')}</Text>
+    <Text class="mt-4 mb-2" fontWeight="medium">{$t('user_usage_detail')}</Text>
     <Table striped size="small">
       <TableHeader>
         <TableHeading class="w-1/4">{$t('user')}</TableHeading>

@@ -78,7 +78,7 @@
     />
   </div>
 
-  <section class="flex flex-wrap pt-2 gap-1">
+  <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedIds as tagId (tagId)}
       {@const tag = tagMap[tagId]}
       {#if tag}

@@ -94,7 +94,7 @@
   {#if isOpen && isSearchSuggestions}
     <div
       transition:fly={{ y: 25, duration: 150 }}
-      class="absolute w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300 z-1"
+      class="absolute z-1 w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300"
     >
       <div class="flex items-center justify-between px-5 pt-5 text-xs">
         <Text class="py-2" color="muted" aria-hidden={true}>{$t('recent_searches')}</Text>
@@ -102,7 +102,7 @@
           <button
             id={getId(0)}
             type="button"
-            class="rounded-lg p-2 font-semibold text-primary aria-selected:bg-immich-primary/25 hover:bg-immich-primary/25"
+            class="rounded-lg p-2 font-semibold text-primary hover:bg-immich-primary/25 aria-selected:bg-immich-primary/25"
             role="option"
             onclick={() => handleClearAll()}
             tabindex="-1"
@@ -121,7 +121,7 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               id={getId(index)}
-              class="relative flex w-full cursor-pointer gap-3 py-3 ps-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-500/30 dark:hover:bg-gray-500/30"
+              class="relative flex w-full cursor-pointer gap-3 py-3 ps-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:hover:bg-gray-500/30 dark:aria-selected:bg-gray-500/30"
               onclick={() => handleSelect(savedSearchTerm)}
               role="option"
               tabindex="-1"
@@ -131,7 +131,7 @@
               <Icon icon={mdiMagnify} size="1.5em" aria-hidden />
               {savedSearchTerm}
             </div>
-            <div aria-hidden={true} class="absolute end-5 top-0 items-center justify-center py-3">
+            <div aria-hidden={true} class="absolute inset-e-5 top-0 items-center justify-center py-3">
               <IconButton
                 shape="round"
                 color="secondary"
