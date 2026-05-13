@@ -19,6 +19,10 @@ import { handleError } from '$lib/utils/handle-error';
 const PAGINATION_MIN_VERSION = { major: 2, minor: 7, patch: 0 };
 
 function waitForServerVersion(): Promise<{ major: number; minor: number; patch: number }> {
+  const current = get(websocketStore.serverVersion);
+  if (current) {
+    return Promise.resolve(current);
+  }
   return new Promise((resolve) => {
     const unsubscribe = websocketStore.serverVersion.subscribe((version) => {
       if (version) {

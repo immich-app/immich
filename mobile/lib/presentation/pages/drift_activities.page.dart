@@ -51,7 +51,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
     }
 
     // Auto-load more pages if content doesn't fill the viewport
-    ref.listen(albumActivityProvider(album.id, assetId), (_, __) {
+    ref.listen(albumActivityProvider((album.id, assetId)), (_, __) {
       checkIfViewportNotFilled();
     });
 
