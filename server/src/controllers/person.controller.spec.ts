@@ -35,7 +35,7 @@ describe(PersonController.name, () => {
         .query({ closestPersonId: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[closestPersonId] Invalid UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['closestPersonId'], message: 'Invalid UUID' }]));
     });
 
     it(`should require closestAssetId to be a uuid`, async () => {
@@ -44,7 +44,7 @@ describe(PersonController.name, () => {
         .query({ closestAssetId: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[closestAssetId] Invalid UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['closestAssetId'], message: 'Invalid UUID' }]));
     });
   });
 
@@ -76,7 +76,7 @@ describe(PersonController.name, () => {
         .delete('/people')
         .send({ ids: ['invalid'] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[ids.0] Invalid UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['ids', 0], message: 'Invalid UUID' }]));
     });
 
     it('should respond with 204', async () => {
@@ -104,7 +104,9 @@ describe(PersonController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/people/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['Invalid input: expected object, received undefined']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
+      );
     });
 
     it(`should not allow a null name`, async () => {
@@ -113,7 +115,9 @@ describe(PersonController.name, () => {
         .send({ name: null })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[name] Invalid input: expected string, received null']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['name'], message: 'Invalid input: expected string, received null' }]),
+      );
     });
 
     it(`should require featureFaceAssetId to be a uuid`, async () => {
@@ -122,7 +126,7 @@ describe(PersonController.name, () => {
         .send({ featureFaceAssetId: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[featureFaceAssetId] Invalid UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['featureFaceAssetId'], message: 'Invalid UUID' }]));
     });
 
     it(`should require isFavorite to be a boolean`, async () => {
@@ -131,7 +135,11 @@ describe(PersonController.name, () => {
         .send({ isFavorite: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[isFavorite] Invalid input: expected boolean, received string']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['isFavorite'], message: 'Invalid input: expected boolean, received string' },
+        ]),
+      );
     });
 
     it(`should require isHidden to be a boolean`, async () => {
@@ -140,7 +148,9 @@ describe(PersonController.name, () => {
         .send({ isHidden: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[isHidden] Invalid input: expected boolean, received string']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['isHidden'], message: 'Invalid input: expected boolean, received string' }]),
+      );
     });
 
     it('should map an empty birthDate to null', async () => {
@@ -154,7 +164,11 @@ describe(PersonController.name, () => {
         .put(`/people/${factory.uuid()}`)
         .send({ birthDate: false });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[birthDate] Invalid input: expected string, received boolean']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['birthDate'], message: 'Invalid input: expected string, received boolean' },
+        ]),
+      );
     });
 
     it('should not accept an invalid birth date (number)', async () => {
@@ -162,7 +176,9 @@ describe(PersonController.name, () => {
         .put(`/people/${factory.uuid()}`)
         .send({ birthDate: 123_456 });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[birthDate] Invalid input: expected string, received number']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['birthDate'], message: 'Invalid input: expected string, received number' }]),
+      );
     });
 
     it('should not accept a birth date in the future)', async () => {
@@ -170,7 +186,9 @@ describe(PersonController.name, () => {
         .put(`/people/${factory.uuid()}`)
         .send({ birthDate: '9999-01-01' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[birthDate] Birth date cannot be in the future']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['birthDate'], message: 'Birth date cannot be in the future' }]),
+      );
     });
   });
 
@@ -183,7 +201,7 @@ describe(PersonController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[id] Invalid UUID']));
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should respond with 204', async () => {

@@ -37,7 +37,9 @@ class Stack {
 
   @override
   bool operator ==(covariant Stack other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.createdAt == createdAt &&
@@ -61,7 +63,9 @@ class StackResponse {
 
   @override
   bool operator ==(covariant StackResponse other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id && other.primaryAssetId == primaryAssetId && other.assetIds == assetIds;
   }

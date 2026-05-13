@@ -1,10 +1,8 @@
 <script lang="ts">
+  import { accordionManager } from '$lib/managers/accordion-manager.svelte';
   import { Icon } from '@immich/ui';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, type Snippet } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { getAccordionState } from './SettingAccordionState.svelte';
-
-  const accordionState = getAccordionState();
 
   interface Props {
     title: string;
@@ -21,7 +19,7 @@
     title,
     subtitle = '',
     key,
-    isOpen = $bindable($accordionState.has(key)),
+    isOpen = $bindable(false),
     autoScrollTo = false,
     icon = '',
     subtitleSnippet,
@@ -30,9 +28,15 @@
 
   let accordionElement: HTMLDivElement | undefined = $state();
 
-  const setIsOpen = (isOpen: boolean) => {
+  $effect(() => {
+    isOpen = accordionManager.isOpen(key);
+  });
+
+  const toggleOpen = () => {
     if (isOpen) {
-      $accordionState = $accordionState.add(key);
+      accordionManager.close(key);
+    } else {
+      accordionManager.open(key);
 
       if (autoScrollTo) {
         setTimeout(() => {
@@ -42,24 +46,11 @@
           });
         }, 200);
       }
-    } else {
-      $accordionState.delete(key);
-      // eslint-disable-next-line no-self-assign
-      $accordionState = $accordionState;
     }
   };
 
   onDestroy(() => {
-    setIsOpen(false);
-  });
-
-  const onclick = () => {
-    isOpen = !isOpen;
-    setIsOpen(isOpen);
-  };
-
-  onMount(() => {
-    setIsOpen(isOpen);
+    accordionManager.close(key);
   });
 </script>
 
@@ -72,7 +63,7 @@
   <button
     type="button"
     aria-expanded={isOpen}
-    {onclick}
+    onclick={toggleOpen}
     class="flex w-full place-items-center justify-between text-start"
   >
     <div>

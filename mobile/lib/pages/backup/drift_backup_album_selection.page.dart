@@ -83,7 +83,9 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     final albumCount = albums.length;
     // Filter albums based on search query
     final filteredAlbums = albums.where((album) {
-      if (_searchQuery.isEmpty) return true;
+      if (_searchQuery.isEmpty) {
+        return true;
+      }
       return album.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 

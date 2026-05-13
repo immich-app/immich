@@ -1,12 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class TimelineArgs {
@@ -93,7 +92,7 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) 
   final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
   final tileExtent = math.max(0, availableTileWidth) / columnCount;
 
-  final groupBy = args.groupBy ?? GroupAssetsBy.values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
+  final groupBy = args.groupBy ?? ref.watch(appConfigProvider.select((config) => config.timeline.groupAssetsBy));
 
   final timelineService = ref.watch(timelineServiceProvider);
   yield* timelineService.watchBuckets().map((buckets) {
@@ -102,7 +101,7 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) 
       tileHeight: tileExtent,
       columnCount: columnCount,
       spacing: spacing,
-      groupBy: groupBy,
+      groupBy: groupBy!,
     ).generate();
   });
 }, dependencies: [timelineServiceProvider, timelineArgsProvider]);

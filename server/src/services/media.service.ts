@@ -13,6 +13,7 @@ import {
   AudioCodec,
   Colorspace,
   ImageFormat,
+  ImmichWorker,
   JobName,
   JobStatus,
   QueueName,
@@ -60,10 +61,9 @@ type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForG
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
 
-  @OnEvent({ name: 'AppBootstrap' })
+  @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Microservices] })
   async onBootstrap() {
-    const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
-    this.videoInterfaces = { dri, mali };
+    this.videoInterfaces = await this.storageCore.getVideoInterfaces();
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
@@ -787,28 +787,6 @@ export class MediaService extends BaseService {
     const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
-  }
-
-  private async getDevices() {
-    try {
-      return await this.storageRepository.readdir('/dev/dri');
-    } catch {
-      this.logger.debug('No devices found in /dev/dri.');
-      return [];
-    }
-  }
-
-  private async hasMaliOpenCL() {
-    try {
-      const [maliIcdStat, maliDeviceStat] = await Promise.all([
-        this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd'),
-        this.storageRepository.stat('/dev/mali0'),
-      ]);
-      return maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
-    } catch {
-      this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU tonemapping');
-      return false;
-    }
   }
 
   private async syncFiles(

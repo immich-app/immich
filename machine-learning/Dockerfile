@@ -68,7 +68,7 @@ ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
 
 RUN apt-get update && \
     # Pascal support was dropped in 9.11
-    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12=9.10.2.21-1 && \
+    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12=9.10.2.21-1 tzdata && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -112,7 +112,7 @@ ARG RKNN_TOOLKIT_VERSION="v2.3.0"
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
-ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
+ADD --chmod=644 --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
 
 FROM prod-${DEVICE} AS prod
 

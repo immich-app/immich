@@ -21,21 +21,27 @@ class AppearsInDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!asset.hasRemote) return const SizedBox.shrink();
+    if (!asset.hasRemote) {
+      return const SizedBox.shrink();
+    }
 
     final remoteAssetId = switch (asset) {
       RemoteAsset(:final id) => id,
       LocalAsset(:final remoteAssetId) => remoteAssetId,
     };
 
-    if (remoteAssetId == null) return const SizedBox.shrink();
+    if (remoteAssetId == null) {
+      return const SizedBox.shrink();
+    }
 
     final userId = ref.watch(currentUserProvider)?.id;
     final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
 
     return assetAlbums.when(
       data: (albums) {
-        if (albums.isEmpty) return const SizedBox.shrink();
+        if (albums.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
         albums.sortBy((a) => a.name);
 

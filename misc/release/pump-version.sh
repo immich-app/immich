@@ -64,16 +64,13 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
 
   pnpm version "$NEXT_SERVER" --no-git-tag-version
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix server
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix i18n
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix cli
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/cli
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix web
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix e2e
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix open-api/typescript-sdk
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/sdk
 
   # copy version to open-api spec
-  pnpm install --frozen-lockfile --prefix server
-  pnpm --prefix server run build
-  ( cd ./open-api && bash ./bin/generate-open-api.sh )
+  mise run //:open-api
 
   uv version --directory machine-learning "$NEXT_SERVER"
 

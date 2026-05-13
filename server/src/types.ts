@@ -89,26 +89,26 @@ export interface VideoStreamInfo {
   height: number;
   width: number;
   rotation: number;
-  codecName?: string;
-  profile?: H264Profile | HevcProfile | Av1Profile;
-  level?: number;
+  codecName: string | null;
+  profile: H264Profile | HevcProfile | Av1Profile | null;
+  level: number | null;
   frameCount: number;
-  frameRate?: number;
-  timeBase?: number;
+  frameRate: number | null;
+  timeBase: number | null;
   bitrate: number;
   pixelFormat: string;
   colorPrimaries: ColorPrimaries;
   colorMatrix: ColorMatrix;
   colorTransfer: ColorTransfer;
-  dvProfile?: DvProfile;
-  dvLevel?: number;
-  dvBlSignalCompatibilityId?: DvSignalCompatibility;
+  dvProfile: DvProfile | null;
+  dvLevel: number | null;
+  dvBlSignalCompatibilityId: DvSignalCompatibility | null;
 }
 
 export interface AudioStreamInfo {
   index: number;
-  codecName?: string;
-  profile?: AacProfile;
+  codecName: string | null;
+  profile: AacProfile | null;
   bitrate: number;
 }
 

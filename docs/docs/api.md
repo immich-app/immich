@@ -10,4 +10,4 @@ OpenAPI is used to generate the client (Typescript, Dart) SDK. `openapi-generato
 make open-api
 ```
 
-You can find the generated client SDK in the `open-api/typescript-sdk/client` for Typescript SDK and `mobile/openapi` for Dart SDK.
+You can find the generated client SDK in the `packages/sdk/client` for Typescript SDK and `mobile/openapi` for Dart SDK.
