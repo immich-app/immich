@@ -1,5 +1,6 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
+  import CtrlDragTagger from '$lib/components/asset-viewer/CtrlDragTagger.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/VideoRemoteViewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -138,18 +139,25 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  let containerEl = $state<HTMLDivElement | undefined>();
 
   $effect(() => {
     if (assetViewerManager.isFaceEditMode) {
       videoPlayer?.pause();
     }
   });
+
+  // Ctrl+drag to create a new face tag
+  let ctrlKeyHeld = $state(false);
+  let ctrlDragInitialRect = $state<{ centerX: number; centerY: number; width: number; height: number } | undefined>();
 </script>
 
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
     class="flex h-full place-content-center place-items-center select-none"
+    class:cursor-crosshair={ctrlKeyHeld && !assetViewerManager.isFaceEditMode}
+    bind:this={containerEl}
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
   >
@@ -248,8 +256,21 @@
         </div>
       {/if}
 
-      {#if assetViewerManager.isFaceEditMode}
-        <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+      <CtrlDragTagger
+        bind:ctrlKeyHeld
+        bind:initialRect={ctrlDragInitialRect}
+        {containerEl}
+        canDrag={() => !!videoPlayer}
+      />
+
+      {#if assetViewerManager.isFaceEditMode && videoPlayer}
+        <FaceEditor
+          htmlElement={videoPlayer}
+          {containerWidth}
+          {containerHeight}
+          {assetId}
+          initialRect={ctrlDragInitialRect}
+        />
       {/if}
     {/if}
   </div>
