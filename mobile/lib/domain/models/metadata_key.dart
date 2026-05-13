@@ -28,6 +28,12 @@ enum MetadataKey<T extends Object> {
   imagePreferRemote<bool>(.appConfig, 'image.preferRemote', false),
   imageLoadOriginal<bool>(.appConfig, 'image.loadOriginal', false),
 
+  // Viewer
+  viewerLoopVideo<bool>(.appConfig, 'viewer.loopVideo', true),
+  viewerLoadOriginalVideo<bool>(.appConfig, 'viewer.loadOriginalVideo', false),
+  viewerAutoPlayVideo<bool>(.appConfig, 'viewer.autoPlayVideo', true),
+  viewerTapToNavigate<bool>(.appConfig, 'viewer.tapToNavigate', false),
+
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
   timelineGroupAssetsBy<GroupAssetsBy>(

@@ -3,21 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 
@@ -132,7 +128,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final remoteId = (videoAsset as RemoteAsset).id;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-      final isOriginalVideo = ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo);
+      final isOriginalVideo = ref.read(metadataProvider).appConfig.viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String videoUrl = videoAsset.livePhotoVideoId != null
           ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
@@ -165,7 +161,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    final autoPlayVideo = AppSetting.get(Setting.autoPlayVideo);
+    final autoPlayVideo = ref.read(metadataProvider).appConfig.viewer.autoPlayVideo;
     if (autoPlayVideo || widget.asset.isMotionPhoto) {
       await _notifier.play();
     }
@@ -216,7 +212,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     await _notifier.load(source);
-    final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
+    final loopVideo = ref.read(metadataProvider).appConfig.viewer.loopVideo;
     await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
     await _notifier.setVolume(1);
   }

@@ -1,3 +1,4 @@
+import type { DateTime } from 'luxon';
 import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/environment';
 import { defaultLang } from '$lib/constants';
@@ -26,8 +27,8 @@ export interface MapSettings {
   withPartners: boolean;
   withSharedAlbums: boolean;
   relativeDate: string;
-  dateAfter: string;
-  dateBefore: string;
+  dateAfter?: DateTime<true>;
+  dateBefore?: DateTime<true>;
 }
 
 const defaultMapSettings = {
@@ -37,8 +38,6 @@ const defaultMapSettings = {
   withPartners: false,
   withSharedAlbums: false,
   relativeDate: '',
-  dateAfter: '',
-  dateBefore: '',
 };
 
 const persistedObject = <T>(key: string, defaults: T) =>
