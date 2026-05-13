@@ -48,6 +48,8 @@ When a new asset is uploaded it kicks off a series of jobs, which include metada
 
 <img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />
 
+If Personal People and Global People do not match, start the **People identity maintenance** queue before resetting face recognition. This repair is safe to rerun and rebuilds the identity links used by Global People, people filters, search, map filters, and album filters. See [Face Identity Backfill](/developer/face-identity-backfill#troubleshooting-personal-and-global-people-drift) for the debugging flow.
+
 Additionally, some jobs (such as [memories generation](/features/memories)) run on a schedule, which is every night at midnight by default. To change when they run or enable/disable a job navigate to System Settings -> [Nightly Tasks Settings](https://my.immich.app/admin/system-settings?isOpen=nightly-tasks).
 
 <img src={require('./img/admin-nightly-tasks.webp').default} width="80%" title="Admin nightly tasks" />

@@ -44,6 +44,21 @@ This means upgraded installs should not require users to reset face recognition.
 
 Admins can also start this repair from the **People identity maintenance** queue on the admin Jobs page. The queue start action enqueues the `FaceIdentityBackfill` root job and shows progress alongside the other queue stats.
 
+## Troubleshooting Personal and Global People Drift
+
+When Personal People and Global People do not line up, treat it as identity-link drift before resetting face recognition. Common symptoms include:
+
+- a person appears correctly in a user's personal People view but is missing from Global People;
+- Global People shows duplicate rows for the same visible person;
+- a people filter, global search, map filter, or album filter returns a different person set than the personal People page;
+- a Space Person is visible in a Shared Space but does not appear in Global People even though that space is enabled for the viewer's timeline.
+
+The first repair step is to run **People identity maintenance** from **Administration -> Jobs**. Starting that queue runs the `FaceIdentityBackfill` job, which repairs missing Personal Person identity links, missing face-to-identity links, and resolvable legacy Space Person identity links. Wait for the queue to drain before comparing the People pages again; the job is paged, resumable, and safe to rerun.
+
+If identity maintenance finishes but a selected Shared Space still disagrees with Global People, check the scope before running heavier repairs. Global People only includes spaces where the viewer has **Show photos in timeline** enabled, while an explicit Shared Space page reads that space directly. If the scope is correct and only that space's assignments are stale, queue a selected-space face rematch by toggling face recognition off and back on for that space.
+
+Do not use a full face-recognition reset as the first debugging step. Resetting face recognition deletes recognition state and rebuilds people from scratch, while People identity maintenance repairs the identity mapping layer in place.
+
 ## Shared Space Face Link Repair
 
 Global People and Space People do not read the same assignment table. Global People uses `face_identity_face` links in the viewer's accessible timeline scope. A selected Shared Space uses `shared_space_person_face` links for the selected space's direct assets and linked-library assets.

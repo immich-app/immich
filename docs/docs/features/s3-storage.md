@@ -130,11 +130,32 @@ If you change an existing deployment from `proxy` to `redirect`, treat bucket CO
 
 ### 4. Configure CORS For Redirect Mode
 
-Redirect mode keeps the bucket private, but browsers need CORS headers when Gallery draws S3 images to canvas for editing, face crops, and copy-to-clipboard.
+Redirect mode keeps the bucket private, but browsers still need CORS headers when Gallery loads S3 media directly. Without bucket CORS, normal image viewing may appear to work while editing, face crops, video thumbnails, copy-to-clipboard, or browser canvas operations fail with a CORS error.
 
-Apply this before you enable `IMMICH_S3_SERVE_MODE=redirect` on an existing instance.
+Apply bucket CORS before you enable `IMMICH_S3_SERVE_MODE=redirect` on an existing instance.
 
-Use your real Gallery origins in `AllowedOrigins`:
+:::note
+CORS does not make the bucket public. It only tells browsers which Gallery origins may read responses from valid presigned URLs. Keep normal bucket public access disabled unless your provider requires a different setup.
+:::
+
+#### Pick the Correct Origins
+
+An origin is only the scheme, host, and optional port. It must not include a path or trailing slash.
+
+Use every browser URL that people use to open Gallery:
+
+- `https://gallery.example.com` for production;
+- `https://photos.example.com` if you also expose Gallery on another hostname;
+- `http://localhost:2283` for local Docker testing;
+- `http://localhost:3000` only if you run the web dev server.
+
+Do not put API paths, album paths, or S3 bucket URLs in `AllowedOrigins`.
+
+For `redirect` mode, the S3 endpoint in `IMMICH_S3_ENDPOINT` must also be reachable by the browser. If users open Gallery over HTTPS, use an HTTPS S3 endpoint or custom domain; browsers can block `http://` media from an HTTPS page as mixed content.
+
+#### Recommended S3 CORS Policy
+
+For AWS S3 and most S3-compatible providers, use this policy and replace the origins with your real Gallery origins:
 
 ```json
 {
@@ -150,7 +171,21 @@ Use your real Gallery origins in `AllowedOrigins`:
 }
 ```
 
-AWS CLI example:
+This allows browser reads of presigned objects from Gallery. `GET` loads media, `HEAD` allows metadata checks when a provider or tool uses them, `AllowedHeaders` covers preflight headers, and `ExposeHeaders` lets Gallery and browser media features read range, size, type, and cache validation headers.
+
+Do not use `"*"` for production origins. Gallery media requests use anonymous CORS today, but explicit origins are safer and avoid surprises if credentialed browser requests are introduced later.
+
+#### Apply the Policy on AWS S3
+
+In the AWS Console:
+
+1. Open the S3 bucket.
+2. Go to **Permissions**.
+3. Find **Cross-origin resource sharing (CORS)** and choose **Edit**.
+4. Paste the JSON policy above.
+5. Save changes.
+
+Or use the AWS CLI:
 
 ```bash
 aws s3api put-bucket-cors \
@@ -158,9 +193,108 @@ aws s3api put-bucket-cors \
   --cors-configuration '{"CORSRules":[{"AllowedOrigins":["https://gallery.example.com","http://localhost:3000","http://localhost:2283"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["*"],"ExposeHeaders":["Accept-Ranges","Content-Length","Content-Range","Content-Type","ETag"],"MaxAgeSeconds":3600}]}'
 ```
 
-Do not use `"*"` for production origins if you introduce credentialed browser requests to S3. Gallery media images use anonymous CORS.
+If you prefer a file, save the policy as `cors.json` and run:
 
-If your provider has a bucket CORS UI instead of an AWS-compatible CLI, enter the same origins, methods, headers, and exposed headers there.
+```bash
+aws s3api put-bucket-cors \
+  --bucket my-gallery-storage \
+  --cors-configuration file://cors.json
+```
+
+#### Apply the Policy on S3-Compatible Providers
+
+For MinIO, Wasabi, Backblaze B2, and other providers that accept AWS S3 API calls, use the same `put-bucket-cors` command with your endpoint:
+
+```bash
+aws s3api put-bucket-cors \
+  --endpoint-url https://your-s3-endpoint.example.com \
+  --bucket my-gallery-storage \
+  --cors-configuration file://cors.json
+```
+
+If your provider has a bucket CORS UI instead of an AWS-compatible CLI, enter the same origins, methods, headers, exposed headers, and max age there.
+
+For MinIO in the same Docker Compose network, you normally keep `IMMICH_S3_SERVE_MODE=proxy` because browsers cannot reach `http://minio:9000`. Only configure CORS and use `redirect` when the endpoint in `IMMICH_S3_ENDPOINT` is reachable from the browser, such as `https://minio.example.com`.
+
+If you use a CDN or custom domain in front of your S3 provider, make sure it forwards the browser's `Origin` request header to S3 or applies an equivalent CORS response-header policy. Purge the CDN cache after changing CORS so old responses without CORS headers do not linger.
+
+#### Apply the Policy on Cloudflare R2
+
+Cloudflare R2 accepts CORS from the bucket settings page:
+
+1. Open **R2 Object Storage** in the Cloudflare dashboard.
+2. Select the bucket.
+3. Open **Settings**.
+4. Under **CORS Policy**, choose **Add CORS policy**.
+5. Use the JSON tab and paste this R2 policy, replacing the origins:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://gallery.example.com", "http://localhost:2283"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["Accept-Ranges", "Content-Length", "Content-Range", "Content-Type", "ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+You can also use Wrangler:
+
+```json title="cors.json"
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": ["https://gallery.example.com", "http://localhost:2283"],
+        "methods": ["GET", "HEAD"],
+        "headers": ["*"]
+      },
+      "exposeHeaders": ["Accept-Ranges", "Content-Length", "Content-Range", "Content-Type", "ETag"],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}
+```
+
+```bash
+npx wrangler r2 bucket cors set my-gallery-storage --file cors.json
+npx wrangler r2 bucket cors list my-gallery-storage
+```
+
+If you serve R2 through a custom domain or CDN, purge that cache after changing CORS so old responses without CORS headers do not linger.
+
+#### Verify CORS
+
+After saving the policy, test from the same browser origin you configured:
+
+1. Restart Gallery if you changed `IMMICH_S3_SERVE_MODE`.
+2. Open Gallery from the exact origin in `AllowedOrigins`.
+3. Open a photo or video that is stored on S3.
+4. Open browser developer tools and check the media request after Gallery redirects to S3.
+5. Confirm the S3 response includes `access-control-allow-origin` with your Gallery origin.
+6. Try editing an image, viewing face crops, copying an image to the clipboard, and playing a video.
+
+You can also test with `curl` by sending an `Origin` header. Replace the URL with a fresh presigned S3 URL copied from the browser network panel. Use `GET`, not `HEAD`, because presigned URLs are method-specific:
+
+```bash
+curl -sS -D - -o /dev/null \
+  -H 'Origin: https://gallery.example.com' \
+  'https://my-gallery-storage.s3.eu-west-1.amazonaws.com/path/to/object?...'
+```
+
+The response should include `access-control-allow-origin: https://gallery.example.com`. A request without an `Origin` header may not show CORS headers, even when the policy is correct.
+
+#### Common CORS Mistakes
+
+- `AllowedOrigins` contains `https://gallery.example.com/` with a trailing slash. Use `https://gallery.example.com`.
+- `AllowedOrigins` contains a path such as `https://gallery.example.com/photos`. Use only the origin.
+- The user opens Gallery through a different hostname than the one in the policy.
+- `HEAD` is missing from `AllowedMethods`.
+- A CDN or custom domain does not forward the `Origin` request header, overrides CORS response headers, or cached the old response before CORS was configured.
+- `IMMICH_S3_ENDPOINT` points at an internal Docker hostname such as `http://minio:9000` while `IMMICH_S3_SERVE_MODE=redirect`; browsers outside Docker cannot reach that endpoint. Use `proxy` or expose S3 on a browser-reachable hostname.
+- Gallery is opened over HTTPS but `IMMICH_S3_ENDPOINT` uses plain HTTP. Use an HTTPS endpoint for redirect mode.
 
 ### 5. Restart Gallery
 
