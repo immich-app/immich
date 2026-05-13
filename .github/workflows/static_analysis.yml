@@ -60,38 +60,30 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
         with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
+          github_token: ${{ steps.token.outputs.token }}
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Install dependencies for UI package
-        run: dart pub get
+        run: flutter pub get
         working-directory: ./mobile/packages/ui
 
       - name: Install dependencies for UI Showcase
-        run: dart pub get
+        run: flutter pub get
         working-directory: ./mobile/packages/ui/showcase
 
-      - name: Install DCM
-        uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
-        with:
-          github-token: ${{ steps.token.outputs.token }}
-          version: auto
-          working-directory: ./mobile
-
-      - name: Generate translation file
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
+      - name: Generate translation files
+        run: mise //mobile:codegen:translation
 
       - name: Run Build Runner
-        run: make build
+        run: mise //mobile:codegen:dart
 
       - name: Generate platform API
-        run: make pigeon
+        run: mise //mobile:codegen:pigeon
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
@@ -107,20 +99,16 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
+          echo "ERROR: Generated files not up to date! Run 'mise //mobile:codegen:dart' and 'mise //mobile:codegen:pigeon'"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
-      - name: Run dart analyze
-        run: dart analyze --fatal-infos
+      - name: Run analyze
+        run: mise //mobile:analyze
 
-      - name: Run dart format
-        run: make format
+      - name: Run format
+        run: mise //mobile:format
 
       # TODO: Re-enable after upgrading custom_lint
       # - name: Run dart custom_lint
       #   run: dart run custom_lint
-
-      # TODO: Use https://github.com/CQLabs/dcm-action
-      - name: Run DCM
-        run: dcm analyze lib --fatal-style --fatal-warnings

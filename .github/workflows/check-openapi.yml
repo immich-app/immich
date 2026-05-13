@@ -24,7 +24,7 @@ jobs:
           persist-credentials: false
 
       - name: Check for breaking API changes
-        uses: oasdiff/oasdiff-action/breaking@37bf9ff785c7315df88216660826e71be4cc03da # v0.0.44
+        uses: oasdiff/oasdiff-action/breaking@26ccb332c67a45ca649de9faf60552ef1b8260d9 # v0.0.46
         with:
           base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
           revision: open-api/immich-openapi-specs.json

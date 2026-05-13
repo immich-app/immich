@@ -1,6 +1,7 @@
 {
   "name": "@immich/e2e-auth-server",
   "version": "0.1.0",
+  "private": true,
   "type": "module",
   "main": "auth-server.ts",
   "scripts": {

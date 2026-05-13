@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 
@@ -15,18 +16,17 @@ class GroupSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final groupByIndex = useAppSettingsState(AppSettingsEnum.groupAssetsBy);
-    final groupBy = GroupAssetsBy.values[groupByIndex.value];
+    final groupBy = useValueNotifier(ref.watch(appConfigProvider.select((s) => s.timeline.groupAssetsBy)));
 
     Future<void> updateAppSettings(GroupAssetsBy groupBy) async {
-      await ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.groupAssetsBy, groupBy.index);
+      await ref.read(metadataProvider).write(MetadataKey.timelineGroupAssetsBy, groupBy);
       ref.invalidate(appSettingsServiceProvider);
     }
 
     void changeGroupValue(GroupAssetsBy? value) {
       if (value != null) {
-        groupByIndex.value = value.index;
-        unawaited(updateAppSettings(groupBy));
+        groupBy.value = value;
+        unawaited(updateAppSettings(value));
       }
     }
 
@@ -52,7 +52,7 @@ class GroupSettings extends HookConsumerWidget {
               value: GroupAssetsBy.auto,
             ),
           ],
-          groupBy: groupBy,
+          groupBy: groupBy.value,
           onRadioChanged: changeGroupValue,
         ),
       ],

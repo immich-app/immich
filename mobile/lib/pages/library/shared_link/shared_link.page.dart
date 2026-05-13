@@ -20,7 +20,9 @@ class SharedLinkPage extends HookConsumerWidget {
     useEffect(() {
       ref.read(sharedLinksStateProvider.notifier).fetchLinks();
       return () {
-        if (!context.mounted) return;
+        if (!context.mounted) {
+          return;
+        }
         ref.invalidate(sharedLinksStateProvider);
       };
     }, []);

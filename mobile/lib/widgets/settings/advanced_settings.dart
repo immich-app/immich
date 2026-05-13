@@ -33,7 +33,11 @@ class AdvancedSettings extends HookConsumerWidget {
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final isManageMediaSupported = useState(false);
     final levelId = useState<int>(ref.read(systemConfigProvider).logLevel.index);
-    final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
+    final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
+    useValueChanged(
+      preferRemote.value,
+      (_, __) => ref.read(metadataProvider).write(.imagePreferRemote, preferRemote.value),
+    );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;

@@ -12,7 +12,6 @@ class OpenInBrowserActionButton extends ConsumerWidget {
   final TimelineOrigin origin;
   final bool iconOnly;
   final bool menuItem;
-  final Color? iconColor;
 
   const OpenInBrowserActionButton({
     super.key,
@@ -20,7 +19,6 @@ class OpenInBrowserActionButton extends ConsumerWidget {
     required this.origin,
     this.iconOnly = false,
     this.menuItem = false,
-    this.iconColor,
   });
 
   void _onTap() async {
@@ -52,7 +50,6 @@ class OpenInBrowserActionButton extends ConsumerWidget {
     return BaseActionButton(
       label: 'open_in_browser'.t(context: context),
       iconData: Icons.open_in_browser,
-      iconColor: iconColor,
       iconOnly: iconOnly,
       menuItem: menuItem,
       onPressed: _onTap,
