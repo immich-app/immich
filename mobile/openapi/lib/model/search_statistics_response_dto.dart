@@ -17,6 +17,9 @@ class SearchStatisticsResponseDto {
   });
 
   /// Total number of matching assets
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int total;
 
   @override

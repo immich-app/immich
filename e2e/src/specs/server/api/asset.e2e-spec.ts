@@ -1,14 +1,12 @@
 import {
   AssetMediaResponseDto,
   AssetMediaStatus,
-  AssetResponseDto,
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
   getMyUser,
   LoginResponseDto,
   SharedLinkType,
-  updateConfig,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
@@ -19,13 +17,12 @@ import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, tempDir, TEN_TIMES, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
-const facesAssetDir = `${testAssetDir}/metadata/faces`;
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -95,8 +92,8 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken, {
         isFavorite: true,
-        fileCreatedAt: yesterday.toISO(),
-        fileModifiedAt: yesterday.toISO(),
+        fileCreatedAt: yesterday.toUTC().toISO(),
+        fileModifiedAt: yesterday.toUTC().toISO(),
         assetData: { filename: 'example.mp4' },
       }),
       utils.createAsset(user1.accessToken),
@@ -183,78 +180,6 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id: ratingAsset.id,
         exifInfo: expect.objectContaining({ rating: 3 }),
-      });
-    });
-
-    describe('faces', () => {
-      const metadataFaceTests = [
-        {
-          description: 'without orientation',
-          filename: 'portrait.jpg',
-        },
-        {
-          description: 'adjusting face regions to orientation',
-          filename: 'portrait-orientation-6.jpg',
-        },
-      ];
-      // should produce same resulting face region coordinates for any orientation
-      const expectedFaces = [
-        {
-          name: 'Marie Curie',
-          birthDate: null,
-          isHidden: false,
-          faces: [
-            {
-              imageHeight: 700,
-              imageWidth: 840,
-              boundingBoxX1: 261,
-              boundingBoxX2: 356,
-              boundingBoxY1: 146,
-              boundingBoxY2: 284,
-              sourceType: 'exif',
-            },
-          ],
-        },
-        {
-          name: 'Pierre Curie',
-          birthDate: null,
-          isHidden: false,
-          faces: [
-            {
-              imageHeight: 700,
-              imageWidth: 840,
-              boundingBoxX1: 536,
-              boundingBoxX2: 618,
-              boundingBoxY1: 83,
-              boundingBoxY2: 252,
-              sourceType: 'exif',
-            },
-          ],
-        },
-      ];
-
-      it.each(metadataFaceTests)('should get the asset faces from $filename $description', async ({ filename }) => {
-        const config = await utils.getSystemConfig(admin.accessToken);
-        config.metadata.faces.import = true;
-        await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
-
-        const facesAsset = await utils.createAsset(admin.accessToken, {
-          assetData: {
-            filename,
-            bytes: await readFile(`${facesAssetDir}/${filename}`),
-          },
-        });
-
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: facesAsset.id });
-
-        const { status, body } = await request(app)
-          .get(`/assets/${facesAsset.id}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`);
-
-        expect(status).toBe(200);
-        expect(body.id).toEqual(facesAsset.id);
-        const sortedPeople = body.people.toSorted((a: any, b: any) => a.name.localeCompare(b.name));
-        expect(sortedPeople).toMatchObject(expectedFaces);
       });
     });
 
@@ -380,62 +305,12 @@ describe('/asset', () => {
     });
   });
 
-  describe('GET /assets/random', () => {
-    beforeAll(async () => {
-      await Promise.all([
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-        utils.createAsset(user1.accessToken),
-      ]);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
-    });
-
-    it.each(TEN_TIMES)('should return 1 random assets', async () => {
-      const { status, body } = await request(app)
-        .get('/assets/random')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(200);
-
-      const assets: AssetResponseDto[] = body;
-      expect(assets.length).toBe(1);
-      expect(assets[0].ownerId).toBe(user1.userId);
-    });
-
-    it.each(TEN_TIMES)('should return 2 random assets', async () => {
-      const { status, body } = await request(app)
-        .get('/assets/random?count=2')
-        .set('Authorization', `Bearer ${user1.accessToken}`);
-
-      expect(status).toBe(200);
-
-      const assets: AssetResponseDto[] = body;
-      expect(assets.length).toBe(2);
-
-      for (const asset of assets) {
-        expect(asset.ownerId).toBe(user1.userId);
-      }
-    });
-
-    it.skip('should return 1 asset if there are 10 assets in the database but user 2 only has 1', async () => {
-      const { status, body } = await request(app)
-        .get('/assets/random')
-        .set('Authorization', `Bearer ${user2.accessToken}`);
-
-      expect(status).toBe(200);
-      expect(body).toEqual([expect.objectContaining({ id: user2Assets[0].id })]);
-    });
-  });
-
   describe('PUT /assets/:id', () => {
     it('should require access', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user2Assets[0].id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({});
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });
@@ -1142,8 +1017,6 @@ describe('/asset', () => {
       const { body, status } = await request(app)
         .post('/assets')
         .set('Authorization', `Bearer ${quotaUser.accessToken}`)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
         .field('fileCreatedAt', new Date().toISOString())
         .field('fileModifiedAt', new Date().toISOString())
         .attach('assetData', makeRandomImage(), 'example.jpg');
@@ -1160,8 +1033,6 @@ describe('/asset', () => {
       const { body, status } = await request(app)
         .post('/assets')
         .set('Authorization', `Bearer ${quotaUser.accessToken}`)
-        .field('deviceAssetId', 'example-image')
-        .field('deviceId', 'e2e')
         .field('fileCreatedAt', new Date().toISOString())
         .field('fileModifiedAt', new Date().toISOString())
         .attach('assetData', randomBytes(2014), 'example.jpg');
@@ -1213,31 +1084,6 @@ describe('/asset', () => {
 
       const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
       expect(video.checksum).toStrictEqual(checksum);
-    });
-  });
-
-  describe('POST /assets/exist', () => {
-    it('ignores invalid deviceAssetIds', async () => {
-      const response = await utils.checkExistingAssets(user1.accessToken, {
-        deviceId: 'test-assets-exist',
-        deviceAssetIds: ['invalid', 'INVALID'],
-      });
-
-      expect(response.existingIds).toHaveLength(0);
-    });
-
-    it('returns the IDs of existing assets', async () => {
-      await utils.createAsset(user1.accessToken, {
-        deviceId: 'test-assets-exist',
-        deviceAssetId: 'test-asset-0',
-      });
-
-      const response = await utils.checkExistingAssets(user1.accessToken, {
-        deviceId: 'test-assets-exist',
-        deviceAssetIds: ['test-asset-0'],
-      });
-
-      expect(response.existingIds).toEqual(['test-asset-0']);
     });
   });
 });

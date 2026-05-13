@@ -29,12 +29,12 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).removeFromAlbum(source, albumId);
-    ref.read(multiSelectProvider.notifier).reset();
-
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
+
+    final result = await ref.read(actionProvider.notifier).removeFromAlbum(source, albumId);
+    ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'remove_from_album_action_prompt'.t(
       context: context,

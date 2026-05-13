@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -23,7 +24,6 @@ import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -106,6 +106,18 @@ class ActionService {
   Future<void> restoreTrash(List<String> ids) async {
     await _assetApiRepository.restoreTrash(ids);
     await _remoteAssetRepository.restoreTrash(ids);
+  }
+
+  Future<int> emptyTrash(String userId) async {
+    final count = await _assetApiRepository.emptyTrash();
+    await _remoteAssetRepository.emptyTrash(userId);
+    return count;
+  }
+
+  Future<int> restoreAllTrash(String userId) async {
+    final count = await _assetApiRepository.restoreAllTrash();
+    await _remoteAssetRepository.restoreAllTrash(userId);
+    return count;
   }
 
   Future<void> trashRemoteAndDeleteLocal(List<String> remoteIds, List<String> localIds) async {
@@ -241,9 +253,18 @@ class ActionService {
   }
 
   Future<bool> setAlbumCover(String albumId, String assetId) async {
-    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
+    final owner = await _remoteAlbumRepository.getOwner(albumId);
+    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, owner, thumbnailAssetId: assetId);
     await _remoteAlbumRepository.update(updatedAlbum);
     return true;
+  }
+
+  Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
+    if (edits.isEmpty) {
+      await _assetApiRepository.removeEdits(remoteId);
+    } else {
+      await _assetApiRepository.editAsset(remoteId, edits);
+    }
   }
 
   Future<int> _deleteLocalAssets(List<String> localIds) async {

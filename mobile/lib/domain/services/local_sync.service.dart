@@ -93,8 +93,7 @@ class LocalSyncService {
 
       if (CurrentPlatform.isIOS) {
         // On iOS, we need to full sync albums that are marked as cloud as the delta sync
-        // does not include changes for cloud albums. If ignoreIcloudAssets is enabled,
-        // remove the albums from the local database from the previous sync
+        // does not include changes for cloud albums.
         final cloudAlbums = deviceAlbums.where((a) => a.isCloud).toLocalAlbums();
         for (final album in cloudAlbums) {
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
@@ -337,7 +336,7 @@ class LocalSyncService {
           a.createdAt.isAtSameMomentAs(b.createdAt) &&
           a.width == b.width &&
           a.height == b.height &&
-          a.durationInSeconds == b.durationInSeconds;
+          a.durationMs == b.durationMs;
     }
 
     final firstAdjustment = a.adjustmentTime?.millisecondsSinceEpoch ?? 0;
@@ -346,7 +345,7 @@ class LocalSyncService {
         a.createdAt.isAtSameMomentAs(b.createdAt) &&
         a.width == b.width &&
         a.height == b.height &&
-        a.durationInSeconds == b.durationInSeconds &&
+        a.durationMs == b.durationMs &&
         a.latitude == b.latitude &&
         a.longitude == b.longitude;
   }
@@ -432,12 +431,22 @@ extension PlatformToLocalAsset on PlatformAsset {
     updatedAt: tryFromSecondsSinceEpoch(updatedAt, isUtc: true) ?? DateTime.timestamp(),
     width: width,
     height: height,
-    durationInSeconds: durationInSeconds,
+    durationMs: durationMs,
     isFavorite: isFavorite,
     orientation: orientation,
+    playbackStyle: _toPlaybackStyle(playbackStyle),
     adjustmentTime: tryFromSecondsSinceEpoch(adjustmentTime, isUtc: true),
     latitude: latitude,
     longitude: longitude,
     isEdited: false,
   );
 }
+
+AssetPlaybackStyle _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {
+  PlatformAssetPlaybackStyle.unknown => AssetPlaybackStyle.unknown,
+  PlatformAssetPlaybackStyle.image => AssetPlaybackStyle.image,
+  PlatformAssetPlaybackStyle.video => AssetPlaybackStyle.video,
+  PlatformAssetPlaybackStyle.imageAnimated => AssetPlaybackStyle.imageAnimated,
+  PlatformAssetPlaybackStyle.livePhoto => AssetPlaybackStyle.livePhoto,
+  PlatformAssetPlaybackStyle.videoLooping => AssetPlaybackStyle.videoLooping,
+};

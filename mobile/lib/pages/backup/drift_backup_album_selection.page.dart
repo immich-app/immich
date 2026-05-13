@@ -83,7 +83,9 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     final albumCount = albums.length;
     // Filter albums based on search query
     final filteredAlbums = albums.where((album) {
-      if (_searchQuery.isEmpty) return true;
+      if (_searchQuery.isEmpty) {
+        return true;
+      }
       return album.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
@@ -112,16 +114,15 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             // Waits for hashing to be cancelled before starting a new one
             unawaited(nativeSync.cancelHashing().whenComplete(() => backgroundSync.hashAssets()));
             if (isBackupEnabled) {
+              backupNotifier.stopForegroundBackup();
               unawaited(
-                backupNotifier.stopForegroundBackup().whenComplete(
-                  () => backgroundSync.syncRemote().then((success) {
-                    if (success) {
-                      return backupNotifier.startForegroundBackup(user.id);
-                    } else {
-                      Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
-                    }
-                  }),
-                ),
+                backgroundSync.syncRemote().then((success) {
+                  if (success) {
+                    return backupNotifier.startForegroundBackup(user.id);
+                  } else {
+                    Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
+                  }
+                }),
               );
             }
           }

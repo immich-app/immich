@@ -58,7 +58,7 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 
 If you only want to do web development connected to an existing, remote backend, follow these steps:
 
-1. Build the Immich SDK - `cd open-api/typescript-sdk && pnpm i && pnpm run build && cd -`
+1. Build the Immich SDK - `pnpm --filter @immich/sdk install && pnpm --filter @immich/sdk build`
 2. Enter the web directory - `cd web/`
 3. Install web dependencies - `pnpm i`
 4. Start the web development server
@@ -80,9 +80,9 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`
 2. Build the `@immich/ui` project via `pnpm run build`
-3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
-4. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
-5. Uncomment the import statement in `web/src/app.css` file `@import '/usr/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
+3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)
+4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui/packages/ui')`)
+5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
 6. Start up the stack via `make dev`
 7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)
 

@@ -5,6 +5,8 @@ class LocalAsset extends BaseAsset {
   final String? remoteAssetId;
   final String? cloudId;
   final int orientation;
+  @override
+  final AssetPlaybackStyle playbackStyle;
 
   final DateTime? adjustmentTime;
   final double? latitude;
@@ -21,10 +23,11 @@ class LocalAsset extends BaseAsset {
     required super.updatedAt,
     super.width,
     super.height,
-    super.durationInSeconds,
+    super.durationMs,
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
+    required this.playbackStyle,
     this.adjustmentTime,
     this.latitude,
     this.longitude,
@@ -55,7 +58,8 @@ class LocalAsset extends BaseAsset {
    updatedAt: $updatedAt,
    width: ${width ?? "<NA>"},
    height: ${height ?? "<NA>"},
-   durationInSeconds: ${durationInSeconds ?? "<NA>"},
+   durationMs: ${durationMs ?? "<NA>"},
+   playbackStyle: $playbackStyle,
    remoteId: ${remoteId ?? "<NA>"},
    cloudId: ${cloudId ?? "<NA>"},
    checksum: ${checksum ?? "<NA>"},
@@ -70,12 +74,17 @@ class LocalAsset extends BaseAsset {
   // Not checking for remoteId here
   @override
   bool operator ==(Object other) {
-    if (other is! LocalAsset) return false;
-    if (identical(this, other)) return true;
+    if (other is! LocalAsset) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other &&
         id == other.id &&
         cloudId == other.cloudId &&
         orientation == other.orientation &&
+        playbackStyle == other.playbackStyle &&
         adjustmentTime == other.adjustmentTime &&
         latitude == other.latitude &&
         longitude == other.longitude;
@@ -87,6 +96,7 @@ class LocalAsset extends BaseAsset {
       id.hashCode ^
       remoteId.hashCode ^
       orientation.hashCode ^
+      playbackStyle.hashCode ^
       adjustmentTime.hashCode ^
       latitude.hashCode ^
       longitude.hashCode;
@@ -102,9 +112,10 @@ class LocalAsset extends BaseAsset {
     DateTime? updatedAt,
     int? width,
     int? height,
-    int? durationInSeconds,
+    int? durationMs,
     bool? isFavorite,
     int? orientation,
+    AssetPlaybackStyle? playbackStyle,
     DateTime? adjustmentTime,
     double? latitude,
     double? longitude,
@@ -121,9 +132,10 @@ class LocalAsset extends BaseAsset {
       updatedAt: updatedAt ?? this.updatedAt,
       width: width ?? this.width,
       height: height ?? this.height,
-      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      durationMs: durationMs ?? this.durationMs,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      playbackStyle: playbackStyle ?? this.playbackStyle,
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,

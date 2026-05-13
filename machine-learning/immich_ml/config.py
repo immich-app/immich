@@ -32,16 +32,6 @@ class OcrSettings(BaseModel):
 
 
 class PreloadModelData(BaseModel):
-    clip_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
-    facial_recognition_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
-    if clip_fallback is not None:
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = clip_fallback
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = clip_fallback
-        del os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
-    if facial_recognition_fallback is not None:
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = facial_recognition_fallback
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = facial_recognition_fallback
-        del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
     ocr: OcrSettings = OcrSettings()
@@ -49,7 +39,7 @@ class PreloadModelData(BaseModel):
 
 class MaxBatchSize(BaseModel):
     facial_recognition: int | None = None
-    text_recognition: int | None = None
+    ocr: int | None = None
 
 
 class Settings(BaseSettings):
@@ -79,6 +69,7 @@ class Settings(BaseSettings):
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
+    rocm_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
     def device_id(self) -> str:

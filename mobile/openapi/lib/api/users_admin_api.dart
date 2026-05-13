@@ -324,7 +324,6 @@ class UsersAdminApi {
   ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
-  ///   Filter by visibility
   Future<Response> getUserStatisticsAdminWithHttpInfo(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/statistics'
@@ -376,7 +375,6 @@ class UsersAdminApi {
   ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
-  ///   Filter by visibility
   Future<AssetStatsResponseDto?> getUserStatisticsAdmin(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     final response = await getUserStatisticsAdminWithHttpInfo(id,  isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {

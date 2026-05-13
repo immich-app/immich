@@ -2,9 +2,10 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { mapUserAdmin } from 'src/dtos/user.dto';
 import { JobName, UserStatus } from 'src/enum';
 import { UserAdminService } from 'src/services/user-admin.service';
+import { AuthFactory } from 'test/factories/auth.factory';
+import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { describe } from 'vitest';
 
@@ -126,8 +127,8 @@ describe(UserAdminService.name, () => {
     });
 
     it('should not allow deleting own account', async () => {
-      const user = factory.userAdmin({ isAdmin: false });
-      const auth = factory.auth({ user });
+      const user = UserFactory.create({ isAdmin: false });
+      const auth = AuthFactory.create(user);
       mocks.user.get.mockResolvedValue(user);
       await expect(sut.delete(auth, user.id, {})).rejects.toBeInstanceOf(ForbiddenException);
 

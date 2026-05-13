@@ -10,9 +10,9 @@
 
 part of openapi.api;
 
-class APIKeyUpdateDto {
-  /// Returns a new [APIKeyUpdateDto] instance.
-  APIKeyUpdateDto({
+class ApiKeyUpdateDto {
+  /// Returns a new [ApiKeyUpdateDto] instance.
+  ApiKeyUpdateDto({
     this.name,
     this.permissions = const [],
   });
@@ -30,7 +30,7 @@ class APIKeyUpdateDto {
   List<Permission> permissions;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is APIKeyUpdateDto &&
+  bool operator ==(Object other) => identical(this, other) || other is ApiKeyUpdateDto &&
     other.name == name &&
     _deepEquality.equals(other.permissions, permissions);
 
@@ -41,7 +41,7 @@ class APIKeyUpdateDto {
     (permissions.hashCode);
 
   @override
-  String toString() => 'APIKeyUpdateDto[name=$name, permissions=$permissions]';
+  String toString() => 'ApiKeyUpdateDto[name=$name, permissions=$permissions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -54,15 +54,15 @@ class APIKeyUpdateDto {
     return json;
   }
 
-  /// Returns a new [APIKeyUpdateDto] instance and imports its values from
+  /// Returns a new [ApiKeyUpdateDto] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static APIKeyUpdateDto? fromJson(dynamic value) {
-    upgradeDto(value, "APIKeyUpdateDto");
+  static ApiKeyUpdateDto? fromJson(dynamic value) {
+    upgradeDto(value, "ApiKeyUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      return APIKeyUpdateDto(
+      return ApiKeyUpdateDto(
         name: mapValueOfType<String>(json, r'name'),
         permissions: Permission.listFromJson(json[r'permissions']),
       );
@@ -70,11 +70,11 @@ class APIKeyUpdateDto {
     return null;
   }
 
-  static List<APIKeyUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <APIKeyUpdateDto>[];
+  static List<ApiKeyUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <ApiKeyUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = APIKeyUpdateDto.fromJson(row);
+        final value = ApiKeyUpdateDto.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -83,12 +83,12 @@ class APIKeyUpdateDto {
     return result.toList(growable: growable);
   }
 
-  static Map<String, APIKeyUpdateDto> mapFromJson(dynamic json) {
-    final map = <String, APIKeyUpdateDto>{};
+  static Map<String, ApiKeyUpdateDto> mapFromJson(dynamic json) {
+    final map = <String, ApiKeyUpdateDto>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = APIKeyUpdateDto.fromJson(entry.value);
+        final value = ApiKeyUpdateDto.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -97,14 +97,14 @@ class APIKeyUpdateDto {
     return map;
   }
 
-  // maps a json object with a list of APIKeyUpdateDto-objects as value to a dart map
-  static Map<String, List<APIKeyUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<APIKeyUpdateDto>>{};
+  // maps a json object with a list of ApiKeyUpdateDto-objects as value to a dart map
+  static Map<String, List<ApiKeyUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<ApiKeyUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = APIKeyUpdateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ApiKeyUpdateDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

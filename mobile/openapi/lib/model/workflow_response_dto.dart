@@ -48,7 +48,6 @@ class WorkflowResponseDto {
   /// Owner user ID
   String ownerId;
 
-  /// Workflow trigger type
   PluginTriggerType triggerType;
 
   @override

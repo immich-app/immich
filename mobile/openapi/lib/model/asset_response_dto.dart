@@ -15,8 +15,6 @@ class AssetResponseDto {
   AssetResponseDto({
     required this.checksum,
     required this.createdAt,
-    required this.deviceAssetId,
-    required this.deviceId,
     this.duplicateId,
     required this.duration,
     this.exifInfo,
@@ -44,7 +42,6 @@ class AssetResponseDto {
     this.tags = const [],
     required this.thumbhash,
     required this.type,
-    this.unassignedFaces = const [],
     required this.updatedAt,
     required this.visibility,
     required this.width,
@@ -56,17 +53,14 @@ class AssetResponseDto {
   /// The UTC timestamp when the asset was originally uploaded to Immich.
   DateTime createdAt;
 
-  /// Device asset ID
-  String deviceAssetId;
-
-  /// Device ID
-  String deviceId;
-
   /// Duplicate group ID
   String? duplicateId;
 
-  /// Video duration (for videos)
-  String duration;
+  /// Video/gif duration in milliseconds (null for static images)
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 2147483647
+  int? duration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -86,7 +80,10 @@ class AssetResponseDto {
   bool hasMetadata;
 
   /// Asset height
-  num? height;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int? height;
 
   /// Asset ID
   String id;
@@ -141,7 +138,7 @@ class AssetResponseDto {
   /// Owner user ID
   String ownerId;
 
-  List<PersonWithFacesResponseDto> people;
+  List<PersonResponseDto> people;
 
   /// Is resized
   ///
@@ -159,26 +156,23 @@ class AssetResponseDto {
   /// Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.
   String? thumbhash;
 
-  /// Asset type
   AssetTypeEnum type;
-
-  List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
 
   /// The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.
   DateTime updatedAt;
 
-  /// Asset visibility
   AssetVisibility visibility;
 
   /// Asset width
-  num? width;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
     other.checksum == checksum &&
     other.createdAt == createdAt &&
-    other.deviceAssetId == deviceAssetId &&
-    other.deviceId == deviceId &&
     other.duplicateId == duplicateId &&
     other.duration == duration &&
     other.exifInfo == exifInfo &&
@@ -206,7 +200,6 @@ class AssetResponseDto {
     _deepEquality.equals(other.tags, tags) &&
     other.thumbhash == thumbhash &&
     other.type == type &&
-    _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
     other.updatedAt == updatedAt &&
     other.visibility == visibility &&
     other.width == width;
@@ -216,10 +209,8 @@ class AssetResponseDto {
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
     (createdAt.hashCode) +
-    (deviceAssetId.hashCode) +
-    (deviceId.hashCode) +
     (duplicateId == null ? 0 : duplicateId!.hashCode) +
-    (duration.hashCode) +
+    (duration == null ? 0 : duration!.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
@@ -245,26 +236,27 @@ class AssetResponseDto {
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
-    (unassignedFaces.hashCode) +
     (updatedAt.hashCode) +
     (visibility.hashCode) +
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'deviceAssetId'] = this.deviceAssetId;
-      json[r'deviceId'] = this.deviceId;
     if (this.duplicateId != null) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
     //  json[r'duplicateId'] = null;
     }
+    if (this.duration != null) {
       json[r'duration'] = this.duration;
+    } else {
+    //  json[r'duration'] = null;
+    }
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
@@ -326,7 +318,6 @@ class AssetResponseDto {
     //  json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
-      json[r'unassignedFaces'] = this.unassignedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'visibility'] = this.visibility;
     if (this.width != null) {
@@ -348,17 +339,13 @@ class AssetResponseDto {
       return AssetResponseDto(
         checksum: mapValueOfType<String>(json, r'checksum')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
-        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        duration: mapValueOfType<String>(json, r'duration')!,
+        duration: mapValueOfType<int>(json, r'duration'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
-        height: json[r'height'] == null
-            ? null
-            : num.parse('${json[r'height']}'),
+        height: mapValueOfType<int>(json, r'height'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isEdited: mapValueOfType<bool>(json, r'isEdited')!,
@@ -373,18 +360,15 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
+        people: PersonResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized'),
         stack: AssetStackResponseDto.fromJson(json[r'stack']),
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
-        unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
-        width: json[r'width'] == null
-            ? null
-            : num.parse('${json[r'width']}'),
+        width: mapValueOfType<int>(json, r'width'),
       );
     }
     return null;
@@ -434,8 +418,6 @@ class AssetResponseDto {
   static const requiredKeys = <String>{
     'checksum',
     'createdAt',
-    'deviceAssetId',
-    'deviceId',
     'duration',
     'fileCreatedAt',
     'fileModifiedAt',

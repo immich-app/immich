@@ -19,7 +19,6 @@ class UserUpdateMeDto {
     this.password,
   });
 
-  /// Avatar color
   UserAvatarColor? avatarColor;
 
   /// User email

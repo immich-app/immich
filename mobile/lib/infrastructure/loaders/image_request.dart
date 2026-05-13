@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:ui' as ui;
 
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ffi/ffi.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 
 part 'local_image_request.dart';
-part 'thumbhash_image_request.dart';
 part 'remote_image_request.dart';
+part 'thumbhash_image_request.dart';
 
 abstract class ImageRequest {
   static int _nextRequestId = 0;
@@ -24,6 +24,8 @@ abstract class ImageRequest {
 
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0});
 
+  Future<ui.Codec?> loadCodec();
+
   void cancel() {
     if (_isCancelled) {
       return;
@@ -34,7 +36,7 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
+  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(int address, int length) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
       malloc.free(pointer);
@@ -61,6 +63,22 @@ abstract class ImageRequest {
     }
 
     final codec = await descriptor.instantiateCodec();
+    if (_isCancelled) {
+      descriptor.dispose();
+      codec.dispose();
+      return null;
+    }
+
+    return (codec, descriptor);
+  }
+
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
+    final result = await _codecFromEncodedPlatformImage(address, length);
+    if (result == null) {
+      return null;
+    }
+
+    final (codec, descriptor) = result;
     if (_isCancelled) {
       descriptor.dispose();
       codec.dispose();

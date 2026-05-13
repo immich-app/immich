@@ -20,14 +20,15 @@ services:
       - /tmp
     volumes:
       - ..:/usr/src/app
+      # - ../../ui:/usr/src/ui
       - pnpm_cache:/buildcache/pnpm_cache
       - server_node_modules:/usr/src/app/server/node_modules
       - web_node_modules:/usr/src/app/web/node_modules
       - github_node_modules:/usr/src/app/.github/node_modules
-      - cli_node_modules:/usr/src/app/cli/node_modules
+      - cli_node_modules:/usr/src/app/packages/cli/node_modules
       - docs_node_modules:/usr/src/app/docs/node_modules
       - e2e_node_modules:/usr/src/app/e2e/node_modules
-      - sdk_node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - sdk_node_modules:/usr/src/app/packages/sdk/node_modules
       - app_node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
@@ -73,7 +74,7 @@ services:
       - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
       - pnpm_store_server:/buildcache/pnpm-store
-      - ../plugins:/build/corePlugin
+      - ../packages/plugins:/build/corePlugin
     env_file:
       - .env
     environment:
@@ -90,6 +91,7 @@ services:
       IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
       IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
       IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
+      IMMICH_HELMET_FILE: 'true'
     ports:
       - 9230:9230
       - 9231:9231
@@ -155,7 +157,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:930b41430fb727f533c5982fe509b6f04233e26d0f7354e04de4b0d5c706e44e
+    image: docker.io/valkey/valkey:9@sha256:8436e10bc65c94886a91d4415b6a6dfa9cb5a306fb3b996e5bb67cd2b4854193
     healthcheck:
       test: redis-cli ping || exit 1
 

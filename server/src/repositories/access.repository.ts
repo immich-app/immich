@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, sql } from 'kysely';
+import { Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
@@ -35,9 +35,14 @@ class ActivityAccess {
     return this.db
       .selectFrom('activity')
       .select('activity.id')
-      .leftJoin('album', (join) => join.onRef('activity.albumId', '=', 'album.id').on('album.deletedAt', 'is', null))
+      .innerJoin('album', (join) => join.onRef('activity.albumId', '=', 'album.id').on('album.deletedAt', 'is', null))
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album.id', '=', 'album_user.albumId')
+          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+          .on('album_user.userId', '=', asUuid(userId)),
+      )
       .where('activity.id', 'in', [...activityIds])
-      .whereRef('album.ownerId', '=', asUuid(userId))
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
@@ -52,11 +57,11 @@ class ActivityAccess {
     return this.db
       .selectFrom('album')
       .select('album.id')
-      .leftJoin('album_user as albumUsers', 'albumUsers.albumId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
+      .innerJoin('album_user as albumUsers', 'albumUsers.albumId', 'album.id')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .where('album.id', 'in', [...albumIds])
       .where('album.isActivityEnabled', '=', true)
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
+      .where((eb) => eb('user.id', '=', userId))
       .where('album.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
@@ -77,7 +82,12 @@ class AlbumAccess {
       .selectFrom('album')
       .select('album.id')
       .where('album.id', 'in', [...albumIds])
-      .where('album.ownerId', '=', userId)
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album.id', '=', 'album_user.albumId')
+          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+          .on('album_user.userId', '=', userId),
+      )
       .where('album.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
@@ -96,8 +106,8 @@ class AlbumAccess {
     return this.db
       .selectFrom('album')
       .select('album.id')
-      .leftJoin('album_user', 'album_user.albumId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'album_user.userId').on('user.deletedAt', 'is', null))
+      .innerJoin('album_user', 'album_user.albumId', 'album.id')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'album_user.userId').on('user.deletedAt', 'is', null))
       .where('album.id', 'in', [...albumIds])
       .where('album.deletedAt', 'is', null)
       .where('user.id', '=', userId)
@@ -152,7 +162,7 @@ class AssetAccess {
           eb('asset.livePhotoVideoId', '=', sql<string>`any(target.ids)`),
         ]),
       )
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
+      .where('user.id', '=', userId)
       .where('album.deletedAt', 'is', null)
       .execute()
       .then((assets) => {
@@ -282,6 +292,28 @@ class AuthDeviceAccess {
       .where('session.id', 'in', [...deviceIds])
       .execute()
       .then((tokens) => new Set(tokens.map((token) => token.id)));
+  }
+}
+
+class DuplicateAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, duplicateIds: Set<string>) {
+    if (duplicateIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset')
+      .select('asset.duplicateId')
+      .where('asset.duplicateId', 'in', [...duplicateIds])
+      .where('asset.ownerId', '=', userId)
+      .where('asset.deletedAt', 'is', null)
+      .$narrowType<{ duplicateId: NotNull }>()
+      .execute()
+      .then((assets) => new Set(assets.map((asset) => asset.duplicateId)));
   }
 }
 
@@ -488,6 +520,7 @@ export class AccessRepository {
   album: AlbumAccess;
   asset: AssetAccess;
   authDevice: AuthDeviceAccess;
+  duplicate: DuplicateAccess;
   memory: MemoryAccess;
   notification: NotificationAccess;
   person: PersonAccess;
@@ -503,6 +536,7 @@ export class AccessRepository {
     this.album = new AlbumAccess(db);
     this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
+    this.duplicate = new DuplicateAccess(db);
     this.memory = new MemoryAccess(db);
     this.notification = new NotificationAccess(db);
     this.person = new PersonAccess(db);

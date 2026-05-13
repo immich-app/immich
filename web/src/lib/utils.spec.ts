@@ -1,5 +1,5 @@
-import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { AssetTypeEnum } from '@immich/sdk';
+import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -50,7 +50,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
 
       const url = getAssetUrl({ asset });
@@ -65,12 +65,38 @@ describe('utils', () => {
         originalPath: 'image.webp',
         originalMimeType: 'image/webp',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
 
       const url = getAssetUrl({ asset });
 
       expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for video assets with forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset, forceOriginal: true });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for video assets without forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
       expect(url).toContain(asset.id);
     });
 
@@ -93,7 +119,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
 
@@ -108,7 +134,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
 
@@ -124,7 +150,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
 

@@ -15,18 +15,23 @@ class SystemConfigGeneratedFullsizeImageDto {
   SystemConfigGeneratedFullsizeImageDto({
     required this.enabled,
     required this.format,
-    this.progressive = false,
+    this.progressive,
     required this.quality,
   });
 
   /// Enabled
   bool enabled;
 
-  /// Image format
   ImageFormat format;
 
   /// Progressive
-  bool progressive;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? progressive;
 
   /// Quality
   ///
@@ -46,7 +51,7 @@ class SystemConfigGeneratedFullsizeImageDto {
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
     (format.hashCode) +
-    (progressive.hashCode) +
+    (progressive == null ? 0 : progressive!.hashCode) +
     (quality.hashCode);
 
   @override
@@ -56,7 +61,11 @@ class SystemConfigGeneratedFullsizeImageDto {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
       json[r'format'] = this.format;
+    if (this.progressive != null) {
       json[r'progressive'] = this.progressive;
+    } else {
+    //  json[r'progressive'] = null;
+    }
       json[r'quality'] = this.quality;
     return json;
   }
@@ -72,7 +81,7 @@ class SystemConfigGeneratedFullsizeImageDto {
       return SystemConfigGeneratedFullsizeImageDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         format: ImageFormat.fromJson(json[r'format'])!,
-        progressive: mapValueOfType<bool>(json, r'progressive') ?? false,
+        progressive: mapValueOfType<bool>(json, r'progressive'),
         quality: mapValueOfType<int>(json, r'quality')!,
       );
     }

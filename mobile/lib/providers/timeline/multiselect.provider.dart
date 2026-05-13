@@ -24,9 +24,11 @@ class MultiSelectState {
 
   bool get hasStacked => selectedAssets.any((asset) => asset is RemoteAsset && asset.stackId != null);
 
-  bool get hasLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
-
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
+
+  bool get onlyLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
+
+  bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
 
   MultiSelectState copyWith({
     Set<BaseAsset>? selectedAssets,
@@ -46,7 +48,9 @@ class MultiSelectState {
 
   @override
   bool operator ==(covariant MultiSelectState other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final setEquals = const DeepCollectionEquality().equals;
 
     return setEquals(other.selectedAssets, selectedAssets) &&
@@ -122,7 +126,9 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void toggleBucketSelectionByAssets(List<BaseAsset> bucketAssets) {
-    if (bucketAssets.isEmpty) return;
+    if (bucketAssets.isEmpty) {
+      return;
+    }
 
     // Check if all assets in this bucket are currently selected
     final allSelected = bucketAssets.every((asset) => state.selectedAssets.contains(asset));
@@ -148,7 +154,9 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, bucketAssets) {
   final selectedAssets = ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
 
-  if (bucketAssets.isEmpty) return false;
+  if (bucketAssets.isEmpty) {
+    return false;
+  }
 
   // Check if all assets in the bucket are selected
   return bucketAssets.every((asset) => selectedAssets.contains(asset));

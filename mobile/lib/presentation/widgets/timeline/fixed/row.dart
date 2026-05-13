@@ -77,7 +77,9 @@ class RenderFixedRow extends RenderBox
   double _height;
 
   set height(double value) {
-    if (_height == value) return;
+    if (_height == value) {
+      return;
+    }
     _height = value;
     markNeedsLayout();
   }
@@ -86,7 +88,9 @@ class RenderFixedRow extends RenderBox
   List<double> _widths;
 
   set widths(List<double> value) {
-    if (listEquals(_widths, value)) return;
+    if (listEquals(_widths, value)) {
+      return;
+    }
     _widths = value;
     markNeedsLayout();
   }
@@ -95,7 +99,9 @@ class RenderFixedRow extends RenderBox
   double _spacing;
 
   set spacing(double value) {
-    if (_spacing == value) return;
+    if (_spacing == value) {
+      return;
+    }
     _spacing = value;
     markNeedsLayout();
   }
@@ -104,7 +110,9 @@ class RenderFixedRow extends RenderBox
   TextDirection _textDirection;
 
   set textDirection(TextDirection value) {
-    if (_textDirection == value) return;
+    if (_textDirection == value) {
+      return;
+    }
     _textDirection = value;
     markNeedsLayout();
   }
