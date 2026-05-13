@@ -78,6 +78,14 @@ type AccessiblePeopleSearchOptions = {
 };
 
 type ProfileKind = 'person' | 'space-person';
+type PersonalBackfillRow = {
+  id: string;
+  ownerId: string;
+  identityId: string | null;
+};
+type PersonalBackfillIdentityGroup = {
+  identityId: string;
+};
 type SpacePersonBackfillRow = {
   id: string;
   spaceId: string;
@@ -394,6 +402,18 @@ export class FaceIdentityRepository {
               AND asset_face."isVisible" = true
               AND asset."deletedAt" IS NULL
               AND face_identity_face."assetFaceId" IS NULL
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM asset_face
+            INNER JOIN asset ON asset.id = asset_face."assetId"
+            INNER JOIN person ON person.id = asset_face."personId"
+            INNER JOIN face_identity_face ON face_identity_face."assetFaceId" = asset_face.id
+            WHERE asset_face."personId" IS NOT NULL
+              AND asset_face."deletedAt" IS NULL
+              AND asset_face."isVisible" = true
+              AND asset."deletedAt" IS NULL
+              AND person."identityId" IS DISTINCT FROM face_identity_face."identityId"
           )
         ) AS "hasPersonalIdentityWork",
         EXISTS (
@@ -2026,14 +2046,14 @@ export class FaceIdentityRepository {
   async backfillPersonalIdentities(input: { cursor?: string; limit: number }): Promise<BackfillResult> {
     const people = await this.db
       .selectFrom('person')
-      .select(['id'])
+      .select(['id', 'ownerId', 'identityId'])
       .$if(!!input.cursor, (qb) => qb.where('id', '>', input.cursor!))
       .orderBy('id')
       .limit(input.limit + 1)
       .execute();
 
     const page = people.slice(0, input.limit);
-    const linkedAssetFaceIds = new Set<string>();
+    const affectedSpaceAssets: SharedSpaceFaceMatchBackfillTarget[] = [];
     for (const person of page) {
       const faces = await this.db
         .selectFrom('asset_face')
@@ -2048,24 +2068,97 @@ export class FaceIdentityRepository {
         .execute();
 
       const personAssetFaceIds = faces.map((face) => face.id);
-      for (const face of faces) {
-        linkedAssetFaceIds.add(face.id);
-      }
-      await this.addPendingSharedSpaceFaceMatchBackfillTargetsForAssetFaces(personAssetFaceIds);
+      affectedSpaceAssets.push(
+        ...(await this.addPendingSharedSpaceFaceMatchBackfillTargetsForAssetFaces(personAssetFaceIds)),
+      );
 
       const identity = await this.ensurePersonIdentity(person.id);
       for (const face of faces) {
         await this.linkFace({ assetFaceId: face.id, identityId: identity.id, source: 'backfill' });
       }
+
+      affectedSpaceAssets.push(...(await this.repairPersonalIdentityAssignments(person)));
     }
 
     return {
       processed: page.length,
       nextCursor: people.length > input.limit ? page.at(-1)?.id : undefined,
-      affectedSpaceAssets: this.dedupeSharedSpaceFaceMatchBackfillTargets(
-        await this.getSharedSpaceFaceMatchTargetsForAssetFaces([...linkedAssetFaceIds]),
-      ),
+      affectedSpaceAssets: this.dedupeSharedSpaceFaceMatchBackfillTargets(affectedSpaceAssets),
     };
+  }
+
+  private async repairPersonalIdentityAssignments(
+    person: PersonalBackfillRow,
+  ): Promise<SharedSpaceFaceMatchBackfillTarget[]> {
+    const groups = await this.getPersonalBackfillIdentityGroups(person);
+    const affectedAssetFaceIds = new Set<string>();
+
+    for (const group of groups) {
+      const targetPerson = await this.getPersonByIdentity(person.ownerId, group.identityId, person.id);
+      if (!targetPerson) {
+        continue;
+      }
+
+      const assetFaceIds = await this.getPersonalBackfillAssetFaceIdsForIdentity(person.id, group.identityId);
+      if (assetFaceIds.length === 0) {
+        continue;
+      }
+
+      await this.db
+        .updateTable('asset_face')
+        .set({ personId: targetPerson.id })
+        .where('personId', '=', person.id)
+        .where('id', 'in', assetFaceIds)
+        .execute();
+
+      for (const assetFaceId of assetFaceIds) {
+        affectedAssetFaceIds.add(assetFaceId);
+      }
+    }
+
+    return this.addPendingSharedSpaceFaceMatchBackfillTargetsForAssetFaces([...affectedAssetFaceIds]);
+  }
+
+  private getPersonalBackfillIdentityGroups(person: PersonalBackfillRow): Promise<PersonalBackfillIdentityGroup[]> {
+    return this.db
+      .selectFrom('asset_face')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+      .select('face_identity_face.identityId')
+      .where('asset_face.personId', '=', person.id)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .where('asset.deletedAt', 'is', null)
+      .$if(!!person.identityId, (qb) => qb.where('face_identity_face.identityId', '!=', person.identityId!))
+      .groupBy('face_identity_face.identityId')
+      .$castTo<PersonalBackfillIdentityGroup>()
+      .execute();
+  }
+
+  private async getPersonalBackfillAssetFaceIdsForIdentity(personId: string, identityId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectFrom('asset_face')
+      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+      .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+      .select('asset_face.id')
+      .where('asset_face.personId', '=', personId)
+      .where('face_identity_face.identityId', '=', identityId)
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .where('asset.deletedAt', 'is', null)
+      .execute();
+
+    return rows.map((row) => row.id);
+  }
+
+  private getPersonByIdentity(ownerId: string, identityId: string, excludePersonId?: string) {
+    return this.db
+      .selectFrom('person')
+      .select(['id'])
+      .where('ownerId', '=', ownerId)
+      .where('identityId', '=', identityId)
+      .$if(!!excludePersonId, (qb) => qb.where('id', '!=', excludePersonId!))
+      .executeTakeFirst();
   }
 
   async backfillSpacePersonIdentities(input: { cursor?: string; limit: number }): Promise<SpacePersonBackfillResult> {

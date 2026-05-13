@@ -148,6 +148,24 @@ const newLibraryIdentityFace = async (
   return { person, identity, asset, assetFace };
 };
 
+const getPersonalIdentityMismatchRows = async (ctx: ReturnType<typeof setup>['ctx'], assetFaceIds: string[]) => {
+  const rows = await ctx.database
+    .selectFrom('asset_face')
+    .innerJoin('person', 'person.id', 'asset_face.personId')
+    .innerJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+    .select([
+      'asset_face.id as assetFaceId',
+      'asset_face.personId',
+      'person.identityId as personIdentityId',
+      'face_identity_face.identityId as faceIdentityId',
+    ])
+    .where('asset_face.id', 'in', assetFaceIds)
+    .orderBy('asset_face.id')
+    .execute();
+
+  return rows.filter((row) => row.personIdentityId !== row.faceIdentityId);
+};
+
 describe(FaceIdentityRepository.name, () => {
   it('returns no accessible identity match when multiple shared identities are within threshold', async () => {
     const { ctx, sut } = setup();
@@ -867,6 +885,152 @@ describe(FaceIdentityRepository.name, () => {
       expect(new Set(links.map((link) => link.identityId))).toEqual(new Set([firstIdentity.identityId]));
     } finally {
       await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
+  });
+
+  it('reports personal face identity mismatches as backfill work', async () => {
+    const { ctx, sut } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+    try {
+      const { person: targetPerson } = await ctx.newPerson({ ownerId: user.id });
+      const { person: sourcePerson } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: sourcePerson.id });
+      const targetIdentity = await sut.ensurePersonIdentity(targetPerson.id);
+      await sut.ensurePersonIdentity(sourcePerson.id);
+      await sut.linkFace({
+        assetFaceId: assetFace.id,
+        identityId: targetIdentity.id,
+        source: 'shared-space-evidence',
+      });
+
+      await expect(sut.getBackfillWork()).resolves.toEqual({
+        hasPersonalIdentityWork: true,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
+      });
+      await expect(sut.hasBackfillWork()).resolves.toBe(true);
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
+  });
+
+  it('repairs personal face identity mismatches by moving faces to an existing same-owner target person', async () => {
+    const { ctx, sut } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+    try {
+      const { person: targetPerson } = await ctx.newPerson({ ownerId: user.id });
+      const { person: sourcePerson } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: sourcePerson.id });
+      const { space } = await ctx.newSharedSpace({ createdById: user.id, faceRecognitionEnabled: true });
+      await ctx.newSharedSpaceMember({ spaceId: space.id, userId: user.id, role: SharedSpaceRole.Owner });
+      await ctx.newSharedSpaceAsset({ spaceId: space.id, assetId: asset.id, addedById: user.id });
+      const targetIdentity = await sut.ensurePersonIdentity(targetPerson.id);
+      const sourceIdentity = await sut.ensurePersonIdentity(sourcePerson.id);
+      await sut.linkFace({
+        assetFaceId: assetFace.id,
+        identityId: targetIdentity.id,
+        source: 'shared-space-evidence',
+      });
+
+      const result = await sut.backfillPersonalIdentities({ limit: 100 });
+
+      const updatedFace = await ctx.database
+        .selectFrom('asset_face')
+        .select('personId')
+        .where('id', '=', assetFace.id)
+        .executeTakeFirstOrThrow();
+      const sourceProfile = await ctx.database
+        .selectFrom('person')
+        .select('identityId')
+        .where('id', '=', sourcePerson.id)
+        .executeTakeFirstOrThrow();
+      const pendingTargetRows = await sut.getPendingSharedSpaceFaceMatchBackfillTargets();
+      const pendingTargets = pendingTargetRows.map(({ spaceId, assetId }) => ({
+        spaceId,
+        assetId,
+      }));
+
+      expect(updatedFace.personId).toBe(targetPerson.id);
+      expect(sourceProfile.identityId).toBe(sourceIdentity.id);
+      expect(await getPersonalIdentityMismatchRows(ctx, [assetFace.id])).toEqual([]);
+      expect(result.affectedSpaceAssets).toEqual([{ spaceId: space.id, assetId: asset.id }]);
+      expect(pendingTargets).toEqual([{ spaceId: space.id, assetId: asset.id }]);
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
+  });
+
+  it('repairs only mismatched personal face groups when a stale person still has correctly linked faces', async () => {
+    const { ctx, sut } = setup(await getKyselyDB());
+    const { user } = await ctx.newUser();
+    try {
+      const { person: targetPerson } = await ctx.newPerson({ ownerId: user.id });
+      const { person: sourcePerson } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace: sourceLinkedFace } = await ctx.newAssetFace({ assetId: asset.id, personId: sourcePerson.id });
+      const { assetFace: targetLinkedFace } = await ctx.newAssetFace({ assetId: asset.id, personId: sourcePerson.id });
+      const targetIdentity = await sut.ensurePersonIdentity(targetPerson.id);
+      const sourceIdentity = await sut.ensurePersonIdentity(sourcePerson.id);
+      await sut.linkFace({ assetFaceId: sourceLinkedFace.id, identityId: sourceIdentity.id, source: 'owner-person' });
+      await sut.linkFace({
+        assetFaceId: targetLinkedFace.id,
+        identityId: targetIdentity.id,
+        source: 'shared-space-evidence',
+      });
+
+      await sut.backfillPersonalIdentities({ limit: 100 });
+
+      const faces = await ctx.database
+        .selectFrom('asset_face')
+        .select(['id', 'personId'])
+        .where('id', 'in', [sourceLinkedFace.id, targetLinkedFace.id])
+        .orderBy('id')
+        .execute();
+
+      expect(faces.find((face) => face.id === sourceLinkedFace.id)?.personId).toBe(sourcePerson.id);
+      expect(faces.find((face) => face.id === targetLinkedFace.id)?.personId).toBe(targetPerson.id);
+      expect(await getPersonalIdentityMismatchRows(ctx, [sourceLinkedFace.id, targetLinkedFace.id])).toEqual([]);
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', '=', user.id).execute();
+    }
+  });
+
+  it('does not move mismatched personal faces to a target person owned by another user', async () => {
+    const { ctx, sut } = setup(await getKyselyDB());
+    const { user: sourceOwner } = await ctx.newUser();
+    const { user: targetOwner } = await ctx.newUser();
+    try {
+      const { person: sourcePerson } = await ctx.newPerson({ ownerId: sourceOwner.id });
+      const { person: otherOwnerTargetPerson } = await ctx.newPerson({ ownerId: targetOwner.id });
+      const { asset } = await ctx.newAsset({ ownerId: sourceOwner.id });
+      const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: sourcePerson.id });
+      const targetIdentity = await sut.ensurePersonIdentity(otherOwnerTargetPerson.id);
+      await sut.ensurePersonIdentity(sourcePerson.id);
+      await sut.linkFace({
+        assetFaceId: assetFace.id,
+        identityId: targetIdentity.id,
+        source: 'shared-space-evidence',
+      });
+
+      await sut.backfillPersonalIdentities({ limit: 100 });
+
+      const updatedFace = await ctx.database
+        .selectFrom('asset_face')
+        .select('personId')
+        .where('id', '=', assetFace.id)
+        .executeTakeFirstOrThrow();
+
+      expect(updatedFace.personId).toBe(sourcePerson.id);
+      expect(await getPersonalIdentityMismatchRows(ctx, [assetFace.id])).toHaveLength(1);
+      await expect(sut.getBackfillWork()).resolves.toEqual({
+        hasPersonalIdentityWork: true,
+        hasSpacePersonIdentityWork: false,
+        hasSharedSpaceProjectionWork: false,
+      });
+    } finally {
+      await ctx.database.deleteFrom('user').where('id', 'in', [sourceOwner.id, targetOwner.id]).execute();
     }
   });
 
