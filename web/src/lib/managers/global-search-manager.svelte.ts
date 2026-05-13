@@ -2599,9 +2599,10 @@ export class GlobalSearchManager {
         }
         try {
           const results = await searchPerson({ name: query, withHidden: false, withSharedSpaces: true }, { signal });
+          const sortedResults = [...results].sort(personSuggestionsComparator);
           return results.length === 0
             ? { status: 'empty' }
-            : { status: 'ok', items: results.slice(0, 5), total: results.length };
+            : { status: 'ok', items: sortedResults.slice(0, 5), total: sortedResults.length };
         } catch (error: unknown) {
           if (error instanceof Error && error.name === 'AbortError') {
             throw error;

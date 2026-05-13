@@ -4,6 +4,37 @@ import { mapNormalizedRectToContent, type Rect, type Size } from '$lib/utils/con
 import { AssetTypeEnum } from '@immich/sdk';
 
 export type BoundingBox = Rect & { id: string };
+export type SortablePerson = {
+  id: string;
+  name?: string | null;
+  isFavorite?: boolean;
+};
+
+const getSortablePersonName = (person: SortablePerson) => person.name?.trim() ?? '';
+
+export function comparePeopleByFavoriteAndName(a: SortablePerson, b: SortablePerson): number {
+  if (!!a.isFavorite !== !!b.isFavorite) {
+    return a.isFavorite ? -1 : 1;
+  }
+
+  const aName = getSortablePersonName(a);
+  const bName = getSortablePersonName(b);
+  const aHasName = aName.length > 0;
+  const bHasName = bName.length > 0;
+  if (aHasName !== bHasName) {
+    return aHasName ? -1 : 1;
+  }
+
+  if (aName !== bName) {
+    return aName.localeCompare(bName);
+  }
+
+  return a.id.localeCompare(b.id);
+}
+
+export function sortPeopleByFavoriteAndName<T extends SortablePerson>(people: T[]): T[] {
+  return [...people].sort(comparePeopleByFavoriteAndName);
+}
 
 export const getPersonFaceThumbnailUrl = (personId: string, faceId: string, updatedAt?: string) =>
   createUrl(`/people/${personId}/faces/${faceId}/thumbnail`, { updatedAt });

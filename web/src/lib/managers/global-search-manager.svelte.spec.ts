@@ -5880,15 +5880,17 @@ describe('prefix scoping — bare @ suggestions', () => {
     vi.useRealTimers();
   });
 
-  it('bare @ calls getAllPeople once; subsequent bare @ reads cache', async () => {
+  it('bare @ calls getAllPeople once and sorts favorites before named people', async () => {
     const m = new GlobalSearchManager();
     const getAllPeopleSpy = vi.mocked(getAllPeople);
     getAllPeopleSpy.mockResolvedValue({
       people: [
-        mockPerson('older', 'Zack', '2026-01-01T00:00:00Z'),
-        mockPerson('newer', 'Alice', '2026-04-15T00:00:00Z'),
+        mockPerson('named-z', 'Zack', '2026-01-01T00:00:00Z'),
+        { ...mockPerson('favorite-z', 'Zelda', '2026-02-01T00:00:00Z'), isFavorite: true },
+        mockPerson('named-a', 'Alice', '2026-04-15T00:00:00Z'),
+        { ...mockPerson('favorite-a', 'Anna', '2026-03-01T00:00:00Z'), isFavorite: true },
       ],
-      total: 2,
+      total: 4,
       hidden: 0,
       hasNextPage: false,
     });
@@ -5897,10 +5899,10 @@ describe('prefix scoping — bare @ suggestions', () => {
     await vi.advanceTimersByTimeAsync(150);
     await vi.runAllTimersAsync();
 
-    // Assert comparator was applied (newer updatedAt first).
+    // Assert comparator was applied (favorites first, then alpha).
     expect(m.sections.people.status).toBe('ok');
     const items = (m.sections.people as { items: { id: string }[] }).items;
-    expect(items.map((i) => i.id)).toEqual(['newer', 'older']);
+    expect(items.map((i) => i.id)).toEqual(['favorite-a', 'favorite-z', 'named-a', 'named-z']);
 
     m.setQuery('@a');
     await vi.advanceTimersByTimeAsync(150);

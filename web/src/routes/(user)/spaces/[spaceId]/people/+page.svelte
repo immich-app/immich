@@ -18,6 +18,7 @@
   import { createUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import { sortPeopleByFavoriteAndName } from '$lib/utils/people-utils';
   import { formatPeopleHeaderDescription } from '$lib/utils/people-statistics';
   import {
     getSpacePeople,
@@ -69,7 +70,7 @@
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   let selectHidden = $state(false);
-  const visiblePeople = $derived(people.filter((p) => !p.isHidden));
+  const visiblePeople = $derived(sortPeopleByFavoriteAndName(people.filter((p) => !p.isHidden)));
   const countVisiblePeople = $derived(peopleStatistics ? peopleStatistics.total - peopleStatistics.hidden : 0);
   const hasSearchablePeople = $derived(countVisiblePeople > 0 || visiblePeople.length > 0 || !!searchName.trim());
   const activeSearchFilterName = $derived(

@@ -164,6 +164,24 @@ describe('Global people page', () => {
     expect(screen.getByDisplayValue('Alice')).toHaveAttribute('placeholder', 'add_a_name');
   });
 
+  it('renders favorites first, then named people alphabetically, then unnamed people', () => {
+    renderPage([
+      makePerson({ id: 'unnamed', name: '', isFavorite: false }),
+      makePerson({ id: 'named-z', name: 'Zoe', isFavorite: false }),
+      makePerson({ id: 'favorite-z', name: 'Zelda', isFavorite: true }),
+      makePerson({ id: 'named-a', name: 'Alice', isFavorite: false }),
+      makePerson({ id: 'favorite-a', name: 'Anna', isFavorite: true }),
+    ]);
+
+    expect(screen.getAllByPlaceholderText('add_a_name').map((input) => (input as HTMLInputElement).value)).toEqual([
+      'Anna',
+      'Zelda',
+      'Alice',
+      'Zoe',
+      '',
+    ]);
+  });
+
   it('shows visible people and detected faces in the heading', () => {
     renderPage([makePerson({ id: 'p1' })], { total: 12, hidden: 2, detectedFaceCount: 2901 });
 

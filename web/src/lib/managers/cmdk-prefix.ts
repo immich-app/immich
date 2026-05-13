@@ -1,3 +1,4 @@
+import { comparePeopleByFavoriteAndName } from '$lib/utils/people-utils';
 import type { PersonResponseDto } from '@immich/sdk';
 
 export type Scope = 'all' | 'people' | 'tags' | 'collections' | 'nav';
@@ -24,17 +25,8 @@ export function parseScope(rawText: string): ParsedQuery {
 
 /**
  * Sort comparator for the bare-`@` suggestions list.
- * Keys (in priority order): updatedAt desc, name alpha, id alpha.
- * `updatedAt` is optional on PersonResponseDto; missing values sink to the bottom.
+ * Keys (in priority order): favorite first, named people alpha, unnamed people, id alpha.
  */
 export function personSuggestionsComparator(a: PersonResponseDto, b: PersonResponseDto): number {
-  const au = a.updatedAt ?? '';
-  const bu = b.updatedAt ?? '';
-  if (au !== bu) {
-    return bu.localeCompare(au); // desc
-  }
-  if (a.name !== b.name) {
-    return a.name.localeCompare(b.name);
-  }
-  return a.id.localeCompare(b.id);
+  return comparePeopleByFavoriteAndName(a, b);
 }

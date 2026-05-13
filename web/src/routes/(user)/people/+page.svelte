@@ -24,6 +24,7 @@
   import { getGlobalPersonHref, getGlobalPersonThumbnailUrl } from '$lib/utils/global-person-route';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
+  import { sortPeopleByFavoriteAndName } from '$lib/utils/people-utils';
   import { formatPeopleHeaderDescription } from '$lib/utils/people-statistics';
   import {
     getAllPeople,
@@ -269,7 +270,7 @@
   );
   let globalFaceStatisticsCacheKey = $derived(`user:${authManager.user.id}:global:people:withSharedSpaces=true`);
   const loadGlobalFaceStatistics = () => getPeopleFaceStatistics({ withSharedSpaces: true });
-  let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
+  let showPeople = $derived(sortPeopleByFavoriteAndName(searchName ? searchedPeopleLocal : visiblePeople));
 
   const getPersonHref = (person: PersonResponseDto) => getGlobalPersonHref(person, Route.people());
 

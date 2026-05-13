@@ -146,7 +146,21 @@ describe('Space people page', () => {
     featureFlagsMock.value.peopleStatistics = true;
   });
 
-  it('keeps a newly named person in the same visible position until the page is refreshed', async () => {
+  it('renders named people alphabetically before unnamed people', () => {
+    renderPage([
+      makeSpacePerson({ id: 'space-person-unnamed', name: '' }),
+      makeSpacePerson({ id: 'space-person-zoe', name: 'Zoe' }),
+      makeSpacePerson({ id: 'space-person-alice', name: 'Alice' }),
+    ]);
+
+    expect(screen.getAllByPlaceholderText('add_a_name').map((input) => (input as HTMLInputElement).value)).toEqual([
+      'Alice',
+      'Zoe',
+      '',
+    ]);
+  });
+
+  it('moves a newly named person into alphabetical order', async () => {
     const bob = makeSpacePerson({ id: 'space-person-bob', name: 'Bob' });
     const unnamed = makeSpacePerson({ id: 'space-person-unnamed', name: '' });
     const renamed = makeSpacePerson({ id: 'space-person-unnamed', name: 'Aaron' });
@@ -175,7 +189,7 @@ describe('Space people page', () => {
     expect(sdkMock.getSpacePeople).not.toHaveBeenCalled();
 
     const updatedInputs = screen.getAllByPlaceholderText('add_a_name');
-    expect(updatedInputs[0]).toHaveValue('Bob');
-    expect(updatedInputs[1]).toHaveValue('Aaron');
+    expect(updatedInputs[0]).toHaveValue('Aaron');
+    expect(updatedInputs[1]).toHaveValue('Bob');
   });
 });

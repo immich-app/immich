@@ -45,22 +45,28 @@ const p = (o: Partial<PersonResponseDto>): PersonResponseDto =>
   }) as PersonResponseDto;
 
 describe('personSuggestionsComparator', () => {
-  it('sorts by updatedAt desc when present on both', () => {
+  it('sorts favorite people first, then named people alphabetically, then unnamed people', () => {
+    const people = [
+      p({ id: 'unnamed', name: '', isFavorite: false }),
+      p({ id: 'named-z', name: 'Zoe', isFavorite: false }),
+      p({ id: 'favorite-z', name: 'Zelda', isFavorite: true }),
+      p({ id: 'named-a', name: 'Alice', isFavorite: false }),
+      p({ id: 'favorite-a', name: 'Anna', isFavorite: true }),
+    ];
+
+    expect(people.sort(personSuggestionsComparator).map((person) => person.id)).toEqual([
+      'favorite-a',
+      'favorite-z',
+      'named-a',
+      'named-z',
+      'unnamed',
+    ]);
+  });
+
+  it('ignores recency when sorting named people', () => {
     const a = p({ id: 'a', name: 'Alice', updatedAt: '2026-04-01T00:00:00Z' });
     const b = p({ id: 'b', name: 'Bob', updatedAt: '2026-04-15T00:00:00Z' });
-    expect([a, b].sort(personSuggestionsComparator)).toEqual([b, a]);
-  });
-
-  it('missing updatedAt treated as oldest', () => {
-    const a = p({ id: 'a', name: 'Alice', updatedAt: '2026-04-10T00:00:00Z' });
-    const b = p({ id: 'b', name: 'Bob' }); // no updatedAt
-    expect([a, b].sort(personSuggestionsComparator)).toEqual([a, b]);
-  });
-
-  it('updatedAt tie → alpha by name', () => {
-    const a = p({ id: 'a', name: 'Zack', updatedAt: '2026-04-10T00:00:00Z' });
-    const b = p({ id: 'b', name: 'Alice', updatedAt: '2026-04-10T00:00:00Z' });
-    expect([a, b].sort(personSuggestionsComparator)).toEqual([b, a]);
+    expect([b, a].sort(personSuggestionsComparator)).toEqual([a, b]);
   });
 
   it('same name tie → stable by id', () => {
