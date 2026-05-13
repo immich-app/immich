@@ -133,7 +133,7 @@
             isEdited={configToEdit.machineLearning.clip.modelName !== config.machineLearning.clip.modelName}
           >
             {#snippet descriptionSnippet()}
-              <p class="immich-form-label pb-2 text-sm">
+              <p class="pb-2 text-sm immich-form-label">
                 <FormatMessage key="admin.machine_learning_clip_model_description">
                   {#snippet children({ message })}
                     <a target="_blank" href="https://huggingface.co/immich-app"><u>{message}</u></a>
@@ -259,7 +259,7 @@
         title={$t('admin.machine_learning_ocr')}
         subtitle={$t('admin.machine_learning_ocr_description')}
       >
-        <div class="ml-4 mt-4 flex flex-col gap-4">
+        <div class="mt-4 ml-4 flex flex-col gap-4">
           <SettingSwitch
             title={$t('admin.machine_learning_ocr_enabled')}
             subtitle={$t('admin.machine_learning_ocr_enabled_description')}

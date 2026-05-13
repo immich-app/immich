@@ -37,16 +37,16 @@
       }
       uploadAssetsStore.reset();
     }}
-    class="fixed bottom-6 end-16"
+    class="fixed inset-e-16 bottom-6"
   >
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="w-81 rounded-xl border border-gray-200 dark:border-subtle p-4 text-sm shadow-xs bg-subtle"
+        class="w-81 rounded-xl border border-gray-200 bg-subtle p-4 text-sm shadow-xs dark:border-subtle"
       >
         <div class="place-item-center mb-4 flex justify-between">
           <div class="flex flex-col gap-1">
-            <p class="immich-form-label text-xm">
+            <p class="text-xm immich-form-label">
               {$t('upload_progress', {
                 values: {
                   remaining: $remainingUploads,
@@ -55,7 +55,7 @@
                 },
               })}
             </p>
-            <p class="immich-form-label text-xs">
+            <p class="text-xs immich-form-label">
               {$t('upload_status_uploaded')}
               <span class="text-success">{$stats.success.toLocaleString($locale)}</span>
               -
@@ -101,7 +101,7 @@
           </div>
         </div>
         {#if showOptions}
-          <div class="immich-scrollbar mb-4 max-h-100 overflow-y-auto rounded-lg">
+          <div class="mb-4 max-h-100 overflow-y-auto rounded-lg immich-scrollbar">
             <div class="flex h-6.5 place-items-center gap-1">
               <label class="immich-form-label" for="upload-concurrency">{$t('upload_concurrency')}</label>
             </div>
@@ -119,7 +119,7 @@
             />
           </div>
         {/if}
-        <div class="immich-scrollbar flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg">
+        <div class="flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg immich-scrollbar">
           {#each $uploadAssetsStore as uploadAsset (uploadAsset.id)}
             <UploadAssetPreview {uploadAsset} />
           {/each}
@@ -131,7 +131,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-light"
+          class="absolute -inset-s-4 -top-4 flex size-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-light"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -140,7 +140,7 @@
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             onclick={() => (showDetail = true)}
-            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-danger p-5 text-xs text-light"
+            class="absolute -inset-e-4 -top-4 flex size-10 place-content-center place-items-center rounded-full bg-danger p-5 text-xs text-light"
           >
             {$stats.errors.toLocaleString($locale)}
           </button>
@@ -149,7 +149,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-subtle p-5 text-sm text-primary shadow-lg"
+          class="flex size-16 place-content-center place-items-center rounded-full bg-subtle p-5 text-sm text-primary shadow-lg"
         >
           <div class="animate-pulse">
             <Icon icon={mdiCloudUploadOutline} size="30" />

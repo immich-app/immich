@@ -31,7 +31,9 @@ describe(MaintenanceController.name, () => {
       });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['[restoreBackupFilename] Backup filename is required when action is restore_database']),
+        errorDto.validationError([
+          { path: ['restoreBackupFilename'], message: 'Backup filename is required when action is restore_database' },
+        ]),
       );
       expect(ctx.authenticate).toHaveBeenCalled();
     });

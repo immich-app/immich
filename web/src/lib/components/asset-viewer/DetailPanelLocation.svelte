@@ -33,7 +33,7 @@
 {#if asset.exifInfo?.country}
   <button
     type="button"
-    class="flex w-full text-start justify-between place-items-start gap-4 py-4"
+    class="flex w-full place-items-start justify-between gap-4 py-4 text-start"
     onclick={isOwner ? onAction : undefined}
     title={isOwner ? $t('edit_location') : ''}
     class:hover:text-primary={isOwner}
@@ -67,7 +67,7 @@
 {:else if !asset.exifInfo?.city && isOwner}
   <button
     type="button"
-    class="flex w-full text-start justify-between place-items-start gap-4 py-4 rounded-lg hover:text-primary"
+    class="flex w-full place-items-start justify-between gap-4 rounded-lg py-4 text-start hover:text-primary"
     onclick={onAction}
     title={$t('add_location')}
   >
@@ -75,7 +75,7 @@
       <div><Icon icon={mdiMapMarkerOutline} size="24" /></div>
       <p>{$t('add_a_location')}</p>
     </div>
-    <div class="focus:outline-none p-1">
+    <div class="p-1 focus:outline-none">
       <Icon icon={mdiPencil} size="20" />
     </div>
   </button>

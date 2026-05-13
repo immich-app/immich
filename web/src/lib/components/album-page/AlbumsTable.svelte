@@ -45,20 +45,20 @@
       {@const isCollapsed = isAlbumGroupCollapsed($albumViewSettings, albumGroup.id)}
       {@const iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90'}
       <tbody
-        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg mt-4"
+        class="mt-4 block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <tr
-          class="flex w-full place-items-center p-2 md:ps-5 md:pe-5 md:pt-3 md:pb-3"
+          class="flex w-full place-items-center p-2 md:py-3 md:ps-5 md:pe-5"
           onclick={() => toggleAlbumGroupCollapsing(albumGroup.id)}
           aria-expanded={!isCollapsed}
         >
-          <td class="text-md text-start -mb-1">
+          <td class="text-md -mb-1 text-start">
             <Icon
               icon={mdiChevronRight}
               size="20"
-              class="inline-block -mt-2 transition-all duration-250 {iconRotation}"
+              class="-mt-2 inline-block transition-all duration-250 {iconRotation}"
             />
-            <span class="font-bold text-2xl">{albumGroup.name}</span>
+            <span class="text-2xl font-bold">{albumGroup.name}</span>
             <span class="ms-1.5">
               ({$t('albums_count', { values: { count: albumGroup.albums.length } })})
             </span>
@@ -67,7 +67,7 @@
       </tbody>
       {#if !isCollapsed}
         <tbody
-          class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg mt-4"
+          class="mt-4 block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
           transition:slide={{ duration: 300 }}
         >
           {#each albumGroup.albums as album (album.id)}

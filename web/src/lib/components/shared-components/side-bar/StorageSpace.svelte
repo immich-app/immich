@@ -34,7 +34,7 @@
 </script>
 
 <div
-  class="p-4 bg-light-100 ms-4 rounded-lg text-sm min-w-52"
+  class="ms-4 min-w-52 rounded-lg bg-light-100 p-4 text-sm"
   title={$t('storage_usage', {
     values: {
       used: getByteUnitString(usedBytes, $locale, 3),
@@ -58,7 +58,7 @@
       {thresholds}
     />
   {:else}
-    <p class="font-medium text-immich-dark-gray dark:text-white mb-4">{$t('storage')}</p>
+    <p class="mb-4 font-medium text-immich-dark-gray dark:text-white">{$t('storage')}</p>
     <LoadingSpinner />
   {/if}
 </div>

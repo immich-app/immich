@@ -49,14 +49,14 @@
 
 <svelte:window bind:innerWidth />
 
-<nav id="dashboard-navbar" class="max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm">
+<nav id="dashboard-navbar" class="h-(--navbar-height) w-dvw text-sm max-md:h-(--navbar-height-md)">
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[--spacing(32)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder
       ? ''
       : 'border-b'}"
   >
-    <div class="flex flex-row gap-1 mx-4 items-center">
+    <div class="mx-4 flex flex-row items-center gap-1">
       <IconButton
         id={menuButtonId}
         shape="round"
@@ -80,14 +80,14 @@
         <Logo variant={mediaQueryManager.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>
-    <div class="flex justify-between gap-4 lg:gap-8 pe-6">
-      <div class="hidden w-full max-w-5xl flex-1 tall:ps-0 sm:block">
+    <div class="flex justify-between gap-4 pe-6 lg:gap-8">
+      <div class="hidden w-full max-w-5xl flex-1 sm:block tall:ps-0">
         {#if featureFlagsManager.value.search}
           <SearchBar grayTheme={true} />
         {/if}
       </div>
 
-      <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
+      <section class="flex w-full place-items-center justify-end gap-1 sm:w-auto md:gap-2">
         {#if featureFlagsManager.value.search}
           <IconButton
             color="secondary"
@@ -146,7 +146,7 @@
 
             {#if hasUnreadNotifications}
               <div
-                class="pointer-events-none absolute border top-0 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-light"
+                class="pointer-events-none absolute top-0 right-1 flex size-5 items-center justify-center rounded-full border bg-primary text-[10px] font-bold text-light"
               >
                 {notificationManager.notifications.length}
               </div>

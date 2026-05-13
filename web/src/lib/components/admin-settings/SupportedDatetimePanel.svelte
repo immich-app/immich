@@ -27,7 +27,7 @@
 
 <Text size="small">{$t('date_and_time')}</Text>
 
-<Card class="mt-2 text-sm bg-light-50 shadow-none">
+<Card class="mt-2 bg-light-50 text-sm shadow-none">
   <CardHeader>
     <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
     <Text color="primary"

@@ -10,7 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
@@ -22,8 +22,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
@@ -74,7 +74,7 @@ class Timeline extends StatelessWidget {
               (ref) => TimelineArgs(
                 maxWidth: constraints.maxWidth,
                 maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
+                columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
                 showStorageIndicator: showStorageIndicator,
                 withStack: withStack,
                 groupBy: groupBy,
@@ -161,7 +161,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
-    final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
+    final currentTilesPerRow = ref.read(appConfigProvider.select((config) => config.timeline.tilesPerRow));
     _perRow = currentTilesPerRow;
     _scaleFactor = 7.0 - _perRow;
     _baseScaleFactor = _scaleFactor;
@@ -201,7 +201,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _restoreAssetPosition(_) {
-    if (_restoreAssetIndex == null) return;
+    if (_restoreAssetIndex == null) {
+      return;
+    }
 
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
@@ -329,7 +331,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _handleDragAssetEnter(TimelineAssetIndex index) {
-    if (_dragAnchorIndex == null || !_dragging) return;
+    if (_dragAnchorIndex == null || !_dragging) {
+      return;
+    }
 
     final timelineService = ref.read(timelineServiceProvider);
     final dragAnchorIndex = _dragAnchorIndex!;
@@ -399,7 +403,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 segments: segments,
                 delegate: SliverChildBuilderDelegate(
                   (ctx, index) {
-                    if (index >= childCount) return null;
+                    if (index >= childCount) {
+                      return null;
+                    }
                     final segment = segments.findByIndex(index);
                     return segment?.builder(ctx, index) ?? const SizedBox.shrink();
                   },
@@ -453,7 +459,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                           _restoreAssetIndex = targetAssetIndex;
                         });
 
-                        ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
+                        ref.read(metadataProvider).write(MetadataKey.timelineTilesPerRow, _perRow);
                       }
                     };
                   },

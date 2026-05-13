@@ -25,9 +25,9 @@
   </AppShellHeader>
   <AppShellSidebar
     bind:open={sidebarStore.isOpen}
-    class="border-none shadow-none h-full flex flex-col justify-between gap-2"
+    class="flex h-full flex-col justify-between gap-2 border-none shadow-none"
   >
-    <div class="flex flex-col pt-8 pe-4 gap-1">
+    <div class="flex flex-col gap-1 pe-4 pt-8">
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
@@ -36,7 +36,7 @@
       <NavbarItem title={$t('server_stats')} href={Route.systemStatistics()} icon={mdiServer} />
     </div>
 
-    <div class="mb-2 me-4">
+    <div class="me-4 mb-2">
       <BottomInfo />
     </div>
   </AppShellSidebar>
