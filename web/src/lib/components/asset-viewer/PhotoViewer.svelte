@@ -3,12 +3,12 @@
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
+  import CtrlDragTagger from '$lib/components/asset-viewer/CtrlDragTagger.svelte';
   import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
@@ -158,14 +158,13 @@
   const faceToNameMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
-    for (const face of faceManager.data) {
-      if (!face.person) {
+    for (const person of asset.people ?? []) {
+      if (person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
         continue;
       }
-      if (face.person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
-        continue;
+      for (const face of person.faces ?? []) {
+        map.set(face, person.name);
       }
-      map.set(face, face.person.name);
     }
     return map;
   });
@@ -200,100 +199,7 @@
 
   // Ctrl+drag to create a new face tag
   let ctrlKeyHeld = $state(false);
-  let ctrlDrag = $state<{ start: { x: number; y: number }; current: { x: number; y: number } } | null>(null);
   let ctrlDragInitialRect = $state<{ centerX: number; centerY: number; width: number; height: number } | undefined>();
-  const faceEditorInitialRect = $derived(assetViewerManager.isFaceEditMode ? ctrlDragInitialRect : undefined);
-
-  $effect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Control' || e.key === 'Meta') {
-        ctrlKeyHeld = e.type === 'keydown';
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('keyup', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('keyup', onKey);
-    };
-  });
-
-  // Intercept pointerdown in capture phase so we run before the zoom-image library's pan gesture.
-  $effect(() => {
-    const el = element;
-    if (!el) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!event.ctrlKey && !event.metaKey) {
-        return;
-      }
-      if (assetViewerManager.isFaceEditMode) {
-        return;
-      }
-      if (!assetViewerManager.imgRef || sharedLink) {
-        return;
-      }
-
-      // Stop propagation so the zoom library never sees this pointer event and won't start a pan.
-      event.stopPropagation();
-      event.preventDefault();
-
-      const containerRect = el.getBoundingClientRect();
-      const startX = event.clientX - containerRect.left;
-      const startY = event.clientY - containerRect.top;
-      ctrlDrag = { start: { x: startX, y: startY }, current: { x: startX, y: startY } };
-
-      const handlePointerMove = (e: PointerEvent) => {
-        if (!e.ctrlKey && !e.metaKey) {
-          cleanup();
-          ctrlDrag = null;
-          return;
-        }
-        if (ctrlDrag) {
-          ctrlDrag.current = {
-            x: Math.min(Math.max(e.clientX - containerRect.left, 0), containerRect.width),
-            y: Math.min(Math.max(e.clientY - containerRect.top, 0), containerRect.height),
-          };
-        }
-      };
-
-      const handlePointerUp = () => {
-        cleanup();
-        const drag = ctrlDrag;
-        ctrlDrag = null;
-        if (!drag) {
-          return;
-        }
-        const left = Math.min(drag.start.x, drag.current.x);
-        const top = Math.min(drag.start.y, drag.current.y);
-        const width = Math.abs(drag.current.x - drag.start.x);
-        const height = Math.abs(drag.current.y - drag.start.y);
-        if (width < 20 || height < 20) {
-          return;
-        }
-
-        const zoom = assetViewerManager.zoomState.currentZoom;
-        const panX = assetViewerManager.zoomState.currentPositionX;
-        const panY = assetViewerManager.zoomState.currentPositionY;
-
-        ctrlDragInitialRect = { centerX: (left - panX + width / 2) / zoom, centerY: (top - panY + height / 2) / zoom, width: width / zoom, height: height / zoom };
-        assetViewerManager.toggleFaceEditMode();
-      };
-
-      const cleanup = () => {
-        document.removeEventListener('pointermove', handlePointerMove);
-        document.removeEventListener('pointerup', handlePointerUp);
-      };
-
-      document.addEventListener('pointermove', handlePointerMove);
-      document.addEventListener('pointerup', handlePointerUp);
-    };
-
-    el.addEventListener('pointerdown', handlePointerDown, { capture: true });
-    return () => el.removeEventListener('pointerdown', handlePointerDown, { capture: true });
-  });
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
@@ -384,12 +290,13 @@
     {/snippet}
   </AdaptiveImage>
 
-  {#if ctrlDrag}
-    <div
-      class="pointer-events-none absolute rounded-lg border-2 border-[rgb(66,80,175)] bg-[rgba(66,80,175,0.25)]"
-      style="left: {Math.min(ctrlDrag.start.x, ctrlDrag.current.x)}px; top: {Math.min(ctrlDrag.start.y, ctrlDrag.current.y)}px; width: {Math.abs(ctrlDrag.current.x - ctrlDrag.start.x)}px; height: {Math.abs(ctrlDrag.current.y - ctrlDrag.start.y)}px;"
-    ></div>
-  {/if}
+  <CtrlDragTagger
+    bind:ctrlKeyHeld
+    bind:initialRect={ctrlDragInitialRect}
+    containerEl={element}
+    canDrag={() => !!assetViewerManager.imgRef && !sharedLink}
+    getZoomState={() => assetViewerManager.zoomState}
+  />
 
   {#if assetViewerManager.isFaceEditMode && assetViewerManager.imgRef}
     <FaceEditor
@@ -397,7 +304,7 @@
       {containerWidth}
       {containerHeight}
       assetId={asset.id}
-      initialRect={faceEditorInitialRect}
+      initialRect={ctrlDragInitialRect}
     />
   {/if}
 </div>
