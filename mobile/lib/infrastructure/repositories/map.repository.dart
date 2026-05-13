@@ -31,11 +31,11 @@ class DriftMapRepository extends DriftDatabaseRepository {
       final hasCustomRange = timeRange.from.isSome || timeRange.to.isSome;
 
       if (hasCustomRange) {
-        timeRange.from.ifSome((from) {
+        timeRange.from.ifPresent((from) {
           condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from);
         });
 
-        timeRange.to.ifSome((to) {
+        timeRange.to.ifPresent((to) {
           condition = condition & _db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to);
         });
       } else if (options.relativeDays > 0) {

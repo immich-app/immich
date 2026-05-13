@@ -560,11 +560,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     final hasCustomRange = timeRange.from.isSome || timeRange.to.isSome;
 
     if (hasCustomRange) {
-      timeRange.from.ifSome((from) {
+      timeRange.from.ifPresent((from) {
         query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from));
       });
 
-      timeRange.to.ifSome((to) {
+      timeRange.to.ifPresent((to) {
         query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to));
       });
     } else if (options.relativeDays > 0) {
@@ -615,11 +615,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     final hasCustomRange = timeRange.from.isSome || timeRange.to.isSome;
 
     if (hasCustomRange) {
-      timeRange.from.ifSome((from) {
+      timeRange.from.ifPresent((from) {
         query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from));
       });
 
-      timeRange.to.ifSome((to) {
+      timeRange.to.ifPresent((to) {
         query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to));
       });
     } else if (options.relativeDays > 0) {
