@@ -50,6 +50,8 @@ enum MetadataKey<T extends Object> {
   // Map
   mapShowFavoriteOnly<bool>(.appConfig, 'map.showFavoriteOnly', false),
   mapRelativeDate<int>(.appConfig, 'map.relativeDate', 0),
+  mapCustomFrom<String>(.appConfig, 'map.customFrom', ''),
+  mapCustomTo<String>(.appConfig, 'map.customTo', ''),
   mapIncludeArchived<bool>(.appConfig, 'map.includeArchived', false),
   mapThemeMode<ThemeMode>(.appConfig, 'map.themeMode', .system, _EnumCodec(ThemeMode.values)),
   mapWithPartners<bool>(.appConfig, 'map.withPartners', false),

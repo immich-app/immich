@@ -40,10 +40,6 @@ enum StoreKey<T> {
   albumGridView<bool>._(140),
   loadOriginal<bool>._(101),
 
-  // Map custom time range settings
-  mapCustomFrom<String>._(142),
-  mapCustomTo<String>._(143),
-
   // Experimental stuff
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
