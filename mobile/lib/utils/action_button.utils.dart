@@ -66,6 +66,7 @@ class ActionButtonContext {
 
 enum ActionButtonType {
   openInfo,
+  slideshow,
   likeActivity,
   share,
   shareLink,
@@ -83,7 +84,6 @@ enum ActionButtonType {
   moveToLockFolder,
   removeFromLockFolder,
   removeFromAlbum,
-  slideshow,
   restoreTrash,
   trash,
   deleteLocal,
@@ -181,7 +181,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
-      ActionButtonType.slideshow => !context.isInLockedView,
+      ActionButtonType.slideshow => !context.isInLockedView && context.timelineOrigin != TimelineOrigin.remoteAlbum,
     };
   }
 
@@ -297,6 +297,7 @@ enum ActionButtonType {
   int get kebabMenuGroup => switch (this) {
     // 0: info
     ActionButtonType.openInfo => 0,
+    ActionButtonType.slideshow => 0,
     // 10: move, remove, and delete
     ActionButtonType.trash => 10,
     ActionButtonType.deletePermanent => 10,
