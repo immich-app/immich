@@ -330,7 +330,7 @@ class ActionButtonBuilder {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
     final visibleButtons = defaultViewerKebabMenuOrder
         .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
         .toList();
@@ -346,7 +346,7 @@ class ActionButtonBuilder {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, false, true));
+      result.add(type.buildButton(context, buildContext, false, true).build(buildContext, ref));
       lastGroup = type.kebabMenuGroup;
     }
 
