@@ -55,6 +55,10 @@ type QueueItem = {
 
 export type QueueJobTypeCounts = QueueJobTypeCountsDto;
 
+export const formatSampledJobTypeCount = (count: number, formatNumber: (count: number) => string) => {
+  return count > 1000 ? `${formatNumber(1000)}+` : formatNumber(count);
+};
+
 export const getQueueJobTypeLabel = (name: JobName) => {
   switch (name) {
     case JobName.FacialRecognition:
