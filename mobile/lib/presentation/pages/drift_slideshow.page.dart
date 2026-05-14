@@ -318,7 +318,9 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
               if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
               _getPhotoView(context, index),
               if (_index == index && _config.progressBar)
-                Align(alignment: Alignment.bottomCenter, child: _getProgressBar(context, index)),
+                SafeArea(
+                  child: Align(alignment: Alignment.bottomCenter, child: _getProgressBar(context, index)),
+                ),
             ],
           ),
         ),
