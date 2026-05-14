@@ -30,6 +30,7 @@ import {
   Permission,
   StorageFolder,
 } from 'src/enum';
+import { StorageBackend } from 'src/interfaces/storage-backend.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { StorageService } from 'src/services/storage.service';
@@ -44,6 +45,17 @@ import { fromChecksum } from 'src/utils/request';
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
 }
+
+const SKIP_UPLOAD_FILE_CLEANUP = Symbol('skipUploadFileCleanup');
+
+const markUploadFileCleanupSkipped = (error: Error | any) => {
+  if (error && typeof error === 'object') {
+    error[SKIP_UPLOAD_FILE_CLEANUP] = true;
+  }
+};
+
+const shouldSkipUploadFileCleanup = (error: Error | any) =>
+  !!(error && typeof error === 'object' && error[SKIP_UPLOAD_FILE_CLEANUP]);
 
 @Injectable()
 export class AssetMediaService extends BaseService {
@@ -287,10 +299,12 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     // clean up files
-    await this.jobRepository.queue({
-      name: JobName.FileDelete,
-      data: { files: [file.originalPath, sidecarFile?.originalPath] },
-    });
+    if (!shouldSkipUploadFileCleanup(error)) {
+      await this.jobRepository.queue({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, sidecarFile?.originalPath] },
+      });
+    }
 
     // handle duplicates with a success response
     if (isAssetChecksumConstraint(error)) {
@@ -333,58 +347,86 @@ export class AssetMediaService extends BaseService {
       originalFileName: dto.filename || file.originalName,
     });
 
-    if (dto.metadata?.length) {
-      await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
-    }
+    const backendFiles: string[] = [];
+    let writeBackend: StorageBackend | undefined;
 
-    if (sidecarFile) {
-      await this.assetRepository.upsertFile({
-        assetId: asset.id,
-        path: sidecarFile.originalPath,
-        type: AssetFileType.Sidecar,
-      });
-      await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    }
-    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif(
-      { assetId: asset.id, fileSizeInByte: file.size },
-      { lockedPropertiesBehavior: 'override' },
-    );
-
-    // If S3 backend, upload the file and update the path
-    const writeBackend = StorageService.getWriteBackend();
-    if (!(writeBackend instanceof DiskStorageBackend)) {
-      const relativeKey = StorageCore.getRelativeNestedPath(
-        StorageFolder.Upload,
-        ownerId,
-        `${asset.id}${getFilenameExtension(file.originalPath)}`,
-      );
-      const stream = createReadStream(file.originalPath);
-      await writeBackend.put(relativeKey, stream, {
-        contentType: mimeTypes.lookup(file.originalPath),
-      });
-      await this.assetRepository.update({ id: asset.id, originalPath: relativeKey });
-      // Clean up the temp local file
-      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.originalPath] } });
+    try {
+      if (dto.metadata?.length) {
+        await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
+      }
 
       if (sidecarFile) {
-        const sidecarKey = StorageCore.getRelativeNestedPath(StorageFolder.Upload, ownerId, `${asset.id}.xmp`);
-        await writeBackend.put(sidecarKey, createReadStream(sidecarFile.originalPath));
         await this.assetRepository.upsertFile({
           assetId: asset.id,
-          path: sidecarKey,
+          path: sidecarFile.originalPath,
           type: AssetFileType.Sidecar,
         });
-        await this.jobRepository.queue({
-          name: JobName.FileDelete,
-          data: { files: [sidecarFile.originalPath] },
-        });
+        await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
       }
+      await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+      await this.assetRepository.upsertExif(
+        { assetId: asset.id, fileSizeInByte: file.size },
+        { lockedPropertiesBehavior: 'override' },
+      );
+
+      // If S3 backend, upload the file and update the path
+      writeBackend = StorageService.getWriteBackend();
+      if (!(writeBackend instanceof DiskStorageBackend)) {
+        const relativeKey = StorageCore.getRelativeNestedPath(
+          StorageFolder.Upload,
+          ownerId,
+          `${asset.id}${getFilenameExtension(file.originalPath)}`,
+        );
+        const stream = createReadStream(file.originalPath);
+        await writeBackend.put(relativeKey, stream, {
+          contentType: mimeTypes.lookup(file.originalPath),
+        });
+        backendFiles.push(relativeKey);
+        await this.assetRepository.update({ id: asset.id, originalPath: relativeKey });
+        // Clean up the temp local file
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.originalPath] } });
+
+        if (sidecarFile) {
+          const sidecarKey = StorageCore.getRelativeNestedPath(StorageFolder.Upload, ownerId, `${asset.id}.xmp`);
+          await writeBackend.put(sidecarKey, createReadStream(sidecarFile.originalPath));
+          backendFiles.push(sidecarKey);
+          await this.assetRepository.upsertFile({
+            assetId: asset.id,
+            path: sidecarKey,
+            type: AssetFileType.Sidecar,
+          });
+          await this.jobRepository.queue({
+            name: JobName.FileDelete,
+            data: { files: [sidecarFile.originalPath] },
+          });
+        }
+      }
+
+      await this.eventRepository.emit('AssetCreate', { asset });
+
+      await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
+    } catch (error: Error | any) {
+      try {
+        await this.assetRepository.remove({ id: asset.id });
+        if (backendFiles.length > 0) {
+          for (const file of backendFiles) {
+            try {
+              await writeBackend?.delete(file);
+            } catch (deleteError: Error | any) {
+              this.logger.error(
+                `Failed to delete incomplete upload file ${file} for asset ${asset.id}: ${deleteError}`,
+                deleteError?.stack,
+              );
+            }
+          }
+        }
+      } catch (deleteError: Error | any) {
+        this.logger.error(`Failed to remove incomplete upload asset ${asset.id}: ${deleteError}`, deleteError?.stack);
+        markUploadFileCleanupSkipped(error);
+      }
+
+      throw error;
     }
-
-    await this.eventRepository.emit('AssetCreate', { asset });
-
-    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;
   }

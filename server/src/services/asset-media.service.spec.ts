@@ -373,6 +373,292 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    it('should remove the asset row when post-create processing fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.heic',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const error = new Error('failed after asset create');
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+
+      expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, undefined] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should allow the same file to upload again after post-create processing fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.heic',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const error = new Error('failed after asset create');
+      let incompleteRowExists = false;
+
+      mocks.asset.create.mockImplementation(() => {
+        if (incompleteRowExists) {
+          const duplicateError = new Error('unique key violation');
+          (duplicateError as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
+          return Promise.reject(duplicateError);
+        }
+
+        incompleteRowExists = true;
+        return Promise.resolve(assetEntity);
+      });
+      mocks.asset.remove.mockImplementation(() => {
+        incompleteRowExists = false;
+        return Promise.resolve();
+      });
+      mocks.event.emit.mockRejectedValueOnce(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: assetEntity.id,
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+      expect(mocks.asset.create).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.getUploadAssetIdByChecksum).not.toHaveBeenCalled();
+      expect(mocks.user.updateUsage).toHaveBeenCalledTimes(1);
+      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
+    });
+
+    it('should keep uploaded disk files when removing the incomplete asset row fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.heic',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const error = new Error('failed after asset create');
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(error);
+      mocks.asset.remove.mockRejectedValue(new Error('remove failed'));
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+
+      expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, undefined] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should queue disk original and sidecar cleanup when post-create processing fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.heic',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const sidecarFile = {
+        uuid: 'random-sidecar-uuid',
+        originalPath: 'fake_path/asset_1.xmp',
+        mimeType: 'application/xml',
+        checksum: Buffer.from('sidecar hash', 'utf8'),
+        originalName: 'asset_1.xmp',
+        size: 12,
+      };
+      const error = new Error('failed after sidecar create');
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file, sidecarFile)).rejects.toThrow(error);
+
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+        assetId: assetEntity.id,
+        path: sidecarFile.originalPath,
+        type: AssetFileType.Sidecar,
+      });
+      expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, sidecarFile.originalPath] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should delete uploaded S3 originals when post-upload processing fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: '/dev/null',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const error = new Error('failed after s3 upload');
+      const expectedKey = 'upload/user-id/id/_1/id_1';
+      const s3Backend = {
+        put: vi.fn().mockResolvedValue(void 0),
+        delete: vi.fn().mockResolvedValue(void 0),
+      };
+      const previousS3Backend = (StorageService as any).s3Backend;
+      const previousWriteBackendType = (StorageService as any).writeBackendType;
+
+      (StorageService as any).s3Backend = s3Backend;
+      (StorageService as any).writeBackendType = 's3';
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.event.emit.mockRejectedValue(error);
+
+      try {
+        await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+
+        expect(s3Backend.put).toHaveBeenCalledWith(expectedKey, expect.anything(), {
+          contentType: 'application/octet-stream',
+        });
+        expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetEntity.id, originalPath: expectedKey });
+        expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+        expect(s3Backend.delete).toHaveBeenCalledWith(expectedKey);
+        expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+        (StorageService as any).writeBackendType = previousWriteBackendType;
+      }
+    });
+
+    it('should preserve the original upload error when S3 rollback deletion fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: '/dev/null',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const error = new Error('failed after s3 upload');
+      const deleteError = new Error('s3 delete failed');
+      const expectedKey = 'upload/user-id/id/_1/id_1';
+      const s3Backend = {
+        put: vi.fn().mockResolvedValue(void 0),
+        delete: vi.fn().mockRejectedValue(deleteError),
+      };
+      const previousS3Backend = (StorageService as any).s3Backend;
+      const previousWriteBackendType = (StorageService as any).writeBackendType;
+
+      (StorageService as any).s3Backend = s3Backend;
+      (StorageService as any).writeBackendType = 's3';
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.event.emit.mockRejectedValue(error);
+
+      try {
+        await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+
+        expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+        expect(s3Backend.delete).toHaveBeenCalledWith(expectedKey);
+        expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+        (StorageService as any).writeBackendType = previousWriteBackendType;
+      }
+    });
+
+    it('should delete uploaded S3 sidecars when sidecar post-processing fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: '/dev/null',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const sidecarFile = {
+        uuid: 'random-sidecar-uuid',
+        originalPath: '/dev/null',
+        mimeType: 'application/xml',
+        checksum: Buffer.from('sidecar hash', 'utf8'),
+        originalName: 'asset_1.xmp',
+        size: 12,
+      };
+      const error = new Error('failed after s3 sidecar upload');
+      const expectedOriginalKey = 'upload/user-id/id/_1/id_1';
+      const expectedSidecarKey = 'upload/user-id/id/_1/id_1.xmp';
+      const s3Backend = {
+        put: vi.fn().mockResolvedValue(void 0),
+        delete: vi.fn().mockResolvedValue(void 0),
+      };
+      const previousS3Backend = (StorageService as any).s3Backend;
+      const previousWriteBackendType = (StorageService as any).writeBackendType;
+
+      (StorageService as any).s3Backend = s3Backend;
+      (StorageService as any).writeBackendType = 's3';
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertFile.mockResolvedValueOnce(void 0).mockRejectedValueOnce(error);
+
+      try {
+        await expect(sut.uploadAsset(authStub.user1, createDto, file, sidecarFile)).rejects.toThrow(error);
+
+        expect(s3Backend.put).toHaveBeenCalledWith(expectedOriginalKey, expect.anything(), {
+          contentType: 'application/octet-stream',
+        });
+        expect(s3Backend.put).toHaveBeenCalledWith(expectedSidecarKey, expect.anything());
+        expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+        expect(s3Backend.delete).toHaveBeenCalledWith(expectedOriginalKey);
+        expect(s3Backend.delete).toHaveBeenCalledWith(expectedSidecarKey);
+        expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+        (StorageService as any).writeBackendType = previousWriteBackendType;
+      }
+    });
+
+    it('should delete uploaded S3 originals directly when the temp cleanup queue fails', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: '/dev/null',
+        mimeType: 'image/heic',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.HEIC',
+        size: 42,
+      };
+      const error = new Error('job queue unavailable');
+      const expectedKey = 'upload/user-id/id/_1/id_1';
+      const s3Backend = {
+        put: vi.fn().mockResolvedValue(void 0),
+        delete: vi.fn().mockResolvedValue(void 0),
+      };
+      const previousS3Backend = (StorageService as any).s3Backend;
+      const previousWriteBackendType = (StorageService as any).writeBackendType;
+
+      (StorageService as any).s3Backend = s3Backend;
+      (StorageService as any).writeBackendType = 's3';
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.job.queue.mockRejectedValueOnce(error);
+
+      try {
+        await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toThrow(error);
+
+        expect(s3Backend.delete).toHaveBeenCalledWith(expectedKey);
+        expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
+        expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+      } finally {
+        (StorageService as any).s3Backend = previousS3Backend;
+        (StorageService as any).writeBackendType = previousWriteBackendType;
+      }
+    });
+
     it('should handle a duplicate', async () => {
       const file = {
         uuid: 'random-uuid',
