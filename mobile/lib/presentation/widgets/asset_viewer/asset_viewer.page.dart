@@ -20,9 +20,6 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.prov
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -68,20 +65,6 @@ class AssetViewer extends ConsumerStatefulWidget {
   ConsumerState createState() => _AssetViewerState();
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
-  // todo PeterO merge conflict!
-
-  //   ref.read(assetViewerProvider.notifier).reset();
-  //
-  //   // Hide controls by default for videos
-  //   if (asset.isVideo) {
-  //     ref.read(assetViewerProvider.notifier).setControls(false);
-  //   }
-  //
-  //   _setAsset(ref, asset);
-  // }
-  //
-  // static void _setAsset(WidgetRef ref, BaseAsset asset) {
-  //   ref.read(assetViewerProvider.notifier).setAsset(asset);
     prepareAssetViewerState(ref.read(assetViewerProvider.notifier), asset);
   }
 }
@@ -174,7 +157,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetChanged(int index) async {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
@@ -218,7 +203,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onEvent(Event event) {
-    if (!mounted || _disposeStarted) return;
+    if (!mounted || _disposeStarted) {
+      return;
+    }
     switch (event) {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
