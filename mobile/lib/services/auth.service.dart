@@ -86,6 +86,10 @@ class AuthService {
     return _authApiRepository.login(email, password);
   }
 
+  Future<LoginResponse> demoLogin() {
+    return _authApiRepository.demoLogin();
+  }
+
   /// Performs user logout operation by making a server request and clearing local data.
   ///
   /// This method attempts to log out the user through the authentication API repository.

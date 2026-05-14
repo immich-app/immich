@@ -84,6 +84,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return response;
   }
 
+  Future<LoginResponse> demoLogin() async {
+    final response = await _authService.demoLogin();
+    await saveAuthInfo(accessToken: response.accessToken);
+    return response;
+  }
+
   Future<void> logout() async {
     try {
       await _secureStorageService.delete(kSecuredPinCode);

@@ -8,6 +8,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -140,6 +141,27 @@ void main() {
       verify(() => authApiRepository.logout()).called(1);
       verify(() => backgroundSyncManager.cancel()).called(1);
       verify(() => authRepository.clearLocalData()).called(1);
+    });
+  });
+
+  group('demoLogin', () {
+    test('Should delegate to auth API repository', () async {
+      const response = LoginResponse(
+        accessToken: 'demo-token',
+        userId: 'demo-user-id',
+        userEmail: 'demo@gallery.app',
+        name: 'Demo User',
+        profileImagePath: '',
+        isAdmin: false,
+        shouldChangePassword: false,
+      );
+
+      when(() => authApiRepository.demoLogin()).thenAnswer((_) async => response);
+
+      final result = await sut.demoLogin();
+
+      expect(result, response);
+      verify(() => authApiRepository.demoLogin()).called(1);
     });
   });
 

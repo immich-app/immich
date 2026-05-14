@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -20,6 +22,26 @@ class AuthApiRepository extends ApiRepository {
     final loginResponseDto = await checkNull(
       _apiService.authenticationApi.login(LoginCredentialDto(email: email, password: password)),
     );
+
+    return _mapLoginReponse(loginResponseDto);
+  }
+
+  Future<LoginResponse> demoLogin() async {
+    final response = await _apiService.apiClient.invokeAPI(
+      '/auth/demo-login',
+      'POST',
+      <QueryParam>[],
+      null,
+      <String, String>{},
+      <String, String>{},
+      null,
+    );
+
+    if (response.statusCode >= 400) {
+      throw ApiException(response.statusCode, response.body);
+    }
+
+    final loginResponseDto = await checkNull(Future.value(LoginResponseDto.fromJson(jsonDecode(response.body))));
 
     return _mapLoginReponse(loginResponseDto);
   }
