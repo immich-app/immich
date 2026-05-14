@@ -3,7 +3,7 @@
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import CtrlDragTagger from '$lib/components/asset-viewer/CtrlDragTagger.svelte';
+  import CtrlFaceInteractionHandler from '$lib/components/asset-viewer/CtrlFaceInteractionHandler.svelte';
   import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
@@ -292,7 +292,7 @@
     {/snippet}
   </AdaptiveImage>
 
-  <CtrlDragTagger
+  <CtrlFaceInteractionHandler
     bind:ctrlKeyHeld
     bind:initialRect={ctrlDragInitialRect}
     containerEl={element}

@@ -1,6 +1,6 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/FaceEditor.svelte';
-  import CtrlDragTagger from '$lib/components/asset-viewer/CtrlDragTagger.svelte';
+  import CtrlFaceInteractionHandler from '$lib/components/asset-viewer/CtrlFaceInteractionHandler.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/VideoRemoteViewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -256,7 +256,7 @@
         </div>
       {/if}
 
-      <CtrlDragTagger
+      <CtrlFaceInteractionHandler
         bind:ctrlKeyHeld
         bind:initialRect={ctrlDragInitialRect}
         {containerEl}

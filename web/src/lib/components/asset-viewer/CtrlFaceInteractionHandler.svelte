@@ -102,6 +102,7 @@
         const panX = zoomState?.currentPositionX ?? 0;
         const panY = zoomState?.currentPositionY ?? 0;
 
+        // eslint-disable-next-line no-useless-assignment
         initialRect = {
           centerX: (left - panX + width / 2) / zoom,
           centerY: (top - panY + height / 2) / zoom,
