@@ -25,10 +25,10 @@ services:
       - server_node_modules:/usr/src/app/server/node_modules
       - web_node_modules:/usr/src/app/web/node_modules
       - github_node_modules:/usr/src/app/.github/node_modules
-      - cli_node_modules:/usr/src/app/cli/node_modules
+      - cli_node_modules:/usr/src/app/packages/cli/node_modules
       - docs_node_modules:/usr/src/app/docs/node_modules
       - e2e_node_modules:/usr/src/app/e2e/node_modules
-      - sdk_node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - sdk_node_modules:/usr/src/app/packages/sdk/node_modules
       - app_node_modules:/usr/src/app/node_modules
       - sveltekit:/usr/src/app/web/.svelte-kit
       - coverage:/usr/src/app/web/coverage
@@ -74,7 +74,7 @@ services:
       - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
       - pnpm_store_server:/buildcache/pnpm-store
-      - ../plugins:/build/corePlugin
+      - ../packages/plugins:/build/corePlugin
     env_file:
       - .env
     environment:
@@ -157,7 +157,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9
+    image: docker.io/valkey/valkey:9@sha256:8436e10bc65c94886a91d4415b6a6dfa9cb5a306fb3b996e5bb67cd2b4854193
     healthcheck:
       test: redis-cli ping || exit 1
 

@@ -68,7 +68,9 @@ class AssetFace {
 
   @override
   bool operator ==(covariant AssetFace other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.assetId == assetId &&

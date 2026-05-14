@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -32,21 +33,27 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
 Future<void> _migrateTo25() async {
   final accessToken = Store.tryGet(StoreKey.accessToken);
-  if (accessToken == null || accessToken.isEmpty) return;
+  if (accessToken == null || accessToken.isEmpty) {
+    return;
+  }
 
   final serverUrls = ApiService.getServerUrls();
-  if (serverUrls.isEmpty) return;
+  if (serverUrls.isEmpty) {
+    return;
+  }
 
   await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
 }
 
 Future<void> _migrateTo26(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
   await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, MetadataKey.logLevel, LogLevel.values);
+  // Theme
+  await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
   await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, MetadataKey.themePrimaryColor, ImmichColorPreset.values);
   await migrator.migrateBool(StoreKey.legacyDynamicTheme, MetadataKey.themeDynamic);
   await migrator.migrateBool(StoreKey.legacyColorfulInterface, MetadataKey.themeColorfulInterface);
+  // Cleanup
   final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
   if (cleanupKeepAlbumIds != null) {
     final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
@@ -67,6 +74,28 @@ Future<void> _migrateTo26(Drift drift) async {
   );
   await migrator.migrateInt(StoreKey.legacyCleanupCutoffDaysAgo, MetadataKey.cleanupCutoffDaysAgo);
   await migrator.migrateBool(StoreKey.legacyCleanupDefaultsInitialized, MetadataKey.cleanupDefaultsInitialized);
+  // Map
+  await migrator.migrateBool(StoreKey.legacyMapShowFavoriteOnly, MetadataKey.mapShowFavoriteOnly);
+  await migrator.migrateInt(StoreKey.legacyMapRelativeDate, MetadataKey.mapRelativeDate);
+  await migrator.migrateBool(StoreKey.legacyMapIncludeArchived, MetadataKey.mapIncludeArchived);
+  await migrator.migrateEnumIndex(StoreKey.legacyMapThemeMode, MetadataKey.mapThemeMode, ThemeMode.values);
+  await migrator.migrateBool(StoreKey.legacyMapwithPartners, MetadataKey.mapWithPartners);
+  // Timeline
+  await migrator.migrateInt(StoreKey.legacyTilesPerRow, MetadataKey.timelineTilesPerRow);
+  await migrator.migrateEnumIndex(
+    StoreKey.legacyGroupAssetsBy,
+    MetadataKey.timelineGroupAssetsBy,
+    GroupAssetsBy.values,
+  );
+  await migrator.migrateBool(StoreKey.legacyStorageIndicator, MetadataKey.timelineStorageIndicator);
+  // Image
+  await migrator.migrateBool(StoreKey.legacyPreferRemoteImage, MetadataKey.imagePreferRemote);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginal, MetadataKey.imageLoadOriginal);
+  // Viewer
+  await migrator.migrateBool(StoreKey.legacyLoopVideo, MetadataKey.viewerLoopVideo);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, MetadataKey.viewerLoadOriginalVideo);
+  await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, MetadataKey.viewerAutoPlayVideo);
+  await migrator.migrateBool(StoreKey.legacyTapToNavigate, MetadataKey.viewerTapToNavigate);
   await migrator.complete();
 }
 
@@ -79,7 +108,9 @@ class _StoreMigrator {
 
   Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, MetadataKey<T> newKey, List<T> values) async {
     final index = await readLegacyStoreInt(legacyKey.id);
-    if (index == null) return;
+    if (index == null) {
+      return;
+    }
 
     final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
     _cache[newKey] = enumValue;
@@ -92,7 +123,9 @@ class _StoreMigrator {
     List<T> values,
   ) async {
     final name = await readLegacyStoreString(legacyKey.id);
-    if (name == null) return;
+    if (name == null) {
+      return;
+    }
 
     final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
     _cache[newKey] = enumValue;
@@ -101,7 +134,9 @@ class _StoreMigrator {
 
   Future<void> migrateBool(StoreKey<bool> legacyKey, MetadataKey<bool> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) return;
+    if (intValue == null) {
+      return;
+    }
 
     final boolValue = intValue != 0;
     _cache[newKey] = boolValue;
@@ -110,7 +145,9 @@ class _StoreMigrator {
 
   Future<void> migrateInt(StoreKey<int> legacyKey, MetadataKey<int> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) return;
+    if (intValue == null) {
+      return;
+    }
 
     _cache[newKey] = intValue;
     _migratedStoreIds.add(legacyKey.id);
@@ -140,7 +177,9 @@ class _StoreMigrator {
   }
 
   Future<void> deleteLegacyStoreRows(List<int> ids) async {
-    if (ids.isEmpty) return;
+    if (ids.isEmpty) {
+      return;
+    }
     await (_db.storeEntity.delete()..where((t) => t.id.isIn(ids))).go();
   }
 }

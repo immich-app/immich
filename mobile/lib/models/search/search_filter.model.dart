@@ -36,7 +36,9 @@ class SearchLocationFilter {
 
   @override
   bool operator ==(covariant SearchLocationFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.country == country && other.state == state && other.city == city;
   }
@@ -75,7 +77,9 @@ class SearchCameraFilter {
 
   @override
   bool operator ==(covariant SearchCameraFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.make == make && other.model == model;
   }
@@ -117,7 +121,9 @@ class SearchDateFilter {
 
   @override
   bool operator ==(covariant SearchDateFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.takenBefore == takenBefore && other.takenAfter == takenAfter;
   }
@@ -152,7 +158,9 @@ class SearchRatingFilter {
 
   @override
   bool operator ==(covariant SearchRatingFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.rating == rating;
   }
@@ -198,7 +206,9 @@ class SearchDisplayFilters {
 
   @override
   bool operator ==(covariant SearchDisplayFilters other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.isNotInAlbum == isNotInAlbum && other.isArchive == isArchive && other.isFavorite == isFavorite;
   }
@@ -305,7 +315,9 @@ class SearchFilter {
 
   @override
   bool operator ==(covariant SearchFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.context == context &&
         other.filename == filename &&

@@ -42,7 +42,7 @@
     type SmartSearchDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -65,6 +65,7 @@
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
+  let searchTermKeys = $derived(getObjectKeys(terms));
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -235,50 +236,65 @@
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
+
+  function removeFilter(key: keyof SearchTerms) {
+    delete terms[key];
+    void goto(Route.search(terms));
+  }
 </script>
 
 <svelte:window bind:scrollY />
 
 <OnEvents {onAlbumAddAssets} />
 
-{#if terms}
-  <section
-    id="search-chips"
-    class="mt-24 flex w-full flex-wrap place-content-center place-items-center gap-5 px-24 text-center"
-  >
-    {#each getObjectKeys(terms) as searchKey (searchKey)}
-      {@const value = terms[searchKey]}
-      <div class="flex place-content-center place-items-center items-stretch text-xs">
+{#if searchTermKeys.length > 0}
+  <section id="search-chips" class="mx-auto mt-24 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
+    <div class="flex w-full flex-wrap place-content-center place-items-center gap-2.5 sm:gap-3">
+      {#each searchTermKeys as searchKey (searchKey)}
+        {@const value = terms[searchKey]}
         <div
-          class="flex items-center justify-center bg-immich-primary px-4 py-2 text-white dark:bg-immich-dark-primary dark:text-black
-          {value === true ? 'rounded-full' : 'rounded-s-full'}"
+          class="inline-flex max-w-full items-center rounded-full bg-primary/10 py-1 ps-1 pe-1 text-xs text-primary ring-1 ring-primary/15 transition-shadow hover:ring-primary/25 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20 dark:hover:ring-immich-dark-primary/30"
         >
-          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
-        </div>
+          <span
+            class="shrink-0 rounded-full bg-primary px-3 py-1.5 font-medium text-light dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+          >
+            {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+          </span>
 
-        {#if value !== true}
-          <div class="rounded-e-full bg-gray-300 px-4 py-2 dark:bg-gray-800 dark:text-white">
-            {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
-              {getHumanReadableDate(value)}
-            {:else if searchKey === 'personIds' && Array.isArray(value)}
-              {#await getPersonName(value) then personName}
-                {personName}
-              {/await}
-            {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
-              {#await getTagNames(value) then tagNames}
-                {tagNames}
-              {/await}
-            {:else if searchKey === 'rating'}
-              {$t('rating_count', { values: { count: value ?? 0 } })}
-            {:else if value === null || value === ''}
-              {$t('unknown')}
-            {:else}
-              {value}
-            {/if}
-          </div>
-        {/if}
-      </div>
-    {/each}
+          {#if value !== true}
+            <span class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg">
+              {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
+                {getHumanReadableDate(value)}
+              {:else if searchKey === 'personIds' && Array.isArray(value)}
+                {#await getPersonName(value) then personName}
+                  {personName}
+                {/await}
+              {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
+                {#await getTagNames(value) then tagNames}
+                  {tagNames}
+                {/await}
+              {:else if searchKey === 'rating'}
+                {$t('rating_count', { values: { count: value ?? 0 } })}
+              {:else if value === null || value === ''}
+                {$t('unknown')}
+              {:else}
+                {value}
+              {/if}
+            </span>
+          {/if}
+
+          <button
+            type="button"
+            class="ms-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-primary outline-offset-2 outline-immich-primary transition-colors hover:bg-primary/15 focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary dark:hover:bg-immich-dark-primary/20"
+            aria-label={$t('remove_filter')}
+            title={$t('remove_filter')}
+            onclick={() => removeFilter(searchKey)}
+          >
+            <Icon icon={mdiClose} size="14" />
+          </button>
+        </div>
+      {/each}
+    </div>
   </section>
 {/if}
 

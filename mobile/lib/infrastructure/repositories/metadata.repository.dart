@@ -48,7 +48,9 @@ class MetadataRepository extends DriftDatabaseRepository {
   T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
 
   Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
-    if (_read(key) == value) return;
+    if (_read(key) == value) {
+      return;
+    }
 
     await _db
         .into(_db.metadataEntity)
@@ -79,13 +81,17 @@ class MetadataRepository extends DriftDatabaseRepository {
     final keyMap = MetadataKey.asKeyMap();
     for (final row in rows) {
       final key = keyMap[row.key];
-      if (key == null) continue;
+      if (key == null) {
+        continue;
+      }
       _updateCache(key, key.decode(row.value));
     }
   }
 
   void _updateCache<T extends Object>(MetadataKey<T> key, T value) {
-    if (_cache[key] == value) return;
+    if (_cache[key] == value) {
+      return;
+    }
     _cache[key] = value;
     key.domain.rebuild(this);
   }
@@ -113,6 +119,25 @@ extension<T extends Object> on MetadataDomain<T> {
             keepAlbumIds: repo._read(.cleanupKeepAlbumIds),
             cutoffDaysAgo: repo._read(.cleanupCutoffDaysAgo),
             defaultsInitialized: repo._read(.cleanupDefaultsInitialized),
+          ),
+          map: .new(
+            relativeDays: repo._read(.mapRelativeDate),
+            favoritesOnly: repo._read(.mapShowFavoriteOnly),
+            includeArchived: repo._read(.mapIncludeArchived),
+            themeMode: repo._read(.mapThemeMode),
+            withPartners: repo._read(.mapWithPartners),
+          ),
+          timeline: .new(
+            tilesPerRow: repo._read(.timelineTilesPerRow),
+            groupAssetsBy: repo._read(.timelineGroupAssetsBy),
+            storageIndicator: repo._read(.timelineStorageIndicator),
+          ),
+          image: .new(preferRemote: repo._read(.imagePreferRemote), loadOriginal: repo._read(.imageLoadOriginal)),
+          viewer: .new(
+            loopVideo: repo._read(.viewerLoopVideo),
+            loadOriginalVideo: repo._read(.viewerLoadOriginalVideo),
+            autoPlayVideo: repo._read(.viewerAutoPlayVideo),
+            tapToNavigate: repo._read(.viewerTapToNavigate),
           ),
         );
       case .systemConfig:

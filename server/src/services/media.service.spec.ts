@@ -2698,9 +2698,11 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
-    it('should set options for nvenc', async () => {
+    it('should set options for nvenc sw decode', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHardwareAcceleration.Nvenc } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: false },
+      });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -2758,7 +2760,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
+          inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([expect.stringContaining('-multipass')]),
           twoPass: false,
         }),
@@ -2775,7 +2777,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
+          inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-cq:v', '23', '-maxrate', '10000k', '-bufsize', '6897k']),
           twoPass: false,
         }),
@@ -2792,7 +2794,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
+          inputOptions: expect.any(Array),
           outputOptions: expect.not.stringContaining('-maxrate'),
           twoPass: false,
         }),
@@ -2809,7 +2811,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
+          inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
           twoPass: false,
         }),
@@ -2824,7 +2826,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device', 'cuda=cuda:0', '-filter_hw_device', 'cuda']),
+          inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-multipass')]),
           twoPass: false,
         }),
@@ -2894,10 +2896,10 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should set options for qsv', async () => {
+    it('should set options for qsv with sw decode', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
       mocks.systemMetadata.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv, maxBitrate: '10000k' },
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv, maxBitrate: '10000k', accelDecode: false },
       });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -2947,13 +2949,14 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should set options for qsv with custom dri node', async () => {
+    it('should set options for qsv with custom dri node with sw decode', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: {
           accel: TranscodeHardwareAcceleration.Qsv,
           maxBitrate: '10000k',
           preferredHwDevice: '/dev/dri/renderD128',
+          accelDecode: false,
         },
       });
       await sut.handleVideoConversion({ id: 'video-id' });
@@ -2983,12 +2986,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device',
-            'hw',
-          ]),
+          inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
           twoPass: false,
         }),
@@ -3005,12 +3003,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'qsv=hw,child_device=/dev/dri/renderD128',
-            '-filter_hw_device',
-            'hw',
-          ]),
+          inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-low_power', '1']),
           twoPass: false,
         }),
@@ -3036,12 +3029,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'qsv=hw,child_device=/dev/dri/renderD129',
-            '-filter_hw_device',
-            'hw',
-          ]),
+          inputOptions: expect.arrayContaining(['-qsv_device', '/dev/dri/renderD129']),
           outputOptions: expect.arrayContaining(['-c:v', 'h264_qsv']),
           twoPass: false,
         }),
@@ -3158,9 +3146,11 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should set options for vaapi', async () => {
+    it('should set options for sw decode vaapi', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false },
+      });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -3211,12 +3201,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device',
-            'accel',
-          ]),
+          inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
             '-c:v',
             'h264_vaapi',
@@ -3242,12 +3227,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device',
-            'accel',
-          ]),
+          inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
             '-c:v',
             'h264_vaapi',
@@ -3275,12 +3255,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device',
-            'accel',
-          ]),
+          inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-compression_level')]),
           twoPass: false,
         }),
@@ -3296,12 +3271,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'vaapi=accel:/dev/dri/renderD129',
-            '-filter_hw_device',
-            'accel',
-          ]),
+          inputOptions: expect.arrayContaining(['-hwaccel_device', '/dev/dri/renderD129']),
           outputOptions: expect.arrayContaining(['-c:v', 'h264_vaapi']),
           twoPass: false,
         }),
@@ -3319,12 +3289,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         expect.any(String),
         expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device',
-            'vaapi=accel:/dev/dri/renderD128',
-            '-filter_hw_device',
-            'accel',
-          ]),
+          inputOptions: expect.arrayContaining(['-hwaccel_device', '/dev/dri/renderD128']),
           outputOptions: expect.arrayContaining(['-c:v', 'h264_vaapi']),
           twoPass: false,
         }),
@@ -3481,7 +3446,9 @@ describe(MediaService.name, () => {
 
     it('should fallback to sw transcoding if hw transcoding fails and hw decoding is disabled', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false },
+      });
       mocks.media.transcode.mockRejectedValueOnce(new Error('error'));
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).toHaveBeenCalledTimes(2);

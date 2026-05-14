@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 
 enum MetadataDomain<T extends Object> {
   appConfig<AppConfig>('config.app'),
@@ -23,8 +24,35 @@ enum MetadataKey<T extends Object> {
   themeDynamic<bool>(.appConfig, 'theme.dynamic', false),
   themeColorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
 
+  // Image
+  imagePreferRemote<bool>(.appConfig, 'image.preferRemote', false),
+  imageLoadOriginal<bool>(.appConfig, 'image.loadOriginal', false),
+
+  // Viewer
+  viewerLoopVideo<bool>(.appConfig, 'viewer.loopVideo', true),
+  viewerLoadOriginalVideo<bool>(.appConfig, 'viewer.loadOriginalVideo', false),
+  viewerAutoPlayVideo<bool>(.appConfig, 'viewer.autoPlayVideo', true),
+  viewerTapToNavigate<bool>(.appConfig, 'viewer.tapToNavigate', false),
+
+  // Timeline
+  timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
+  timelineGroupAssetsBy<GroupAssetsBy>(
+    .appConfig,
+    'timeline.groupAssetsBy',
+    GroupAssetsBy.day,
+    _EnumCodec(GroupAssetsBy.values),
+  ),
+  timelineStorageIndicator<bool>(.appConfig, 'timeline.storageIndicator', true),
+
   // Log
   logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values)),
+
+  // Map
+  mapShowFavoriteOnly<bool>(.appConfig, 'map.showFavoriteOnly', false),
+  mapRelativeDate<int>(.appConfig, 'map.relativeDate', 0),
+  mapIncludeArchived<bool>(.appConfig, 'map.includeArchived', false),
+  mapThemeMode<ThemeMode>(.appConfig, 'map.themeMode', .system, _EnumCodec(ThemeMode.values)),
+  mapWithPartners<bool>(.appConfig, 'map.withPartners', false),
 
   // Cleanup
   cleanupKeepFavorites<bool>(.appConfig, 'cleanup.keepFavorites', true),
@@ -115,12 +143,18 @@ final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
   List<T>? decode(String raw) {
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return null;
+      if (decoded is! List) {
+        return null;
+      }
       final result = <T>[];
       for (final item in decoded) {
-        if (item is! String) return null;
+        if (item is! String) {
+          return null;
+        }
         final element = _elementCodec.decode(item);
-        if (element == null) return null;
+        if (element == null) {
+          return null;
+        }
         result.add(element);
       }
       return result;

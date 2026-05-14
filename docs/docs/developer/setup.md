@@ -58,7 +58,7 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 
 If you only want to do web development connected to an existing, remote backend, follow these steps:
 
-1. Build the Immich SDK - `cd open-api/typescript-sdk && pnpm i && pnpm run build && cd -`
+1. Build the Immich SDK - `pnpm --filter @immich/sdk install && pnpm --filter @immich/sdk build`
 2. Enter the web directory - `cd web/`
 3. Install web dependencies - `pnpm i`
 4. Start the web development server

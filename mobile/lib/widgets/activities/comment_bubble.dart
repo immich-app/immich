@@ -35,7 +35,9 @@ class CommentBubble extends ConsumerWidget {
     Future<void> openAssetViewer() async {
       final activityService = ref.read(activityServiceProvider);
       final route = await activityService.buildAssetViewerRoute(activity.assetId!, ref);
-      if (route != null) await context.pushRoute(route);
+      if (route != null) {
+        await context.pushRoute(route);
+      }
     }
 
     // avatar (hidden for own messages)

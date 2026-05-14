@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
@@ -708,7 +709,9 @@ class _SearchResultGrid extends ConsumerWidget {
   bool _onScrollUpdateNotification(ScrollNotification notification) {
     final metrics = notification.metrics;
 
-    if (metrics.axis != Axis.vertical) return false;
+    if (metrics.axis != Axis.vertical) {
+      return false;
+    }
 
     final isBottomSheet = notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
     final remaining = metrics.maxScrollExtent - metrics.pixels;
@@ -735,7 +738,9 @@ class _SearchResultGrid extends ConsumerWidget {
 
     final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
 
-    if (hasMore) return null;
+    if (hasMore) {
+      return null;
+    }
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -874,6 +879,12 @@ class _QuickLinkList extends StatelessWidget {
             icon: Icons.schedule_outlined,
             isTop: true,
             onTap: () => context.pushRoute(const DriftRecentlyTakenRoute()),
+          ),
+          _QuickLink(
+            title: context.t.recently_added,
+            icon: Icons.upload_outlined,
+            isTop: true,
+            onTap: () => context.pushRoute(const DriftRecentlyAddedRoute()),
           ),
           _QuickLink(
             title: 'videos'.t(context: context),

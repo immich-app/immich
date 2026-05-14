@@ -79,7 +79,6 @@ void main() {
       expect(sut.appConfig.theme.mode, ThemeMode.system);
 
       await MetadataRepository.refresh();
-
       expect(sut.appConfig.theme.mode, ThemeMode.dark);
     });
 
@@ -90,7 +89,6 @@ void main() {
       expect(sut.appConfig.theme.mode, ThemeMode.dark);
 
       await MetadataRepository.refresh();
-
       expect(sut.appConfig.theme.mode, ThemeMode.system);
     });
 
@@ -135,5 +133,4 @@ void main() {
       await expectation;
     });
   });
-
 }

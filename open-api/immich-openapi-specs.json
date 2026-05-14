@@ -13323,6 +13323,15 @@
             }
           },
           {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrderBy"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -13510,6 +13519,15 @@
             "description": "Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrderBy"
             }
           },
           {
@@ -16022,6 +16040,7 @@
         "type": "object"
       },
       "AssetFaceResponseDto": {
+        "description": "Asset face with person",
         "properties": {
           "boundingBoxX1": {
             "description": "Bounding box X1 coordinate",
@@ -16125,66 +16144,6 @@
         ],
         "type": "object"
       },
-      "AssetFaceWithoutPersonResponseDto": {
-        "description": "Asset face without person",
-        "properties": {
-          "boundingBoxX1": {
-            "description": "Bounding box X1 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxX2": {
-            "description": "Bounding box X2 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxY1": {
-            "description": "Bounding box Y1 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxY2": {
-            "description": "Bounding box Y2 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "id": {
-            "description": "Face ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          },
-          "imageHeight": {
-            "description": "Image height in pixels",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "imageWidth": {
-            "description": "Image width in pixels",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "sourceType": {
-            "$ref": "#/components/schemas/SourceType"
-          }
-        },
-        "required": [
-          "boundingBoxX1",
-          "boundingBoxX2",
-          "boundingBoxY1",
-          "boundingBoxY2",
-          "id",
-          "imageHeight",
-          "imageWidth"
-        ],
-        "type": "object"
-      },
       "AssetIdErrorReason": {
         "description": "Error reason if failed",
         "enum": [
@@ -16271,7 +16230,7 @@
           },
           "duration": {
             "description": "Duration in milliseconds (for videos)",
-            "maximum": 2147483647,
+            "maximum": 9007199254740991,
             "minimum": 0,
             "type": "integer"
           },
@@ -16616,6 +16575,14 @@
         ],
         "type": "string"
       },
+      "AssetOrderBy": {
+        "description": "Asset sorting property",
+        "enum": [
+          "takenAt",
+          "createdAt"
+        ],
+        "type": "string"
+      },
       "AssetRejectReason": {
         "description": "Rejection reason if rejected",
         "enum": [
@@ -16755,7 +16722,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonWithFacesResponseDto"
+              "$ref": "#/components/schemas/PersonResponseDto"
             },
             "type": "array"
           },
@@ -16795,12 +16762,6 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
-          },
-          "unassignedFaces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
           },
           "updatedAt": {
             "description": "The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.",
@@ -16929,7 +16890,6 @@
         "enum": [
           "mp3",
           "aac",
-          "libopus",
           "opus",
           "pcm_s16le"
         ],
@@ -19763,93 +19723,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "PersonWithFacesResponseDto": {
-        "properties": {
-          "birthDate": {
-            "description": "Person date of birth",
-            "format": "date",
-            "nullable": true,
-            "type": "string"
-          },
-          "color": {
-            "description": "Person color (hex)",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "faces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
-          },
-          "id": {
-            "description": "Person ID",
-            "type": "string"
-          },
-          "isFavorite": {
-            "description": "Is favorite",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "isHidden": {
-            "description": "Is hidden",
-            "type": "boolean"
-          },
-          "name": {
-            "description": "Person name",
-            "type": "string"
-          },
-          "thumbnailPath": {
-            "description": "Thumbnail path",
-            "type": "string"
-          },
-          "updatedAt": {
-            "description": "Last update date",
-            "format": "date-time",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.107.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          }
-        },
-        "required": [
-          "birthDate",
-          "faces",
-          "id",
-          "isHidden",
-          "name",
-          "thumbnailPath"
-        ],
         "type": "object"
       },
       "PinCodeChangeDto": {
@@ -23067,6 +22940,14 @@
             "description": "Checksum",
             "type": "string"
           },
+          "createdAt": {
+            "description": "Uploaded to Immich at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
           "deletedAt": {
             "description": "Deleted at",
             "example": "2024-01-01T00:00:00.000Z",
@@ -23167,6 +23048,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deletedAt",
           "duration",
           "fileCreatedAt",
@@ -23192,6 +23074,14 @@
         "properties": {
           "checksum": {
             "description": "Checksum",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Uploaded to Immich at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "deletedAt": {
@@ -23296,6 +23186,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deletedAt",
           "duration",
           "fileCreatedAt",
@@ -25144,6 +25035,13 @@
             },
             "type": "array"
           },
+          "createdAt": {
+            "description": "Array of UTC timestamps when each asset was originally uploaded to Immich",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "duration": {
             "description": "Array of video/gif durations in milliseconds (null for static images)",
             "items": {
@@ -25274,6 +25172,7 @@
         "required": [
           "city",
           "country",
+          "createdAt",
           "duration",
           "fileCreatedAt",
           "id",

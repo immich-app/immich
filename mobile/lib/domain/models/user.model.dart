@@ -125,7 +125,9 @@ profileChangedAt: $profileChangedAt
 
   @override
   bool operator ==(covariant UserDto other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         ((updatedAt == null && other.updatedAt == null) ||
@@ -219,7 +221,9 @@ class PartnerUserDto {
 
   @override
   bool operator ==(covariant PartnerUserDto other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.email == email &&
