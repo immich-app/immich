@@ -128,9 +128,8 @@ enum ActionButtonType {
             !context.isWaitingForTrashApproval,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
-                context.asset.hasRemote && //
-                !context.isTrashEnabled ||
-            context.isInLockedView && !context.isWaitingForTrashApproval,
+            context.asset.hasRemote && //
+            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView) && !context.isWaitingForTrashApproval,
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -333,6 +332,7 @@ class ActionButtonBuilder {
     ActionButtonType.archive,
     ActionButtonType.unarchive,
     ActionButtonType.restoreTrash,
+    ActionButtonType.deletePermanent,
   };
 
   static List<Widget> build(ActionButtonContext context) {

@@ -33,6 +33,7 @@ class RemoteAsset extends BaseAsset {
     super.livePhotoVideoId,
     this.stackId,
     required super.isEdited,
+    this.deletedAt,
   }) : localAssetId = localId;
 
   @override
@@ -49,6 +50,8 @@ class RemoteAsset extends BaseAsset {
 
   @override
   bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage && deletedAt == null;
+
+  bool get isTrashed => deletedAt != null;
 
   @override
   String toString() {
@@ -90,7 +93,8 @@ class RemoteAsset extends BaseAsset {
         visibility == other.visibility &&
         deletedAt == other.deletedAt &&
         stackId == other.stackId &&
-        uploadedAt == other.uploadedAt;
+        uploadedAt == other.uploadedAt &&
+        deletedAt == other.deletedAt;
   }
 
   @override
@@ -103,7 +107,8 @@ class RemoteAsset extends BaseAsset {
       visibility.hashCode ^
       deletedAt.hashCode ^
       stackId.hashCode ^
-      uploadedAt.hashCode;
+      uploadedAt.hashCode ^
+      deletedAt.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -125,6 +130,7 @@ class RemoteAsset extends BaseAsset {
     String? livePhotoVideoId,
     String? stackId,
     bool? isEdited,
+    DateTime? deletedAt,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -146,6 +152,7 @@ class RemoteAsset extends BaseAsset {
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
