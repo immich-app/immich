@@ -1172,6 +1172,11 @@ export class PersonService extends BaseService {
         const targetIdentity = await this.faceIdentityRepository.ensurePersonIdentity(id);
         const sourceIdentity = await this.faceIdentityRepository.ensurePersonIdentity(mergeId);
         await this.personRepository.reassignFaces(mergeData);
+        await this.faceIdentityRepository.linkPersonFaces({
+          personId: id,
+          identityId: targetIdentity.id,
+          source: 'manual',
+        });
         await this.removeAllPeople([mergePerson]);
         await this.faceIdentityRepository.mergeIdentities({
           targetIdentityId: targetIdentity.id,

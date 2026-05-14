@@ -1345,6 +1345,38 @@ set
 returning
   *
 
+-- FaceIdentityRepository.linkPersonFaces
+insert into
+  "face_identity_face" (
+    "assetFaceId",
+    "identityId",
+    "source",
+    "confidence"
+  )
+select
+  "asset_face"."id" as "assetFaceId",
+  $1 as "identityId",
+  $2 as "source",
+  $3 as "confidence"
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  left join "face_identity_face" on "face_identity_face"."assetFaceId" = "asset_face"."id"
+where
+  "asset_face"."personId" = $4
+  and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" = $5
+  and "asset"."deletedAt" is null
+  and (
+    "face_identity_face"."identityId" is null
+    or "face_identity_face"."identityId" != $6
+  )
+on conflict ("assetFaceId") do update
+set
+  "identityId" = $7,
+  "source" = $8,
+  "confidence" = $9
+
 -- FaceIdentityRepository.updateRepresentativeFace
 update "face_identity"
 set

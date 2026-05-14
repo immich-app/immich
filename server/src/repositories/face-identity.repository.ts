@@ -27,6 +27,12 @@ export type LinkFaceInput = {
   confidence?: number | null;
 };
 
+export type LinkPersonFacesInput = {
+  personId: string;
+  identityId: string;
+  source: FaceIdentityFaceSource;
+};
+
 export type BackfillResult = {
   processed: number;
   nextCursor?: string;
@@ -1982,6 +1988,43 @@ export class FaceIdentityRepository {
       )
       .returningAll()
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [{ personId: DummyValue.UUID, identityId: DummyValue.UUID, source: 'manual' }] })
+  async linkPersonFaces(input: LinkPersonFacesInput): Promise<void> {
+    await this.db
+      .insertInto('face_identity_face')
+      .columns(['assetFaceId', 'identityId', 'source', 'confidence'])
+      .expression((eb) =>
+        eb
+          .selectFrom('asset_face')
+          .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+          .leftJoin('face_identity_face', 'face_identity_face.assetFaceId', 'asset_face.id')
+          .select((eb) => [
+            'asset_face.id as assetFaceId',
+            eb.val(input.identityId).as('identityId'),
+            eb.val(input.source).as('source'),
+            eb.val(null).as('confidence'),
+          ])
+          .where('asset_face.personId', '=', input.personId)
+          .where('asset_face.deletedAt', 'is', null)
+          .where('asset_face.isVisible', '=', true)
+          .where('asset.deletedAt', 'is', null)
+          .where((eb) =>
+            eb.or([
+              eb('face_identity_face.identityId', 'is', null),
+              eb('face_identity_face.identityId', '!=', input.identityId),
+            ]),
+          ),
+      )
+      .onConflict((oc) =>
+        oc.column('assetFaceId').doUpdateSet({
+          identityId: input.identityId,
+          source: input.source,
+          confidence: null,
+        }),
+      )
+      .execute();
   }
 
   @GenerateSql({ params: [{ identityId: DummyValue.UUID, assetFaceId: DummyValue.UUID }] })
