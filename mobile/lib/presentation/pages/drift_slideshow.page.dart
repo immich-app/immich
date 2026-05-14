@@ -45,7 +45,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   @override
   initState() {
     super.initState();
-    _config = ref.watch(appConfigProvider.select((s) => s.slideshow));
+    _config = ref.read(appConfigProvider.select((s) => s.slideshow));
     final asset = ref.read(assetViewerProvider).currentAsset!;
     _index = widget.timeline.getIndex(asset.heroTag)!;
     _pageController = PageController(initialPage: _index);
