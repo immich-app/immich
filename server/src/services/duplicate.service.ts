@@ -300,30 +300,28 @@ export class DuplicateService extends BaseService {
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
   async handleQueueSearchDuplicates({ force }: JobOf<JobName.AssetDetectDuplicatesQueueAll>): Promise<JobStatus> {
-    return this.databaseRepository.withLock(DatabaseLock.DuplicateDetection, async () => {
-      const { machineLearning } = await this.getConfig({ withCache: false });
-      if (!isDuplicateDetectionEnabled(machineLearning)) {
-        return JobStatus.Skipped;
+    const { machineLearning } = await this.getConfig({ withCache: false });
+    if (!isDuplicateDetectionEnabled(machineLearning)) {
+      return JobStatus.Skipped;
+    }
+
+    let jobs: JobItem[] = [];
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
+
+    const assets = this.assetJobRepository.streamForSearchDuplicates(force);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
       }
+    }
 
-      let jobs: JobItem[] = [];
-      const queueAll = async () => {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      };
+    await queueAll();
 
-      const assets = this.assetJobRepository.streamForSearchDuplicates(force);
-      for await (const asset of assets) {
-        jobs.push({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } });
-        if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-          await queueAll();
-        }
-      }
-
-      await queueAll();
-
-      return JobStatus.Success;
-    });
+    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicates, queue: QueueName.DuplicateDetection })
