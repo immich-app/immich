@@ -1,27 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class SlideshowSettings extends HookConsumerWidget {
   const SlideshowSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressBar = useAppSettingsState(AppSettingsEnum.slideshowProgressBar);
-    final transition = useAppSettingsState(AppSettingsEnum.slideshowTransition);
-    final repeat = useAppSettingsState(AppSettingsEnum.slideshowRepeat);
-    final duration = useAppSettingsState(AppSettingsEnum.slideshowDuration);
-    final look = useAppSettingsState(AppSettingsEnum.slideshowLook);
-    final direction = useAppSettingsState(AppSettingsEnum.slideshowDirection);
+    final slideshow = ref.read(appConfigProvider).slideshow;
+    final useProgressBar = useState(slideshow.progressBar);
+    final useTransition = useState(slideshow.transition);
+    final useRepeat = useState(slideshow.repeat);
+    final useDuration = useState(slideshow.duration);
+    final useLook = useState(slideshow.look);
+    final useDirection = useState(slideshow.direction);
+
+    useValueChanged<bool, void>(useProgressBar.value, (_, __) {
+      ref.read(metadataProvider).write(.slideshowProgressBar, useProgressBar.value);
+    });
+    useValueChanged<bool, void>(useTransition.value, (_, __) {
+      ref.read(metadataProvider).write(.slideshowTransition, useTransition.value);
+    });
+    useValueChanged<bool, void>(useRepeat.value, (_, __) {
+      ref.read(metadataProvider).write(.slideshowRepeat, useRepeat.value);
+    });
+    useValueChanged<int, void>(useDuration.value, (_, __) {
+      ref.read(metadataProvider).write(.slideshowDuration, useDuration.value);
+    });
+    useValueChanged<SlideshowLook, void>(useLook.value, (_, __) {
+      ref.read(metadataProvider).write(.slideshowLook, useLook.value);
+    });
+    useValueChanged<SlideshowDirection, void>(useDirection.value, (_, __) {
+      ref.read(metadataProvider).write(.slideshowDirection, useDirection.value);
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,24 +50,21 @@ class SlideshowSettings extends HookConsumerWidget {
           icon: Icons.slideshow_outlined,
         ),
         SettingsSwitchListTile(
-          valueNotifier: progressBar,
+          valueNotifier: useProgressBar,
           title: "show_progress_bar".t(context: context),
-          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSwitchListTile(
-          valueNotifier: transition,
+          valueNotifier: useTransition,
           title: "show_slideshow_transition".t(context: context),
-          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
-          enabled: direction.value != SlideshowDirection.shuffle.index,
+          enabled: useDirection.value != SlideshowDirection.shuffle,
         ),
         SettingsSwitchListTile(
-          valueNotifier: repeat,
+          valueNotifier: useRepeat,
           title: "slideshow_repeat".t(context: context),
           subtitle: "slideshow_repeat_description".t(context: context),
-          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSliderListTile(
-          valueNotifier: duration,
+          valueNotifier: useDuration,
           text: "duration".t(context: context),
           minValue: 1,
           noDivisons: 6,
@@ -70,12 +86,10 @@ class SlideshowSettings extends HookConsumerWidget {
               value: SlideshowLook.blurredBackground,
             ),
           ],
-          groupBy: SlideshowLook.values[look.value],
-          onRadioChanged: (value) async {
+          groupBy: useLook.value,
+          onRadioChanged: (value) {
             if (value != null) {
-              look.value = value.index;
-              await ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.slideshowLook, value.index);
-              ref.invalidate(appSettingsServiceProvider);
+              useLook.value = value;
             }
           },
         ),
@@ -95,12 +109,10 @@ class SlideshowSettings extends HookConsumerWidget {
               value: SlideshowDirection.shuffle,
             ),
           ],
-          groupBy: SlideshowDirection.values[direction.value],
-          onRadioChanged: (value) async {
+          groupBy: useDirection.value,
+          onRadioChanged: (value) {
             if (value != null) {
-              direction.value = value.index;
-              await ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.slideshowDirection, value.index);
-              ref.invalidate(appSettingsServiceProvider);
+              useDirection.value = value;
             }
           },
         ),

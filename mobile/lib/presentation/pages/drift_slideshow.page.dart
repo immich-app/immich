@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
@@ -14,11 +15,10 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -33,7 +33,7 @@ class DriftSlideshowPage extends ConsumerStatefulWidget {
 }
 
 class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
-  late final AppSettingsService _appSettings;
+  late final SlideshowConfig _config;
   late final PageController _pageController;
   late final Stopwatch _stopwatch;
   late Timer _timer;
@@ -45,8 +45,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   @override
   initState() {
     super.initState();
-
-    _appSettings = ref.read(appSettingsServiceProvider);
+    _config = ref.watch(appConfigProvider.select((s) => s.slideshow));
     final asset = ref.read(assetViewerProvider).currentAsset!;
     _index = widget.timeline.getIndex(asset.heroTag)!;
     _pageController = PageController(initialPage: _index);
@@ -100,7 +99,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   }
 
   void _updateNextIndex() {
-    _nextIndex = switch (SlideshowDirection.values[_appSettings.getSetting<int>(AppSettingsEnum.slideshowDirection)]) {
+    _nextIndex = switch (_config.direction) {
       SlideshowDirection.forward => _index + 1,
       SlideshowDirection.backward => _index - 1,
       SlideshowDirection.shuffle => widget.timeline.getIndex(widget.timeline.getRandomAsset().heroTag)!,
@@ -112,11 +111,9 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   }
 
   void _nextPage() async {
-    final dir = SlideshowDirection.values[_appSettings.getSetting<int>(AppSettingsEnum.slideshowDirection)];
-
     if (_nextIndex < 0 || _nextIndex >= widget.timeline.totalAssets) {
-      if (_appSettings.getSetting<bool>(AppSettingsEnum.slideshowRepeat)) {
-        final wrapped = dir == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
+      if (_config.repeat) {
+        final wrapped = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
         await widget.timeline.preloadAssets(wrapped);
         _pageController.jumpToPage(wrapped);
       }
@@ -127,7 +124,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
       await widget.timeline.preloadAssets(_nextIndex);
     }
 
-    if (dir == SlideshowDirection.shuffle || !_appSettings.getSetting<bool>(AppSettingsEnum.slideshowTransition)) {
+    if (_config.direction == SlideshowDirection.shuffle || !_config.transition) {
       _pageController.jumpToPage(_nextIndex);
     } else {
       unawaited(_pageController.animateToPage(_nextIndex, duration: Durations.long2, curve: Curves.easeIn));
@@ -135,17 +132,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   }
 
   void _createTimer() {
-    _timer = Timer(
-      Duration(
-        milliseconds:
-            _appSettings.getSetting<int>(AppSettingsEnum.slideshowDuration) * 1000 - _stopwatch.elapsedMilliseconds,
-      ),
-      () {
-        _stopwatch.stop();
-        _stopwatch.reset();
-        _nextPage();
-      },
-    );
+    _timer = Timer(Duration(milliseconds: _config.duration * 1000 - _stopwatch.elapsedMilliseconds), () {
+      _stopwatch.stop();
+      _stopwatch.reset();
+      _nextPage();
+    });
 
     _stopwatch.start();
   }
@@ -191,7 +182,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
 
     if (asset.isImage) {
       final elapsed = _stopwatch.elapsedMilliseconds;
-      final duration = _appSettings.getSetting<int>(AppSettingsEnum.slideshowDuration) * 1000;
+      final duration = _config.duration * 1000;
 
       return TweenAnimationBuilder(
         tween: Tween<double>(begin: elapsed / duration.toDouble(), end: _paused ? elapsed / duration.toDouble() : 1.0),
@@ -238,7 +229,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
 
   Widget _getPhotoView(BuildContext context, int index) {
     final asset = widget.timeline.getAssetSafe(index);
-    final scale = _appSettings.getSetting<int>(AppSettingsEnum.slideshowLook) == SlideshowLook.cover.index
+    final scale = _config.look == SlideshowLook.cover
         ? PhotoViewComputedScale.covered
         : PhotoViewComputedScale.contained;
 
@@ -324,10 +315,9 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
           onPageChanged: _pageChanged,
           itemBuilder: (context, index) => Stack(
             children: [
-              if (_appSettings.getSetting<int>(AppSettingsEnum.slideshowLook) == SlideshowLook.blurredBackground.index)
-                _getBlur(context, index),
+              if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
               _getPhotoView(context, index),
-              if (_index == index && _appSettings.getSetting<bool>(AppSettingsEnum.slideshowProgressBar))
+              if (_index == index && _config.progressBar)
                 Align(alignment: Alignment.bottomCenter, child: _getProgressBar(context, index)),
             ],
           ),

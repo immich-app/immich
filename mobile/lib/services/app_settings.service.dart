@@ -15,13 +15,7 @@ enum AppSettingsEnum<T> {
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
-  slideshowProgressBar<bool>(StoreKey.slideshowProgressBar, null, true),
-  slideshowTransition<bool>(StoreKey.slideshowTransition, null, true),
-  slideshowRepeat<bool>(StoreKey.slideshowRepeat, null, false),
-  slideshowDuration<int>(StoreKey.slideshowDuration, null, 5),
-  slideshowLook<int>(StoreKey.slideshowLook, null, 0),
-  slideshowDirection<int>(StoreKey.slideshowDirection, null, 0);
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
