@@ -91,6 +91,11 @@ Future<void> _migrateTo26(Drift drift) async {
   // Image
   await migrator.migrateBool(StoreKey.legacyPreferRemoteImage, MetadataKey.imagePreferRemote);
   await migrator.migrateBool(StoreKey.legacyLoadOriginal, MetadataKey.imageLoadOriginal);
+  // Viewer
+  await migrator.migrateBool(StoreKey.legacyLoopVideo, MetadataKey.viewerLoopVideo);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, MetadataKey.viewerLoadOriginalVideo);
+  await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, MetadataKey.viewerAutoPlayVideo);
+  await migrator.migrateBool(StoreKey.legacyTapToNavigate, MetadataKey.viewerTapToNavigate);
   await migrator.complete();
 }
 
