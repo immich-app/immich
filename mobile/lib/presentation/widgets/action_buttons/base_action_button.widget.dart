@@ -35,10 +35,11 @@ class BaseActionButton extends ConsumerWidget {
     final miniWidth = minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
     final iconTheme = IconTheme.of(context);
     final iconSize = iconTheme.size ?? 24.0;
-    final iconColor = this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
     final textColor = context.themeData.textTheme.labelLarge?.color;
 
     if (iconOnly) {
+      final iconColor = this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
+
       return IconButton(
         onPressed: onPressed,
         icon: Icon(iconData, size: iconSize, color: iconColor),
@@ -46,16 +47,17 @@ class BaseActionButton extends ConsumerWidget {
     }
 
     if (menuItem) {
-      final theme = context.themeData;
-      final effectiveIconColor = iconColor ?? theme.iconTheme.color ?? theme.colorScheme.onSurfaceVariant;
+      final iconColor = this.iconColor;
 
       return MenuItemButton(
         style: MenuItemButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.all(16)),
-        leadingIcon: Icon(iconData, color: effectiveIconColor),
+        leadingIcon: Icon(iconData, color: iconColor),
         onPressed: onPressed,
-        child: Text(label, style: theme.textTheme.labelLarge?.copyWith(fontSize: 16, color: iconColor)),
+        child: Text(label, style: TextStyle(fontSize: 16, color: iconColor)),
       );
     }
+
+    final iconColor = this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),

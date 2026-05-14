@@ -74,5 +74,6 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     localId: localId,
     stackId: stackId,
     isEdited: isEdited,
+    deletedAt: deletedAt,
   );
 }
