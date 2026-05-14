@@ -301,20 +301,18 @@ export class DuplicateService extends BaseService {
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
   async handleQueueSearchDuplicates({ force }: JobOf<JobName.AssetDetectDuplicatesQueueAll>): Promise<JobStatus> {
-    return this.databaseRepository.withLock(DatabaseLock.DuplicateDetection, async () => {
-      const { machineLearning } = await this.getConfig({ withCache: false });
-      if (!isDuplicateDetectionEnabled(machineLearning)) {
-        return JobStatus.Skipped;
-      }
+    const { machineLearning } = await this.getConfig({ withCache: false });
+    if (!isDuplicateDetectionEnabled(machineLearning)) {
+      return JobStatus.Skipped;
+    }
 
-      for await (const assets of batched(this.assetJobRepository.streamForSearchDuplicates(force))) {
-        await this.jobRepository.queueAll(
-          assets.map((asset) => ({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } })),
-        );
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForSearchDuplicates(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } })),
+      );
+    }
 
-      return JobStatus.Success;
-    });
+    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicates, queue: QueueName.DuplicateDetection })
