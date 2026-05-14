@@ -171,8 +171,8 @@ export class JobRepository {
         options: this.getJobOptions(item) || undefined,
       } as JobItem & { data: any; options: JobsOptions | undefined };
 
-      if (job.options?.jobId) {
-        // need to use add() instead of addBulk() for jobId deduplication
+      if (job.options?.jobId || job.options?.deduplication) {
+        // need to use add() instead of addBulk() for jobId/deduplication to take effect
         promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
       } else {
         itemsByQueue[queueName] = itemsByQueue[queueName] || [];
@@ -230,13 +230,13 @@ export class JobRepository {
         return { priority: 1 };
       }
       case JobName.FacialRecognitionQueueAll: {
-        return { jobId: JobName.FacialRecognitionQueueAll };
+        return { deduplication: { id: JobName.FacialRecognitionQueueAll } };
       }
       case JobName.VersionCheck: {
-        return { jobId: JobName.VersionCheck };
+        return { deduplication: { id: JobName.VersionCheck } };
       }
       case JobName.DatabaseBackup: {
-        return { jobId: JobName.DatabaseBackup };
+        return { deduplication: { id: JobName.DatabaseBackup } };
       }
       default: {
         return null;
