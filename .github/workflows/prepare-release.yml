@@ -150,7 +150,7 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           draft: true
-          prerelease: ${{ contains(needs.bump_version.outputs.version, '-rc.') }}
+          prerelease: ${{ inputs.rc == 'true' }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true

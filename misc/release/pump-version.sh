@@ -148,9 +148,9 @@ fi
 sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
 sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
-# iOS marketing version cannot contain a pre-release suffix; strip -rc.N before writing the plist.
+# iOS marketing version cannot contain a pre-release suffix; the plist always holds the base version.
 IOS_NEXT="${NEXT_SERVER%-rc.*}"
-perl -i -p0e "s/(<key>CFBundleShortVersionString<\/key>\s*<string>)$CURRENT_SERVER(<\/string>)/\${1}$IOS_NEXT\${2}/s" mobile/ios/Runner/Info.plist
+perl -i -p0e "s/(<key>CFBundleShortVersionString<\/key>\s*<string>)$CURRENT_BASE(<\/string>)/\${1}$IOS_NEXT\${2}/s" mobile/ios/Runner/Info.plist
 
 
 echo "IMMICH_VERSION=v$NEXT_SERVER" >>"$GITHUB_ENV"
