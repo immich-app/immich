@@ -69,6 +69,14 @@ enum StoreKey<T> {
   // Image viewer navigation settings
   tapToNavigate<bool>._(141),
 
+  // Slideshow settings
+  slideshowProgressBar<bool>._(142),
+  slideshowTransition<bool>._(143),
+  slideshowRepeat<bool>._(144),
+  slideshowDuration<int>._(145),
+  slideshowLook<int>._(146),
+  slideshowDirection<int>._(147),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
