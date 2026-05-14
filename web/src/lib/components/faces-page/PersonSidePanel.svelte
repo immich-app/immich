@@ -31,9 +31,10 @@
     assetType: AssetTypeEnum;
     onClose: () => void;
     onRefresh: () => void;
+    initialFaceId?: string;
   }
 
-  let { assetId, assetType, onClose, onRefresh }: Props = $props();
+  let { assetId, assetType, onClose, onRefresh, initialFaceId }: Props = $props();
 
   // keep track of the changes
   let peopleToCreate: string[] = [];
@@ -62,6 +63,12 @@
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       peopleWithFaces = await getFaces({ id: assetId });
+      if (initialFaceId) {
+        const face = peopleWithFaces.find((f) => f.id === initialFaceId);
+        if (face) {
+          handleFacePicker(face);
+        }
+      }
     } catch (error) {
       handleError(error, $t('errors.cant_get_faces'));
     } finally {

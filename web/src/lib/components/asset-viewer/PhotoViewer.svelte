@@ -202,6 +202,13 @@
   // Ctrl+drag to create a new face tag
   let ctrlKeyHeld = $state(false);
   let ctrlDragInitialRect = $state<{ centerX: number; centerY: number; width: number; height: number } | undefined>();
+
+  const handleCtrlClickFace = (faceId: string) => {
+    if (sharedLink) {
+      return;
+    }
+    assetViewerManager.openEditFacesPanel(faceId);
+  };
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
@@ -271,6 +278,7 @@
         <div
           class="pointer-events-auto absolute rounded-lg {isActive && 'border-3 border-solid border-white'}"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          faceId={boundingbox.face.id}
           onpointerenter={() => assetViewerManager.setHighlightedFaces([boundingbox.face])}
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
         >
@@ -298,6 +306,7 @@
     containerEl={element}
     canDrag={() => !!assetViewerManager.imgRef && !sharedLink}
     getZoomState={() => assetViewerManager.zoomState}
+    onCtrlClickFace={handleCtrlClickFace}
   />
 
   {#if assetViewerManager.isFaceEditMode && assetViewerManager.imgRef}

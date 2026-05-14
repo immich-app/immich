@@ -386,5 +386,6 @@
     assetType={asset.type}
     onClose={() => assetViewerManager.closeEditFacesPanel()}
     onRefresh={handleRefreshPeople}
+    initialFaceId={assetViewerManager.editFacesPanelInitialFaceId}
   />
 {/if}

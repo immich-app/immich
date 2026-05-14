@@ -56,6 +56,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   isShowEditor = $state(false);
   #isFaceEditMode = $state(false);
   #isEditFacesPanelOpen = $state(false);
+  #editFacesPanelInitialFaceId = $state<string | undefined>();
   #viewingAssetStoreState = $state<AssetResponseDto>();
   #viewState = $state<boolean>(false);
   #highlightedFaces = $state<Faces[]>([]);
@@ -88,6 +89,10 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   get isEditFacesPanelOpen() {
     return this.#isEditFacesPanelOpen;
+  }
+
+  get editFacesPanelInitialFaceId() {
+    return this.#editFacesPanelInitialFaceId;
   }
 
   get zoomState() {
@@ -208,12 +213,15 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.#isFaceEditMode = false;
   }
 
-  openEditFacesPanel() {
+  openEditFacesPanel(faceId?: string) {
+    this.#editFacesPanelInitialFaceId = faceId;
     this.#isEditFacesPanelOpen = true;
+    this.isShowDetailPanel = true;
   }
 
   closeEditFacesPanel() {
     this.#isEditFacesPanelOpen = false;
+    this.#editFacesPanelInitialFaceId = undefined;
   }
 
   resetPanelState() {

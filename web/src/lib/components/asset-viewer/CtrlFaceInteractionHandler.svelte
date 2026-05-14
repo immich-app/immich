@@ -7,6 +7,7 @@
     containerEl?: HTMLElement;
     canDrag?: () => boolean;
     getZoomState?: () => ZoomState;
+    onCtrlClickFace?: (faceId: string) => void;
     initialRect?: { centerX: number; centerY: number; width: number; height: number } | undefined;
     ctrlKeyHeld?: boolean;
   };
@@ -15,6 +16,7 @@
     containerEl,
     canDrag = () => true,
     getZoomState,
+    onCtrlClickFace,
     initialRect = $bindable(undefined),
     ctrlKeyHeld = $bindable(false),
   }: Props = $props();
@@ -93,10 +95,31 @@
         const top = Math.min(drag.start.y, drag.current.y);
         const width = Math.abs(drag.current.x - drag.start.x);
         const height = Math.abs(drag.current.y - drag.start.y);
-        if (width < 20 || height < 20) {
+
+        // Check if this was a click (minimal drag distance) on a face element
+        if (width < 20 && height < 20) {
+          const clickX = drag.start.x;
+          const clickY = drag.start.y;
+          const clickTarget = document.elementFromPoint(
+            containerRect.left + clickX,
+            containerRect.top + clickY,
+          ) as HTMLElement | null;
+
+          // Look for a face element (marked with faceId) in the click target or its parents
+          if (clickTarget) {
+            const faceElement = clickTarget.closest('[faceId]') as HTMLElement | null;
+            if (faceElement) {
+              const faceId = faceElement.getAttribute('faceId');
+              if (faceId) {
+                onCtrlClickFace?.(faceId);
+                return;
+              }
+            }
+          }
           return;
         }
 
+        // This was a drag, create a new face tag
         const zoomState = getZoomState?.();
         const zoom = zoomState?.currentZoom ?? 1;
         const panX = zoomState?.currentPositionX ?? 0;
