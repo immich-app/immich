@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_but
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/restore_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -40,6 +42,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
     final serverInfo = ref.watch(serverInfoProvider);
+    final isInTrash = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
 
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
@@ -47,6 +50,10 @@ class ViewerBottomBar extends ConsumerWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
+      if (isInTrash && isOwner && asset.hasRemote  && !isSyncTrashTimeline)
+        const RestoreActionButton(source: ActionSource.viewer)
+      else
+        const ShareActionButton(source: ActionSource.viewer),
       if (isSyncTrashTimeline) ...[
         KeepOnDeviceActionButton(
           source: ActionSource.viewer,
@@ -66,12 +73,13 @@ class ViewerBottomBar extends ConsumerWidget {
         const ShareActionButton(source: ActionSource.viewer),
 
         if (!isInLockedView) ...[
+          if (!isInTrash) ...[
           if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
           // edit sync was added in 2.6.0
           if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
             const EditImageActionButton(),
           if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
-
+        ],
           if (isOwner) ...[
             asset.isLocalOnly
                 ? const DeleteLocalActionButton(source: ActionSource.viewer)

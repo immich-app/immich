@@ -21,6 +21,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_f
 import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/restore_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -83,6 +84,7 @@ enum ActionButtonType {
   moveToLockFolder,
   removeFromLockFolder,
   removeFromAlbum,
+  restoreTrash,
   trash,
   deleteLocal,
   deletePermanent,
@@ -115,7 +117,14 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            context.isTrashEnabled &&
+            context.isTrashEnabled && //
+            context.timelineOrigin != TimelineOrigin.trash &&
+            !context.isWaitingForTrashApproval,
+      ActionButtonType.restoreTrash =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.asset.hasRemote && //
+            context.timelineOrigin == TimelineOrigin.trash &&
             !context.isWaitingForTrashApproval,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
@@ -209,6 +218,11 @@ enum ActionButtonType {
       ),
       ActionButtonType.download => DownloadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.trash => TrashActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.restoreTrash => RestoreActionButton(
+        source: context.source,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
       ActionButtonType.deletePermanent => DeletePermanentActionButton(
         source: context.source,
         iconOnly: iconOnly,
@@ -300,6 +314,7 @@ enum ActionButtonType {
     ActionButtonType.moveToLockFolder => 10,
     ActionButtonType.deleteLocal => 10,
     ActionButtonType.delete => 10,
+    ActionButtonType.restoreTrash => 10,
     // 90: advancedInfo
     ActionButtonType.advancedInfo => 90,
     // 1: others
@@ -317,6 +332,7 @@ class ActionButtonBuilder {
     ActionButtonType.delete,
     ActionButtonType.archive,
     ActionButtonType.unarchive,
+    ActionButtonType.restoreTrash,
   };
 
   static List<Widget> build(ActionButtonContext context) {
