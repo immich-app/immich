@@ -727,8 +727,9 @@ export class SharedSpaceRepository {
           ),
         ),
       )
-      .orderBy(sql`NULLIF(shared_space_person.name, '')`, (om) => om.asc().nullsLast())
-      .orderBy(sql`CASE WHEN shared_space_person.name = '' THEN "shared_space_person"."assetCount" END`, (om) =>
+      .orderBy('shared_space_person.isHidden', 'asc')
+      .orderBy(sql`NULLIF(BTRIM(shared_space_person.name), '')`, (om) => om.asc().nullsLast())
+      .orderBy(sql`CASE WHEN NULLIF(BTRIM(shared_space_person.name), '') IS NULL THEN "shared_space_person"."assetCount" END`, (om) =>
         om.desc().nullsLast(),
       )
       .orderBy('shared_space_person.id')

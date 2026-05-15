@@ -1667,7 +1667,7 @@ describe(SharedSpaceRepository.name, () => {
       expect(result.map((p) => p.id)).toEqual([alice.id, bob.id, charlie.id]);
     });
 
-    it('should sort unnamed space persons after named rows by asset count without private global fallback', async () => {
+    it('should sort visible space persons by name, then unnamed rows by asset count without private global fallback', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { space } = await ctx.newSharedSpace({ createdById: user.id });
@@ -1683,6 +1683,14 @@ describe(SharedSpaceRepository.name, () => {
         type: 'person',
         assetCount: 5,
       });
+      const hiddenAlice = await sut.createPerson({
+        spaceId: space.id,
+        name: 'Alice Hidden',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 50,
+        isHidden: true,
+      });
       const bob = await sut.createPerson({
         id: '00000000-0000-4000-8000-000000000001',
         spaceId: space.id,
@@ -1690,6 +1698,13 @@ describe(SharedSpaceRepository.name, () => {
         representativeFaceId: bobFace.id,
         type: 'person',
         assetCount: 1,
+      });
+      const whitespaceName = await sut.createPerson({
+        spaceId: space.id,
+        name: '   ',
+        representativeFaceId: null,
+        type: 'person',
+        assetCount: 20,
       });
       const unnamedMany = await sut.createPerson({
         id: 'ffffffff-ffff-4fff-bfff-ffffffffffff',
@@ -1707,9 +1722,16 @@ describe(SharedSpaceRepository.name, () => {
         assetCount: 5,
       });
 
-      const result = await sut.getPersonsBySpaceId(space.id, {});
+      const result = await sut.getPersonsBySpaceId(space.id, { withHidden: true });
 
-      expect(result.map((p) => p.id)).toEqual([alice.id, charlie.id, unnamedMany.id, bob.id]);
+      expect(result.map((p) => p.id)).toEqual([
+        alice.id,
+        charlie.id,
+        whitespaceName.id,
+        unnamedMany.id,
+        bob.id,
+        hiddenAlice.id,
+      ]);
     });
 
     it('should ignore stale off-scope face links when applying taken-date filters', async () => {
