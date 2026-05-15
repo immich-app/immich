@@ -253,6 +253,7 @@ describe(JobRepository.name, () => {
       {
         jobId: 'face-identity-backfill/root',
         removeOnFail: true,
+        removeOnComplete: true,
       },
     );
     expect(queue.add).toHaveBeenCalledWith(
@@ -261,6 +262,7 @@ describe(JobRepository.name, () => {
       {
         jobId: 'face-identity-backfill/root',
         removeOnFail: true,
+        removeOnComplete: true,
       },
     );
     expect(queue.add).toHaveBeenCalledWith(
@@ -312,6 +314,27 @@ describe(JobRepository.name, () => {
       JobName.SharedSpacePersonMetadataBackfill,
       { identityId: 'identity-1', cursor: 'cursor-2', limit: 1000 },
       { jobId: 'shared-space-person-metadata-backfill/identity/identity-1/cursor-2', removeOnFail: true },
+    );
+  });
+
+  it('sets removeOnComplete on the root backfill so it can be re-triggered after recognition drains', async () => {
+    // BullMQ deduplicates by jobId: a completed job whose hash is still in Redis
+    // makes a same-jobId add a no-op (handleDuplicatedJob). Without removeOnComplete,
+    // the onBootstrap pass leaves face-identity-backfill/root behind and the
+    // FaceIdentityMaintenanceAfterRecognition marker can never queue a fresh backfill.
+    const { sut, queue } = setup();
+    setHandlers(sut, [JobName.FaceIdentityBackfill]);
+
+    await sut.queue({ name: JobName.FaceIdentityBackfill, data: {} });
+
+    expect(queue.add).toHaveBeenCalledWith(
+      JobName.FaceIdentityBackfill,
+      {},
+      {
+        jobId: 'face-identity-backfill/root',
+        removeOnFail: true,
+        removeOnComplete: true,
+      },
     );
   });
 
