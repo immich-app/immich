@@ -50,7 +50,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (isInTrash && isOwner && asset.hasRemote  && !isSyncTrashTimeline)
+      if (isInTrash && isOwner && asset.hasRemote && !isSyncTrashTimeline)
         const RestoreActionButton(source: ActionSource.viewer)
       else
         const ShareActionButton(source: ActionSource.viewer),
@@ -74,19 +74,19 @@ class ViewerBottomBar extends ConsumerWidget {
 
         if (!isInLockedView) ...[
           if (!isInTrash) ...[
-          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-          // edit sync was added in 2.6.0
-          if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
-            const EditImageActionButton(),
-          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
-        ],
+            if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+            // edit sync was added in 2.6.0
+            if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
+              const EditImageActionButton(),
+            if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+          ],
           if (isOwner) ...[
             if (asset.isLocalOnly)
-                const DeleteLocalActionButton(source: ActionSource.viewer)
-          else if (asset.isTrashed)
-            const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
-          else
-                 const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+              const DeleteLocalActionButton(source: ActionSource.viewer)
+            else if (asset.isTrashed)
+              const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
+            else
+              const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
           ],
         ],
       ],

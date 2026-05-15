@@ -33,7 +33,6 @@ class RemoteAsset extends BaseAsset {
     super.livePhotoVideoId,
     this.stackId,
     required super.isEdited,
-    this.deletedAt,
   }) : localAssetId = localId;
 
   @override
@@ -130,7 +129,6 @@ class RemoteAsset extends BaseAsset {
     String? livePhotoVideoId,
     String? stackId,
     bool? isEdited,
-    DateTime? deletedAt,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -152,7 +150,6 @@ class RemoteAsset extends BaseAsset {
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
-      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
