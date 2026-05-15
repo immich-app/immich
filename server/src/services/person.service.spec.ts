@@ -174,6 +174,27 @@ describe(PersonService.name, () => {
       expect(mocks.person.getAllForUser).not.toHaveBeenCalled();
     });
 
+    it('should preserve identity-aware people ordering returned by repository', async () => {
+      const auth = AuthFactory.create();
+      const response = {
+        total: 4,
+        hidden: 0,
+        hasNextPage: false,
+        people: [
+          { id: 'favorite', name: 'Anna', isFavorite: true, numberOfAssets: 1 },
+          { id: 'named', name: 'Bob', numberOfAssets: 20 },
+          { id: 'unnamed-high', name: '', numberOfAssets: 50 },
+          { id: 'unnamed-low', name: '', numberOfAssets: 1 },
+        ],
+      };
+
+      (mocks.faceIdentity as any).getAccessiblePeople.mockResolvedValue(response);
+
+      await expect(
+        sut.getAll(auth, { withSharedSpaces: true, withHidden: false, page: 1, size: 10 } as any),
+      ).resolves.toEqual(response);
+    });
+
     it('should keep legacy people behavior when withSharedSpaces is omitted', async () => {
       const auth = AuthFactory.create();
       mocks.person.getAllForUser.mockResolvedValue({ items: [], hasNextPage: false });
