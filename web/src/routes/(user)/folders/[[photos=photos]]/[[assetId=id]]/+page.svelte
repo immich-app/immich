@@ -79,7 +79,7 @@
     <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
       <section>
-        <Text class="ps-4 mb-4" size="small">{$t('explorer')}</Text>
+        <Text class="mb-4 ps-4" size="small">{$t('explorer')}</Text>
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
@@ -114,7 +114,7 @@
 </UserPageLayout>
 
 {#if assetMultiSelectManager.selectionActive}
-  <div class="fixed top-0 start-0 w-full">
+  <div class="fixed inset-s-0 top-0 w-full">
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />

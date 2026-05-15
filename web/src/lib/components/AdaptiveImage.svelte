@@ -148,11 +148,11 @@
   });
 </script>
 
-<div class="relative h-full w-full overflow-hidden" bind:this={ref}>
+<div class="relative size-full overflow-hidden" bind:this={ref}>
   {@render backdrop?.()}
 
   <div
-    class="absolute inset-0 pointer-events-none"
+    class="pointer-events-none absolute inset-0"
     style:inset-inline-start={insetInlineStart}
     style:top
     style:width
@@ -165,7 +165,7 @@
     {#if show.thumbhash}
       {#if asset.thumbhash}
         <!-- Thumbhash / spinner layer  -->
-        <Thumbhash base64ThumbHash={asset.thumbhash} class="h-full w-full absolute" />
+        <Thumbhash base64ThumbHash={asset.thumbhash} class="absolute size-full" />
       {:else if show.spinner}
         <DelayedLoadingSpinner />
       {/if}
@@ -185,7 +185,7 @@
     {/if}
 
     {#if show.brokenAsset}
-      <BrokenAsset class="text-xl h-full w-full absolute" />
+      <BrokenAsset class="absolute size-full text-xl" />
     {/if}
 
     {#if show.preview}

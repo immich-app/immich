@@ -28,7 +28,7 @@
   <img {src} alt="" width="500" draggable="false" />
 
   {#if title}
-    <h2 class="text-xl font-medium my-4">{title}</h2>
+    <h2 class="my-4 text-xl font-medium">{title}</h2>
   {/if}
-  <p class="text-immich-text-gray-500 dark:text-immich-dark-fg font-light text-center">{text}</p>
+  <p class="text-immich-text-gray-500 text-center font-light dark:text-immich-dark-fg">{text}</p>
 </svelte:element>

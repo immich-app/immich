@@ -67,8 +67,11 @@ describe(SystemConfigController.name, () => {
         const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(400);
         expect(body).toEqual(
-          errorDto.badRequest([
-            '[nightlyTasks.startTime] Invalid input: expected string in HH:mm format, received string',
+          errorDto.validationError([
+            {
+              path: ['nightlyTasks', 'startTime'],
+              message: 'Invalid input: expected string in HH:mm format, received string',
+            },
           ]),
         );
       });
@@ -86,7 +89,9 @@ describe(SystemConfigController.name, () => {
         const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(400);
         expect(body).toEqual(
-          errorDto.badRequest(['[nightlyTasks.databaseCleanup] Invalid input: expected boolean, received string']),
+          errorDto.validationError([
+            { path: ['nightlyTasks', 'databaseCleanup'], message: 'Invalid input: expected boolean, received string' },
+          ]),
         );
       });
     });
@@ -116,7 +121,12 @@ describe(SystemConfigController.name, () => {
         const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
         expect(status).toBe(400);
         expect(body).toEqual(
-          errorDto.badRequest(['[image.thumbnail.progressive] Invalid input: expected boolean, received string']),
+          errorDto.validationError([
+            {
+              path: ['image', 'thumbnail', 'progressive'],
+              message: 'Invalid input: expected boolean, received string',
+            },
+          ]),
         );
       });
     });

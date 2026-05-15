@@ -26,7 +26,11 @@
   },
   "[svelte]": {
     "editor.defaultFormatter": "svelte.svelte-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+  },
+  "svelte.plugin.svelte.compilerWarnings": {
+    "state_referenced_locally": "ignore"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",

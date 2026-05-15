@@ -212,16 +212,10 @@
       };
     }
 
-    try {
-      return {
-        fileCreatedAfter: dateAfter ? new Date(dateAfter).toISOString() : undefined,
-        fileCreatedBefore: dateBefore ? new Date(dateBefore).toISOString() : undefined,
-      };
-    } catch {
-      $mapSettings.dateAfter = '';
-      $mapSettings.dateBefore = '';
-      return {};
-    }
+    return {
+      fileCreatedAfter: dateAfter?.toUTC().toISO(),
+      fileCreatedBefore: dateBefore?.toUTC().toISO(),
+    };
   }
 
   async function loadMapMarkers() {
@@ -237,7 +231,7 @@
       {
         isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
-        fileCreatedAfter: fileCreatedAfter || undefined,
+        fileCreatedAfter,
         fileCreatedBefore,
         withPartners: withPartners || undefined,
         withSharedAlbums: withSharedAlbums || undefined,
@@ -390,7 +384,7 @@
       >
         {#snippet children({ feature })}
           <div
-            class="rounded-full w-10 h-10 bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+            class="flex size-10 items-center justify-center rounded-full bg-immich-primary font-mono font-bold text-white opacity-90 shadow-lg transition-all duration-200 hover:bg-immich-dark-primary hover:text-immich-dark-bg"
           >
             {feature.properties?.point_count?.toLocaleString()}
           </div>
@@ -407,11 +401,11 @@
       >
         {#snippet children({ feature }: { feature: Feature })}
           {#if useLocationPin}
-            <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
+            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[-50%] text-primary" />
           {:else}
             <img
               src={getAssetMediaUrl({ id: feature.properties?.id })}
-              class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+              class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
               alt={feature.properties?.city && feature.properties.country
                 ? $t('map_marker_for_images', {
                     values: { city: feature.properties.city, country: feature.properties.country },

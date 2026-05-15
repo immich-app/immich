@@ -1460,137 +1460,6 @@ class StackEntityCompanion extends UpdateCompanion<StackEntityData> {
   }
 }
 
-class VisibleStackRepresentativeData extends DataClass {
-  final String stackId;
-  final String ownerId;
-  final String? assetId;
-  const VisibleStackRepresentativeData({
-    required this.stackId,
-    required this.ownerId,
-    this.assetId,
-  });
-  factory VisibleStackRepresentativeData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return VisibleStackRepresentativeData(
-      stackId: serializer.fromJson<String>(json['stackId']),
-      ownerId: serializer.fromJson<String>(json['ownerId']),
-      assetId: serializer.fromJson<String?>(json['assetId']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'stackId': serializer.toJson<String>(stackId),
-      'ownerId': serializer.toJson<String>(ownerId),
-      'assetId': serializer.toJson<String?>(assetId),
-    };
-  }
-
-  VisibleStackRepresentativeData copyWith({
-    String? stackId,
-    String? ownerId,
-    Value<String?> assetId = const Value.absent(),
-  }) => VisibleStackRepresentativeData(
-    stackId: stackId ?? this.stackId,
-    ownerId: ownerId ?? this.ownerId,
-    assetId: assetId.present ? assetId.value : this.assetId,
-  );
-  @override
-  String toString() {
-    return (StringBuffer('VisibleStackRepresentativeData(')
-          ..write('stackId: $stackId, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('assetId: $assetId')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(stackId, ownerId, assetId);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is VisibleStackRepresentativeData &&
-          other.stackId == this.stackId &&
-          other.ownerId == this.ownerId &&
-          other.assetId == this.assetId);
-}
-
-class VisibleStackRepresentative
-    extends ViewInfo<VisibleStackRepresentative, VisibleStackRepresentativeData>
-    implements HasResultSet {
-  final String? _alias;
-  @override
-  final DatabaseAtV25 attachedDatabase;
-  VisibleStackRepresentative(this.attachedDatabase, [this._alias]);
-  @override
-  List<GeneratedColumn> get $columns => [stackId, ownerId, assetId];
-  @override
-  String get aliasedName => _alias ?? entityName;
-  @override
-  String get entityName => 'visible_stack_representative';
-  @override
-  Map<SqlDialect, String> get createViewStatements => {
-    SqlDialect.sqlite:
-        'CREATE VIEW visible_stack_representative AS SELECT se.id AS stack_id, se.owner_id, COALESCE((SELECT primary_asset.id FROM remote_asset_entity AS primary_asset WHERE primary_asset.id = se.primary_asset_id AND primary_asset.deleted_at IS NULL AND primary_asset.visibility = 0 AND primary_asset.owner_id = se.owner_id LIMIT 1), (SELECT candidate.id FROM remote_asset_entity AS candidate WHERE candidate.stack_id = se.id AND candidate.deleted_at IS NULL AND candidate.visibility = 0 AND candidate.owner_id = se.owner_id ORDER BY candidate.created_at DESC, candidate.id ASC LIMIT 1)) AS asset_id FROM stack_entity AS se',
-  };
-  @override
-  VisibleStackRepresentative get asDslTable => this;
-  @override
-  VisibleStackRepresentativeData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return VisibleStackRepresentativeData(
-      stackId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}stack_id'],
-      )!,
-      ownerId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}owner_id'],
-      )!,
-      assetId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}asset_id'],
-      ),
-    );
-  }
-
-  late final GeneratedColumn<String> stackId = GeneratedColumn<String>(
-    'stack_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-  );
-  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
-    'owner_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-  );
-  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
-    'asset_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-  );
-  @override
-  VisibleStackRepresentative createAlias(String alias) {
-    return VisibleStackRepresentative(attachedDatabase, alias);
-  }
-
-  @override
-  Query? get query => null;
-  @override
-  Set<String> get readTables => const {'stack_entity', 'remote_asset_entity'};
-}
-
 class LocalAssetEntity extends Table
     with TableInfo<LocalAssetEntity, LocalAssetEntityData> {
   @override
@@ -8923,13 +8792,223 @@ class AssetEditEntityCompanion extends UpdateCompanion<AssetEditEntityData> {
   }
 }
 
+class Metadata extends Table with TableInfo<Metadata, MetadataData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  Metadata(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT CURRENT_TIMESTAMP',
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'metadata';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  MetadataData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MetadataData(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  Metadata createAlias(String alias) {
+    return Metadata(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY("key")'];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class MetadataData extends DataClass implements Insertable<MetadataData> {
+  final String key;
+  final String value;
+  final String updatedAt;
+  const MetadataData({
+    required this.key,
+    required this.value,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  factory MetadataData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MetadataData(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  MetadataData copyWith({String? key, String? value, String? updatedAt}) =>
+      MetadataData(
+        key: key ?? this.key,
+        value: value ?? this.value,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  MetadataData copyWithCompanion(MetadataCompanion data) {
+    return MetadataData(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MetadataData(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MetadataData &&
+          other.key == this.key &&
+          other.value == this.value &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MetadataCompanion extends UpdateCompanion<MetadataData> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<String> updatedAt;
+  const MetadataCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  MetadataCompanion.insert({
+    required String key,
+    required String value,
+    this.updatedAt = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<MetadataData> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<String>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  MetadataCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<String>? updatedAt,
+  }) {
+    return MetadataCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MetadataCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class DatabaseAtV25 extends GeneratedDatabase {
   DatabaseAtV25(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
   late final RemoteAssetEntity remoteAssetEntity = RemoteAssetEntity(this);
   late final StackEntity stackEntity = StackEntity(this);
-  late final VisibleStackRepresentative visibleStackRepresentative =
-      VisibleStackRepresentative(this);
   late final LocalAssetEntity localAssetEntity = LocalAssetEntity(this);
   late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
   late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
@@ -8951,10 +9030,6 @@ class DatabaseAtV25 extends GeneratedDatabase {
     'idx_stack_primary_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)',
   );
-  late final Index idxRemoteAssetOwnerChecksum = Index(
-    'idx_remote_asset_owner_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-  );
   late final Index uQRemoteAssetsOwnerChecksum = Index(
     'UQ_remote_assets_owner_checksum',
     'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
@@ -8971,17 +9046,9 @@ class DatabaseAtV25 extends GeneratedDatabase {
     'idx_remote_asset_stack_id',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
   );
-  late final Index idxRemoteAssetVisibleStack = Index(
-    'idx_remote_asset_visible_stack',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_visible_stack ON remote_asset_entity (stack_id, owner_id, created_at DESC, id) WHERE deleted_at IS NULL AND visibility = 0',
-  );
-  late final Index idxRemoteAssetLocalDateTimeDay = Index(
-    'idx_remote_asset_local_date_time_day',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
-  );
-  late final Index idxRemoteAssetLocalDateTimeMonth = Index(
-    'idx_remote_asset_local_date_time_month',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+  late final Index idxRemoteAssetOwnerVisibilityDeletedCreated = Index(
+    'idx_remote_asset_owner_visibility_deleted_created',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
   );
   late final AuthUserEntity authUserEntity = AuthUserEntity(this);
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
@@ -9001,6 +9068,7 @@ class DatabaseAtV25 extends GeneratedDatabase {
   late final TrashedLocalAssetEntity trashedLocalAssetEntity =
       TrashedLocalAssetEntity(this);
   late final AssetEditEntity assetEditEntity = AssetEditEntity(this);
+  late final Metadata metadata = Metadata(this);
   late final Index idxPartnerSharedWithId = Index(
     'idx_partner_shared_with_id',
     'CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)',
@@ -9008,6 +9076,10 @@ class DatabaseAtV25 extends GeneratedDatabase {
   late final Index idxLatLng = Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+  );
+  late final Index idxRemoteExifCity = Index(
+    'idx_remote_exif_city',
+    'CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL',
   );
   late final Index idxRemoteAlbumAssetAlbumAsset = Index(
     'idx_remote_album_asset_album_asset',
@@ -9029,6 +9101,10 @@ class DatabaseAtV25 extends GeneratedDatabase {
     'idx_asset_face_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
   );
+  late final Index idxAssetFaceVisiblePerson = Index(
+    'idx_asset_face_visible_person',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL',
+  );
   late final Index idxTrashedLocalAssetChecksum = Index(
     'idx_trashed_local_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)',
@@ -9049,7 +9125,6 @@ class DatabaseAtV25 extends GeneratedDatabase {
     userEntity,
     remoteAssetEntity,
     stackEntity,
-    visibleStackRepresentative,
     localAssetEntity,
     remoteAlbumEntity,
     localAlbumEntity,
@@ -9058,14 +9133,11 @@ class DatabaseAtV25 extends GeneratedDatabase {
     idxLocalAssetChecksum,
     idxLocalAssetCloudId,
     idxStackPrimaryAssetId,
-    idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
     idxRemoteAssetStackId,
-    idxRemoteAssetVisibleStack,
-    idxRemoteAssetLocalDateTimeDay,
-    idxRemoteAssetLocalDateTimeMonth,
+    idxRemoteAssetOwnerVisibilityDeletedCreated,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
@@ -9080,13 +9152,16 @@ class DatabaseAtV25 extends GeneratedDatabase {
     storeEntity,
     trashedLocalAssetEntity,
     assetEditEntity,
+    metadata,
     idxPartnerSharedWithId,
     idxLatLng,
+    idxRemoteExifCity,
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
     idxAssetFacePersonId,
     idxAssetFaceAssetId,
+    idxAssetFaceVisiblePerson,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,

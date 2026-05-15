@@ -250,7 +250,7 @@
 <AssetViewerEvents {onZoom} />
 
 <svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true }]} />
-<div class="h-full w-full mb-0" bind:this={container}></div>
+<div class="mb-0 size-full" bind:this={container}></div>
 
 <style>
   /* Reset the default tooltip styling */

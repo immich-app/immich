@@ -104,7 +104,9 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   late ScrollController _scrollController;
 
   double get _currentOffset {
-    if (_scrollController.hasClients != true) return 0.0;
+    if (_scrollController.hasClients != true) {
+      return 0.0;
+    }
 
     return _scrollController.offset * _scrubberHeight / _scrollController.position.maxScrollExtent;
   }

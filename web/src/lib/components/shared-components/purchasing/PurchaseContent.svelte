@@ -55,7 +55,7 @@
     </div>
   {/if}
 
-  <div class="flex flex-col sm:flex-row gap-6 mt-4 justify-between">
+  <div class="mt-4 flex flex-col justify-between gap-6 sm:flex-row">
     <ServerPurchaseOptionCard />
     <UserPurchaseOptionCard />
   </div>

@@ -46,7 +46,7 @@
     draggable="false"
     onfocus={() => (showVerticalDots = true)}
   >
-    <div class="w-full h-full rounded-xl brightness-95 filter">
+    <div class="size-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
         url={getPeopleThumbnailUrl(person)}
@@ -57,7 +57,7 @@
         preload={false}
       />
       {#if person.isFavorite}
-        <div class="absolute top-4 start-4">
+        <div class="absolute inset-s-4 top-4">
           <Icon icon={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
@@ -65,7 +65,7 @@
   </a>
 
   {#if showVerticalDots}
-    <div class="absolute top-2 end-2 z-1">
+    <div class="absolute inset-e-2 top-2 z-1">
       <ButtonContextMenu
         buttonClass="icon-white-drop-shadow"
         color="secondary"

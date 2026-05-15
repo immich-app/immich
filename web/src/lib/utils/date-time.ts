@@ -1,20 +1,8 @@
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 import { dateFormats } from '$lib/constants';
 import { locale } from '$lib/stores/preferences.store';
 
-/**
- * Convert time like `01:02:03.456` to seconds.
- */
-export function timeToSeconds(time: string) {
-  if (!time || time === '0') {
-    return 0;
-  }
-
-  const seconds = Duration.fromISOTime(time).as('seconds');
-
-  return Number.isNaN(seconds) ? 0 : seconds;
-}
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }

@@ -1048,6 +1048,22 @@ class DriftPlaceRouteArgs {
 }
 
 /// generated route for
+/// [DriftRecentlyAddedPage]
+class DriftRecentlyAddedRoute extends PageRouteInfo<void> {
+  const DriftRecentlyAddedRoute({List<PageRouteInfo>? children})
+    : super(DriftRecentlyAddedRoute.name, initialChildren: children);
+
+  static const String name = 'DriftRecentlyAddedRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftRecentlyAddedPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftRecentlyTakenPage]
 class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
   const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})

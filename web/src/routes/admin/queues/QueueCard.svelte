@@ -44,7 +44,7 @@
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
 
-<div class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-9">
+<div class="sm:rounded-9 flex flex-col overflow-hidden rounded-2xl bg-gray-100 sm:flex-row dark:bg-immich-dark-gray">
   <div class="flex w-full flex-col">
     {#if queue.isPaused}
       <QueueCardBadge color="warning">{$t('paused')}</QueueCardBadge>
@@ -94,7 +94,7 @@
       </div>
 
       {#if subtitle}
-        <div class="whitespace-pre-line text-sm dark:text-white">{subtitle}</div>
+        <div class="text-sm whitespace-pre-line dark:text-white">{subtitle}</div>
       {/if}
 
       {#if description}

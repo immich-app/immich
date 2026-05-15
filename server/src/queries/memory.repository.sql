@@ -42,6 +42,16 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
+          and not exists (
+            select
+              $1 as "one"
+            from
+              "asset_face"
+              inner join "person" on "person"."id" = "asset_face"."personId"
+            where
+              "asset_face"."assetId" = "asset"."id"
+              and "person"."isHidden" = $2
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -51,7 +61,7 @@ from
   "memory"
 where
   "deletedAt" is null
-  and "ownerId" = $1
+  and "ownerId" = $3
 order by
   "memoryAt" desc
 
@@ -71,6 +81,16 @@ select
           "memory_asset"."memoriesId" = "memory"."id"
           and "asset"."visibility" = 'timeline'
           and "asset"."deletedAt" is null
+          and not exists (
+            select
+              $1 as "one"
+            from
+              "asset_face"
+              inner join "person" on "person"."id" = "asset_face"."personId"
+            where
+              "asset_face"."assetId" = "asset"."id"
+              and "person"."isHidden" = $2
+          )
         order by
           "asset"."fileCreatedAt" asc
       ) as agg
@@ -81,14 +101,14 @@ from
 where
   (
     "showAt" is null
-    or "showAt" <= $1
+    or "showAt" <= $3
   )
   and (
     "hideAt" is null
-    or "hideAt" >= $2
+    or "hideAt" >= $4
   )
   and "deletedAt" is null
-  and "ownerId" = $3
+  and "ownerId" = $5
 order by
   "memoryAt" desc
 

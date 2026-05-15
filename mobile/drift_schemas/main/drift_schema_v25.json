@@ -423,51 +423,6 @@
     },
     {
       "id": 3,
-      "references": [
-        2,
-        1
-      ],
-      "type": "view",
-      "data": {
-        "name": "visible_stack_representative",
-        "sql": "CREATE VIEW visible_stack_representative AS SELECT se.id AS stack_id, se.owner_id, COALESCE((SELECT primary_asset.id FROM remote_asset_entity AS primary_asset WHERE primary_asset.id = se.primary_asset_id AND primary_asset.deleted_at IS NULL AND primary_asset.visibility = 0 AND primary_asset.owner_id = se.owner_id LIMIT 1), (SELECT candidate.id FROM remote_asset_entity AS candidate WHERE candidate.stack_id = se.id AND candidate.deleted_at IS NULL AND candidate.visibility = 0 AND candidate.owner_id = se.owner_id ORDER BY candidate.created_at DESC, candidate.id ASC LIMIT 1)) AS asset_id FROM stack_entity AS se",
-        "dart_info_name": "VisibleStackRepresentative",
-        "columns": [
-          {
-            "name": "stack_id",
-            "getter_name": "stackId",
-            "moor_type": "string",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "owner_id",
-            "getter_name": "ownerId",
-            "moor_type": "string",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "asset_id",
-            "getter_name": "assetId",
-            "moor_type": "string",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          }
-        ]
-      }
-    },
-    {
-      "id": 4,
       "references": [],
       "type": "table",
       "data": {
@@ -657,7 +612,7 @@
       }
     },
     {
-      "id": 5,
+      "id": 4,
       "references": [
         1
       ],
@@ -781,9 +736,9 @@
       }
     },
     {
-      "id": 6,
+      "id": 5,
       "references": [
-        5
+        4
       ],
       "type": "table",
       "data": {
@@ -899,10 +854,10 @@
       }
     },
     {
-      "id": 7,
+      "id": 6,
       "references": [
-        4,
-        6
+        3,
+        5
       ],
       "type": "table",
       "data": {
@@ -987,13 +942,13 @@
       }
     },
     {
-      "id": 8,
+      "id": 7,
       "references": [
-        7
+        6
       ],
       "type": "index",
       "data": {
-        "on": 7,
+        "on": 6,
         "name": "idx_local_album_asset_album_asset",
         "sql": "CREATE INDEX IF NOT EXISTS idx_local_album_asset_album_asset ON local_album_asset_entity (album_id, asset_id)",
         "unique": false,
@@ -1001,13 +956,13 @@
       }
     },
     {
-      "id": 9,
+      "id": 8,
       "references": [
-        4
+        3
       ],
       "type": "index",
       "data": {
-        "on": 4,
+        "on": 3,
         "name": "idx_local_asset_checksum",
         "sql": "CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)",
         "unique": false,
@@ -1015,13 +970,13 @@
       }
     },
     {
-      "id": 10,
+      "id": 9,
       "references": [
-        4
+        3
       ],
       "type": "index",
       "data": {
-        "on": 4,
+        "on": 3,
         "name": "idx_local_asset_cloud_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)",
         "unique": false,
@@ -1029,7 +984,7 @@
       }
     },
     {
-      "id": 11,
+      "id": 10,
       "references": [
         2
       ],
@@ -1043,21 +998,7 @@
       }
     },
     {
-      "id": 12,
-      "references": [
-        1
-      ],
-      "type": "index",
-      "data": {
-        "on": 1,
-        "name": "idx_remote_asset_owner_checksum",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 13,
+      "id": 11,
       "references": [
         1
       ],
@@ -1071,7 +1012,7 @@
       }
     },
     {
-      "id": 14,
+      "id": 12,
       "references": [
         1
       ],
@@ -1085,7 +1026,7 @@
       }
     },
     {
-      "id": 15,
+      "id": 13,
       "references": [
         1
       ],
@@ -1099,7 +1040,7 @@
       }
     },
     {
-      "id": 16,
+      "id": 14,
       "references": [
         1
       ],
@@ -1113,49 +1054,21 @@
       }
     },
     {
-      "id": 17,
+      "id": 15,
       "references": [
         1
       ],
       "type": "index",
       "data": {
         "on": 1,
-        "name": "idx_remote_asset_visible_stack",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_visible_stack\nON remote_asset_entity (stack_id, owner_id, created_at DESC, id)\nWHERE deleted_at IS NULL AND visibility = 0;\n",
+        "name": "idx_remote_asset_owner_visibility_deleted_created",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created\nON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)\n",
         "unique": false,
         "columns": []
       }
     },
     {
-      "id": 18,
-      "references": [
-        1
-      ],
-      "type": "index",
-      "data": {
-        "on": 1,
-        "name": "idx_remote_asset_local_date_time_day",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME('%Y-%m-%d', local_date_time))",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 19,
-      "references": [
-        1
-      ],
-      "type": "index",
-      "data": {
-        "on": 1,
-        "name": "idx_remote_asset_local_date_time_month",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME('%Y-%m', local_date_time))",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 20,
+      "id": 16,
       "references": [],
       "type": "table",
       "data": {
@@ -1285,7 +1198,7 @@
       }
     },
     {
-      "id": 21,
+      "id": 17,
       "references": [
         0
       ],
@@ -1360,7 +1273,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 18,
       "references": [
         0
       ],
@@ -1447,7 +1360,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 19,
       "references": [
         1
       ],
@@ -1703,10 +1616,10 @@
       }
     },
     {
-      "id": 24,
+      "id": 20,
       "references": [
         1,
-        5
+        4
       ],
       "type": "table",
       "data": {
@@ -1777,9 +1690,9 @@
       }
     },
     {
-      "id": 25,
+      "id": 21,
       "references": [
-        5,
+        4,
         0
       ],
       "type": "table",
@@ -1865,7 +1778,7 @@
       }
     },
     {
-      "id": 26,
+      "id": 22,
       "references": [
         1
       ],
@@ -1961,7 +1874,7 @@
       }
     },
     {
-      "id": 27,
+      "id": 23,
       "references": [
         0
       ],
@@ -2125,10 +2038,10 @@
       }
     },
     {
-      "id": 28,
+      "id": 24,
       "references": [
         1,
-        27
+        23
       ],
       "type": "table",
       "data": {
@@ -2199,7 +2112,7 @@
       }
     },
     {
-      "id": 29,
+      "id": 25,
       "references": [
         0
       ],
@@ -2343,10 +2256,10 @@
       }
     },
     {
-      "id": 30,
+      "id": 26,
       "references": [
         1,
-        29
+        25
       ],
       "type": "table",
       "data": {
@@ -2520,7 +2433,7 @@
       }
     },
     {
-      "id": 31,
+      "id": 27,
       "references": [],
       "type": "table",
       "data": {
@@ -2568,7 +2481,7 @@
       }
     },
     {
-      "id": 32,
+      "id": 28,
       "references": [],
       "type": "table",
       "data": {
@@ -2743,7 +2656,7 @@
       }
     },
     {
-      "id": 33,
+      "id": 29,
       "references": [
         1
       ],
@@ -2837,13 +2750,61 @@
       }
     },
     {
-      "id": 34,
+      "id": 30,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "metadata",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "key",
+            "getter_name": "key",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "value",
+            "getter_name": "value",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": true,
+        "constraints": [],
+        "strict": true,
+        "explicit_pk": [
+          "key"
+        ]
+      }
+    },
+    {
+      "id": 31,
       "references": [
-        22
+        18
       ],
       "type": "index",
       "data": {
-        "on": 22,
+        "on": 18,
         "name": "idx_partner_shared_with_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)",
         "unique": false,
@@ -2851,13 +2812,13 @@
       }
     },
     {
-      "id": 35,
+      "id": 32,
       "references": [
-        23
+        19
       ],
       "type": "index",
       "data": {
-        "on": 23,
+        "on": 19,
         "name": "idx_lat_lng",
         "sql": "CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)",
         "unique": false,
@@ -2865,15 +2826,57 @@
       }
     },
     {
-      "id": 36,
+      "id": 33,
       "references": [
-        24
+        19
       ],
       "type": "index",
       "data": {
-        "on": 24,
+        "on": 19,
+        "name": "idx_remote_exif_city",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_exif_city\nON remote_exif_entity (city) WHERE city IS NOT NULL\n",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 34,
+      "references": [
+        20
+      ],
+      "type": "index",
+      "data": {
+        "on": 20,
         "name": "idx_remote_album_asset_album_asset",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 35,
+      "references": [
+        22
+      ],
+      "type": "index",
+      "data": {
+        "on": 22,
+        "name": "idx_remote_asset_cloud_id",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 36,
+      "references": [
+        25
+      ],
+      "type": "index",
+      "data": {
+        "on": 25,
+        "name": "idx_person_owner_id",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)",
         "unique": false,
         "columns": []
       }
@@ -2886,34 +2889,6 @@
       "type": "index",
       "data": {
         "on": 26,
-        "name": "idx_remote_asset_cloud_id",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 38,
-      "references": [
-        29
-      ],
-      "type": "index",
-      "data": {
-        "on": 29,
-        "name": "idx_person_owner_id",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 39,
-      "references": [
-        30
-      ],
-      "type": "index",
-      "data": {
-        "on": 30,
         "name": "idx_asset_face_person_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)",
         "unique": false,
@@ -2921,13 +2896,13 @@
       }
     },
     {
-      "id": 40,
+      "id": 38,
       "references": [
-        30
+        26
       ],
       "type": "index",
       "data": {
-        "on": 30,
+        "on": 26,
         "name": "idx_asset_face_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)",
         "unique": false,
@@ -2935,13 +2910,27 @@
       }
     },
     {
-      "id": 41,
+      "id": 39,
       "references": [
-        32
+        26
       ],
       "type": "index",
       "data": {
-        "on": 32,
+        "on": 26,
+        "name": "idx_asset_face_visible_person",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person\nON asset_face_entity (person_id, asset_id)\nWHERE is_visible = 1 AND deleted_at IS NULL\n",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 40,
+      "references": [
+        28
+      ],
+      "type": "index",
+      "data": {
+        "on": 28,
         "name": "idx_trashed_local_asset_checksum",
         "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)",
         "unique": false,
@@ -2949,13 +2938,13 @@
       }
     },
     {
-      "id": 42,
+      "id": 41,
       "references": [
-        32
+        28
       ],
       "type": "index",
       "data": {
-        "on": 32,
+        "on": 28,
         "name": "idx_trashed_local_asset_album",
         "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)",
         "unique": false,
@@ -2963,13 +2952,13 @@
       }
     },
     {
-      "id": 43,
+      "id": 42,
       "references": [
-        33
+        29
       ],
       "type": "index",
       "data": {
-        "on": 33,
+        "on": 29,
         "name": "idx_asset_edit_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)",
         "unique": false,
@@ -3002,15 +2991,6 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE TABLE IF NOT EXISTS \"stack_entity\" (\"id\" TEXT NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"owner_id\" TEXT NOT NULL REFERENCES user_entity (id) ON DELETE CASCADE, \"primary_asset_id\" TEXT NOT NULL, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
-        }
-      ]
-    },
-    {
-      "name": "visible_stack_representative",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE VIEW visible_stack_representative AS SELECT se.id AS stack_id, se.owner_id, COALESCE((SELECT primary_asset.id FROM remote_asset_entity AS primary_asset WHERE primary_asset.id = se.primary_asset_id AND primary_asset.deleted_at IS NULL AND primary_asset.visibility = 0 AND primary_asset.owner_id = se.owner_id LIMIT 1), (SELECT candidate.id FROM remote_asset_entity AS candidate WHERE candidate.stack_id = se.id AND candidate.deleted_at IS NULL AND candidate.visibility = 0 AND candidate.owner_id = se.owner_id ORDER BY candidate.created_at DESC, candidate.id ASC LIMIT 1)) AS asset_id FROM stack_entity AS se"
         }
       ]
     },
@@ -3087,15 +3067,6 @@
       ]
     },
     {
-      "name": "idx_remote_asset_owner_checksum",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)"
-        }
-      ]
-    },
-    {
       "name": "UQ_remote_assets_owner_checksum",
       "sql": [
         {
@@ -3132,29 +3103,11 @@
       ]
     },
     {
-      "name": "idx_remote_asset_visible_stack",
+      "name": "idx_remote_asset_owner_visibility_deleted_created",
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_visible_stack ON remote_asset_entity (stack_id, owner_id, created_at DESC, id) WHERE deleted_at IS NULL AND visibility = 0"
-        }
-      ]
-    },
-    {
-      "name": "idx_remote_asset_local_date_time_day",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME('%Y-%m-%d', local_date_time))"
-        }
-      ]
-    },
-    {
-      "name": "idx_remote_asset_local_date_time_month",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME('%Y-%m', local_date_time))"
+          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)"
         }
       ]
     },
@@ -3285,6 +3238,15 @@
       ]
     },
     {
+      "name": "metadata",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"metadata\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
+        }
+      ]
+    },
+    {
       "name": "idx_partner_shared_with_id",
       "sql": [
         {
@@ -3299,6 +3261,15 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)"
+        }
+      ]
+    },
+    {
+      "name": "idx_remote_exif_city",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL"
         }
       ]
     },
@@ -3344,6 +3315,15 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)"
+        }
+      ]
+    },
+    {
+      "name": "idx_asset_face_visible_person",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL"
         }
       ]
     },
