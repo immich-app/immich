@@ -12,6 +12,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -23,6 +24,7 @@ class LocalSyncService {
   final NativeSyncApi _nativeSyncApi;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final IPermissionRepository _permissionRepository;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
@@ -30,18 +32,20 @@ class LocalSyncService {
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required AssetMediaRepository assetMediaRepository,
+    required IPermissionRepository permissionRepository,
     required NativeSyncApi nativeSyncApi,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _assetMediaRepository = assetMediaRepository,
+       _permissionRepository = permissionRepository,
        _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-        final hasPermission = await _assetMediaRepository.hasManageMediaPermission();
+        final hasPermission = await _permissionRepository.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
         } else {

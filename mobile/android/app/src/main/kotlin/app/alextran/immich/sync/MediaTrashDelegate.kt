@@ -9,60 +9,24 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.provider.Settings
 import androidx.annotation.RequiresApi
-import androidx.core.net.toUri
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.PluginRegistry
 
-class ManageMediaPermissionDelegate(context: Context) : PluginRegistry.ActivityResultListener {
+class MediaTrashDelegate(
+  context: Context,
+  private val trashRequestCode: Int = 1002,
+) : PluginRegistry.ActivityResultListener {
   private val ctx = context.applicationContext
   private var activityBinding: ActivityPluginBinding? = null
   private var pendingResult: ((Result<Boolean>) -> Unit)? = null
 
-  companion object {
-    private const val PERMISSION_REQUEST_CODE = 1001
-    private const val TRASH_REQUEST_CODE = 1002
-  }
-
-  fun hasManageMediaPermission(): Boolean {
+  private fun hasManageMediaPermission(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
       MediaStore.canManageMedia(ctx)
     } else {
       false
     }
-  }
-
-  fun requestManageMediaPermission(callback: (Result<Boolean>) -> Unit) {
-    if (hasManageMediaPermission()) {
-      callback(Result.success(true))
-      return
-    }
-
-    openManageMediaPermissionSettings(callback)
-  }
-
-  fun manageMediaPermission(callback: (Result<Boolean>) -> Unit) {
-    openManageMediaPermissionSettings(callback)
-  }
-
-  private fun openManageMediaPermissionSettings(callback: (Result<Boolean>) -> Unit) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-      callback(Result.success(false))
-      return
-    }
-
-    val activity = activityBinding?.activity
-    if (activity == null) {
-      callback(Result.failure(FlutterError("NO_ACTIVITY", "Activity not available", null)))
-      return
-    }
-
-    pendingResult = callback
-    val intent = Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA).apply {
-      data = "package:${activity.packageName}".toUri()
-    }
-    activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE)
   }
 
   fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
@@ -82,24 +46,13 @@ class ManageMediaPermissionDelegate(context: Context) : PluginRegistry.ActivityR
       return
     }
 
-    restoreUris(listOf(ContentUris.withAppendedId(contentUriForType(type.toInt()), id)), callback)
+    restoreUri(ContentUris.withAppendedId(contentUriForType(type.toInt()), id), callback)
   }
 
   @RequiresApi(Build.VERSION_CODES.R)
-  private fun restoreUris(uris: List<Uri>, callback: (Result<Boolean>) -> Unit) {
-    if (uris.isEmpty()) {
-      callback(Result.failure(FlutterError("TRASH_ERROR", "No URIs to restore", null)))
-      return
-    }
-
-    toggleTrash(uris, false, callback)
-  }
-
-  @RequiresApi(Build.VERSION_CODES.R)
-  private fun toggleTrash(
-    contentUris: List<Uri>,
-    isTrashed: Boolean,
-    callback: (Result<Boolean>) -> Unit
+  private fun restoreUri(
+    contentUri: Uri,
+    callback: (Result<Boolean>) -> Unit,
   ) {
     val activity = activityBinding?.activity
     if (activity == null) {
@@ -108,15 +61,15 @@ class ManageMediaPermissionDelegate(context: Context) : PluginRegistry.ActivityR
     }
 
     try {
-      val pendingIntent = MediaStore.createTrashRequest(ctx.contentResolver, contentUris, isTrashed)
+      val pendingIntent = MediaStore.createTrashRequest(ctx.contentResolver, listOf(contentUri), false)
       pendingResult = callback
       activity.startIntentSenderForResult(
         pendingIntent.intentSender,
-        TRASH_REQUEST_CODE,
+        trashRequestCode,
         null,
         0,
         0,
-        0
+        0,
       )
     } catch (e: Exception) {
       callback(Result.failure(FlutterError("TRASH_ERROR", "Error creating or starting trash request", null)))
@@ -156,13 +109,7 @@ class ManageMediaPermissionDelegate(context: Context) : PluginRegistry.ActivityR
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-    if (requestCode == PERMISSION_REQUEST_CODE) {
-      pendingResult?.invoke(Result.success(hasManageMediaPermission()))
-      pendingResult = null
-      return true
-    }
-
-    if (requestCode == TRASH_REQUEST_CODE) {
+    if (requestCode == trashRequestCode) {
       pendingResult?.invoke(Result.success(resultCode == Activity.RESULT_OK))
       pendingResult = null
       return true

@@ -51,6 +51,7 @@ void main() {
   late DriftLocalAssetRepository mockLocalAssetRepo;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
   late AssetMediaRepository mockAssetMediaRepo;
+  late MockPermissionRepository mockPermissionRepo;
   late MockApiService mockApi;
   late MockServerApi mockServerApi;
   late MockSyncMigrationRepository mockSyncMigrationRepo;
@@ -84,6 +85,7 @@ void main() {
     mockLocalAssetRepo = MockLocalAssetRepository();
     mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
     mockAssetMediaRepo = MockAssetMediaRepository();
+    mockPermissionRepo = MockPermissionRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
     mockResetCallbackWrapper = _MockAbortCallbackWrapper();
     mockApi = MockApiService();
@@ -156,6 +158,7 @@ void main() {
       localAssetRepository: mockLocalAssetRepo,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
       assetMediaRepository: mockAssetMediaRepo,
+      permissionRepository: mockPermissionRepo,
       api: mockApi,
       syncMigrationRepository: mockSyncMigrationRepo,
     );
@@ -165,7 +168,7 @@ void main() {
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
     hasManageMediaPermission = false;
-    when(() => mockAssetMediaRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
+    when(() => mockPermissionRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
     when(() => mockAssetMediaRepo.deleteAll(any())).thenAnswer((invocation) async {
       final ids = invocation.positionalArguments.first as List<String>;
       return ids;
@@ -239,6 +242,7 @@ void main() {
         localAssetRepository: mockLocalAssetRepo,
         trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
         assetMediaRepository: mockAssetMediaRepo,
+        permissionRepository: mockPermissionRepo,
         cancelChecker: cancellationChecker.call,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
@@ -279,6 +283,7 @@ void main() {
         localAssetRepository: mockLocalAssetRepo,
         trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
         assetMediaRepository: mockAssetMediaRepo,
+        permissionRepository: mockPermissionRepo,
         cancelChecker: cancellationChecker.call,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,

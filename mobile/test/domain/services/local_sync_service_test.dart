@@ -27,6 +27,7 @@ void main() {
   late DriftLocalAssetRepository mockLocalAssetRepository;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late AssetMediaRepository mockAssetMediaRepository;
+  late MockPermissionRepository mockPermissionRepository;
   late MockNativeSyncApi mockNativeSyncApi;
   late Drift db;
 
@@ -49,6 +50,7 @@ void main() {
     mockLocalAssetRepository = MockLocalAssetRepository();
     mockTrashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     mockAssetMediaRepository = MockAssetMediaRepository();
+    mockPermissionRepository = MockPermissionRepository();
     mockNativeSyncApi = MockNativeSyncApi();
 
     when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => false);
@@ -71,17 +73,18 @@ void main() {
       localAssetRepository: mockLocalAssetRepository,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepository,
       assetMediaRepository: mockAssetMediaRepository,
+      permissionRepository: mockPermissionRepository,
       nativeSyncApi: mockNativeSyncApi,
     );
 
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
-    when(() => mockAssetMediaRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+    when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
   });
 
   group('LocalSyncService - syncTrashedAssets gating', () {
     test('invokes syncTrashedAssets when Android flag enabled and permission granted', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      when(() => mockAssetMediaRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
+      when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();
 
@@ -91,7 +94,7 @@ void main() {
 
     test('skips syncTrashedAssets when store flag disabled', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      when(() => mockAssetMediaRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
+      when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();
 
@@ -100,7 +103,7 @@ void main() {
 
     test('skips syncTrashedAssets when MANAGE_MEDIA permission absent', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      when(() => mockAssetMediaRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+      when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
 
       await sut.sync();
 
@@ -112,7 +115,7 @@ void main() {
       addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
 
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      when(() => mockAssetMediaRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
+      when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();
 

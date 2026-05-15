@@ -45,7 +45,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
-  private val manageMediaPermissionDelegate = ManageMediaPermissionDelegate(ctx)
+  private val mediaTrashDelegate = MediaTrashDelegate(ctx)
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
@@ -451,34 +451,24 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     hashTask = null
   }
 
-  fun hasManageMediaPermission(): Boolean = manageMediaPermissionDelegate.hasManageMediaPermission()
-
-  fun requestManageMediaPermission(callback: (Result<Boolean>) -> Unit) {
-    manageMediaPermissionDelegate.requestManageMediaPermission { completeWhenActive(callback, it) }
-  }
-
-  fun manageMediaPermission(callback: (Result<Boolean>) -> Unit) {
-    manageMediaPermissionDelegate.manageMediaPermission { completeWhenActive(callback, it) }
-  }
-
   fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
-    manageMediaPermissionDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
+    mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    manageMediaPermissionDelegate.onAttachedToActivity(binding)
+    mediaTrashDelegate.onAttachedToActivity(binding)
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
-    manageMediaPermissionDelegate.onDetachedFromActivity()
+    mediaTrashDelegate.onDetachedFromActivity()
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    manageMediaPermissionDelegate.onAttachedToActivity(binding)
+    mediaTrashDelegate.onAttachedToActivity(binding)
   }
 
   override fun onDetachedFromActivity() {
-    manageMediaPermissionDelegate.onDetachedFromActivity()
+    mediaTrashDelegate.onDetachedFromActivity()
   }
 
   // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs

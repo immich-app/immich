@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/repositories/sync_migration.reposit
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
@@ -34,6 +35,7 @@ class SyncStreamService {
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final IPermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final bool Function()? _cancelChecker;
@@ -44,6 +46,7 @@ class SyncStreamService {
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required AssetMediaRepository assetMediaRepository,
+    required IPermissionRepository permissionRepository,
     required SyncMigrationRepository syncMigrationRepository,
     required ApiService api,
     bool Function()? cancelChecker,
@@ -52,6 +55,7 @@ class SyncStreamService {
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _assetMediaRepository = assetMediaRepository,
+       _permissionRepository = permissionRepository,
        _syncMigrationRepository = syncMigrationRepository,
        _api = api,
        _cancelChecker = cancelChecker;
@@ -519,7 +523,7 @@ class SyncStreamService {
   }
 
   Future<void> _syncAssetTrashStatus(List<String> remoteIds) async {
-    if (!(await _assetMediaRepository.hasManageMediaPermission())) {
+    if (!(await _permissionRepository.hasManageMediaPermission())) {
       _logger.warning("Syncing asset trash status cannot proceed because MANAGE_MEDIA permission is missing");
       return;
     }
@@ -529,7 +533,7 @@ class SyncStreamService {
   }
 
   Future<void> _syncAssetDeletion(List<String> remoteIds) async {
-    if (!(await _assetMediaRepository.hasManageMediaPermission())) {
+    if (!(await _permissionRepository.hasManageMediaPermission())) {
       _logger.warning("Syncing asset deletion cannot proceed because MANAGE_MEDIA permission is missing");
       return;
     }

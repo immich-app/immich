@@ -135,14 +135,6 @@ abstract class NativeSyncApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
 
-  bool hasManageMediaPermission();
-
-  @async
-  bool requestManageMediaPermission();
-
-  @async
-  bool manageMediaPermission();
-
   @async
   bool restoreFromTrashById(String mediaId, int type);
 

@@ -10,7 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -57,7 +57,7 @@ class AdvancedSettings extends HookConsumerWidget {
       () async {
         isManageMediaSupported.value = await checkAndroidVersion();
         if (isManageMediaSupported.value) {
-          manageMediaAndroidPermission.value = await ref.read(assetMediaRepositoryProvider).hasManageMediaPermission();
+          manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
         }
       }();
       return null;
@@ -80,7 +80,7 @@ class AdvancedSettings extends HookConsumerWidget {
               subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
               onChanged: (value) async {
                 if (value) {
-                  final result = await ref.read(assetMediaRepositoryProvider).requestManageMediaPermission();
+                  final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                   manageMediaAndroidPermission.value = result;
                 }
@@ -94,7 +94,7 @@ class AdvancedSettings extends HookConsumerWidget {
                   ? const Color.fromARGB(255, 243, 188, 106)
                   : null,
               onActionTap: () async {
-                final result = await ref.read(assetMediaRepositoryProvider).manageMediaPermission();
+                final result = await ref.read(permissionRepositoryProvider).manageMediaPermission();
                 manageMediaAndroidPermission.value = result;
               },
             ),
