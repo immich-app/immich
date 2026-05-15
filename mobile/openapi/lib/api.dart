@@ -382,6 +382,7 @@ part 'model/tag_create_dto.dart';
 part 'model/tag_response_dto.dart';
 part 'model/tag_update_dto.dart';
 part 'model/tag_upsert_dto.dart';
+part 'model/tags_for_assets_response_dto.dart';
 part 'model/tags_response.dart';
 part 'model/tags_update.dart';
 part 'model/template_dto.dart';

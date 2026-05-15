@@ -228,6 +228,69 @@ class TagsApi {
     return null;
   }
 
+  /// Retrieve tags for assets
+  ///
+  /// Retrieve all tags associated with the specified assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [List<String>] assetIds (required):
+  ///   Asset IDs to retrieve tags for
+  Future<Response> getAllTagsForAssetsWithHttpInfo(List<String> assetIds,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/tags/getAllTagsForAssets';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('multi', 'assetIds', assetIds));
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve tags for assets
+  ///
+  /// Retrieve all tags associated with the specified assets.
+  ///
+  /// Parameters:
+  ///
+  /// * [List<String>] assetIds (required):
+  ///   Asset IDs to retrieve tags for
+  Future<List<TagsForAssetsResponseDto>?> getAllTagsForAssets(List<String> assetIds,) async {
+    final response = await getAllTagsForAssetsWithHttpInfo(assetIds,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<TagsForAssetsResponseDto>') as List)
+        .cast<TagsForAssetsResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Retrieve a tag
   ///
   /// Retrieve a specific tag by its ID.

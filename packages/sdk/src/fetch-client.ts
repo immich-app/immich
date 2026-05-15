@@ -2627,6 +2627,12 @@ export type TagBulkAssetsResponseDto = {
     /** Number of assets tagged */
     count: number;
 };
+export type TagsForAssetsResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Tag IDs associated with the asset */
+    tagIds?: string[];
+};
 export type TagUpdateDto = {
     /** Tag color (hex) */
     color?: string | null;
@@ -6219,6 +6225,21 @@ export function bulkTagAssets({ tagBulkAssetsDto }: {
         method: "PUT",
         body: tagBulkAssetsDto
     })));
+}
+/**
+ * Retrieve tags for assets
+ */
+export function getAllTagsForAssets({ assetIds }: {
+    assetIds: string[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagsForAssetsResponseDto[];
+    }>(`/tags/getAllTagsForAssets${QS.query(QS.explode({
+        assetIds
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Delete a tag

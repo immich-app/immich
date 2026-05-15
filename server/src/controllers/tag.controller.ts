@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -8,6 +8,8 @@ import {
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
+  TagsForAssetsQueryDto,
+  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
 } from 'src/dtos/tag.dto';
@@ -63,6 +65,20 @@ export class TagController {
   })
   bulkTagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     return this.service.bulkTagAssets(auth, dto);
+  }
+
+  @Get('getAllTagsForAssets')
+  @Authenticated({ permission: Permission.TagRead })
+  @Endpoint({
+    summary: 'Retrieve tags for assets',
+    description: 'Retrieve all tags associated with the specified assets.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  getAllTagsForAssets(
+    @Auth() auth: AuthDto,
+    @Query() { assetIds }: TagsForAssetsQueryDto,
+  ): Promise<TagsForAssetsResponseDto[]> {
+    return this.service.getAllForAssets(auth, assetIds);
   }
 
   @Get(':id')

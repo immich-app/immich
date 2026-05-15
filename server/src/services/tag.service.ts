@@ -4,13 +4,14 @@ import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  mapTag,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
+  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
-  mapTag,
 } from 'src/dtos/tag.dto';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
@@ -30,6 +31,15 @@ export class TagService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.TagRead, ids: [id] });
     const tag = await this.findOrFail(id);
     return mapTag(tag);
+  }
+
+  async getAllForAssets(auth: AuthDto, assetIds: string[]): Promise<TagsForAssetsResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: assetIds });
+    const tag_assets = await this.tagRepository.getIdsForAssets(assetIds);
+    return assetIds.map((assetId) => ({
+      assetId,
+      tagIds: tag_assets.filter((ta) => ta.assetId === assetId).map((ta) => ta.tagId),
+    }));
   }
 
   async create(auth: AuthDto, dto: TagCreateDto) {

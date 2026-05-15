@@ -1,7 +1,13 @@
 <script lang="ts">
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
-  import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import {
+    getAllTags,
+    getAllTagsForAssets,
+    upsertTags,
+    type TagResponseDto,
+    type TagsForAssetsResponseDto,
+  } from '@immich/sdk';
   import { FormModal } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -18,6 +24,7 @@
   let { onClose, assetIds }: Props = $props();
 
   let allTags: TagResponseDto[] = $state([]);
+  let tagsForAssets: TagsForAssetsResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedIds = new SvelteSet<string>();
   let disabled = $derived(selectedIds.size === 0);
@@ -25,6 +32,7 @@
 
   onMount(async () => {
     allTags = await getAllTags();
+    tagsForAssets = await getAllTagsForAssets({ assetIds });
   });
 
   const onSubmit = async () => {
@@ -77,7 +85,7 @@
       forceFocus
     />
   </div>
-
+  <div>{JSON.stringify(tagsForAssets)}</div>
   <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedIds as tagId (tagId)}
       {@const tag = tagMap[tagId]}

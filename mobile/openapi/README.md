@@ -274,6 +274,7 @@ Class | Method | HTTP request | Description
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | Create a tag
 *TagsApi* | [**deleteTag**](doc//TagsApi.md#deletetag) | **DELETE** /tags/{id} | Delete a tag
 *TagsApi* | [**getAllTags**](doc//TagsApi.md#getalltags) | **GET** /tags | Retrieve tags
+*TagsApi* | [**getAllTagsForAssets**](doc//TagsApi.md#getalltagsforassets) | **GET** /tags/getAllTagsForAssets | Retrieve tags for assets
 *TagsApi* | [**getTagById**](doc//TagsApi.md#gettagbyid) | **GET** /tags/{id} | Retrieve a tag
 *TagsApi* | [**tagAssets**](doc//TagsApi.md#tagassets) | **PUT** /tags/{id}/assets | Tag assets
 *TagsApi* | [**untagAssets**](doc//TagsApi.md#untagassets) | **DELETE** /tags/{id}/assets | Untag assets
@@ -634,6 +635,7 @@ Class | Method | HTTP request | Description
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagUpdateDto](doc//TagUpdateDto.md)
  - [TagUpsertDto](doc//TagUpsertDto.md)
+ - [TagsForAssetsResponseDto](doc//TagsForAssetsResponseDto.md)
  - [TagsResponse](doc//TagsResponse.md)
  - [TagsUpdate](doc//TagsUpdate.md)
  - [TemplateDto](doc//TemplateDto.md)

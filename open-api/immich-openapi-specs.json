@@ -12933,6 +12933,72 @@
         "x-immich-state": "Stable"
       }
     },
+    "/tags/getAllTagsForAssets": {
+      "get": {
+        "description": "Retrieve all tags associated with the specified assets.",
+        "operationId": "getAllTagsForAssets",
+        "parameters": [
+          {
+            "name": "assetIds",
+            "required": true,
+            "in": "query",
+            "description": "Asset IDs to retrieve tags for",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagsForAssetsResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve tags for assets",
+        "tags": [
+          "Tags"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/tags/{id}": {
       "delete": {
         "description": "Delete a specific tag by its ID.",
@@ -24943,6 +25009,25 @@
         },
         "required": [
           "tags"
+        ],
+        "type": "object"
+      },
+      "TagsForAssetsResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "tagIds": {
+            "description": "Tag IDs associated with the asset",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId"
         ],
         "type": "object"
       },

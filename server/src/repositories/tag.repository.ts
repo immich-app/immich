@@ -73,6 +73,25 @@ export class TagRepository {
     return this.db.selectFrom('tag').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getIdsForAssets(assetIds: string[]) {
+    /*
+    return this.db
+      .selectFrom('tag_asset')
+      .select([
+        'assetId',
+        sql`(
+            select coalesce(array_agg(distinct tag_asset."tagId"), '{}')
+            from tag_asset
+            where tag_asset."assetId" = assetId
+          )`.as('tagIds'),
+      ])
+      .where('assetId', 'in', assetIds)
+      .execute();
+      */
+    return this.db.selectFrom('tag_asset').select(['assetId', 'tagId']).where('assetId', 'in', assetIds).execute();
+  }
+
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
   create(tag: Insertable<TagTable>) {
     return this.db.insertInto('tag').values(tag).returningAll().executeTakeFirstOrThrow();
