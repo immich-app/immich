@@ -537,6 +537,10 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
+    func hasManageMediaPermission() throws -> Bool
+    func requestManageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void)
+    func manageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void)
+    func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
 }
 
@@ -721,6 +725,74 @@ class NativeSyncApiSetup {
     } else {
       getTrashedAssetsChannel.setMessageHandler(nil)
     }
+      let hasManageMediaPermissionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hasManageMediaPermission\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      if let api = api {
+          hasManageMediaPermissionChannel.setMessageHandler {
+              _, reply in
+              do {
+                  let result = try api.hasManageMediaPermission()
+                  reply(wrapResult(result))
+              } catch {
+                  reply(wrapError(error))
+              }
+          }
+      } else {
+          hasManageMediaPermissionChannel.setMessageHandler(nil)
+      }
+      let requestManageMediaPermissionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.requestManageMediaPermission\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      if let api = api {
+          requestManageMediaPermissionChannel.setMessageHandler {
+              _, reply in
+              api.requestManageMediaPermission {
+                  result in
+                  switch result {
+                  case .success(let res):
+                      reply(wrapResult(res))
+                  case .failure(let error):
+                      reply(wrapError(error))
+                  }
+              }
+          }
+      } else {
+          requestManageMediaPermissionChannel.setMessageHandler(nil)
+      }
+      let manageMediaPermissionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.manageMediaPermission\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      if let api = api {
+          manageMediaPermissionChannel.setMessageHandler {
+              _, reply in
+              api.manageMediaPermission {
+                  result in
+                  switch result {
+                  case .success(let res):
+                      reply(wrapResult(res))
+                  case .failure(let error):
+                      reply(wrapError(error))
+                  }
+              }
+          }
+      } else {
+          manageMediaPermissionChannel.setMessageHandler(nil)
+      }
+      let restoreFromTrashByIdChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.restoreFromTrashById\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      if let api = api {
+          restoreFromTrashByIdChannel.setMessageHandler {
+              message, reply in
+              let args = message as ! [Any?]
+              let mediaIdArg = args[0] as !String
+              let typeArg = args[1] as !Int64
+              api.restoreFromTrashById(mediaId: mediaIdArg, type: typeArg) {
+                  result in
+                  switch result {
+                  case .success(let res):
+                      reply(wrapResult(res))
+                  case .failure(let error):
+                      reply(wrapError(error))
+                  }
+              }
+          }
+      } else {
+          restoreFromTrashByIdChannel.setMessageHandler(nil)
+      }
     let getCloudIdForAssetIdsChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
