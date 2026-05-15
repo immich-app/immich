@@ -181,7 +181,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
-      ActionButtonType.slideshow => !context.isInLockedView && context.timelineOrigin != TimelineOrigin.remoteAlbum,
+      ActionButtonType.slideshow => !context.isInLockedView,
     };
   }
 
