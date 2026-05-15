@@ -200,11 +200,7 @@ describe(JobRepository.name, () => {
 
   it('does not double-count paused jobs that BullMQ also returns as waiting jobs', async () => {
     const { sut, queue } = setup();
-    const pausedJob = {
-      id: 'paused-job-1',
-      name: JobName.FaceIdentityBackfill,
-      getState: vitest.fn().mockResolvedValue('paused'),
-    };
+    const pausedJob = { id: 'paused-job-1', name: JobName.FaceIdentityBackfill };
     queue.getJobs.mockImplementation((status) => {
       const jobs = {
         active: [],

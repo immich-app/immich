@@ -64,6 +64,9 @@
       .sort((a, b) => b.active - a.active || b.pending - a.pending || a.label.localeCompare(b.label));
   });
 
+  let jobTypesSampled = $derived(jobTypeRows.reduce((sum, r) => sum + r.active + r.pending, 0));
+  let jobTypesTruncated = $derived(jobTypesSampled < statistics.active + waitingCount);
+
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
   const jobTypeGridClasses = 'grid grid-cols-[minmax(0,1fr)_8rem_5rem] items-center gap-4 px-4 py-2';
 </script>
@@ -174,6 +177,11 @@
               </span>
             </div>
           {/each}
+          {#if jobTypesTruncated}
+            <p class="px-4 py-2 text-xs text-gray-400 dark:text-gray-500">
+              Sampled from first {jobTypesSampled.toLocaleString($locale)} jobs
+            </p>
+          {/if}
         </div>
       {/if}
     </div>

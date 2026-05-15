@@ -175,30 +175,33 @@ export class JobRepository {
   }
 
   async getJobTypes(name: QueueName): Promise<JobTypeCounts[]> {
-    const statuses = ['active', 'waiting', 'delayed', 'paused'] as const;
-    const counts = new Map<JobName, JobTypeCounts>();
-    const seenJobs = new Set<string>();
+    // Process 'paused' before 'waiting': BullMQ may include the same job in both lists
+    // when a queue is paused. ID-based dedup then correctly attributes it to 'paused'.
+    const statusOrder = ['active', 'delayed', 'paused', 'waiting'] as const;
+    type Status = (typeof statusOrder)[number];
 
-    for (const status of statuses) {
-      const jobs = await this.getQueue(name).getJobs(status, 0, 1000, true);
+    const results = await Promise.all(
+      statusOrder.map(async (status) => ({ status, jobs: await this.getQueue(name).getJobs(status, 0, 1000, true) })),
+    );
+
+    const counts = new Map<JobName, JobTypeCounts>();
+    const seenJobIds = new Set<string>();
+
+    for (const { status, jobs } of results) {
       for (const job of jobs) {
         if (!job) {
           continue;
         }
-        const actualStatus = typeof job.getState === 'function' ? await job.getState() : status;
-        if (!statuses.includes(actualStatus as (typeof statuses)[number])) {
-          continue;
+        if (job.id) {
+          if (seenJobIds.has(job.id)) {
+            continue;
+          }
+          seenJobIds.add(job.id);
         }
-
-        const jobKey = job.id ?? `${job.name}:${actualStatus}:${seenJobs.size}`;
-        if (seenJobs.has(jobKey)) {
-          continue;
-        }
-        seenJobs.add(jobKey);
 
         const jobName = job.name as JobName;
         const count = counts.get(jobName) ?? { name: jobName, active: 0, waiting: 0, delayed: 0, paused: 0 };
-        count[actualStatus as (typeof statuses)[number]]++;
+        count[status as Status]++;
         counts.set(jobName, count);
       }
     }
