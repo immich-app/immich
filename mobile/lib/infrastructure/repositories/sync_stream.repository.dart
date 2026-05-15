@@ -199,6 +199,16 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          // Avoid SqliteException(2067) when server re-issues a new id for
+          // the same (ownerId, checksum). #22522 #27186
+          _enqueueRemoteAssetDedupe(
+            batch,
+            id: asset.id,
+            ownerId: asset.ownerId,
+            checksum: asset.checksum,
+            libraryId: asset.libraryId,
+          );
+
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -238,6 +248,15 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          // See updateAssetsV1 for why this dedupe is required. #22522 #27186
+          _enqueueRemoteAssetDedupe(
+            batch,
+            id: asset.id,
+            ownerId: asset.ownerId,
+            checksum: asset.checksum,
+            libraryId: asset.libraryId,
+          );
+
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -270,6 +289,39 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsV2 - $debugLabel', error, stack);
       rethrow;
+    }
+  }
+
+  /// Queues a DELETE that prunes any stale remote_asset row matching the
+  /// partial UNIQUE index for the incoming asset:
+  ///   - libraryId IS NULL  -> (owner_id, checksum)
+  ///   - libraryId NOT NULL -> (owner_id, library_id, checksum)
+  /// The current id is excluded so a same-id update does not delete itself.
+  void _enqueueRemoteAssetDedupe(
+    Batch batch, {
+    required String id,
+    required String ownerId,
+    required String checksum,
+    required String? libraryId,
+  }) {
+    if (libraryId == null) {
+      batch.deleteWhere(
+        _db.remoteAssetEntity,
+        (row) =>
+            row.ownerId.equals(ownerId) &
+            row.checksum.equals(checksum) &
+            row.libraryId.isNull() &
+            row.id.equals(id).not(),
+      );
+    } else {
+      batch.deleteWhere(
+        _db.remoteAssetEntity,
+        (row) =>
+            row.ownerId.equals(ownerId) &
+            row.checksum.equals(checksum) &
+            row.libraryId.equals(libraryId) &
+            row.id.equals(id).not(),
+      );
     }
   }
 
