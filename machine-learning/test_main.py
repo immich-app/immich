@@ -35,6 +35,18 @@ from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
 
 
+class FakeLock:
+    def __init__(self) -> None:
+        self.enter = mock.Mock()
+        self.exit = mock.Mock()
+
+    def __enter__(self) -> None:
+        self.enter()
+
+    def __exit__(self, *args: object) -> None:
+        self.exit(*args)
+
+
 class TestBase:
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
@@ -412,6 +424,30 @@ class TestOrtSession:
         )
 
         assert sess_options is session.sess_options
+
+    def test_serializes_rocm_run(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        mocker.patch("immich_ml.sessions.ort._migraphx_run_lock", lock)
+        mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+
+        lock.enter.assert_called_once()
+        lock.exit.assert_called_once()
+        session.session.run.assert_called_once_with(None, input_feed, None)
+
+    def test_does_not_serialize_non_rocm_run(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        mocker.patch("immich_ml.sessions.ort._migraphx_run_lock", lock)
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["CPUExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+
+        lock.enter.assert_not_called()
+        session.session.run.assert_called_once_with(None, input_feed, None)
 
 
 class TestAnnSession:
@@ -876,6 +912,34 @@ class TestFaceRecognition:
         face_recognizer = FaceRecognizer(
             "buffalo_s", model_format=ModelFormat.ARMNN, cache_dir=path, providers=["OpenVINOExecutionProvider"]
         )
+        face_recognizer.load()
+
+        assert face_recognizer.batch_size == 1
+        update_dims.assert_not_called()
+        onnx.load.assert_not_called()
+        onnx.save.assert_not_called()
+
+    def test_recognition_does_not_add_batch_axis_for_migraphx(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
+        update_dims = mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        )
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["MIGraphXExecutionProvider", "CPUExecutionProvider"],
+        )
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        inputs = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
+        outputs = [SimpleNamespace(name="output.1", shape=(1, 800))]
+        ort_session.return_value.get_inputs.return_value = inputs
+        ort_session.return_value.get_outputs.return_value = outputs
+
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path)
         face_recognizer.load()
 
         assert face_recognizer.batch_size == 1

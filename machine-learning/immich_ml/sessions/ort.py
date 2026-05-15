@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
 import numpy as np
@@ -11,6 +12,8 @@ from immich_ml.models.constants import SUPPORTED_PROVIDERS
 from immich_ml.schemas import ModelPrecision, SessionNode
 
 from ..config import log, settings
+
+_migraphx_run_lock = Lock()
 
 
 class OrtSession:
@@ -48,7 +51,12 @@ class OrtSession:
         input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
-        outputs: list[NDArray[np.float32]] = self.session.run(output_names, input_feed, run_options)
+        if "MIGraphXExecutionProvider" in self.providers:
+            with _migraphx_run_lock:
+                outputs: list[NDArray[np.float32]] = self.session.run(output_names, input_feed, run_options)
+            return outputs
+
+        outputs = self.session.run(output_names, input_feed, run_options)
         return outputs
 
     @property
