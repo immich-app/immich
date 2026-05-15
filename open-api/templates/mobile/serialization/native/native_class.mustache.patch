@@ -1,5 +1,18 @@
 --- native_class.mustache	2025-07-01 08:29:23.968133163 +0800
 +++ native_class_temp.mustache	2025-07-01 08:29:44.225850583 +0800
+@@ -78,10 +78,10 @@
+       {{#pattern}}
+       json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
+         ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
+-        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
++        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}});
+       {{/pattern}}
+       {{^pattern}}
+-      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
++      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}});
+       {{/pattern}}
+     {{/isDate}}
+     {{^isDateTime}}
 @@ -91,14 +91,14 @@
      {{/isDateTime}}
      {{#isNullable}}

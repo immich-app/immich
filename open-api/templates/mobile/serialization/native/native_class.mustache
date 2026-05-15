@@ -78,10 +78,10 @@ class {{{classname}}} {
       {{#pattern}}
       json[r'{{{baseName}}}'] = _isEpochMarker(r'{{{pattern}}}')
         ? this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.millisecondsSinceEpoch
-        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
+        : _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}});
       {{/pattern}}
       {{^pattern}}
-      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}}.toUtc());
+      json[r'{{{baseName}}}'] = _dateFormatter.format(this.{{{name}}}{{#isNullable}}!{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}!{{/defaultValue}}{{/required}}{{/isNullable}});
       {{/pattern}}
     {{/isDate}}
     {{^isDateTime}}
