@@ -421,6 +421,7 @@ export type JobItem =
   | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
   | { name: JobName.FacialRecognition; data: IFacialRecognitionJob }
   | { name: JobName.FaceIdentityBackfill; data: IFaceIdentityBackfillJob }
+  | { name: JobName.FaceIdentityMaintenanceAfterRecognition; data: IDelayedJob }
   | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
 
   // Smart Search

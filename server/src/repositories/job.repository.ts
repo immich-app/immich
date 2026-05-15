@@ -354,6 +354,13 @@ export class JobRepository {
         }
         return { jobId: 'face-identity-backfill/root', removeOnFail: true };
       }
+      case JobName.FaceIdentityMaintenanceAfterRecognition: {
+        const data = item.data as { delay?: number };
+        if (data.delay !== undefined) {
+          return { delay: data.delay, removeOnFail: true };
+        }
+        return { jobId: 'face-identity-maintenance-after-recognition', removeOnFail: true };
+      }
       case JobName.VersionCheck: {
         return { jobId: JobName.VersionCheck };
       }

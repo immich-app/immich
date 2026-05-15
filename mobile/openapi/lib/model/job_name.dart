@@ -43,6 +43,7 @@ class JobName {
   static const facialRecognitionQueueAll = JobName._(r'FacialRecognitionQueueAll');
   static const facialRecognition = JobName._(r'FacialRecognition');
   static const faceIdentityBackfill = JobName._(r'FaceIdentityBackfill');
+  static const faceIdentityMaintenanceAfterRecognition = JobName._(r'FaceIdentityMaintenanceAfterRecognition');
   static const fileDelete = JobName._(r'FileDelete');
   static const fileMigrationQueueAll = JobName._(r'FileMigrationQueueAll');
   static const libraryDeleteCheck = JobName._(r'LibraryDeleteCheck');
@@ -116,6 +117,7 @@ class JobName {
     facialRecognitionQueueAll,
     facialRecognition,
     faceIdentityBackfill,
+    faceIdentityMaintenanceAfterRecognition,
     fileDelete,
     fileMigrationQueueAll,
     libraryDeleteCheck,
@@ -224,6 +226,7 @@ class JobNameTypeTransformer {
         case r'FacialRecognitionQueueAll': return JobName.facialRecognitionQueueAll;
         case r'FacialRecognition': return JobName.facialRecognition;
         case r'FaceIdentityBackfill': return JobName.faceIdentityBackfill;
+        case r'FaceIdentityMaintenanceAfterRecognition': return JobName.faceIdentityMaintenanceAfterRecognition;
         case r'FileDelete': return JobName.fileDelete;
         case r'FileMigrationQueueAll': return JobName.fileMigrationQueueAll;
         case r'LibraryDeleteCheck': return JobName.libraryDeleteCheck;

@@ -860,8 +860,44 @@ export class PersonService extends BaseService {
       );
     }
 
+    await this.jobRepository.queue({ name: JobName.FaceIdentityMaintenanceAfterRecognition, data: {} });
+
     await this.systemMetadataRepository.set(SystemMetadataKey.FacialRecognitionState, { lastRun });
 
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.FaceIdentityMaintenanceAfterRecognition, queue: QueueName.FacialRecognition })
+  async handleFaceIdentityMaintenanceAfterRecognition(
+    _data: JobOf<JobName.FaceIdentityMaintenanceAfterRecognition>,
+  ): Promise<JobStatus> {
+    const counts = await this.jobRepository.getJobCounts(QueueName.FacialRecognition);
+
+    if (counts.waiting > 0 || counts.delayed > 0 || counts.paused > 0) {
+      await this.jobRepository.queue({
+        name: JobName.FaceIdentityMaintenanceAfterRecognition,
+        data: { delay: 10_000 },
+      });
+      return JobStatus.Success;
+    }
+
+    // active=1 means only this marker is running — queue has drained
+    if (counts.active > 1) {
+      await this.jobRepository.queue({
+        name: JobName.FaceIdentityMaintenanceAfterRecognition,
+        data: { delay: 10_000 },
+      });
+      return JobStatus.Success;
+    }
+
+    const activeBackfills = await this.jobRepository.searchJobs(QueueName.PeopleBackfill, {
+      status: [QueueJobStatus.Active, QueueJobStatus.Delayed, QueueJobStatus.Paused, QueueJobStatus.Waiting],
+    });
+    if (activeBackfills.some((job) => job.name === JobName.FaceIdentityBackfill)) {
+      return JobStatus.Skipped;
+    }
+
+    await this.jobRepository.queue({ name: JobName.FaceIdentityBackfill, data: {} });
     return JobStatus.Success;
   }
 
