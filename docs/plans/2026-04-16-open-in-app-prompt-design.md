@@ -6,7 +6,7 @@
 ## Problem
 
 When a user opens a Gallery web link on their mobile device (e.g. a friend shares
-`https://pierre.opennoodle.de/photos/<uuid>` in a chat), the user lands in mobile
+`https://<your-gallery>/photos/<uuid>` in a chat), the user lands in mobile
 Safari/Chrome. They have the Gallery app installed but the web isn't telling them
 that opening it in the app would be a better experience.
 

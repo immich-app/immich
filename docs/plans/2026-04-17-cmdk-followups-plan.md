@@ -708,7 +708,7 @@ Design doc: `docs/plans/2026-04-17-cmdk-followups-design.md`
 - [ ] Trigger an `onerror` (e.g. delete a person and re-open recents that
       still reference it): row falls back to the grey placeholder
       circle without breaking layout.
-- [ ] On `pierre.opennoodle.de` (real photo library): browse a few
+- [ ] On `personal instance` (real photo library): browse a few
       arrowed-through people in the People section to confirm the row
       thumbnail and the preview pane both update correctly per person.
 EOF

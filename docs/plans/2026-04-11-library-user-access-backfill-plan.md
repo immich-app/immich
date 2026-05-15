@@ -2119,7 +2119,7 @@ Summary: new `library_user (userId, libraryId, createId, createdAt)` denormaliza
 - [ ] New unit tests in `sync.repository.spec.ts` for `LibrarySync.getCreatedAfter`
 - [ ] New E2E cases in `sync-library.e2e-spec.ts`
 - [ ] Existing `sync-library*.spec.ts`, `library-audit-triggers.spec.ts`, and `sync-library.e2e-spec.ts` continue to pass
-- [ ] Deploy to `pierre.opennoodle.de` via RC build and manually verify: viewer re-added to Google Takeout space sees photos on next sync without app restart
+- [ ] Deploy to `personal instance` via RC build and manually verify: viewer re-added to Google Takeout space sees photos on next sync without app restart
 
 ## Rollback
 
@@ -2176,4 +2176,4 @@ EOF
 - **Medium tests need a real Postgres** — make sure your local stack has the test DB available (`make dev` or the test container setup). If `newMediumService` blows up on startup, that's a stack/env issue, not a code issue.
 - **Schema tool boilerplate is fiddly** — the `migration_overrides` JSON-encoded SQL strings must escape quotes and newlines exactly as shown. Copy-paste from `1778200000000-LibraryAuditTables.ts` as a template.
 - **If the `sql-tools` decorator library doesn't support exactly the decorator form shown** for `@CreateIdColumn({ index: false })`, fall back to the raw migration index and just use `@CreateIdColumn()` in the table definition. The plan adapts — don't get stuck on that detail.
-- **Don't merge to main until the full E2E + regression sweep is green** and the fix is manually verified on `pierre.opennoodle.de` via an RC build.
+- **Don't merge to main until the full E2E + regression sweep is green** and the fix is manually verified on `personal instance` via an RC build.

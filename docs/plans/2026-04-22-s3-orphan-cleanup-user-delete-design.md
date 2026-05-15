@@ -139,7 +139,7 @@ Wire into `.github/workflows/storage-migration-tests.yml` after `phaseCopyAssetS
 
 ### Manual smoke (via `/rc-personal`)
 
-1. Create a disposable user on pierre.opennoodle.de, upload 2–3 photos, wait for thumbs.
+1. Create a disposable user on personal instance, upload 2–3 photos, wait for thumbs.
 2. Admin delete with `force: true`.
 3. `docker logs gallery-server | grep 'Cleaned S3 prefix'` → see 4 lines.
 4. Wasabi console → confirm `upload/<deleted-uuid>/` returns 0 objects.

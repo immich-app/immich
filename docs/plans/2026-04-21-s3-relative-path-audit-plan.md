@@ -1053,9 +1053,9 @@ If it reports issues, run `pnpm format` and commit as `chore: prettier`.
 
 - (none — use the `/rc-personal` skill)
 
-**Step 1: Push the branch** and invoke the `/rc-personal` skill to ship this branch to `pierre.opennoodle.de`.
+**Step 1: Push the branch** and invoke the `/rc-personal` skill to ship this branch to `personal instance`.
 
-**Step 2: Manually verify on pierre.opennoodle.de:**
+**Step 2: Manually verify on personal instance:**
 
 - Upload a short video; wait ~30s; confirm a `smart_search` row appears for the asset (query the DB directly via the instance's psql or admin UI).
 - Duplicate an asset with an XMP sidecar via the UI; confirm the target sidecar object exists in the S3 bucket.
@@ -1102,7 +1102,7 @@ Design: `docs/plans/2026-04-21-s3-relative-path-audit-design.md`
 - [ ] Type-check green (`make check-server`)
 - [ ] Lint zero warnings (`cd server && pnpm lint --max-warnings 0`)
 - [ ] Nightly storage-migration workflow passes with the two new phases
-- [ ] Manual smoke on pierre.opennoodle.de: video upload → `smart_search` row appears; asset duplicate with sidecar → target sidecar in S3
+- [ ] Manual smoke on personal instance: video upload → `smart_search` row appears; asset duplicate with sidecar → target sidecar in S3
 
 ## Verifications
 
