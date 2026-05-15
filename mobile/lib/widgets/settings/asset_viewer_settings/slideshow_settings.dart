@@ -58,8 +58,8 @@ class SlideshowSettings extends HookConsumerWidget {
         SettingsSliderListTile(
           valueNotifier: useDuration,
           text: "duration".t(context: context),
-          minValue: 1,
-          noDivisons: 6,
+          minValue: 5,
+          noDivisons: 5,
           maxValue: 30,
         ),
         Padding(
@@ -93,7 +93,7 @@ class SlideshowSettings extends HookConsumerWidget {
           child: SettingsSubTitle(title: 'direction'.t(context: context)),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.only(bottom: 32),
           child: SettingsRadioListTile(
             groups: [
               SettingsRadioGroup(

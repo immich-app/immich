@@ -66,7 +66,6 @@ class ActionButtonContext {
 
 enum ActionButtonType {
   openInfo,
-  slideshow,
   likeActivity,
   share,
   shareLink,
@@ -75,6 +74,7 @@ enum ActionButtonType {
   similarPhotos,
   setProfilePicture,
   viewInTimeline,
+  slideshow,
   download,
   upload,
   openInBrowser,
@@ -181,7 +181,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
-      ActionButtonType.slideshow => !context.isInLockedView,
+      ActionButtonType.slideshow => true,
     };
   }
 
@@ -203,6 +203,7 @@ enum ActionButtonType {
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
+      ActionButtonType.slideshow => SlideshowActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.archive => ArchiveActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unarchive => UnArchiveActionButton(
         source: context.source,
@@ -287,7 +288,6 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.slideshow => SlideshowActionButton(iconOnly: iconOnly, menuItem: menuItem),
     };
   }
 
@@ -297,7 +297,6 @@ enum ActionButtonType {
   int get kebabMenuGroup => switch (this) {
     // 0: info
     ActionButtonType.openInfo => 0,
-    ActionButtonType.slideshow => 0,
     // 10: move, remove, and delete
     ActionButtonType.trash => 10,
     ActionButtonType.deletePermanent => 10,
