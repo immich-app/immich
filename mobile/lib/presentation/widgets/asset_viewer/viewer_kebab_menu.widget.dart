@@ -53,7 +53,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       isWaitingForTrashApproval: isWaitingForTrashApproval,
     );
 
-    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context);
+    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context, ref);
 
     return MenuAnchor(
       consumeOutsideTap: true,
