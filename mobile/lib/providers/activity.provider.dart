@@ -1,14 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 const _pageSize = 50;
-
-/// Minimum server version that supports paginated activity loading (take + before params).
-const _paginationMinVersion = ServerVersion(major: 2, minor: 7, patch: 0);
 
 // ignore: unintended_html_in_doc_comment
 /// Maintains the current list of all activities for <share-album-id, asset>
@@ -26,7 +23,7 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
   bool get isLoadingMore => state.isLoading;
 
   bool get _paginationSupported =>
-      ref.read(serverInfoProvider).serverVersion >= _paginationMinVersion;
+      ref.read(serverInfoProvider).serverVersion >= const SemVer(major: 3, minor: 0, patch: 0);
 
   @override
   Future<List<Activity>> build((String albumId, String? assetId) args) async {
@@ -34,11 +31,9 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
     assetId = args.$2;
     _hasMore = true;
     final paginationSupported = _paginationSupported;
-    final activities = await ref.watch(activityServiceProvider).getAllActivities(
-      albumId,
-      assetId: assetId,
-      take: paginationSupported ? _pageSize : null,
-    );
+    final activities = await ref
+        .watch(activityServiceProvider)
+        .getAllActivities(albumId, assetId: assetId, take: paginationSupported ? _pageSize : null);
     _hasMore = paginationSupported && activities.length >= _pageSize;
     return activities;
   }
@@ -52,12 +47,9 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
     final previous = state;
     state = const AsyncLoading<List<Activity>>().copyWithPrevious(previous);
     try {
-      final older = await ref.watch(activityServiceProvider).getAllActivities(
-        albumId,
-        assetId: assetId,
-        take: _pageSize,
-        before: activities.first.createdAt,
-      );
+      final older = await ref
+          .read(activityServiceProvider)
+          .getAllActivities(albumId, assetId: assetId, take: _pageSize, before: activities.first.createdAt);
       _hasMore = older.length >= _pageSize;
       state = AsyncData([...older, ...activities]);
     } catch (e, st) {

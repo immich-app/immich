@@ -1,4 +1,3 @@
-import { websocketStore } from '$lib/stores/websocket';
 import {
   createActivity,
   deleteActivity,
@@ -12,24 +11,37 @@ import {
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { websocketStore } from '$lib/stores/websocket';
 import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 
 /** Minimum server version that supports paginated activity loading (take + before params). */
-const PAGINATION_MIN_VERSION = { major: 2, minor: 7, patch: 0 };
+const PAGINATION_MIN_VERSION = { major: 3, minor: 0, patch: 0 };
+const SERVER_VERSION_TIMEOUT_MS = 3000;
 
-function waitForServerVersion(): Promise<{ major: number; minor: number; patch: number }> {
+function waitForServerVersion(): Promise<{ major: number; minor: number; patch: number } | undefined> {
   const current = get(websocketStore.serverVersion);
   if (current) {
     return Promise.resolve(current);
   }
   return new Promise((resolve) => {
-    const unsubscribe = websocketStore.serverVersion.subscribe((version) => {
-      if (version) {
+    let settled = false;
+    const finish = (version: { major: number; minor: number; patch: number } | undefined) => {
+      if (settled) return;
+      settled = true;
+      try {
+        clearTimeout(timer);
         unsubscribe();
+      } finally {
         resolve(version);
       }
+    };
+    const unsubscribe = websocketStore.serverVersion.subscribe((version) => {
+      if (version) {
+        finish(version);
+      }
     });
+    const timer = setTimeout(() => finish(undefined), SERVER_VERSION_TIMEOUT_MS);
   });
 }
 
@@ -132,7 +144,7 @@ class ActivityManager {
     }
 
     this.#invalidateCache(this.#albumId, this.#assetId);
-    handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
+    handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId, { preserveDepth: true }));
     return activity;
   }
 
@@ -153,7 +165,7 @@ class ActivityManager {
 
     await deleteActivity({ id: activity.id });
     this.#invalidateCache(this.#albumId, this.#assetId);
-    handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
+    handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId, { preserveDepth: true }));
   }
 
   async toggleLike() {
@@ -173,7 +185,7 @@ class ActivityManager {
     }
   }
 
-  async refreshActivities(albumId: string, assetId?: string) {
+  async refreshActivities(albumId: string, assetId?: string, options?: { preserveDepth?: boolean }) {
     this.isLoading = true;
 
     const cacheKey = this.#getCacheKey(albumId, assetId);
@@ -190,13 +202,19 @@ class ActivityManager {
     }
 
     const serverVersion = await waitForServerVersion();
-    const paginationSupported = versionSupportsPagination(serverVersion);
+    const paginationSupported = serverVersion !== undefined && versionSupportsPagination(serverVersion);
+    const targetCount = options?.preserveDepth
+      ? Math.max(
+          ActivityManager.PAGE_SIZE,
+          Math.ceil(this.#activities.length / ActivityManager.PAGE_SIZE) * ActivityManager.PAGE_SIZE,
+        )
+      : ActivityManager.PAGE_SIZE;
     this.#activities = await getActivities({
       albumId,
       assetId,
-      take: paginationSupported ? ActivityManager.PAGE_SIZE : undefined,
+      take: paginationSupported ? targetCount : undefined,
     });
-    this.#hasMore = paginationSupported && this.#activities.length >= ActivityManager.PAGE_SIZE;
+    this.#hasMore = paginationSupported && this.#activities.length >= targetCount;
 
     const [liked] = await getActivities({
       albumId,
@@ -237,6 +255,12 @@ class ActivityManager {
       });
       this.#activities = [...older, ...this.#activities];
       this.#hasMore = older.length >= ActivityManager.PAGE_SIZE;
+
+      const cacheKey = this.#getCacheKey(this.#albumId, this.#assetId);
+      const cached = this.#cache.get(cacheKey);
+      if (cached) {
+        this.#cache.set(cacheKey, { ...cached, activities: this.#activities, hasMore: this.#hasMore });
+      }
     } finally {
       this.isLoadingMore = false;
     }

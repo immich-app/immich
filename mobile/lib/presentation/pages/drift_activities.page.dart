@@ -43,26 +43,27 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
     void checkIfViewportNotFilled() {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (listViewScrollController.hasClients &&
-            listViewScrollController.position.maxScrollExtent <= 0) {
+        if (listViewScrollController.hasClients && listViewScrollController.position.maxScrollExtent <= 0) {
           loadMoreIfNeeded();
         }
       });
     }
 
     // Auto-load more pages if content doesn't fill the viewport
-    ref.listen(albumActivityProvider((album.id, assetId)), (_, __) {
-      checkIfViewportNotFilled();
+    ref.listen(albumActivityProvider((album.id, assetId)), (_, next) {
+      if (next is AsyncData) {
+        checkIfViewportNotFilled();
+      }
     });
 
     useEffect(() {
       void onScroll() {
         // In a reversed ListView, scrolling toward older items means reaching maxScrollExtent
-        if (listViewScrollController.position.pixels >=
-            listViewScrollController.position.maxScrollExtent - 200) {
+        if (listViewScrollController.position.pixels >= listViewScrollController.position.maxScrollExtent - 200) {
           loadMoreIfNeeded();
         }
       }
+
       listViewScrollController.addListener(onScroll);
       return () => listViewScrollController.removeListener(onScroll);
     }, [listViewScrollController]);

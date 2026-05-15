@@ -72,11 +72,11 @@
     try {
       await activityManager.deleteActivity(reaction, index);
 
-      const deleteMessages: Partial<Record<ReactionType, string>> = {
+      const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      toastManager.primary(deleteMessages[reaction.type] ?? $t('removed'));
+      toastManager.primary(deleteMessages[reaction.type]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }

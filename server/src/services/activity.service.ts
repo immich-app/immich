@@ -31,7 +31,7 @@ export class ActivityService extends BaseService {
     const activities = await this.activityRepository.search({ ...searchOptions, take, before });
     const results = activities.map((activity) => mapActivity(activity));
 
-    // Query returns DESC in order for the LIMIT query to return the most recent.
+    // The query returns rows in DESC order so the LIMIT keeps the most recent.
     // Reverse to ASC for the caller.
     results.reverse();
 

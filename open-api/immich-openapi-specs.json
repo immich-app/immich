@@ -55,13 +55,13 @@
             "name": "take",
             "required": false,
             "in": "query",
-            "description": "Maximum number of activities to return",
+            "description": "Approximate maximum number of activities to return. The response may exceed this value to include all activities sharing the oldest returned timestamp, preserving pagination boundaries.",
             "x-nestjs_zod-parent-metadata": {
               "description": "Activity search"
             },
             "schema": {
               "minimum": 1,
-              "maximum": 9007199254740991,
+              "maximum": 1000,
               "type": "integer"
             }
           },

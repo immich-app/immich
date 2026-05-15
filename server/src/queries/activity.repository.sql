@@ -27,7 +27,8 @@ where
   "activity"."albumId" = $1
   and "asset"."deletedAt" is null
 order by
-  "activity"."createdAt" asc
+  "activity"."createdAt" desc,
+  "activity"."id" desc
 
 -- ActivityRepository.create
 insert into
