@@ -16,16 +16,12 @@ class SlideshowSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final slideshow = ref.read(appConfigProvider).slideshow;
-    final useProgressBar = useState(slideshow.progressBar);
     final useTransition = useState(slideshow.transition);
     final useRepeat = useState(slideshow.repeat);
     final useDuration = useState(slideshow.duration);
     final useLook = useState(slideshow.look);
     final useDirection = useState(slideshow.direction);
 
-    useValueChanged<bool, void>(useProgressBar.value, (_, __) {
-      ref.read(metadataProvider).write(.slideshowProgressBar, useProgressBar.value);
-    });
     useValueChanged<bool, void>(useTransition.value, (_, __) {
       ref.read(metadataProvider).write(.slideshowTransition, useTransition.value);
     });
@@ -48,10 +44,6 @@ class SlideshowSettings extends HookConsumerWidget {
         SettingGroupTitle(
           title: 'slideshow'.t(context: context),
           icon: Icons.slideshow_outlined,
-        ),
-        SettingsSwitchListTile(
-          valueNotifier: useProgressBar,
-          title: "show_progress_bar".t(context: context),
         ),
         SettingsSwitchListTile(
           valueNotifier: useTransition,

@@ -140,7 +140,6 @@ extension<T extends Object> on MetadataDomain<T> {
             tapToNavigate: repo._read(.viewerTapToNavigate),
           ),
           slideshow: .new(
-            progressBar: repo._read(.slideshowProgressBar),
             transition: repo._read(.slideshowTransition),
             repeat: repo._read(.slideshowRepeat),
             duration: repo._read(.slideshowDuration),

@@ -173,8 +173,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     });
   }
 
-  Widget _getProgressBar(BuildContext context, int index) {
-    final asset = widget.timeline.getAssetSafe(index);
+  Widget _getProgressBar(BuildContext context) {
+    final asset = widget.timeline.getAssetSafe(_index);
 
     if (asset == null) {
       return Container();
@@ -185,6 +185,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
       final duration = _config.duration * 1000;
 
       return TweenAnimationBuilder(
+        key: Key(_index.toString()),
         tween: Tween<double>(begin: elapsed / duration.toDouble(), end: _paused ? elapsed / duration.toDouble() : 1.0),
         duration: Duration(milliseconds: _paused ? 1 : max(duration - elapsed, 1)),
         builder: (context, value, _) => LinearProgressIndicator(
@@ -229,28 +230,47 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
 
   Widget _getPhotoView(BuildContext context, int index) {
     final asset = widget.timeline.getAssetSafe(index);
-    final scale = _config.look == SlideshowLook.cover
-        ? PhotoViewComputedScale.covered
-        : PhotoViewComputedScale.contained;
 
     if (asset == null) {
       return const Center(child: ImmichLoadingIndicator());
     }
 
+    final scale = _config.look == SlideshowLook.cover
+        ? PhotoViewComputedScale.covered
+        : PhotoViewComputedScale.contained;
+    final isCurrent = _index == index;
+    final imageProvider = getFullImageProvider(asset, size: context.sizeData);
+
     if (asset.isImage) {
-      return PhotoView(
-        imageProvider: getFullImageProvider(asset),
-        index: index,
-        disableScaleGestures: true,
-        gaplessPlayback: true,
-        filterQuality: FilterQuality.high,
-        initialScale: scale,
-        onTapUp: (_, _, _) => _onTapUp(),
+      final zoomOut = index % 2 == 1;
+      final elapsed = _stopwatch.elapsedMilliseconds;
+      final duration = _config.duration * 1000;
+      final progress = zoomOut ? 1.0 - elapsed / duration.toDouble() : elapsed / duration.toDouble();
+
+      return TweenAnimationBuilder(
+        tween: Tween<double>(
+          begin: progress,
+          end: _paused
+              ? progress
+              : zoomOut
+              ? 0.0
+              : 1.0,
+        ),
+        duration: Duration(milliseconds: _paused ? 1 : max(duration - elapsed, 1)),
+        builder: (context, value, _) => PhotoView(
+          imageProvider: imageProvider,
+          index: index,
+          disableScaleGestures: true,
+          gaplessPlayback: true,
+          filterQuality: FilterQuality.high,
+          initialScale: scale * (1.0 + value / 10.0),
+          controller: PhotoViewController(),
+          onTapUp: (_, _, _) => _onTapUp(),
+        ),
       );
     } else {
       final status = ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.status));
       final position = ref.read(videoPlayerProvider(asset.heroTag)).position;
-      final isCurrent = _index == index;
 
       if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
         _nextPage();
@@ -266,11 +286,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
         child: NativeVideoViewer(
           asset: asset,
           isCurrent: isCurrent,
-          image: Image(
-            image: getFullImageProvider(asset, size: context.sizeData),
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-          ),
+          image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
         ),
       );
     }
@@ -280,24 +296,32 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: AppBar().preferredSize,
+        preferredSize: Size(AppBar().preferredSize.width, AppBar().preferredSize.height + 5),
         child: IgnorePointer(
           ignoring: !_showAppBar,
           child: AnimatedOpacity(
             opacity: _showAppBar ? 1.0 : 0.0,
             duration: Durations.short2,
-            child: AppBar(
-              backgroundColor: context.scaffoldBackgroundColor,
-              title: Text("slideshow".t(context: context)),
-              actions: [
-                IconButton(onPressed: _paused ? _play : _pause, icon: Icon(_paused ? Icons.play_arrow : Icons.pause)),
-                IconButton(
-                  onPressed: () {
-                    _pause();
-                    context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer));
-                  },
-                  icon: const Icon(Icons.settings),
+            child: Column(
+              children: [
+                AppBar(
+                  backgroundColor: context.scaffoldBackgroundColor,
+                  title: Text("slideshow".t(context: context)),
+                  actions: [
+                    IconButton(
+                      onPressed: _paused ? _play : _pause,
+                      icon: Icon(_paused ? Icons.play_arrow : Icons.pause),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _pause();
+                        context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer));
+                      },
+                      icon: const Icon(Icons.settings),
+                    ),
+                  ],
                 ),
+                _getProgressBar(context),
               ],
             ),
           ),
@@ -317,10 +341,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
             children: [
               if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
               _getPhotoView(context, index),
-              if (_index == index && _config.progressBar)
-                SafeArea(
-                  child: Align(alignment: Alignment.bottomCenter, child: _getProgressBar(context, index)),
-                ),
             ],
           ),
         ),

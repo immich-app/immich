@@ -67,7 +67,6 @@ enum MetadataKey<T extends Object> {
   cleanupDefaultsInitialized<bool>(.appConfig, 'cleanup.defaultsInitialized', false),
 
   // Slideshow
-  slideshowProgressBar<bool>(.appConfig, 'slideshow.progressBar', true),
   slideshowTransition<bool>(.appConfig, 'slideshow.transition', true),
   slideshowRepeat<bool>(.appConfig, 'slideshow.repeat', true),
   slideshowDuration<int>(.appConfig, 'slideshow.duration', 5),
