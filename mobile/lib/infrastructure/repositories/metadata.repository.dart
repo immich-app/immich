@@ -139,6 +139,13 @@ extension<T extends Object> on MetadataDomain<T> {
             autoPlayVideo: repo._read(.viewerAutoPlayVideo),
             tapToNavigate: repo._read(.viewerTapToNavigate),
           ),
+          slideshow: .new(
+            transition: repo._read(.slideshowTransition),
+            repeat: repo._read(.slideshowRepeat),
+            duration: repo._read(.slideshowDuration),
+            look: repo._read(.slideshowLook),
+            direction: repo._read(.slideshowDirection),
+          ),
         );
       case .systemConfig:
         repo._systemConfig = .new(logLevel: repo._read(.logLevel));

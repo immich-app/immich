@@ -29,6 +29,9 @@ enum StoreKey<T> {
   readonlyModeEnabled<bool>._(138),
   albumGridView<bool>._(140),
 
+  // Image viewer navigation settings
+  tapToNavigate<bool>._(141),
+
   // Experimental stuff
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
