@@ -164,21 +164,36 @@ describe('Global people page', () => {
     expect(screen.getByDisplayValue('Alice')).toHaveAttribute('placeholder', 'add_a_name');
   });
 
-  it('renders favorites first, then named people alphabetically, then unnamed people', () => {
+  it('renders favorites first, named people alphabetically, then unnamed people by photo count', () => {
     renderPage([
-      makePerson({ id: 'unnamed', name: '', isFavorite: false }),
-      makePerson({ id: 'named-z', name: 'Zoe', isFavorite: false }),
-      makePerson({ id: 'favorite-z', name: 'Zelda', isFavorite: true }),
-      makePerson({ id: 'named-a', name: 'Alice', isFavorite: false }),
-      makePerson({ id: 'favorite-a', name: 'Anna', isFavorite: true }),
+      makePerson({ id: 'unnamed-low', name: '', isFavorite: false, numberOfAssets: 1 }),
+      makePerson({ id: 'named-z', name: 'Zoe', isFavorite: false, numberOfAssets: 99 }),
+      makePerson({ id: 'favorite-unnamed', name: '', isFavorite: true, numberOfAssets: 7 }),
+      makePerson({ id: 'named-a', name: 'Alice', isFavorite: false, numberOfAssets: 1 }),
+      makePerson({ id: 'unnamed-high', name: '', isFavorite: false, numberOfAssets: 12 }),
+      makePerson({ id: 'favorite-named', name: 'Anna', isFavorite: true, numberOfAssets: 1 }),
     ]);
 
     expect(screen.getAllByPlaceholderText('add_a_name').map((input) => (input as HTMLInputElement).value)).toEqual([
       'Anna',
-      'Zelda',
+      '',
       'Alice',
       'Zoe',
       '',
+      '',
+    ]);
+    expect(
+      [...document.querySelectorAll<HTMLAnchorElement>('a[href^="/people/"]')].map((link) => {
+        const url = new URL(link.href);
+        return `${url.pathname}${url.search}`;
+      }),
+    ).toEqual([
+      '/people/favorite-named?previousRoute=%2Fpeople',
+      '/people/favorite-unnamed?previousRoute=%2Fpeople',
+      '/people/named-a?previousRoute=%2Fpeople',
+      '/people/named-z?previousRoute=%2Fpeople',
+      '/people/unnamed-high?previousRoute=%2Fpeople',
+      '/people/unnamed-low?previousRoute=%2Fpeople',
     ]);
   });
 
