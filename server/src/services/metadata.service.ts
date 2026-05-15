@@ -630,29 +630,27 @@ export class MetadataService extends BaseService {
   }
 
   private getTagList(exifTags: ImmichTags): string[] {
-    let tags: string[];
     if (exifTags.TagsList) {
-      tags = exifTags.TagsList.map(String);
-    } else if (exifTags.HierarchicalSubject) {
-      tags = exifTags.HierarchicalSubject.map((tag) =>
-        // convert | to /
-        typeof tag === 'number'
-          ? String(tag)
-          : tag
-              .split('|')
-              .map((tag) => tag.replaceAll('/', '|'))
-              .join('/'),
-      );
-    } else if (exifTags.Keywords) {
-      let keywords = exifTags.Keywords;
-      if (!Array.isArray(keywords)) {
-        keywords = [keywords];
-      }
-      tags = keywords.map(String);
-    } else {
-      tags = [];
+      return exifTags.TagsList.map(String);
     }
-    return tags;
+
+    const hierarchical = (exifTags.HierarchicalSubject ?? []).map((tag) =>
+      // convert | to /
+      typeof tag === 'number'
+        ? String(tag)
+        : tag
+            .split('|')
+            .map((t) => t.replaceAll('/', '|'))
+            .join('/'),
+    );
+
+    let keywords = exifTags.Keywords ?? [];
+    if (!Array.isArray(keywords)) {
+      keywords = [keywords];
+    }
+    const flat = keywords.map(String);
+
+    return [...new Set([...hierarchical, ...flat])];
   }
 
   private async applyTagList({ id, ownerId }: { id: string; ownerId: string }) {

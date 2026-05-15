@@ -588,6 +588,56 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should merge Keywords with HierarchicalSubject when both are present', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ HierarchicalSubject: ['Archive'], Keywords: ['Flat'] });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ tags: ['Archive', 'Flat'] }), {
+        lockedPropertiesBehavior: 'skip',
+      });
+    });
+
+    it('should deduplicate merged Keywords and HierarchicalSubject', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ HierarchicalSubject: ['Archive'], Keywords: ['Archive', 'Flat'] });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ tags: ['Archive', 'Flat'] }), {
+        lockedPropertiesBehavior: 'skip',
+      });
+    });
+
+    it('should use only Keywords when HierarchicalSubject is absent', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ Keywords: ['Trip2026', 'Landscape'] });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ tags: ['Trip2026', 'Landscape'] }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
+    });
+
+    it('should apply | to / conversion when merging HierarchicalSubject with Keywords', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ HierarchicalSubject: ['Parent|Child'], Keywords: ['Vacation'] });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ tags: ['Parent/Child', 'Vacation'] }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
+    });
+
     it('should remove existing tags', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
