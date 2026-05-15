@@ -517,7 +517,9 @@ jobs:
             --target "$SHA" \
             --title "$VERSION" \
             --latest \
-            --notes "$notes"
+            --notes "$notes" \
+            docker/docker-compose.yml \
+            docker/example.env
 
           echo "Released $VERSION (server-only)"
 

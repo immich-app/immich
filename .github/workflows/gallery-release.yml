@@ -348,6 +348,17 @@ jobs:
 
           git push origin "$VERSION" "v${major}" "release" --force
 
+      - name: Upload config files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ needs.discover.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh release upload "$VERSION" --repo "$REPO" --clobber \
+            docker/docker-compose.yml \
+            docker/example.env
+
       - name: Promote draft release
         env:
           GH_TOKEN: ${{ github.token }}
