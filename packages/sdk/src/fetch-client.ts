@@ -2627,11 +2627,11 @@ export type TagBulkAssetsResponseDto = {
     /** Number of assets tagged */
     count: number;
 };
-export type TagsForAssetsResponseDto = {
-    /** Asset ID */
-    assetId: string;
-    /** Tag IDs associated with the asset */
-    tagIds?: string[];
+export type AssetsForTagResponseDto = {
+    /** Asset IDs associated with the tag */
+    assetIds?: string[];
+    /** Tag ID */
+    tagId: string;
 };
 export type TagUpdateDto = {
     /** Tag color (hex) */
@@ -6234,7 +6234,7 @@ export function getAllTagsForAssets({ assetIds }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: TagsForAssetsResponseDto[];
+        data: AssetsForTagResponseDto[];
     }>(`/tags/getAllTagsForAssets${QS.query(QS.explode({
         assetIds
     }))}`, {

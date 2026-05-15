@@ -75,21 +75,19 @@ export class TagRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   getIdsForAssets(assetIds: string[]) {
-    /*
     return this.db
       .selectFrom('tag_asset')
       .select([
-        'assetId',
-        sql`(
-            select coalesce(array_agg(distinct tag_asset."tagId"), '{}')
-            from tag_asset
-            where tag_asset."assetId" = assetId
-          )`.as('tagIds'),
+        sql<string>`distinct "tagId"`.as('tagId'),
+        sql<string[]>`(
+            select coalesce(array_agg(distinct ta."assetId"), '{}')
+            from tag_asset as ta
+            where ta."tagId" = tag_asset."tagId"
+            and ta."assetId" in (${sql.join(assetIds, sql`, `)})
+          )`.as('assetIds'),
       ])
       .where('assetId', 'in', assetIds)
       .execute();
-      */
-    return this.db.selectFrom('tag_asset').select(['assetId', 'tagId']).where('assetId', 'in', assetIds).execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })

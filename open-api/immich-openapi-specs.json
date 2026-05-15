@@ -12957,7 +12957,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/TagsForAssetsResponseDto"
+                    "$ref": "#/components/schemas/AssetsForTagResponseDto"
                   },
                   "type": "array"
                 }
@@ -16950,6 +16950,25 @@
           "locked"
         ],
         "type": "string"
+      },
+      "AssetsForTagResponseDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs associated with the tag",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagId": {
+            "description": "Tag ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tagId"
+        ],
+        "type": "object"
       },
       "AudioCodec": {
         "description": "Target audio codec",
@@ -25009,25 +25028,6 @@
         },
         "required": [
           "tags"
-        ],
-        "type": "object"
-      },
-      "TagsForAssetsResponseDto": {
-        "properties": {
-          "assetId": {
-            "description": "Asset ID",
-            "type": "string"
-          },
-          "tagIds": {
-            "description": "Tag IDs associated with the asset",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "assetId"
         ],
         "type": "object"
       },

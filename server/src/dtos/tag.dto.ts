@@ -44,12 +44,12 @@ const TagsForAssetsQuerySchema = z
   })
   .meta({ id: 'TagsForAssetsQueryDto' });
 
-const TagsForAssetsResponseSchema = z
+const AssetsForTagResponseSchema = z
   .object({
-    assetId: z.string().describe('Asset ID'),
-    tagIds: z.array(z.string()).optional().describe('Tag IDs associated with the asset'),
+    tagId: z.string().describe('Tag ID'),
+    assetIds: z.array(z.string()).optional().describe('Asset IDs associated with the tag'),
   })
-  .meta({ id: 'TagsForAssetsResponseDto' });
+  .meta({ id: 'AssetsForTagResponseDto' });
 
 export const TagResponseSchema = z
   .object({
@@ -72,7 +72,7 @@ export class TagBulkAssetsDto extends createZodDto(TagBulkAssetsSchema) {}
 export class TagBulkAssetsResponseDto extends createZodDto(TagBulkAssetsResponseSchema) {}
 export class TagResponseDto extends createZodDto(TagResponseSchema) {}
 export class TagsForAssetsQueryDto extends createZodDto(TagsForAssetsQuerySchema) {}
-export class TagsForAssetsResponseDto extends createZodDto(TagsForAssetsResponseSchema) {}
+export class AssetsForTagResponseDto extends createZodDto(AssetsForTagResponseSchema) {}
 
 export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
   return {
