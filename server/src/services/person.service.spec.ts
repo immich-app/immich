@@ -241,6 +241,24 @@ describe(PersonService.name, () => {
       });
       expect(mocks.person.getNumberOfPeople).toHaveBeenCalledWith(auth.user.id, { minimumFaceCount: 3 });
     });
+
+    it('should preserve non-shared repository order for favorites, named people, and unnamed count ordering', async () => {
+      const auth = AuthFactory.create();
+      const favorite = PersonFactory.create({ id: 'favorite', name: 'Anna', isFavorite: true });
+      const named = PersonFactory.create({ id: 'named', name: 'Bob', isFavorite: false });
+      const unnamedHigh = PersonFactory.create({ id: 'unnamed-high', name: '', isFavorite: false });
+      const unnamedLow = PersonFactory.create({ id: 'unnamed-low', name: '', isFavorite: false });
+
+      mocks.person.getAllForUser.mockResolvedValue({
+        items: [favorite, named, unnamedHigh, unnamedLow],
+        hasNextPage: false,
+      });
+      mocks.person.getNumberOfPeople.mockResolvedValue({ total: 4, hidden: 0 });
+
+      const result = await sut.getAll(auth, { withHidden: false, page: 1, size: 10 });
+
+      expect(result.people.map((person) => person.id)).toEqual(['favorite', 'named', 'unnamed-high', 'unnamed-low']);
+    });
   });
 
   describe('getPeopleStatistics', () => {

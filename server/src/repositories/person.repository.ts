@@ -238,10 +238,12 @@ export class PersonRepository {
       )
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
-          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
-          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
-          .orderBy('person.createdAt'),
+          .orderBy(sql`NULLIF(BTRIM(person.name), '') is null`, 'asc')
+          .orderBy(sql`NULLIF(BTRIM(person.name), '')`, (om) => om.asc().nullsLast())
+          .orderBy(sql`CASE WHEN NULLIF(BTRIM(person.name), '') IS NULL THEN COUNT("asset_face"."assetId") END`, (om) =>
+            om.desc().nullsLast(),
+          )
+          .orderBy('person.id'),
       )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
       .offset(pagination.skip ?? 0)

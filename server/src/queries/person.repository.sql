@@ -71,10 +71,12 @@ having
 order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
-  NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
-  NULLIF(person.name, '') asc nulls last,
-  "person"."createdAt"
+  NULLIF(BTRIM(person.name), '') is null asc,
+  NULLIF(BTRIM(person.name), '') asc nulls last,
+  CASE
+    WHEN NULLIF(BTRIM(person.name), '') IS NULL THEN COUNT("asset_face"."assetId")
+  END desc nulls last,
+  "person"."id"
 limit
   $5
 offset
