@@ -265,18 +265,14 @@ private class CronetImageFetcher : ImageFetcher {
       byteBuffer: ByteBuffer
     ) {
       try {
-        val b = buffer!!
-        b.advance(byteBuffer.position())
-        // Reuse the caller-supplied ByteBuffer as long as we don't need to grow.
-        // It already points at our native memory with position advanced past the
-        // written bytes — Cronet can keep writing into the remaining tail.
-        // Only when the buffer is full do we grow (which may realloc + move the
-        // native pointer) and need a fresh wrap.
-        val buf = if (b.offset == b.capacity) {
-          b.ensureHeadroom()
-          b.wrapRemaining()
-        } else {
-          byteBuffer
+        // Always pass a fresh wrap so byteBuffer.position() represents only the
+        // bytes Cronet wrote in this iteration. Reusing the caller-supplied
+        // ByteBuffer breaks advance(): Cronet's position keeps accumulating
+        // across reads, which would double-count previous iterations' bytes.
+        val buf = buffer!!.run {
+          advance(byteBuffer.position())
+          ensureHeadroom()
+          wrapRemaining()
         }
         request.read(buf)
       } catch (e: Exception) {
