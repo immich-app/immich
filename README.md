@@ -320,4 +320,8 @@ make sql                        # regenerates SQL query docs (needs DB running)
 - Include a short description of what changed and why, plus screenshots or screen recordings for UI work.
 - Make sure CI is green before requesting review.
 
+## Acknowledgements
+
+This software is developed with strong assistance from AI (Codex/Claude Code) and with humans leading the ideas, testing, and debugging. We say this openly because it shaped how the project was built. If you are not happy with AI-developed code, this software is not for you. The acknowledgement below is equally important: this would not exist without [Immich](https://github.com/immich-app/immich), largely written by hand.
+
 See [CLAUDE.md](CLAUDE.md) for a deeper tour of the codebase architecture and common commands.
