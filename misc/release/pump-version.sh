@@ -9,9 +9,9 @@
 #    ./scripts/pump-version.sh -s major         # 1.0.0+50 => 2.0.0+50
 #    ./scripts/pump-version.sh -s minor -m true # 1.0.0+50 => 1.1.0+51
 #    ./scripts/pump-version.sh -m true          # 1.0.0+50 => 1.0.0+51
-#    ./scripts/pump-version.sh -s minor -m true -r true     # 3.0.0 => 3.1.0-rc.1 (start RC)
-#    ./scripts/pump-version.sh -m true -r true              # 3.1.0-rc.1 => 3.1.0-rc.2 (iterate RC)
-#    ./scripts/pump-version.sh -m true -r finalize          # 3.1.0-rc.2 => 3.1.0 (finalize RC)
+#    ./scripts/pump-version.sh -s minor -m true -r true     # 3.0.0 => 3.1.0-rc.0 (start RC)
+#    ./scripts/pump-version.sh -m true -r true              # 3.1.0-rc.0 => 3.1.0-rc.1 (iterate RC)
+#    ./scripts/pump-version.sh -m true -r finalize          # 3.1.0-rc.1 => 3.1.0 (finalize RC)
 #
 
 SERVER_PUMP="false"
@@ -72,41 +72,28 @@ else
   fi
 fi
 
-MAJOR=$(echo "$CURRENT_BASE" | cut -d '.' -f1)
-MINOR=$(echo "$CURRENT_BASE" | cut -d '.' -f2)
-PATCH=$(echo "$CURRENT_BASE" | cut -d '.' -f3)
-
-if [[ $SERVER_PUMP == "major" ]]; then
-  MAJOR=$((MAJOR + 1))
-  MINOR=0
-  PATCH=0
-elif [[ $SERVER_PUMP == "minor" ]]; then
-  MINOR=$((MINOR + 1))
-  PATCH=0
-elif [[ $SERVER_PUMP == "patch" ]]; then
-  PATCH=$((PATCH + 1))
-elif [[ $SERVER_PUMP == "false" ]]; then
-  echo 'Skipping Server Pump'
-else
+if [[ "$SERVER_PUMP" != "major" && "$SERVER_PUMP" != "minor" && "$SERVER_PUMP" != "patch" && "$SERVER_PUMP" != "false" ]]; then
   echo 'Expected <major|minor|patch|false> for the server argument'
   exit 1
 fi
 
-NEXT_BASE=$MAJOR.$MINOR.$PATCH
-
-if [[ "$RC" == "true" ]]; then
-  if [[ -n "$CURRENT_RC_NUM" ]]; then
-    # Iterate existing RC
-    NEXT_RC_NUM=$((CURRENT_RC_NUM + 1))
-    NEXT_SERVER="${NEXT_BASE}-rc.${NEXT_RC_NUM}"
-  else
-    # Start new RC after server bump
-    NEXT_SERVER="${NEXT_BASE}-rc.1"
-  fi
-elif [[ "$RC" == "finalize" ]]; then
-  NEXT_SERVER="$NEXT_BASE"
+NEXT_SERVER="$CURRENT_SERVER"
+if [[ "$SERVER_PUMP" == "false" && "$RC" == "false" ]]; then
+  echo 'Skipping Server Pump'
 else
-  NEXT_SERVER="$NEXT_BASE"
+  npm version "$CURRENT_SERVER" --allow-same-version --no-git-tag-version || exit 1
+
+  if [[ "$RC" == "true" && -n "$CURRENT_RC_NUM" ]]; then
+    npm version prerelease --no-git-tag-version || exit 1
+  elif [[ "$RC" == "true" ]]; then
+    npm version "pre$SERVER_PUMP" --preid=rc --no-git-tag-version || exit 1
+  elif [[ "$RC" == "finalize" ]]; then
+    npm version "$CURRENT_BASE" --no-git-tag-version || exit 1
+  else
+    npm version "$SERVER_PUMP" --no-git-tag-version || exit 1
+  fi
+
+  NEXT_SERVER=$(jq -r '.version' package.json)
 fi
 
 CURRENT_MOBILE=$(grep "^version: .*+[0-9]\+$" mobile/pubspec.yaml | cut -d "+" -f2)
@@ -123,7 +110,6 @@ fi
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
 
-  pnpm version "$NEXT_SERVER" --no-git-tag-version
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix server
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/cli
   pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix web
