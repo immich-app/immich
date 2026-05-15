@@ -1435,6 +1435,9 @@ describe('/shared-spaces', () => {
 
     let namedPersonId: string; // Alice — has a name
     let unnamedPersonId: string; // empty name
+    let namedZoePersonId: string; // Zoe — has a name, sorts after Alice
+    let unnamedHighAssetCountPersonId: string; // empty name, above minFaces threshold
+    let unnamedLowAssetCountPersonId: string; // empty name, above minFaces threshold
     let hiddenPersonId: string; // Hannah — set isHidden=true
     let petPersonId: string; // Rex — type=pet
     let zeroThumbPersonId: string; // person with empty thumbnailPath — invisible to listing
@@ -1483,11 +1486,26 @@ describe('/shared-spaces', () => {
       const unnamedRes = await utils.createSpacePerson(spaceId, '', owner.userId, spaceAssetId);
       unnamedPersonId = unnamedRes.spacePersonId;
 
+      const zoeRes = await utils.createSpacePerson(spaceId, 'Zoe', owner.userId, spaceAssetId);
+      namedZoePersonId = zoeRes.spacePersonId;
+
+      const unnamedHighRes = await utils.createSpacePerson(spaceId, '', owner.userId, spaceAssetId);
+      unnamedHighAssetCountPersonId = unnamedHighRes.spacePersonId;
+
+      const unnamedLowRes = await utils.createSpacePerson(spaceId, '', owner.userId, spaceAssetId);
+      unnamedLowAssetCountPersonId = unnamedLowRes.spacePersonId;
+
       const hannahRes = await utils.createSpacePerson(spaceId, 'Hannah', owner.userId, spaceAssetId);
       hiddenPersonId = hannahRes.spacePersonId;
       // Set hidden directly via DB to avoid coupling to T11's PUT endpoint coverage.
       const dbClient = await utils.connectDatabase();
       await dbClient.query('UPDATE shared_space_person SET "isHidden" = true WHERE id = $1', [hiddenPersonId]);
+      await dbClient.query('UPDATE shared_space_person SET "assetCount" = 6 WHERE id = $1', [
+        unnamedHighAssetCountPersonId,
+      ]);
+      await dbClient.query('UPDATE shared_space_person SET "assetCount" = 3 WHERE id = $1', [
+        unnamedLowAssetCountPersonId,
+      ]);
 
       const rexRes = await utils.createSpacePerson(spaceId, 'Rex', owner.userId, spaceAssetId, { type: 'pet' });
       petPersonId = rexRes.spacePersonId;
@@ -1536,6 +1554,8 @@ describe('/shared-spaces', () => {
       const ids = (body as Array<{ id: string }>).map((p) => p.id);
       expect(ids).toContain(namedPersonId);
       expect(ids).not.toContain(unnamedPersonId);
+      expect(ids).toContain(unnamedHighAssetCountPersonId);
+      expect(ids).toContain(unnamedLowAssetCountPersonId);
       expect(ids).toContain(petPersonId);
       // Sanity check: namedPersonId and aliceGlobalId are different UUIDs.
       expect(namedPersonId).not.toBe(aliceGlobalId);
@@ -1570,6 +1590,18 @@ describe('/shared-spaces', () => {
       expect(ids).not.toContain(unnamedPersonId);
     });
 
+    it('sorts named people alphabetically before unnamed people by asset count', async () => {
+      const { status, body } = await request(app)
+        .get(`/shared-spaces/${spaceId}/people`)
+        .set('Authorization', `Bearer ${owner.accessToken}`);
+      expect(status).toBe(200);
+      const ids = (body as Array<{ id: string }>).map((p) => p.id);
+
+      expect(ids.indexOf(namedPersonId)).toBeLessThan(ids.indexOf(namedZoePersonId));
+      expect(ids.indexOf(namedZoePersonId)).toBeLessThan(ids.indexOf(unnamedHighAssetCountPersonId));
+      expect(ids.indexOf(unnamedHighAssetCountPersonId)).toBeLessThan(ids.indexOf(unnamedLowAssetCountPersonId));
+    });
+
     it('?named=true returns only persons with non-empty names', async () => {
       // The named filter is true if either shared_space_person.name OR the underlying
       // person.name is non-empty (server/src/repositories/shared-space.repository.ts:514-521).
@@ -1580,7 +1612,10 @@ describe('/shared-spaces', () => {
       expect(status).toBe(200);
       const ids = (body as Array<{ id: string }>).map((p) => p.id);
       expect(ids).toContain(namedPersonId);
+      expect(ids).toContain(namedZoePersonId);
       expect(ids).not.toContain(unnamedPersonId);
+      expect(ids).not.toContain(unnamedHighAssetCountPersonId);
+      expect(ids).not.toContain(unnamedLowAssetCountPersonId);
     });
 
     it('petsEnabled toggle on the space hides pet persons', async () => {
