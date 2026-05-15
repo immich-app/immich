@@ -62,7 +62,10 @@ class SlideshowSettings extends HookConsumerWidget {
           noDivisons: 6,
           maxValue: 30,
         ),
-        SettingsSubTitle(title: 'look'.t(context: context)),
+        Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: SettingsSubTitle(title: 'look'.t(context: context)),
+        ),
         SettingsRadioListTile(
           groups: [
             SettingsRadioGroup(
@@ -85,28 +88,34 @@ class SlideshowSettings extends HookConsumerWidget {
             }
           },
         ),
-        SettingsSubTitle(title: 'direction'.t(context: context)),
-        SettingsRadioListTile(
-          groups: [
-            SettingsRadioGroup(
-              title: 'forward'.t(context: context),
-              value: SlideshowDirection.forward,
-            ),
-            SettingsRadioGroup(
-              title: 'backward'.t(context: context),
-              value: SlideshowDirection.backward,
-            ),
-            SettingsRadioGroup(
-              title: 'shuffle'.t(context: context),
-              value: SlideshowDirection.shuffle,
-            ),
-          ],
-          groupBy: useDirection.value,
-          onRadioChanged: (value) {
-            if (value != null) {
-              useDirection.value = value;
-            }
-          },
+        Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: SettingsSubTitle(title: 'direction'.t(context: context)),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: SettingsRadioListTile(
+            groups: [
+              SettingsRadioGroup(
+                title: 'forward'.t(context: context),
+                value: SlideshowDirection.forward,
+              ),
+              SettingsRadioGroup(
+                title: 'backward'.t(context: context),
+                value: SlideshowDirection.backward,
+              ),
+              SettingsRadioGroup(
+                title: 'shuffle'.t(context: context),
+                value: SlideshowDirection.shuffle,
+              ),
+            ],
+            groupBy: useDirection.value,
+            onRadioChanged: (value) {
+              if (value != null) {
+                useDirection.value = value;
+              }
+            },
+          ),
         ),
       ],
     );
