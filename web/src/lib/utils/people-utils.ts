@@ -8,11 +8,19 @@ export type SortablePerson = {
   id: string;
   name?: string | null;
   isFavorite?: boolean;
+  isHidden?: boolean;
+  numberOfAssets?: number | null;
+  assetCount?: number | null;
 };
 
 const getSortablePersonName = (person: SortablePerson) => person.name?.trim() ?? '';
+const getSortablePersonCount = (person: SortablePerson) => person.numberOfAssets ?? person.assetCount ?? 0;
 
-export function comparePeopleByFavoriteAndName(a: SortablePerson, b: SortablePerson): number {
+export function comparePeopleForManagement(a: SortablePerson, b: SortablePerson): number {
+  if (!!a.isHidden !== !!b.isHidden) {
+    return a.isHidden ? 1 : -1;
+  }
+
   if (!!a.isFavorite !== !!b.isFavorite) {
     return a.isFavorite ? -1 : 1;
   }
@@ -25,16 +33,29 @@ export function comparePeopleByFavoriteAndName(a: SortablePerson, b: SortablePer
     return aHasName ? -1 : 1;
   }
 
-  if (aName !== bName) {
-    return aName.localeCompare(bName);
+  if (aHasName && bHasName) {
+    const nameCompare = aName.localeCompare(bName, undefined, { sensitivity: 'base' });
+    if (nameCompare !== 0) {
+      return nameCompare;
+    }
+  }
+
+  if (!aHasName && !bHasName) {
+    const countCompare = getSortablePersonCount(b) - getSortablePersonCount(a);
+    if (countCompare !== 0) {
+      return countCompare;
+    }
   }
 
   return a.id.localeCompare(b.id);
 }
 
-export function sortPeopleByFavoriteAndName<T extends SortablePerson>(people: T[]): T[] {
-  return [...people].sort(comparePeopleByFavoriteAndName);
+export function sortPeopleForManagement<T extends SortablePerson>(people: T[]): T[] {
+  return [...people].sort(comparePeopleForManagement);
 }
+
+export const comparePeopleByFavoriteAndName = comparePeopleForManagement;
+export const sortPeopleByFavoriteAndName = sortPeopleForManagement;
 
 export const getPersonFaceThumbnailUrl = (personId: string, faceId: string, updatedAt?: string) =>
   createUrl(`/people/${personId}/faces/${faceId}/thumbnail`, { updatedAt });

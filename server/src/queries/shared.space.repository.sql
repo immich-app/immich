@@ -444,9 +444,10 @@ where
     or "shared_space_person"."assetCount" >= $4
   )
 order by
-  NULLIF(shared_space_person.name, '') asc nulls last,
+  "shared_space_person"."isHidden" asc,
+  NULLIF(BTRIM(shared_space_person.name), '') asc nulls last,
   CASE
-    WHEN shared_space_person.name = '' THEN "shared_space_person"."assetCount"
+    WHEN NULLIF(BTRIM(shared_space_person.name), '') IS NULL THEN "shared_space_person"."assetCount"
   END desc nulls last,
   "shared_space_person"."id"
 limit

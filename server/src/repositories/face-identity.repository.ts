@@ -1520,6 +1520,7 @@ export class FaceIdentityRepository {
           person."identityId",
           person.name,
           person."isHidden",
+          person."isFavorite",
           person."updatedAt",
           person.id AS "profileId",
           0 AS "profileRank"
@@ -1534,6 +1535,7 @@ export class FaceIdentityRepository {
           shared_space_person."identityId",
           COALESCE(NULLIF(shared_space_person_alias.alias, ''), shared_space_person.name, '') AS name,
           shared_space_person."isHidden",
+          NULL::boolean AS "isFavorite",
           shared_space_person."updatedAt",
           shared_space_person.id AS "profileId",
           CASE WHEN NULLIF(shared_space_person_alias.alias, '') IS NULL THEN 2 ELSE 1 END AS "profileRank"
@@ -1579,23 +1581,34 @@ export class FaceIdentityRepository {
         FROM eligible_profiles
         ORDER BY
           "identityId",
-          NULLIF(name, '') IS NULL,
+          NULLIF(BTRIM(name), '') IS NULL,
           "profileRank",
-          lower(name),
+          lower(NULLIF(BTRIM(name), '')),
           "updatedAt" DESC,
           "profileId"
+      ),
+      identity_favorites AS (
+        SELECT
+          "identityId",
+          bool_or(COALESCE("isFavorite", false)) AS "isFavorite"
+        FROM eligible_profiles
+        GROUP BY "identityId"
       )
       SELECT
         identity_counts."identityId",
         identity_counts."visibleAssetCount"
       FROM identity_counts
       INNER JOIN best_profiles ON best_profiles."identityId" = identity_counts."identityId"
-      WHERE NULLIF(best_profiles.name, '') IS NOT NULL
+      INNER JOIN identity_favorites ON identity_favorites."identityId" = identity_counts."identityId"
+      WHERE NULLIF(BTRIM(best_profiles.name), '') IS NOT NULL
         OR identity_counts."visibleAssetCount" >= ${input.minimumFaceCount}
       ORDER BY
-        NULLIF(best_profiles.name, '') IS NULL,
-        lower(best_profiles.name),
-        identity_counts."visibleAssetCount" DESC,
+        COALESCE(identity_favorites."isFavorite", false) DESC,
+        NULLIF(BTRIM(best_profiles.name), '') IS NULL,
+        lower(NULLIF(BTRIM(best_profiles.name), '')) ASC NULLS LAST,
+        CASE
+          WHEN NULLIF(BTRIM(best_profiles.name), '') IS NULL THEN identity_counts."visibleAssetCount"
+        END DESC NULLS LAST,
         identity_counts."identityId"
       LIMIT ${input.limit}
       OFFSET ${input.offset}

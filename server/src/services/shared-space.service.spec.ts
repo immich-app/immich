@@ -4356,7 +4356,7 @@ describe(SharedSpaceService.name, () => {
       expect(result[0].type).toBe('person');
     });
 
-    it('should preserve the repository person order', async () => {
+    it('should preserve repository order for named people and unnamed asset counts', async () => {
       const auth = factory.auth();
       const spaceId = newUuid();
       const person1 = factory.sharedSpacePerson({
@@ -4367,12 +4367,12 @@ describe(SharedSpaceService.name, () => {
       const person2 = factory.sharedSpacePerson({
         id: newUuid(),
         spaceId,
-        name: 'Bob',
+        name: '',
       });
       const person3 = factory.sharedSpacePerson({
         id: newUuid(),
         spaceId,
-        name: 'Charlie',
+        name: '',
       });
       const space = factory.sharedSpace({ id: spaceId, faceRecognitionEnabled: true });
 
@@ -4400,7 +4400,7 @@ describe(SharedSpaceService.name, () => {
       const result = await sut.getSpacePeople(auth, spaceId);
 
       expect(result).toHaveLength(3);
-      expect(result.map((person) => person.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+      expect(result.map((person) => person.id)).toEqual([person1.id, person2.id, person3.id]);
       expect(result.map((person) => person.assetCount)).toEqual([2, 10, 5]);
     });
 

@@ -1,6 +1,6 @@
 import type { Faces } from '$lib/stores/people.store';
 import type { Size } from '$lib/utils/container-utils';
-import { getBoundingBox, zoomImageToBase64 } from '$lib/utils/people-utils';
+import { getBoundingBox, sortPeopleForManagement, zoomImageToBase64 } from '$lib/utils/people-utils';
 import { AssetTypeEnum } from '@immich/sdk';
 
 const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
@@ -12,6 +12,67 @@ const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
   boundingBoxX2: 2000,
   boundingBoxY2: 1500,
   ...overrides,
+});
+
+describe('sortPeopleForManagement', () => {
+  const p = (overrides: {
+    id: string;
+    name?: string | null;
+    isFavorite?: boolean;
+    numberOfAssets?: number;
+    assetCount?: number;
+    isHidden?: boolean;
+  }) => overrides;
+
+  it('sorts favorites first, named people alphabetically, then unnamed by count descending', () => {
+    const people = [
+      p({ id: 'unnamed-low', name: '', numberOfAssets: 1 }),
+      p({ id: 'named-z', name: 'Zoe', numberOfAssets: 99 }),
+      p({ id: 'favorite-unnamed-high', name: '', isFavorite: true, numberOfAssets: 10 }),
+      p({ id: 'named-a', name: 'Alice', numberOfAssets: 1 }),
+      p({ id: 'unnamed-high', name: '', numberOfAssets: 50 }),
+      p({ id: 'favorite-named', name: 'Beth', isFavorite: true, numberOfAssets: 1 }),
+    ];
+
+    expect(sortPeopleForManagement(people).map((person) => person.id)).toEqual([
+      'favorite-named',
+      'favorite-unnamed-high',
+      'named-a',
+      'named-z',
+      'unnamed-high',
+      'unnamed-low',
+    ]);
+  });
+
+  it('treats whitespace-only names as unnamed and uses assetCount for space people', () => {
+    const people = [
+      p({ id: 'space-unnamed-low', name: '   ', assetCount: 2 }),
+      p({ id: 'space-named', name: 'anna', assetCount: 1 }),
+      p({ id: 'space-unnamed-high', name: '', assetCount: 9 }),
+    ];
+
+    expect(sortPeopleForManagement(people).map((person) => person.id)).toEqual([
+      'space-named',
+      'space-unnamed-high',
+      'space-unnamed-low',
+    ]);
+  });
+
+  it('uses case-insensitive names, missing counts as zero, and id as final tiebreak', () => {
+    const people = [
+      p({ id: 'unnamed-b', name: '', numberOfAssets: undefined }),
+      p({ id: 'named-b', name: 'bob' }),
+      p({ id: 'unnamed-a', name: '', numberOfAssets: 0 }),
+      p({ id: 'named-a', name: 'Alice' }),
+    ];
+
+    expect(sortPeopleForManagement(people).map((person) => person.id)).toEqual([
+      'named-a',
+      'named-b',
+      'unnamed-a',
+      'unnamed-b',
+    ]);
+  });
 });
 
 describe('getBoundingBox', () => {

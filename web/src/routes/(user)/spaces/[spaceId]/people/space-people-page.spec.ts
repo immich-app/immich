@@ -146,18 +146,46 @@ describe('Space people page', () => {
     featureFlagsMock.value.peopleStatistics = true;
   });
 
-  it('renders named people alphabetically before unnamed people', () => {
+  it('renders named people alphabetically before unnamed people sorted by asset count', () => {
     renderPage([
-      makeSpacePerson({ id: 'space-person-unnamed', name: '' }),
-      makeSpacePerson({ id: 'space-person-zoe', name: 'Zoe' }),
-      makeSpacePerson({ id: 'space-person-alice', name: 'Alice' }),
+      makeSpacePerson({ id: 'space-person-unnamed-low', name: '', assetCount: 1 }),
+      makeSpacePerson({ id: 'space-person-zoe', name: 'Zoe', assetCount: 99 }),
+      makeSpacePerson({ id: 'space-person-unnamed-high', name: '', assetCount: 20 }),
+      makeSpacePerson({ id: 'space-person-alice', name: 'Alice', assetCount: 1 }),
     ]);
 
     expect(screen.getAllByPlaceholderText('add_a_name').map((input) => (input as HTMLInputElement).value)).toEqual([
       'Alice',
       'Zoe',
       '',
+      '',
     ]);
+    expect(
+      [...document.querySelectorAll<HTMLAnchorElement>('a[href^="/spaces/space-1/people/"]')].map((link) => {
+        const url = new URL(link.href);
+        return url.pathname;
+      }),
+    ).toEqual([
+      '/spaces/space-1/people/space-person-alice',
+      '/spaces/space-1/people/space-person-zoe',
+      '/spaces/space-1/people/space-person-unnamed-high',
+      '/spaces/space-1/people/space-person-unnamed-low',
+    ]);
+  });
+
+  it('loads person thumbnails without the deferred queue used by visibility management', () => {
+    class NeverIntersectingObserver {
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+    }
+    vi.stubGlobal('IntersectionObserver', NeverIntersectingObserver);
+
+    renderPage([makeSpacePerson({ id: 'space-person-alice', name: 'Alice' })]);
+
+    expect(screen.getByTitle('Alice').getAttribute('src')).toContain(
+      '/shared-spaces/space-1/people/space-person-alice/thumbnail?updatedAt=2026-01-02T00%3A00%3A00.000Z',
+    );
   });
 
   it('moves a newly named person into alphabetical order', async () => {
