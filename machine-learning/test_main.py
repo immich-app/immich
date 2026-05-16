@@ -48,6 +48,24 @@ class FakeLock:
 
 
 class TestBase:
+    def test_sets_default_worker_timeout(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.delenv("DEVICE", raising=False)
+        monkeypatch.delenv("MACHINE_LEARNING_WORKER_TIMEOUT", raising=False)
+
+        assert Settings().worker_timeout == 300
+
+    def test_sets_rocm_default_worker_timeout(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("DEVICE", "rocm")
+        monkeypatch.delenv("MACHINE_LEARNING_WORKER_TIMEOUT", raising=False)
+
+        assert Settings().worker_timeout == 900
+
+    def test_worker_timeout_env_override(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("DEVICE", "rocm")
+        monkeypatch.setenv("MACHINE_LEARNING_WORKER_TIMEOUT", "1200")
+
+        assert Settings().worker_timeout == 1200
+
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
