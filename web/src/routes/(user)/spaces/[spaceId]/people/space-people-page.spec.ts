@@ -173,6 +173,21 @@ describe('Space people page', () => {
     ]);
   });
 
+  it('loads person thumbnails without the deferred queue used by visibility management', () => {
+    class NeverIntersectingObserver {
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+    }
+    vi.stubGlobal('IntersectionObserver', NeverIntersectingObserver);
+
+    renderPage([makeSpacePerson({ id: 'space-person-alice', name: 'Alice' })]);
+
+    expect(screen.getByTitle('Alice').getAttribute('src')).toContain(
+      '/shared-spaces/space-1/people/space-person-alice/thumbnail?updatedAt=2026-01-02T00%3A00%3A00.000Z',
+    );
+  });
+
   it('moves a newly named person into alphabetical order', async () => {
     const bob = makeSpacePerson({ id: 'space-person-bob', name: 'Bob' });
     const unnamed = makeSpacePerson({ id: 'space-person-unnamed', name: '' });
