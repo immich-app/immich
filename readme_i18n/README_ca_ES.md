@@ -37,25 +37,23 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Avís legal
+> [!WARNING]
+> ⚠️ Always follow [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan for your precious photos and videos!
+>
 
-- ⚠️ El projecte està en desenvolupament **molt actiu**.
-- ⚠️ Espereu errors i canvis que poden trencar coses.
-- ⚠️ **No utilitzeu l'aplicació com a única manera de guardar les vostres fotos i vídeos!**
+> [!NOTE]
+> Podeu trobar la documentació principal, incloent les guies d'instal·lació, a https://immich.app/.
 
 ## Contingut
 
-- [Documentació oficial](https://docs.immich.app)
-- [Mapa de ruta](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Funcionalitats](#funcionalitats)
+- [Documentació](https://docs.immich.app/)
 - [Introducció](https://docs.immich.app/overview/introduction)
 - [Instal·lació](https://docs.immich.app/install/requirements)
+- [Mapa de ruta](https://immich.app/roadmap)
+- [Demo](#demo)
+- [Funcionalitats](#funcionalitats)
+- [Traduccions](https://docs.immich.app/developer/translations)
 - [Directrius de contribució](https://docs.immich.app/overview/support-the-project)
-
-## Documentació
-
-Podeu trobar la documentació principal, incloent les guies d'instal·lació, a https://immich.app/.
 
 ## Demo
 
