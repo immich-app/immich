@@ -56,8 +56,5 @@
     "utimes": "^5.2.1",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.0.0"
-  },
-  "volta": {
-    "node": "24.15.0"
   }
 }

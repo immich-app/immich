@@ -50,7 +50,9 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
   List<Widget> _buildMenuChildren() {
     final asset = ref.read(assetViewerProvider).currentAsset;
-    if (asset == null) return [];
+    if (asset == null) {
+      return [];
+    }
 
     final user = ref.read(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;

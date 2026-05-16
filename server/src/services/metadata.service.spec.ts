@@ -672,7 +672,7 @@ describe(MetadataService.name, () => {
             colorPrimaries: 9,
             colorTransfer: 16,
             colorMatrix: 9,
-            dvProfile: undefined,
+            dvProfile: null,
           }),
         }),
       );

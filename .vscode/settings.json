@@ -29,6 +29,9 @@
     "editor.formatOnSave": true,
     "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
   },
+  "svelte.plugin.svelte.compilerWarnings": {
+    "state_referenced_locally": "ignore"
+  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true

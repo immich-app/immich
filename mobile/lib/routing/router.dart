@@ -58,7 +58,9 @@ import 'package:immich_mobile/presentation/pages/drift_person.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_recently_added.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
@@ -168,6 +170,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftAssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftPartnerDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftRecentlyTakenRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: DriftRecentlyAddedRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftLocalAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftCreateAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftPlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
@@ -187,6 +190,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: AssetTroubleshootRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DownloadInfoRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: CleanupPreviewRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: DriftSlideshowRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),
