@@ -30,6 +30,7 @@
 ## Task 1: Pure Web Comparator
 
 **Files:**
+
 - Modify: `web/src/lib/utils/people-utils.ts`
 - Test: `web/src/lib/utils/people-utils.spec.ts`
 
@@ -191,6 +192,7 @@ git commit -m "test: cover people management sorting"
 ## Task 2: Global and Space Page Sorting Tests
 
 **Files:**
+
 - Modify: `web/src/routes/(user)/people/+page.svelte`
 - Test: `web/src/routes/(user)/people/people-page.spec.ts`
 - Modify: `web/src/routes/(user)/spaces/[spaceId]/people/+page.svelte`
@@ -310,6 +312,7 @@ git commit -m "fix(web): sort unnamed people by photo count"
 ## Task 3: Server Non-Shared People Ordering
 
 **Files:**
+
 - Modify: `server/src/repositories/person.repository.ts`
 - Test: `server/src/services/person.service.spec.ts`
 
@@ -395,6 +398,7 @@ git commit -m "fix(server): sort non-shared people by canonical order"
 ## Task 4: Server Identity-Aware Global People Ordering
 
 **Files:**
+
 - Modify: `server/src/repositories/face-identity.repository.ts`
 - Test: `server/src/services/person.service.spec.ts`
 
@@ -497,6 +501,7 @@ git commit -m "fix(server): sort identity people by canonical order"
 ## Task 5: Server Space People Ordering
 
 **Files:**
+
 - Modify: `server/src/repositories/shared-space.repository.ts`
 - Test: `server/src/services/shared-space.service.spec.ts`
 
@@ -578,6 +583,7 @@ git commit -m "fix(server): sort space people by canonical order"
 ## Task 6: API-Level Ordering Coverage
 
 **Files:**
+
 - Test: `e2e/src/specs/server/api/person.e2e-spec.ts`
 - Test: `e2e/src/specs/server/api/shared-space.e2e-spec.ts`
 
@@ -656,17 +662,13 @@ Add this test in T09:
 
 ```ts
 it('orders named space people alphabetically before unnamed people by asset count', async () => {
-  const { status, body } = await request(app)
-    .get(`/shared-spaces/${spaceId}/people`)
-    .set(authHeaders(owner));
+  const { status, body } = await request(app).get(`/shared-spaces/${spaceId}/people`).set(authHeaders(owner));
 
   expect(status).toBe(200);
   const ordered = body.map((person: { id: string }) => person.id);
   expect(ordered.indexOf(namedPersonId)).toBeLessThan(ordered.indexOf(namedZoePersonId));
   expect(ordered.indexOf(namedZoePersonId)).toBeLessThan(ordered.indexOf(unnamedHighAssetCountPersonId));
-  expect(ordered.indexOf(unnamedHighAssetCountPersonId)).toBeLessThan(
-    ordered.indexOf(unnamedLowAssetCountPersonId),
-  );
+  expect(ordered.indexOf(unnamedHighAssetCountPersonId)).toBeLessThan(ordered.indexOf(unnamedLowAssetCountPersonId));
 });
 ```
 
@@ -700,6 +702,7 @@ git commit -m "test(e2e): cover people sort order"
 ## Task 7: Final Verification
 
 **Files:**
+
 - Verify all files changed in prior tasks.
 
 - [ ] **Step 1: Run focused web tests**
