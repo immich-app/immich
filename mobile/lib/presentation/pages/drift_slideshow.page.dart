@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 class DriftSlideshowPage extends ConsumerStatefulWidget {
@@ -33,7 +34,7 @@ class DriftSlideshowPage extends ConsumerStatefulWidget {
 }
 
 class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
-  late final SlideshowConfig _config;
+  late SlideshowConfig _config;
   late final PageController _pageController;
   late final Stopwatch _stopwatch;
   late Timer _timer;
@@ -52,8 +53,10 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     _stopwatch = Stopwatch();
     _createTimer();
     _updateNextIndex();
+    ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    unawaited(WakelockPlus.enable());
   }
 
   @override
@@ -61,6 +64,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     _timer.cancel();
     _stopwatch.stop();
     _pageController.dispose();
+    unawaited(WakelockPlus.disable());
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -98,6 +102,24 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     });
   }
 
+  void _onConfigChanged(SlideshowConfig? previous, SlideshowConfig next) {
+    if (_config == next) {
+      return;
+    }
+
+    final durationChanged = _config.duration != next.duration;
+    _config = next;
+    _updateNextIndex();
+
+    final asset = widget.timeline.getAssetSafe(_index);
+    if (durationChanged && !_paused && asset?.isImage == true) {
+      _timer.cancel();
+      _createTimer();
+    }
+
+    setState(() {});
+  }
+
   void _updateNextIndex() {
     _nextIndex = switch (_config.direction) {
       SlideshowDirection.forward => _index + 1,
@@ -116,6 +138,10 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
         final wrapped = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
         await widget.timeline.preloadAssets(wrapped);
         _pageController.jumpToPage(wrapped);
+      } else {
+        setState(() {
+          _paused = true;
+        });
       }
       return;
     }
