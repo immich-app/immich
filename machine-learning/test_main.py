@@ -443,27 +443,49 @@ class TestOrtSession:
 
         assert sess_options is session.sess_options
 
-    def test_serializes_rocm_run(self, mocker: MockerFixture) -> None:
+    def test_serializes_rocm_first_run_for_new_input_signature(self, mocker: MockerFixture) -> None:
         lock = FakeLock()
-        mocker.patch("immich_ml.sessions.ort._migraphx_run_lock", lock)
+        get_model_lock = mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        mocker.patch("immich_ml.sessions.ort._migraphx_compiled_inputs", set())
         mocker.patch("immich_ml.sessions.ort.Path.mkdir")
         session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
         input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
 
         session.run(None, input_feed)
+        session.run(None, input_feed)
 
         lock.enter.assert_called_once()
         lock.exit.assert_called_once()
-        session.session.run.assert_called_once_with(None, input_feed, None)
+        get_model_lock.assert_called_once()
+        session.session.run.assert_has_calls([mock.call(None, input_feed, None), mock.call(None, input_feed, None)])
+
+    def test_serializes_rocm_run_for_each_new_input_signature(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        mocker.patch("immich_ml.sessions.ort._migraphx_compiled_inputs", set())
+        mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+        new_shape_input_feed = {"input": np.random.rand(2, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+        session.run(None, new_shape_input_feed)
+
+        assert lock.enter.call_count == 2
+        assert lock.exit.call_count == 2
+        session.session.run.assert_has_calls(
+            [mock.call(None, input_feed, None), mock.call(None, new_shape_input_feed, None)]
+        )
 
     def test_does_not_serialize_non_rocm_run(self, mocker: MockerFixture) -> None:
         lock = FakeLock()
-        mocker.patch("immich_ml.sessions.ort._migraphx_run_lock", lock)
+        get_model_lock = mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
         session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["CPUExecutionProvider"])
         input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
 
         session.run(None, input_feed)
 
+        get_model_lock.assert_not_called()
         lock.enter.assert_not_called()
         session.session.run.assert_called_once_with(None, input_feed, None)
 
