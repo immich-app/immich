@@ -111,7 +111,9 @@ class TechnicalDetails extends ConsumerWidget {
   }
 
   static String? _getCameraInfoTitle(ExifInfo? exifInfo) {
-    if (exifInfo == null) return null;
+    if (exifInfo == null) {
+      return null;
+    }
     return switch ((exifInfo.make, exifInfo.model)) {
       (null, null) => null,
       (String make, null) => make,
@@ -121,17 +123,23 @@ class TechnicalDetails extends ConsumerWidget {
   }
 
   static String? _getCameraInfoSubtitle(ExifInfo? exifInfo) {
-    if (exifInfo == null) return null;
+    if (exifInfo == null) {
+      return null;
+    }
     final exposureTime = exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
     final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
     return [exposureTime, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
   static String? _getLensInfoSubtitle(ExifInfo? exifInfo) {
-    if (exifInfo == null) return null;
+    if (exifInfo == null) {
+      return null;
+    }
     final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
-    if (fNumber == null && focalLength == null) return null;
+    if (fNumber == null && focalLength == null) {
+      return null;
+    }
     return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 }

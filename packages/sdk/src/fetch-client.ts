@@ -787,29 +787,11 @@ export type ExifResponseDto = {
     /** Time zone */
     timeZone?: string | null;
 };
-export type AssetFaceWithoutPersonResponseDto = {
-    /** Bounding box X1 coordinate */
-    boundingBoxX1: number;
-    /** Bounding box X2 coordinate */
-    boundingBoxX2: number;
-    /** Bounding box Y1 coordinate */
-    boundingBoxY1: number;
-    /** Bounding box Y2 coordinate */
-    boundingBoxY2: number;
-    /** Face ID */
-    id: string;
-    /** Image height in pixels */
-    imageHeight: number;
-    /** Image width in pixels */
-    imageWidth: number;
-    sourceType?: SourceType;
-};
-export type PersonWithFacesResponseDto = {
+export type PersonResponseDto = {
     /** Person date of birth */
     birthDate: string | null;
     /** Person color (hex) */
     color?: string;
-    faces: AssetFaceWithoutPersonResponseDto[];
     /** Person ID */
     id: string;
     /** Is favorite */
@@ -892,7 +874,7 @@ export type AssetResponseDto = {
     owner?: UserResponseDto;
     /** Owner user ID */
     ownerId: string;
-    people?: PersonWithFacesResponseDto[];
+    people?: PersonResponseDto[];
     /** Is resized */
     resized?: boolean;
     stack?: (AssetStackResponseDto) | null;
@@ -900,7 +882,6 @@ export type AssetResponseDto = {
     /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
     thumbhash: string | null;
     "type": AssetTypeEnum;
-    unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
     visibility: AssetVisibility;
@@ -1135,24 +1116,6 @@ export type DuplicateResolveGroupDto = {
 export type DuplicateResolveDto = {
     /** List of duplicate groups to resolve */
     groups: DuplicateResolveGroupDto[];
-};
-export type PersonResponseDto = {
-    /** Person date of birth */
-    birthDate: string | null;
-    /** Person color (hex) */
-    color?: string;
-    /** Person ID */
-    id: string;
-    /** Is favorite */
-    isFavorite?: boolean;
-    /** Is hidden */
-    isHidden: boolean;
-    /** Person name */
-    name: string;
-    /** Thumbnail path */
-    thumbnailPath: string;
-    /** Last update date */
-    updatedAt?: string;
 };
 export type AssetFaceResponseDto = {
     /** Bounding box X1 coordinate */
@@ -2673,6 +2636,8 @@ export type TimeBucketAssetResponseDto = {
     city: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country: (string | null)[];
+    /** Array of UTC timestamps when each asset was originally uploaded to Immich */
+    createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
     duration: (number | null)[];
     /** Array of file creation timestamps in UTC */
@@ -3040,6 +3005,8 @@ export type SyncAssetMetadataV1 = {
 export type SyncAssetV1 = {
     /** Checksum */
     checksum: string;
+    /** Uploaded to Immich at */
+    createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
     /** Duration */
@@ -3078,6 +3045,8 @@ export type SyncAssetV1 = {
 export type SyncAssetV2 = {
     /** Checksum */
     checksum: string;
+    /** Uploaded to Immich at */
+    createdAt: string | null;
     /** Deleted at */
     deletedAt: string | null;
     /** Duration */
@@ -6326,13 +6295,14 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    orderBy?: AssetOrderBy;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -6353,6 +6323,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         isTrashed,
         key,
         order,
+        orderBy,
         personId,
         slug,
         tagId,
@@ -6369,13 +6340,14 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    orderBy?: AssetOrderBy;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -6395,6 +6367,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         isTrashed,
         key,
         order,
+        orderBy,
         personId,
         slug,
         tagId,
@@ -6971,11 +6944,6 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
-export enum SourceType {
-    MachineLearning = "machine-learning",
-    Exif = "exif",
-    Manual = "manual"
-}
 export enum AssetTypeEnum {
     Image = "IMAGE",
     Video = "VIDEO",
@@ -6996,6 +6964,11 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
+}
+export enum SourceType {
+    MachineLearning = "machine-learning",
+    Exif = "exif",
+    Manual = "manual"
 }
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",
@@ -7241,7 +7214,6 @@ export enum TranscodeHWAccel {
 export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
-    Libopus = "libopus",
     Opus = "opus",
     PcmS16Le = "pcm_s16le"
 }
@@ -7294,6 +7266,10 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum AssetOrderBy {
+    TakenAt = "takenAt",
+    CreatedAt = "createdAt"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

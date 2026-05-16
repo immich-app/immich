@@ -324,12 +324,13 @@ class ForegroundUploadService {
       final deviceId = Store.get(StoreKey.deviceId);
 
       final fields = {
+        // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
         'deviceAssetId': asset.localId!,
         'deviceId': deviceId,
         'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
         'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
         'isFavorite': asset.isFavorite.toString(),
-        'duration': asset.duration.toString(),
+        'duration': (asset.durationMs ?? 0).toString(),
       };
 
       // Upload live photo video first if available
@@ -431,6 +432,7 @@ class ForegroundUploadService {
       final filename = p.basename(file.path);
 
       final fields = {
+        // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
         'deviceAssetId': deviceAssetId,
         'deviceId': Store.get(StoreKey.deviceId),
         'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),

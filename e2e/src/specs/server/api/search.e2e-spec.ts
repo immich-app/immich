@@ -441,7 +441,18 @@ describe('/search', () => {
         .get('/search/explore')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toEqual([{ fieldName: 'exifInfo.city', items: [] }]);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toEqual(expect.arrayContaining([{ fieldName: 'exifInfo.city', items: [] }]));
+      expect(body).toEqual(
+        expect.arrayContaining([
+          {
+            fieldName: 'createdAt',
+            items: expect.arrayContaining([
+              expect.objectContaining({ data: expect.objectContaining({ id: assetLast.id }) }),
+            ]),
+          },
+        ]),
+      );
     });
   });
 

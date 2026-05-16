@@ -90,6 +90,11 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+
       - name: Create the Keystore
         if: ${{ !github.event.pull_request.head.repo.fork }}
         env:
@@ -111,15 +116,7 @@ jobs:
             ~/.gradle/wrapper
             ~/.android/sdk
             mobile/android/.gradle
-            mobile/.dart_tool
           key: build-mobile-gradle-${{ runner.os }}-main
-
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
-        with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
-          cache: true
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
@@ -131,11 +128,10 @@ jobs:
         run: flutter pub get
 
       - name: Generate translation file
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
-        working-directory: ./mobile
+        run: mise //mobile:codegen:translation
 
       - name: Generate platform APIs
-        run: make pigeon
+        run: mise //mobile:codegen:pigeon
         working-directory: ./mobile
 
       - name: Build Android App Bundle
@@ -175,7 +171,10 @@ jobs:
 
             Download: ${{ env.APK_URL }}
 
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
+            <details>
+              <summary>QR code</summary>
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${{ env.APK_URL }}" alt="QR code" />
+            </details>
 
             Installs as a separate app (applicationId `app.alextran.immich.pr${{ github.event.pull_request.number }}`), so it coexists with the Play Store version and any other PR builds.
 
@@ -189,7 +188,6 @@ jobs:
             ~/.gradle/wrapper
             ~/.android/sdk
             mobile/android/.gradle
-            mobile/.dart_tool
           key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}
 
   build-sign-ios:
@@ -202,6 +200,12 @@ jobs:
     runs-on: macos-15
 
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Select Xcode 26
         run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
 
@@ -211,24 +215,20 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
         with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
-          cache: true
+          github_token: ${{ steps.token.outputs.token }}
 
       - name: Install Flutter dependencies
         working-directory: ./mobile
         run: flutter pub get
 
       - name: Generate translation files
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
-        working-directory: ./mobile
+        run: mise //mobile:codegen:translation
 
       - name: Generate platform APIs
-        run: make pigeon
-        working-directory: ./mobile
+        run: mise //mobile:codegen:pigeon
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0

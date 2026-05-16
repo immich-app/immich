@@ -217,7 +217,9 @@ List<TranslationParam> _extractParams(String value) {
     final icuType = match.group(2)!;
     final icuContent = match.group(3) ?? '';
 
-    if (params.containsKey(name)) continue;
+    if (params.containsKey(name)) {
+      continue;
+    }
 
     String type;
     if (icuType == 'plural' || icuType == 'number') {
@@ -238,7 +240,9 @@ List<TranslationParam> _extractParams(String value) {
 
   for (var i = 0; i < value.length; i++) {
     if (value[i] == '{') {
-      if (depth == 0) icuStart = i;
+      if (depth == 0) {
+        icuStart = i;
+      }
       depth++;
     } else if (value[i] == '}') {
       depth--;
@@ -256,7 +260,9 @@ List<TranslationParam> _extractParams(String value) {
   for (final match in simpleRegex.allMatches(cleanedValue)) {
     final name = match.group(1)!;
 
-    if (params.containsKey(name)) continue;
+    if (params.containsKey(name)) {
+      continue;
+    }
 
     String type;
     if (_kIntParamNames.contains(name.toLowerCase())) {
