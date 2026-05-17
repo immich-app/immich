@@ -64,36 +64,32 @@ class Timeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      floatingActionButton: const DownloadStatusFloatingButton(),
-      body: LayoutBuilder(
-        builder: (_, constraints) => ProviderScope(
-          overrides: [
-            timelineArgsProvider.overrideWith(
-              (ref) => TimelineArgs(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
-                showStorageIndicator: showStorageIndicator,
-                withStack: withStack,
-                groupBy: groupBy,
-              ),
+    return LayoutBuilder(
+      builder: (_, constraints) => ProviderScope(
+        overrides: [
+          timelineArgsProvider.overrideWith(
+            (ref) => TimelineArgs(
+              maxWidth: constraints.maxWidth,
+              maxHeight: constraints.maxHeight,
+              columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
+              showStorageIndicator: showStorageIndicator,
+              withStack: withStack,
+              groupBy: groupBy,
             ),
-            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-          ],
-          child: _SliverTimeline(
-            topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
-            bottomSliverWidget: bottomSliverWidget,
-            appBar: appBar,
-            bottomSheet: bottomSheet,
-            withScrubber: withScrubber,
-            persistentBottomBar: persistentBottomBar,
-            snapToMonth: snapToMonth,
-            maxWidth: constraints.maxWidth,
-            loadingWidget: loadingWidget,
           ),
+          if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+        ],
+        child: _SliverTimeline(
+          topSliverWidget: topSliverWidget,
+          topSliverWidgetHeight: topSliverWidgetHeight,
+          bottomSliverWidget: bottomSliverWidget,
+          appBar: appBar,
+          bottomSheet: bottomSheet,
+          withScrubber: withScrubber,
+          persistentBottomBar: persistentBottomBar,
+          snapToMonth: snapToMonth,
+          maxWidth: constraints.maxWidth,
+          loadingWidget: loadingWidget,
         ),
       ),
     );
@@ -438,57 +434,61 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
           return PrimaryScrollController(
             controller: _scrollController,
-            child: RawGestureDetector(
-              gestures: {
-                CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
-                  () => CustomScaleGestureRecognizer(),
-                  (CustomScaleGestureRecognizer scale) {
-                    scale.onStart = (details) {
-                      _baseScaleFactor = _scaleFactor;
-                    };
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              floatingActionButton: const DownloadStatusFloatingButton(),
+              body: RawGestureDetector(
+                gestures: {
+                  CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+                    () => CustomScaleGestureRecognizer(),
+                    (CustomScaleGestureRecognizer scale) {
+                      scale.onStart = (details) {
+                        _baseScaleFactor = _scaleFactor;
+                      };
 
-                    scale.onUpdate = (details) {
-                      final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
-                      final newPerRow = 7 - newScaleFactor.toInt();
+                      scale.onUpdate = (details) {
+                        final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
+                        final newPerRow = 7 - newScaleFactor.toInt();
 
-                      if (newPerRow != _perRow) {
-                        final targetAssetIndex = _getCurrentAssetIndex(segments);
-                        setState(() {
-                          _scaleFactor = newScaleFactor;
-                          _perRow = newPerRow;
-                          _restoreAssetIndex = targetAssetIndex;
-                        });
+                        if (newPerRow != _perRow) {
+                          final targetAssetIndex = _getCurrentAssetIndex(segments);
+                          setState(() {
+                            _scaleFactor = newScaleFactor;
+                            _perRow = newPerRow;
+                            _restoreAssetIndex = targetAssetIndex;
+                          });
 
-                        ref.read(metadataProvider).write(MetadataKey.timelineTilesPerRow, _perRow);
-                      }
-                    };
-                  },
-                ),
-              },
-              child: TimelineDragRegion(
-                onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
-                onAssetEnter: _handleDragAssetEnter,
-                onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                onScroll: _dragScroll,
-                onScrollStart: () {
-                  // Minimize the bottom sheet when drag selection starts
-                  ref.read(timelineStateProvider.notifier).setScrolling(true);
+                          ref.read(metadataProvider).write(MetadataKey.timelineTilesPerRow, _perRow);
+                        }
+                      };
+                    },
+                  ),
                 },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    timeline,
-                    if (isBottomWidgetVisible)
-                      Positioned(
-                        top: MediaQuery.paddingOf(context).top,
-                        left: 25,
-                        child: const SizedBox(
-                          height: kToolbarHeight,
-                          child: Center(child: _MultiSelectStatusButton()),
+                child: TimelineDragRegion(
+                  onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
+                  onAssetEnter: _handleDragAssetEnter,
+                  onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
+                  onScroll: _dragScroll,
+                  onScrollStart: () {
+                    // Minimize the bottom sheet when drag selection starts
+                    ref.read(timelineStateProvider.notifier).setScrolling(true);
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      timeline,
+                      if (isBottomWidgetVisible)
+                        Positioned(
+                          top: MediaQuery.paddingOf(context).top,
+                          left: 25,
+                          child: const SizedBox(
+                            height: kToolbarHeight,
+                            child: Center(child: _MultiSelectStatusButton()),
+                          ),
                         ),
-                      ),
-                    if (isBottomWidgetVisible) widget.bottomSheet!,
-                  ],
+                      if (isBottomWidgetVisible) widget.bottomSheet!,
+                    ],
+                  ),
                 ),
               ),
             ),
