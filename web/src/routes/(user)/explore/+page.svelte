@@ -4,15 +4,18 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
+  import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import Portal from '$lib/elements/Portal.svelte';
 
   interface Props {
     data: PageData;
@@ -40,6 +43,15 @@
       }
     }
   };
+
+  const onViewAsset = async (id: string) => {
+    const asset = await getAssetInfo({ ...authManager.params, id });
+    assetViewerManager.setAsset(asset);
+  };
+
+  const assetCursor = $derived({
+    current: assetViewerManager.asset!,
+  });
 </script>
 
 <OnEvents {onPersonThumbnailReady} />
@@ -122,15 +134,20 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <div class="flex h-24 flex-wrap gap-x-1 overflow-hidden md:h-42">
+      <div class="flex h-24 max-w-fit flex-wrap gap-x-1 overflow-hidden md:h-42">
         {#each recents as item (item.data.id)}
-          <a class="relative h-full flex-auto" href={Route.viewAsset({ id: item.data.id })} draggable="false">
+          <button
+            type="button"
+            class="relative h-full flex-auto"
+            onclick={() => onViewAsset(item.data.id)}
+            draggable="false"
+          >
             <img
               src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
               alt={$getAltText(toTimelineAsset(item.data))}
               class="size-full min-w-max rounded-xl object-cover"
             />
-          </a>
+          </button>
         {/each}
       </div>
     </div>
@@ -140,3 +157,15 @@
     <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
   {/if}
 </UserPageLayout>
+
+{#if assetViewerManager.isViewing}
+  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+    <Portal target="body">
+      <AssetViewer
+        cursor={assetCursor}
+        showNavigation={false}
+        onClose={() => assetViewerManager.showAssetViewer(false)}
+      />
+    </Portal>
+  {/await}
+{/if}

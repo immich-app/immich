@@ -1096,6 +1096,53 @@ class DriftSearchRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftSlideshowPage]
+class DriftSlideshowRoute extends PageRouteInfo<DriftSlideshowRouteArgs> {
+  DriftSlideshowRoute({
+    Key? key,
+    required TimelineService timeline,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DriftSlideshowRoute.name,
+         args: DriftSlideshowRouteArgs(key: key, timeline: timeline),
+         initialChildren: children,
+       );
+
+  static const String name = 'DriftSlideshowRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftSlideshowRouteArgs>();
+      return DriftSlideshowPage(key: args.key, timeline: args.timeline);
+    },
+  );
+}
+
+class DriftSlideshowRouteArgs {
+  const DriftSlideshowRouteArgs({this.key, required this.timeline});
+
+  final Key? key;
+
+  final TimelineService timeline;
+
+  @override
+  String toString() {
+    return 'DriftSlideshowRouteArgs{key: $key, timeline: $timeline}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftSlideshowRouteArgs) return false;
+    return key == other.key && timeline == other.timeline;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ timeline.hashCode;
+}
+
+/// generated route for
 /// [DriftTrashPage]
 class DriftTrashRoute extends PageRouteInfo<void> {
   const DriftTrashRoute({List<PageRouteInfo>? children})

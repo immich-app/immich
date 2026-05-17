@@ -28,6 +28,12 @@ enum MetadataKey<T extends Object> {
   imagePreferRemote<bool>(.appConfig, 'image.preferRemote', false),
   imageLoadOriginal<bool>(.appConfig, 'image.loadOriginal', false),
 
+  // Viewer
+  viewerLoopVideo<bool>(.appConfig, 'viewer.loopVideo', true),
+  viewerLoadOriginalVideo<bool>(.appConfig, 'viewer.loadOriginalVideo', false),
+  viewerAutoPlayVideo<bool>(.appConfig, 'viewer.autoPlayVideo', true),
+  viewerTapToNavigate<bool>(.appConfig, 'viewer.tapToNavigate', false),
+
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
   timelineGroupAssetsBy<GroupAssetsBy>(
@@ -58,7 +64,19 @@ enum MetadataKey<T extends Object> {
   ),
   cleanupKeepAlbumIds<List<String>>(.appConfig, 'cleanup.keepAlbumIds', [], _ListCodec(_PrimitiveCodec.string)),
   cleanupCutoffDaysAgo<int>(.appConfig, 'cleanup.cutoffDaysAgo', -1),
-  cleanupDefaultsInitialized<bool>(.appConfig, 'cleanup.defaultsInitialized', false);
+  cleanupDefaultsInitialized<bool>(.appConfig, 'cleanup.defaultsInitialized', false),
+
+  // Slideshow
+  slideshowTransition<bool>(.appConfig, 'slideshow.transition', true),
+  slideshowRepeat<bool>(.appConfig, 'slideshow.repeat', true),
+  slideshowDuration<int>(.appConfig, 'slideshow.duration', 5),
+  slideshowLook<SlideshowLook>(.appConfig, 'slideshow.look', SlideshowLook.contain, _EnumCodec(SlideshowLook.values)),
+  slideshowDirection<SlideshowDirection>(
+    .appConfig,
+    'slideshow.direction',
+    SlideshowDirection.forward,
+    _EnumCodec(SlideshowDirection.values),
+  );
 
   final MetadataDomain domain;
   final String name;

@@ -4,25 +4,15 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 /// Defines the data type for each value
 enum StoreKey<T> {
   version<int>._(0),
-  assetETag<String>._(1),
   currentUser<UserDto>._(2),
-  deviceIdHash<int>._(3),
   deviceId<String>._(4),
-  backupFailedSince<DateTime>._(5),
-  backupRequireWifi<bool>._(6),
   backupRequireCharging<bool>._(7),
   backupTriggerDelay<int>._(8),
   serverUrl<String>._(10),
   accessToken<String>._(11),
   serverEndpoint<String>._(12),
-  autoBackup<bool>._(13),
-  backgroundBackup<bool>._(14),
-  sslClientCertData<String>._(15),
-  sslClientPasswd<String>._(16),
-  uploadErrorNotificationGracePeriod<int>._(106),
   selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
-  selfSignedCert<bool>._(120),
   selectedAlbumSortReverse<bool>._(123),
   enableHapticFeedback<bool>._(126),
   customHeaders<String>._(127),
@@ -38,12 +28,8 @@ enum StoreKey<T> {
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
   albumGridView<bool>._(140),
-  loadOriginal<bool>._(101),
 
   // Image viewer navigation settings
-  loopVideo<bool>._(117),
-  loadOriginalVideo<bool>._(136),
-  autoPlayVideo<bool>._(139),
   tapToNavigate<bool>._(141),
 
   // Experimental stuff
@@ -53,6 +39,10 @@ enum StoreKey<T> {
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyLoopVideo<bool>._(117),
+  legacyLoadOriginalVideo<bool>._(136),
+  legacyAutoPlayVideo<bool>._(139),
+  legacyTapToNavigate<bool>._(141),
   legacyPreferRemoteImage<bool>._(116),
   legacyLoadOriginal<bool>._(101),
   legacyPrimaryColor<String>._(128),

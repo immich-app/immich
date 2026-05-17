@@ -394,9 +394,13 @@ class BackgroundUploadService {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
+    final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final fieldsMap = {
       'filename': originalFileName ?? filename,
+      // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
+      'deviceAssetId': deviceAssetId ?? '',
+      'deviceId': deviceId,
       'fileCreatedAt': createdAt.toUtc().toIso8601String(),
       'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
