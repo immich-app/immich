@@ -124,6 +124,13 @@ Future<void> _migrateTo26(Drift drift) async {
   await _migrateAlbumSortMode(migrator);
   await migrator.migrateBool(StoreKey.legacySelectedAlbumSortReverse, MetadataKey.albumIsReverse);
   await migrator.migrateBool(StoreKey.legacyAlbumGridView, MetadataKey.albumIsGrid);
+  // Backup
+  await migrator.migrateBool(StoreKey.legacyEnableBackup, MetadataKey.backupEnabled);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadVideos, MetadataKey.backupUseCellularForVideos);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadPhotos, MetadataKey.backupUseCellularForPhotos);
+  await migrator.migrateBool(StoreKey.legacyBackupRequireCharging, MetadataKey.backupRequireCharging);
+  await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, MetadataKey.backupTriggerDelay);
+  await migrator.migrateBool(StoreKey.legacySyncAlbums, MetadataKey.backupSyncAlbums);
   await migrator.complete();
 }
 

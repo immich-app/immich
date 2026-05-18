@@ -6,26 +6,25 @@ enum StoreKey<T> {
   version<int>._(0),
   currentUser<UserDto>._(2),
   deviceId<String>._(4),
-  backupRequireCharging<bool>._(7),
-  backupTriggerDelay<int>._(8),
   serverUrl<String>._(10),
   accessToken<String>._(11),
   serverEndpoint<String>._(12),
   advancedTroubleshooting<bool>._(114),
   enableHapticFeedback<bool>._(126),
-  syncAlbums<bool>._(131),
 
   manageLocalMediaAndroid<bool>._(137),
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
 
-  // Experimental stuff
-  enableBackup<bool>._(1003),
-  useWifiForUploadVideos<bool>._(1004),
-  useWifiForUploadPhotos<bool>._(1005),
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyBackupRequireCharging<bool>._(7),
+  legacyBackupTriggerDelay<int>._(8),
+  legacySyncAlbums<bool>._(131),
+  legacyEnableBackup<bool>._(1003),
+  legacyUseWifiForUploadVideos<bool>._(1004),
+  legacyUseWifiForUploadPhotos<bool>._(1005),
   legacySelectedAlbumSortOrder<int>._(113),
   legacySelectedAlbumSortReverse<bool>._(123),
   legacyAlbumGridView<bool>._(140),
