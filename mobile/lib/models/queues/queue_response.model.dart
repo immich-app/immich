@@ -8,7 +8,7 @@ class QueueStatistics {
   final int waiting;
   final int paused;
 
-  QueueStatistics({
+  const QueueStatistics({
     required this.active,
     required this.completed,
     required this.failed,
@@ -34,7 +34,7 @@ class QueueResponse {
   final bool isPaused;
   final QueueStatistics statistics;
 
-  QueueResponse({required this.name, required this.isPaused, required this.statistics});
+  const QueueResponse({required this.name, required this.isPaused, required this.statistics});
 
   factory QueueResponse.fromDto(QueueResponseDto dto) =>
       QueueResponse(name: dto.name.value, isPaused: dto.isPaused, statistics: QueueStatistics.fromDto(dto.statistics));

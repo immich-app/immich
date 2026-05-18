@@ -10,11 +10,7 @@ class _ButtonConfig {
   final String label;
   final String action;
 
-  const _ButtonConfig({
-    required this.icon,
-    required this.label,
-    required this.action,
-  });
+  const _ButtonConfig({required this.icon, required this.label, required this.action});
 }
 
 class JobQueueSettings extends ConsumerWidget {
@@ -96,7 +92,7 @@ class _QueueTile extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         side: hasHeader
             ? BorderSide(color: queue.isPaused ? Colors.orange.shade100 : Colors.green.shade100, width: 1.5)
             : BorderSide.none,
@@ -204,7 +200,7 @@ class _QueueTile extends ConsumerWidget {
   Widget _buildInfoButton(BuildContext context, String title, String description) {
     return InkWell(
       onTap: () => _showDescriptionPopup(context, title, description),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: const BorderRadius.all(Radius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(4),
         child: Icon(Icons.info_outline, size: 20, color: Theme.of(context).primaryColor),
@@ -212,10 +208,10 @@ class _QueueTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildBadge(BuildContext context, String text, IconData icon, Color backgroundColor, Color textColor) {
+  Widget _buildBadge(_, String text, IconData icon, Color backgroundColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: backgroundColor, borderRadius: const BorderRadius.all(Radius.circular(12))),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -232,7 +228,7 @@ class _QueueTile extends ConsumerWidget {
 
   Widget _buildActionButtons(
     WidgetRef ref,
-    BuildContext context, {
+    _, {
     required bool isDisabled,
     required bool isIdle,
     required bool isPaused,
@@ -298,9 +294,7 @@ class _QueueTile extends ConsumerWidget {
           if (missingText != null) _ButtonConfig(icon: Icons.search, label: missingText, action: 'missing'),
         ];
       }
-      return [
-        _ButtonConfig(icon: Icons.play_arrow, label: missingText ?? tr('start'), action: 'start'),
-      ];
+      return [_ButtonConfig(icon: Icons.play_arrow, label: missingText ?? tr('start'), action: 'start')];
     }
 
     return [

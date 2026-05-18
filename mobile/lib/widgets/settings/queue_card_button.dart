@@ -22,7 +22,7 @@ class QueueCardButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: disabled ? null : onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         decoration: _getDecoration(context),
@@ -49,33 +49,33 @@ class QueueCardButton extends StatelessWidget {
       return Colors.grey.shade500;
     }
 
-    switch (color) {
-      case QueueCardButtonColor.primary:
-        return Theme.of(context).colorScheme.onPrimary;
-      case QueueCardButtonColor.secondary:
-        return Theme.of(context).colorScheme.onSecondary;
-      case QueueCardButtonColor.outlined:
-        return Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8);
-    }
+    return switch (color) {
+      QueueCardButtonColor.primary => Theme.of(context).colorScheme.onPrimary,
+      QueueCardButtonColor.secondary => Theme.of(context).colorScheme.onSecondary,
+      QueueCardButtonColor.outlined => Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+    };
   }
 
   BoxDecoration _getDecoration(BuildContext context) {
     if (disabled) {
-      return BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(12));
+      return BoxDecoration(color: Colors.grey.shade300, borderRadius: const BorderRadius.all(Radius.circular(12)));
     }
 
-    switch (color) {
-      case QueueCardButtonColor.primary:
-        return BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(12));
-      case QueueCardButtonColor.secondary:
-        return BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(12));
-      case QueueCardButtonColor.outlined:
-        return BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5), width: 1.5),
-        );
-    }
+    return switch (color) {
+      QueueCardButtonColor.primary => BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+      ),
+      QueueCardButtonColor.secondary => BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary,
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+      ),
+      QueueCardButtonColor.outlined => BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5), width: 1.5),
+      ),
+    };
   }
 }
 
