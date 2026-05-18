@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidate } from '$app/navigation';
+  import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import WorkflowAddStepModal from '$lib/modals/WorkflowAddStepModal.svelte';
@@ -34,7 +34,6 @@
     Text,
     Textarea,
     VStack,
-    type ActionItem,
   } from '@immich/ui';
   import {
     mdiArrowLeft,
@@ -46,9 +45,9 @@
     mdiPlus,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
 
   type Props = {
     data: PageData;
@@ -57,6 +56,18 @@
   let { data }: Props = $props();
 
   let { id, enabled, name, description, trigger, steps } = $derived(data.workflow);
+  let savedWorkflow = $state(cloneDeep(data.workflow));
+  let allowNavigation = $state(false);
+  let isShowingNavigationDialog = $state(false);
+  let isSaving = $state(false);
+
+  const hasChanges = $derived(
+    enabled !== savedWorkflow.enabled ||
+      name !== savedWorkflow.name ||
+      description !== savedWorkflow.description ||
+      !isEqual(trigger, savedWorkflow.trigger) ||
+      !isEqual(steps, savedWorkflow.steps),
+  );
 
   const handleAddStep = async () => {
     const step = await modalManager.show(WorkflowAddStepModal, { trigger });
@@ -66,9 +77,10 @@
   };
 
   const handleEditStep = async (step: WorkflowStepDto) => {
-    const result = await modalManager.show(WorkflowEditStepModal, { trigger, step });
+    const result = await modalManager.show(WorkflowEditStepModal, { trigger, step: cloneDeep(step) });
     if (result) {
       Object.assign(step, result);
+      steps = [...steps];
     }
   };
 
@@ -80,10 +92,7 @@
     }
   };
 
-  const onClose = async () => {
-    // check for pending changes
-    await goto(Route.workflows());
-  };
+  const onClose = () => goto(Route.workflows());
 
   const onChangeTrigger = async () => {
     const newTrigger = await modalManager.show(WorkflowTriggerPicker, { selected: trigger });
@@ -95,16 +104,67 @@
   const onWorkflowUpdate = async (response: WorkflowResponseDto) => {
     if (id === response.id) {
       data.workflow = response;
+      savedWorkflow = cloneDeep(response);
       await invalidate('workflow:data');
     }
   };
 
-  const Done: ActionItem = {
-    title: $t('save'),
-    icon: mdiContentSave,
-    color: 'primary',
-    onAction: () => handleUpdateWorkflow(id, { enabled, name, description, trigger, steps }),
+  const confirmNavigation = async () => {
+    if (!hasChanges) {
+      return true;
+    }
+
+    if (isShowingNavigationDialog) {
+      return false;
+    }
+
+    try {
+      isShowingNavigationDialog = true;
+      return await modalManager.showDialog({
+        prompt: $t('workflow_navigation_prompt'),
+        confirmColor: 'primary',
+      });
+    } finally {
+      isShowingNavigationDialog = false;
+    }
   };
+
+  const saveWorkflow = async () => {
+    if (!hasChanges || isSaving) {
+      return;
+    }
+
+    isSaving = true;
+    try {
+      const submitted = { enabled, name, description, trigger, steps: cloneDeep(steps) };
+      const saved = await handleUpdateWorkflow(id, submitted);
+
+      if (saved) {
+        Object.assign(savedWorkflow, submitted);
+      }
+    } finally {
+      isSaving = false;
+    }
+  };
+
+  beforeNavigate(({ cancel, to, willUnload }) => {
+    if (!hasChanges || allowNavigation) {
+      return;
+    }
+
+    cancel();
+
+    if (willUnload || !to) {
+      return;
+    }
+
+    void confirmNavigation().then((confirmed) => {
+      if (confirmed) {
+        allowNavigation = true;
+        void goto(to.url);
+      }
+    });
+  });
 </script>
 
 <OnEvents {onWorkflowUpdate} />
@@ -117,7 +177,17 @@
         <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
       </ControlBarHeader>
       <ControlBarContent class="flex justify-end">
-        <HeaderActionButton action={Done} variant="filled" />
+        <Button
+          variant="filled"
+          size="small"
+          color="primary"
+          leadingIcon={mdiContentSave}
+          disabled={!hasChanges || isSaving}
+          loading={isSaving}
+          onclick={saveWorkflow}
+        >
+          {$t('save')}
+        </Button>
       </ControlBarContent>
     </ActionBar>
   </AppShellBar>
