@@ -13,11 +13,7 @@ class BulkTagAssetsActionButton extends ConsumerWidget {
 
   const BulkTagAssetsActionButton({super.key, required this.source});
 
-  _onTap(BuildContext context, WidgetRef ref) async {
-    if (!context.mounted) {
-      return;
-    }
-
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     final result = await ref.read(actionProvider.notifier).tagAssets(source, context);
     if (result == null) {
       return;
@@ -25,23 +21,24 @@ class BulkTagAssetsActionButton extends ConsumerWidget {
 
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'tagged_assets'.t(context: context, args: {'count': result.count.toString()});
-
-    if (context.mounted) {
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'errors.failed_to_tag_assets'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
+    if (!context.mounted) {
+      return;
     }
+
+    ImmichToast.show(
+      context: context,
+      msg: result.success
+          ? 'tagged_assets'.t(context: context, args: {'count': result.count.toString()})
+          : 'errors.failed_to_tag_assets'.t(context: context),
+      gravity: ToastGravity.BOTTOM,
+      toastType: result.success ? ToastType.success : ToastType.error,
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
-      maxWidth: 95.0,
-      iconData: Icons.sell,
+      iconData: Icons.sell_outlined,
       label: "control_bottom_app_bar_add_tags".t(context: context),
       onPressed: () => _onTap(context, ref),
     );

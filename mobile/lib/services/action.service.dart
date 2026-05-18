@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -15,7 +16,6 @@ import 'package:immich_mobile/infrastructure/repositories/remote_asset.repositor
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
@@ -37,7 +37,7 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(trashedLocalAssetRepository),
     ref.watch(assetMediaRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
-    ref.watch(tagProvider.notifier),
+    ref.watch(tagServiceProvider),
   ),
 );
 
@@ -50,7 +50,7 @@ class ActionService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
   final DownloadRepository _downloadRepository;
-  final TagNotifier _tagService;
+  final TagService _tagService;
 
   const ActionService(
     this._assetApiRepository,
@@ -239,24 +239,24 @@ class ActionService {
     return true;
   }
 
-  Future<bool> tagAssets(List<String> remoteIds, BuildContext context) async {
+  Future<int?> tagAssets(List<String> remoteIds, BuildContext context) async {
     final tagResults = await showTagPickerModal(context: context);
     if (tagResults == null) {
       // user cancelled
-      return false;
+      return null;
     }
 
-    final selectedTagIds = tagResults.$1;
+    final selectedTagIds = Set<String>.from(tagResults.$1);
     final selectedNewTagValues = tagResults.$2;
 
     if (selectedNewTagValues.isNotEmpty) {
       final upsertedTags = await _tagService.upsertTags(selectedNewTagValues.toList());
       selectedTagIds.addAll(upsertedTags.map((t) => t.id));
     }
-    if (selectedTagIds.isNotEmpty) {
-      await _tagService.bulkTagAssets(remoteIds, selectedTagIds.toList());
+    if (selectedTagIds.isEmpty) {
+      return 0;
     }
-    return true;
+    return _tagService.bulkTagAssets(remoteIds, selectedTagIds.toList());
   }
 
   Future<void> stack(String userId, List<String> remoteIds) async {

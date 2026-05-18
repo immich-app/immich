@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -356,14 +357,16 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult?> tagAssets(ActionSource source, BuildContext context) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {
-      final isTagged = await _service.tagAssets(ids, context);
-      if (!isTagged) {
+      final count = await _service.tagAssets(ids, context);
+      if (count == null) {
         return null;
       }
 
-      return ActionResult(count: ids.length, success: true);
+      ref.invalidate(tagProvider);
+      return ActionResult(count: count, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to tag assets', error, stack);
+      ref.invalidate(tagProvider);
       return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }

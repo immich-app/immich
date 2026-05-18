@@ -9,8 +9,8 @@ class TagService {
 
   const TagService(this._repository);
 
-  Future<void> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
-    await _repository.bulkTagAssets(assetIds, tagIds);
+  Future<int> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
+    return _repository.bulkTagAssets(assetIds, tagIds);
   }
 
   Future<Set<Tag>> getAllTags() async {

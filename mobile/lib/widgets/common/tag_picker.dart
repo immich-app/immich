@@ -8,6 +8,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
+String _trimSlashes(String s) => s.replaceAll(RegExp(r'^/+|/+$'), '');
+
 Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext context, Set<String>? initialSelection}) {
   return showDialog<(Set<String>, Set<String>)?>(
     context: context,
@@ -190,9 +192,5 @@ class TagPicker extends HookConsumerWidget {
         ),
       ],
     );
-  }
-
-  String _trimSlashes(String s) {
-    return s.replaceAll(RegExp(r'^/+|/+$'), '');
   }
 }

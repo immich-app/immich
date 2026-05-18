@@ -27,7 +27,7 @@ void main() {
   late MockTrashedLocalAssetRepository trashedLocalAssetRepository;
   late MockAssetMediaRepository assetMediaRepository;
   late MockDownloadRepository downloadRepository;
-  late MockTagNotifier tagNotifier;
+  late MockTagService tagService;
 
   late Drift db;
 
@@ -54,7 +54,7 @@ void main() {
     trashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     assetMediaRepository = MockAssetMediaRepository();
     downloadRepository = MockDownloadRepository();
-    tagNotifier = MockTagNotifier();
+    tagService = MockTagService();
 
     sut = ActionService(
       assetApiRepository,
@@ -65,7 +65,7 @@ void main() {
       trashedLocalAssetRepository,
       assetMediaRepository,
       downloadRepository,
-      tagNotifier,
+      tagService,
     );
   });
 

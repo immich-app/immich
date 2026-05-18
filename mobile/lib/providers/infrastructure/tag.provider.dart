@@ -3,20 +3,17 @@ import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
 
 class TagNotifier extends AsyncNotifier<Set<Tag>> {
-  late final TagService service;
-
   @override
   Future<Set<Tag>> build() async {
-    final service = ref.watch(tagServiceProvider);
-    return await service.getAllTags();
+    return ref.watch(tagServiceProvider).getAllTags();
   }
 
-  Future<void> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
-    await service.bulkTagAssets(assetIds, tagIds);
+  Future<int> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
+    return ref.read(tagServiceProvider).bulkTagAssets(assetIds, tagIds);
   }
 
   Future<List<Tag>> upsertTags(List<String> tags) async {
-    final upsertedTags = await service.upsertTags(tags);
+    final upsertedTags = await ref.read(tagServiceProvider).upsertTags(tags);
 
     state = AsyncValue.data({...?state.valueOrNull, ...upsertedTags});
     return upsertedTags;

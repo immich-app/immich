@@ -2,8 +2,8 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
+import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAssetApiRepository extends Mock implements AssetApiRepository {}
@@ -16,4 +16,4 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockLocalFilesManagerRepository extends Mock implements LocalFilesManagerRepository {}
 
-class MockTagNotifier extends Mock implements TagNotifier {}
+class MockTagService extends Mock implements TagService {}

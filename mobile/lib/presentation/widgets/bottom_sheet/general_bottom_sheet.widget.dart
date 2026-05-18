@@ -27,6 +27,7 @@ import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.d
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -58,6 +59,9 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
+    final tagsEnabled = ref.watch(
+      userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
+    );
 
     Future<void> addAssetsToAlbum(RemoteAlbum album) async {
       final selectedAssets = multiselect.selectedAssets;
@@ -115,7 +119,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
               : const DeletePermanentActionButton(source: ActionSource.timeline),
           const FavoriteActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
-          const BulkTagAssetsActionButton(source: ActionSource.timeline),
+          if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
           const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(source: ActionSource.timeline),
