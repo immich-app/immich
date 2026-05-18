@@ -15590,6 +15590,36 @@
         ]
       }
     },
+    "/yucca/repository/{id}/snapshots/prune": {
+      "post": {
+        "operationId": "pruneRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
     "/yucca/repository/{id}/snapshots/{snapshot}": {
       "delete": {
         "operationId": "forgetSnapshot",
@@ -18171,6 +18201,15 @@
           },
           "name": {
             "type": "string"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
           },
           "worm": {
             "type": "boolean"
@@ -22242,6 +22281,15 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
           }
         },
         "required": [
@@ -22367,6 +22415,15 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
           }
         },
         "type": "object"
@@ -22380,6 +22437,32 @@
         "required": [
           "repository"
         ],
+        "type": "object"
+      },
+      "RetentionPolicyDto": {
+        "properties": {
+          "keepLast": {
+            "type": "number"
+          },
+          "keepWithin": {
+            "type": "string"
+          },
+          "keepWithinDaily": {
+            "type": "string"
+          },
+          "keepWithinHourly": {
+            "type": "string"
+          },
+          "keepWithinMonthly": {
+            "type": "string"
+          },
+          "keepWithinWeekly": {
+            "type": "string"
+          },
+          "keepWithinYearly": {
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ReverseGeocodingStateResponseDto": {
@@ -22491,8 +22574,10 @@
       },
       "RunType": {
         "enum": [
+          "schedule",
+          "restore",
           "backup",
-          "restore"
+          "forget"
         ],
         "type": "string"
       },
