@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RestoreFlowAutoSelectBackup from './RestoreFlowAutoSelectBackup.svelte';
   import RestoreFlowDetectInstall from './RestoreFlowDetectInstall.svelte';
   import RestoreFlowIntro from './RestoreFlowIntro.svelte';
   import RestoreFlowSelectBackup from './RestoreFlowSelectBackup.svelte';
@@ -11,26 +12,27 @@
 
   const { end, expectedVersion }: Props = $props();
 
-  let stage = $state(localStorage.getItem('restoring-yucca') ? 1 : 0);
+  let stage: 'overview' | 'yucca' | 'detect-install' | 'auto-select-backup' | 'select-backup' = $state(
+    localStorage.getItem('restoring-yucca') ? 'yucca' : 'overview',
+  );
 
   $effect(() => {
-    if (stage === 1) {
+    if (stage === 'yucca') {
       localStorage.setItem('restoring-yucca', '1');
     } else {
       localStorage.removeItem('restoring-yucca');
     }
   });
-
-  const next = () => stage++;
-  const previous = () => stage--;
 </script>
 
-{#if stage === 0}
-  <RestoreFlowIntro flowToYucca={() => (stage = 1)} flowToDatabase={() => (stage = 2)} {end} />
-{:else if stage === 1}
-  <ImmichOnboardingRestoreFlow onExit={previous} onFinish={() => stage++} />
-{:else if stage === 2}
-  <RestoreFlowDetectInstall {next} previous={() => (stage = 0)} />
-{:else}
-  <RestoreFlowSelectBackup {previous} {end} {expectedVersion} />
+{#if stage === 'overview'}
+  <RestoreFlowIntro flowToYucca={() => (stage = 'yucca')} flowToDatabase={() => (stage = 'detect-install')} {end} />
+{:else if stage === 'yucca'}
+  <ImmichOnboardingRestoreFlow onExit={() => (stage = 'overview')} onFinish={() => (stage = 'auto-select-backup')} />
+{:else if stage === 'detect-install'}
+  <RestoreFlowDetectInstall next={() => (stage = 'select-backup')} previous={() => (stage = 'overview')} />
+{:else if stage === 'select-backup'}
+  <RestoreFlowSelectBackup previous={() => (stage = 'detect-install')} {end} {expectedVersion} />
+{:else if stage === 'auto-select-backup'}
+  <RestoreFlowAutoSelectBackup selectAnother={() => (stage = 'select-backup')} {end} {expectedVersion} />
 {/if}
