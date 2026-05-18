@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.0",
     "@faker-js/faker": "^10.1.0",
+    "@futo-org/backups-orchestrator-ui": "0.1.71",
     "@immich/cli": "workspace:*",
     "@immich/e2e-auth-server": "workspace:*",
     "@immich/sdk": "workspace:*",
@@ -44,7 +45,6 @@
     "exiftool-vendored": "^35.0.0",
     "globals": "^17.0.0",
     "luxon": "^3.4.4",
-    "orchestration-ui": "0.1.69",
     "pg": "^8.11.3",
     "pngjs": "^7.0.0",
     "prettier": "^3.7.4",

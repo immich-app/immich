@@ -1,10 +1,10 @@
+import { EventsGateway } from '@futo-org/backups-orchestrator-api/dist';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
-import { EventsGateway } from 'orchestration-api/dist';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import {

@@ -1,7 +1,7 @@
+import { GatewayEvent as YuccaGatewayEvent } from '@futo-org/backups-orchestrator-api/dist/events/events.gateway';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import _ from 'lodash';
-import { GatewayEvent as YuccaGatewayEvent } from 'orchestration-api/dist/events/events.gateway';
 import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
 import { Asset } from 'src/database';

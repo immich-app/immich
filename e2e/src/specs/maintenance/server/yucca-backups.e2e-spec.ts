@@ -1,5 +1,5 @@
+import * as sdk from '@futo-org/backups-orchestrator-ui/sdk';
 import { LoginResponseDto, StorageFolder } from '@immich/sdk';
-import * as sdk from 'orchestration-ui/sdk';
 import { io, Socket } from 'socket.io-client';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';

@@ -6,7 +6,7 @@
   import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
-  import { YuccaContext } from 'orchestration-ui';
+  import { YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

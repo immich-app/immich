@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { ImmichBackupsPage, orchestrationApiProvider, sdk, setProvider, YuccaContext } from 'orchestration-ui';
+  import { ImmichBackupsPage, orchestrationApiProvider, sdk, setProvider, YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import type { PageData } from './$types';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
 

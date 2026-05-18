@@ -27,7 +27,7 @@
     mdiProgressWrench,
     mdiTrayArrowUp,
   } from '@mdi/js';
-  import { sdk } from 'orchestration-ui';
+  import { sdk } from '@futo-org/backups-orchestrator-ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../ThemeButton.svelte';

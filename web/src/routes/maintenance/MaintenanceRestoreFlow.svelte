@@ -2,7 +2,7 @@
   import RestoreFlowDetectInstall from './RestoreFlowDetectInstall.svelte';
   import RestoreFlowIntro from './RestoreFlowIntro.svelte';
   import RestoreFlowSelectBackup from './RestoreFlowSelectBackup.svelte';
-  import { ImmichOnboardingRestoreFlow } from 'orchestration-ui';
+  import { ImmichOnboardingRestoreFlow } from '@futo-org/backups-orchestrator-ui';
 
   type Props = {
     end: () => void;
