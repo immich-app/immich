@@ -235,6 +235,7 @@ Class | Method | HTTP request | Description
 *RepositoryApi* | [**getSnapshots**](doc//RepositoryApi.md#getsnapshots) | **GET** /yucca/repository/{id}/snapshots | 
 *RepositoryApi* | [**importRepository**](doc//RepositoryApi.md#importrepository) | **POST** /yucca/repository/{id}/import | 
 *RepositoryApi* | [**inspectRepositories**](doc//RepositoryApi.md#inspectrepositories) | **GET** /yucca/repository/inspect | 
+*RepositoryApi* | [**pruneRepository**](doc//RepositoryApi.md#prunerepository) | **POST** /yucca/repository/{id}/snapshots/prune | 
 *RepositoryApi* | [**restoreFromPoint**](doc//RepositoryApi.md#restorefrompoint) | **POST** /yucca/repository/{id}/snapshots/{snapshot}/restore-from-point | 
 *RepositoryApi* | [**restoreSnapshot**](doc//RepositoryApi.md#restoresnapshot) | **POST** /yucca/repository/{id}/snapshots/{snapshot} | 
 *RepositoryApi* | [**updateRepository**](doc//RepositoryApi.md#updaterepository) | **PATCH** /yucca/repository/{id} | 
@@ -392,7 +393,6 @@ Class | Method | HTTP request | Description
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
- - [AssetFaceWithoutPersonResponseDto](doc//AssetFaceWithoutPersonResponseDto.md)
  - [AssetIdErrorReason](doc//AssetIdErrorReason.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
@@ -411,6 +411,7 @@ Class | Method | HTTP request | Description
  - [AssetMetadataUpsertItemDto](doc//AssetMetadataUpsertItemDto.md)
  - [AssetOcrResponseDto](doc//AssetOcrResponseDto.md)
  - [AssetOrder](doc//AssetOrder.md)
+ - [AssetOrderBy](doc//AssetOrderBy.md)
  - [AssetRejectReason](doc//AssetRejectReason.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
@@ -540,7 +541,6 @@ Class | Method | HTTP request | Description
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
  - [PersonUpdateDto](doc//PersonUpdateDto.md)
- - [PersonWithFacesResponseDto](doc//PersonWithFacesResponseDto.md)
  - [PinCodeChangeDto](doc//PinCodeChangeDto.md)
  - [PinCodeResetDto](doc//PinCodeResetDto.md)
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
@@ -587,6 +587,7 @@ Class | Method | HTTP request | Description
  - [RepositorySnapshotRestoreRequestDto](doc//RepositorySnapshotRestoreRequestDto.md)
  - [RepositoryUpdateRequestDto](doc//RepositoryUpdateRequestDto.md)
  - [RepositoryUpdateResponseDto](doc//RepositoryUpdateResponseDto.md)
+ - [RetentionPolicyDto](doc//RetentionPolicyDto.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
  - [RotateParameters](doc//RotateParameters.md)
  - [RunDto](doc//RunDto.md)

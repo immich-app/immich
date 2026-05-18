@@ -15,6 +15,7 @@ class RepositoryUpdateRequestDto {
   RepositoryUpdateRequestDto({
     this.name,
     this.paths = const [],
+    this.retentionPolicy,
   });
 
   ///
@@ -27,19 +28,23 @@ class RepositoryUpdateRequestDto {
 
   List<String> paths;
 
+  RetentionPolicyDto? retentionPolicy;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is RepositoryUpdateRequestDto &&
     other.name == name &&
-    _deepEquality.equals(other.paths, paths);
+    _deepEquality.equals(other.paths, paths) &&
+    other.retentionPolicy == retentionPolicy;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (name == null ? 0 : name!.hashCode) +
-    (paths.hashCode);
+    (paths.hashCode) +
+    (retentionPolicy == null ? 0 : retentionPolicy!.hashCode);
 
   @override
-  String toString() => 'RepositoryUpdateRequestDto[name=$name, paths=$paths]';
+  String toString() => 'RepositoryUpdateRequestDto[name=$name, paths=$paths, retentionPolicy=$retentionPolicy]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -49,6 +54,11 @@ class RepositoryUpdateRequestDto {
     //  json[r'name'] = null;
     }
       json[r'paths'] = this.paths;
+    if (this.retentionPolicy != null) {
+      json[r'retentionPolicy'] = this.retentionPolicy;
+    } else {
+    //  json[r'retentionPolicy'] = null;
+    }
     return json;
   }
 
@@ -65,6 +75,7 @@ class RepositoryUpdateRequestDto {
         paths: json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        retentionPolicy: RetentionPolicyDto.fromJson(json[r'retentionPolicy']),
       );
     }
     return null;

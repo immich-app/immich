@@ -18,6 +18,7 @@ class ConfigureImmichIntegrationRequestDto {
     this.dataFolders = const [],
     required this.libraries,
     required this.name,
+    this.retentionPolicy,
     required this.worm,
   });
 
@@ -31,6 +32,8 @@ class ConfigureImmichIntegrationRequestDto {
 
   String name;
 
+  RetentionPolicyDto? retentionPolicy;
+
   bool worm;
 
   @override
@@ -40,6 +43,7 @@ class ConfigureImmichIntegrationRequestDto {
     _deepEquality.equals(other.dataFolders, dataFolders) &&
     other.libraries == libraries &&
     other.name == name &&
+    other.retentionPolicy == retentionPolicy &&
     other.worm == worm;
 
   @override
@@ -50,10 +54,11 @@ class ConfigureImmichIntegrationRequestDto {
     (dataFolders.hashCode) +
     (libraries.hashCode) +
     (name.hashCode) +
+    (retentionPolicy == null ? 0 : retentionPolicy!.hashCode) +
     (worm.hashCode);
 
   @override
-  String toString() => 'ConfigureImmichIntegrationRequestDto[backupConfiguration=$backupConfiguration, cron=$cron, dataFolders=$dataFolders, libraries=$libraries, name=$name, worm=$worm]';
+  String toString() => 'ConfigureImmichIntegrationRequestDto[backupConfiguration=$backupConfiguration, cron=$cron, dataFolders=$dataFolders, libraries=$libraries, name=$name, retentionPolicy=$retentionPolicy, worm=$worm]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -62,6 +67,11 @@ class ConfigureImmichIntegrationRequestDto {
       json[r'dataFolders'] = this.dataFolders;
       json[r'libraries'] = this.libraries;
       json[r'name'] = this.name;
+    if (this.retentionPolicy != null) {
+      json[r'retentionPolicy'] = this.retentionPolicy;
+    } else {
+    //  json[r'retentionPolicy'] = null;
+    }
       json[r'worm'] = this.worm;
     return json;
   }
@@ -82,6 +92,7 @@ class ConfigureImmichIntegrationRequestDto {
             : const [],
         libraries: ConfigureImmichIntegrationRequestDtoLibraries.fromJson(json[r'libraries'])!,
         name: mapValueOfType<String>(json, r'name')!,
+        retentionPolicy: RetentionPolicyDto.fromJson(json[r'retentionPolicy']),
         worm: mapValueOfType<bool>(json, r'worm')!,
       );
     }

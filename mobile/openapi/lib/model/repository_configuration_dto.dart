@@ -14,25 +14,35 @@ class RepositoryConfigurationDto {
   /// Returns a new [RepositoryConfigurationDto] instance.
   RepositoryConfigurationDto({
     this.paths = const [],
+    this.retentionPolicy,
   });
 
   List<String> paths;
 
+  RetentionPolicyDto? retentionPolicy;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is RepositoryConfigurationDto &&
-    _deepEquality.equals(other.paths, paths);
+    _deepEquality.equals(other.paths, paths) &&
+    other.retentionPolicy == retentionPolicy;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (paths.hashCode);
+    (paths.hashCode) +
+    (retentionPolicy == null ? 0 : retentionPolicy!.hashCode);
 
   @override
-  String toString() => 'RepositoryConfigurationDto[paths=$paths]';
+  String toString() => 'RepositoryConfigurationDto[paths=$paths, retentionPolicy=$retentionPolicy]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'paths'] = this.paths;
+    if (this.retentionPolicy != null) {
+      json[r'retentionPolicy'] = this.retentionPolicy;
+    } else {
+    //  json[r'retentionPolicy'] = null;
+    }
     return json;
   }
 
@@ -48,6 +58,7 @@ class RepositoryConfigurationDto {
         paths: json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        retentionPolicy: RetentionPolicyDto.fromJson(json[r'retentionPolicy']),
       );
     }
     return null;

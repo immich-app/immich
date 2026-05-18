@@ -258,8 +258,6 @@ class ApiClient {
           return AssetFaceUpdateDto.fromJson(value);
         case 'AssetFaceUpdateItem':
           return AssetFaceUpdateItem.fromJson(value);
-        case 'AssetFaceWithoutPersonResponseDto':
-          return AssetFaceWithoutPersonResponseDto.fromJson(value);
         case 'AssetIdErrorReason':
           return AssetIdErrorReasonTypeTransformer().decode(value);
         case 'AssetIdsDto':
@@ -296,6 +294,8 @@ class ApiClient {
           return AssetOcrResponseDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
+        case 'AssetOrderBy':
+          return AssetOrderByTypeTransformer().decode(value);
         case 'AssetRejectReason':
           return AssetRejectReasonTypeTransformer().decode(value);
         case 'AssetResponseDto':
@@ -554,8 +554,6 @@ class ApiClient {
           return PersonStatisticsResponseDto.fromJson(value);
         case 'PersonUpdateDto':
           return PersonUpdateDto.fromJson(value);
-        case 'PersonWithFacesResponseDto':
-          return PersonWithFacesResponseDto.fromJson(value);
         case 'PinCodeChangeDto':
           return PinCodeChangeDto.fromJson(value);
         case 'PinCodeResetDto':
@@ -648,6 +646,8 @@ class ApiClient {
           return RepositoryUpdateRequestDto.fromJson(value);
         case 'RepositoryUpdateResponseDto':
           return RepositoryUpdateResponseDto.fromJson(value);
+        case 'RetentionPolicyDto':
+          return RetentionPolicyDto.fromJson(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'RotateParameters':

@@ -23,13 +23,17 @@ class RunType {
 
   String toJson() => value;
 
-  static const backup = RunType._(r'backup');
+  static const schedule = RunType._(r'schedule');
   static const restore = RunType._(r'restore');
+  static const backup = RunType._(r'backup');
+  static const forget = RunType._(r'forget');
 
   /// List of all possible values in this [enum][RunType].
   static const values = <RunType>[
-    backup,
+    schedule,
     restore,
+    backup,
+    forget,
   ];
 
   static RunType? fromJson(dynamic value) => RunTypeTypeTransformer().decode(value);
@@ -68,8 +72,10 @@ class RunTypeTypeTransformer {
   RunType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'backup': return RunType.backup;
+        case r'schedule': return RunType.schedule;
         case r'restore': return RunType.restore;
+        case r'backup': return RunType.backup;
+        case r'forget': return RunType.forget;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
