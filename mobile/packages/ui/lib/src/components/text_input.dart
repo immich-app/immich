@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ImmichTextInput extends StatefulWidget {
-  final String label;
+  final String? label;
   final String? hintText;
   final TextEditingController? controller;
   final FocusNode? focusNode;
@@ -12,13 +13,19 @@ class ImmichTextInput extends StatefulWidget {
   final List<String>? autofillHints;
   final Widget? suffixIcon;
   final bool obscureText;
-  final bool autoCorrect;
+  final bool autocorrect;
+  final SmartDashesType? smartDashesType;
+  final SmartQuotesType? smartQuotesType;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool enabled;
+  final bool autofocus;
+  final AutovalidateMode? autovalidateMode;
 
   const ImmichTextInput({
     super.key,
     this.controller,
     this.focusNode,
-    required this.label,
+    this.label,
     this.hintText,
     this.validator,
     this.onSubmit,
@@ -27,7 +34,13 @@ class ImmichTextInput extends StatefulWidget {
     this.autofillHints,
     this.suffixIcon,
     this.obscureText = false,
-    this.autoCorrect = true,
+    this.autocorrect = true,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.inputFormatters,
+    this.enabled = true,
+    this.autofocus = false,
+    this.autovalidateMode,
   });
 
   @override
@@ -53,9 +66,14 @@ class _ImmichTextInputState extends State<ImmichTextInput> {
   }
 
   String? _validateInput(String? value) {
-    setState(() {
-      _error = widget.validator?.call(value);
-    });
+    final error = widget.validator?.call(value);
+    if (error != _error) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _error = error);
+        }
+      });
+    }
     return null;
   }
 
@@ -68,6 +86,9 @@ class _ImmichTextInputState extends State<ImmichTextInput> {
     return TextFormField(
       controller: widget.controller,
       focusNode: _focusNode,
+      enabled: widget.enabled,
+      autofocus: widget.autofocus,
+      autovalidateMode: widget.autovalidateMode,
       decoration: InputDecoration(
         hintText: widget.hintText,
         labelText: widget.label,
@@ -79,13 +100,16 @@ class _ImmichTextInputState extends State<ImmichTextInput> {
       ),
       obscureText: widget.obscureText,
       validator: _validateInput,
-      keyboardType: widget.keyboardType,
       textInputAction: widget.keyboardAction,
-      autocorrect: widget.autoCorrect,
-      autofillHints: widget.autofillHints,
       onTap: () => setState(() => _error = null),
       onTapOutside: (_) => _focusNode.unfocus(),
       onFieldSubmitted: (value) => widget.onSubmit?.call(context, value),
+      keyboardType: widget.keyboardType,
+      autofillHints: widget.autofillHints,
+      autocorrect: widget.autocorrect,
+      smartDashesType: widget.smartDashesType,
+      smartQuotesType: widget.smartQuotesType,
+      inputFormatters: widget.inputFormatters,
     );
   }
 }
