@@ -30,16 +30,16 @@
     IconButton,
     Input,
     modalManager,
-    Stack,
     Switch,
-    Text,
     Textarea,
     VStack,
   } from '@immich/ui';
   import {
     mdiArrowLeft,
+    mdiAutoFix,
     mdiCodeJson,
     mdiContentSave,
+    mdiFilterVariant,
     mdiFlashOutline,
     mdiFormatListBulletedSquare,
     mdiInformationOutline,
@@ -73,6 +73,12 @@
   let editMode = $state<EditMode>('visual');
   const workflowSummary = $derived({ trigger, steps });
   const workflowJsonContent = $derived<WorkflowJsonContent>({ description, enabled, name, steps, trigger });
+  const stepsWithConfigEntries = $derived(
+    steps.map((step) => ({
+      step,
+      configEntries: getConfigEntries(step.config),
+    })),
+  );
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -89,11 +95,19 @@
     }
   };
 
-  const handleEditStep = async (step: WorkflowStepDto) => {
+  const replaceStep = (index: number, step: WorkflowStepDto) => {
+    steps = steps.map((current, i) => (i === index ? cloneDeep(step) : current));
+  };
+
+  const handleEditStep = async (index: number) => {
+    const step = steps[index];
+    if (!step) {
+      return;
+    }
+
     const result = await modalManager.show(WorkflowEditStepModal, { trigger, step: cloneDeep(step) });
     if (result) {
-      Object.assign(step, result);
-      steps = [...steps];
+      replaceStep(index, result);
     }
   };
 
@@ -128,24 +142,25 @@
       return String(value);
     }
     if (typeof value === 'string') {
-      return truncate(value);
+      return `"${truncate(value)}"`;
     }
     if (Array.isArray(value)) {
       if (value.length === 0) {
         return $t('none');
       }
       const items = value.map((v) => (v !== null && typeof v === 'object' ? '{…}' : String(v)));
-      const joined = items.join(', ');
+      const joined = items.join(' · ');
       if (joined.length <= 28) {
-        return joined;
+        return `"${joined}"`;
       }
       return $t('items_count', { values: { count: value.length } });
     }
     return '{…}';
   };
 
-  const getConfigEntries = (config: WorkflowStepDto['config']) =>
-    Object.entries(config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== '');
+  function getConfigEntries(config: WorkflowStepDto['config']) {
+    return Object.entries(config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== '');
+  }
 
   const onChangeTrigger = async () => {
     const newTrigger = await modalManager.show(WorkflowTriggerPicker, { selected: trigger });
@@ -222,7 +237,7 @@
 
 <OnEvents {onWorkflowUpdate} />
 
-<AppShell>
+<AppShell class="bg-light-50">
   <AppShellBar>
     <ActionBar static {onClose} translations={{ close: $t('back') }} closeIcon={mdiArrowLeft}>
       <ControlBarHeader>
@@ -230,9 +245,9 @@
         <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
       </ControlBarHeader>
       <ControlBarContent class="flex items-center justify-end gap-6">
-        <div class="flex gap-1 rounded-full border border-muted bg-light p-1" role="group">
+        <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
           <Button
-            variant={editMode === 'visual' ? 'outline' : 'ghost'}
+            variant={editMode === 'visual' ? 'filled' : 'ghost'}
             color={editMode === 'visual' ? 'primary' : 'secondary'}
             size="small"
             leadingIcon={mdiFormatListBulletedSquare}
@@ -243,7 +258,7 @@
             {$t('visual')}
           </Button>
           <Button
-            variant={editMode === 'json' ? 'outline' : 'ghost'}
+            variant={editMode === 'json' ? 'filled' : 'ghost'}
             color={editMode === 'json' ? 'primary' : 'secondary'}
             size="small"
             leadingIcon={mdiCodeJson}
@@ -273,7 +288,7 @@
   <Container size="medium" class="pt-8 pb-24" center>
     <VStack gap={4}>
       {#if editMode === 'visual'}
-        <Card expandable>
+        <Card class="bg-light" expandable>
           <CardHeader>
             <div class="flex place-items-start gap-3">
               <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
@@ -313,104 +328,112 @@
 
         <div class="my-4 h-px w-[98%] bg-light-200"></div>
 
-        <Card>
-          <CardHeader class="bg-success-50">
-            <div class="flex items-start gap-3">
-              <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-success" />
-              <div class="flex grow flex-col">
-                <CardTitle class="text-left text-success">{$t('trigger')}</CardTitle>
-                <CardDescription>{$t('trigger_description')}</CardDescription>
+        <Card class="shadow-none bg-light">
+          <CardHeader>
+            <div class="flex items-center gap-3">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success-50">
+                <Icon icon={mdiFlashOutline} size="20" class="text-success" />
               </div>
-              <div class="flex items-center justify-end">
-                <Button leadingIcon={mdiPencilOutline} size="small" color="secondary" onclick={onChangeTrigger}>
-                  {$t('edit')}
-                </Button>
+              <div class="flex min-w-0 flex-1 flex-col">
+                <CardTitle class="truncate">{getTriggerName($t, trigger)}</CardTitle>
+                <CardDescription class="truncate">{getTriggerDescription($t, trigger)}</CardDescription>
               </div>
+
+              <IconButton
+                icon={mdiPencilOutline}
+                aria-label={$t('edit')}
+                variant="ghost"
+                shape="round"
+                color="secondary"
+                size="small"
+                onclick={onChangeTrigger}
+              />
             </div>
           </CardHeader>
-
-          <CardBody>
-            <div class="flex flex-col items-start">
-              <Text>{getTriggerName($t, trigger)}</Text>
-              <Text size="small" color="muted">{getTriggerDescription($t, trigger)}</Text>
-            </div>
-          </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader class="bg-primary-50">
-            <div class="flex items-start gap-3">
-              <Icon icon={mdiFormatListBulletedSquare} size="20" class="mt-1 text-primary" />
-              <CardTitle class="text-left text-primary">{$t('steps')}</CardTitle>
+        {#snippet sequenceConnector()}
+          <div class="-my-4 flex w-full items-center gap-3 px-4">
+            <div class="flex w-1 shrink-0 justify-start">
+              <div class="h-8 w-0.5 bg-light-200"></div>
             </div>
-          </CardHeader>
+          </div>
+        {/snippet}
 
-          <CardBody>
-            {#if steps.length === 0}
-              <Button leadingIcon={mdiPlus} onclick={handleAddStep}>{$t('add_step')}</Button>
-            {:else}
-              <Stack gap={2}>
-                {#each steps as step, index (index)}
-                  {@const method = pluginManager.getMethod(step.method)}
-                  {@const entries = getConfigEntries(step.config)}
-                  {#if index > 0}
-                    <hr />
+        {#each stepsWithConfigEntries as { step, configEntries }, index (index)}
+          {@const method = pluginManager.getMethod(step.method)}
+          {@const isFilter = method?.uiHints?.includes('filter') ?? false}
+          {@render sequenceConnector()}
+          <Card class="{isFilter ? '' : ''} bg-light shadow-none">
+            <CardHeader>
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex size-10 shrink-0 items-center justify-center rounded-lg"
+                  class:bg-primary-50={isFilter}
+                  class:bg-danger-50={!isFilter}
+                >
+                  <Icon
+                    icon={isFilter ? mdiFilterVariant : mdiAutoFix}
+                    size="20"
+                    class={isFilter ? 'text-primary' : 'text-danger'}
+                  />
+                </div>
+                <div class="flex min-w-0 flex-1 flex-col">
+                  <CardTitle class="truncate">
+                    <span class="font-bold text-light-400 mr-1">{index + 1}</span>
+                    {pluginManager.getMethodLabel(step.method)}
+                  </CardTitle>
+                  {#if method?.description}
+                    <CardDescription class="truncate">{method.description}</CardDescription>
                   {/if}
-                  <div
-                    class="flex cursor-move items-start gap-3 rounded-2xl border bg-light-100 p-4 transition-all hover:border-dashed hover:border-light-300"
-                  >
-                    <Badge color="primary" shape="round" size="tiny" class="mt-0.5 w-6 justify-center">
-                      {index + 1}
-                    </Badge>
-                    <div class="flex min-w-0 flex-1 flex-col gap-1">
-                      <Text fontWeight="medium">{pluginManager.getMethodLabel(step.method)}</Text>
-                      {#if method?.description}
-                        <Text color="muted" size="small">{method.description}</Text>
-                      {/if}
-                      {#if entries.length > 0}
-                        <div class="mt-1 flex flex-wrap items-center gap-1.5">
-                          {#each entries.slice(0, 3) as [key, value] (key)}
-                            <Badge color="primary" size="small">
-                              <span class="font-medium opacity-70">{key}:</span>
-                              <span class="font-mono">{formatConfigValue(value)}</span>
-                            </Badge>
-                          {/each}
-                          {#if entries.length > 3}
-                            <Badge color="secondary" size="tiny">
-                              +{entries.length - 3}
-                            </Badge>
-                          {/if}
-                        </div>
-                      {/if}
-                    </div>
-                    <div class="flex shrink-0 gap-1">
-                      <IconButton
-                        icon={mdiPencilOutline}
-                        aria-label={$t('edit')}
-                        variant="ghost"
-                        shape="round"
-                        color="secondary"
-                        onclick={() => handleEditStep(step)}
-                      />
-                      <IconButton
-                        icon={mdiTrashCanOutline}
-                        aria-label={$t('delete')}
-                        variant="ghost"
-                        shape="round"
-                        color="danger"
-                        onclick={() => handleDeleteStep(index)}
-                      />
-                    </div>
-                  </div>
-                {/each}
+                </div>
+                <div class="flex shrink-0 items-center gap-1">
+                  <IconButton
+                    icon={mdiPencilOutline}
+                    aria-label={$t('edit')}
+                    variant="ghost"
+                    shape="round"
+                    color="secondary"
+                    size="small"
+                    onclick={() => handleEditStep(index)}
+                  />
+                  <IconButton
+                    icon={mdiTrashCanOutline}
+                    aria-label={$t('delete')}
+                    variant="ghost"
+                    shape="round"
+                    color="danger"
+                    size="small"
+                    onclick={() => handleDeleteStep(index)}
+                  />
+                </div>
+              </div>
+            </CardHeader>
 
-                <Button size="small" fullWidth variant="ghost" leadingIcon={mdiPlus} onclick={handleAddStep}>
-                  {$t('add_step')}
-                </Button>
-              </Stack>
+            {#if configEntries.length > 0}
+              <CardBody class="py-3">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  {#each configEntries as [key, value] (key)}
+                    <Badge color="secondary" shape="round" size="small" class="font-mono">
+                      <span class="opacity-60">{key}</span>{formatConfigValue(value)}
+                    </Badge>
+                  {/each}
+                </div>
+              </CardBody>
             {/if}
-          </CardBody>
-        </Card>
+          </Card>
+        {/each}
+
+        <Button
+          size="small"
+          fullWidth
+          variant="ghost"
+          leadingIcon={mdiPlus}
+          class="border border-dashed"
+          onclick={handleAddStep}
+        >
+          {$t('add_step')}
+        </Button>
       {:else}
         <WorkflowJsonEditor jsonContent={workflowJsonContent} onContentChange={handleJsonContentChange} />
       {/if}
