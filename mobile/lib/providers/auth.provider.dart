@@ -11,12 +11,11 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -144,7 +143,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         // Due to the flow of the code, this will always happen on first login
         user = serverUser;
         await Store.put(StoreKey.deviceId, deviceId);
-        await Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
       }
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {

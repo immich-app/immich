@@ -31,6 +31,16 @@ class AssetApiRepository extends ApiRepository {
     await _trashApi.restoreAssets(BulkIdsDto(ids: ids));
   }
 
+  Future<int> emptyTrash() async {
+    final response = await _trashApi.emptyTrash();
+    return response?.count ?? 0;
+  }
+
+  Future<int> restoreAllTrash() async {
+    final response = await _trashApi.restoreTrash();
+    return response?.count ?? 0;
+  }
+
   Future<void> updateVisibility(List<String> ids, AssetVisibilityEnum visibility) async {
     return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: _mapVisibility(visibility)));
   }

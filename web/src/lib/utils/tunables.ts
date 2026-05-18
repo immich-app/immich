@@ -31,4 +31,7 @@ export const TUNABLES = {
   IMAGE_THUMBNAIL: {
     THUMBHASH_FADE_DURATION: getNumber(storage.getItem('THUMBHASH_FADE_DURATION'), 100),
   },
+  IMAGE_RASTER: {
+    MAX_PIXELS: getNumber(storage.getItem('IMAGE_RASTER.MAX_PIXELS'), 0),
+  },
 };

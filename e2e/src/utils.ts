@@ -91,7 +91,7 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../cli' }).promise;
+  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../packages/cli' }).promise;
 export const dockerExec = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', args.join(' ')]);
 export const immichAdmin = (args: string[]) => dockerExec([`immich-admin ${args.join(' ')}`]);
@@ -574,6 +574,8 @@ export const utils = {
     await utils.createJob(accessToken, {
       name: ManualJobName.BackupDatabase,
     });
+
+    await utils.waitForQueueFinish(accessToken, 'backupDatabase');
 
     return utils.poll(
       () => request(app).get('/admin/database-backups').set('Authorization', `Bearer ${accessToken}`),

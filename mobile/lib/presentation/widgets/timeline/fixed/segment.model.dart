@@ -53,14 +53,18 @@ class FixedSegment extends Segment {
   @override
   int getMinChildIndexForScrollOffset(double scrollOffset) {
     final adjustedOffset = scrollOffset - gridOffset;
-    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) {
+      return firstIndex;
+    }
     return gridIndex + (adjustedOffset / mainAxisExtend).floor();
   }
 
   @override
   int getMaxChildIndexForScrollOffset(double scrollOffset) {
     final adjustedOffset = scrollOffset - gridOffset;
-    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) {
+      return firstIndex;
+    }
     return gridIndex + (adjustedOffset / mainAxisExtend).ceil() - 1;
   }
 
@@ -162,8 +166,12 @@ class _FixedSegmentRow extends ConsumerWidget {
       // 0.5: width < mean - threshold
       // 1.5: width > mean + threshold
       final arConfiguration = aspectRatios.map((e) {
-        if (e - meanAspectRatio > 0.3) return 1.5;
-        if (e - meanAspectRatio < -0.3) return 0.5;
+        if (e - meanAspectRatio > 0.3) {
+          return 1.5;
+        }
+        if (e - meanAspectRatio < -0.3) {
+          return 0.5;
+        }
         return 1.0;
       });
 
@@ -234,7 +242,11 @@ class _AssetTileWidget extends ConsumerWidget {
       return false;
     }
 
-    return lockSelectionAssets.contains(asset);
+    // Iterate with `==` instead of `Set.contains` because `RemoteAsset.hashCode`
+    // includes `localId` while `==` does not — so the same server asset can
+    // hash to a different bucket when its `localId` differs (e.g., album-fetched
+    // copy has localId=null, merged-timeline copy has it populated).
+    return lockSelectionAssets.any((a) => a == asset);
   }
 
   @override
