@@ -12,8 +12,7 @@ class SystemConfig {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SystemConfig && other.logLevel == logLevel && other.network == network);
+      identical(this, other) || (other is SystemConfig && other.logLevel == logLevel && other.network == network);
 
   @override
   int get hashCode => Object.hash(logLevel, network);
