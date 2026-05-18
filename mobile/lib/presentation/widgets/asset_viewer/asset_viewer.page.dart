@@ -237,14 +237,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       ..setStackIndex(targetIndex);
   }
 
-  bool _isStackAssetOnTimelinePage(BaseAsset currentAsset, int pageIndex) {
-    final timelineAsset = ref.read(timelineServiceProvider).getAssetSafe(pageIndex);
-    return currentAsset is RemoteAsset &&
-        timelineAsset is RemoteAsset &&
-        currentAsset.stackId != null &&
-        currentAsset.stackId == timelineAsset.stackId;
-  }
-
   void _onTimelineReloadEvent() {
     final timelineService = ref.read(timelineServiceProvider);
     final totalAssets = timelineService.totalAssets;
@@ -261,7 +253,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
       _onAssetChanged(index);
-    } else if (currentAsset != null && assetIndex == null && !_isStackAssetOnTimelinePage(currentAsset, index)) {
+    } else if (currentAsset is RemoteAsset && currentAsset.stackId != null && assetIndex == null) {
+      final timelineAsset = timelineService.getAssetSafe(index);
+      if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+        _onAssetChanged(index);
+      }
+    } else if (currentAsset != null && assetIndex == null) {
       _onAssetChanged(index);
     }
 
