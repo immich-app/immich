@@ -48,6 +48,7 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import WorkflowSummary from './WorkflowSummary.svelte';
 
   type Props = {
     data: PageData;
@@ -60,6 +61,7 @@
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
+  const workflowSummary = $derived({ trigger, steps });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -324,4 +326,6 @@
       </Card>
     </VStack>
   </Container>
+
+  <WorkflowSummary workflow={workflowSummary} />
 </AppShell>

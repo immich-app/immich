@@ -18,6 +18,7 @@
     CodeBlock,
     Container,
     IconButton,
+    Link,
     MenuItemType,
     menuManager,
     Text,
@@ -125,7 +126,9 @@
                   <div class="flex items-center gap-3">
                     <span class="rounded-full {workflow.enabled ? 'size-3 bg-success' : 'size-3 rounded-full bg-muted'}"
                     ></span>
-                    <CardTitle>{workflow.name || $t('workflow')}</CardTitle>
+                    <CardTitle>
+                      <Link href={Route.viewWorkflow({ id: workflow.id })}>{workflow.name || $t('workflow')}</Link>
+                    </CardTitle>
                   </div>
                   {#if workflow.description}
                     <CardDescription class="mt-1 text-sm">{workflow.description}</CardDescription>

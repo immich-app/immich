@@ -1,12 +1,18 @@
 <script lang="ts">
+  import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import { getTriggerName } from '$lib/utils/workflow';
-  import type { WorkflowResponseDto } from '@immich/sdk';
+  import type { WorkflowStepDto, WorkflowTrigger } from '@immich/sdk';
   import { Icon, IconButton, Text } from '@immich/ui';
   import { mdiClose, mdiFlashOutline, mdiPlayCircleOutline, mdiViewDashboardOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
+  type WorkflowSummaryData = {
+    trigger: WorkflowTrigger;
+    steps: WorkflowStepDto[];
+  };
+
   type Props = {
-    workflow: WorkflowResponseDto;
+    workflow: WorkflowSummaryData;
   };
 
   let { workflow }: Props = $props();
@@ -118,9 +124,19 @@
                     class="flex size-4 shrink-0 items-center justify-center rounded-full bg-light-200 text-[10px] font-medium"
                     >{index + 1}</span
                   >
-                  <p class="truncate text-sm">{step.method}</p>
+                  <p class="truncate text-sm">{pluginManager.getMethodLabel(step.method)}</p>
                 </div>
               {/each}
+            </div>
+          </div>
+        {:else}
+          <div class="rounded-lg border bg-light-100 p-3">
+            <div class="mb-2 flex items-center gap-2">
+              <Icon icon={mdiPlayCircleOutline} size="18" class="text-success" />
+              <Text size="tiny" fontWeight="semi-bold">{$t('actions')}</Text>
+            </div>
+            <div class="pl-5">
+              <Text size="small" color="muted">{$t('no_steps')}</Text>
             </div>
           </div>
         {/if}
@@ -132,6 +148,7 @@
     type="button"
     class="fixed right-6 bottom-6 hidden size-14 items-center justify-center rounded-full bg-primary text-light shadow-lg transition-colors hover:bg-primary/90 sm:flex"
     title={$t('workflow_summary')}
+    aria-label={$t('workflow_summary')}
     onclick={() => (isOpen = true)}
   >
     <Icon icon={mdiViewDashboardOutline} size="24" />
