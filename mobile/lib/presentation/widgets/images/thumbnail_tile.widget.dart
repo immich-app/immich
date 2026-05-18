@@ -120,6 +120,9 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                     flightShuttleBuilder: (context, animation, direction, from, to) {
                       void animationStatusListener(AnimationStatus status) {
+                        if (!mounted) {
+                          return;
+                        }
                         final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
                         if (_hideIndicators != heroInFlight) {
                           setState(() => _hideIndicators = heroInFlight);

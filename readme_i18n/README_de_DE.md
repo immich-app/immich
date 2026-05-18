@@ -38,7 +38,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-- ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+> [!WARNING]
+> ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+>
 
 > [!NOTE]
 > Die Hauptdokumentation, einschließlich der Installationsanleitungen, befinden sich unter https://immich.app/.
@@ -49,7 +51,7 @@
 - [Offizielle Dokumentation](https://docs.immich.app)
 - [Über Immich](https://docs.immich.app/overview/introduction)
 - [Installation](https://docs.immich.app/install/requirements)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
+- [Roadmap](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Funktionen](#funktionen)
 - [Übersetzungen](https://docs.immich.app/developer/translations)
