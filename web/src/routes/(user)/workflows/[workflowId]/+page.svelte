@@ -13,6 +13,7 @@
     ActionBar,
     AppShell,
     AppShellBar,
+    Badge,
     Button,
     Card,
     CardBody,
@@ -113,6 +114,38 @@
   };
 
   const onClose = () => goto(Route.workflows());
+
+  const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
+
+  const formatConfigValue = (value: unknown): string => {
+    if (value === null || value === undefined) {
+      return '—';
+    }
+    if (typeof value === 'boolean') {
+      return value ? 'on' : 'off';
+    }
+    if (typeof value === 'number') {
+      return String(value);
+    }
+    if (typeof value === 'string') {
+      return truncate(value);
+    }
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return $t('none');
+      }
+      const items = value.map((v) => (v !== null && typeof v === 'object' ? '{…}' : String(v)));
+      const joined = items.join(', ');
+      if (joined.length <= 28) {
+        return joined;
+      }
+      return $t('items_count', { values: { count: value.length } });
+    }
+    return '{…}';
+  };
+
+  const getConfigEntries = (config: WorkflowStepDto['config']) =>
+    Object.entries(config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== '');
 
   const onChangeTrigger = async () => {
     const newTrigger = await modalManager.show(WorkflowTriggerPicker, { selected: trigger });
@@ -319,28 +352,38 @@
               <Stack gap={2}>
                 {#each steps as step, index (index)}
                   {@const method = pluginManager.getMethod(step.method)}
+                  {@const entries = getConfigEntries(step.config)}
                   {#if index > 0}
                     <hr />
                   {/if}
                   <div
-                    // {@attach dragAndDrop({
-                    //   index,
-                    //   onDragStart: handleFilterDragStart,
-                    //   onDragEnter: handleFilterDragEnter,
-                    //   onDrop: handleFilterDrop,
-                    //   onDragEnd: handleFilterDragEnd,
-                    //   isDragging: draggedIndex === index,
-                    //   isDragOver: dragOverIndex === index,
-                    // })}
-                    class="flex cursor-move justify-between gap-2 rounded-2xl border-2 border-dashed bg-light-50 p-4 transition-all hover:border-light-300"
+                    class="flex cursor-move items-start gap-3 rounded-2xl border bg-light-100 p-4 transition-all hover:border-dashed hover:border-light-300"
                   >
-                    <div class="flex flex-col gap-1">
-                      <Text>{pluginManager.getMethodLabel(step.method)}</Text>
+                    <Badge color="primary" shape="round" size="tiny" class="mt-0.5 w-6 justify-center">
+                      {index + 1}
+                    </Badge>
+                    <div class="flex min-w-0 flex-1 flex-col gap-1">
+                      <Text fontWeight="medium">{pluginManager.getMethodLabel(step.method)}</Text>
                       {#if method?.description}
                         <Text color="muted" size="small">{method.description}</Text>
                       {/if}
+                      {#if entries.length > 0}
+                        <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                          {#each entries.slice(0, 3) as [key, value] (key)}
+                            <Badge color="primary" size="small">
+                              <span class="font-medium opacity-70">{key}:</span>
+                              <span class="font-mono">{formatConfigValue(value)}</span>
+                            </Badge>
+                          {/each}
+                          {#if entries.length > 3}
+                            <Badge color="secondary" size="tiny">
+                              +{entries.length - 3}
+                            </Badge>
+                          {/if}
+                        </div>
+                      {/if}
                     </div>
-                    <div class="flex gap-1">
+                    <div class="flex shrink-0 gap-1">
                       <IconButton
                         icon={mdiPencilOutline}
                         aria-label={$t('edit')}
