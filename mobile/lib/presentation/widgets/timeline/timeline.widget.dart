@@ -375,69 +375,70 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           ref.read(multiSelectProvider.notifier).reset();
         }
       },
-      child: asyncSegments.widgetWhen(
-        onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
-        onData: (segments) {
-          final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
-          final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
-              ? 200
-              : 0;
-          final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
+      child: PrimaryScrollController(
+        controller: _scrollController,
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          floatingActionButton: const DownloadStatusFloatingButton(),
+          body: asyncSegments.widgetWhen(
+            onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
+            onData: (segments) {
+              final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+              final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
+                  ? 200
+                  : 0;
+              final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
-          const bottomSheetOpenModifier = 120.0;
-          final contentBottomPadding = context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
-          final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
+              const bottomSheetOpenModifier = 120.0;
+              final contentBottomPadding =
+                  context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
+              final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
 
-          final grid = CustomScrollView(
-            primary: true,
-            physics: _scrollPhysics,
-            cacheExtent: maxHeight * 2,
-            slivers: [
-              if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
-              if (widget.topSliverWidget != null) widget.topSliverWidget!,
-              _SliverSegmentedList(
-                segments: segments,
-                delegate: SliverChildBuilderDelegate(
-                  (ctx, index) {
-                    if (index >= childCount) {
-                      return null;
-                    }
-                    final segment = segments.findByIndex(index);
-                    return segment?.builder(ctx, index) ?? const SizedBox.shrink();
-                  },
-                  childCount: childCount,
-                  addAutomaticKeepAlives: false,
-                  // We add repaint boundary around tiles, so skip the auto boundaries
-                  addRepaintBoundaries: false,
-                ),
-              ),
-              if (widget.bottomSliverWidget != null) widget.bottomSliverWidget!,
-              SliverPadding(padding: EdgeInsets.only(bottom: contentBottomPadding)),
-            ],
-          );
+              final grid = CustomScrollView(
+                primary: true,
+                physics: _scrollPhysics,
+                cacheExtent: maxHeight * 2,
+                slivers: [
+                  if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
+                  if (widget.topSliverWidget != null) widget.topSliverWidget!,
+                  _SliverSegmentedList(
+                    segments: segments,
+                    delegate: SliverChildBuilderDelegate(
+                      (ctx, index) {
+                        if (index >= childCount) {
+                          return null;
+                        }
+                        final segment = segments.findByIndex(index);
+                        return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                      },
+                      childCount: childCount,
+                      addAutomaticKeepAlives: false,
+                      // We add repaint boundary around tiles, so skip the auto boundaries
+                      addRepaintBoundaries: false,
+                    ),
+                  ),
+                  if (widget.bottomSliverWidget != null) widget.bottomSliverWidget!,
+                  SliverPadding(padding: EdgeInsets.only(bottom: contentBottomPadding)),
+                ],
+              );
 
-          final Widget timeline;
-          if (widget.withScrubber) {
-            timeline = Scrubber(
-              snapToMonth: widget.snapToMonth,
-              layoutSegments: segments,
-              timelineHeight: maxHeight,
-              topPadding: topPadding,
-              bottomPadding: scrubberBottomPadding,
-              monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
-              hasAppBar: widget.appBar != null,
-              child: grid,
-            );
-          } else {
-            timeline = grid;
-          }
+              final Widget timeline;
+              if (widget.withScrubber) {
+                timeline = Scrubber(
+                  snapToMonth: widget.snapToMonth,
+                  layoutSegments: segments,
+                  timelineHeight: maxHeight,
+                  topPadding: topPadding,
+                  bottomPadding: scrubberBottomPadding,
+                  monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                  hasAppBar: widget.appBar != null,
+                  child: grid,
+                );
+              } else {
+                timeline = grid;
+              }
 
-          return PrimaryScrollController(
-            controller: _scrollController,
-            child: Scaffold(
-              resizeToAvoidBottomInset: false,
-              floatingActionButton: const DownloadStatusFloatingButton(),
-              body: RawGestureDetector(
+              return RawGestureDetector(
                 gestures: {
                   CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
                     () => CustomScaleGestureRecognizer(),
@@ -490,10 +491,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                     ],
                   ),
                 ),
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
