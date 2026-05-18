@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 const int targetVersion = 26;
 
@@ -81,14 +82,7 @@ Future<void> _migrateTo26(Drift drift) async {
   final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
   if (cleanupKeepAlbumIds != null) {
     final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
-    await drift.metadataEntity.insertOnConflictUpdate(
-      MetadataEntityCompanion.insert(
-        key: MetadataKey.cleanupKeepAlbumIds.key,
-        value: MetadataKey.cleanupKeepAlbumIds.encode(ids),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-    await migrator.deleteLegacyStoreRows([StoreKey.legacyCleanupKeepAlbumIds.id]);
+    migrator.stage(StoreKey.legacyCleanupKeepAlbumIds, MetadataKey.cleanupKeepAlbumIds, ids);
   }
   await migrator.migrateBool(StoreKey.legacyCleanupKeepFavorites, MetadataKey.cleanupKeepFavorites);
   await migrator.migrateEnumIndex(
@@ -124,12 +118,30 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, MetadataKey.networkAutoEndpointSwitching);
   await migrator.migrateString(StoreKey.legacyPreferredWifiName, MetadataKey.networkPreferredWifiName);
   await migrator.migrateString(StoreKey.legacyLocalEndpoint, MetadataKey.networkLocalEndpoint);
-  await _migrateExternalEndpointList(drift, migrator);
-  await _migrateCustomHeaders(drift, migrator);
+  await _migrateExternalEndpointList(migrator);
+  await _migrateCustomHeaders(migrator);
+  // Album
+  await _migrateAlbumSortMode(migrator);
+  await migrator.migrateBool(StoreKey.legacySelectedAlbumSortReverse, MetadataKey.albumIsReverse);
+  await migrator.migrateBool(StoreKey.legacyAlbumGridView, MetadataKey.albumIsGrid);
   await migrator.complete();
 }
 
-Future<void> _migrateExternalEndpointList(Drift drift, _StoreMigrator migrator) async {
+Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreInt(StoreKey.legacySelectedAlbumSortOrder.id);
+  if (raw == null) {
+    return;
+  }
+
+  final mode = AlbumSortMode.values.firstWhere(
+    (e) => e.storeIndex == raw,
+    orElse: () => MetadataKey.albumSortMode.defaultValue,
+  );
+
+  migrator.stage(StoreKey.legacySelectedAlbumSortOrder, MetadataKey.albumSortMode, mode);
+}
+
+Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
   final raw = await migrator.readLegacyStoreString(StoreKey.legacyExternalEndpointList.id);
   if (raw == null) {
     return;
@@ -150,17 +162,10 @@ Future<void> _migrateExternalEndpointList(Drift drift, _StoreMigrator migrator) 
     // ignore invalid entries
   }
 
-  await drift.metadataEntity.insertOnConflictUpdate(
-    MetadataEntityCompanion.insert(
-      key: MetadataKey.networkExternalEndpointList.key,
-      value: MetadataKey.networkExternalEndpointList.encode(urls),
-      updatedAt: Value(DateTime.now()),
-    ),
-  );
-  await migrator.deleteLegacyStoreRows([StoreKey.legacyExternalEndpointList.id]);
+  migrator.stage(StoreKey.legacyExternalEndpointList, MetadataKey.networkExternalEndpointList, urls);
 }
 
-Future<void> _migrateCustomHeaders(Drift drift, _StoreMigrator migrator) async {
+Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
   final raw = await migrator.readLegacyStoreString(StoreKey.legacyCustomHeaders.id);
   if (raw == null) {
     return;
@@ -180,14 +185,7 @@ Future<void> _migrateCustomHeaders(Drift drift, _StoreMigrator migrator) async {
     // ignore invalid entries
   }
 
-  await drift.metadataEntity.insertOnConflictUpdate(
-    MetadataEntityCompanion.insert(
-      key: MetadataKey.networkCustomHeaders.key,
-      value: MetadataKey.networkCustomHeaders.encode(headers),
-      updatedAt: Value(DateTime.now()),
-    ),
-  );
-  await migrator.deleteLegacyStoreRows([StoreKey.legacyCustomHeaders.id]);
+  migrator.stage(StoreKey.legacyCustomHeaders, MetadataKey.networkCustomHeaders, headers);
 }
 
 class _StoreMigrator {
@@ -250,6 +248,11 @@ class _StoreMigrator {
       return;
     }
 
+    _cache[newKey] = value;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  void stage<T extends Object>(StoreKey legacyKey, MetadataKey<T> newKey, T value) {
     _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }

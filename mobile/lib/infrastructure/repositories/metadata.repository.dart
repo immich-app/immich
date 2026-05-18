@@ -147,6 +147,11 @@ extension<T extends Object> on MetadataDomain<T> {
             look: repo._read(.slideshowLook),
             direction: repo._read(.slideshowDirection),
           ),
+          album: .new(
+            sortMode: repo._read(.albumSortMode),
+            isReverse: repo._read(.albumIsReverse),
+            isGrid: repo._read(.albumIsGrid),
+          ),
         );
       case .systemConfig:
         repo._systemConfig = .new(
