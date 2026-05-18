@@ -50,10 +50,13 @@ class BaseActionButton extends ConsumerWidget {
       final iconColor = this.iconColor;
 
       return MenuItemButton(
-        style: MenuItemButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.all(16)),
-        leadingIcon: Icon(iconData, color: iconColor),
+        style: MenuItemButton.styleFrom(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+        leadingIcon: Icon(iconData, color: iconColor, size: 20),
         onPressed: onPressed,
-        child: Text(label, style: TextStyle(fontSize: 16, color: iconColor)),
+        child: Text(label, style: TextStyle(fontSize: 15, color: iconColor)),
       );
     }
 
