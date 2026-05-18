@@ -18,7 +18,7 @@ make e2e
 Before you can run the tests, you need to run the following commands _once_:
 
 - `pnpm install`
-- `pnpm --filter "@immich/*" build`
+- `pnpm --filter @immich/sdk --filter @immich/cli build`
 - `mise //:open-api`
 
 Once the test environment is running, the e2e tests can be run via:

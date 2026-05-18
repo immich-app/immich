@@ -2,7 +2,7 @@ experimental_monorepo_root = true
 
 [monorepo]
 config_roots = [
-  "packages/plugins",
+  "packages/plugin-core",
   "server",
   "packages/cli",
   "deployment",
@@ -22,6 +22,9 @@ terragrunt = "1.0.3"
 opentofu = "1.11.6"
 java = "21.0.2"
 "npm:oazapfts" = "7.5.0"
+"github:extism/cli" = "1.6.3"
+"github:webassembly/binaryen" = "version_124"
+"github:extism/js-pdk" = "1.6.0"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"
@@ -48,6 +51,12 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 experimental = true
 pin = true
 
+[tasks.plugins]
+run = [
+  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
+  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build"
+]
+
 [tasks.open-api-typescript]
 run = [
   "oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas open-api/immich-openapi-specs.json packages/sdk/src/fetch-client.ts",
@@ -62,6 +71,8 @@ run = "bash ./bin/generate-dart-sdk.sh"
 [tasks.open-api]
 env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
 run = [
+  { task = "//:plugins" },
+  { task = "//server:build" },
   { task = "//server:install" },
   { task = "//server:build" },
   { task = "//server:sync-open-api" },

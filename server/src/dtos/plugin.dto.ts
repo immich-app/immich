@@ -1,39 +1,33 @@
 import { createZodDto } from 'nestjs-zod';
-import { PluginAction, PluginFilter } from 'src/database';
-import { PluginContextSchema, PluginTriggerTypeSchema } from 'src/enum';
-import { JSONSchemaSchema } from 'src/types/plugin-schema.types';
+import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
+import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
+import { asMethodString } from 'src/utils/workflow';
 import z from 'zod';
 
-const PluginTriggerResponseSchema = z
+const PluginSearchSchema = z
   .object({
-    type: PluginTriggerTypeSchema,
-    contextType: PluginContextSchema,
+    id: z.uuidv4().optional().describe('Plugin ID'),
+    enabled: z.boolean().optional().describe('Whether the plugin is enabled'),
+    name: z.string().optional(),
+    version: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
   })
-  .meta({ id: 'PluginTriggerResponseDto' });
+  .meta({ id: 'PluginSearchDto' });
 
-const PluginFilterResponseSchema = z
+const PluginMethodResponseSchema = z
   .object({
-    id: z.string().describe('Filter ID'),
-    pluginId: z.string().describe('Plugin ID'),
-    methodName: z.string().describe('Method name'),
-    title: z.string().describe('Filter title'),
-    description: z.string().describe('Filter description'),
-    supportedContexts: z.array(PluginContextSchema).describe('Supported contexts'),
-    schema: JSONSchemaSchema.nullable().describe('Filter schema'),
+    key: z.string().describe('Key'),
+    name: z.string().describe('Name'),
+    title: z.string().describe('Title'),
+    description: z.string().describe('Description'),
+    types: z.array(WorkflowTypeSchema).describe('Workflow types'),
+    uiHints: z.array(z.string()).describe('Ui hints'),
+    // TODO fix this
+    schema: z.object().optional(),
+    hostFunctions: z.boolean(),
   })
-  .meta({ id: 'PluginFilterResponseDto' });
-
-const PluginActionResponseSchema = z
-  .object({
-    id: z.string().describe('Action ID'),
-    pluginId: z.string().describe('Plugin ID'),
-    methodName: z.string().describe('Method name'),
-    title: z.string().describe('Action title'),
-    description: z.string().describe('Action description'),
-    supportedContexts: z.array(PluginContextSchema).describe('Supported contexts'),
-    schema: JSONSchemaSchema.nullable().describe('Action schema'),
-  })
-  .meta({ id: 'PluginActionResponseDto' });
+  .meta({ id: 'PluginMethodResponseDto' });
 
 const PluginResponseSchema = z
   .object({
@@ -45,29 +39,53 @@ const PluginResponseSchema = z
     version: z.string().describe('Plugin version'),
     createdAt: z.string().describe('Creation date'),
     updatedAt: z.string().describe('Last update date'),
-    filters: z.array(PluginFilterResponseSchema).describe('Plugin filters'),
-    actions: z.array(PluginActionResponseSchema).describe('Plugin actions'),
+    methods: z.array(PluginMethodResponseSchema).describe('Plugin methods'),
   })
   .meta({ id: 'PluginResponseDto' });
 
-export class PluginTriggerResponseDto extends createZodDto(PluginTriggerResponseSchema) {}
-export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
+const PluginMethodSearchSchema = z
+  .object({
+    id: z.uuidv4().optional().describe('Plugin method ID'),
+    enabled: z.boolean().optional().describe('Whether the plugin method is enabled'),
+    name: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    type: WorkflowTypeSchema.optional().describe('Workflow types'),
+    trigger: WorkflowTriggerSchema.optional().describe('Workflow trigger'),
+    pluginName: z.string().optional().describe('Plugin name'),
+    pluginVersion: z.string().optional().describe('Plugin version'),
+  })
+  .meta({ id: 'PluginMethodSearchDto' });
 
-type MapPlugin = {
+export class PluginSearchDto extends createZodDto(PluginSearchSchema) {}
+export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
+export class PluginMethodSearchDto extends createZodDto(PluginMethodSearchSchema) {}
+export class PluginMethodResponseDto extends createZodDto(PluginMethodResponseSchema) {}
+
+type Plugin = {
   id: string;
   name: string;
   title: string;
   description: string;
   author: string;
   version: string;
-  wasmPath: string;
   createdAt: Date;
   updatedAt: Date;
-  filters: PluginFilter[];
-  actions: PluginAction[];
+  methods: PluginMethod[];
 };
 
-export function mapPlugin(plugin: MapPlugin): PluginResponseDto {
+type PluginMethod = {
+  pluginName: string;
+  name: string;
+  title: string;
+  description: string;
+  types: WorkflowType[];
+  schema: JsonSchemaDto | null;
+  hostFunctions: boolean;
+  uiHints: string[];
+};
+
+export function mapPlugin(plugin: Plugin): PluginResponseDto {
   return {
     id: plugin.id,
     name: plugin.name,
@@ -77,7 +95,19 @@ export function mapPlugin(plugin: MapPlugin): PluginResponseDto {
     version: plugin.version,
     createdAt: plugin.createdAt.toISOString(),
     updatedAt: plugin.updatedAt.toISOString(),
-    filters: plugin.filters,
-    actions: plugin.actions,
+    methods: plugin.methods.map((method) => mapMethod(method)),
   };
 }
+
+export const mapMethod = (method: PluginMethod): PluginMethodResponseDto => {
+  return {
+    key: asMethodString({ pluginName: method.pluginName, methodName: method.name }),
+    name: method.name,
+    title: method.title,
+    hostFunctions: method.hostFunctions,
+    uiHints: method.uiHints,
+    description: method.description,
+    types: method.types,
+    schema: method.schema as any,
+  };
+};

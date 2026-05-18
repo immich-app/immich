@@ -13,31 +13,24 @@ part of openapi.api;
 class WorkflowResponseDto {
   /// Returns a new [WorkflowResponseDto] instance.
   WorkflowResponseDto({
-    this.actions = const [],
     required this.createdAt,
     required this.description,
     required this.enabled,
-    this.filters = const [],
     required this.id,
     required this.name,
-    required this.ownerId,
-    required this.triggerType,
+    this.steps = const [],
+    required this.trigger,
+    required this.updatedAt,
   });
-
-  /// Workflow actions
-  List<WorkflowActionResponseDto> actions;
 
   /// Creation date
   String createdAt;
 
   /// Workflow description
-  String description;
+  String? description;
 
   /// Workflow enabled
   bool enabled;
-
-  /// Workflow filters
-  List<WorkflowFilterResponseDto> filters;
 
   /// Workflow ID
   String id;
@@ -45,54 +38,58 @@ class WorkflowResponseDto {
   /// Workflow name
   String? name;
 
-  /// Owner user ID
-  String ownerId;
+  /// Workflow steps
+  List<WorkflowStepDto> steps;
 
-  PluginTriggerType triggerType;
+  WorkflowTrigger trigger;
+
+  /// Update date
+  String updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowResponseDto &&
-    _deepEquality.equals(other.actions, actions) &&
     other.createdAt == createdAt &&
     other.description == description &&
     other.enabled == enabled &&
-    _deepEquality.equals(other.filters, filters) &&
     other.id == id &&
     other.name == name &&
-    other.ownerId == ownerId &&
-    other.triggerType == triggerType;
+    _deepEquality.equals(other.steps, steps) &&
+    other.trigger == trigger &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (actions.hashCode) +
     (createdAt.hashCode) +
-    (description.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (enabled.hashCode) +
-    (filters.hashCode) +
     (id.hashCode) +
     (name == null ? 0 : name!.hashCode) +
-    (ownerId.hashCode) +
-    (triggerType.hashCode);
+    (steps.hashCode) +
+    (trigger.hashCode) +
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'WorkflowResponseDto[actions=$actions, createdAt=$createdAt, description=$description, enabled=$enabled, filters=$filters, id=$id, name=$name, ownerId=$ownerId, triggerType=$triggerType]';
+  String toString() => 'WorkflowResponseDto[createdAt=$createdAt, description=$description, enabled=$enabled, id=$id, name=$name, steps=$steps, trigger=$trigger, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'actions'] = this.actions;
       json[r'createdAt'] = this.createdAt;
+    if (this.description != null) {
       json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
+    }
       json[r'enabled'] = this.enabled;
-      json[r'filters'] = this.filters;
       json[r'id'] = this.id;
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
     }
-      json[r'ownerId'] = this.ownerId;
-      json[r'triggerType'] = this.triggerType;
+      json[r'steps'] = this.steps;
+      json[r'trigger'] = this.trigger;
+      json[r'updatedAt'] = this.updatedAt;
     return json;
   }
 
@@ -105,15 +102,14 @@ class WorkflowResponseDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowResponseDto(
-        actions: WorkflowActionResponseDto.listFromJson(json[r'actions']),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        description: mapValueOfType<String>(json, r'description')!,
+        description: mapValueOfType<String>(json, r'description'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        filters: WorkflowFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name'),
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        triggerType: PluginTriggerType.fromJson(json[r'triggerType'])!,
+        steps: WorkflowStepDto.listFromJson(json[r'steps']),
+        trigger: WorkflowTrigger.fromJson(json[r'trigger'])!,
+        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
     }
     return null;
@@ -161,15 +157,14 @@ class WorkflowResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'actions',
     'createdAt',
     'description',
     'enabled',
-    'filters',
     'id',
     'name',
-    'ownerId',
-    'triggerType',
+    'steps',
+    'trigger',
+    'updatedAt',
   };
 }
 

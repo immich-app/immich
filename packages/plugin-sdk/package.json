@@ -1,0 +1,38 @@
+{
+  "name": "@immich/plugin-sdk",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "exports": {
+    "./host-functions": {
+      "import": "./dist/host-functions.js",
+      "types": "./dist/host-functions.d.ts"
+    },
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node esbuild.js && tsc --emitDeclarationOnly && tsc-alias"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "GNU Affero General Public License version 3",
+  "packageManager": "pnpm@10.30.3",
+  "devDependencies": {
+    "@extism/js-pdk": "^1.1.1",
+    "@types/node": "^24.11.0",
+    "esbuild": "^0.27.3",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@extism/js-pdk": "^1.1.1"
+  }
+}
