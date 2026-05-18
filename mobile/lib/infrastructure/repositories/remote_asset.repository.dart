@@ -71,7 +71,13 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     }
 
     final query = _db.remoteAssetEntity.select()
-      ..where((row) => row.stackId.equals(stackId) & row.id.equals(asset.id).not())
+      ..where(
+        (row) =>
+            row.stackId.equals(stackId) &
+            row.id.equals(asset.id).not() &
+            row.deletedAt.isNull() &
+            row.visibility.equalsValue(AssetVisibility.timeline),
+      )
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
 
     return query.map((row) => row.toDto()).get();

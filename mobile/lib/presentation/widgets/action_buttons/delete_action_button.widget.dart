@@ -68,9 +68,7 @@ class DeleteActionButton extends ConsumerWidget {
     if (source == ActionSource.viewer && result.success) {
       final shouldRefreshStack = currentAsset is RemoteAsset && currentAsset.stackId != null;
       EventStream.shared.emit(
-        shouldRefreshStack
-            ? ViewerStackAssetDeletedEvent(deletedHeroTag: currentAsset.heroTag, stackIndex: stackIndex)
-            : const ViewerReloadAssetEvent(),
+        shouldRefreshStack ? ViewerStackAssetDeletedEvent(stackIndex: stackIndex) : const ViewerReloadAssetEvent(),
       );
     }
 

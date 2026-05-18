@@ -224,17 +224,16 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (!mounted) return;
 
-    final updatedStack = stack.where((asset) => asset.heroTag != event.deletedHeroTag).toList();
-    ref.read(stackProvider.notifier).setStack(updatedStack);
+    ref.read(stackProvider.notifier).setStack(stack);
 
-    if (updatedStack.isEmpty) {
+    if (stack.isEmpty) {
       _onViewerReloadEvent();
       return;
     }
 
-    final targetIndex = math.min(event.stackIndex, updatedStack.length - 1);
+    final targetIndex = math.min(event.stackIndex, stack.length - 1);
     ref.read(assetViewerProvider.notifier)
-      ..setAsset(updatedStack[targetIndex])
+      ..setAsset(stack[targetIndex])
       ..setStackIndex(targetIndex);
   }
 

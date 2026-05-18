@@ -25,10 +25,9 @@ class ViewerReloadAssetEvent extends Event {
 }
 
 class ViewerStackAssetDeletedEvent extends Event {
-  final String deletedHeroTag;
   final int stackIndex;
 
-  const ViewerStackAssetDeletedEvent({required this.deletedHeroTag, required this.stackIndex});
+  const ViewerStackAssetDeletedEvent({required this.stackIndex});
 }
 
 // Multi-Select Events
