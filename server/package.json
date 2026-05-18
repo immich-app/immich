@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
+    "@immich/plugin-sdk": "workspace:*",
     "@immich/sql-tools": "^0.5.1",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
@@ -74,6 +75,7 @@
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
+    "generic-pool": "^3.9.0",
     "geo-tz": "^8.0.0",
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",

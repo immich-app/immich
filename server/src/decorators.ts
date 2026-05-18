@@ -200,6 +200,10 @@ export class HistoryBuilder {
   private hasDeprecated = false;
   private items: HistoryEntry[] = [];
 
+  static v3() {
+    return new HistoryBuilder().added('v3.0.0');
+  }
+
   added(version: string, description?: string) {
     return this.push({ version, state: 'Added', description });
   }

@@ -13,24 +13,14 @@ part of openapi.api;
 class WorkflowUpdateDto {
   /// Returns a new [WorkflowUpdateDto] instance.
   WorkflowUpdateDto({
-    this.actions = const [],
     this.description,
     this.enabled,
-    this.filters = const [],
     this.name,
-    this.triggerType,
+    this.steps = const [],
+    this.trigger,
   });
 
-  /// Workflow actions
-  List<WorkflowActionItemDto> actions;
-
   /// Workflow description
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? description;
 
   /// Workflow enabled
@@ -42,51 +32,41 @@ class WorkflowUpdateDto {
   ///
   bool? enabled;
 
-  /// Workflow filters
-  List<WorkflowFilterItemDto> filters;
-
   /// Workflow name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? name;
 
+  List<WorkflowStepDto> steps;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  PluginTriggerType? triggerType;
+  WorkflowTrigger? trigger;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
-    _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
     other.enabled == enabled &&
-    _deepEquality.equals(other.filters, filters) &&
     other.name == name &&
-    other.triggerType == triggerType;
+    _deepEquality.equals(other.steps, steps) &&
+    other.trigger == trigger;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (actions.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
-    (filters.hashCode) +
     (name == null ? 0 : name!.hashCode) +
-    (triggerType == null ? 0 : triggerType!.hashCode);
+    (steps.hashCode) +
+    (trigger == null ? 0 : trigger!.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
+  String toString() => 'WorkflowUpdateDto[description=$description, enabled=$enabled, name=$name, steps=$steps, trigger=$trigger]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'actions'] = this.actions;
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
@@ -97,16 +77,16 @@ class WorkflowUpdateDto {
     } else {
     //  json[r'enabled'] = null;
     }
-      json[r'filters'] = this.filters;
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
     }
-    if (this.triggerType != null) {
-      json[r'triggerType'] = this.triggerType;
+      json[r'steps'] = this.steps;
+    if (this.trigger != null) {
+      json[r'trigger'] = this.trigger;
     } else {
-    //  json[r'triggerType'] = null;
+    //  json[r'trigger'] = null;
     }
     return json;
   }
@@ -120,12 +100,11 @@ class WorkflowUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowUpdateDto(
-        actions: WorkflowActionItemDto.listFromJson(json[r'actions']),
         description: mapValueOfType<String>(json, r'description'),
         enabled: mapValueOfType<bool>(json, r'enabled'),
-        filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),
-        triggerType: PluginTriggerType.fromJson(json[r'triggerType']),
+        steps: WorkflowStepDto.listFromJson(json[r'steps']),
+        trigger: WorkflowTrigger.fromJson(json[r'trigger']),
       );
     }
     return null;

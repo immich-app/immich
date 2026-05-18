@@ -346,7 +346,7 @@ const getEnv = (): EnvData => {
         root: folders.web,
         indexHtml: join(folders.web, 'index.html'),
       },
-      corePlugin: join(buildFolder, 'corePlugin'),
+      corePlugin: join(buildFolder, 'plugins', 'immich-plugin-core'),
     },
 
     setup: {

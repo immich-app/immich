@@ -3,17 +3,17 @@ import {
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
-  Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  UpdateDateColumn,
 } from '@immich/sql-tools';
-import { PluginTriggerType } from 'src/enum';
-import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { WorkflowTrigger } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
-import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
 
 @Table('workflow')
+@UpdatedAtTrigger('workflow_updatedAt')
 export class WorkflowTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -22,57 +22,23 @@ export class WorkflowTable {
   ownerId!: string;
 
   @Column()
-  triggerType!: PluginTriggerType;
+  trigger!: WorkflowTrigger;
 
   @Column({ nullable: true })
   name!: string | null;
 
-  @Column()
-  description!: string;
+  @Column({ nullable: true })
+  description!: string | null;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
+
+  @UpdateIdColumn()
+  updateId!: Generated<string>;
+
   @Column({ type: 'boolean', default: true })
-  enabled!: boolean;
-}
-
-@Index({ columns: ['workflowId', 'order'] })
-@Index({ columns: ['pluginFilterId'] })
-@Table('workflow_filter')
-export class WorkflowFilterTable {
-  @PrimaryGeneratedColumn('uuid')
-  id!: Generated<string>;
-
-  @ForeignKeyColumn(() => WorkflowTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  workflowId!: Generated<string>;
-
-  @ForeignKeyColumn(() => PluginFilterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  pluginFilterId!: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  filterConfig!: FilterConfig | null;
-
-  @Column({ type: 'integer' })
-  order!: number;
-}
-
-@Index({ columns: ['workflowId', 'order'] })
-@Index({ columns: ['pluginActionId'] })
-@Table('workflow_action')
-export class WorkflowActionTable {
-  @PrimaryGeneratedColumn('uuid')
-  id!: Generated<string>;
-
-  @ForeignKeyColumn(() => WorkflowTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  workflowId!: Generated<string>;
-
-  @ForeignKeyColumn(() => PluginActionTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  pluginActionId!: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  actionConfig!: ActionConfig | null;
-
-  @Column({ type: 'integer' })
-  order!: number;
+  enabled!: Generated<boolean>;
 }
