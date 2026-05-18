@@ -152,6 +152,14 @@ extension<T extends Object> on MetadataDomain<T> {
             isReverse: repo._read(.albumIsReverse),
             isGrid: repo._read(.albumIsGrid),
           ),
+          backup: .new(
+            enabled: repo._read(.backupEnabled),
+            useCellularForVideos: repo._read(.backupUseCellularForVideos),
+            useCellularForPhotos: repo._read(.backupUseCellularForPhotos),
+            requireCharging: repo._read(.backupRequireCharging),
+            triggerDelay: repo._read(.backupTriggerDelay),
+            syncAlbums: repo._read(.backupSyncAlbums),
+          ),
         );
       case .systemConfig:
         repo._systemConfig = .new(

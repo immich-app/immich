@@ -62,6 +62,14 @@ enum MetadataKey<T extends Object> {
   albumIsReverse<bool>(.appConfig, 'album.isReverse', true),
   albumIsGrid<bool>(.appConfig, 'album.isGrid', false),
 
+  // Backup
+  backupEnabled<bool>(.appConfig, 'backup.enabled', false),
+  backupUseCellularForVideos<bool>(.appConfig, 'backup.useCellularForVideos', false),
+  backupUseCellularForPhotos<bool>(.appConfig, 'backup.useCellularForPhotos', false),
+  backupRequireCharging<bool>(.appConfig, 'backup.requireCharging', false),
+  backupTriggerDelay<int>(.appConfig, 'backup.triggerDelay', 30),
+  backupSyncAlbums<bool>(.appConfig, 'backup.syncAlbums', false),
+
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
   timelineGroupAssetsBy<GroupAssetsBy>(

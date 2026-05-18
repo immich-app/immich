@@ -8,13 +8,13 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:logging/logging.dart';
@@ -43,7 +43,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _searchController = TextEditingController();
     _searchFocusNode = FocusNode();
 
-    _enableSyncUploadAlbum.value = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+    _enableSyncUploadAlbum.value = ref.read(metadataProvider).appConfig.backup.syncAlbums;
     ref.read(backupAlbumProvider.notifier).getAll();
 
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
@@ -55,7 +55,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       return;
     }
 
-    final enableSyncUploadAlbum = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+    final enableSyncUploadAlbum = ref.read(metadataProvider).appConfig.backup.syncAlbums;
     final selectedAlbums = ref
         .read(backupAlbumProvider)
         .where((a) => a.backupSelection == BackupSelection.selected)
@@ -103,7 +103,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             return;
           }
 
-          final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+          final isBackupEnabled = MetadataRepository.instance.appConfig.backup.enabled;
           await ref.read(driftBackupProvider.notifier).getBackupStatus(user.id);
           final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
           final totalChanged = currentTotalAssetCount != _initialTotalAssetCount;
