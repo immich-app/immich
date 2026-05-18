@@ -34,6 +34,23 @@ enum MetadataKey<T extends Object> {
   viewerAutoPlayVideo<bool>(.appConfig, 'viewer.autoPlayVideo', true),
   viewerTapToNavigate<bool>(.appConfig, 'viewer.tapToNavigate', false),
 
+  // Network
+  networkAutoEndpointSwitching<bool>(.systemConfig, 'network.autoEndpointSwitching', false),
+  networkPreferredWifiName<String>(.systemConfig, 'network.preferredWifiName', ''),
+  networkLocalEndpoint<String>(.systemConfig, 'network.localEndpoint', ''),
+  networkExternalEndpointList<List<String>>(
+    .systemConfig,
+    'network.externalEndpointList',
+    [],
+    _ListCodec(_PrimitiveCodec.string),
+  ),
+  networkCustomHeaders<Map<String, String>>(
+    .systemConfig,
+    'network.customHeaders',
+    {},
+    _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string),
+  ),
+
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
   timelineGroupAssetsBy<GroupAssetsBy>(
@@ -141,6 +158,47 @@ final class _DateTimeCodec extends _MetadataCodec<DateTime> {
 
   @override
   DateTime? decode(String raw) => DateTime.tryParse(raw);
+}
+
+final class _MapCodec<K extends Object, V extends Object> extends _MetadataCodec<Map<K, V>> {
+  final _MetadataCodec<K> _keyCodec;
+  final _MetadataCodec<V> _valueCodec;
+
+  const _MapCodec(this._keyCodec, this._valueCodec);
+
+  @override
+  String encode(Map<K, V> value) {
+    final entries = <String, String>{};
+    value.forEach((k, v) => entries[_keyCodec.encode(k)] = _valueCodec.encode(v));
+    return jsonEncode(entries);
+  }
+
+  @override
+  Map<K, V>? decode(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) {
+        return null;
+      }
+      final result = <K, V>{};
+      for (final entry in decoded.entries) {
+        final rawKey = entry.key;
+        final rawValue = entry.value;
+        if (rawKey is! String || rawValue is! String) {
+          return null;
+        }
+        final k = _keyCodec.decode(rawKey);
+        final v = _valueCodec.decode(rawValue);
+        if (k == null || v == null) {
+          return null;
+        }
+        result[k] = v;
+      }
+      return result;
+    } on FormatException {
+      return null;
+    }
+  }
 }
 
 final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {

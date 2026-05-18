@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 
 const int targetVersion = 26;
 
@@ -37,12 +38,35 @@ Future<void> _migrateTo25() async {
     return;
   }
 
-  final serverUrls = ApiService.getServerUrls();
-  if (serverUrls.isEmpty) {
+  final urls = <String>[];
+  final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+  if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
+    urls.add(serverEndpoint);
+  }
+  final localEndpoint = Store.tryGet(StoreKey.legacyLocalEndpoint);
+  if (localEndpoint != null && localEndpoint.isNotEmpty) {
+    urls.add(localEndpoint);
+  }
+  final externalJson = Store.tryGet(StoreKey.legacyExternalEndpointList);
+  if (externalJson != null) {
+    final List<dynamic> list = jsonDecode(externalJson);
+    for (final entry in list) {
+      final url = AuxilaryEndpoint.fromJson(entry).url;
+      if (url.isNotEmpty) {
+        urls.add(url);
+      }
+    }
+  }
+  if (urls.isEmpty) {
     return;
   }
 
-  await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
+  final customHeadersStr = Store.get(StoreKey.legacyCustomHeaders, "");
+  final headers = customHeadersStr.isEmpty
+      ? const <String, String>{}
+      : (jsonDecode(customHeadersStr) as Map).cast<String, String>();
+
+  await NetworkRepository.setHeaders(headers, urls, token: accessToken);
 }
 
 Future<void> _migrateTo26(Drift drift) async {
@@ -96,7 +120,74 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, MetadataKey.viewerLoadOriginalVideo);
   await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, MetadataKey.viewerAutoPlayVideo);
   await migrator.migrateBool(StoreKey.legacyTapToNavigate, MetadataKey.viewerTapToNavigate);
+  // Network
+  await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, MetadataKey.networkAutoEndpointSwitching);
+  await migrator.migrateString(StoreKey.legacyPreferredWifiName, MetadataKey.networkPreferredWifiName);
+  await migrator.migrateString(StoreKey.legacyLocalEndpoint, MetadataKey.networkLocalEndpoint);
+  await _migrateExternalEndpointList(drift, migrator);
+  await _migrateCustomHeaders(drift, migrator);
   await migrator.complete();
+}
+
+Future<void> _migrateExternalEndpointList(Drift drift, _StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreString(StoreKey.legacyExternalEndpointList.id);
+  if (raw == null) {
+    return;
+  }
+
+  final urls = <String>[];
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is List) {
+      for (final entry in decoded) {
+        final url = AuxilaryEndpoint.fromJson(entry).url;
+        if (url.isNotEmpty) {
+          urls.add(url);
+        }
+      }
+    }
+  } on FormatException {
+    // ignore invalid entries
+  }
+
+  await drift.metadataEntity.insertOnConflictUpdate(
+    MetadataEntityCompanion.insert(
+      key: MetadataKey.networkExternalEndpointList.key,
+      value: MetadataKey.networkExternalEndpointList.encode(urls),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
+  await migrator.deleteLegacyStoreRows([StoreKey.legacyExternalEndpointList.id]);
+}
+
+Future<void> _migrateCustomHeaders(Drift drift, _StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreString(StoreKey.legacyCustomHeaders.id);
+  if (raw == null) {
+    return;
+  }
+
+  final headers = <String, String>{};
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map) {
+      decoded.forEach((key, value) {
+        if (key is String && value is String) {
+          headers[key] = value;
+        }
+      });
+    }
+  } on FormatException {
+    // ignore invalid entries
+  }
+
+  await drift.metadataEntity.insertOnConflictUpdate(
+    MetadataEntityCompanion.insert(
+      key: MetadataKey.networkCustomHeaders.key,
+      value: MetadataKey.networkCustomHeaders.encode(headers),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
+  await migrator.deleteLegacyStoreRows([StoreKey.legacyCustomHeaders.id]);
 }
 
 class _StoreMigrator {
@@ -150,6 +241,16 @@ class _StoreMigrator {
     }
 
     _cache[newKey] = intValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateString(StoreKey<String> legacyKey, MetadataKey<String> newKey) async {
+    final value = await readLegacyStoreString(legacyKey.id);
+    if (value == null) {
+      return;
+    }
+
+    _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }
 

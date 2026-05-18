@@ -123,10 +123,6 @@ class AuthService {
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),
-      Store.delete(StoreKey.autoEndpointSwitching),
-      Store.delete(StoreKey.preferredWifiName),
-      Store.delete(StoreKey.localEndpoint),
-      Store.delete(StoreKey.externalEndpointList),
     ]);
   }
 

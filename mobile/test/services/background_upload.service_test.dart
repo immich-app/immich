@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
@@ -42,6 +43,7 @@ void main() {
     );
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await MetadataRepository.ensureInitialized(db);
 
     await Store.put(StoreKey.serverEndpoint, 'http://test-server.com');
     await Store.put(StoreKey.deviceId, 'test-device-id');

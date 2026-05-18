@@ -8,7 +8,6 @@ enum AppSettingsEnum<T> {
   selectedAlbumSortReverse<bool>(StoreKey.selectedAlbumSortReverse, null, true),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
-  autoEndpointSwitching<bool>(StoreKey.autoEndpointSwitching, null, false),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
   useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),

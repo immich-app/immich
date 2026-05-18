@@ -4,6 +4,8 @@ extension StringExtension on String {
   String capitalize() {
     return split(" ").map((str) => str.isEmpty ? str : str[0].toUpperCase() + str.substring(1)).join(" ");
   }
+
+  String? get nullIfEmpty => isEmpty ? null : this;
 }
 
 extension DurationExtension on String {
