@@ -157,38 +157,38 @@ class SyncAssetV1 {
         ? this.createdAt!.millisecondsSinceEpoch
         : this.createdAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'createdAt'] = null;
+      json[r'createdAt'] = null;
     }
     if (this.deletedAt != null) {
       json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.deletedAt!.millisecondsSinceEpoch
         : this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      json[r'deletedAt'] = null;
     }
     if (this.duration != null) {
       json[r'duration'] = this.duration;
     } else {
-    //  json[r'duration'] = null;
+      json[r'duration'] = null;
     }
     if (this.fileCreatedAt != null) {
       json[r'fileCreatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.fileCreatedAt!.millisecondsSinceEpoch
         : this.fileCreatedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'fileCreatedAt'] = null;
+      json[r'fileCreatedAt'] = null;
     }
     if (this.fileModifiedAt != null) {
       json[r'fileModifiedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.fileModifiedAt!.millisecondsSinceEpoch
         : this.fileModifiedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'fileModifiedAt'] = null;
+      json[r'fileModifiedAt'] = null;
     }
     if (this.height != null) {
       json[r'height'] = this.height;
     } else {
-    //  json[r'height'] = null;
+      json[r'height'] = null;
     }
       json[r'id'] = this.id;
       json[r'isEdited'] = this.isEdited;
@@ -196,38 +196,38 @@ class SyncAssetV1 {
     if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
     } else {
-    //  json[r'libraryId'] = null;
+      json[r'libraryId'] = null;
     }
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-    //  json[r'livePhotoVideoId'] = null;
+      json[r'livePhotoVideoId'] = null;
     }
     if (this.localDateTime != null) {
       json[r'localDateTime'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.localDateTime!.millisecondsSinceEpoch
         : this.localDateTime!.toUtc().toIso8601String();
     } else {
-    //  json[r'localDateTime'] = null;
+      json[r'localDateTime'] = null;
     }
       json[r'originalFileName'] = this.originalFileName;
       json[r'ownerId'] = this.ownerId;
     if (this.stackId != null) {
       json[r'stackId'] = this.stackId;
     } else {
-    //  json[r'stackId'] = null;
+      json[r'stackId'] = null;
     }
     if (this.thumbhash != null) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-    //  json[r'thumbhash'] = null;
+      json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
       json[r'visibility'] = this.visibility;
     if (this.width != null) {
       json[r'width'] = this.width;
     } else {
-    //  json[r'width'] = null;
+      json[r'width'] = null;
     }
     return json;
   }
