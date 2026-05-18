@@ -8,7 +8,7 @@
   import { Route } from '$lib/route';
   import { handleUpdateWorkflow } from '$lib/services/workflow.service';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
-  import type { WorkflowResponseDto, WorkflowStepDto } from '@immich/sdk';
+  import type { WorkflowResponseDto, WorkflowStepDto, WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,
     AppShell,
@@ -37,6 +37,7 @@
   } from '@immich/ui';
   import {
     mdiArrowLeft,
+    mdiCodeJson,
     mdiContentSave,
     mdiFlashOutline,
     mdiFormatListBulletedSquare,
@@ -48,7 +49,14 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowSummary from './WorkflowSummary.svelte';
+
+  type WorkflowJsonContent = Required<
+    Pick<WorkflowUpdateDto, 'description' | 'enabled' | 'name' | 'steps' | 'trigger'>
+  >;
+
+  type EditMode = 'visual' | 'json';
 
   type Props = {
     data: PageData;
@@ -61,7 +69,9 @@
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
+  let editMode = $state<EditMode>('visual');
   const workflowSummary = $derived({ trigger, steps });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({ description, enabled, name, steps, trigger });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -92,6 +102,14 @@
       steps.splice(index, 1);
       steps = [...steps];
     }
+  };
+
+  const handleJsonContentChange = (content: WorkflowJsonContent) => {
+    enabled = content.enabled;
+    name = content.name;
+    description = content.description;
+    trigger = content.trigger;
+    steps = cloneDeep(content.steps);
   };
 
   const onClose = () => goto(Route.workflows());
@@ -178,7 +196,32 @@
         <ControlBarTitle>{data.workflow.name}</ControlBarTitle>
         <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
       </ControlBarHeader>
-      <ControlBarContent class="flex justify-end">
+      <ControlBarContent class="flex items-center justify-end gap-6">
+        <div class="flex gap-1 rounded-full border border-muted bg-light p-1" role="group">
+          <Button
+            variant={editMode === 'visual' ? 'outline' : 'ghost'}
+            color={editMode === 'visual' ? 'primary' : 'secondary'}
+            size="small"
+            leadingIcon={mdiFormatListBulletedSquare}
+            aria-pressed={editMode === 'visual'}
+            onclick={() => (editMode = 'visual')}
+            shape="round"
+          >
+            {$t('visual')}
+          </Button>
+          <Button
+            variant={editMode === 'json' ? 'outline' : 'ghost'}
+            color={editMode === 'json' ? 'primary' : 'secondary'}
+            size="small"
+            leadingIcon={mdiCodeJson}
+            aria-pressed={editMode === 'json'}
+            onclick={() => (editMode = 'json')}
+            shape="round"
+          >
+            JSON
+          </Button>
+        </div>
+
         <Button
           variant="filled"
           size="small"
@@ -196,134 +239,138 @@
 
   <Container size="medium" class="pt-8 pb-24" center>
     <VStack gap={4}>
-      <Card expandable>
-        <CardHeader>
-          <div class="flex place-items-start gap-3">
-            <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
-            <div class="flex flex-col">
-              <CardTitle>
-                {$t('workflow_info')}
-              </CardTitle>
+      {#if editMode === 'visual'}
+        <Card expandable>
+          <CardHeader>
+            <div class="flex place-items-start gap-3">
+              <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
+              <div class="flex flex-col">
+                <CardTitle>
+                  {$t('workflow_info')}
+                </CardTitle>
+              </div>
             </div>
-          </div>
-        </CardHeader>
+          </CardHeader>
 
-        <CardBody>
-          <VStack gap={4}>
-            <div class="relative w-full overflow-hidden rounded-xl border p-4" class:bg-primary-50={enabled}>
-              <Field label={enabled ? $t('enabled') : $t('disabled')} color={enabled ? 'primary' : 'secondary'}>
-                <Switch bind:checked={enabled} />
+          <CardBody>
+            <VStack gap={4}>
+              <div class="relative w-full overflow-hidden rounded-xl border p-4" class:bg-primary-50={enabled}>
+                <Field label={enabled ? $t('enabled') : $t('disabled')} color={enabled ? 'primary' : 'secondary'}>
+                  <Switch bind:checked={enabled} />
+                </Field>
+              </div>
+
+              <Field label={$t('name')} required>
+                <Input
+                  placeholder={$t('workflow_name')}
+                  bind:value={() => name ?? '', (value) => (name = value || null)}
+                />
               </Field>
+              <Field label={$t('description')} for="workflow-description">
+                <Textarea
+                  id="workflow-description"
+                  grow
+                  placeholder={$t('workflow_description')}
+                  bind:value={() => description ?? '', (value) => (description = value || null)}
+                />
+              </Field>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        <div class="my-4 h-px w-[98%] bg-light-200"></div>
+
+        <Card>
+          <CardHeader class="bg-success-50">
+            <div class="flex items-start gap-3">
+              <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-success" />
+              <div class="flex grow flex-col">
+                <CardTitle class="text-left text-success">{$t('trigger')}</CardTitle>
+                <CardDescription>{$t('trigger_description')}</CardDescription>
+              </div>
+              <div class="flex items-center justify-end">
+                <Button leadingIcon={mdiPencilOutline} size="small" color="secondary" onclick={onChangeTrigger}>
+                  {$t('edit')}
+                </Button>
+              </div>
             </div>
+          </CardHeader>
 
-            <Field label={$t('name')} required>
-              <Input
-                placeholder={$t('workflow_name')}
-                bind:value={() => name ?? '', (value) => (name = value || null)}
-              />
-            </Field>
-            <Field label={$t('description')} for="workflow-description">
-              <Textarea
-                id="workflow-description"
-                grow
-                placeholder={$t('workflow_description')}
-                bind:value={() => description ?? '', (value) => (description = value || null)}
-              />
-            </Field>
-          </VStack>
-        </CardBody>
-      </Card>
-
-      <div class="my-4 h-px w-[98%] bg-light-200"></div>
-
-      <Card>
-        <CardHeader class="bg-success-50">
-          <div class="flex items-start gap-3">
-            <Icon icon={mdiFlashOutline} size="20" class="mt-1 text-success" />
-            <div class="flex grow flex-col">
-              <CardTitle class="text-left text-success">{$t('trigger')}</CardTitle>
-              <CardDescription>{$t('trigger_description')}</CardDescription>
+          <CardBody>
+            <div class="flex flex-col items-start">
+              <Text>{getTriggerName($t, trigger)}</Text>
+              <Text size="small" color="muted">{getTriggerDescription($t, trigger)}</Text>
             </div>
-            <div class="flex items-center justify-end">
-              <Button leadingIcon={mdiPencilOutline} size="small" color="secondary" onclick={onChangeTrigger}>
-                {$t('edit')}
-              </Button>
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader class="bg-primary-50">
+            <div class="flex items-start gap-3">
+              <Icon icon={mdiFormatListBulletedSquare} size="20" class="mt-1 text-primary" />
+              <CardTitle class="text-left text-primary">{$t('steps')}</CardTitle>
             </div>
-          </div>
-        </CardHeader>
+          </CardHeader>
 
-        <CardBody>
-          <div class="flex flex-col items-start">
-            <Text>{getTriggerName($t, trigger)}</Text>
-            <Text size="small" color="muted">{getTriggerDescription($t, trigger)}</Text>
-          </div>
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader class="bg-primary-50">
-          <div class="flex items-start gap-3">
-            <Icon icon={mdiFormatListBulletedSquare} size="20" class="mt-1 text-primary" />
-            <CardTitle class="text-left text-primary">{$t('steps')}</CardTitle>
-          </div>
-        </CardHeader>
-
-        <CardBody>
-          {#if steps.length === 0}
-            <Button leadingIcon={mdiPlus} onclick={handleAddStep}>{$t('add_step')}</Button>
-          {:else}
-            <Stack gap={2}>
-              {#each steps as step, index (index)}
-                {@const method = pluginManager.getMethod(step.method)}
-                {#if index > 0}
-                  <hr />
-                {/if}
-                <div
-                  // {@attach dragAndDrop({
-                  //   index,
-                  //   onDragStart: handleFilterDragStart,
-                  //   onDragEnter: handleFilterDragEnter,
-                  //   onDrop: handleFilterDrop,
-                  //   onDragEnd: handleFilterDragEnd,
-                  //   isDragging: draggedIndex === index,
-                  //   isDragOver: dragOverIndex === index,
-                  // })}
-                  class="flex cursor-move justify-between gap-2 rounded-2xl border-2 border-dashed bg-light-50 p-4 transition-all hover:border-light-300"
-                >
-                  <div class="flex flex-col gap-1">
-                    <Text>{pluginManager.getMethodLabel(step.method)}</Text>
-                    {#if method?.description}
-                      <Text color="muted" size="small">{method.description}</Text>
-                    {/if}
+          <CardBody>
+            {#if steps.length === 0}
+              <Button leadingIcon={mdiPlus} onclick={handleAddStep}>{$t('add_step')}</Button>
+            {:else}
+              <Stack gap={2}>
+                {#each steps as step, index (index)}
+                  {@const method = pluginManager.getMethod(step.method)}
+                  {#if index > 0}
+                    <hr />
+                  {/if}
+                  <div
+                    // {@attach dragAndDrop({
+                    //   index,
+                    //   onDragStart: handleFilterDragStart,
+                    //   onDragEnter: handleFilterDragEnter,
+                    //   onDrop: handleFilterDrop,
+                    //   onDragEnd: handleFilterDragEnd,
+                    //   isDragging: draggedIndex === index,
+                    //   isDragOver: dragOverIndex === index,
+                    // })}
+                    class="flex cursor-move justify-between gap-2 rounded-2xl border-2 border-dashed bg-light-50 p-4 transition-all hover:border-light-300"
+                  >
+                    <div class="flex flex-col gap-1">
+                      <Text>{pluginManager.getMethodLabel(step.method)}</Text>
+                      {#if method?.description}
+                        <Text color="muted" size="small">{method.description}</Text>
+                      {/if}
+                    </div>
+                    <div class="flex gap-1">
+                      <IconButton
+                        icon={mdiPencilOutline}
+                        aria-label={$t('edit')}
+                        variant="ghost"
+                        shape="round"
+                        color="secondary"
+                        onclick={() => handleEditStep(step)}
+                      />
+                      <IconButton
+                        icon={mdiTrashCanOutline}
+                        aria-label={$t('delete')}
+                        variant="ghost"
+                        shape="round"
+                        color="danger"
+                        onclick={() => handleDeleteStep(index)}
+                      />
+                    </div>
                   </div>
-                  <div class="flex gap-1">
-                    <IconButton
-                      icon={mdiPencilOutline}
-                      aria-label={$t('edit')}
-                      variant="ghost"
-                      shape="round"
-                      color="secondary"
-                      onclick={() => handleEditStep(step)}
-                    />
-                    <IconButton
-                      icon={mdiTrashCanOutline}
-                      aria-label={$t('delete')}
-                      variant="ghost"
-                      shape="round"
-                      color="danger"
-                      onclick={() => handleDeleteStep(index)}
-                    />
-                  </div>
-                </div>
-              {/each}
+                {/each}
 
-              <Button size="small" fullWidth variant="ghost" leadingIcon={mdiPlus} onclick={handleAddStep}>
-                {$t('add_step')}
-              </Button>
-            </Stack>
-          {/if}
-        </CardBody>
-      </Card>
+                <Button size="small" fullWidth variant="ghost" leadingIcon={mdiPlus} onclick={handleAddStep}>
+                  {$t('add_step')}
+                </Button>
+              </Stack>
+            {/if}
+          </CardBody>
+        </Card>
+      {:else}
+        <WorkflowJsonEditor jsonContent={workflowJsonContent} onContentChange={handleJsonContentChange} />
+      {/if}
     </VStack>
   </Container>
 
