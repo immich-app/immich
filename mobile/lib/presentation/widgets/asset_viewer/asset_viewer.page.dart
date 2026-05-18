@@ -222,7 +222,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.invalidate(stackProvider);
     final stack = await ref.read(stackProvider.future);
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     ref.read(stackProvider.notifier).setStack(stack);
 
