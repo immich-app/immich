@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 enum MetadataDomain<T extends Object> {
   appConfig<AppConfig>('config.app'),
@@ -50,6 +51,16 @@ enum MetadataKey<T extends Object> {
     {},
     _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string),
   ),
+
+  // Album
+  albumSortMode<AlbumSortMode>(
+    .appConfig,
+    'album.sortMode',
+    AlbumSortMode.mostRecent,
+    _EnumCodec(AlbumSortMode.values),
+  ),
+  albumIsReverse<bool>(.appConfig, 'album.isReverse', true),
+  albumIsGrid<bool>(.appConfig, 'album.isGrid', false),
 
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),

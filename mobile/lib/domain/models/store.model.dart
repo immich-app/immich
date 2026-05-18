@@ -11,16 +11,13 @@ enum StoreKey<T> {
   serverUrl<String>._(10),
   accessToken<String>._(11),
   serverEndpoint<String>._(12),
-  selectedAlbumSortOrder<int>._(113),
   advancedTroubleshooting<bool>._(114),
-  selectedAlbumSortReverse<bool>._(123),
   enableHapticFeedback<bool>._(126),
   syncAlbums<bool>._(131),
 
   manageLocalMediaAndroid<bool>._(137),
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
-  albumGridView<bool>._(140),
 
   // Experimental stuff
   enableBackup<bool>._(1003),
@@ -29,6 +26,9 @@ enum StoreKey<T> {
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacySelectedAlbumSortOrder<int>._(113),
+  legacySelectedAlbumSortReverse<bool>._(123),
+  legacyAlbumGridView<bool>._(140),
   legacyAutoEndpointSwitching<bool>._(132),
   legacyPreferredWifiName<String>._(133),
   legacyLocalEndpoint<String>._(134),
