@@ -25,7 +25,9 @@ String? getServerUrl() {
 }
 
 String? buildSharedLinkUrl({required String? baseUrl, required String key, String? slug}) {
-  if (baseUrl == null || baseUrl.isEmpty) return null;
+  if (baseUrl == null || baseUrl.isEmpty) {
+    return null;
+  }
 
   final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
   final path = (slug != null && slug.isNotEmpty) ? 's/$slug' : 'share/$key';

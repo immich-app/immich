@@ -1,22 +1,22 @@
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 class SharedLinkItem extends ConsumerWidget {
   final SharedLink sharedLink;
@@ -26,12 +26,12 @@ class SharedLinkItem extends ConsumerWidget {
   bool isExpired() => sharedLink.expiresAt?.isBefore(DateTime.now()) ?? false;
 
   Widget buildExpiryDuration(BuildContext context) {
-    var expiresText = "shared_link_expires_never".tr();
+    var expiresText = context.t.shared_link_expires_never;
     IconData expiryIcon = Icons.schedule;
 
     if (sharedLink.expiresAt != null) {
       if (isExpired()) {
-        expiresText = "expired".tr();
+        expiresText = context.t.expired;
         expiryIcon = Icons.timer_off_outlined;
       }
 
@@ -40,14 +40,16 @@ class SharedLinkItem extends ConsumerWidget {
 
       if (difference.inDays > 0) {
         var dayDifference = difference.inDays;
-        if (difference.inHours % 24 > 12) dayDifference += 1;
-        expiresText = "shared_link_expires_days".tr(namedArgs: {'count': dayDifference.toString()});
+        if (difference.inHours % 24 > 12) {
+          dayDifference += 1;
+        }
+        expiresText = context.t.shared_link_expires_days(count: dayDifference);
       } else if (difference.inHours > 0) {
-        expiresText = "shared_link_expires_hours".tr(namedArgs: {'count': difference.inHours.toString()});
+        expiresText = context.t.shared_link_expires_hours(count: difference.inHours);
       } else if (difference.inMinutes > 0) {
-        expiresText = "shared_link_expires_minutes".tr(namedArgs: {'count': difference.inMinutes.toString()});
+        expiresText = context.t.shared_link_expires_minutes(count: difference.inMinutes);
       } else if (difference.inSeconds > 0) {
-        expiresText = "shared_link_expires_seconds".tr(namedArgs: {'count': difference.inSeconds.toString()});
+        expiresText = context.t.shared_link_expires_seconds(count: difference.inSeconds);
       }
     }
 
@@ -68,9 +70,9 @@ class SharedLinkItem extends ConsumerWidget {
     final thumbnailUrl = sharedLink.thumbAssetId != null ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!) : null;
     final imageSize = math.min(context.width / 4, 100.0);
 
-    void copyShareLinkToClipboard() {
+    Future<void> copyShareLinkToClipboard() async {
       final externalDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
-      var serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      final serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
       final shareUrl = buildSharedLinkUrl(baseUrl: serverUrl, slug: sharedLink.slug, key: sharedLink.key);
 
       if (shareUrl == null) {
@@ -78,20 +80,22 @@ class SharedLinkItem extends ConsumerWidget {
           context: context,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.error,
-          msg: "shared_link_error_server_url_fetch".tr(),
+          msg: context.t.shared_link_error_server_url_fetch,
         );
         return;
       }
 
-      Clipboard.setData(ClipboardData(text: shareUrl)).then(
-        (_) => context.scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              "shared_link_clipboard_copied_massage",
-              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-            ).tr(),
-            duration: const Duration(seconds: 2),
+      await Clipboard.setData(ClipboardData(text: shareUrl));
+      if (!context.mounted) {
+        return;
+      }
+      context.scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            context.t.shared_link_clipboard_copied_massage,
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
           ),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -128,9 +132,9 @@ class SharedLinkItem extends ConsumerWidget {
       return Row(
         spacing: 4,
         children: [
-          if (sharedLink.allowUpload) buildInfoChip("upload".tr()),
-          if (sharedLink.allowDownload) buildInfoChip("download".tr()),
-          if (sharedLink.showMetadata) buildInfoChip("shared_link_info_chip_metadata".tr()),
+          if (sharedLink.allowUpload) buildInfoChip(context.t.upload),
+          if (sharedLink.allowDownload) buildInfoChip(context.t.download),
+          if (sharedLink.showMetadata) buildInfoChip(context.t.shared_link_info_chip_metadata),
         ],
       );
     }
