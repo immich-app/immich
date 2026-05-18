@@ -397,16 +397,16 @@ class LoginForm extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.max,
               children: [
                 ImmichForm(
+                  onSubmit: getServerAuthSettings,
                   submitText: 'next'.t(context: context),
                   submitIcon: Icons.arrow_forward_rounded,
-                  onSubmit: getServerAuthSettings,
-                  child: ImmichURLInput(
+                  builder: (_, form) => ImmichURLInput(
                     controller: serverEndpointController,
                     label: 'login_form_endpoint_url'.t(context: context),
                     hintText: 'login_form_endpoint_hint'.t(context: context),
                     validator: _validateUrl,
                     keyboardAction: .next,
-                    onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
+                    onSubmit: (_) => form.submit(),
                   ),
                 ),
                 ImmichTextButton(
@@ -434,10 +434,10 @@ class LoginForm extends HookConsumerWidget {
                 ),
                 if (isPasswordLoginEnable.value)
                   ImmichForm(
+                    onSubmit: login,
                     submitText: 'login'.t(context: context),
                     submitIcon: Icons.login_rounded,
-                    onSubmit: login,
-                    child: Column(
+                    builder: (context, form) => Column(
                       spacing: ImmichSpacing.md,
                       children: [
                         ImmichTextInput(
@@ -448,7 +448,7 @@ class LoginForm extends HookConsumerWidget {
                           keyboardAction: TextInputAction.next,
                           keyboardType: TextInputType.emailAddress,
                           autofillHints: const [AutofillHints.email],
-                          onSubmit: (_, _) => passwordFocusNode.requestFocus(),
+                          onSubmit: (_) => passwordFocusNode.requestFocus(),
                         ),
                         ImmichPasswordInput(
                           controller: passwordController,
@@ -456,17 +456,17 @@ class LoginForm extends HookConsumerWidget {
                           label: 'password'.t(context: context),
                           hintText: 'login_form_password_hint'.t(context: context),
                           keyboardAction: TextInputAction.go,
-                          onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
+                          onSubmit: (_) => form.submit(),
                         ),
                       ],
                     ),
                   ),
                 if (isOauthEnable.value)
                   ImmichForm(
+                    onSubmit: oAuthLogin,
                     submitText: oAuthButtonLabel.value,
                     submitIcon: Icons.pin_outlined,
-                    onSubmit: oAuthLogin,
-                    child: isPasswordLoginEnable.value
+                    builder: (context, _) => isPasswordLoginEnable.value
                         ? Padding(
                             padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
                             child: Divider(color: context.isDarkTheme ? Colors.white : Colors.black, height: 5),

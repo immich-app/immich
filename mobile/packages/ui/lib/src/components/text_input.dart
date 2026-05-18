@@ -7,7 +7,7 @@ class ImmichTextInput extends StatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
-  final void Function(BuildContext, String)? onSubmit;
+  final void Function(String value)? onSubmit;
   final TextInputType keyboardType;
   final TextInputAction? keyboardAction;
   final List<String>? autofillHints;
@@ -29,7 +29,7 @@ class ImmichTextInput extends StatefulWidget {
     this.hintText,
     this.validator,
     this.onSubmit,
-    this.keyboardType = TextInputType.text,
+    this.keyboardType = .text,
     this.keyboardAction,
     this.autofillHints,
     this.suffixIcon,
@@ -49,7 +49,6 @@ class ImmichTextInput extends StatefulWidget {
 
 class _ImmichTextInputState extends State<ImmichTextInput> {
   late final FocusNode _focusNode;
-  String? _error;
 
   @override
   void initState() {
@@ -65,45 +64,20 @@ class _ImmichTextInputState extends State<ImmichTextInput> {
     super.dispose();
   }
 
-  String? _validateInput(String? value) {
-    final error = widget.validator?.call(value);
-    if (error != _error) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() => _error = error);
-        }
-      });
-    }
-    return null;
-  }
-
-  bool get _hasError => _error != null && _error!.isNotEmpty;
-
   @override
   Widget build(BuildContext context) {
-    final themeData = Theme.of(context);
-
     return TextFormField(
       controller: widget.controller,
       focusNode: _focusNode,
       enabled: widget.enabled,
       autofocus: widget.autofocus,
       autovalidateMode: widget.autovalidateMode,
-      decoration: InputDecoration(
-        hintText: widget.hintText,
-        labelText: widget.label,
-        labelStyle: themeData.inputDecorationTheme.labelStyle?.copyWith(
-          color: _hasError ? themeData.colorScheme.error : null,
-        ),
-        errorText: _error,
-        suffixIcon: widget.suffixIcon,
-      ),
+      decoration: InputDecoration(hintText: widget.hintText, labelText: widget.label, suffixIcon: widget.suffixIcon),
       obscureText: widget.obscureText,
-      validator: _validateInput,
+      validator: widget.validator,
       textInputAction: widget.keyboardAction,
-      onTap: () => setState(() => _error = null),
       onTapOutside: (_) => _focusNode.unfocus(),
-      onFieldSubmitted: (value) => widget.onSubmit?.call(context, value),
+      onFieldSubmitted: (value) => widget.onSubmit?.call(value),
       keyboardType: widget.keyboardType,
       autofillHints: widget.autofillHints,
       autocorrect: widget.autocorrect,
