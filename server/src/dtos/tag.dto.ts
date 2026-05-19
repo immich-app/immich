@@ -40,7 +40,10 @@ const TagBulkAssetsResponseSchema = z
 
 const TagsForAssetsQuerySchema = z
   .object({
-    assetIds: z.array(z.string()).describe('Asset IDs to retrieve tags for'),
+    assetIds: z.preprocess(
+      (val) => (typeof val === 'string' ? [val] : val),
+      z.array(z.string()).describe('Asset IDs to retrieve tags for'),
+    ),
   })
   .meta({ id: 'TagsForAssetsQueryDto' });
 

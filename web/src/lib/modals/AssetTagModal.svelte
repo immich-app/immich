@@ -1,6 +1,6 @@
 <script lang="ts">
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { tagAssets } from '$lib/utils/asset-utils';
+  import { tagAssets, removeTag } from '$lib/utils/asset-utils';
   import {
     getAllTags,
     getAllTagsForAssets,
@@ -24,23 +24,49 @@
   let { onClose, assetIds }: Props = $props();
 
   let allTags: TagResponseDto[] = $state([]);
-  let tagsForAssets: TagsForAssetsResponseDto[] = $state([]);
+  let existingTagsForAssets: TagsForAssetsResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
-  let selectedIds = new SvelteSet<string>();
-  let disabled = $derived(selectedIds.size === 0);
+  let selectedTags = new SvelteSet<{ id: string; count: number; partial: boolean }>();
+  let disabled = $derived(selectedTags.size === 0 && existingTagsForAssets.length === 0);
   let allowCreate: boolean = $state(true);
 
   onMount(async () => {
     allTags = await getAllTags();
-    tagsForAssets = await getAllTagsForAssets({ assetIds });
+    existingTagsForAssets = await getAllTagsForAssets({ assetIds });
+    for (const tagForAsset of existingTagsForAssets) {
+      selectedTags.add({
+        id: tagForAsset.tagId,
+        count: tagForAsset.assetIds.length,
+        partial: tagForAsset.assetIds.length < assetIds.length,
+      });
+    }
   });
 
   const onSubmit = async () => {
-    if (selectedIds.size === 0) {
-      return;
-    }
+    const updatedIds = await tagAssets({
+      tagIds: [...selectedTags].filter((tag) => tag.partial === false).map((tag) => tag.id),
+      assetIds,
+      showNotification: false,
+    });
 
-    const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+    const tagIdsToRemove = existingTagsForAssets
+      .filter((tagForAsset) => {
+        for (const selectedTag of selectedTags) {
+          if (selectedTag.id === tagForAsset.tagId) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .map((tagForAsset) => tagForAsset.tagId);
+    console.log('tagIdsToRemove', tagIdsToRemove);
+    const removedIds = await removeTag({
+      tagIds: tagIdsToRemove,
+      assetIds,
+      showNotification: false,
+    });
+
+    eventManager.emit('AssetsUntag', removedIds);
     eventManager.emit('AssetsTag', updatedIds);
     onClose(true);
   };
@@ -51,16 +77,27 @@
     }
 
     if (option.id) {
-      selectedIds.add(option.value);
+      for (const item of selectedTags) {
+        if (item.id === option.id) {
+          selectedTags.delete(item);
+          break;
+        }
+      }
+      selectedTags.add({ id: option.id, count: assetIds.length, partial: false });
     } else {
       const [newTag] = await upsertTags({ tagUpsertDto: { tags: [option.label] } });
       allTags.push(newTag);
-      selectedIds.add(newTag.id);
+      selectedTags.add({ id: newTag.id, count: assetIds.length, partial: false });
     }
   };
 
-  const handleRemove = (tag: string) => {
-    selectedIds.delete(tag);
+  const handleRemove = (tag: { id: string; count: number; partial: boolean }) => {
+    for (const item of selectedTags) {
+      if (item.id === tag.id) {
+        selectedTags.delete(item);
+        break;
+      }
+    }
   };
 </script>
 
@@ -82,15 +119,23 @@
       defaultFirstOption
       options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
       placeholder={$t('search_tags')}
-      forceFocus
     />
   </div>
-  <div>{JSON.stringify(tagsForAssets)}</div>
+  <div>{JSON.stringify([...selectedTags])}</div>
   <section class="flex flex-wrap gap-1 pt-2">
-    {#each selectedIds as tagId (tagId)}
-      {@const tag = tagMap[tagId]}
+    {#each selectedTags as { id, count, partial } (id)}
+      {@const tag = tagMap[id]}
       {#if tag}
-        <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
+        <TagPill
+          label={tag.value}
+          {partial}
+          tooltipText={partial
+            ? `${count} of the ${assetIds.length} selected assets have this tag`
+            : assetIds.length > 1
+              ? `All ${assetIds.length} selected assets have this tag`
+              : undefined}
+          onRemove={() => handleRemove({ id, count, partial })}
+        />
       {/if}
     {/each}
   </section>
