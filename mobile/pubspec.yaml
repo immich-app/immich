@@ -50,6 +50,7 @@ dependencies:
       ref: 'cdf621bdb7edaf996e118a58a48f6441187d79c6'
   network_info_plus: ^6.1.4
   octo_image: ^2.1.0
+  panorama_viewer: ^2.0.7
   openapi:
     path: openapi
   package_info_plus: ^8.3.1

@@ -26,6 +26,11 @@ class ExifInfo {
   final int? iso;
   final double? exposureSeconds;
 
+  // Spherical
+  final String? projectionType;
+
+  bool get isPanorama => projectionType?.toUpperCase() == 'EQUIRECTANGULAR';
+
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   String get exposureTime {
@@ -65,6 +70,7 @@ class ExifInfo {
     this.mm,
     this.iso,
     this.exposureSeconds,
+    this.projectionType,
   });
 
   @override
@@ -94,7 +100,8 @@ class ExifInfo {
         other.mm == mm &&
         other.iso == iso &&
         other.exposureSeconds == exposureSeconds &&
-        other.assetId == assetId;
+        other.assetId == assetId &&
+        other.projectionType == projectionType;
   }
 
   @override
@@ -120,7 +127,8 @@ class ExifInfo {
         mm.hashCode ^
         iso.hashCode ^
         exposureSeconds.hashCode ^
-        assetId.hashCode;
+        assetId.hashCode ^
+        projectionType.hashCode;
   }
 
   @override
@@ -147,6 +155,7 @@ f: ${f ?? 'NA'},
 mm: ${mm ?? '<NA>'},
 iso: ${iso ?? 'NA'},
 exposureSeconds: ${exposureSeconds ?? 'NA'},
+projectionType: ${projectionType ?? 'NA'},
 }''';
   }
 
@@ -173,6 +182,7 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
     double? mm,
     int? iso,
     double? exposureSeconds,
+    String? projectionType,
   }) {
     return ExifInfo(
       assetId: assetId ?? this.assetId,
@@ -197,6 +207,7 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
       mm: mm ?? this.mm,
       iso: iso ?? this.iso,
       exposureSeconds: exposureSeconds ?? this.exposureSeconds,
+      projectionType: projectionType ?? this.projectionType,
     );
   }
 }

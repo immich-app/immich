@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/panorama.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -290,15 +291,16 @@ class _TileOverlayIcon extends StatelessWidget {
   }
 }
 
-class _AssetTypeIcons extends StatelessWidget {
+class _AssetTypeIcons extends ConsumerWidget {
   final BaseAsset asset;
 
   const _AssetTypeIcons({required this.asset});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
     final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
+    final isPanorama = ref.watch(isPanoramaProvider(asset)).valueOrNull ?? false;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -313,6 +315,11 @@ class _AssetTypeIcons extends StatelessWidget {
           ),
         if (asset.isAnimatedImage)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
+        if (isPanorama)
+          const Padding(
+            padding: EdgeInsets.only(right: 10.0, top: 6.0),
+            child: _TileOverlayIcon(Icons.threesixty),
+          ),
       ],
     );
   }

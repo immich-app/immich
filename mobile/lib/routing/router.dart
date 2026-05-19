@@ -69,6 +69,7 @@ import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.page.dart';
 import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/panorama_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -191,6 +192,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DownloadInfoRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: CleanupPreviewRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftSlideshowRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PanoramaViewerRoute.page, guards: [_authGuard, _duplicateGuard], fullscreenDialog: true),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

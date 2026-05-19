@@ -23,6 +23,7 @@ abstract final class ExifDtoConverter {
       mm: dto.focalLength?.toDouble(),
       iso: dto.iso?.toInt(),
       exposureSeconds: exposureTimeToSeconds(dto.exposureTime),
+      projectionType: dto.projectionType,
     );
   }
 

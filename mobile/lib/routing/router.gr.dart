@@ -1457,6 +1457,53 @@ class MapLocationPickerRouteArgs {
 }
 
 /// generated route for
+/// [PanoramaViewerPage]
+class PanoramaViewerRoute extends PageRouteInfo<PanoramaViewerRouteArgs> {
+  PanoramaViewerRoute({
+    Key? key,
+    required BaseAsset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         PanoramaViewerRoute.name,
+         args: PanoramaViewerRouteArgs(key: key, asset: asset),
+         initialChildren: children,
+       );
+
+  static const String name = 'PanoramaViewerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<PanoramaViewerRouteArgs>();
+      return PanoramaViewerPage(key: args.key, asset: args.asset);
+    },
+  );
+}
+
+class PanoramaViewerRouteArgs {
+  const PanoramaViewerRouteArgs({this.key, required this.asset});
+
+  final Key? key;
+
+  final BaseAsset asset;
+
+  @override
+  String toString() {
+    return 'PanoramaViewerRouteArgs{key: $key, asset: $asset}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PanoramaViewerRouteArgs) return false;
+    return key == other.key && asset == other.asset;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ asset.hashCode;
+}
+
+/// generated route for
 /// [PinAuthPage]
 class PinAuthRoute extends PageRouteInfo<PinAuthRouteArgs> {
   PinAuthRoute({

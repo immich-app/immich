@@ -55,9 +55,10 @@ SyncAssetV1 _createAsset({
 
 SyncAssetExifV1 _createExif({
   required String assetId,
-  required int width,
-  required int height,
-  required String orientation,
+  int width = 1920,
+  int height = 1080,
+  String orientation = '1',
+  String? projectionType,
 }) {
   return SyncAssetExifV1(
     assetId: assetId,
@@ -81,7 +82,7 @@ SyncAssetExifV1 _createExif({
     model: null,
     modifyDate: null,
     profileDescription: null,
-    projectionType: null,
+    projectionType: projectionType,
     rating: null,
     state: null,
     timeZone: null,
@@ -186,6 +187,34 @@ void main() {
 
       expect(result.width, equals(existingWidth), reason: 'Width should remain as originally set');
       expect(result.height, equals(existingHeight), reason: 'Height should remain as originally set');
+    });
+  });
+
+  group('SyncStreamRepository - projectionType sync', () {
+    test('stores projectionType from exif sync', () async {
+      const assetId = 'panorama-asset';
+
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([_createAsset(id: assetId, checksum: 'cs', fileName: 'pano.jpg')]);
+      await sut.updateAssetsExifV1([_createExif(assetId: assetId, projectionType: 'EQUIRECTANGULAR')]);
+
+      final query = db.remoteExifEntity.select()..where((tbl) => tbl.assetId.equals(assetId));
+      final result = await query.getSingle();
+
+      expect(result.projectionType, equals('EQUIRECTANGULAR'));
+    });
+
+    test('stores null projectionType for non-panorama assets', () async {
+      const assetId = 'normal-asset';
+
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([_createAsset(id: assetId, checksum: 'cs2', fileName: 'photo.jpg')]);
+      await sut.updateAssetsExifV1([_createExif(assetId: assetId)]);
+
+      final query = db.remoteExifEntity.select()..where((tbl) => tbl.assetId.equals(assetId));
+      final result = await query.getSingle();
+
+      expect(result.projectionType, isNull);
     });
   });
 
