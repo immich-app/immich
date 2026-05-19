@@ -71,7 +71,7 @@
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
   let editMode = $state<EditMode>('visual');
-  const workflowSummary = $derived({ trigger, steps });
+  const workflowSummary = $derived({ name, description, enabled, trigger, steps });
   const workflowJsonContent = $derived<WorkflowJsonContent>({ description, enabled, name, steps, trigger });
   const stepsWithConfigEntries = $derived(
     steps.map((step) => ({
