@@ -71,7 +71,8 @@
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
   let editMode = $state<EditMode>('visual');
-  const workflowSummary = $derived({ name, description, enabled, trigger, steps });
+
+  const workflowSummary = $derived({ name, description, trigger, steps });
   const workflowJsonContent = $derived<WorkflowJsonContent>({ description, enabled, name, steps, trigger });
   const stepsWithConfigEntries = $derived(
     steps.map((step) => ({
@@ -328,7 +329,7 @@
 
         <div class="my-4 h-px w-[98%] bg-light-200"></div>
 
-        <Card class="shadow-none bg-light">
+        <Card class="bg-light shadow-none">
           <CardHeader>
             <div class="flex items-center gap-3">
               <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success-50">
@@ -380,7 +381,7 @@
                 </div>
                 <div class="flex min-w-0 flex-1 flex-col">
                   <CardTitle class="truncate">
-                    <span class="font-bold text-light-400 mr-1">{index + 1}</span>
+                    <span class="mr-1 font-bold text-light-400">{index + 1}</span>
                     {pluginManager.getMethodLabel(step.method)}
                   </CardTitle>
                   {#if method?.description}

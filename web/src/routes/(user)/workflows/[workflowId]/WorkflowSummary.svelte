@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import { getTriggerName } from '$lib/utils/workflow';
-  import type { WorkflowStepDto, WorkflowTrigger } from '@immich/sdk';
+  import type { WorkflowResponseDto, WorkflowStepDto, WorkflowTrigger } from '@immich/sdk';
   import { Icon, IconButton, Text } from '@immich/ui';
   import { mdiCheck, mdiClose, mdiContentCopy, mdiViewDashboardOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -10,7 +10,6 @@
   type WorkflowSummaryData = {
     name: string | null;
     description: string | null;
-    enabled: boolean;
     trigger: WorkflowTrigger;
     steps: WorkflowStepDto[];
   };
@@ -24,6 +23,35 @@
   let isOpen = $state(false);
   let justCopied = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
+  let panelElement = $state<HTMLElement | undefined>(undefined);
+
+  $effect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        event.preventDefault();
+        isOpen = false;
+      }
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (panelElement && event.target instanceof Node && !panelElement.contains(event.target)) {
+        isOpen = false;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeydown, { capture: true });
+    document.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeydown, { capture: true });
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  });
 
   const formatConfigValue = (value: unknown): string => {
     if (value === null || value === undefined) {
@@ -56,36 +84,31 @@
   const asciiSummary = $derived.by(() => {
     const lines: string[] = [];
     const title = workflow.name ?? $t('no_name');
-    const state = workflow.enabled ? '[ON]' : '[OFF]';
-    lines.push(`${title}  ${state}`);
+    lines.push(`${title}`);
     if (workflow.description) {
       lines.push(workflow.description);
     }
-    lines.push('');
-    lines.push('  WHEN');
-    lines.push(`    ⚡ ${getTriggerName($t, workflow.trigger)}`);
 
-    lines.push('');
-    lines.push('  THEN');
+    lines.push('', '  WHEN', `    ⚡ ${getTriggerName($t, workflow.trigger)}`, '', '  THEN');
 
     if (workflow.steps.length === 0) {
       lines.push(`    ${$t('no_steps')}`);
       return lines.join('\n');
     }
 
-    workflow.steps.forEach((step, i) => {
+    for (const [i, step] of workflow.steps.entries()) {
       const method = pluginManager.getMethod(step.method);
       const isFilter = method?.uiHints?.includes('filter') ?? false;
-      const type = isFilter ? 'FILTER' : 'ACTION';
+      const type = isFilter ? $t('filter') : $t('action');
       const label = pluginManager.getMethodLabel(step.method);
-      lines.push(`    [${i + 1}] ${type} · ${label}`);
+      lines.push(`    [${i + 1}] ${type.toUpperCase()} · ${label}`);
       for (const [key, value] of getConfigEntries(step.config)) {
         lines.push(`          ${key} = ${formatConfigValue(value)}`);
       }
       if (i < workflow.steps.length - 1) {
         lines.push('');
       }
-    });
+    }
 
     return lines.join('\n');
   });
@@ -106,7 +129,8 @@
 
 {#if isOpen}
   <aside
-    class="fixed top-4 right-4 bottom-4 z-40 hidden w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-light-200 bg-light shadow-2xl sm:flex"
+    bind:this={panelElement}
+    class="fixed inset-y-20 right-4 bottom-4 hidden max-w-lg flex-col overflow-hidden rounded-2xl border border-light-200 bg-light shadow-2xl sm:flex"
     transition:fly={{ x: 400, duration: 250 }}
     aria-label={$t('workflow_summary')}
   >
@@ -138,7 +162,7 @@
     <!-- ASCII body — what you see is what you copy -->
     <div class="flex-1 overflow-auto p-4">
       <pre
-        class="m-0 overflow-auto rounded-lg border border-light-200 bg-light-100 px-4 py-3 font-mono text-xs leading-relaxed whitespace-pre">{asciiSummary}</pre>
+        class="m-0 overflow-auto rounded-lg border border-light-200 bg-light-100 px-4 py-3 font-mono text-xs/relaxed whitespace-pre">{asciiSummary}</pre>
     </div>
   </aside>
 {:else}
