@@ -44,9 +44,8 @@ jobs:
         run: 'mise run //deployment:tf destroy -- -refresh=false'
 
       - name: Comment
-        uses: actions-cool/maintain-one-comment@909842216bc8e8658364c572ec52100f4c2cc50a # v3.3.0
+        uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
         with:
+          id: docs-pr-url
           token: ${{ steps.token.outputs.token }}
-          number: ${{ github.event.number }}
           delete: true
-          body-include: '<!-- Docs PR URL -->'
