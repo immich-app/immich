@@ -286,7 +286,11 @@ export class MetadataService extends BaseService {
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
+      projectionType: exifTags.ProjectionType
+        ? String(exifTags.ProjectionType).toUpperCase()
+        : (exifTags.SpecialTypeID ?? []).some((v) => v.includes('PHOTOSPHERE'))
+          ? 'EQUIRECTANGULAR'
+          : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 

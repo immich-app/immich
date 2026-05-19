@@ -1111,6 +1111,34 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should use SpecialTypeID as projectionType fallback when ProjectionType is absent', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ SpecialTypeID: ['com.google.android.apps.camera.gallery.specialtype.SpecialTrait.PHOTOSPHERE'] });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({ projectionType: 'EQUIRECTANGULAR' }),
+        }),
+      );
+    });
+
+    it('should not set projectionType when SpecialTypeID does not contain PHOTOSPHERE', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ SpecialTypeID: ['com.google.android.apps.camera.gallery.specialtype.SpecialTrait.PORTRAIT'] });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({ projectionType: null }),
+        }),
+      );
+    });
+
     it('should extract +00:00 timezone from raw value', async () => {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
