@@ -43,13 +43,18 @@
   });
 
   const onSubmit = async () => {
-    const updatedIds = await tagAssets({
-      tagIds: [...selectedTags].filter((tag) => tag.partial === false).map((tag) => tag.id),
-      assetIds,
-      showNotification: false,
-    });
+    const tagIdsToAdd = [...selectedTags].filter((tag) => tag.partial === false).map((tag) => tag.id);
+    if (tagIdsToAdd?.length > 0) {
+      console.log('tagIdsToAdd', tagIdsToAdd);
+      const updatedIds = await tagAssets({
+        tagIds: tagIdsToAdd,
+        assetIds,
+        showNotification: false,
+      });
+      eventManager.emit('AssetsTag', updatedIds);
+    }
 
-    const tagIdsToRemove = existingTagsForAssets
+    const tagIdsToRemove: string[] = existingTagsForAssets
       .filter((tagForAsset) => {
         for (const selectedTag of selectedTags) {
           if (selectedTag.id === tagForAsset.tagId) {
@@ -59,15 +64,17 @@
         return true;
       })
       .map((tagForAsset) => tagForAsset.tagId);
-    console.log('tagIdsToRemove', tagIdsToRemove);
-    const removedIds = await removeTag({
-      tagIds: tagIdsToRemove,
-      assetIds,
-      showNotification: false,
-    });
 
-    eventManager.emit('AssetsUntag', removedIds);
-    eventManager.emit('AssetsTag', updatedIds);
+    if (tagIdsToRemove?.length > 0) {
+      console.log('tagIdsToRemove', tagIdsToRemove);
+      const removedIds = await removeTag({
+        tagIds: tagIdsToRemove,
+        assetIds,
+        showNotification: false,
+      });
+      eventManager.emit('AssetsUntag', removedIds);
+    }
+
     onClose(true);
   };
 
