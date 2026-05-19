@@ -159,14 +159,14 @@ jobs:
 
       - name: Comment APK download link on PR
         if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork }}
-        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3.11.0
+        uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           APK_URL: ${{ steps.upload-apk.outputs.artifact-url }}
         with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'mobile-android-apk'
-          message: |
+          id: mobile-android-apk
+          token: ${{ steps.token.outputs.token }}
+          body: |
             📱 **Android release APK (universal)** — `${{ env.HEAD_SHA }}`
 
             Download: ${{ env.APK_URL }}
