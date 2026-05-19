@@ -238,7 +238,7 @@
 
 <OnEvents {onWorkflowUpdate} />
 
-<AppShell class="bg-light-50">
+<AppShell class="">
   <AppShellBar>
     <ActionBar static {onClose} translations={{ close: $t('back') }} closeIcon={mdiArrowLeft}>
       <ControlBarHeader>
@@ -289,7 +289,7 @@
   <Container size="medium" class="pt-8 pb-24" center>
     <VStack gap={4}>
       {#if editMode === 'visual'}
-        <Card class="bg-light" expandable>
+        <Card class="shadow-none" expandable>
           <CardHeader>
             <div class="flex place-items-start gap-3">
               <Icon icon={mdiInformationOutline} size="20" class="mt-1" />
@@ -329,7 +329,7 @@
 
         <div class="my-4 h-px w-[98%] bg-light-200"></div>
 
-        <Card class="bg-light shadow-none">
+        <Card class="shadow-none">
           <CardHeader>
             <div class="flex items-center gap-3">
               <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success-50">
@@ -354,7 +354,7 @@
         </Card>
 
         {#snippet sequenceConnector()}
-          <div class="-my-4 flex w-full items-center gap-3 px-4">
+          <div class="-my-4 ml-18 flex w-full items-center gap-3">
             <div class="flex w-1 shrink-0 justify-start">
               <div class="h-8 w-0.5 bg-light-200"></div>
             </div>
@@ -365,23 +365,23 @@
           {@const method = pluginManager.getMethod(step.method)}
           {@const isFilter = method?.uiHints?.includes('filter') ?? false}
           {@render sequenceConnector()}
-          <Card class="{isFilter ? '' : ''} bg-light shadow-none">
+          <Card class="{isFilter ? '' : ''} shadow-none">
             <CardHeader>
               <div class="flex items-center gap-3">
                 <div
                   class="flex size-10 shrink-0 items-center justify-center rounded-lg"
                   class:bg-primary-50={isFilter}
-                  class:bg-danger-50={!isFilter}
+                  class:bg-warning-50={!isFilter}
                 >
                   <Icon
                     icon={isFilter ? mdiFilterVariant : mdiAutoFix}
                     size="20"
-                    class={isFilter ? 'text-primary' : 'text-danger'}
+                    class={isFilter ? 'text-primary' : 'text-warning'}
                   />
                 </div>
                 <div class="flex min-w-0 flex-1 flex-col">
                   <CardTitle class="truncate">
-                    <span class="mr-1 font-bold text-light-400">{index + 1}</span>
+                    <span class="mr-1 font-bold text-light-500">{index + 1}</span>
                     {pluginManager.getMethodLabel(step.method)}
                   </CardTitle>
                   {#if method?.description}
@@ -415,7 +415,12 @@
               <CardBody class="py-3">
                 <div class="flex flex-wrap items-center gap-1.5">
                   {#each configEntries as [key, value] (key)}
-                    <Badge color="secondary" shape="round" size="small" class="font-mono">
+                    <Badge
+                      color={isFilter ? 'info' : 'warning'}
+                      shape="round"
+                      size="small"
+                      class="border font-mono {isFilter ? 'border-primary-200' : 'border-warning-200'}"
+                    >
                       <span class="opacity-60">{key}</span>{formatConfigValue(value)}
                     </Badge>
                   {/each}
