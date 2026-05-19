@@ -135,8 +135,8 @@ extension<T extends Object> on MetadataDomain<T> {
           ),
           image: .new(
             preferRemote: repo._read(.imagePreferRemote),
-            loadOriginal: repo._read(.imageLoadOriginal),
             loadPreview: repo._read(.imageLoadPreview),
+            loadOriginal: repo._read(.imageLoadOriginal),
           ),
           viewer: .new(
             loopVideo: repo._read(.viewerLoopVideo),
