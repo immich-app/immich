@@ -33,9 +33,7 @@ class QueuesApiRepository extends ApiRepository {
       return QueueResponse(
         name: name.value,
         isPaused: false,
-        statistics: QueueStatistics(
-          active: 0, completed: 0, failed: 0, delayed: 0, waiting: 0, paused: 0,
-        ),
+        statistics: const QueueStatistics(active: 0, completed: 0, failed: 0, delayed: 0, waiting: 0, paused: 0),
       );
     }
   }
