@@ -1,17 +1,31 @@
 #!/usr/bin/env bash
 
 #
-# Pump one or both of the server/mobile versions in appropriate files
+# Pump one or both of the server/mobile versions in appropriate files.
 #
-# usage: './scripts/pump-version.sh -s <major|minor|patch> <-m> <true|false> <-r> <true|false|finalize>
+# Usage:
+#   ./misc/release/pump-version.sh [-s <major|minor|patch>] [-m <true|false>] [-r <true|false>]
 #
-# examples:
-#    ./scripts/pump-version.sh -s major         # 1.0.0+50 => 2.0.0+50
-#    ./scripts/pump-version.sh -s minor -m true # 1.0.0+50 => 1.1.0+51
-#    ./scripts/pump-version.sh -m true          # 1.0.0+50 => 1.0.0+51
-#    ./scripts/pump-version.sh -s minor -m true -r true     # 3.0.0 => 3.1.0-rc.0 (start RC)
-#    ./scripts/pump-version.sh -m true -r true              # 3.1.0-rc.0 => 3.1.0-rc.1 (iterate RC)
-#    ./scripts/pump-version.sh -m true -r finalize          # 3.1.0-rc.1 => 3.1.0 (finalize RC)
+# Flags:
+#   -s <major|minor|patch>   Server version bump scope. Omit to leave the server
+#                            version unchanged, except when finalizing an RC (see -r).
+#                            (default: false)
+#   -m <true|false>          Whether to increment the mobile build number.
+#                            (default: false)
+#   -r <true|false>          Release candidate mode. When true, starts a new RC
+#                            (combined with -s) or iterates an existing one. When
+#                            false while the current version is already an RC,
+#                            finalizes it (e.g. 3.1.0-rc.2 => 3.1.0). A server bump
+#                            is rejected while on an RC; finalize first.
+#                            (default: false)
+#
+# Examples:
+#   ./misc/release/pump-version.sh -s major                     # 1.0.0+50  => 2.0.0+50
+#   ./misc/release/pump-version.sh -s minor -m true             # 1.0.0+50  => 1.1.0+51
+#   ./misc/release/pump-version.sh -m true                      # 1.0.0+50  => 1.0.0+51
+#   ./misc/release/pump-version.sh -s minor -m true -r true     # 3.0.0      => 3.1.0-rc.0 (start RC)
+#   ./misc/release/pump-version.sh -m true -r true              # 3.1.0-rc.0 => 3.1.0-rc.1 (iterate RC)
+#   ./misc/release/pump-version.sh -m true                      # 3.1.0-rc.1 => 3.1.0      (finalize RC)
 #
 
 SERVER_PUMP="false"
@@ -30,8 +44,8 @@ while getopts 's:m:r:' flag; do
   esac
 done
 
-if [[ "$RC" != "true" && "$RC" != "false" && "$RC" != "finalize" ]]; then
-  echo "Expected <true|false|finalize> for the -r argument"
+if [[ "$RC" != "true" && "$RC" != "false" ]]; then
+  echo "Expected <true|false> for the -r argument"
   exit 1
 fi
 
@@ -47,27 +61,15 @@ fi
 
 # Validate RC/server-bump combinations against current version state
 if [[ -n "$CURRENT_RC_NUM" ]]; then
-  # Currently on an RC
-  if [[ "$RC" == "false" ]]; then
-    echo "Current version $CURRENT_SERVER is a release candidate. Pass -r true to iterate the RC or -r finalize to finalize the release."
-    exit 1
-  fi
-  if [[ "$RC" == "true" && "$SERVER_PUMP" != "false" ]]; then
-    echo "Cannot start a new RC while still on an RC; finalize first."
-    exit 1
-  fi
-  if [[ "$RC" == "finalize" && "$SERVER_PUMP" != "false" ]]; then
-    echo "Finalize takes no server bump."
+  # Currently on an RC: -r true iterates, -r false finalizes. Either way, a server bump is invalid.
+  if [[ "$SERVER_PUMP" != "false" ]]; then
+    echo "Cannot bump server while on an RC ($CURRENT_SERVER); finalize first by re-running with -r false and no -s."
     exit 1
   fi
 else
   # Not currently on an RC
   if [[ "$RC" == "true" && "$SERVER_PUMP" == "false" ]]; then
     echo "Starting an RC requires a server bump."
-    exit 1
-  fi
-  if [[ "$RC" == "finalize" ]]; then
-    echo "Nothing to finalize."
     exit 1
   fi
 fi
@@ -78,7 +80,7 @@ if [[ "$SERVER_PUMP" != "major" && "$SERVER_PUMP" != "minor" && "$SERVER_PUMP" !
 fi
 
 NEXT_SERVER="$CURRENT_SERVER"
-if [[ "$SERVER_PUMP" == "false" && "$RC" == "false" ]]; then
+if [[ "$SERVER_PUMP" == "false" && "$RC" == "false" && -z "$CURRENT_RC_NUM" ]]; then
   echo 'Skipping Server Pump'
 else
   npm version "$CURRENT_SERVER" --allow-same-version --no-git-tag-version || exit 1
@@ -87,7 +89,8 @@ else
     npm version prerelease --no-git-tag-version || exit 1
   elif [[ "$RC" == "true" ]]; then
     npm version "pre$SERVER_PUMP" --preid=rc --no-git-tag-version || exit 1
-  elif [[ "$RC" == "finalize" ]]; then
+  elif [[ -n "$CURRENT_RC_NUM" ]]; then
+    # rc=false while on an RC → finalize
     npm version "$CURRENT_BASE" --no-git-tag-version || exit 1
   else
     npm version "$SERVER_PUMP" --no-git-tag-version || exit 1

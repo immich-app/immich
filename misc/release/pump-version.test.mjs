@@ -250,10 +250,10 @@ test('iterates an existing RC', (t) => {
   assert.equal(fixture.hasFile('archive-version.calls'), false);
 });
 
-test('finalizes an existing RC', (t) => {
+test('finalizes an existing RC when rc is false', (t) => {
   const fixture = makeFixture(t, { rootVersion: '2.7.5', serverVersion: '3.1.0-rc.1', mobileBuild: 3048 });
 
-  const result = fixture.run('-m', 'false', '-r', 'finalize');
+  const result = fixture.run('-m', 'false', '-r', 'false');
 
   assertCommandPassed(result);
   assertPackageVersions(fixture, '3.1.0');
@@ -288,13 +288,23 @@ test('bumps mobile only', (t) => {
   assert.equal(fixture.hasFile('archive-version.calls'), false);
 });
 
-test('rejects starting a new RC while already on an RC', (t) => {
+test('rejects a server bump while on an RC', (t) => {
   const fixture = makeFixture(t, { rootVersion: '2.7.5', serverVersion: '3.1.0-rc.0', mobileBuild: 3048 });
 
   const result = fixture.run('-s', 'patch', '-r', 'true');
 
   assert.notEqual(result.status, 0);
-  assert.match(result.stdout, /Cannot start a new RC while still on an RC; finalize first\./);
+  assert.match(result.stdout, /Cannot bump server while on an RC/);
   assert.equal(packageVersion(fixture.path), '2.7.5');
   assert.equal(packageVersion(fixture.file('server')), '3.1.0-rc.0');
+});
+
+test('rejects a server bump while finalizing an RC', (t) => {
+  const fixture = makeFixture(t, { rootVersion: '2.7.5', serverVersion: '3.1.0-rc.1', mobileBuild: 3048 });
+
+  const result = fixture.run('-s', 'patch', '-r', 'false');
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stdout, /Cannot bump server while on an RC/);
+  assert.equal(packageVersion(fixture.file('server')), '3.1.0-rc.1');
 });

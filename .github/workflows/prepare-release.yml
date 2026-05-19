@@ -18,14 +18,10 @@ on:
         required: false
         type: boolean
       rc:
-        description: 'Release candidate mode'
+        description: 'Release candidate'
         required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'false'
-          - 'true'
-          - 'finalize'
+        default: false
+        type: boolean
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -118,7 +114,7 @@ jobs:
 
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
-      environment: ${{ inputs.rc != 'false' && 'rc' || 'production' }}
+      environment: ${{ inputs.rc && 'rc' || 'production' }}
 
   prepare_release:
     runs-on: ubuntu-latest
@@ -150,7 +146,7 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           draft: true
-          prerelease: ${{ inputs.rc == 'true' }}
+          prerelease: ${{ inputs.rc }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
