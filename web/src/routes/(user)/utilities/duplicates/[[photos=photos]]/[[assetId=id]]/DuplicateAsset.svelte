@@ -1,103 +1,42 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
-  import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
+  import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
-  import {
-    mdiBookmarkOutline,
-    mdiCalendar,
-    mdiClock,
-    mdiFile,
-    mdiFitToScreen,
-    mdiFolderOutline,
-    mdiHeart,
-    mdiImageMultipleOutline,
-    mdiImageOutline,
-    mdiMagnifyPlus,
-    mdiMapMarkerOutline,
-  } from '@mdi/js';
+  import { mdiBookmarkOutline, mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import InfoRow from './InfoRow.svelte';
 
   interface Props {
-    assets: AssetResponseDto[];
     asset: AssetResponseDto;
     isSelected: boolean;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
+    differingMetadataFields: DifferingMetadataFields;
+    showMore?: boolean;
+    initialVisibleCount?: number;
   }
 
-  let { assets, asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+  let {
+    asset,
+    isSelected,
+    onSelectAsset,
+    onViewAsset,
+    differingMetadataFields,
+    showMore = false,
+    initialVisibleCount = 5,
+  }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
 
-  let locationParts = $derived([asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean));
-
-  let timeZone = $derived(asset.exifInfo?.timeZone);
-  let dateTime = $derived(
-    timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset.localDateTime),
+  const visibleMetadataItems = $derived(
+    getAllMetadataItems(asset, $t, $locale)
+      .filter(({ keys }) => keys.some((k) => differingMetadataFields[k]))
+      .slice(0, showMore ? undefined : initialVisibleCount),
   );
-
-  const isDifferent = (getter: (asset: AssetResponseDto) => string | undefined): boolean => {
-    return new Set(assets.map((asset) => getter(asset))).size > 1;
-  };
-
-  const hasDifferentValues = $derived({
-    fileName: isDifferent((a) => a.originalFileName),
-    fileSize: isDifferent((a) => getFileSize(a)),
-    resolution: isDifferent((a) => getAssetResolution(a)),
-    originalPath: isDifferent((a) => a.originalPath ?? $t('unknown')),
-    date: isDifferent((a) => {
-      const tz = a.exifInfo?.timeZone;
-      const dt =
-        tz && a.exifInfo?.dateTimeOriginal
-          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
-          : fromISODateTimeUTC(a.localDateTime);
-      return dt?.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale });
-    }),
-    time: isDifferent((a) => {
-      const tz = a.exifInfo?.timeZone;
-      const dt =
-        tz && a.exifInfo?.dateTimeOriginal
-          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
-          : fromISODateTimeUTC(a.localDateTime);
-      return dt?.toLocaleString(
-        {
-          hour: 'numeric',
-          minute: '2-digit',
-          second: '2-digit',
-          timeZoneName: tz ? 'shortOffset' : undefined,
-        },
-        { locale: $locale },
-      );
-    }),
-    location: isDifferent(
-      (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
-    ),
-  });
-
-  const getBasePath = (fullpath: string, fileName: string): string => {
-    if (fileName && fullpath.endsWith(fileName)) {
-      return fullpath.slice(0, -(fileName.length + 1));
-    }
-    return fullpath;
-  };
-
-  function truncateMiddle(path: string, maxLength: number = 50): string {
-    if (path.length <= maxLength) {
-      return path;
-    }
-
-    const start = Math.floor(maxLength / 2) - 2;
-    const end = Math.floor(maxLength / 2) - 2;
-
-    return path.slice(0, Math.max(0, start)) + '...' + path.slice(Math.max(0, path.length - end));
-  }
 </script>
 
 <div class="min-w-60 flex-1 rounded-lg border transition-colors">
@@ -166,69 +105,13 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    <InfoRow
-      icon={mdiImageOutline}
-      highlight={hasDifferentValues.fileName}
-      title={$t('file_name_with_value', { values: { file_name: asset.originalFileName ?? '' } })}
-    >
-      {asset.originalFileName}
-    </InfoRow>
+    {#each visibleMetadataItems as { icon, title, render, keys } (keys[0])}
+      <InfoRow {icon} {title}>
+        {render}
+      </InfoRow>
+    {/each}
 
-    <InfoRow
-      icon={mdiFolderOutline}
-      highlight={hasDifferentValues.originalPath}
-      title={$t('full_path', { values: { path: asset.originalPath } })}
-    >
-      {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
-    </InfoRow>
-
-    <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
-      {getFileSize(asset)}
-    </InfoRow>
-
-    <InfoRow icon={mdiFitToScreen} highlight={hasDifferentValues.resolution} title={$t('resolution')}>
-      {getAssetResolution(asset)}
-    </InfoRow>
-
-    <InfoRow icon={mdiCalendar} highlight={hasDifferentValues.date} title={$t('date')}>
-      {#if dateTime}
-        {dateTime.toLocaleString(
-          {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          },
-          { locale: $locale },
-        )}
-      {:else}
-        {$t('unknown')}
-      {/if}
-    </InfoRow>
-
-    <InfoRow icon={mdiClock} highlight={hasDifferentValues.time} title={$t('time')}>
-      {#if dateTime}
-        {dateTime.toLocaleString(
-          {
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZoneName: timeZone ? 'shortOffset' : undefined,
-          },
-          { locale: $locale },
-        )}
-      {:else}
-        {$t('unknown')}
-      {/if}
-    </InfoRow>
-
-    <InfoRow icon={mdiMapMarkerOutline} highlight={hasDifferentValues.location} title={$t('location')}>
-      {#if locationParts.length > 0}
-        {locationParts.join(', ')}
-      {:else}
-        {$t('unknown')}
-      {/if}
-    </InfoRow>
-
+    <!-- Albums always shown -->
     <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}

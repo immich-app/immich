@@ -1,0 +1,258 @@
+{
+  "name": "immich-plugin-core",
+  "version": "2.0.1",
+  "title": "Immich Core Plugin",
+  "description": "Core workflow capabilities for Immich",
+  "author": "Immich Team",
+  "wasmPath": "dist/plugin.wasm",
+  "methods": [
+    {
+      "name": "assetFileFilter",
+      "title": "Filter by filename",
+      "description": "Filter assets by filename pattern using text matching or regular expressions",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "title": "Filename pattern",
+            "description": "Text or regex pattern to match against filename"
+          },
+          "matchType": {
+            "type": "string",
+            "title": "Match type",
+            "enum": ["contains", "startsWith", "exact", "regex"],
+            "default": "contains",
+            "description": "Type of pattern matching to perform"
+          },
+          "caseSensitive": {
+            "type": "boolean",
+            "default": false,
+            "title": "Case sensitive",
+            "description": "Whether matching should be case-sensitive"
+          }
+        },
+        "required": ["pattern"]
+      },
+      "uiHints": ["filter"]
+    },
+    {
+      "name": "filterFileType",
+      "title": "Filter by file type",
+      "description": "Filter assets by file type",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "fileTypes": {
+            "title": "File types",
+            "description": "Allowed file types",
+            "type": "string",
+            "array": true,
+            "enum": ["image", "video"]
+          }
+        },
+        "required": ["fileTypes"]
+      },
+      "uiHints": ["filter"]
+    },
+    {
+      "name": "filterPerson",
+      "title": "Filter by person",
+      "description": "Filter by detected person",
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "personIds": {
+            "type": "string",
+            "array": true,
+            "title": "Person IDs",
+            "description": "List of person to match",
+            "uiHint": "personI"
+          },
+          "matchAny": {
+            "type": "boolean",
+            "title": "Match any",
+            "default": true,
+            "description": "Match any name (true) or require all names (false)"
+          }
+        },
+        "required": ["personIds"]
+      },
+      "uiHints": ["filter"]
+    },
+    {
+      "name": "assetArchive",
+      "title": "Archive asset",
+      "description": "Change asset visibility to archive",
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "inverse": {
+            "title": "Inverse",
+            "description": "When true will unarchive any archived assets",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "assetLock",
+      "title": "Move to locked folder",
+      "description": "Change visibility to locked",
+      "types": ["AssetV1"]
+    },
+    {
+      "name": "assetTimeline",
+      "title": "Move to timeline",
+      "description": "Change visibility to timeline",
+      "types": ["AssetV1"]
+    },
+    {
+      "name": "assetVisibility",
+      "title": "Update visibility",
+      "description": "Change visibility to selected option",
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "visibility": {
+            "title": "Visibility",
+            "description": "Asset visibility",
+            "type": "string",
+            "enum": ["archive", "timeline", "locked"]
+          }
+        },
+        "required": ["visibility"]
+      }
+    },
+    {
+      "name": "assetFavorite",
+      "title": "Favorite",
+      "description": "Favorite an asset",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "inverse": {
+            "type": "boolean",
+            "title": "Inverse",
+            "description": "Unfavorite by default, set to true to favorite instead",
+            "default": false
+          }
+        }
+      }
+    },
+    {
+      "name": "assetAddToAlbums",
+      "title": "Add to Album(s)",
+      "description": "Add asset to selected albums",
+      "types": ["AssetV1"],
+      "hostFunctions": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "albumIds": {
+            "type": "string",
+            "title": "Album IDs",
+            "array": true,
+            "description": "Target album IDs",
+            "uiHint": "albumId"
+          }
+        },
+        "required": ["albumIds"]
+      }
+    },
+    {
+      "name": "noop1",
+      "title": "DEV: Nested properties",
+      "description": "Example configuration with nested properties",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "number1": {
+            "type": "number",
+            "title": "Number 1",
+            "description": "Basic number"
+          },
+          "number2": {
+            "type": "number",
+            "title": "Number 2",
+            "array": true,
+            "description": "List of numbers"
+          },
+          "string1": {
+            "type": "string",
+            "title": "String 1",
+            "description": "Basic string"
+          },
+          "string2": {
+            "type": "string",
+            "title": "String 2",
+            "array": true,
+            "description": "List of strings"
+          },
+          "string3": {
+            "type": "string",
+            "title": "String 3",
+            "enum": ["choice-1", "choice-2"],
+            "description": "Select from a list"
+          },
+          "nested": {
+            "type": "object",
+            "title": "Nested",
+            "description": "Nested properties for nesting",
+            "properties": {
+              "nested1": {
+                "type": "string",
+                "title": "Nested 1",
+                "description": "Nested string"
+              },
+              "nested2": {
+                "type": "number",
+                "title": "Nested 2",
+                "description": "Nested number"
+              },
+              "nested3": {
+                "type": "object",
+                "title": "Nested 3",
+                "description": "Nested again",
+                "properties": {
+                  "nested4": {
+                    "type": "boolean",
+                    "title": "Nested 4",
+                    "description": "Nested, nested boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "noop2",
+      "title": "DEV: Album pickers",
+      "description": "Example configuration with album pickers",
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "albumId": {
+            "type": "string",
+            "title": "Album ID",
+            "description": "Target album ID",
+            "uiHint": "albumId"
+          },
+          "albumIds": {
+            "type": "string",
+            "title": "Album IDs",
+            "description": "Target album IDs",
+            "array": true,
+            "uiHint": "albumId"
+          }
+        }
+      }
+    }
+  ]
+}

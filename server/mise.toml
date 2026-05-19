@@ -58,6 +58,7 @@ run = "email dev -p 3050 --dir src/emails"
 [tasks.ci-unit]
 run = [
   { task = ":install" },
+  { task = "//:plugins" },
   { task = ":format" },
   { task = ":lint" },
   { task = ":check" },
@@ -67,6 +68,7 @@ run = [
 [tasks.ci-medium]
 run = [
   { task = ":install" },
+  { task = "//packages/plugin-core:build" },
   { task = ":test-medium --run" },
 ]
 
