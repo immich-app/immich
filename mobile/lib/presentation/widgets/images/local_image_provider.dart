@@ -108,7 +108,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
     if (loadPreview) {
       final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-      final previewRequest = this.request = LocalImageRequest(
+      final previewRequest = request = LocalImageRequest(
         localId: key.id,
         size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
         assetType: key.assetType,
