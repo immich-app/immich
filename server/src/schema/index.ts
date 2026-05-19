@@ -60,7 +60,8 @@ import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
+import { PluginMethodTable } from 'src/schema/tables/plugin-method.table';
+import { PluginTable } from 'src/schema/tables/plugin.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
@@ -82,7 +83,8 @@ import {
   VideoStreamSessionTable,
   VideoStreamVariantTable,
 } from 'src/schema/tables/video-stream.table';
-import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
+import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
+import { WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @Database({ name: 'immich' })
@@ -143,11 +145,9 @@ export class ImmichDatabase {
     VideoStreamVariantTable,
     VideoStreamSegmentTable,
     PluginTable,
-    PluginFilterTable,
-    PluginActionTable,
+    PluginMethodTable,
     WorkflowTable,
-    WorkflowFilterTable,
-    WorkflowActionTable,
+    WorkflowStepTable,
   ];
 
   functions = [
@@ -264,10 +264,8 @@ export interface DB {
   video_stream_segment: VideoStreamSegmentTable;
 
   plugin: PluginTable;
-  plugin_filter: PluginFilterTable;
-  plugin_action: PluginActionTable;
+  plugin_method: PluginMethodTable;
 
   workflow: WorkflowTable;
-  workflow_filter: WorkflowFilterTable;
-  workflow_action: WorkflowActionTable;
+  workflow_step: WorkflowStepTable;
 }

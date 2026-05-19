@@ -11,9 +11,6 @@
             "required": true,
             "in": "query",
             "description": "Album ID",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -25,9 +22,6 @@
             "required": false,
             "in": "query",
             "description": "Asset ID (if activity is for an asset)",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -38,9 +32,6 @@
             "name": "level",
             "required": false,
             "in": "query",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "$ref": "#/components/schemas/ReactionLevel"
             }
@@ -49,9 +40,6 @@
             "name": "type",
             "required": false,
             "in": "query",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "$ref": "#/components/schemas/ReactionType"
             }
@@ -61,9 +49,6 @@
             "required": false,
             "in": "query",
             "description": "Filter by user ID",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -187,9 +172,6 @@
             "required": true,
             "in": "query",
             "description": "Album ID",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -201,9 +183,6 @@
             "required": false,
             "in": "query",
             "description": "Asset ID (if activity is for an asset)",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -1641,7 +1620,7 @@
             "name": "assetId",
             "required": false,
             "in": "query",
-            "description": "Filter albums containing this asset ID (ignores shared parameter)",
+            "description": "Filter albums containing this asset ID (ignores other parameters)",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -1649,10 +1628,19 @@
             }
           },
           {
-            "name": "shared",
+            "name": "isOwned",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
+            "description": "Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isShared",
+            "required": false,
+            "in": "query",
+            "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",
             "schema": {
               "type": "boolean"
             }
@@ -8611,8 +8599,61 @@
     "/plugins": {
       "get": {
         "description": "Retrieve a list of plugins available to the authenticated user.",
-        "operationId": "getPlugins",
-        "parameters": [],
+        "operationId": "searchPlugins",
+        "parameters": [
+          {
+            "name": "description",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enabled",
+            "required": false,
+            "in": "query",
+            "description": "Whether the plugin is enabled",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Plugin ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -8645,30 +8686,106 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "plugin.read",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "plugin.read"
       }
     },
-    "/plugins/triggers": {
+    "/plugins/methods": {
       "get": {
-        "description": "Retrieve a list of all available plugin triggers.",
-        "operationId": "getPluginTriggers",
-        "parameters": [],
+        "description": "Retrieve a list of plugin methods",
+        "operationId": "searchPluginMethods",
+        "parameters": [
+          {
+            "name": "description",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enabled",
+            "required": false,
+            "in": "query",
+            "description": "Whether the plugin method is enabled",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Plugin method ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pluginName",
+            "required": false,
+            "in": "query",
+            "description": "Plugin name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pluginVersion",
+            "required": false,
+            "in": "query",
+            "description": "Plugin version",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "title",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trigger",
+            "required": false,
+            "in": "query",
+            "description": "Workflow trigger",
+            "schema": {
+              "$ref": "#/components/schemas/WorkflowTrigger"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Workflow types",
+            "schema": {
+              "$ref": "#/components/schemas/WorkflowType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/PluginTriggerResponseDto"
+                    "$ref": "#/components/schemas/PluginMethodResponseDto"
                   },
                   "type": "array"
                 }
@@ -8688,22 +8805,17 @@
             "api_key": []
           }
         ],
-        "summary": "List all plugin triggers",
+        "summary": "Retrieve plugin methods",
         "tags": [
           "Plugins"
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "plugin.read",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "plugin.read"
       }
     },
     "/plugins/{id}": {
@@ -8751,16 +8863,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "plugin.read",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "plugin.read"
       }
     },
     "/queues": {
@@ -13314,6 +13421,15 @@
             }
           },
           {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrderBy"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -13501,6 +13617,15 @@
             "description": "Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrderBy"
             }
           },
           {
@@ -14695,8 +14820,56 @@
     "/workflows": {
       "get": {
         "description": "Retrieve a list of workflows available to the authenticated user.",
-        "operationId": "getWorkflows",
-        "parameters": [],
+        "operationId": "searchWorkflows",
+        "parameters": [
+          {
+            "name": "description",
+            "required": false,
+            "in": "query",
+            "description": "Workflow description",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enabled",
+            "required": false,
+            "in": "query",
+            "description": "Workflow enabled",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Workflow ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Workflow name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trigger",
+            "required": false,
+            "in": "query",
+            "description": "Workflow trigger type",
+            "schema": {
+              "$ref": "#/components/schemas/WorkflowTrigger"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -14729,16 +14902,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "workflow.read",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "workflow.read"
       },
       "post": {
         "description": "Create a new workflow, the workflow can also be created with empty filters and actions.",
@@ -14783,16 +14951,54 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "workflow.create",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "workflow.create"
+      }
+    },
+    "/workflows/triggers": {
+      "get": {
+        "description": "Retrieve a list of all available workflow triggers.",
+        "operationId": "getWorkflowTriggers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowTriggerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all workflow triggers",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ]
       }
     },
     "/workflows/{id}": {
@@ -14833,16 +15039,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "workflow.delete",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "workflow.delete"
       },
       "get": {
         "description": "Retrieve information about a specific workflow by its ID.",
@@ -14888,16 +15089,11 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "workflow.read",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "workflow.read"
       },
       "put": {
         "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
@@ -14953,16 +15149,63 @@
         ],
         "x-immich-history": [
           {
-            "version": "v2.3.0",
+            "version": "v3.0.0",
             "state": "Added"
-          },
-          {
-            "version": "v2.3.0",
-            "state": "Alpha"
           }
         ],
-        "x-immich-permission": "workflow.update",
-        "x-immich-state": "Alpha"
+        "x-immich-permission": "workflow.update"
+      }
+    },
+    "/workflows/{id}/share": {
+      "get": {
+        "description": "Retrieve a workflow details without ids, default values, etc.",
+        "operationId": "getWorkflowForShare",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowShareResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "workflow.read"
       }
     }
   },
@@ -16013,6 +16256,7 @@
         "type": "object"
       },
       "AssetFaceResponseDto": {
+        "description": "Asset face with person",
         "properties": {
           "boundingBoxX1": {
             "description": "Bounding box X1 coordinate",
@@ -16116,66 +16360,6 @@
         ],
         "type": "object"
       },
-      "AssetFaceWithoutPersonResponseDto": {
-        "description": "Asset face without person",
-        "properties": {
-          "boundingBoxX1": {
-            "description": "Bounding box X1 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxX2": {
-            "description": "Bounding box X2 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxY1": {
-            "description": "Bounding box Y1 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "boundingBoxY2": {
-            "description": "Bounding box Y2 coordinate",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "id": {
-            "description": "Face ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          },
-          "imageHeight": {
-            "description": "Image height in pixels",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "imageWidth": {
-            "description": "Image width in pixels",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "sourceType": {
-            "$ref": "#/components/schemas/SourceType"
-          }
-        },
-        "required": [
-          "boundingBoxX1",
-          "boundingBoxX2",
-          "boundingBoxY1",
-          "boundingBoxY2",
-          "id",
-          "imageHeight",
-          "imageWidth"
-        ],
-        "type": "object"
-      },
       "AssetIdErrorReason": {
         "description": "Error reason if failed",
         "enum": [
@@ -16262,7 +16446,7 @@
           },
           "duration": {
             "description": "Duration in milliseconds (for videos)",
-            "maximum": 2147483647,
+            "maximum": 9007199254740991,
             "minimum": 0,
             "type": "integer"
           },
@@ -16607,6 +16791,14 @@
         ],
         "type": "string"
       },
+      "AssetOrderBy": {
+        "description": "Asset sorting property",
+        "enum": [
+          "takenAt",
+          "createdAt"
+        ],
+        "type": "string"
+      },
       "AssetRejectReason": {
         "description": "Rejection reason if rejected",
         "enum": [
@@ -16746,7 +16938,7 @@
           },
           "people": {
             "items": {
-              "$ref": "#/components/schemas/PersonWithFacesResponseDto"
+              "$ref": "#/components/schemas/PersonResponseDto"
             },
             "type": "array"
           },
@@ -16786,12 +16978,6 @@
           },
           "type": {
             "$ref": "#/components/schemas/AssetTypeEnum"
-          },
-          "unassignedFaces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
           },
           "updatedAt": {
             "description": "The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.",
@@ -16920,7 +17106,6 @@
         "enum": [
           "mp3",
           "aac",
-          "libopus",
           "opus",
           "pcm_s16le"
         ],
@@ -17922,7 +18107,7 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "WorkflowAssetCreate"
         ],
         "type": "string"
       },
@@ -19756,93 +19941,6 @@
         },
         "type": "object"
       },
-      "PersonWithFacesResponseDto": {
-        "properties": {
-          "birthDate": {
-            "description": "Person date of birth",
-            "format": "date",
-            "nullable": true,
-            "type": "string"
-          },
-          "color": {
-            "description": "Person color (hex)",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "faces": {
-            "items": {
-              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
-            },
-            "type": "array"
-          },
-          "id": {
-            "description": "Person ID",
-            "type": "string"
-          },
-          "isFavorite": {
-            "description": "Is favorite",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "isHidden": {
-            "description": "Is hidden",
-            "type": "boolean"
-          },
-          "name": {
-            "description": "Person name",
-            "type": "string"
-          },
-          "thumbnailPath": {
-            "description": "Thumbnail path",
-            "type": "string"
-          },
-          "updatedAt": {
-            "description": "Last update date",
-            "format": "date-time",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.107.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          }
-        },
-        "required": [
-          "birthDate",
-          "faces",
-          "id",
-          "isHidden",
-          "name",
-          "thumbnailPath"
-        ],
-        "type": "object"
-      },
       "PinCodeChangeDto": {
         "properties": {
           "newPinCode": {
@@ -19927,206 +20025,59 @@
         ],
         "type": "object"
       },
-      "PluginActionResponseDto": {
+      "PluginMethodResponseDto": {
         "properties": {
           "description": {
-            "description": "Action description",
+            "description": "Description",
             "type": "string"
           },
-          "id": {
-            "description": "Action ID",
-            "type": "string"
-          },
-          "methodName": {
-            "description": "Method name",
-            "type": "string"
-          },
-          "pluginId": {
-            "description": "Plugin ID",
-            "type": "string"
-          },
-          "schema": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PluginJsonSchema"
-              }
-            ],
-            "description": "Action schema",
-            "nullable": true
-          },
-          "supportedContexts": {
-            "description": "Supported contexts",
-            "items": {
-              "$ref": "#/components/schemas/PluginContextType"
-            },
-            "type": "array"
-          },
-          "title": {
-            "description": "Action title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "description",
-          "id",
-          "methodName",
-          "pluginId",
-          "schema",
-          "supportedContexts",
-          "title"
-        ],
-        "type": "object"
-      },
-      "PluginConfigValue": {},
-      "PluginContextType": {
-        "description": "Plugin context",
-        "enum": [
-          "asset",
-          "album",
-          "person"
-        ],
-        "type": "string"
-      },
-      "PluginFilterResponseDto": {
-        "properties": {
-          "description": {
-            "description": "Filter description",
-            "type": "string"
-          },
-          "id": {
-            "description": "Filter ID",
-            "type": "string"
-          },
-          "methodName": {
-            "description": "Method name",
-            "type": "string"
-          },
-          "pluginId": {
-            "description": "Plugin ID",
-            "type": "string"
-          },
-          "schema": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PluginJsonSchema"
-              }
-            ],
-            "description": "Filter schema",
-            "nullable": true
-          },
-          "supportedContexts": {
-            "description": "Supported contexts",
-            "items": {
-              "$ref": "#/components/schemas/PluginContextType"
-            },
-            "type": "array"
-          },
-          "title": {
-            "description": "Filter title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "description",
-          "id",
-          "methodName",
-          "pluginId",
-          "schema",
-          "supportedContexts",
-          "title"
-        ],
-        "type": "object"
-      },
-      "PluginJsonSchema": {
-        "properties": {
-          "additionalProperties": {
+          "hostFunctions": {
             "type": "boolean"
           },
-          "description": {
+          "key": {
+            "description": "Key",
             "type": "string"
           },
-          "properties": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/PluginJsonSchemaProperty"
-            },
-            "type": "object"
-          },
-          "required": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "type": {
-            "$ref": "#/components/schemas/PluginJsonSchemaType"
-          }
-        },
-        "type": "object"
-      },
-      "PluginJsonSchemaProperty": {
-        "properties": {
-          "additionalProperties": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "$ref": "#/components/schemas/PluginJsonSchemaProperty"
-              }
-            ]
-          },
-          "default": {},
-          "description": {
+          "name": {
+            "description": "Name",
             "type": "string"
           },
-          "enum": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "items": {
-            "$ref": "#/components/schemas/PluginJsonSchemaProperty"
-          },
-          "properties": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/PluginJsonSchemaProperty"
-            },
+          "schema": {
+            "properties": {},
             "type": "object"
           },
-          "required": {
+          "title": {
+            "description": "Title",
+            "type": "string"
+          },
+          "types": {
+            "description": "Workflow types",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowType"
+            },
+            "type": "array"
+          },
+          "uiHints": {
+            "description": "Ui hints",
             "items": {
               "type": "string"
             },
             "type": "array"
-          },
-          "type": {
-            "$ref": "#/components/schemas/PluginJsonSchemaType"
           }
         },
-        "type": "object"
-      },
-      "PluginJsonSchemaType": {
-        "enum": [
-          "string",
-          "number",
-          "integer",
-          "boolean",
-          "object",
-          "array",
-          "null"
+        "required": [
+          "description",
+          "hostFunctions",
+          "key",
+          "name",
+          "title",
+          "types",
+          "uiHints"
         ],
-        "type": "string"
+        "type": "object"
       },
       "PluginResponseDto": {
         "properties": {
-          "actions": {
-            "description": "Plugin actions",
-            "items": {
-              "$ref": "#/components/schemas/PluginActionResponseDto"
-            },
-            "type": "array"
-          },
           "author": {
             "description": "Plugin author",
             "type": "string"
@@ -20139,16 +20090,16 @@
             "description": "Plugin description",
             "type": "string"
           },
-          "filters": {
-            "description": "Plugin filters",
-            "items": {
-              "$ref": "#/components/schemas/PluginFilterResponseDto"
-            },
-            "type": "array"
-          },
           "id": {
             "description": "Plugin ID",
             "type": "string"
+          },
+          "methods": {
+            "description": "Plugin methods",
+            "items": {
+              "$ref": "#/components/schemas/PluginMethodResponseDto"
+            },
+            "type": "array"
           },
           "name": {
             "description": "Plugin name",
@@ -20168,41 +20119,17 @@
           }
         },
         "required": [
-          "actions",
           "author",
           "createdAt",
           "description",
-          "filters",
           "id",
+          "methods",
           "name",
           "title",
           "updatedAt",
           "version"
         ],
         "type": "object"
-      },
-      "PluginTriggerResponseDto": {
-        "properties": {
-          "contextType": {
-            "$ref": "#/components/schemas/PluginContextType"
-          },
-          "type": {
-            "$ref": "#/components/schemas/PluginTriggerType"
-          }
-        },
-        "required": [
-          "contextType",
-          "type"
-        ],
-        "type": "object"
-      },
-      "PluginTriggerType": {
-        "description": "Plugin trigger type",
-        "enum": [
-          "AssetCreate",
-          "PersonRecognized"
-        ],
-        "type": "string"
       },
       "PurchaseResponse": {
         "properties": {
@@ -23058,6 +22985,14 @@
             "description": "Checksum",
             "type": "string"
           },
+          "createdAt": {
+            "description": "Uploaded to Immich at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
           "deletedAt": {
             "description": "Deleted at",
             "example": "2024-01-01T00:00:00.000Z",
@@ -23158,6 +23093,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deletedAt",
           "duration",
           "fileCreatedAt",
@@ -23183,6 +23119,14 @@
         "properties": {
           "checksum": {
             "description": "Checksum",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Uploaded to Immich at",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "deletedAt": {
@@ -23287,6 +23231,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deletedAt",
           "duration",
           "fileCreatedAt",
@@ -25135,6 +25080,13 @@
             },
             "type": "array"
           },
+          "createdAt": {
+            "description": "Array of UTC timestamps when each asset was originally uploaded to Immich",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "duration": {
             "description": "Array of video/gif durations in milliseconds (null for static images)",
             "items": {
@@ -25265,6 +25217,7 @@
         "required": [
           "city",
           "country",
+          "createdAt",
           "duration",
           "fileCreatedAt",
           "id",
@@ -26101,195 +26054,52 @@
         ],
         "type": "string"
       },
-      "WorkflowActionConfig": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/PluginConfigValue"
-        },
-        "type": "object"
-      },
-      "WorkflowActionItemDto": {
-        "properties": {
-          "actionConfig": {
-            "$ref": "#/components/schemas/WorkflowActionConfig"
-          },
-          "pluginActionId": {
-            "description": "Plugin action ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "pluginActionId"
-        ],
-        "type": "object"
-      },
-      "WorkflowActionResponseDto": {
-        "properties": {
-          "actionConfig": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/WorkflowActionConfig"
-              }
-            ],
-            "nullable": true
-          },
-          "id": {
-            "description": "Action ID",
-            "type": "string"
-          },
-          "order": {
-            "description": "Action order",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "pluginActionId": {
-            "description": "Plugin action ID",
-            "type": "string"
-          },
-          "workflowId": {
-            "description": "Workflow ID",
-            "type": "string"
-          }
-        },
-        "required": [
-          "actionConfig",
-          "id",
-          "order",
-          "pluginActionId",
-          "workflowId"
-        ],
-        "type": "object"
-      },
       "WorkflowCreateDto": {
         "properties": {
-          "actions": {
-            "description": "Workflow actions",
-            "items": {
-              "$ref": "#/components/schemas/WorkflowActionItemDto"
-            },
-            "type": "array"
-          },
           "description": {
             "description": "Workflow description",
+            "nullable": true,
             "type": "string"
           },
           "enabled": {
             "description": "Workflow enabled",
             "type": "boolean"
           },
-          "filters": {
-            "description": "Workflow filters",
+          "name": {
+            "description": "Workflow name",
+            "nullable": true,
+            "type": "string"
+          },
+          "steps": {
             "items": {
-              "$ref": "#/components/schemas/WorkflowFilterItemDto"
+              "$ref": "#/components/schemas/WorkflowStepDto"
             },
             "type": "array"
           },
-          "name": {
-            "description": "Workflow name",
-            "type": "string"
-          },
-          "triggerType": {
-            "$ref": "#/components/schemas/PluginTriggerType"
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger type"
           }
         },
         "required": [
-          "actions",
-          "filters",
-          "name",
-          "triggerType"
-        ],
-        "type": "object"
-      },
-      "WorkflowFilterConfig": {
-        "additionalProperties": {
-          "$ref": "#/components/schemas/PluginConfigValue"
-        },
-        "type": "object"
-      },
-      "WorkflowFilterItemDto": {
-        "properties": {
-          "filterConfig": {
-            "$ref": "#/components/schemas/WorkflowFilterConfig"
-          },
-          "pluginFilterId": {
-            "description": "Plugin filter ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "pluginFilterId"
-        ],
-        "type": "object"
-      },
-      "WorkflowFilterResponseDto": {
-        "properties": {
-          "filterConfig": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/WorkflowFilterConfig"
-              }
-            ],
-            "nullable": true
-          },
-          "id": {
-            "description": "Filter ID",
-            "type": "string"
-          },
-          "order": {
-            "description": "Filter order",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "pluginFilterId": {
-            "description": "Plugin filter ID",
-            "type": "string"
-          },
-          "workflowId": {
-            "description": "Workflow ID",
-            "type": "string"
-          }
-        },
-        "required": [
-          "filterConfig",
-          "id",
-          "order",
-          "pluginFilterId",
-          "workflowId"
+          "trigger"
         ],
         "type": "object"
       },
       "WorkflowResponseDto": {
         "properties": {
-          "actions": {
-            "description": "Workflow actions",
-            "items": {
-              "$ref": "#/components/schemas/WorkflowActionResponseDto"
-            },
-            "type": "array"
-          },
           "createdAt": {
             "description": "Creation date",
             "type": "string"
           },
           "description": {
             "description": "Workflow description",
+            "nullable": true,
             "type": "string"
           },
           "enabled": {
             "description": "Workflow enabled",
             "type": "boolean"
-          },
-          "filters": {
-            "description": "Workflow filters",
-            "items": {
-              "$ref": "#/components/schemas/WorkflowFilterResponseDto"
-            },
-            "type": "array"
           },
           "id": {
             "description": "Workflow ID",
@@ -26300,57 +26110,173 @@
             "nullable": true,
             "type": "string"
           },
-          "ownerId": {
-            "description": "Owner user ID",
-            "type": "string"
-          },
-          "triggerType": {
-            "$ref": "#/components/schemas/PluginTriggerType"
-          }
-        },
-        "required": [
-          "actions",
-          "createdAt",
-          "description",
-          "enabled",
-          "filters",
-          "id",
-          "name",
-          "ownerId",
-          "triggerType"
-        ],
-        "type": "object"
-      },
-      "WorkflowUpdateDto": {
-        "properties": {
-          "actions": {
-            "description": "Workflow actions",
+          "steps": {
+            "description": "Workflow steps",
             "items": {
-              "$ref": "#/components/schemas/WorkflowActionItemDto"
+              "$ref": "#/components/schemas/WorkflowStepDto"
             },
             "type": "array"
           },
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger type"
+          },
+          "updatedAt": {
+            "description": "Update date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "enabled",
+          "id",
+          "name",
+          "steps",
+          "trigger",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "WorkflowShareResponseDto": {
+        "properties": {
           "description": {
             "description": "Workflow description",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "description": "Workflow name",
+            "nullable": true,
+            "type": "string"
+          },
+          "steps": {
+            "description": "Workflow steps",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowShareStepDto"
+            },
+            "type": "array"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger type"
+          }
+        },
+        "required": [
+          "description",
+          "name",
+          "steps",
+          "trigger"
+        ],
+        "type": "object"
+      },
+      "WorkflowShareStepDto": {
+        "properties": {
+          "config": {
+            "additionalProperties": {},
+            "description": "Step configuration",
+            "nullable": true,
+            "type": "object"
+          },
+          "enabled": {
+            "description": "Step is enabled",
+            "type": "boolean"
+          },
+          "method": {
+            "description": "Step plugin method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "method"
+        ],
+        "type": "object"
+      },
+      "WorkflowStepDto": {
+        "properties": {
+          "config": {
+            "additionalProperties": {},
+            "description": "Step configuration",
+            "nullable": true,
+            "type": "object"
+          },
+          "enabled": {
+            "description": "Step is enabled",
+            "type": "boolean"
+          },
+          "method": {
+            "description": "Step plugin method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "method"
+        ],
+        "type": "object"
+      },
+      "WorkflowTrigger": {
+        "description": "Plugin trigger type",
+        "enum": [
+          "AssetCreate",
+          "PersonRecognized"
+        ],
+        "type": "string"
+      },
+      "WorkflowTriggerResponseDto": {
+        "properties": {
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Trigger type"
+          },
+          "types": {
+            "description": "Workflow types",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowType"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "trigger",
+          "types"
+        ],
+        "type": "object"
+      },
+      "WorkflowType": {
+        "description": "Workflow type",
+        "enum": [
+          "AssetV1",
+          "AssetPersonV1"
+        ],
+        "type": "string"
+      },
+      "WorkflowUpdateDto": {
+        "properties": {
+          "description": {
+            "description": "Workflow description",
+            "nullable": true,
             "type": "string"
           },
           "enabled": {
             "description": "Workflow enabled",
             "type": "boolean"
           },
-          "filters": {
-            "description": "Workflow filters",
+          "name": {
+            "description": "Workflow name",
+            "nullable": true,
+            "type": "string"
+          },
+          "steps": {
             "items": {
-              "$ref": "#/components/schemas/WorkflowFilterItemDto"
+              "$ref": "#/components/schemas/WorkflowStepDto"
             },
             "type": "array"
           },
-          "name": {
-            "description": "Workflow name",
-            "type": "string"
-          },
-          "triggerType": {
-            "$ref": "#/components/schemas/PluginTriggerType"
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger type"
           }
         },
         "type": "object"

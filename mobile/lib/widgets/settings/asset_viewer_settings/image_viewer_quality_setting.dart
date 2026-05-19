@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class ImageViewerQualitySetting extends HookConsumerWidget {
   const ImageViewerQualitySetting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isPreview = useAppSettingsState(AppSettingsEnum.loadPreview);
-    final isOriginal = useAppSettingsState(AppSettingsEnum.loadOriginal);
+    final isPreview = useState(ref.read(appConfigProvider).image.loadPreview);
+    final isOriginal = useState(ref.read(appConfigProvider).image.loadOriginal);
+    useValueChanged<bool, void>(isPreview.value, (_, __) {
+      ref.read(metadataProvider).write(.imageLoadPreview, isPreview.value);
+    });
+    useValueChanged<bool, void>(isOriginal.value, (_, __) {
+      ref.read(metadataProvider).write(.imageLoadOriginal, isOriginal.value);
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

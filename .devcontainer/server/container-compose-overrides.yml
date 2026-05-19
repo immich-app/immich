@@ -16,7 +16,7 @@ services:
       - ${UPLOAD_LOCATION:-upload-devcontainer-volume}${UPLOAD_LOCATION:+/photos}:/data
       - /etc/localtime:/etc/localtime:ro
       - pnpm_store_server:/buildcache/pnpm-store
-      - ../plugins:/build/corePlugin
+      - ../packages/plugin-core:/build/plugins/immich-plugin-core
   immich-web:
     env_file: !reset []
   immich-machine-learning:

@@ -5,6 +5,11 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)')
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person
+ON asset_face_entity (person_id, asset_id)
+WHERE is_visible = 1 AND deleted_at IS NULL
+''')
 class AssetFaceEntity extends Table with DriftDefaultsMixin {
   const AssetFaceEntity();
 

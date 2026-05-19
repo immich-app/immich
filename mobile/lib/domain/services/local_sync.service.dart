@@ -93,8 +93,7 @@ class LocalSyncService {
 
       if (CurrentPlatform.isIOS) {
         // On iOS, we need to full sync albums that are marked as cloud as the delta sync
-        // does not include changes for cloud albums. If ignoreIcloudAssets is enabled,
-        // remove the albums from the local database from the previous sync
+        // does not include changes for cloud albums.
         final cloudAlbums = deviceAlbums.where((a) => a.isCloud).toLocalAlbums();
         for (final album in cloudAlbums) {
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);

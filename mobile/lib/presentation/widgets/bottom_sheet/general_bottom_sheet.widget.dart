@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
@@ -26,6 +27,7 @@ import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.d
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -57,6 +59,9 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
+    final tagsEnabled = ref.watch(
+      userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
+    );
 
     Future<void> addAssetsToAlbum(RemoteAlbum album) async {
       final selectedAssets = multiselect.selectedAssets;
@@ -114,6 +119,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
               : const DeletePermanentActionButton(source: ActionSource.timeline),
           const FavoriteActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
+          if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
           const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(source: ActionSource.timeline),

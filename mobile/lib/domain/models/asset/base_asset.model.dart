@@ -51,12 +51,18 @@ sealed class BaseAsset {
   bool get isAnimatedImage => playbackStyle == AssetPlaybackStyle.imageAnimated;
 
   AssetPlaybackStyle get playbackStyle {
-    if (isVideo) return AssetPlaybackStyle.video;
-    if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
+    if (isVideo) {
+      return AssetPlaybackStyle.video;
+    }
+    if (isMotionPhoto) {
+      return AssetPlaybackStyle.livePhoto;
+    }
     if (isImage && durationMs != null && durationMs! > 0) {
       return AssetPlaybackStyle.imageAnimated;
     }
-    if (isImage) return AssetPlaybackStyle.image;
+    if (isImage) {
+      return AssetPlaybackStyle.image;
+    }
     return AssetPlaybackStyle.unknown;
   }
 
@@ -98,7 +104,9 @@ sealed class BaseAsset {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is BaseAsset) {
       return name == other.name &&
           type == other.type &&

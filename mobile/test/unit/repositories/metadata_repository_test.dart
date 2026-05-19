@@ -13,6 +13,10 @@ void main() {
 
     test('decode falls back to the default value when the raw input is unparseable', () {
       for (final key in MetadataKey.values) {
+        // String keys can decode any string. So skip them
+        if (key.defaultValue is String) {
+          continue;
+        }
         expect(
           key.decode('not a valid encoding for any key'),
           key.defaultValue,

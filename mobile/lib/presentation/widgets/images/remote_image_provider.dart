@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
-import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
@@ -44,7 +43,9 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is RemoteImageProvider) {
       return url == other.url && edited == other.edited;
     }
@@ -108,8 +109,8 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     final isImage = assetType == AssetType.image;
-    final loadOriginal = isImage && AppSetting.get(Setting.loadOriginal);
-    final loadPreview = isImage && AppSetting.get(Setting.loadPreview);
+    final loadOriginal = isImage && MetadataRepository.instance.appConfig.image.loadOriginal;
+    final loadPreview = isImage && MetadataRepository.instance.appConfig.image.loadPreview;
     yield* initialImageStream(isFinal: !loadOriginal && !loadPreview);
 
     if (isCancelled) {
@@ -149,7 +150,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return;
     }
 
-    if (AppSetting.get(Setting.loadPreview)) {
+    if (MetadataRepository.instance.appConfig.image.loadPreview) {
       final previewRequest = request = RemoteImageRequest(
         uri: getThumbnailUrlForRemoteId(
           key.assetId,
@@ -181,7 +182,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is RemoteFullImageProvider) {
       return assetId == other.assetId &&
           thumbhash == other.thumbhash &&

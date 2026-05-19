@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
@@ -47,8 +48,10 @@ class MetadataRepository extends DriftDatabaseRepository {
 
   T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
 
-  Future<void> write<T extends Object>(MetadataKey<T> key, T value) async {
-    if (_read(key) == value) return;
+  Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
+    if (_read(key) == value) {
+      return;
+    }
 
     await _db
         .into(_db.metadataEntity)
@@ -63,9 +66,9 @@ class MetadataRepository extends DriftDatabaseRepository {
     _updateCache(key, key.defaultValue);
   }
 
-  Stream<AppConfig> watchAppConfig() => _watchDomain(MetadataDomain.appConfig).distinct();
+  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).distinct();
 
-  Stream<SystemConfig> watchSystemConfig() => _watchDomain(MetadataDomain.systemConfig).distinct();
+  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).distinct();
 
   Stream<T> _watchDomain<T extends Object>(MetadataDomain<T> domain) {
     final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));
@@ -79,13 +82,17 @@ class MetadataRepository extends DriftDatabaseRepository {
     final keyMap = MetadataKey.asKeyMap();
     for (final row in rows) {
       final key = keyMap[row.key];
-      if (key == null) continue;
+      if (key == null) {
+        continue;
+      }
       _updateCache(key, key.decode(row.value));
     }
   }
 
   void _updateCache<T extends Object>(MetadataKey<T> key, T value) {
-    if (_cache[key] == value) return;
+    if (_cache[key] == value) {
+      return;
+    }
     _cache[key] = value;
     key.domain.rebuild(this);
   }
@@ -100,9 +107,75 @@ extension<T extends Object> on MetadataDomain<T> {
   void rebuild(MetadataRepository repo) {
     switch (this) {
       case .appConfig:
-        repo._appConfig = .new(theme: .new(mode: repo._read(.themeMode)));
+        repo._appConfig = .new(
+          theme: .new(
+            mode: repo._read(.themeMode),
+            primaryColor: repo._read(.themePrimaryColor),
+            dynamicTheme: repo._read(.themeDynamic),
+            colorfulInterface: repo._read(.themeColorfulInterface),
+          ),
+          cleanup: .new(
+            keepFavorites: repo._read(.cleanupKeepFavorites),
+            keepMediaType: repo._read(.cleanupKeepMediaType),
+            keepAlbumIds: repo._read(.cleanupKeepAlbumIds),
+            cutoffDaysAgo: repo._read(.cleanupCutoffDaysAgo),
+            defaultsInitialized: repo._read(.cleanupDefaultsInitialized),
+          ),
+          map: .new(
+            relativeDays: repo._read(.mapRelativeDate),
+            favoritesOnly: repo._read(.mapShowFavoriteOnly),
+            includeArchived: repo._read(.mapIncludeArchived),
+            themeMode: repo._read(.mapThemeMode),
+            withPartners: repo._read(.mapWithPartners),
+          ),
+          timeline: .new(
+            tilesPerRow: repo._read(.timelineTilesPerRow),
+            groupAssetsBy: repo._read(.timelineGroupAssetsBy),
+            storageIndicator: repo._read(.timelineStorageIndicator),
+          ),
+          image: .new(
+            preferRemote: repo._read(.imagePreferRemote),
+            loadOriginal: repo._read(.imageLoadOriginal),
+            loadPreview: repo._read(.imageLoadPreview),
+          ),
+          viewer: .new(
+            loopVideo: repo._read(.viewerLoopVideo),
+            loadOriginalVideo: repo._read(.viewerLoadOriginalVideo),
+            autoPlayVideo: repo._read(.viewerAutoPlayVideo),
+            tapToNavigate: repo._read(.viewerTapToNavigate),
+          ),
+          slideshow: .new(
+            transition: repo._read(.slideshowTransition),
+            repeat: repo._read(.slideshowRepeat),
+            duration: repo._read(.slideshowDuration),
+            look: repo._read(.slideshowLook),
+            direction: repo._read(.slideshowDirection),
+          ),
+          album: .new(
+            sortMode: repo._read(.albumSortMode),
+            isReverse: repo._read(.albumIsReverse),
+            isGrid: repo._read(.albumIsGrid),
+          ),
+          backup: .new(
+            enabled: repo._read(.backupEnabled),
+            useCellularForVideos: repo._read(.backupUseCellularForVideos),
+            useCellularForPhotos: repo._read(.backupUseCellularForPhotos),
+            requireCharging: repo._read(.backupRequireCharging),
+            triggerDelay: repo._read(.backupTriggerDelay),
+            syncAlbums: repo._read(.backupSyncAlbums),
+          ),
+        );
       case .systemConfig:
-        repo._systemConfig = .new(logLevel: repo._read(.logLevel));
+        repo._systemConfig = .new(
+          logLevel: repo._read(.logLevel),
+          network: .new(
+            autoEndpointSwitching: repo._read(.networkAutoEndpointSwitching),
+            preferredWifiName: repo._read(.networkPreferredWifiName).nullIfEmpty,
+            localEndpoint: repo._read(.networkLocalEndpoint).nullIfEmpty,
+            externalEndpointList: repo._read(.networkExternalEndpointList),
+            customHeaders: repo._read(.networkCustomHeaders),
+          ),
+        );
     }
   }
 }

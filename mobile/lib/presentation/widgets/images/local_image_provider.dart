@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
-import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
@@ -41,7 +40,9 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalThumbProvider) {
       return id == other.id;
     }
@@ -97,8 +98,8 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   }
 
   Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
-    final loadOriginal = AppSetting.get(Setting.loadOriginal);
-    final loadPreview = AppSetting.get(Setting.loadPreview);
+    final loadOriginal = MetadataRepository.instance.appConfig.image.loadOriginal;
+    final loadPreview = MetadataRepository.instance.appConfig.image.loadPreview;
     yield* initialImageStream(isFinal: !loadOriginal && !loadPreview);
 
     if (isCancelled) {
@@ -107,7 +108,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
     if (loadPreview) {
       final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-      final previewRequest = request = LocalImageRequest(
+      final previewRequest = this.request = LocalImageRequest(
         localId: key.id,
         size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
         assetType: key.assetType,
@@ -134,7 +135,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return;
     }
 
-    if (AppSetting.get(Setting.loadPreview)) {
+    if (MetadataRepository.instance.appConfig.image.loadPreview) {
       final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
       final previewRequest = request = LocalImageRequest(
         localId: key.id,
@@ -152,7 +153,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
     final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
-      if (isCancelled) return;
+      if (isCancelled) {
+        return;
+      }
       throw StateError('Failed to load animated codec for local asset ${key.id}');
     }
     yield codec;
@@ -160,7 +163,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalFullImageProvider) {
       return id == other.id && size == other.size && isAnimated == other.isAnimated;
     }

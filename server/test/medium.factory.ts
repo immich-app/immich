@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { Insertable, Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
@@ -75,7 +74,7 @@ import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { SyncService } from 'src/services/sync.service';
-import { UploadFile } from 'src/types';
+import { ClassConstructor, UploadFile } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
@@ -84,10 +83,6 @@ import { Mocked } from 'vitest';
 
 // eslint-disable-next-line unicorn/prefer-module
 export const testAssetsDir = resolve(__dirname, '../../e2e/test-assets');
-
-interface ClassConstructor<T = any> extends Function {
-  new (...args: any[]): T;
-}
 
 type MediumTestOptions = {
   mock: ClassConstructor<any>[];
@@ -425,7 +420,6 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
-    case PluginRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
@@ -456,6 +450,10 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case MediaRepository:
     case MetadataRepository: {
       return new key(LoggingRepository.create());
+    }
+
+    case PluginRepository: {
+      return new key(db, LoggingRepository.create());
     }
 
     case StorageRepository: {
@@ -489,7 +487,6 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
-    case PluginRepository:
     case SessionRepository:
     case SyncRepository:
     case SyncCheckpointRepository:

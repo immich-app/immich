@@ -36,26 +36,23 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## 免責事項
+> [!WARNING]
+> ⚠️ 大切な写真やビデオは、常に [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) のバックアッププランに従ってください！
+>
 
-- ⚠️ このプロジェクトは **非常に活発に** 開発中です。
-- ⚠️ バグの存在や変更が入ることも予想されます。
-- ⚠️ **写真やビデオを保存する唯一の方法としてこのアプリを使用しないでください。**
-- ⚠️ 大切な写真やビデオは、常に [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) のバックアッププランに従ってください！
+> [!NOTE]
+> インストールガイドを含む主なドキュメントは、https://immich.app/ です。
 
 ## コンテンツ
 
-- [公式ドキュメント](https://docs.immich.app)
-- [ロードマップ](https://github.com/orgs/immich-app/projects/1)
-- [デモ](#デモ)
-- [機能](#機能)
+- [公式ドキュメント](https://docs.immich.app/)
 - [紹介](https://docs.immich.app/overview/introduction)
 - [インストール](https://docs.immich.app/install/requirements)
+- [ロードマップ](https://immich.app/roadmap)
+- [デモ](#デモ)
+- [機能](#機能)
+- [翻訳](https://docs.immich.app/developer/translations)
 - [コントリビューションガイド](https://docs.immich.app/overview/support-the-project)
-
-## ドキュメント
-
-インストールガイドを含む主なドキュメントは、https://immich.app/ です。
 
 ## デモ
 

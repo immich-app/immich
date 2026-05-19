@@ -179,17 +179,14 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     }
 
     final album = await ref
-        .watch(remoteAlbumProvider.notifier)
-        .createAlbum(
+        .read(remoteAlbumProvider.notifier)
+        .createAlbumWithAssets(
           title: title,
           description: albumDescriptionController.text.trim(),
-          assetIds: selectedAssets.map((asset) {
-            final remoteAsset = asset as RemoteAsset;
-            return remoteAsset.id;
-          }).toList(),
+          assets: selectedAssets,
         );
 
-    if (album != null) {
+    if (album != null && context.mounted) {
       unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
     }
   }
