@@ -55,11 +55,13 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
 
-    Future<void> addAssetsToAlbum(RemoteAlbum album) async {
+    Future<void> addToAlbum(RemoteAlbum album) async {
       final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+
       if (!context.mounted) {
         return;
       }
+
       if (!result.success) {
         ImmichToast.show(
           context: context,
@@ -68,6 +70,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         );
         return;
       }
+
       ImmichToast.show(
         context: context,
         msg: result.count == 0
@@ -113,10 +116,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
       ],
       slivers: ownsAlbum
-          ? [
-              const AddToAlbumHeader(),
-              AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
-            ]
+          ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand)]
           : null,
     );
   }

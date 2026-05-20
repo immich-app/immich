@@ -61,11 +61,13 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
     );
 
-    Future<void> addAssetsToAlbum(RemoteAlbum album) async {
+    Future<void> addToAlbum(RemoteAlbum album) async {
       final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+
       if (!context.mounted) {
         return;
       }
+
       if (!result.success) {
         ImmichToast.show(context: context, msg: 'scaffold_body_error_occurred'.tr(), toastType: ToastType.error);
         return;
@@ -115,7 +117,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       ],
       slivers: [
         const AddToAlbumHeader(),
-        AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
+        AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand),
       ],
     );
   }
