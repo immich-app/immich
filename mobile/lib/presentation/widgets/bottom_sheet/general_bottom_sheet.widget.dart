@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -22,11 +23,12 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/utils/add_to_album.utils.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GeneralBottomSheet extends ConsumerStatefulWidget {
   final double? minChildSize;
@@ -60,11 +62,20 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
     );
 
     Future<void> addAssetsToAlbum(RemoteAlbum album) async {
-      final selectedAssets = multiselect.selectedAssets.toList(growable: false);
-      if (selectedAssets.isEmpty) {
+      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+      if (!context.mounted) {
         return;
       }
-      await addSelectedAssetsToAlbum(context, ref, album, selectedAssets);
+      if (!result.success) {
+        ImmichToast.show(context: context, msg: 'scaffold_body_error_occurred'.tr(), toastType: ToastType.error);
+        return;
+      }
+      ImmichToast.show(
+        context: context,
+        msg: result.count == 0
+            ? 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name})
+            : 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+      );
     }
 
     Future<void> onKeyboardExpand() {

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -7,8 +8,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/utils/add_to_album.utils.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class LocalAlbumBottomSheet extends ConsumerStatefulWidget {
   const LocalAlbumBottomSheet({super.key});
@@ -34,12 +35,24 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    Future<void> addAssetsToAlbum(RemoteAlbum album) async {
-      final selectedAssets = ref.read(multiSelectProvider).selectedAssets.toList(growable: false);
-      if (selectedAssets.isEmpty) {
+    Future<void> addToAlbum(RemoteAlbum album) async {
+      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+
+      if (!context.mounted) {
         return;
       }
-      await addSelectedAssetsToAlbum(context, ref, album, selectedAssets);
+
+      if (!result.success) {
+        ImmichToast.show(context: context, msg: 'scaffold_body_error_occurred'.tr(), toastType: ToastType.error);
+        return;
+      }
+
+      ImmichToast.show(
+        context: context,
+        msg: result.count == 0
+            ? 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name})
+            : 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+      );
     }
 
     Future<void> onKeyboardExpand() {
@@ -58,7 +71,7 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       ],
       slivers: [
         const AddToAlbumHeader(),
-        AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
+        AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand),
       ],
     );
   }

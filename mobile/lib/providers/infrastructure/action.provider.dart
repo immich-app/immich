@@ -5,12 +5,15 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
@@ -373,6 +376,52 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> addToAlbum(ActionSource source, RemoteAlbum album) async {
+    final selected = _getAssets(source).toList(growable: false);
+    if (selected.isEmpty) {
+      return const ActionResult(count: 0, success: true);
+    }
+
+    final candidates = RemoteAlbumService.categorizeCandidates(selected);
+    final remoteIds = candidates.remoteAssetIds;
+    final localAssets = candidates.localAssetsToUpload;
+    final albumNotifier = ref.read(remoteAlbumProvider.notifier);
+
+    // Clear multi-select so the timeline tiles can render upload progress overlays.
+    ref.read(multiSelectProvider.notifier).reset();
+
+    int addedRemote = 0;
+    if (remoteIds.isNotEmpty) {
+      try {
+        addedRemote = await albumNotifier.addAssets(album.id, remoteIds);
+      } catch (error, stack) {
+        _logger.severe('Failed to add assets to album ${album.id}', error, stack);
+        return ActionResult(count: 0, success: false, error: error.toString());
+      }
+    }
+
+    if (localAssets.isEmpty) {
+      return ActionResult(count: addedRemote, success: true);
+    }
+
+    final uploadResult = await upload(
+      source,
+      assets: localAssets,
+      onAssetUploaded: (asset, remoteId) async {
+        final added = await albumNotifier.linkUploadedAssetToAlbum(album.id, asset, remoteId);
+        if (added == 0) {
+          throw StateError('Uploaded asset was not added to album ${album.id}');
+        }
+      },
+    );
+
+    return ActionResult(
+      count: addedRemote + uploadResult.count,
+      success: uploadResult.success,
+      error: uploadResult.error,
+    );
+  }
+
   Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {
@@ -545,16 +594,19 @@ class ActionNotifier extends Notifier<void> {
           },
         ),
       );
+
       await Future.wait(postUploadTasks);
-      final successfulCount = uploadedAssetIds.difference(failedAssetIds).length;
-      final isSuccess = successfulCount == assetsToUpload.length && failedAssetIds.isEmpty;
+      final successCount = uploadedAssetIds.difference(failedAssetIds).length;
+      final isSuccess = successCount == assetsToUpload.length && failedAssetIds.isEmpty;
+
       return ActionResult(
-        count: successfulCount,
+        count: successCount,
         success: isSuccess,
-        error: isSuccess ? null : 'Failed to upload ${assetsToUpload.length - successfulCount} assets',
+        error: isSuccess ? null : 'Failed to upload ${assetsToUpload.length - successCount} assets',
       );
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
+
       return ActionResult(
         count: uploadedAssetIds.difference(failedAssetIds).length,
         success: false,
