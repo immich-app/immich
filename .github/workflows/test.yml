@@ -30,25 +30,32 @@ jobs:
           filters: |
             i18n:
               - 'i18n/**'
+              - 'mise.toml'
             web:
               - 'web/**'
               - 'i18n/**'
               - 'packages/sdk/**'
               - 'pnpm-lock.yaml'
+              - 'mise.toml'
             server:
               - 'server/**'
               - 'pnpm-lock.yaml'
+              - 'mise.toml'
             cli:
               - 'packages/cli/**'
               - 'packages/sdk/**'
               - 'pnpm-lock.yaml'
+              - 'mise.toml'
             e2e:
               - 'e2e/**'
               - 'pnpm-lock.yaml'
+              - 'mise.toml'
             mobile:
               - 'mobile/**'
+              - 'mise.toml'
             machine-learning:
               - 'machine-learning/**'
+              - 'mise.toml'
             .github:
               - '.github/**'
           force-filters: |
