@@ -207,6 +207,22 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return added;
   }
 
+  /// Links a freshly-uploaded local asset to an album using its new remote ID,
+  /// upserting a placeholder remote asset row so the local DB join survives
+  /// until the next sync catches up.
+  Future<int> linkUploadedAssetToAlbum(String albumId, LocalAsset source, String remoteId) async {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final added = await _remoteAlbumService.linkUploadedAssetToAlbum(albumId, remoteId, currentUser, source);
+    if (added > 0) {
+      await _refreshAlbumInState(albumId);
+    }
+    return added;
+  }
+
   /// Adds a heterogeneous asset selection to an album. Already-remote assets
   /// are linked immediately; local-only assets are queued in
   /// [pendingAlbumUploadsProvider] (so the album page can show them with

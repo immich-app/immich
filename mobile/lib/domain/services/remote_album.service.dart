@@ -258,7 +258,7 @@ class RemoteAlbumService {
           return;
         }
         pendingAdds.add(
-          _linkUploadedAssetToAlbum(albumId, remoteId, uploader, source)
+          linkUploadedAssetToAlbum(albumId, remoteId, uploader, source)
               .then<void>((added) {
                 addedCount += added;
               })
@@ -288,7 +288,7 @@ class RemoteAlbumService {
   /// `remote_asset_entity` row from the local source so the FK-protected
   /// junction insert succeeds. Sync overwrites the placeholder later with
   /// the authoritative server data.
-  Future<int> _linkUploadedAssetToAlbum(String albumId, String remoteId, UserDto uploader, LocalAsset source) async {
+  Future<int> linkUploadedAssetToAlbum(String albumId, String remoteId, UserDto uploader, LocalAsset source) async {
     final result = await _albumApiRepository.addAssets(albumId, [remoteId]);
     if (result.added.isEmpty) {
       return 0;

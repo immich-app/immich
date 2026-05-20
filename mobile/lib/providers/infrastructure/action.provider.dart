@@ -495,8 +495,16 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> upload(ActionSource source, {List<LocalAsset>? assets}) async {
+  Future<ActionResult> upload(
+    ActionSource source, {
+    List<LocalAsset>? assets,
+    FutureOr<void> Function(LocalAsset asset, String remoteId)? onAssetUploaded,
+  }) async {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
+    final assetById = {for (final a in assetsToUpload) a.id: a};
+    final uploadedAssetIds = <String>{};
+    final failedAssetIds = <String>{};
+    final postUploadTasks = <Future<void>>[];
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
     final cancelToken = Completer<void>();
@@ -518,16 +526,40 @@ class ActionNotifier extends Notifier<void> {
           },
           onSuccess: (localAssetId, remoteAssetId) {
             progressNotifier.remove(localAssetId);
+            uploadedAssetIds.add(localAssetId);
+            final asset = assetById[localAssetId];
+            final callback = onAssetUploaded;
+            if (asset != null && callback != null) {
+              postUploadTasks.add(
+                Future.sync(() => callback(asset, remoteAssetId)).catchError((Object error, StackTrace stack) {
+                  failedAssetIds.add(localAssetId);
+                  progressNotifier.setError(localAssetId);
+                  _logger.warning('Post-upload callback failed for $localAssetId', error, stack);
+                }),
+              );
+            }
           },
           onError: (localAssetId, errorMessage) {
+            failedAssetIds.add(localAssetId);
             progressNotifier.setError(localAssetId);
           },
         ),
       );
-      return ActionResult(count: assetsToUpload.length, success: true);
+      await Future.wait(postUploadTasks);
+      final successfulCount = uploadedAssetIds.difference(failedAssetIds).length;
+      final isSuccess = successfulCount == assetsToUpload.length && failedAssetIds.isEmpty;
+      return ActionResult(
+        count: successfulCount,
+        success: isSuccess,
+        error: isSuccess ? null : 'Failed to upload ${assetsToUpload.length - successfulCount} assets',
+      );
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
-      return ActionResult(count: assetsToUpload.length, success: false, error: error.toString());
+      return ActionResult(
+        count: uploadedAssetIds.difference(failedAssetIds).length,
+        success: false,
+        error: error.toString(),
+      );
     } finally {
       ref.read(manualUploadCancelTokenProvider.notifier).state = null;
       Future.delayed(const Duration(seconds: 2), () {
