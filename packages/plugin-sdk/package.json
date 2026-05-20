@@ -27,7 +27,7 @@
   "packageManager": "pnpm@10.30.3",
   "devDependencies": {
     "@extism/js-pdk": "^1.1.1",
-    "@types/node": "^24.11.0",
+    "@types/node": "^24.12.4",
     "esbuild": "^0.27.3",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3"
