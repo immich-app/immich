@@ -205,8 +205,8 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
 *PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
-*PluginsApi* | [**getPluginTriggers**](doc//PluginsApi.md#getplugintriggers) | **GET** /plugins/triggers | List all plugin triggers
-*PluginsApi* | [**getPlugins**](doc//PluginsApi.md#getplugins) | **GET** /plugins | List all plugins
+*PluginsApi* | [**searchPluginMethods**](doc//PluginsApi.md#searchpluginmethods) | **GET** /plugins/methods | Retrieve plugin methods
+*PluginsApi* | [**searchPlugins**](doc//PluginsApi.md#searchplugins) | **GET** /plugins | List all plugins
 *QueuesApi* | [**emptyQueue**](doc//QueuesApi.md#emptyqueue) | **DELETE** /queues/{name}/jobs | Empty a queue
 *QueuesApi* | [**getQueue**](doc//QueuesApi.md#getqueue) | **GET** /queues/{name} | Retrieve a queue
 *QueuesApi* | [**getQueueJobs**](doc//QueuesApi.md#getqueuejobs) | **GET** /queues/{name}/jobs | Retrieve queue jobs
@@ -314,7 +314,9 @@ Class | Method | HTTP request | Description
 *WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow
 *WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | Delete a workflow
 *WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | Retrieve a workflow
-*WorkflowsApi* | [**getWorkflows**](doc//WorkflowsApi.md#getworkflows) | **GET** /workflows | List all workflows
+*WorkflowsApi* | [**getWorkflowForShare**](doc//WorkflowsApi.md#getworkflowforshare) | **GET** /workflows/{id}/share | Retrieve a workflow
+*WorkflowsApi* | [**getWorkflowTriggers**](doc//WorkflowsApi.md#getworkflowtriggers) | **GET** /workflows/triggers | List all workflow triggers
+*WorkflowsApi* | [**searchWorkflows**](doc//WorkflowsApi.md#searchworkflows) | **GET** /workflows | List all workflows
 *WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
 
 
@@ -487,16 +489,8 @@ Class | Method | HTTP request | Description
  - [PinCodeResetDto](doc//PinCodeResetDto.md)
  - [PinCodeSetupDto](doc//PinCodeSetupDto.md)
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
- - [PluginActionResponseDto](doc//PluginActionResponseDto.md)
- - [PluginContextType](doc//PluginContextType.md)
- - [PluginFilterResponseDto](doc//PluginFilterResponseDto.md)
- - [PluginJsonSchema](doc//PluginJsonSchema.md)
- - [PluginJsonSchemaProperty](doc//PluginJsonSchemaProperty.md)
- - [PluginJsonSchemaPropertyAdditionalProperties](doc//PluginJsonSchemaPropertyAdditionalProperties.md)
- - [PluginJsonSchemaType](doc//PluginJsonSchemaType.md)
+ - [PluginMethodResponseDto](doc//PluginMethodResponseDto.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
- - [PluginTriggerResponseDto](doc//PluginTriggerResponseDto.md)
- - [PluginTriggerType](doc//PluginTriggerType.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
  - [QueueCommand](doc//QueueCommand.md)
@@ -669,12 +663,14 @@ Class | Method | HTTP request | Description
  - [VersionCheckStateResponseDto](doc//VersionCheckStateResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)
- - [WorkflowActionItemDto](doc//WorkflowActionItemDto.md)
- - [WorkflowActionResponseDto](doc//WorkflowActionResponseDto.md)
  - [WorkflowCreateDto](doc//WorkflowCreateDto.md)
- - [WorkflowFilterItemDto](doc//WorkflowFilterItemDto.md)
- - [WorkflowFilterResponseDto](doc//WorkflowFilterResponseDto.md)
  - [WorkflowResponseDto](doc//WorkflowResponseDto.md)
+ - [WorkflowShareResponseDto](doc//WorkflowShareResponseDto.md)
+ - [WorkflowShareStepDto](doc//WorkflowShareStepDto.md)
+ - [WorkflowStepDto](doc//WorkflowStepDto.md)
+ - [WorkflowTrigger](doc//WorkflowTrigger.md)
+ - [WorkflowTriggerResponseDto](doc//WorkflowTriggerResponseDto.md)
+ - [WorkflowType](doc//WorkflowType.md)
  - [WorkflowUpdateDto](doc//WorkflowUpdateDto.md)
 
 

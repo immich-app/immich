@@ -2,7 +2,15 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
-import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
+import {
+  constants,
+  createReadStream,
+  createWriteStream,
+  Dirent,
+  existsSync,
+  mkdirSync,
+  ReadOptionsWithBuffer,
+} from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
@@ -48,6 +56,10 @@ export class StorageRepository {
 
   readdir(folder: string): Promise<string[]> {
     return fs.readdir(folder);
+  }
+
+  readdirWithTypes(folder: string): Promise<Dirent[]> {
+    return fs.readdir(folder, { withFileTypes: true });
   }
 
   copyFile(source: string, target: string) {
@@ -117,17 +129,24 @@ export class StorageRepository {
   }
 
   async readFile(filepath: string, options?: ReadOptionsWithBuffer<Buffer>): Promise<Buffer> {
-    const file = await fs.open(filepath);
-    try {
-      const { buffer } = await file.read(options);
-      return buffer as Buffer;
-    } finally {
-      await file.close();
+    // read a slice
+    if (options) {
+      const file = await fs.open(filepath);
+      try {
+        const { buffer } = await file.read(options);
+        return buffer as Buffer;
+      } finally {
+        await file.close();
+      }
     }
+
+    // read everything
+    return fs.readFile(filepath);
   }
 
-  async readTextFile(filepath: string): Promise<string> {
-    return fs.readFile(filepath, 'utf8');
+  async readJsonFile<T>(filepath: string): Promise<T> {
+    const file = await fs.readFile(filepath, 'utf8');
+    return JSON.parse(file) as T;
   }
 
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {

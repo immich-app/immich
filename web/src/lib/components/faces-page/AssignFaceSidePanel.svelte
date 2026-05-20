@@ -153,7 +153,7 @@
         <LoadingSpinner />
       </div>
     {:else}
-      <div class="mt-4 flex flex-wrap gap-2 overflow-y-auto immich-scrollbar">
+      <div class="mt-4 flex immich-scrollbar flex-wrap gap-2 overflow-y-auto">
         {#each showPeople as person (person.id)}
           {#if !editedFace.person || person.id !== editedFace.person.id}
             <div class="w-fit">

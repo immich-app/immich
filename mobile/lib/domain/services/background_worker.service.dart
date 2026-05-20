@@ -11,15 +11,14 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart' show nativeSyncApiProvider;
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -39,16 +38,15 @@ class BackgroundWorkerFgService {
   Future<void> saveNotificationMessage(String title, String body) =>
       _foregroundHostApi.saveNotificationMessage(title, body);
 
-  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
-    BackgroundWorkerSettings(
-      minimumDelaySeconds:
-          minimumDelaySeconds ??
-          Store.get(AppSettingsEnum.backupTriggerDelay.storeKey, AppSettingsEnum.backupTriggerDelay.defaultValue),
-      requiresCharging:
-          requireCharging ??
-          Store.get(AppSettingsEnum.backupRequireCharging.storeKey, AppSettingsEnum.backupRequireCharging.defaultValue),
-    ),
-  );
+  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) {
+    final backup = MetadataRepository.instance.appConfig.backup;
+    return _foregroundHostApi.configure(
+      BackgroundWorkerSettings(
+        minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
+        requiresCharging: requireCharging ?? backup.requireCharging,
+      ),
+    );
+  }
 
   Future<void> disable() => _foregroundHostApi.disable();
 }
@@ -71,7 +69,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
-  bool get _isBackupEnabled => _ref?.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup) ?? false;
+  bool get _isBackupEnabled => MetadataRepository.instance.appConfig.backup.enabled;
 
   Future<void> init() async {
     try {

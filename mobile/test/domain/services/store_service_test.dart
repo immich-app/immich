@@ -9,7 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import '../../infrastructure/repository.mock.dart';
 
 const _kAccessToken = '#ThisIsAToken';
-const _kEnableBackup = false;
+const _kAdvancedTroubleshooting = false;
 const _kVersion = 2;
 
 void main() {
@@ -22,13 +22,13 @@ void main() {
     mockDriftStoreRepo = MockDriftStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.accessToken);
-    registerFallbackValue(StoreKey.backupTriggerDelay);
-    registerFallbackValue(StoreKey.enableBackup);
+    registerFallbackValue(StoreKey.version);
+    registerFallbackValue(StoreKey.advancedTroubleshooting);
 
     when(() => mockDriftStoreRepo.getAll()).thenAnswer(
       (_) async => [
         const StoreDto(StoreKey.accessToken, _kAccessToken),
-        const StoreDto(StoreKey.enableBackup, _kEnableBackup),
+        const StoreDto(StoreKey.advancedTroubleshooting, _kAdvancedTroubleshooting),
         const StoreDto(StoreKey.version, _kVersion),
       ],
     );
@@ -46,7 +46,7 @@ void main() {
     test('Populates the internal cache on init', () {
       verify(() => mockDriftStoreRepo.getAll()).called(1);
       expect(sut.tryGet(StoreKey.accessToken), _kAccessToken);
-      expect(sut.tryGet(StoreKey.enableBackup), _kEnableBackup);
+      expect(sut.tryGet(StoreKey.advancedTroubleshooting), _kAdvancedTroubleshooting);
       expect(sut.tryGet(StoreKey.version), _kVersion);
       // Other keys should be null
       expect(sut.tryGet(StoreKey.currentUser), isNull);
@@ -147,7 +147,7 @@ void main() {
       await sut.clear();
       verify(() => mockDriftStoreRepo.deleteAll()).called(1);
       expect(sut.tryGet(StoreKey.accessToken), isNull);
-      expect(sut.tryGet(StoreKey.enableBackup), isNull);
+      expect(sut.tryGet(StoreKey.advancedTroubleshooting), isNull);
       expect(sut.tryGet(StoreKey.version), isNull);
     });
   });

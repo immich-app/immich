@@ -24,6 +24,17 @@ String? getServerUrl() {
   );
 }
 
+String? buildSharedLinkUrl({required String? baseUrl, required String key, String? slug}) {
+  if (baseUrl == null || baseUrl.isEmpty) {
+    return null;
+  }
+
+  final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+  final path = (slug != null && slug.isNotEmpty) ? 's/$slug' : 'share/$key';
+
+  return '$normalizedBaseUrl$path';
+}
+
 /// Converts a Unicode URL to its ASCII-compatible encoding (Punycode).
 ///
 /// This is especially useful for internationalized domain names (IDNs),

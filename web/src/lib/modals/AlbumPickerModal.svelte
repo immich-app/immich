@@ -21,9 +21,9 @@
   let search = $state('');
   let selectedRowIndex: number = $state(-1);
 
-  interface Props {
+  type Props = {
     onClose: (albums?: AlbumResponseDto[]) => void;
-  }
+  };
 
   let { onClose }: Props = $props();
 
@@ -172,7 +172,7 @@
           bind:value={search}
           use:initInput
         />
-        <div class="overflow-y-auto immich-scrollbar">
+        <div class="immich-scrollbar overflow-y-auto">
           <!-- eslint-disable-next-line svelte/require-each-key -->
           {#each albumModalRows as row}
             {#if row.type === AlbumModalRowType.NEW_ALBUM}

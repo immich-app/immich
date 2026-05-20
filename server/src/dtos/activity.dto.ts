@@ -36,18 +36,16 @@ const ActivityStatisticsResponseSchema = z
   })
   .meta({ id: 'ActivityStatisticsResponseDto' });
 
-const ActivitySchema = z
-  .object({
-    albumId: z.uuidv4().describe('Album ID'),
-    assetId: z.uuidv4().optional().describe('Asset ID (if activity is for an asset)'),
-  })
-  .describe('Activity');
+const ActivitySchema = z.object({
+  albumId: z.uuidv4().describe('Album ID'),
+  assetId: z.uuidv4().optional().describe('Asset ID (if activity is for an asset)'),
+});
 
 const ActivitySearchSchema = ActivitySchema.extend({
   type: ReactionTypeSchema.optional(),
   level: ReactionLevelSchema.optional(),
   userId: z.uuidv4().optional().describe('Filter by user ID'),
-}).describe('Activity search');
+});
 
 const ActivityCreateSchema = ActivitySchema.extend({
   type: ReactionTypeSchema,
