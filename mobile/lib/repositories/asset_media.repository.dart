@@ -5,6 +5,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -141,6 +142,7 @@ class AssetMediaRepository {
           headers: ApiService.getRequestHeaders(),
           filename: sanitizedFilename,
           baseDirectory: BaseDirectory.temporary,
+          group: kShareDownloadGroup,
           updates: Updates.statusAndProgress,
         );
         final statusUpdate = await FileDownloader().download(
