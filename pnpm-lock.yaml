@@ -505,11 +505,11 @@ importers:
         specifier: ^9.0.2
         version: 9.0.3
       kysely:
-        specifier: 0.29.0
-        version: 0.29.0
+        specifier: 0.28.17
+        version: 0.28.17
       kysely-postgres-js:
         specifier: ^3.0.0
-        version: 3.0.0(kysely@0.29.0)(postgres@3.4.9)
+        version: 3.0.0(kysely@0.28.17)(postgres@3.4.9)
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
@@ -530,7 +530,7 @@ importers:
         version: 6.2.0(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
         specifier: 3.1.2
-        version: 3.1.2(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(kysely@0.29.0)(reflect-metadata@0.2.2)
+        version: 3.1.2(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(kysely@0.28.17)(reflect-metadata@0.2.2)
       nestjs-otel:
         specifier: ^8.0.0
         version: 8.0.3(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)
@@ -8760,10 +8760,6 @@ packages:
   kysely@0.28.17:
     resolution: {integrity: sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q==}
     engines: {node: '>=20.0.0'}
-
-  kysely@0.29.0:
-    resolution: {integrity: sha512-LrQfPUeTW7MXbMvT62moEMnpMTuj9TO3lqjCeLKjM975PJ4Alrl/43f2tlDX7xOsNptKgH4LSNGwIbXwEkLg4g==}
-    engines: {node: '>=22.0.0'}
 
   latest-version@7.0.0:
     resolution: {integrity: sha512-KvNT4XqAMzdcL6ka6Tl3i2lYeFDgXNCuIX+xNx6ZMVR1dFq+idXd9FLKNMOIx0t9mJ9/HudyX4oZWXZQ0UJHeg==}
@@ -22064,15 +22060,7 @@ snapshots:
     optionalDependencies:
       postgres: 3.4.9
 
-  kysely-postgres-js@3.0.0(kysely@0.29.0)(postgres@3.4.9):
-    dependencies:
-      kysely: 0.29.0
-    optionalDependencies:
-      postgres: 3.4.9
-
   kysely@0.28.17: {}
-
-  kysely@0.29.0: {}
 
   latest-version@7.0.0:
     dependencies:
@@ -23129,11 +23117,11 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
 
-  nestjs-kysely@3.1.2(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(kysely@0.29.0)(reflect-metadata@0.2.2):
+  nestjs-kysely@3.1.2(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.21)(kysely@0.28.17)(reflect-metadata@0.2.2):
     dependencies:
       '@nestjs/common': 11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.21(@nestjs/common@11.1.21(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.21)(@nestjs/websockets@11.1.21)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      kysely: 0.29.0
+      kysely: 0.28.17
       reflect-metadata: 0.2.2
       tslib: 2.8.1
 
