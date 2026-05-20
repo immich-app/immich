@@ -72,14 +72,14 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="-mb-4 max-h-60 overflow-y-auto immich-scrollbar">
+    <div id="people-selection" class="-mb-4 max-h-60 immich-scrollbar overflow-y-auto">
       <div class="flex w-full items-center justify-between gap-6">
         <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <SingleGridRow
-        class="space-between mt-2 grid grid-auto-fill-20 gap-1 overflow-y-auto immich-scrollbar"
+        class="space-between mt-2 grid immich-scrollbar grid-auto-fill-20 gap-1 overflow-y-auto"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
