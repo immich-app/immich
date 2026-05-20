@@ -16,7 +16,7 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-flutter = "3.41.9"
+"aqua:flutter/flutter" = "3.41.9"
 pnpm = "10.33.1"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
@@ -55,7 +55,7 @@ lockfile = true
 [tasks.plugins]
 run = [
   "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build"
+  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build",
 ]
 
 [tasks.open-api-typescript]
@@ -77,8 +77,8 @@ run = [
   { task = "//server:install" },
   { task = "//server:build" },
   { task = "//server:sync-open-api" },
-  { task = ":open-api-typescript"},
-  { task = ":open-api-dart"},
+  { task = ":open-api-typescript" },
+  { task = ":open-api-dart" },
 ]
 
 [tasks.sql]
