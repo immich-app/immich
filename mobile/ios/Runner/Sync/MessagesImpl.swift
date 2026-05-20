@@ -110,7 +110,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         
         var domainAlbum = PlatformAlbum(
           id: album.localIdentifier,
-          name: album.localizedTitle!,
+          name: album.localizedTitle ?? album.localIdentifier,
           updatedAt: nil,
           isCloud: isCloud,
           assetCount: Int64(assets.count)
@@ -171,7 +171,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
             id: asset.localIdentifier,
             name: "",
             type: 0,
-            durationInSeconds: 0,
+            durationMs: 0,
             orientation: 0,
             isFavorite: false,
             playbackStyle: .unknown

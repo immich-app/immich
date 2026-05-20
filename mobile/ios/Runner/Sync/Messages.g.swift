@@ -192,7 +192,7 @@ struct PlatformAsset: Hashable {
   var updatedAt: Int64? = nil
   var width: Int64? = nil
   var height: Int64? = nil
-  var durationInSeconds: Int64
+  var durationMs: Int64
   var orientation: Int64
   var isFavorite: Bool
   var adjustmentTime: Int64? = nil
@@ -210,7 +210,7 @@ struct PlatformAsset: Hashable {
     let updatedAt: Int64? = nilOrValue(pigeonVar_list[4])
     let width: Int64? = nilOrValue(pigeonVar_list[5])
     let height: Int64? = nilOrValue(pigeonVar_list[6])
-    let durationInSeconds = pigeonVar_list[7] as! Int64
+    let durationMs = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
     let adjustmentTime: Int64? = nilOrValue(pigeonVar_list[10])
@@ -226,7 +226,7 @@ struct PlatformAsset: Hashable {
       updatedAt: updatedAt,
       width: width,
       height: height,
-      durationInSeconds: durationInSeconds,
+      durationMs: durationMs,
       orientation: orientation,
       isFavorite: isFavorite,
       adjustmentTime: adjustmentTime,
@@ -244,7 +244,7 @@ struct PlatformAsset: Hashable {
       updatedAt,
       width,
       height,
-      durationInSeconds,
+      durationMs,
       orientation,
       isFavorite,
       adjustmentTime,
@@ -257,7 +257,7 @@ struct PlatformAsset: Hashable {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationInSeconds, rhs.durationInSeconds) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle)
+    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -269,7 +269,7 @@ struct PlatformAsset: Hashable {
     deepHashMessages(value: updatedAt, hasher: &hasher)
     deepHashMessages(value: width, hasher: &hasher)
     deepHashMessages(value: height, hasher: &hasher)
-    deepHashMessages(value: durationInSeconds, hasher: &hasher)
+    deepHashMessages(value: durationMs, hasher: &hasher)
     deepHashMessages(value: orientation, hasher: &hasher)
     deepHashMessages(value: isFavorite, hasher: &hasher)
     deepHashMessages(value: adjustmentTime, hasher: &hasher)

@@ -27,3 +27,18 @@ run = { task = "lint --fix" }
 [tasks.check]
 env._.path = "./node_modules/.bin"
 run = "tsc --noEmit"
+
+
+[tasks.ci-setup]
+depends = ["//:sdk:install", "//:sdk:build", "//cli:install", "//cli:build"]
+run = { task = ":install" }
+
+
+[tasks.ci-unit]
+depends = ["//:sdk:install", "//:sdk:build"]
+run = [
+  { task = ":install" },
+  { task = ":format" },
+  { task = ":lint" },
+  { task = ":check" },
+]

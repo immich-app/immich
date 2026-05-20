@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
-  import SettingTextarea from './setting-textarea.svelte';
+  import SettingTextarea from './SettingTextarea.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { t } from 'svelte-i18n';

@@ -29,7 +29,7 @@ class ExifInfo {
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   String get exposureTime {
-    if (exposureSeconds == null) {
+    if (exposureSeconds == null || exposureSeconds! <= 0 || exposureSeconds!.isNaN) {
       return "";
     }
     if (exposureSeconds! < 1) {
@@ -69,7 +69,9 @@ class ExifInfo {
 
   @override
   bool operator ==(covariant ExifInfo other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.fileSize == fileSize &&
         other.description == description &&

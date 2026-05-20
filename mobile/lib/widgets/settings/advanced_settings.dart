@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
@@ -30,8 +31,12 @@ class AdvancedSettings extends HookConsumerWidget {
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
-    final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
-    final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
+    final levelId = useState<int>(ref.read(systemConfigProvider).logLevel.index);
+    final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
+    useValueChanged(
+      preferRemote.value,
+      (_, __) => ref.read(metadataProvider).write(.imagePreferRemote, preferRemote.value),
+    );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;

@@ -1,8 +1,8 @@
-import { sortAlbums } from '$lib/utils/album-utils';
-import { normalizeSearchString } from '$lib/utils/string-utils';
 import type { AlbumResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { sortAlbums } from '$lib/utils/album-utils';
+import { normalizeSearchString } from '$lib/utils/string-utils';
 
 export const SCROLL_PROPERTIES: ScrollIntoViewOptions = { block: 'center', behavior: 'smooth' };
 

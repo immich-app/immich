@@ -1,7 +1,8 @@
+import type { DateTime } from 'luxon';
+import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/environment';
 import { defaultLang } from '$lib/constants';
 import { getPreferredLocale } from '$lib/utils/i18n';
-import { persisted } from 'svelte-persisted-store';
 
 // Locale to use for formatting dates, numbers, etc.
 export const locale = persisted('locale', 'default', {
@@ -26,8 +27,8 @@ export interface MapSettings {
   withPartners: boolean;
   withSharedAlbums: boolean;
   relativeDate: string;
-  dateAfter: string;
-  dateBefore: string;
+  dateAfter?: DateTime<true>;
+  dateBefore?: DateTime<true>;
 }
 
 const defaultMapSettings = {
@@ -37,8 +38,6 @@ const defaultMapSettings = {
   withPartners: false,
   withSharedAlbums: false,
   relativeDate: '',
-  dateAfter: '',
-  dateBefore: '',
 };
 
 const persistedObject = <T>(key: string, defaults: T) =>
@@ -50,9 +49,6 @@ const persistedObject = <T>(key: string, defaults: T) =>
   });
 
 export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
-
-export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
-export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});
 
 export interface AlbumViewSettings {
   view: string;

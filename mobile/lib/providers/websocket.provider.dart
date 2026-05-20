@@ -29,7 +29,9 @@ class WebsocketState {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is WebsocketState && other.socket == socket && other.isConnected == isConnected;
   }
@@ -58,7 +60,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   /// Connects websocket to server unless already connected
   void connect() {
-    if (state.isConnected) return;
+    if (state.isConnected) {
+      return;
+    }
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
@@ -94,8 +98,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           state = const WebsocketState(isConnected: false, socket: null);
         });
 
-        socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
-        socket.on('AssetEditReadyV1', _handleSyncAssetEditReady);
+        socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReadyV1);
+        socket.on('AssetUploadReadyV2', _handleSyncAssetUploadReadyV2);
+        socket.on('AssetEditReadyV1', _handleSyncAssetEditReadyV1);
+        socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
@@ -163,16 +169,25 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _ref.read(serverInfoProvider.notifier).handleReleaseInfo(serverVersion, releaseVersion);
   }
 
-  void _handleSyncAssetUploadReady(dynamic data) {
+  void _handleSyncAssetUploadReadyV1(dynamic data) {
     _batchedAssetUploadReady.add(data);
-    _batchDebouncer.run(_processBatchedAssetUploadReady);
+    _batchDebouncer.run(_processBatchedAssetUploadReadyV1);
   }
 
-  void _handleSyncAssetEditReady(dynamic data) {
-    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEdit(data));
+  void _handleSyncAssetUploadReadyV2(dynamic data) {
+    _batchedAssetUploadReady.add(data);
+    _batchDebouncer.run(_processBatchedAssetUploadReadyV2);
   }
 
-  void _processBatchedAssetUploadReady() {
+  void _handleSyncAssetEditReadyV1(dynamic data) {
+    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV1(data));
+  }
+
+  void _handleSyncAssetEditReadyV2(dynamic data) {
+    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV2(data));
+  }
+
+  void _processBatchedAssetUploadReadyV1() {
     if (_batchedAssetUploadReady.isEmpty) {
       return;
     }
@@ -180,7 +195,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     final isSyncAlbumEnabled = Store.get(StoreKey.syncAlbums, false);
     try {
       unawaited(
-        _ref.read(backgroundSyncProvider).syncWebsocketBatch(_batchedAssetUploadReady.toList()).then((_) {
+        _ref.read(backgroundSyncProvider).syncWebsocketBatchV1(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
             _ref.read(backgroundSyncProvider).syncLinkedAlbum();
           }
@@ -188,6 +203,27 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       );
     } catch (error) {
       _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
+    }
+
+    _batchedAssetUploadReady.clear();
+  }
+
+  void _processBatchedAssetUploadReadyV2() {
+    if (_batchedAssetUploadReady.isEmpty) {
+      return;
+    }
+
+    final isSyncAlbumEnabled = Store.get(StoreKey.syncAlbums, false);
+    try {
+      unawaited(
+        _ref.read(backgroundSyncProvider).syncWebsocketBatchV2(_batchedAssetUploadReady.toList()).then((_) {
+          if (isSyncAlbumEnabled) {
+            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+          }
+        }),
+      );
+    } catch (error) {
+      _log.severe("Error processing batched AssetUploadReadyV2 events: $error");
     }
 
     _batchedAssetUploadReady.clear();

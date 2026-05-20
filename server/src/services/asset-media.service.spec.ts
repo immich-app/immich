@@ -80,6 +80,7 @@ const validImages = [
   '.jxl',
   '.k25',
   '.kdc',
+  '.mpo',
   '.mrw',
   '.nef',
   '.orf',

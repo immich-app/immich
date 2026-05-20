@@ -108,6 +108,18 @@ class ActionService {
     await _remoteAssetRepository.restoreTrash(ids);
   }
 
+  Future<int> emptyTrash(String userId) async {
+    final count = await _assetApiRepository.emptyTrash();
+    await _remoteAssetRepository.emptyTrash(userId);
+    return count;
+  }
+
+  Future<int> restoreAllTrash(String userId) async {
+    final count = await _assetApiRepository.restoreAllTrash();
+    await _remoteAssetRepository.restoreAllTrash(userId);
+    return count;
+  }
+
   Future<void> trashRemoteAndDeleteLocal(List<String> remoteIds, List<String> localIds) async {
     await _assetApiRepository.delete(remoteIds, false);
     await _remoteAssetRepository.trash(remoteIds);
@@ -251,7 +263,8 @@ class ActionService {
   }
 
   Future<bool> setAlbumCover(String albumId, String assetId) async {
-    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
+    final owner = await _remoteAlbumRepository.getOwner(albumId);
+    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, owner, thumbnailAssetId: assetId);
     await _remoteAlbumRepository.update(updatedAlbum);
     return true;
   }

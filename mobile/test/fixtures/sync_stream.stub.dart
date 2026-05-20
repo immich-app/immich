@@ -115,6 +115,7 @@ abstract final class SyncStreamStub {
         duration: '0',
         fileCreatedAt: DateTime(2025),
         fileModifiedAt: DateTime(2025, 1, 2),
+        createdAt: DateTime(2025, 1, 2),
         id: id,
         isFavorite: false,
         libraryId: null,

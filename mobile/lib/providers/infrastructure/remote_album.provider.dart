@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:logging/logging.dart';
 
 class RemoteAlbumState {
@@ -23,7 +24,9 @@ class RemoteAlbumState {
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final listEquals = const DeepCollectionEquality().equals;
 
     return listEquals(other.albums, albums);
@@ -81,7 +84,17 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     List<String> assetIds = const [],
   }) async {
     try {
-      final album = await _remoteAlbumService.createAlbum(title: title, description: description, assetIds: assetIds);
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser == null) {
+        throw Exception('User not logged in');
+      }
+
+      final album = await _remoteAlbumService.createAlbum(
+        title: title,
+        owner: currentUser,
+        description: description,
+        assetIds: assetIds,
+      );
 
       state = state.copyWith(albums: [...state.albums, album]);
 

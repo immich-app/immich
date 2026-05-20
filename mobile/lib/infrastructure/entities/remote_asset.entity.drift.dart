@@ -19,7 +19,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInSeconds,
+      i0.Value<int?> durationMs,
       required String id,
       required String checksum,
       i0.Value<bool> isFavorite,
@@ -27,6 +27,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime?> localDateTime,
       i0.Value<String?> thumbHash,
       i0.Value<DateTime?> deletedAt,
+      i0.Value<DateTime?> uploadedAt,
       i0.Value<String?> livePhotoVideoId,
       required i2.AssetVisibility visibility,
       i0.Value<String?> stackId,
@@ -41,7 +42,7 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
       i0.Value<int?> height,
-      i0.Value<int?> durationInSeconds,
+      i0.Value<int?> durationMs,
       i0.Value<String> id,
       i0.Value<String> checksum,
       i0.Value<bool> isFavorite,
@@ -49,6 +50,7 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime?> localDateTime,
       i0.Value<String?> thumbHash,
       i0.Value<DateTime?> deletedAt,
+      i0.Value<DateTime?> uploadedAt,
       i0.Value<String?> livePhotoVideoId,
       i0.Value<i2.AssetVisibility> visibility,
       i0.Value<String?> stackId,
@@ -142,8 +144,8 @@ class $$RemoteAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -174,6 +176,11 @@ class $$RemoteAssetEntityTableFilterComposer
 
   i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<DateTime> get uploadedAt => $composableBuilder(
+    column: $table.uploadedAt,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -270,8 +277,8 @@ class $$RemoteAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -302,6 +309,11 @@ class $$RemoteAssetEntityTableOrderingComposer
 
   i0.ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<DateTime> get uploadedAt => $composableBuilder(
+    column: $table.uploadedAt,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
@@ -385,8 +397,8 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<int> get height =>
       $composableBuilder(column: $table.height, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
-    column: $table.durationInSeconds,
+  i0.GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
     builder: (column) => column,
   );
 
@@ -411,6 +423,11 @@ class $$RemoteAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get uploadedAt => $composableBuilder(
+    column: $table.uploadedAt,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<String> get livePhotoVideoId => $composableBuilder(
     column: $table.livePhotoVideoId,
@@ -499,7 +516,7 @@ class $$RemoteAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
@@ -507,6 +524,7 @@ class $$RemoteAssetEntityTableTableManager
                 i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
                 i0.Value<String?> thumbHash = const i0.Value.absent(),
                 i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> uploadedAt = const i0.Value.absent(),
                 i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
                 i0.Value<i2.AssetVisibility> visibility =
                     const i0.Value.absent(),
@@ -520,7 +538,7 @@ class $$RemoteAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInSeconds: durationInSeconds,
+                durationMs: durationMs,
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
@@ -528,6 +546,7 @@ class $$RemoteAssetEntityTableTableManager
                 localDateTime: localDateTime,
                 thumbHash: thumbHash,
                 deletedAt: deletedAt,
+                uploadedAt: uploadedAt,
                 livePhotoVideoId: livePhotoVideoId,
                 visibility: visibility,
                 stackId: stackId,
@@ -542,7 +561,7 @@ class $$RemoteAssetEntityTableTableManager
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
                 i0.Value<int?> height = const i0.Value.absent(),
-                i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+                i0.Value<int?> durationMs = const i0.Value.absent(),
                 required String id,
                 required String checksum,
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
@@ -550,6 +569,7 @@ class $$RemoteAssetEntityTableTableManager
                 i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
                 i0.Value<String?> thumbHash = const i0.Value.absent(),
                 i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> uploadedAt = const i0.Value.absent(),
                 i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
                 required i2.AssetVisibility visibility,
                 i0.Value<String?> stackId = const i0.Value.absent(),
@@ -562,7 +582,7 @@ class $$RemoteAssetEntityTableTableManager
                 updatedAt: updatedAt,
                 width: width,
                 height: height,
-                durationInSeconds: durationInSeconds,
+                durationMs: durationMs,
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
@@ -570,6 +590,7 @@ class $$RemoteAssetEntityTableTableManager
                 localDateTime: localDateTime,
                 thumbHash: thumbHash,
                 deletedAt: deletedAt,
+                uploadedAt: uploadedAt,
                 livePhotoVideoId: livePhotoVideoId,
                 visibility: visibility,
                 stackId: stackId,
@@ -645,9 +666,9 @@ typedef $$RemoteAssetEntityTableProcessedTableManager =
       i1.RemoteAssetEntityData,
       i0.PrefetchHooks Function({bool ownerId})
     >;
-i0.Index get idxRemoteAssetOwnerChecksum => i0.Index(
-  'idx_remote_asset_owner_checksum',
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+i0.Index get uQRemoteAssetsOwnerChecksum => i0.Index(
+  'UQ_remote_assets_owner_checksum',
+  'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
 );
 
 class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
@@ -724,17 +745,17 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const i0.VerificationMeta _durationInSecondsMeta =
-      const i0.VerificationMeta('durationInSeconds');
+  static const i0.VerificationMeta _durationMsMeta = const i0.VerificationMeta(
+    'durationMs',
+  );
   @override
-  late final i0.GeneratedColumn<int> durationInSeconds =
-      i0.GeneratedColumn<int>(
-        'duration_in_seconds',
-        aliasedName,
-        true,
-        type: i0.DriftSqlType.int,
-        requiredDuringInsert: false,
-      );
+  late final i0.GeneratedColumn<int> durationMs = i0.GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
@@ -818,6 +839,18 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         type: i0.DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const i0.VerificationMeta _uploadedAtMeta = const i0.VerificationMeta(
+    'uploadedAt',
+  );
+  @override
+  late final i0.GeneratedColumn<DateTime> uploadedAt =
+      i0.GeneratedColumn<DateTime>(
+        'uploaded_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const i0.VerificationMeta _livePhotoVideoIdMeta =
       const i0.VerificationMeta('livePhotoVideoId');
   @override
@@ -886,7 +919,7 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     updatedAt,
     width,
     height,
-    durationInSeconds,
+    durationMs,
     id,
     checksum,
     isFavorite,
@@ -894,6 +927,7 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     localDateTime,
     thumbHash,
     deletedAt,
+    uploadedAt,
     livePhotoVideoId,
     visibility,
     stackId,
@@ -944,13 +978,10 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         height.isAcceptableOrUnknown(data['height']!, _heightMeta),
       );
     }
-    if (data.containsKey('duration_in_seconds')) {
+    if (data.containsKey('duration_ms')) {
       context.handle(
-        _durationInSecondsMeta,
-        durationInSeconds.isAcceptableOrUnknown(
-          data['duration_in_seconds']!,
-          _durationInSecondsMeta,
-        ),
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -999,6 +1030,12 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
       context.handle(
         _deletedAtMeta,
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('uploaded_at')) {
+      context.handle(
+        _uploadedAtMeta,
+        uploadedAt.isAcceptableOrUnknown(data['uploaded_at']!, _uploadedAtMeta),
       );
     }
     if (data.containsKey('live_photo_video_id')) {
@@ -1066,9 +1103,9 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}height'],
       ),
-      durationInSeconds: attachedDatabase.typeMapping.read(
+      durationMs: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
-        data['${effectivePrefix}duration_in_seconds'],
+        data['${effectivePrefix}duration_ms'],
       ),
       id: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
@@ -1097,6 +1134,10 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
       deletedAt: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
+      ),
+      uploadedAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}uploaded_at'],
       ),
       livePhotoVideoId: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
@@ -1148,7 +1189,7 @@ class RemoteAssetEntityData extends i0.DataClass
   final DateTime updatedAt;
   final int? width;
   final int? height;
-  final int? durationInSeconds;
+  final int? durationMs;
   final String id;
   final String checksum;
   final bool isFavorite;
@@ -1156,6 +1197,7 @@ class RemoteAssetEntityData extends i0.DataClass
   final DateTime? localDateTime;
   final String? thumbHash;
   final DateTime? deletedAt;
+  final DateTime? uploadedAt;
   final String? livePhotoVideoId;
   final i2.AssetVisibility visibility;
   final String? stackId;
@@ -1168,7 +1210,7 @@ class RemoteAssetEntityData extends i0.DataClass
     required this.updatedAt,
     this.width,
     this.height,
-    this.durationInSeconds,
+    this.durationMs,
     required this.id,
     required this.checksum,
     required this.isFavorite,
@@ -1176,6 +1218,7 @@ class RemoteAssetEntityData extends i0.DataClass
     this.localDateTime,
     this.thumbHash,
     this.deletedAt,
+    this.uploadedAt,
     this.livePhotoVideoId,
     required this.visibility,
     this.stackId,
@@ -1199,8 +1242,8 @@ class RemoteAssetEntityData extends i0.DataClass
     if (!nullToAbsent || height != null) {
       map['height'] = i0.Variable<int>(height);
     }
-    if (!nullToAbsent || durationInSeconds != null) {
-      map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = i0.Variable<int>(durationMs);
     }
     map['id'] = i0.Variable<String>(id);
     map['checksum'] = i0.Variable<String>(checksum);
@@ -1214,6 +1257,9 @@ class RemoteAssetEntityData extends i0.DataClass
     }
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = i0.Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || uploadedAt != null) {
+      map['uploaded_at'] = i0.Variable<DateTime>(uploadedAt);
     }
     if (!nullToAbsent || livePhotoVideoId != null) {
       map['live_photo_video_id'] = i0.Variable<String>(livePhotoVideoId);
@@ -1247,7 +1293,7 @@ class RemoteAssetEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
-      durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
@@ -1255,6 +1301,7 @@ class RemoteAssetEntityData extends i0.DataClass
       localDateTime: serializer.fromJson<DateTime?>(json['localDateTime']),
       thumbHash: serializer.fromJson<String?>(json['thumbHash']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      uploadedAt: serializer.fromJson<DateTime?>(json['uploadedAt']),
       livePhotoVideoId: serializer.fromJson<String?>(json['livePhotoVideoId']),
       visibility: i1.$RemoteAssetEntityTable.$convertervisibility.fromJson(
         serializer.fromJson<int>(json['visibility']),
@@ -1276,7 +1323,7 @@ class RemoteAssetEntityData extends i0.DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'width': serializer.toJson<int?>(width),
       'height': serializer.toJson<int?>(height),
-      'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
+      'durationMs': serializer.toJson<int?>(durationMs),
       'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
@@ -1284,6 +1331,7 @@ class RemoteAssetEntityData extends i0.DataClass
       'localDateTime': serializer.toJson<DateTime?>(localDateTime),
       'thumbHash': serializer.toJson<String?>(thumbHash),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'uploadedAt': serializer.toJson<DateTime?>(uploadedAt),
       'livePhotoVideoId': serializer.toJson<String?>(livePhotoVideoId),
       'visibility': serializer.toJson<int>(
         i1.$RemoteAssetEntityTable.$convertervisibility.toJson(visibility),
@@ -1301,7 +1349,7 @@ class RemoteAssetEntityData extends i0.DataClass
     DateTime? updatedAt,
     i0.Value<int?> width = const i0.Value.absent(),
     i0.Value<int?> height = const i0.Value.absent(),
-    i0.Value<int?> durationInSeconds = const i0.Value.absent(),
+    i0.Value<int?> durationMs = const i0.Value.absent(),
     String? id,
     String? checksum,
     bool? isFavorite,
@@ -1309,6 +1357,7 @@ class RemoteAssetEntityData extends i0.DataClass
     i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
     i0.Value<String?> thumbHash = const i0.Value.absent(),
     i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+    i0.Value<DateTime?> uploadedAt = const i0.Value.absent(),
     i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
     i2.AssetVisibility? visibility,
     i0.Value<String?> stackId = const i0.Value.absent(),
@@ -1321,9 +1370,7 @@ class RemoteAssetEntityData extends i0.DataClass
     updatedAt: updatedAt ?? this.updatedAt,
     width: width.present ? width.value : this.width,
     height: height.present ? height.value : this.height,
-    durationInSeconds: durationInSeconds.present
-        ? durationInSeconds.value
-        : this.durationInSeconds,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
     id: id ?? this.id,
     checksum: checksum ?? this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
@@ -1333,6 +1380,7 @@ class RemoteAssetEntityData extends i0.DataClass
         : this.localDateTime,
     thumbHash: thumbHash.present ? thumbHash.value : this.thumbHash,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    uploadedAt: uploadedAt.present ? uploadedAt.value : this.uploadedAt,
     livePhotoVideoId: livePhotoVideoId.present
         ? livePhotoVideoId.value
         : this.livePhotoVideoId,
@@ -1349,9 +1397,9 @@ class RemoteAssetEntityData extends i0.DataClass
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
-      durationInSeconds: data.durationInSeconds.present
-          ? data.durationInSeconds.value
-          : this.durationInSeconds,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
       id: data.id.present ? data.id.value : this.id,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite: data.isFavorite.present
@@ -1363,6 +1411,9 @@ class RemoteAssetEntityData extends i0.DataClass
           : this.localDateTime,
       thumbHash: data.thumbHash.present ? data.thumbHash.value : this.thumbHash,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      uploadedAt: data.uploadedAt.present
+          ? data.uploadedAt.value
+          : this.uploadedAt,
       livePhotoVideoId: data.livePhotoVideoId.present
           ? data.livePhotoVideoId.value
           : this.livePhotoVideoId,
@@ -1384,7 +1435,7 @@ class RemoteAssetEntityData extends i0.DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
@@ -1392,6 +1443,7 @@ class RemoteAssetEntityData extends i0.DataClass
           ..write('localDateTime: $localDateTime, ')
           ..write('thumbHash: $thumbHash, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('uploadedAt: $uploadedAt, ')
           ..write('livePhotoVideoId: $livePhotoVideoId, ')
           ..write('visibility: $visibility, ')
           ..write('stackId: $stackId, ')
@@ -1409,7 +1461,7 @@ class RemoteAssetEntityData extends i0.DataClass
     updatedAt,
     width,
     height,
-    durationInSeconds,
+    durationMs,
     id,
     checksum,
     isFavorite,
@@ -1417,6 +1469,7 @@ class RemoteAssetEntityData extends i0.DataClass
     localDateTime,
     thumbHash,
     deletedAt,
+    uploadedAt,
     livePhotoVideoId,
     visibility,
     stackId,
@@ -1433,7 +1486,7 @@ class RemoteAssetEntityData extends i0.DataClass
           other.updatedAt == this.updatedAt &&
           other.width == this.width &&
           other.height == this.height &&
-          other.durationInSeconds == this.durationInSeconds &&
+          other.durationMs == this.durationMs &&
           other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
@@ -1441,6 +1494,7 @@ class RemoteAssetEntityData extends i0.DataClass
           other.localDateTime == this.localDateTime &&
           other.thumbHash == this.thumbHash &&
           other.deletedAt == this.deletedAt &&
+          other.uploadedAt == this.uploadedAt &&
           other.livePhotoVideoId == this.livePhotoVideoId &&
           other.visibility == this.visibility &&
           other.stackId == this.stackId &&
@@ -1456,7 +1510,7 @@ class RemoteAssetEntityCompanion
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> width;
   final i0.Value<int?> height;
-  final i0.Value<int?> durationInSeconds;
+  final i0.Value<int?> durationMs;
   final i0.Value<String> id;
   final i0.Value<String> checksum;
   final i0.Value<bool> isFavorite;
@@ -1464,6 +1518,7 @@ class RemoteAssetEntityCompanion
   final i0.Value<DateTime?> localDateTime;
   final i0.Value<String?> thumbHash;
   final i0.Value<DateTime?> deletedAt;
+  final i0.Value<DateTime?> uploadedAt;
   final i0.Value<String?> livePhotoVideoId;
   final i0.Value<i2.AssetVisibility> visibility;
   final i0.Value<String?> stackId;
@@ -1476,7 +1531,7 @@ class RemoteAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInSeconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
@@ -1484,6 +1539,7 @@ class RemoteAssetEntityCompanion
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
+    this.uploadedAt = const i0.Value.absent(),
     this.livePhotoVideoId = const i0.Value.absent(),
     this.visibility = const i0.Value.absent(),
     this.stackId = const i0.Value.absent(),
@@ -1497,7 +1553,7 @@ class RemoteAssetEntityCompanion
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
     this.height = const i0.Value.absent(),
-    this.durationInSeconds = const i0.Value.absent(),
+    this.durationMs = const i0.Value.absent(),
     required String id,
     required String checksum,
     this.isFavorite = const i0.Value.absent(),
@@ -1505,6 +1561,7 @@ class RemoteAssetEntityCompanion
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
+    this.uploadedAt = const i0.Value.absent(),
     this.livePhotoVideoId = const i0.Value.absent(),
     required i2.AssetVisibility visibility,
     this.stackId = const i0.Value.absent(),
@@ -1523,7 +1580,7 @@ class RemoteAssetEntityCompanion
     i0.Expression<DateTime>? updatedAt,
     i0.Expression<int>? width,
     i0.Expression<int>? height,
-    i0.Expression<int>? durationInSeconds,
+    i0.Expression<int>? durationMs,
     i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
@@ -1531,6 +1588,7 @@ class RemoteAssetEntityCompanion
     i0.Expression<DateTime>? localDateTime,
     i0.Expression<String>? thumbHash,
     i0.Expression<DateTime>? deletedAt,
+    i0.Expression<DateTime>? uploadedAt,
     i0.Expression<String>? livePhotoVideoId,
     i0.Expression<int>? visibility,
     i0.Expression<String>? stackId,
@@ -1544,7 +1602,7 @@ class RemoteAssetEntityCompanion
       if (updatedAt != null) 'updated_at': updatedAt,
       if (width != null) 'width': width,
       if (height != null) 'height': height,
-      if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
+      if (durationMs != null) 'duration_ms': durationMs,
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
@@ -1552,6 +1610,7 @@ class RemoteAssetEntityCompanion
       if (localDateTime != null) 'local_date_time': localDateTime,
       if (thumbHash != null) 'thumb_hash': thumbHash,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (uploadedAt != null) 'uploaded_at': uploadedAt,
       if (livePhotoVideoId != null) 'live_photo_video_id': livePhotoVideoId,
       if (visibility != null) 'visibility': visibility,
       if (stackId != null) 'stack_id': stackId,
@@ -1567,7 +1626,7 @@ class RemoteAssetEntityCompanion
     i0.Value<DateTime>? updatedAt,
     i0.Value<int?>? width,
     i0.Value<int?>? height,
-    i0.Value<int?>? durationInSeconds,
+    i0.Value<int?>? durationMs,
     i0.Value<String>? id,
     i0.Value<String>? checksum,
     i0.Value<bool>? isFavorite,
@@ -1575,6 +1634,7 @@ class RemoteAssetEntityCompanion
     i0.Value<DateTime?>? localDateTime,
     i0.Value<String?>? thumbHash,
     i0.Value<DateTime?>? deletedAt,
+    i0.Value<DateTime?>? uploadedAt,
     i0.Value<String?>? livePhotoVideoId,
     i0.Value<i2.AssetVisibility>? visibility,
     i0.Value<String?>? stackId,
@@ -1588,7 +1648,7 @@ class RemoteAssetEntityCompanion
       updatedAt: updatedAt ?? this.updatedAt,
       width: width ?? this.width,
       height: height ?? this.height,
-      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      durationMs: durationMs ?? this.durationMs,
       id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
@@ -1596,6 +1656,7 @@ class RemoteAssetEntityCompanion
       localDateTime: localDateTime ?? this.localDateTime,
       thumbHash: thumbHash ?? this.thumbHash,
       deletedAt: deletedAt ?? this.deletedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       visibility: visibility ?? this.visibility,
       stackId: stackId ?? this.stackId,
@@ -1627,8 +1688,8 @@ class RemoteAssetEntityCompanion
     if (height.present) {
       map['height'] = i0.Variable<int>(height.value);
     }
-    if (durationInSeconds.present) {
-      map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds.value);
+    if (durationMs.present) {
+      map['duration_ms'] = i0.Variable<int>(durationMs.value);
     }
     if (id.present) {
       map['id'] = i0.Variable<String>(id.value);
@@ -1650,6 +1711,9 @@ class RemoteAssetEntityCompanion
     }
     if (deletedAt.present) {
       map['deleted_at'] = i0.Variable<DateTime>(deletedAt.value);
+    }
+    if (uploadedAt.present) {
+      map['uploaded_at'] = i0.Variable<DateTime>(uploadedAt.value);
     }
     if (livePhotoVideoId.present) {
       map['live_photo_video_id'] = i0.Variable<String>(livePhotoVideoId.value);
@@ -1680,7 +1744,7 @@ class RemoteAssetEntityCompanion
           ..write('updatedAt: $updatedAt, ')
           ..write('width: $width, ')
           ..write('height: $height, ')
-          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('durationMs: $durationMs, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
@@ -1688,6 +1752,7 @@ class RemoteAssetEntityCompanion
           ..write('localDateTime: $localDateTime, ')
           ..write('thumbHash: $thumbHash, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('uploadedAt: $uploadedAt, ')
           ..write('livePhotoVideoId: $livePhotoVideoId, ')
           ..write('visibility: $visibility, ')
           ..write('stackId: $stackId, ')
@@ -1698,10 +1763,6 @@ class RemoteAssetEntityCompanion
   }
 }
 
-i0.Index get uQRemoteAssetsOwnerChecksum => i0.Index(
-  'UQ_remote_assets_owner_checksum',
-  'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
-);
 i0.Index get uQRemoteAssetsOwnerLibraryChecksum => i0.Index(
   'UQ_remote_assets_owner_library_checksum',
   'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_library_checksum ON remote_asset_entity (owner_id, library_id, checksum) WHERE(library_id IS NOT NULL)',
@@ -1714,11 +1775,7 @@ i0.Index get idxRemoteAssetStackId => i0.Index(
   'idx_remote_asset_stack_id',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
 );
-i0.Index get idxRemoteAssetLocalDateTimeDay => i0.Index(
-  'idx_remote_asset_local_date_time_day',
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
-);
-i0.Index get idxRemoteAssetLocalDateTimeMonth => i0.Index(
-  'idx_remote_asset_local_date_time_month',
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+i0.Index get idxRemoteAssetOwnerVisibilityDeletedCreated => i0.Index(
+  'idx_remote_asset_owner_visibility_deleted_created',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
 );

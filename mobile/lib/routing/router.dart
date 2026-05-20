@@ -58,7 +58,9 @@ import 'package:immich_mobile/presentation/pages/drift_person.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_recently_added.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
@@ -73,6 +75,7 @@ import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -82,6 +85,7 @@ part 'router.gr.dart';
 final appRouterProvider = Provider(
   (ref) => AppRouter(
     ref.watch(apiServiceProvider),
+    ref.watch(authServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(secureStorageServiceProvider),
     ref.watch(localAuthServiceProvider),
@@ -96,11 +100,12 @@ class AppRouter extends RootStackRouter {
 
   AppRouter(
     ApiService apiService,
+    AuthService authService,
     GalleryPermissionNotifier galleryPermissionNotifier,
     SecureStorageService secureStorageService,
     LocalAuthService localAuthService,
   ) {
-    _authGuard = AuthGuard(apiService);
+    _authGuard = AuthGuard(apiService, authService);
     _duplicateGuard = const DuplicateGuard();
     _lockedGuard = LockedGuard(apiService, secureStorageService, localAuthService);
   }
@@ -165,6 +170,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftAssetSelectionTimelineRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftPartnerDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftRecentlyTakenRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: DriftRecentlyAddedRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftLocalAlbumsRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftCreateAlbumRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftPlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
@@ -184,6 +190,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: AssetTroubleshootRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DownloadInfoRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: CleanupPreviewRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: DriftSlideshowRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),
