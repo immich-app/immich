@@ -192,13 +192,20 @@ class RemoteAlbumService {
     required UserDto uploader,
     required AlbumAssetCandidates candidates,
     UploadCallbacks uploadCallbacks = const UploadCallbacks(),
+    Completer<void>? cancelToken,
   }) async {
     int addedCount = 0;
     if (candidates.remoteAssetIds.isNotEmpty) {
       addedCount += await addAssets(albumId: albumId, assetIds: candidates.remoteAssetIds);
     }
     if (candidates.localAssetsToUpload.isNotEmpty) {
-      addedCount += await _uploadAndAddLocals(albumId, uploader, candidates.localAssetsToUpload, uploadCallbacks);
+      addedCount += await _uploadAndAddLocals(
+        albumId,
+        uploader,
+        candidates.localAssetsToUpload,
+        uploadCallbacks,
+        cancelToken,
+      );
     }
     return addedCount;
   }
@@ -228,8 +235,9 @@ class RemoteAlbumService {
     String albumId,
     UserDto uploader,
     List<LocalAsset> localAssets,
-    UploadCallbacks userCallbacks,
-  ) async {
+    UploadCallbacks userCallbacks, [
+    Completer<void>? cancelToken,
+  ]) async {
     int addedCount = 0;
     final pendingAdds = <Future<void>>[];
     final localById = {for (final a in localAssets) a.id: a};
@@ -269,7 +277,7 @@ class RemoteAlbumService {
       },
     );
 
-    await _uploadService.uploadManual(localAssets, callbacks: wrappedCallbacks);
+    await _uploadService.uploadManual(localAssets, callbacks: wrappedCallbacks, cancelToken: cancelToken);
     await Future.wait(pendingAdds);
     return addedCount;
   }
