@@ -2283,6 +2283,7 @@
   "system_theme": "System theme",
   "system_theme_command_description": "Use the system theme ({value})",
   "tag": "Tag",
+  "tag_add_edit": "Add/Edit tags",
   "tag_assets": "Tag assets",
   "tag_created": "Created tag: {tag}",
   "tag_face": "Tag face",
