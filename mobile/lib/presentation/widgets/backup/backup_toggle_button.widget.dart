@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 
 class BackupToggleButton extends ConsumerStatefulWidget {
   final VoidCallback onStart;
@@ -31,7 +31,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
       end: 1,
     ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
 
-    _isEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    _isEnabled = ref.read(metadataProvider).appConfig.backup.enabled;
   }
 
   @override
@@ -41,7 +41,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
   }
 
   Future<void> _onToggle(bool value) async {
-    await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.enableBackup, value);
+    await ref.read(metadataProvider).write(MetadataKey.backupEnabled, value);
 
     setState(() {
       _isEnabled = value;

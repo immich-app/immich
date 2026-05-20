@@ -39,7 +39,7 @@ class _FormPageState extends State<FormPage> {
                       _result = 'Form submitted!';
                     });
                   },
-                  child: Column(
+                  builder: (context, form) => Column(
                     spacing: 10,
                     children: [
                       ImmichTextInput(
@@ -54,6 +54,7 @@ class _FormPageState extends State<FormPage> {
                         controller: _passwordController,
                         validator: (value) =>
                             value?.isEmpty ?? true ? 'Required' : null,
+                        onSubmit: (_) => form.submit(),
                       ),
                     ],
                   ),

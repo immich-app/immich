@@ -21,7 +21,6 @@ void main() {
   late MockApiService apiService;
   late MockNetworkService networkService;
   late MockBackgroundSyncManager backgroundSyncManager;
-  late MockAppSettingService appSettingsService;
   late Drift db;
 
   setUp(() async {
@@ -30,15 +29,12 @@ void main() {
     apiService = MockApiService();
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
-    appSettingsService = MockAppSettingService();
-
     sut = AuthService(
       authApiRepository,
       authRepository,
       apiService,
       networkService,
       backgroundSyncManager,
-      appSettingsService,
     );
 
     registerFallbackValue(Uri());
