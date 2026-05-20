@@ -109,11 +109,11 @@
 
 <FormModal
   size="small"
-  title={$t('tag_assets')}
+  title={$t('tag_add_edit')}
   icon={mdiTag}
   {onClose}
   {onSubmit}
-  submitText={$t('tag_assets')}
+  submitText={$t('save') + ' ' + $t('tags')}
   onOpenAutoFocus={(event) => event.preventDefault()}
   {disabled}
 >
