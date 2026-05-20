@@ -976,6 +976,7 @@
   "downloading_asset_filename": "Downloading asset {filename}",
   "downloading_from_icloud": "Downloading from iCloud",
   "downloading_media": "Downloading media",
+  "drag_to_reorder": "Drag to reorder",
   "drop_files_to_upload": "Drop files anywhere to upload",
   "duplicates": "Duplicates",
   "duplicates_description": "Resolve each group by indicating which, if any, are duplicates.",
