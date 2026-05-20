@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_act
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/slideshow.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -37,6 +38,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
+    final slideshow = ref.watch(slideshowNotifierProvider);
 
     if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
       ref.watch(albumActivityProvider((album.id, asset.id)));
@@ -67,6 +69,17 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
         const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+      IconButton(
+        icon: Icon(slideshow.isPlaying ? Icons.slideshow_rounded : Icons.slideshow_outlined),
+        onPressed: () {
+          final notifier = ref.read(slideshowNotifierProvider.notifier);
+          if (slideshow.isPlaying) {
+            notifier.stop();
+          } else {
+            notifier.start();
+          }
+        },
+      ),
 
       ViewerKebabMenu(originalTheme: originalTheme),
     ];

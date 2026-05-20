@@ -17,9 +17,11 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/download_statu
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_preloader.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/slideshow_control_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/slideshow.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -89,9 +91,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
+  Timer? _slideshowTimer;
+  Timer? _controlsHideTimer;
+  bool _isInAutoAdvance = false;
 
   void _onTapNavigate(int direction) {
-    final page = _pageController.page?.toInt();
+    final page = _pageController.page?.round();
     if (page == null) {
       return;
     }
@@ -100,7 +105,109 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (target >= 0 && target <= maxPage) {
       _pageController.jumpToPage(target);
       _onAssetChanged(target);
+      _restartSlideshowIfNeeded();
     }
+  }
+
+  void _restartSlideshowIfNeeded() {
+    final slideshow = ref.read(slideshowNotifierProvider);
+    if (!slideshow.isPlaying || slideshow.isPaused) return;
+    _startSlideshowTimer();
+    _showSlideshowControlsTemporarily();
+  }
+
+  void _showSlideshowControlsTemporarily() {
+    ref.read(slideshowNotifierProvider.notifier).showControls();
+    _controlsHideTimer?.cancel();
+    _controlsHideTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (!mounted) return;
+      final state = ref.read(slideshowNotifierProvider);
+      if (state.isPlaying) {
+        ref.read(slideshowNotifierProvider.notifier).hideControls();
+      }
+    });
+  }
+
+  void _startSlideshowTimer() {
+    _slideshowTimer?.cancel();
+    final slideshow = ref.read(slideshowNotifierProvider);
+    if (!slideshow.isPlaying || slideshow.isPaused) return;
+
+    _slideshowTimer = Timer(Duration(seconds: slideshow.delaySeconds), () async {
+      if (!mounted) return;
+      final state = ref.read(slideshowNotifierProvider);
+      if (!state.isPlaying || state.isPaused) return;
+      _isInAutoAdvance = true;
+      await _advanceSlideshow();
+      _isInAutoAdvance = false;
+      if (mounted && ref.read(slideshowNotifierProvider).isPlaying && !ref.read(slideshowNotifierProvider).isPaused) {
+        _startSlideshowTimer();
+      }
+    });
+  }
+
+  Future<void> _advanceSlideshow() async {
+    final slideshow = ref.read(slideshowNotifierProvider);
+    final page = _pageController.page?.round() ?? _currentPage;
+
+    int? target;
+    switch (slideshow.navigation) {
+      case SlideshowNavigationMode.descending:
+        target = page + 1;
+        if (target >= _totalAssets) target = slideshow.repeat ? 0 : null;
+        break;
+      case SlideshowNavigationMode.ascending:
+        target = page - 1;
+        if (target < 0) target = slideshow.repeat ? _totalAssets - 1 : null;
+        break;
+      case SlideshowNavigationMode.shuffle:
+        if (_totalAssets <= 1) {
+          target = slideshow.repeat ? page : null;
+        } else {
+          final now = DateTime.now().microsecondsSinceEpoch;
+          var candidate = now % _totalAssets;
+          if (candidate == page) {
+            candidate = (candidate + 1) % _totalAssets;
+          }
+          target = candidate;
+        }
+        break;
+    }
+
+    if (target == null) {
+      _stopSlideshow();
+      return;
+    }
+
+    _pageController.jumpToPage(target);
+    _onAssetChanged(target);
+  }
+
+  void _stopSlideshow() {
+    _slideshowTimer?.cancel();
+    _controlsHideTimer?.cancel();
+    ref.read(slideshowNotifierProvider.notifier).stop();
+  }
+
+  void _pauseSlideshow() {
+    _slideshowTimer?.cancel();
+  }
+
+  void _resumeSlideshow() {
+    final state = ref.read(slideshowNotifierProvider);
+    if (!state.isPlaying || state.isPaused) return;
+    _slideshowTimer?.cancel();
+    _slideshowTimer = Timer(Duration(seconds: state.delaySeconds), () async {
+      if (!mounted) return;
+      final s = ref.read(slideshowNotifierProvider);
+      if (!s.isPlaying || s.isPaused) return;
+      _isInAutoAdvance = true;
+      await _advanceSlideshow();
+      _isInAutoAdvance = false;
+      if (mounted && ref.read(slideshowNotifierProvider).isPlaying && !ref.read(slideshowNotifierProvider).isPaused) {
+        _startSlideshowTimer();
+      }
+    });
   }
 
   @override
@@ -127,6 +234,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _preloader.dispose();
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
+    _slideshowTimer?.cancel();
+    _controlsHideTimer?.cancel();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -172,6 +281,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _handleCasting();
     _stackChildrenKeepAlive?.close();
     _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    if (!_isInAutoAdvance) {
+      _restartSlideshowIfNeeded();
+    }
   }
 
   void _handleCasting() {
@@ -281,6 +393,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _setSystemUIMode(controls, details);
     });
 
+    ref.listen(slideshowNotifierProvider, (previous, next) {
+      if (!next.isPlaying) {
+        _slideshowTimer?.cancel();
+        _controlsHideTimer?.cancel();
+        return;
+      }
+
+      if (next.isPaused) {
+        _pauseSlideshow();
+      } else {
+        _resumeSlideshow();
+      }
+    });
+
     return Scaffold(
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: false,
@@ -323,6 +449,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                 height: context.padding.top,
               ),
             ),
+          SlideshowControlBar(
+            onNext: () => _onTapNavigate(1),
+            onPrevious: () => _onTapNavigate(-1),
+            onExit: _stopSlideshow,
+          ),
         ],
       ),
     );
