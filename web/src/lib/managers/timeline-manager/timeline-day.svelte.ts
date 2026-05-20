@@ -23,7 +23,7 @@ export class TimelineDay {
   #row = $state(0);
   #col = $state(0);
   #deferredLayout = false;
-  #lastInOrNearViewport = 0;
+  #lastInOrNearViewport = -1;
 
   constructor(timelineMonth: TimelineMonth, index: number, day: number, groupTitle: string, orderBy: AssetOrderBy) {
     this.index = index;
