@@ -104,6 +104,28 @@ export class TagService extends BaseService {
     return { count: results.length };
   }
 
+  async bulkUntagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    const [tagIds, assetIds] = await Promise.all([
+      this.checkAccess({ auth, permission: Permission.TagAsset, ids: dto.tagIds }),
+      this.checkAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds }),
+    ]);
+
+    const items: Insertable<TagAssetTable>[] = [];
+    for (const tagId of tagIds) {
+      for (const assetId of assetIds) {
+        items.push({ tagId, assetId });
+      }
+    }
+
+    const results = await this.tagRepository.deleteAssetIds(items);
+    for (const assetId of new Set(results.map((item) => item.assetId))) {
+      await this.updateTags(assetId);
+      await this.eventRepository.emit('AssetUntag', { assetId });
+    }
+
+    return { count: results.length };
+  }
+
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.TagAsset, ids: [id] });
 

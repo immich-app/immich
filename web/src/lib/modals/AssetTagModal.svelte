@@ -1,6 +1,6 @@
 <script lang="ts">
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { tagAssets, removeTag } from '$lib/utils/asset-utils';
+  import { tagAssets, untagAssets } from '$lib/utils/asset-utils';
   import {
     getAllTags,
     getAllTagsForAssets,
@@ -42,10 +42,18 @@
     }
   });
 
+  const tagIsSelected = (tagId: string, excludePartials: boolean) => {
+    for (const tag of selectedTags) {
+      if (tag.id === tagId && (!excludePartials || !tag.partial)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const onSubmit = async () => {
     const tagIdsToAdd = [...selectedTags].filter((tag) => tag.partial === false).map((tag) => tag.id);
     if (tagIdsToAdd?.length > 0) {
-      console.log('tagIdsToAdd', tagIdsToAdd);
       const updatedIds = await tagAssets({
         tagIds: tagIdsToAdd,
         assetIds,
@@ -55,19 +63,10 @@
     }
 
     const tagIdsToRemove: string[] = existingTagsForAssets
-      .filter((tagForAsset) => {
-        for (const selectedTag of selectedTags) {
-          if (selectedTag.id === tagForAsset.tagId) {
-            return false;
-          }
-        }
-        return true;
-      })
+      .filter((tagForAsset) => !tagIsSelected(tagForAsset.tagId, false))
       .map((tagForAsset) => tagForAsset.tagId);
-
     if (tagIdsToRemove?.length > 0) {
-      console.log('tagIdsToRemove', tagIdsToRemove);
-      const removedIds = await removeTag({
+      const removedIds = await untagAssets({
         tagIds: tagIdsToRemove,
         assetIds,
         showNotification: false,
@@ -124,11 +123,12 @@
       label={$t('tag')}
       {allowCreate}
       defaultFirstOption
-      options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
+      options={allTags
+        .filter((tag) => !tagIsSelected(tag.id, true))
+        .map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
       placeholder={$t('search_tags')}
     />
   </div>
-  <div>{JSON.stringify([...selectedTags])}</div>
   <section class="flex flex-wrap gap-1 pt-2">
     {#each selectedTags as { id, count, partial } (id)}
       {@const tag = tagMap[id]}

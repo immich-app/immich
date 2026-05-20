@@ -6195,6 +6195,21 @@ export function upsertTags({ tagUpsertDto }: {
     })));
 }
 /**
+ * Untag assets
+ */
+export function bulkUntagAssets({ tagBulkAssetsDto }: {
+    tagBulkAssetsDto: TagBulkAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TagBulkAssetsResponseDto;
+    }>("/tags/assets", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: tagBulkAssetsDto
+    })));
+}
+/**
  * Tag assets
  */
 export function bulkTagAssets({ tagBulkAssetsDto }: {

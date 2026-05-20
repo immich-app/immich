@@ -160,6 +160,25 @@ export class TagRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [[{ tagId: DummyValue.UUID, assetId: DummyValue.UUID }]] })
+  @Chunked()
+  deleteAssetIds(items: Insertable<TagAssetTable>[]) {
+    if (items.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.db
+      .deleteFrom('tag_asset')
+      .where(
+        sql<boolean>`("tagId","assetId") IN (${sql.join(
+          items.map(({ tagId, assetId }) => sql`(${tagId}, ${assetId})`),
+          sql`, `,
+        )})`,
+      )
+      .returningAll()
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   replaceAssetTags(assetId: string, tagIds: string[]) {

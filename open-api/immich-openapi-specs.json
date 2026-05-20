@@ -12972,6 +12972,64 @@
       }
     },
     "/tags/assets": {
+      "delete": {
+        "description": "Remove multiple tags from multiple assets in a single request.",
+        "operationId": "bulkUntagAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBulkAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagBulkAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Untag assets",
+        "tags": [
+          "Tags"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.asset",
+        "x-immich-state": "Stable"
+      },
       "put": {
         "description": "Add multiple tags to multiple assets in a single request.",
         "operationId": "bulkTagAssets",

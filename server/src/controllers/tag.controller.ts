@@ -67,6 +67,17 @@ export class TagController {
     return this.service.bulkTagAssets(auth, dto);
   }
 
+  @Delete('assets')
+  @Authenticated({ permission: Permission.TagAsset })
+  @Endpoint({
+    summary: 'Untag assets',
+    description: 'Remove multiple tags from multiple assets in a single request.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  bulkUntagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    return this.service.bulkUntagAssets(auth, dto);
+  }
+
   @Get('getAllTagsForAssets')
   @Authenticated({ permission: Permission.TagRead })
   @Endpoint({

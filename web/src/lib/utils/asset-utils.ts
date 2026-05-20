@@ -1,13 +1,13 @@
 import {
   AssetVisibility,
   bulkTagAssets,
+  bulkUntagAssets,
   createStack,
   deleteAssets,
   deleteStacks,
   getBaseUrl,
   getDownloadInfo,
   getStack,
-  untagAssets,
   updateAsset,
   updateAssets,
   type AssetResponseDto,
@@ -52,7 +52,7 @@ export const tagAssets = async ({
   return assetIds;
 };
 
-export const removeTag = async ({
+export const untagAssets = async ({
   assetIds,
   tagIds,
   showNotification = true,
@@ -61,9 +61,7 @@ export const removeTag = async ({
   tagIds: string[];
   showNotification?: boolean;
 }) => {
-  for (const tagId of tagIds) {
-    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
-  }
+  await bulkUntagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
 
   if (showNotification) {
     const $t = await getFormatter();

@@ -271,6 +271,7 @@ Class | Method | HTTP request | Description
 *SystemMetadataApi* | [**getVersionCheckState**](doc//SystemMetadataApi.md#getversioncheckstate) | **GET** /system-metadata/version-check-state | Retrieve version check state
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | Update admin onboarding
 *TagsApi* | [**bulkTagAssets**](doc//TagsApi.md#bulktagassets) | **PUT** /tags/assets | Tag assets
+*TagsApi* | [**bulkUntagAssets**](doc//TagsApi.md#bulkuntagassets) | **DELETE** /tags/assets | Untag assets
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | Create a tag
 *TagsApi* | [**deleteTag**](doc//TagsApi.md#deletetag) | **DELETE** /tags/{id} | Delete a tag
 *TagsApi* | [**getAllTags**](doc//TagsApi.md#getalltags) | **GET** /tags | Retrieve tags
