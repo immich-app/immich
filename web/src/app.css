@@ -34,7 +34,7 @@
 }
 
 @utility immich-form-input {
-  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
+  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-immich-primary dark:focus-visible:outline-immich-dark-primary focus-within:ring-immich-primary/50 dark:focus-within:ring-immich-dark-primary/50;
 }
 
 @utility immich-form-label {
@@ -151,11 +151,6 @@
 
   body.asset-viewer-open {
     background-color: black;
-  }
-
-  input:focus-visible {
-    outline-offset: 0px !important;
-    outline: none !important;
   }
 
   .text-white-shadow {
