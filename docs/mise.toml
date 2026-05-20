@@ -3,7 +3,7 @@ run = "pnpm install --filter documentation --frozen-lockfile"
 
 [tasks.start]
 env._.path = "./node_modules/.bin"
-run = "docusaurus --port 3005"
+run = "docusaurus start --port 3005"
 
 [tasks.build]
 env._.path = "./node_modules/.bin"
