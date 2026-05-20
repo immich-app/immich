@@ -17,13 +17,13 @@ export class TimelineDay {
 
   height = $state(0);
   width = $state(0);
-  isInOrNearViewport = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.isInOrNearViewport));
 
   #top: number = $state(0);
   #start: number = $state(0);
   #row = $state(0);
   #col = $state(0);
   #deferredLayout = false;
+  #lastInOrNearViewport = 0;
 
   constructor(timelineMonth: TimelineMonth, index: number, day: number, groupTitle: string, orderBy: AssetOrderBy) {
     this.index = index;
@@ -153,5 +153,14 @@ export class TimelineDay {
 
   get absoluteTimelineDayTop() {
     return this.timelineMonth.top + this.#top;
+  }
+
+  get isInOrNearViewport() {
+    if (this.#lastInOrNearViewport !== -1 && this.viewerAssets[this.#lastInOrNearViewport].isInOrNearViewport) {
+      return true;
+    }
+
+    this.#lastInOrNearViewport = this.viewerAssets.findIndex((viewAsset) => viewAsset.isInOrNearViewport);
+    return this.#lastInOrNearViewport !== -1;
   }
 }
