@@ -53,10 +53,12 @@
     });
 
     const substitutions: Record<string, string> = {
-      filename: 'IMAGE_56437',
-      ext: 'jpg',
-      filetype: 'IMG',
-      filetypefull: 'IMAGE',
+      filename: 'VIDEO_12345',
+      ext: 'mp4',
+      filetype: 'VID',
+      filetypefull: 'VIDEO',
+      isVideo: 'true',
+      isImage: '',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
       assetIdShort: '56717ccba856',
       album: $t('album_name'),
