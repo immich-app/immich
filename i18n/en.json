@@ -2255,6 +2255,7 @@
   "step_delete_confirm": "Are you sure you want to delete this step?",
   "step_details": "Step details",
   "steps": "Steps",
+  "steps_count": "{count, plural, one {# step} other {# steps}}",
   "stop_casting": "Stop casting",
   "stop_motion_photo": "Stop Motion Photo",
   "stop_photo_sharing": "Stop sharing your photos?",
