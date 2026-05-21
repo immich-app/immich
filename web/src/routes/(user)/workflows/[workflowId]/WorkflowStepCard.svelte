@@ -2,13 +2,7 @@
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import type { WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
-  import {
-    mdiAutoFix,
-    mdiDragVertical,
-    mdiFilterVariant,
-    mdiPencilOutline,
-    mdiTrashCanOutline,
-  } from '@mdi/js';
+  import { mdiAutoFix, mdiDragVertical, mdiFilterVariant, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {

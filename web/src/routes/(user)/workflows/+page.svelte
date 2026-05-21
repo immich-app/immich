@@ -8,6 +8,7 @@
   import { getWorkflowActions, getWorkflowsActions, getWorkflowShowSchemaAction } from '$lib/services/workflow.service';
   import { getWorkflowForShare, type WorkflowResponseDto } from '@immich/sdk';
   import {
+    Badge,
     Button,
     Card,
     CardDescription,
@@ -114,11 +115,9 @@
                       </CardTitle>
 
                       {#if !workflow.enabled}
-                        <span
-                          class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tracking-wide text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                        >
+                        <Badge size="small" color="secondary">
                           {$t('disabled')}
-                        </span>
+                        </Badge>
                       {/if}
                     </div>
 
