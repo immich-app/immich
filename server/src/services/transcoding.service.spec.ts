@@ -177,6 +177,29 @@ describe(TranscodingService.name, () => {
 
       expect(mocks.process.spawn).not.toHaveBeenCalled();
     });
+
+    it('accepts segments from a restart after the previous ffmpeg exited on its own', async () => {
+      const first = mockSpawn(0, '', '');
+      const second = mockSpawn(0, '', '');
+      mocks.process.spawn.mockReturnValueOnce(first).mockReturnValueOnce(second);
+
+      await sut.onSegmentRequest({ sessionId, assetId, variantIndex: 0, segmentIndex: 10 });
+      completeSegment(10);
+
+      const onCalls = vi.mocked(first.on).mock.calls as unknown as [string, (code: number) => void][];
+      const exitHandler = onCalls.find(([event]) => event === 'exit')?.[1];
+      exitHandler?.(0);
+
+      mocks.websocket.serverSend.mockClear();
+      await sut.onSegmentRequest({ sessionId, assetId, variantIndex: 0, segmentIndex: 2 });
+      completeSegment(2);
+
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsSegmentResult', {
+        sessionId,
+        variantIndex: 0,
+        segmentIndex: 2,
+      });
+    });
   });
 
   describe('backpressure', () => {

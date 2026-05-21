@@ -304,6 +304,7 @@ export class TranscodingService extends BaseService {
       }
       session.paused = false;
       session.process = null;
+      session.lastCompletedSegment = null;
       if (code) {
         this.logger.error(
           `FFmpeg exited with code ${code} for variant ${variantIndex} asset ${session.assetId}\n${stderr}`,
