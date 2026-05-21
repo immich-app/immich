@@ -1,4 +1,4 @@
-import { AssetsForTagResponseSchema, TagsForAssetsQuerySchema } from 'src/dtos/tag.dto';
+import { TagsForAssetsQuerySchema, TagsForAssetsResponseSchema } from 'src/dtos/tag.dto';
 
 describe('Tag DTOs', () => {
   describe('TagsForAssetsQueryDto', () => {
@@ -19,18 +19,18 @@ describe('Tag DTOs', () => {
     });
   });
 
-  describe('AssetsForTagResponseDto', () => {
-    it('should validate a valid AssetsForTagResponseDto', () => {
+  describe('TagsForAssetsResponseDto', () => {
+    it('should validate a valid TagsForAssetsResponseDto', () => {
       const data = {
         tagId: '3fe388e4-2078-44d7-b36c-39d9dee3a657',
         assetIds: ['3fe388e4-2078-44d7-b36c-39d9dee3a657', '4fe388e4-2078-44d7-b36c-39d9dee3a657'],
       };
-      const result = AssetsForTagResponseSchema.safeParse(data);
+      const result = TagsForAssetsResponseSchema.safeParse(data);
       expect(result.success).toBe(true);
     });
 
     it('should throw error for invalid tagId', () => {
-      const result = AssetsForTagResponseSchema.safeParse({
+      const result = TagsForAssetsResponseSchema.safeParse({
         tagId: 'invalid-uuid',
         assetIds: ['3fe388e4-2078-44d7-b36c-39d9dee3a657'],
       });
@@ -38,7 +38,7 @@ describe('Tag DTOs', () => {
     });
 
     it('should throw error for invalid assetIds', () => {
-      const result = AssetsForTagResponseSchema.safeParse({
+      const result = TagsForAssetsResponseSchema.safeParse({
         tagId: '3fe388e4-2078-44d7-b36c-39d9dee3a657',
         assetIds: ['invalid-uuid'],
       });

@@ -4,12 +4,12 @@ import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetsForTagResponseDto,
   mapTag,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
+  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
 } from 'src/dtos/tag.dto';
@@ -33,7 +33,7 @@ export class TagService extends BaseService {
     return mapTag(tag);
   }
 
-  async getAllForAssets(auth: AuthDto, assetIds: string[]): Promise<AssetsForTagResponseDto[]> {
+  async getAllForAssets(auth: AuthDto, assetIds: string[]): Promise<TagsForAssetsResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: assetIds });
     return await this.tagRepository.getIdsForAssets(assetIds);
   }

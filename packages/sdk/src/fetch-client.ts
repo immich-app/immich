@@ -2584,7 +2584,7 @@ export type TagBulkAssetsResponseDto = {
     /** Number of assets tagged */
     count: number;
 };
-export type AssetsForTagResponseDto = {
+export type TagsForAssetsResponseDto = {
     /** Asset IDs associated with the tag */
     assetIds?: string[];
     /** Tag ID */
@@ -6232,7 +6232,7 @@ export function getAllTagsForAssets({ assetIds }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: AssetsForTagResponseDto[];
+        data: TagsForAssetsResponseDto[];
     }>(`/tags/getAllTagsForAssets${QS.query(QS.explode({
         assetIds
     }))}`, {

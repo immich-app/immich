@@ -329,7 +329,7 @@ class TagsApi {
   ///
   /// * [List<String>] assetIds (required):
   ///   Asset IDs to retrieve tags for
-  Future<List<AssetsForTagResponseDto>?> getAllTagsForAssets(List<String> assetIds,) async {
+  Future<List<TagsForAssetsResponseDto>?> getAllTagsForAssets(List<String> assetIds,) async {
     final response = await getAllTagsForAssetsWithHttpInfo(assetIds,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -339,8 +339,8 @@ class TagsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetsForTagResponseDto>') as List)
-        .cast<AssetsForTagResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<TagsForAssetsResponseDto>') as List)
+        .cast<TagsForAssetsResponseDto>()
         .toList(growable: false);
 
     }

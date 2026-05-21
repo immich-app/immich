@@ -13115,7 +13115,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/AssetsForTagResponseDto"
+                    "$ref": "#/components/schemas/TagsForAssetsResponseDto"
                   },
                   "type": "array"
                 }
@@ -17226,29 +17226,6 @@
           "locked"
         ],
         "type": "string"
-      },
-      "AssetsForTagResponseDto": {
-        "properties": {
-          "assetIds": {
-            "description": "Asset IDs associated with the tag",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "tagId": {
-            "description": "Tag ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "tagId"
-        ],
-        "type": "object"
       },
       "AudioCodec": {
         "description": "Target audio codec",
@@ -25137,6 +25114,29 @@
         },
         "required": [
           "tags"
+        ],
+        "type": "object"
+      },
+      "TagsForAssetsResponseDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs associated with the tag",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagId": {
+            "description": "Tag ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tagId"
         ],
         "type": "object"
       },

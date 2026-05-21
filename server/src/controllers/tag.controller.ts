@@ -4,12 +4,12 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  AssetsForTagResponseDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
   TagsForAssetsQueryDto,
+  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
 } from 'src/dtos/tag.dto';
@@ -88,7 +88,7 @@ export class TagController {
   getAllTagsForAssets(
     @Auth() auth: AuthDto,
     @Query() { assetIds }: TagsForAssetsQueryDto,
-  ): Promise<AssetsForTagResponseDto[]> {
+  ): Promise<TagsForAssetsResponseDto[]> {
     return this.service.getAllForAssets(auth, assetIds);
   }
 
