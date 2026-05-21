@@ -63,26 +63,33 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
   }
 
   Future<int> deleteOutdated(Iterable<String> remoteIds) async {
-    final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
-      ..addColumns([_db.remoteAssetEntity.checksum])
-      ..where(_db.remoteAssetEntity.id.isIn(remoteIds) & _db.remoteAssetEntity.deletedAt.isNull());
+    var deletedMatched = 0;
+    for (final slice in remoteIds.toSet().slices(kDriftMaxChunk)) {
+      final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
+        ..addColumns([_db.remoteAssetEntity.checksum])
+        ..where(_db.remoteAssetEntity.id.isIn(slice) & _db.remoteAssetEntity.deletedAt.isNull());
 
-    final query = _db.delete(_db.trashSyncEntity)..where((row) => row.checksum.isInQuery(remoteAliveSelect));
+      final query = _db.delete(_db.trashSyncEntity)..where((row) => row.checksum.isInQuery(remoteAliveSelect));
 
-    final deletedMatched = await query.go();
+      deletedMatched += await query.go();
+    }
     return deletedMatched;
   }
 
-  Future<int> deleteResolved(Iterable<String> checksums) {
+  Future<int> deleteResolved(Iterable<String> checksums) async {
     final checksumSet = checksums.toSet();
     if (checksumSet.isEmpty) {
       return Future.value(0);
     }
 
-    final query = _db.delete(_db.trashSyncEntity)
-      ..where((row) => row.checksum.isIn(checksumSet) & row.isSyncApproved.isNotValue(true));
+    var deletedMatched = 0;
+    for (final slice in checksumSet.slices(kDriftMaxChunk)) {
+      final query = _db.delete(_db.trashSyncEntity)
+        ..where((row) => row.checksum.isIn(slice) & row.isSyncApproved.isNotValue(true));
 
-    return query.go();
+      deletedMatched += await query.go();
+    }
+    return deletedMatched;
   }
 
   Future<int> cleanupLocalTrashSync() async {

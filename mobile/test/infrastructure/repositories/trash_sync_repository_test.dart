@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
@@ -251,6 +252,22 @@ void main() {
       expect(remainingChecksums, isNot(contains('alive-rejected')));
       expect(remainingChecksums, isNot(contains('alive-approved')));
     });
+
+    test('removes entries across remote id chunks', () async {
+      final now = DateTime(2025, 1, 1);
+      final count = kDriftMaxChunk + 1;
+
+      for (var i = 0; i < count; i++) {
+        final checksum = 'alive-$i';
+        await insertRemoteAsset(checksum: checksum, deletedAt: null);
+        await insertTrashSync(checksum: checksum, isSyncApproved: null, remoteDeletedAt: now);
+      }
+
+      final deleted = await repository.deleteOutdated(List.generate(count, (i) => 'remote-alive-$i'));
+
+      expect(deleted, count);
+      expect(await db.managers.trashSyncEntity.count(), 0);
+    });
   });
 
   group('deleteResolved', () {
@@ -271,6 +288,20 @@ void main() {
       expect(remainingChecksums, containsAll(['approved-matched', 'pending-not-requested']));
       expect(remainingChecksums, isNot(contains('pending-matched')));
       expect(remainingChecksums, isNot(contains('rejected-matched')));
+    });
+
+    test('removes entries across checksum chunks', () async {
+      final now = DateTime(2025, 1, 1);
+      final count = kDriftMaxChunk + 1;
+
+      for (var i = 0; i < count; i++) {
+        await insertTrashSync(checksum: 'pending-$i', isSyncApproved: null, remoteDeletedAt: now);
+      }
+
+      final deleted = await repository.deleteResolved(List.generate(count, (i) => 'pending-$i'));
+
+      expect(deleted, count);
+      expect(await db.managers.trashSyncEntity.count(), 0);
     });
   });
 

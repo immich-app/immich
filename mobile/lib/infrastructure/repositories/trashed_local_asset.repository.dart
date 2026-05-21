@@ -20,7 +20,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     if (hashes.isEmpty) {
       return Future.value();
     }
-    return _db.batch((batch) async {
+    return _db.batch((batch) {
       for (final entry in hashes.entries) {
         batch.update(
           _db.trashedLocalAssetEntity,
@@ -104,9 +104,11 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
           _db.trashedLocalAssetEntity,
         )..addColumns([_db.trashedLocalAssetEntity.id])).map((r) => r.read(_db.trashedLocalAssetEntity.id)!).get();
         final idToDelete = existingIds.where((id) => !assetIds.contains(id));
-        for (final slice in idToDelete.slices(kDriftMaxChunk)) {
-          await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
-        }
+        await _db.batch((batch) {
+          for (final slice in idToDelete.slices(kDriftMaxChunk)) {
+            batch.deleteWhere(_db.trashedLocalAssetEntity, (t) => t.id.isIn(slice));
+          }
+        });
       }
     });
   }
@@ -159,13 +161,14 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     await _db.transaction(() async {
-      for (final companion in companions) {
-        await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
-      }
-
-      for (final slice in idToDelete.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
-      }
+      await _db.batch((batch) {
+        for (final companion in companions) {
+          batch.insert(_db.trashedLocalAssetEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+        for (final slice in idToDelete.slices(kDriftMaxChunk)) {
+          batch.deleteWhere(_db.localAssetEntity, (t) => t.id.isIn(slice));
+        }
+      });
     });
   }
 
@@ -203,12 +206,14 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
 
     await _db.transaction(() async {
-      for (final companion in companions) {
-        await _db.into(_db.localAssetEntity).insertOnConflictUpdate(companion);
-      }
-      for (final slice in idList.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
-      }
+      await _db.batch((batch) {
+        for (final companion in companions) {
+          batch.insert(_db.localAssetEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+        for (final slice in idList.slices(kDriftMaxChunk)) {
+          batch.deleteWhere(_db.trashedLocalAssetEntity, (t) => t.id.isIn(slice));
+        }
+      });
     });
   }
 
@@ -256,12 +261,14 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
 
     await _db.transaction(() async {
-      for (final companion in companions) {
-        await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
-      }
-      for (final slice in idList.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
-      }
+      await _db.batch((batch) {
+        for (final companion in companions) {
+          batch.insert(_db.trashedLocalAssetEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+        for (final slice in idList.slices(kDriftMaxChunk)) {
+          batch.deleteWhere(_db.localAssetEntity, (t) => t.id.isIn(slice));
+        }
+      });
     });
   }
 
