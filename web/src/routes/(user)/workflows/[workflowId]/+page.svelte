@@ -100,6 +100,13 @@
     }
   };
 
+  const handleInsertStep = async (index: number) => {
+    const step = await modalManager.show(WorkflowAddStepModal, { trigger });
+    if (step) {
+      steps = [...steps.slice(0, index), step, ...steps.slice(index)];
+    }
+  };
+
   const replaceStep = (index: number, step: WorkflowStepDto) => {
     steps = steps.map((current, i) => (i === index ? cloneDeep(step) : current));
   };
@@ -384,16 +391,7 @@
           </CardHeader>
         </Card>
 
-        {#snippet sequenceConnector()}
-          <div class="-my-4 ml-18 flex w-full items-center gap-3">
-            <div class="flex w-1 shrink-0 justify-start">
-              <div class="h-8 w-0.5 bg-light-200"></div>
-            </div>
-          </div>
-        {/snippet}
-
         {#each steps as step, index (index)}
-          {@render sequenceConnector()}
           <WorkflowStepCard
             {step}
             {index}
@@ -402,6 +400,7 @@
             isDropTarget={dropTargetIndex === index && draggedIndex !== null && draggedIndex !== index}
             onEdit={handleEditStep}
             onDelete={handleDeleteStep}
+            onInsertBefore={handleInsertStep}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}

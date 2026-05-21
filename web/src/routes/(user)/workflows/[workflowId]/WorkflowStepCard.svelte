@@ -2,7 +2,14 @@
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import type { WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
-  import { mdiAutoFix, mdiDragVertical, mdiFilterVariant, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import {
+    mdiAutoFix,
+    mdiDragVertical,
+    mdiFilterVariant,
+    mdiPencilOutline,
+    mdiPlus,
+    mdiTrashCanOutline,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -13,6 +20,7 @@
     isDropTarget: boolean;
     onEdit: (index: number) => void;
     onDelete: (index: number) => void;
+    onInsertBefore: (index: number) => void;
     onDragStart: (index: number, event: DragEvent) => void;
     onDragEnd: () => void;
     onDragOver: (index: number, event: DragEvent) => void;
@@ -30,6 +38,7 @@
     isDropTarget,
     onEdit,
     onDelete,
+    onInsertBefore,
     onDragStart,
     onDragEnd,
     onDragOver,
@@ -75,95 +84,112 @@
   };
 </script>
 
-<div
-  class="w-full transition-all"
-  class:opacity-40={isDragging}
-  class:scale-[0.99]={isDragging}
-  ondragover={(event) => onDragOver(index, event)}
-  ondragleave={() => onDragLeave(index)}
-  ondrop={(event) => onDrop(index, event)}
-  role="listitem"
->
-  <Card
-    class="shadow-none transition-colors {isDropTarget
-      ? 'border-primary ring-2 ring-primary-200'
-      : isDragHandleHovered
-        ? 'border-dashed border-primary'
-        : ''}"
-  >
-    <CardHeader>
-      <div class="flex items-center gap-2">
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div
-          class="flex shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent p-1 text-light-400 select-none hover:border-primary-200 hover:bg-primary-50 hover:text-primary active:cursor-grabbing"
-          aria-label={$t('drag_to_reorder')}
-          draggable="true"
-          onmouseenter={() => onDragHandleEnter(index)}
-          onmouseleave={onDragHandleLeave}
-          ondragstart={(event) => onDragStart(index, event)}
-          ondragend={onDragEnd}
-          title={$t('drag_to_reorder')}
-        >
-          <Icon icon={mdiDragVertical} size="20" />
-        </div>
-        <div
-          class="flex size-10 shrink-0 items-center justify-center rounded-lg"
-          class:bg-primary-50={isFilter}
-          class:bg-warning-50={!isFilter}
-        >
-          <Icon
-            icon={isFilter ? mdiFilterVariant : mdiAutoFix}
-            size="20"
-            class={isFilter ? 'text-primary' : 'text-warning'}
-          />
-        </div>
-        <div class="flex min-w-0 flex-1 flex-col">
-          <CardTitle class="truncate">
-            <span class="mr-1 font-bold text-light-500">{index + 1}</span>
-            {pluginManager.getMethodLabel(step.method)}
-          </CardTitle>
-          {#if method?.description}
-            <CardDescription class="truncate">{method.description}</CardDescription>
-          {/if}
-        </div>
-        <div class="flex shrink-0 items-center gap-1">
-          <IconButton
-            icon={mdiPencilOutline}
-            aria-label={$t('edit')}
-            variant="ghost"
-            shape="round"
-            color="secondary"
-            size="small"
-            onclick={() => onEdit(index)}
-          />
-          <IconButton
-            icon={mdiTrashCanOutline}
-            aria-label={$t('delete')}
-            variant="ghost"
-            shape="round"
-            color="danger"
-            size="small"
-            onclick={() => onDelete(index)}
-          />
-        </div>
-      </div>
-    </CardHeader>
+<div class="group/step-row flex w-full flex-col">
+  <div class="-mt-4 ml-18 flex w-full items-center gap-4">
+    <div class="relative flex w-1 shrink-0 justify-start">
+      <div class="h-10 w-0.5 bg-light-200"></div>
+      <button
+        type="button"
+        class="absolute top-1/2 left-1/2 z-10 -translate-1/2 cursor-pointer rounded-full border border-dashed border-primary-200 bg-light p-0.5 text-primary opacity-0 transition-opacity group-hover/step-row:opacity-100 hover:bg-primary-50"
+        aria-label={$t('add_step')}
+        title={$t('add_step')}
+        onclick={() => onInsertBefore(index)}
+      >
+        <Icon icon={mdiPlus} size="14" />
+      </button>
+    </div>
+  </div>
 
-    {#if configEntries.length > 0}
-      <CardBody class="py-3">
-        <div class="flex flex-wrap items-center gap-1.5">
-          {#each configEntries as [key, value] (key)}
-            <Badge
-              color={isFilter ? 'info' : 'warning'}
+  <div
+    class="w-full transition-all"
+    class:opacity-40={isDragging}
+    class:scale-[0.99]={isDragging}
+    ondragover={(event) => onDragOver(index, event)}
+    ondragleave={() => onDragLeave(index)}
+    ondrop={(event) => onDrop(index, event)}
+    role="listitem"
+  >
+    <Card
+      class="shadow-none transition-colors {isDropTarget
+        ? 'border-primary ring-2 ring-primary-200'
+        : isDragHandleHovered
+          ? 'border-dashed border-primary'
+          : ''}"
+    >
+      <CardHeader>
+        <div class="flex items-center gap-2">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="flex shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent p-1 text-light-400 select-none hover:border-primary-200 hover:bg-primary-50 hover:text-primary active:cursor-grabbing"
+            aria-label={$t('drag_to_reorder')}
+            draggable="true"
+            onmouseenter={() => onDragHandleEnter(index)}
+            onmouseleave={onDragHandleLeave}
+            ondragstart={(event) => onDragStart(index, event)}
+            ondragend={onDragEnd}
+            title={$t('drag_to_reorder')}
+          >
+            <Icon icon={mdiDragVertical} size="20" />
+          </div>
+          <div
+            class="flex size-10 shrink-0 items-center justify-center rounded-lg"
+            class:bg-primary-50={isFilter}
+            class:bg-warning-50={!isFilter}
+          >
+            <Icon
+              icon={isFilter ? mdiFilterVariant : mdiAutoFix}
+              size="20"
+              class={isFilter ? 'text-primary' : 'text-warning'}
+            />
+          </div>
+          <div class="flex min-w-0 flex-1 flex-col">
+            <CardTitle class="truncate">
+              <span class="mr-1 font-bold text-light-500">{index + 1}</span>
+              {pluginManager.getMethodLabel(step.method)}
+            </CardTitle>
+            {#if method?.description}
+              <CardDescription class="truncate">{method.description}</CardDescription>
+            {/if}
+          </div>
+          <div class="flex shrink-0 items-center gap-1">
+            <IconButton
+              icon={mdiPencilOutline}
+              aria-label={$t('edit')}
+              variant="ghost"
               shape="round"
+              color="secondary"
               size="small"
-              class="border font-mono {isFilter ? 'border-primary-200' : 'border-warning-200'}"
-            >
-              <span class="opacity-60">{key}</span>{formatConfigValue(value)}
-            </Badge>
-          {/each}
+              onclick={() => onEdit(index)}
+            />
+            <IconButton
+              icon={mdiTrashCanOutline}
+              aria-label={$t('delete')}
+              variant="ghost"
+              shape="round"
+              color="danger"
+              size="small"
+              onclick={() => onDelete(index)}
+            />
+          </div>
         </div>
-      </CardBody>
-    {/if}
-  </Card>
+      </CardHeader>
+
+      {#if configEntries.length > 0}
+        <CardBody class="py-3">
+          <div class="flex flex-wrap items-center gap-1.5">
+            {#each configEntries as [key, value] (key)}
+              <Badge
+                color={isFilter ? 'info' : 'warning'}
+                shape="round"
+                size="small"
+                class="border font-mono {isFilter ? 'border-primary-200' : 'border-warning-200'}"
+              >
+                <span class="opacity-60">{key}</span>{formatConfigValue(value)}
+              </Badge>
+            {/each}
+          </div>
+        </CardBody>
+      {/if}
+    </Card>
+  </div>
 </div>
