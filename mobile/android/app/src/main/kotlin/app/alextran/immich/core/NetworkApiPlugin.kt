@@ -1,6 +1,7 @@
 package app.alextran.immich.core
 
 import android.app.Activity
+import android.content.Context
 import android.os.OperationCanceledException
 import android.security.KeyChain
 import app.alextran.immich.NativeBuffer
@@ -12,7 +13,7 @@ class NetworkApiPlugin : FlutterPlugin, ActivityAware {
   private var networkApi: NetworkApiImpl? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    networkApi = NetworkApiImpl()
+    networkApi = NetworkApiImpl(binding.applicationContext)
     NetworkApi.setUp(binding.binaryMessenger, networkApi)
   }
 
@@ -38,8 +39,10 @@ class NetworkApiPlugin : FlutterPlugin, ActivityAware {
   }
 }
 
-private class NetworkApiImpl : NetworkApi {
+private class NetworkApiImpl(private val context: Context) : NetworkApi {
   var activity: Activity? = null
+
+  override fun getAppGroupId(): String = context.packageName
 
   override fun addCertificate(clientData: ClientCertData, callback: (Result<Unit>) -> Unit) {
     try {

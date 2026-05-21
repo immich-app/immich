@@ -12,6 +12,7 @@ class WidgetService {
   const WidgetService(this._repository);
 
   Future<void> writeCredentials(String serverURL, String sessionKey, String? customHeaders) async {
+    await _repository.setAppGroupId();
     await _repository.saveData(kWidgetServerEndpoint, serverURL);
     await _repository.saveData(kWidgetAuthToken, sessionKey);
 
@@ -24,6 +25,7 @@ class WidgetService {
   }
 
   Future<void> clearCredentials() async {
+    await _repository.setAppGroupId();
     await _repository.saveData(kWidgetServerEndpoint, "");
     await _repository.saveData(kWidgetAuthToken, "");
     await _repository.saveData(kWidgetCustomHeaders, "");

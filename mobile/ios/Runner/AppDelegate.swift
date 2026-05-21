@@ -31,9 +31,6 @@ import native_video_player
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: messenger, api: BackgroundWorkerApiImpl())
     ConnectivityApiSetup.setUp(binaryMessenger: messenger, api: ConnectivityApiImpl())
     NetworkApiSetup.setUp(binaryMessenger: messenger, api: NetworkApiImpl())
-
-    FlutterMethodChannel(name: "home_widget", binaryMessenger: messenger)
-      .invokeMethod("setAppGroupId", arguments: ["groupId": APP_GROUP])
   }
 
   public static func cancelPlugins(with engine: FlutterEngine) {
