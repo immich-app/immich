@@ -19,7 +19,6 @@
     IconButton,
     MenuItemType,
     menuManager,
-    Text,
   } from '@immich/ui';
   import { mdiClose, mdiDotsVertical, mdiFlashOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -42,14 +41,6 @@
     } else {
       expandedIds.add(id);
     }
-  };
-
-  const getTriggerLabel = (triggerType: string) => {
-    const labels: Record<string, string> = {
-      AssetCreate: $t('asset_created'),
-      PersonRecognized: $t('person_recognized'),
-    };
-    return labels[triggerType] || triggerType;
   };
 
   const showWorkflowMenu = (event: MouseEvent, workflow: WorkflowResponseDto) => {
