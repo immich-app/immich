@@ -146,7 +146,7 @@
     Object.defineProperty(api, 'nextLevel', {
       configurable: true,
       get: () => api.currentLevel,
-      set: (level: number) => (api.currentLevel = level)
+      set: (level: number) => (api.currentLevel = level),
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

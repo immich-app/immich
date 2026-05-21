@@ -88,3 +88,4 @@ class MediaCapabilitiesManager {
 }
 
 export const mediaCapabilitiesManager = new MediaCapabilitiesManager();
+mediaCapabilitiesManager.init();
