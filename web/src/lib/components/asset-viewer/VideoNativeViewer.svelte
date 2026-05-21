@@ -140,6 +140,15 @@
       return;
     }
 
+    // This is a hack to make the rendition menu use `api.currentLevel` instead of `api.nextLevel`.
+    // `api.nextLevel` makes the player request the next segment followed by the current segment.
+    // That backward request causes the server to restart transcoding for no reason.
+    Object.defineProperty(api, 'nextLevel', {
+      configurable: true,
+      get: () => api.currentLevel,
+      set: (level: number) => (api.currentLevel = level)
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     api.on(Hls.Events.MANIFEST_PARSED, async () => {
       // Defer hls.js's first fragment load until we filter out suboptimal variants
