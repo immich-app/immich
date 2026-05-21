@@ -7,7 +7,20 @@
   import { Route } from '$lib/route';
   import { getWorkflowActions, getWorkflowsActions, getWorkflowShowSchemaAction } from '$lib/services/workflow.service';
   import { getWorkflowForShare, type WorkflowResponseDto } from '@immich/sdk';
-  import { Button, CodeBlock, Container, Icon, IconButton, MenuItemType, menuManager } from '@immich/ui';
+  import {
+    Button,
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    CodeBlock,
+    Container,
+    Icon,
+    IconButton,
+    MenuItemType,
+    menuManager,
+    Text,
+  } from '@immich/ui';
   import { mdiClose, mdiDotsVertical, mdiFlashOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -86,83 +99,78 @@
       {:else}
         <div class="my-6 flex flex-col gap-3">
           {#each workflows as workflow (workflow.id)}
-            <div
-              class="group border-outline overflow-hidden rounded-2xl border transition-colors hover:bg-primary/5 dark:border-neutral-800"
-            >
-              <a
-                href={Route.viewWorkflow({ id: workflow.id })}
-                class="flex items-center gap-4 px-5 py-4"
-                class:opacity-55={!workflow.enabled}
-              >
-                <div
-                  class={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
-                    workflow.enabled
-                      ? 'bg-immich-primary/10 text-immich-primary dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary'
-                      : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
-                  }`}
+            <Card class="group shadow-none transition-colors hover:border-primary">
+              <CardHeader>
+                <a
+                  href={Route.viewWorkflow({ id: workflow.id })}
+                  class="flex items-center gap-4"
+                  class:opacity-55={!workflow.enabled}
                 >
-                  <Icon icon={mdiFlashOutline} size="20" />
-                </div>
+                  <div
+                    class={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
+                      workflow.enabled
+                        ? 'bg-immich-primary/10 text-immich-primary dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary'
+                        : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+                    }`}
+                  >
+                    <Icon icon={mdiFlashOutline} size="20" />
+                  </div>
 
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2">
-                    <h3
-                      class="truncate text-base font-semibold text-dark group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary"
-                    >
-                      {workflow.name || $t('workflow')}
-                    </h3>
-                    {#if !workflow.enabled}
-                      <span
-                        class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tracking-wide text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                      >
-                        {$t('disabled')}
-                      </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <CardTitle class="truncate font-semibold text-dark group-hover:text-primary">
+                        {workflow.name || $t('workflow')}
+                      </CardTitle>
+
+                      {#if !workflow.enabled}
+                        <span
+                          class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium tracking-wide text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                        >
+                          {$t('disabled')}
+                        </span>
+                      {/if}
+                    </div>
+
+                    {#if workflow.description}
+                      <CardDescription class="mt-0.5 truncate">
+                        {workflow.description}
+                      </CardDescription>
                     {/if}
                   </div>
-                  <p class="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
-                    {getTriggerLabel(workflow.trigger)} · {$t('steps_count', {
-                      values: { count: workflow.steps.length },
-                    })}
-                  </p>
-                  {#if workflow.description}
-                    <p class="mt-1 truncate text-xs text-gray-500/80 dark:text-gray-500">
-                      {workflow.description}
-                    </p>
-                  {/if}
-                </div>
 
-                <IconButton
-                  shape="round"
-                  variant="ghost"
-                  color="secondary"
-                  icon={mdiDotsVertical}
-                  aria-label={$t('menu')}
-                  onclick={(event: MouseEvent) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    showWorkflowMenu(event, workflow);
-                  }}
-                />
-              </a>
+                  <IconButton
+                    shape="round"
+                    variant="ghost"
+                    color="secondary"
+                    icon={mdiDotsVertical}
+                    aria-label={$t('menu')}
+                    onclick={(event: MouseEvent) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      showWorkflowMenu(event, workflow);
+                    }}
+                  />
+                </a>
 
-              {#if expandedIds.has(workflow.id)}
-                {#await getWorkflowForShare({ id: workflow.id }) then result}
-                  <div class="border-t border-gray-200 p-4 dark:border-gray-800">
-                    <CodeBlock code={JSON.stringify(result, null, 2)} lineNumbers />
-                    <Button
-                      class="mt-2"
-                      leadingIcon={mdiClose}
-                      fullWidth
-                      variant="ghost"
-                      color="secondary"
-                      onclick={() => toggleExpanded(workflow.id)}
-                    >
-                      {$t('close')}
-                    </Button>
-                  </div>
-                {/await}
-              {/if}
-            </div>
+                {#if expandedIds.has(workflow.id)}
+                  {#await getWorkflowForShare({ id: workflow.id }) then result}
+                    <div class="border-t border-gray-200 p-4 dark:border-gray-800">
+                      <CodeBlock code={JSON.stringify(result, null, 2)} lineNumbers />
+                      <Button
+                        class="mt-2"
+                        leadingIcon={mdiClose}
+                        fullWidth
+                        variant="ghost"
+                        color="secondary"
+                        onclick={() => toggleExpanded(workflow.id)}
+                      >
+                        {$t('close')}
+                      </Button>
+                    </div>
+                  {/await}
+                {/if}
+              </CardHeader>
+            </Card>
           {/each}
         </div>
       {/if}
