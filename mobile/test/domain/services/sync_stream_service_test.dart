@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -35,7 +36,6 @@ class _AbortCallbackWrapper {
 }
 
 class _MockAbortCallbackWrapper extends Mock implements _AbortCallbackWrapper {}
-
 
 void main() {
   late SyncStreamService sut;
@@ -618,6 +618,176 @@ void main() {
       await sut.sync();
 
       verifyNever(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset());
+    });
+  });
+
+  group('SyncStreamService - websocket fromWebsocket plumbing', () {
+    SyncAssetV1 wsAssetV1(String id) => SyncAssetV1(
+      checksum: 'checksum-$id',
+      createdAt: DateTime(2025, 1, 2),
+      deletedAt: null,
+      duration: null,
+      fileCreatedAt: DateTime(2025),
+      fileModifiedAt: DateTime(2025, 1, 2),
+      height: null,
+      id: id,
+      isEdited: false,
+      isFavorite: false,
+      libraryId: null,
+      livePhotoVideoId: null,
+      localDateTime: DateTime(2025, 1, 3),
+      originalFileName: '$id.jpg',
+      ownerId: 'owner',
+      stackId: null,
+      thumbhash: null,
+      type: AssetTypeEnum.IMAGE,
+      visibility: AssetVisibility.timeline,
+      width: null,
+    );
+
+    SyncAssetV2 wsAssetV2(String id) => SyncAssetV2(
+      checksum: 'checksum-$id',
+      createdAt: DateTime(2025, 1, 2),
+      deletedAt: null,
+      duration: null,
+      fileCreatedAt: DateTime(2025),
+      fileModifiedAt: DateTime(2025, 1, 2),
+      height: null,
+      id: id,
+      isEdited: false,
+      isFavorite: false,
+      libraryId: null,
+      livePhotoVideoId: null,
+      localDateTime: DateTime(2025, 1, 3),
+      originalFileName: '$id.jpg',
+      ownerId: 'owner',
+      stackId: null,
+      thumbhash: null,
+      type: AssetTypeEnum.IMAGE,
+      visibility: AssetVisibility.timeline,
+      width: null,
+    );
+
+    SyncAssetExifV1 wsExif(String id) => SyncAssetExifV1(
+      assetId: id,
+      city: null,
+      country: null,
+      dateTimeOriginal: null,
+      description: null,
+      exifImageHeight: null,
+      exifImageWidth: null,
+      exposureTime: null,
+      fNumber: null,
+      fileSizeInByte: null,
+      focalLength: null,
+      fps: null,
+      iso: null,
+      latitude: null,
+      lensModel: null,
+      longitude: null,
+      make: null,
+      model: null,
+      modifyDate: null,
+      orientation: null,
+      profileDescription: null,
+      projectionType: null,
+      rating: null,
+      state: null,
+      timeZone: null,
+    );
+
+    // toJson keeps enums as objects; round-trip so fromJson sees plain JSON
+    Map<String, dynamic> wsPayload(Map<String, dynamic> payload) =>
+        jsonDecode(jsonEncode(payload)) as Map<String, dynamic>;
+
+    setUp(() {
+      // stubs registered without fromWebsocket won't match calls that pass it
+      when(
+        () => mockSyncStreamRepo.updateAssetsV1(
+          any(),
+          debugLabel: any(named: 'debugLabel'),
+          fromWebsocket: any(named: 'fromWebsocket'),
+        ),
+      ).thenAnswer(successHandler);
+      when(
+        () => mockSyncStreamRepo.updateAssetsV2(
+          any(),
+          debugLabel: any(named: 'debugLabel'),
+          fromWebsocket: any(named: 'fromWebsocket'),
+        ),
+      ).thenAnswer(successHandler);
+      when(
+        () => mockSyncStreamRepo.replaceAssetEditsV1(any(), any(), debugLabel: any(named: 'debugLabel')),
+      ).thenAnswer(successHandler);
+    });
+
+    test('handleWsAssetUploadReadyV1Batch passes fromWebsocket true', () async {
+      await sut.handleWsAssetUploadReadyV1Batch([
+        wsPayload({'asset': wsAssetV1('ws-v1').toJson(), 'exif': wsExif('ws-v1').toJson()}),
+      ]);
+
+      verify(
+        () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: true),
+      ).called(1);
+      verify(() => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel'))).called(1);
+      verifyNever(
+        () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: false),
+      );
+    });
+
+    test('handleWsAssetUploadReadyV2Batch passes fromWebsocket true', () async {
+      await sut.handleWsAssetUploadReadyV2Batch([
+        wsPayload({'asset': wsAssetV2('ws-v2').toJson(), 'exif': wsExif('ws-v2').toJson()}),
+      ]);
+
+      verify(
+        () => mockSyncStreamRepo.updateAssetsV2(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: true),
+      ).called(1);
+      verify(() => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel'))).called(1);
+      verifyNever(
+        () => mockSyncStreamRepo.updateAssetsV2(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: false),
+      );
+    });
+
+    test('handleWsAssetEditReadyV1 passes fromWebsocket true', () async {
+      await sut.handleWsAssetEditReadyV1(wsPayload({'asset': wsAssetV1('ws-edit-v1').toJson(), 'edit': []}));
+
+      verify(
+        () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: true),
+      ).called(1);
+      verify(
+        () => mockSyncStreamRepo.replaceAssetEditsV1('ws-edit-v1', any(), debugLabel: any(named: 'debugLabel')),
+      ).called(1);
+      verifyNever(
+        () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: false),
+      );
+    });
+
+    test('handleWsAssetEditReadyV2 passes fromWebsocket true', () async {
+      await sut.handleWsAssetEditReadyV2(wsPayload({'asset': wsAssetV2('ws-edit-v2').toJson(), 'edit': []}));
+
+      verify(
+        () => mockSyncStreamRepo.updateAssetsV2(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: true),
+      ).called(1);
+      verify(
+        () => mockSyncStreamRepo.replaceAssetEditsV1('ws-edit-v2', any(), debugLabel: any(named: 'debugLabel')),
+      ).called(1);
+      verifyNever(
+        () => mockSyncStreamRepo.updateAssetsV2(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: false),
+      );
+    });
+
+    test('checkpoint sync keeps fromWebsocket false', () async {
+      await simulateEvents([
+        SyncStreamStub.assetModified(id: 'remote-checkpoint', checksum: 'checksum-cp', ack: 'cp-ack'),
+      ]);
+
+      verify(
+        () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: false),
+      ).called(1);
+      verifyNever(
+        () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel'), fromWebsocket: true),
+      );
     });
   });
 }

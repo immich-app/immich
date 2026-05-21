@@ -50,14 +50,7 @@ class BackgroundSyncManager {
   });
 
   Future<void> cancel() async {
-    final tasks = [
-      _syncTask,
-      _syncWebsocketTask,
-      _cloudIdSyncTask,
-      _linkedAlbumSyncTask,
-      _deviceAlbumSyncTask,
-      _hashTask,
-    ];
+    final tasks = [_syncTask, _syncWebsocketTask, _cloudIdSyncTask, _linkedAlbumSyncTask];
     final futures = [
       for (final task in tasks)
         if (task != null) task.future,
@@ -69,8 +62,30 @@ class BackgroundSyncManager {
     _syncWebsocketTask = null;
     _cloudIdSyncTask = null;
     _linkedAlbumSyncTask = null;
-    _deviceAlbumSyncTask = null;
+
+    try {
+      await Future.wait(futures);
+    } on CanceledError {
+      // Ignore cancellation errors
+    }
+
+    await cancelLocal();
+  }
+
+  Future<void> cancelLocal() async {
+    final futures = <Future>[];
+
+    if (_hashTask != null) {
+      futures.add(_hashTask!.future);
+    }
+    _hashTask?.cancel();
     _hashTask = null;
+
+    if (_deviceAlbumSyncTask != null) {
+      futures.add(_deviceAlbumSyncTask!.future);
+    }
+    _deviceAlbumSyncTask?.cancel();
+    _deviceAlbumSyncTask = null;
 
     try {
       await Future.wait(futures);
@@ -158,6 +173,22 @@ class BackgroundSyncManager {
         .whenComplete(() {
           _syncTask = null;
         });
+  }
+
+  /// Runs a remote sync guaranteed to observe changes up to now. [syncRemote]
+  /// joins an in-flight sync whose snapshot can pre-date a just-received change
+  /// (e.g. a stack update) and miss it, so wait for any in-flight sync to finish
+  /// first, then run a fresh one.
+  Future<void> runFreshRemoteSync() async {
+    final inflight = _syncTask;
+    if (inflight != null) {
+      try {
+        await inflight.future;
+      } catch (_) {
+        // The in-flight sync's outcome doesn't matter; we only need a fresh one after it.
+      }
+    }
+    await syncRemote();
   }
 
   Future<void> syncWebsocketBatchV1(List<dynamic> batchData) {

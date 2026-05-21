@@ -53,9 +53,18 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   );
   final List<dynamic> _batchedAssetUploadReady = [];
 
+  // Batches a burst of stack updates (one per uploaded edit) into a single
+  // remote sync. Kept separate from _batchDebouncer so the two don't overwrite
+  // each other's pending action.
+  final Debouncer _stackUpdateDebouncer = Debouncer(
+    interval: const Duration(seconds: 2),
+    maxWaitTime: const Duration(seconds: 5),
+  );
+
   @override
   void dispose() {
     _batchDebouncer.dispose();
+    _stackUpdateDebouncer.dispose();
     super.dispose();
   }
 
@@ -105,6 +114,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
+        socket.on('on_asset_stack_update', _handleAssetStackUpdate);
       } catch (e) {
         dPrint(() => "[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
@@ -186,6 +196,14 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void _handleSyncAssetEditReadyV2(dynamic data) {
     unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV2(data));
+  }
+
+  // Server stacked/restacked assets (e.g. an edit stacked onto its original).
+  // Pull a fresh remote sync so the stack_entity lands and the timeline shows
+  // the stacked primary instead of briefly hiding the asset. Debounced so a
+  // backup of many edits doesn't trigger a sync per event.
+  void _handleAssetStackUpdate(dynamic _) {
+    _stackUpdateDebouncer.run(() => _ref.read(backgroundSyncProvider).runFreshRemoteSync());
   }
 
   void _processBatchedAssetUploadReadyV1() {

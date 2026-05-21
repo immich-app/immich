@@ -73,6 +73,10 @@ class AssetApiRepository extends ApiRepository {
     return _stacksApi.deleteStacks(BulkIdsDto(ids: ids));
   }
 
+  Future<void> setStackPrimary(String stackId, String primaryAssetId) async {
+    await _stacksApi.updateStack(stackId, StackUpdateDto(primaryAssetId: Optional.present(primaryAssetId)));
+  }
+
   Future<Response> downloadAsset(String id, {required bool edited}) {
     return _api.downloadAssetWithHttpInfo(id, edited: edited);
   }

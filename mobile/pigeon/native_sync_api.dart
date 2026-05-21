@@ -103,6 +103,29 @@ class CloudIdResult {
   const CloudIdResult({required this.assetId, this.error, this.cloudId});
 }
 
+class BaseResource {
+  final String path;
+  final String sha1;
+
+  const BaseResource({required this.path, required this.sha1});
+}
+
+// The readable originals of an edited live photo: the still always, the paired
+// video when the asset still carries one. Both are temp copies the caller
+// uploads then deletes.
+class BaseLivePhoto {
+  final BaseResource still;
+  final BaseResource? video;
+
+  const BaseLivePhoto({required this.still, this.video});
+}
+
+// Whether an iOS asset currently carries a user edit, as opposed to a
+// capture-time Photographic Style or a reverted edit. `unknown` means the
+// adjustment data couldn't be read (e.g. the asset is offloaded to iCloud and
+// network wasn't allowed), so callers must not treat it as "not edited".
+enum EditState { notEdited, edited, unknown }
+
 @HostApi()
 abstract class NativeSyncApi {
   @async
@@ -143,4 +166,16 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  BaseResource? getBaseResource(String assetId, {bool allowNetworkAccess = false});
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  EditState getEditState(String assetId, {bool allowNetworkAccess = false});
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  BaseLivePhoto? getBaseLivePhoto(String assetId, {bool allowNetworkAccess = false});
 }

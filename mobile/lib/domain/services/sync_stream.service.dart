@@ -360,7 +360,7 @@ class SyncStreamService {
       }
 
       if (assets.isNotEmpty && exifs.isNotEmpty) {
-        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch', fromWebsocket: true);
         await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
         _logger.info('Successfully processed ${assets.length} assets in batch');
       }
@@ -403,7 +403,7 @@ class SyncStreamService {
       }
 
       if (assets.isNotEmpty && exifs.isNotEmpty) {
-        await _syncStreamRepository.updateAssetsV2(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository.updateAssetsV2(assets, debugLabel: 'websocket-batch', fromWebsocket: true);
         await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
         _logger.info('Successfully processed ${assets.length} assets in batch');
       }
@@ -444,7 +444,7 @@ class SyncStreamService {
             .toList();
       }
 
-      await _syncStreamRepository.updateAssetsV1([asset], debugLabel: 'websocket-edit');
+      await _syncStreamRepository.updateAssetsV1([asset], debugLabel: 'websocket-edit', fromWebsocket: true);
       await _syncStreamRepository.replaceAssetEditsV1(asset.id, assetEdits, debugLabel: 'websocket-edit');
 
       _logger.info(
@@ -482,7 +482,7 @@ class SyncStreamService {
           .whereType<SyncAssetEditV1>()
           .toList();
 
-      await _syncStreamRepository.updateAssetsV2([asset], debugLabel: 'websocket-edit');
+      await _syncStreamRepository.updateAssetsV2([asset], debugLabel: 'websocket-edit', fromWebsocket: true);
       await _syncStreamRepository.replaceAssetEditsV1(asset.id, assetEdits, debugLabel: 'websocket-edit');
 
       _logger.info(

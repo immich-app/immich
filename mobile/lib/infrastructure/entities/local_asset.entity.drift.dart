@@ -26,6 +26,8 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
       i0.Value<i2.AssetPlaybackStyle> playbackStyle,
+      i0.Value<String?> priorRemoteId,
+      i0.Value<String?> syncedChecksum,
     });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
@@ -45,6 +47,8 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
       i0.Value<i2.AssetPlaybackStyle> playbackStyle,
+      i0.Value<String?> priorRemoteId,
+      i0.Value<String?> syncedChecksum,
     });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -141,6 +145,16 @@ class $$LocalAssetEntityTableFilterComposer
     column: $table.playbackStyle,
     builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
+
+  i0.ColumnFilters<String> get priorRemoteId => $composableBuilder(
+    column: $table.priorRemoteId,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<String> get syncedChecksum => $composableBuilder(
+    column: $table.syncedChecksum,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -231,6 +245,16 @@ class $$LocalAssetEntityTableOrderingComposer
     column: $table.playbackStyle,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<String> get priorRemoteId => $composableBuilder(
+    column: $table.priorRemoteId,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<String> get syncedChecksum => $composableBuilder(
+    column: $table.syncedChecksum,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -300,6 +324,16 @@ class $$LocalAssetEntityTableAnnotationComposer
     column: $table.playbackStyle,
     builder: (column) => column,
   );
+
+  i0.GeneratedColumn<String> get priorRemoteId => $composableBuilder(
+    column: $table.priorRemoteId,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<String> get syncedChecksum => $composableBuilder(
+    column: $table.syncedChecksum,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalAssetEntityTableTableManager
@@ -359,6 +393,8 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<double?> longitude = const i0.Value.absent(),
                 i0.Value<i2.AssetPlaybackStyle> playbackStyle =
                     const i0.Value.absent(),
+                i0.Value<String?> priorRemoteId = const i0.Value.absent(),
+                i0.Value<String?> syncedChecksum = const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion(
                 name: name,
                 type: type,
@@ -376,6 +412,8 @@ class $$LocalAssetEntityTableTableManager
                 latitude: latitude,
                 longitude: longitude,
                 playbackStyle: playbackStyle,
+                priorRemoteId: priorRemoteId,
+                syncedChecksum: syncedChecksum,
               ),
           createCompanionCallback:
               ({
@@ -396,6 +434,8 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<double?> longitude = const i0.Value.absent(),
                 i0.Value<i2.AssetPlaybackStyle> playbackStyle =
                     const i0.Value.absent(),
+                i0.Value<String?> priorRemoteId = const i0.Value.absent(),
+                i0.Value<String?> syncedChecksum = const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -413,6 +453,8 @@ class $$LocalAssetEntityTableTableManager
                 latitude: latitude,
                 longitude: longitude,
                 playbackStyle: playbackStyle,
+                priorRemoteId: priorRemoteId,
+                syncedChecksum: syncedChecksum,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -637,6 +679,28 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
       ).withConverter<i2.AssetPlaybackStyle>(
         i1.$LocalAssetEntityTable.$converterplaybackStyle,
       );
+  static const i0.VerificationMeta _priorRemoteIdMeta =
+      const i0.VerificationMeta('priorRemoteId');
+  @override
+  late final i0.GeneratedColumn<String> priorRemoteId =
+      i0.GeneratedColumn<String>(
+        'prior_remote_id',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _syncedChecksumMeta =
+      const i0.VerificationMeta('syncedChecksum');
+  @override
+  late final i0.GeneratedColumn<String> syncedChecksum =
+      i0.GeneratedColumn<String>(
+        'synced_checksum',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     name,
@@ -655,6 +719,8 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     latitude,
     longitude,
     playbackStyle,
+    priorRemoteId,
+    syncedChecksum,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -759,6 +825,24 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
       );
     }
+    if (data.containsKey('prior_remote_id')) {
+      context.handle(
+        _priorRemoteIdMeta,
+        priorRemoteId.isAcceptableOrUnknown(
+          data['prior_remote_id']!,
+          _priorRemoteIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('synced_checksum')) {
+      context.handle(
+        _syncedChecksumMeta,
+        syncedChecksum.isAcceptableOrUnknown(
+          data['synced_checksum']!,
+          _syncedChecksumMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -839,6 +923,14 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           data['${effectivePrefix}playback_style'],
         )!,
       ),
+      priorRemoteId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}prior_remote_id'],
+      ),
+      syncedChecksum: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}synced_checksum'],
+      ),
     );
   }
 
@@ -877,6 +969,8 @@ class LocalAssetEntityData extends i0.DataClass
   final double? latitude;
   final double? longitude;
   final i2.AssetPlaybackStyle playbackStyle;
+  final String? priorRemoteId;
+  final String? syncedChecksum;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -894,6 +988,8 @@ class LocalAssetEntityData extends i0.DataClass
     this.latitude,
     this.longitude,
     required this.playbackStyle,
+    this.priorRemoteId,
+    this.syncedChecksum,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -938,6 +1034,12 @@ class LocalAssetEntityData extends i0.DataClass
         i1.$LocalAssetEntityTable.$converterplaybackStyle.toSql(playbackStyle),
       );
     }
+    if (!nullToAbsent || priorRemoteId != null) {
+      map['prior_remote_id'] = i0.Variable<String>(priorRemoteId);
+    }
+    if (!nullToAbsent || syncedChecksum != null) {
+      map['synced_checksum'] = i0.Variable<String>(syncedChecksum);
+    }
     return map;
   }
 
@@ -967,6 +1069,8 @@ class LocalAssetEntityData extends i0.DataClass
       playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStyle.fromJson(
         serializer.fromJson<int>(json['playbackStyle']),
       ),
+      priorRemoteId: serializer.fromJson<String?>(json['priorRemoteId']),
+      syncedChecksum: serializer.fromJson<String?>(json['syncedChecksum']),
     );
   }
   @override
@@ -993,6 +1097,8 @@ class LocalAssetEntityData extends i0.DataClass
       'playbackStyle': serializer.toJson<int>(
         i1.$LocalAssetEntityTable.$converterplaybackStyle.toJson(playbackStyle),
       ),
+      'priorRemoteId': serializer.toJson<String?>(priorRemoteId),
+      'syncedChecksum': serializer.toJson<String?>(syncedChecksum),
     };
   }
 
@@ -1013,6 +1119,8 @@ class LocalAssetEntityData extends i0.DataClass
     i0.Value<double?> latitude = const i0.Value.absent(),
     i0.Value<double?> longitude = const i0.Value.absent(),
     i2.AssetPlaybackStyle? playbackStyle,
+    i0.Value<String?> priorRemoteId = const i0.Value.absent(),
+    i0.Value<String?> syncedChecksum = const i0.Value.absent(),
   }) => i1.LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -1032,6 +1140,12 @@ class LocalAssetEntityData extends i0.DataClass
     latitude: latitude.present ? latitude.value : this.latitude,
     longitude: longitude.present ? longitude.value : this.longitude,
     playbackStyle: playbackStyle ?? this.playbackStyle,
+    priorRemoteId: priorRemoteId.present
+        ? priorRemoteId.value
+        : this.priorRemoteId,
+    syncedChecksum: syncedChecksum.present
+        ? syncedChecksum.value
+        : this.syncedChecksum,
   );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -1061,6 +1175,12 @@ class LocalAssetEntityData extends i0.DataClass
       playbackStyle: data.playbackStyle.present
           ? data.playbackStyle.value
           : this.playbackStyle,
+      priorRemoteId: data.priorRemoteId.present
+          ? data.priorRemoteId.value
+          : this.priorRemoteId,
+      syncedChecksum: data.syncedChecksum.present
+          ? data.syncedChecksum.value
+          : this.syncedChecksum,
     );
   }
 
@@ -1082,7 +1202,9 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
-          ..write('playbackStyle: $playbackStyle')
+          ..write('playbackStyle: $playbackStyle, ')
+          ..write('priorRemoteId: $priorRemoteId, ')
+          ..write('syncedChecksum: $syncedChecksum')
           ..write(')'))
         .toString();
   }
@@ -1105,6 +1227,8 @@ class LocalAssetEntityData extends i0.DataClass
     latitude,
     longitude,
     playbackStyle,
+    priorRemoteId,
+    syncedChecksum,
   );
   @override
   bool operator ==(Object other) =>
@@ -1125,7 +1249,9 @@ class LocalAssetEntityData extends i0.DataClass
           other.adjustmentTime == this.adjustmentTime &&
           other.latitude == this.latitude &&
           other.longitude == this.longitude &&
-          other.playbackStyle == this.playbackStyle);
+          other.playbackStyle == this.playbackStyle &&
+          other.priorRemoteId == this.priorRemoteId &&
+          other.syncedChecksum == this.syncedChecksum);
 }
 
 class LocalAssetEntityCompanion
@@ -1146,6 +1272,8 @@ class LocalAssetEntityCompanion
   final i0.Value<double?> latitude;
   final i0.Value<double?> longitude;
   final i0.Value<i2.AssetPlaybackStyle> playbackStyle;
+  final i0.Value<String?> priorRemoteId;
+  final i0.Value<String?> syncedChecksum;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -1163,6 +1291,8 @@ class LocalAssetEntityCompanion
     this.latitude = const i0.Value.absent(),
     this.longitude = const i0.Value.absent(),
     this.playbackStyle = const i0.Value.absent(),
+    this.priorRemoteId = const i0.Value.absent(),
+    this.syncedChecksum = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -1181,6 +1311,8 @@ class LocalAssetEntityCompanion
     this.latitude = const i0.Value.absent(),
     this.longitude = const i0.Value.absent(),
     this.playbackStyle = const i0.Value.absent(),
+    this.priorRemoteId = const i0.Value.absent(),
+    this.syncedChecksum = const i0.Value.absent(),
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id);
@@ -1201,6 +1333,8 @@ class LocalAssetEntityCompanion
     i0.Expression<double>? latitude,
     i0.Expression<double>? longitude,
     i0.Expression<int>? playbackStyle,
+    i0.Expression<String>? priorRemoteId,
+    i0.Expression<String>? syncedChecksum,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1219,6 +1353,8 @@ class LocalAssetEntityCompanion
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (playbackStyle != null) 'playback_style': playbackStyle,
+      if (priorRemoteId != null) 'prior_remote_id': priorRemoteId,
+      if (syncedChecksum != null) 'synced_checksum': syncedChecksum,
     });
   }
 
@@ -1239,6 +1375,8 @@ class LocalAssetEntityCompanion
     i0.Value<double?>? latitude,
     i0.Value<double?>? longitude,
     i0.Value<i2.AssetPlaybackStyle>? playbackStyle,
+    i0.Value<String?>? priorRemoteId,
+    i0.Value<String?>? syncedChecksum,
   }) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1257,6 +1395,8 @@ class LocalAssetEntityCompanion
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       playbackStyle: playbackStyle ?? this.playbackStyle,
+      priorRemoteId: priorRemoteId ?? this.priorRemoteId,
+      syncedChecksum: syncedChecksum ?? this.syncedChecksum,
     );
   }
 
@@ -1317,6 +1457,12 @@ class LocalAssetEntityCompanion
         ),
       );
     }
+    if (priorRemoteId.present) {
+      map['prior_remote_id'] = i0.Variable<String>(priorRemoteId.value);
+    }
+    if (syncedChecksum.present) {
+      map['synced_checksum'] = i0.Variable<String>(syncedChecksum.value);
+    }
     return map;
   }
 
@@ -1338,7 +1484,9 @@ class LocalAssetEntityCompanion
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
-          ..write('playbackStyle: $playbackStyle')
+          ..write('playbackStyle: $playbackStyle, ')
+          ..write('priorRemoteId: $priorRemoteId, ')
+          ..write('syncedChecksum: $syncedChecksum')
           ..write(')'))
         .toString();
   }
@@ -1351,4 +1499,8 @@ i0.Index get idxLocalAssetCloudId => i0.Index(
 i0.Index get idxLocalAssetCreatedAt => i0.Index(
   'idx_local_asset_created_at',
   'CREATE INDEX IF NOT EXISTS idx_local_asset_created_at ON local_asset_entity (created_at)',
+);
+i0.Index get idxLocalAssetPriorRemoteId => i0.Index(
+  'idx_local_asset_prior_remote_id',
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_prior_remote_id ON local_asset_entity (prior_remote_id)',
 );

@@ -1,23 +1,31 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/edit_revert.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/stack.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
+import 'package:immich_mobile/services/cloud_metadata.dart';
+import 'package:immich_mobile/services/edit_pair.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
@@ -39,6 +47,10 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(connectivityApiProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(nativeSyncApiProvider),
+    ref.watch(localAssetRepository),
+    ref.watch(editRevertServiceProvider),
+    ref.watch(driftStackProvider),
   );
 });
 
@@ -54,6 +66,10 @@ class ForegroundUploadService {
     this._backupRepository,
     this._connectivityApi,
     this._assetMediaRepository,
+    this._nativeSyncApi,
+    this._localAssetRepository,
+    this._editRevertService,
+    this._stackRepository,
   );
 
   final UploadRepository _uploadRepository;
@@ -61,6 +77,10 @@ class ForegroundUploadService {
   final DriftBackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AssetMediaRepository _assetMediaRepository;
+  final NativeSyncApi _nativeSyncApi;
+  final DriftLocalAssetRepository _localAssetRepository;
+  final EditRevertService _editRevertService;
+  final DriftStackRepository _stackRepository;
   final Logger _logger = Logger('ForegroundUploadService');
 
   bool shouldAbortUpload = false;
@@ -142,7 +162,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks, surfaceDefers: true),
     );
   }
 
@@ -236,6 +256,7 @@ class ForegroundUploadService {
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
+    bool surfaceDefers = false,
   }) async {
     File? file;
     File? livePhotoFile;
@@ -247,6 +268,60 @@ class ForegroundUploadService {
           asset.localId!,
           CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
         );
+        return;
+      }
+
+      // A reverted iOS edit flips the stack back to the original and skips the upload.
+      // Works for live photos too — getEditState reads the adjustment plist, which is
+      // media-agnostic.
+      if (CurrentPlatform.isIOS && asset.priorRemoteId != null && await _editRevertService.tryHandleRevert(asset)) {
+        callbacks.onSuccess?.call(asset.localId!, asset.priorRemoteId!);
+        return;
+      }
+
+      final deviceId = Store.get(StoreKey.deviceId);
+      final fields = {
+        // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
+        'deviceAssetId': asset.localId!,
+        'deviceId': deviceId,
+        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
+        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
+        'isFavorite': asset.isFavorite.toString(),
+        'duration': (asset.durationMs ?? 0).toString(),
+      };
+
+      // Edit pair: upload the unedited original first and stack the edit onto it. For a
+      // live photo that's the original still+video pair; this upload stays the edit and
+      // its own edited motion uploads after, below. Resolved before anything is
+      // materialized so a deferred or failed pair doesn't burn an iCloud download or a
+      // motion upload every retry cycle, and before the edit's metadata is added so the
+      // base isn't stamped with the edit's adjustmentTime.
+      final base = await _resolveStackParent(asset, Map.of(fields), cancelToken, isLivePhoto: entity.isLivePhoto);
+      if (base.deferred) {
+        // Undecidable right now (prior in server trash, or the original couldn't be
+        // read). The asset stays a candidate; auto backup retries silently, a manual
+        // upload tells the user why nothing happened.
+        _logger.fine(() => "Deferring upload for ${asset.localId}: edit pair undecidable this cycle");
+        if (surfaceDefers) {
+          callbacks.onError?.call(asset.localId!, "upload_deferred_edit_pair".t());
+        }
+        return;
+      }
+      if (base.baseFailed) {
+        // The original couldn't be uploaded. Don't upload the edit on its own and mark
+        // it synced — that would permanently drop the original from backup. Leave the
+        // whole pair as a candidate to retry next cycle.
+        _logger.warning(() => "Base upload failed for ${asset.localId}, retrying the pair later");
+        if (base.isCancelled) {
+          shouldAbortUpload = true;
+          return;
+        }
+        if (base.errorMessage != null) {
+          callbacks.onError?.call(asset.localId!, base.errorMessage!);
+          if (base.errorMessage == _kQuotaError) {
+            shouldAbortUpload = true;
+          }
+        }
         return;
       }
 
@@ -317,19 +392,13 @@ class ForegroundUploadService {
       }
 
       final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
-      final deviceId = Store.get(StoreKey.deviceId);
 
-      final fields = {
-        // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
-        'deviceAssetId': asset.localId!,
-        'deviceId': deviceId,
-        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
-        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
-        'isFavorite': asset.isFavorite.toString(),
-        'duration': (asset.durationMs ?? 0).toString(),
-      };
+      if (base.stackParentId != null) {
+        fields['stackParentId'] = base.stackParentId!;
+      }
 
-      // Upload live photo video first if available
+      // The edit's own motion video, uploaded hidden so it never flashes onto the
+      // timeline before the still below links it.
       String? livePhotoVideoId;
       if (entity.isLivePhoto && livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
@@ -338,7 +407,7 @@ class ForegroundUploadService {
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
-          fields: fields,
+          fields: {...fields, 'visibility': kHiddenVisibility}..remove('stackParentId'),
           cancelToken: cancelToken,
           onProgress: onProgress != null
               ? (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes)
@@ -348,6 +417,13 @@ class ForegroundUploadService {
 
         if (livePhotoResult.isSuccess && livePhotoResult.remoteAssetId != null) {
           livePhotoVideoId = livePhotoResult.remoteAssetId;
+        } else if (livePhotoResult.isCancelled) {
+          shouldAbortUpload = true;
+          return;
+        } else if (livePhotoResult.errorMessage == _kQuotaError) {
+          callbacks.onError?.call(asset.localId!, livePhotoResult.errorMessage!);
+          shouldAbortUpload = true;
+          return;
         }
       }
 
@@ -356,19 +432,9 @@ class ForegroundUploadService {
       }
 
       // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.
-      if (CurrentPlatform.isIOS && asset.cloudId != null) {
-        fields['metadata'] = jsonEncode([
-          RemoteAssetMetadataItem(
-            key: RemoteAssetMetadataKey.mobileApp,
-            value: RemoteAssetMobileAppMetadata(
-              cloudId: asset.cloudId,
-              createdAt: asset.createdAt.toIso8601String(),
-              adjustmentTime: asset.adjustmentTime?.toIso8601String(),
-              latitude: asset.latitude?.toString(),
-              longitude: asset.longitude?.toString(),
-            ),
-          ),
-        ]);
+      final metadata = _cloudMetadata(asset, includeAdjustment: true);
+      if (metadata != null) {
+        fields['metadata'] = metadata;
       }
 
       final onProgress = callbacks.onProgress;
@@ -384,6 +450,18 @@ class ForegroundUploadService {
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
+        // Edit stacking is iOS-only; leave the columns untouched on Android so the
+        // candidate guard and merged-timeline hide clause never engage there.
+        if (CurrentPlatform.isIOS) {
+          unawaited(
+            _localAssetRepository
+                .markSynced(asset.localId!, priorRemoteId: result.remoteAssetId!, syncedChecksum: asset.checksum)
+                .catchError(
+                  (Object error, StackTrace stack) =>
+                      _logger.warning(() => "Failed to mark ${asset.localId} synced", error, stack),
+                ),
+          );
+        }
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
       } else if (result.isCancelled) {
         _logger.warning(() => "Backup was cancelled by the user");
@@ -396,8 +474,20 @@ class ForegroundUploadService {
 
         callbacks.onError?.call(asset.localId!, result.errorMessage!);
 
-        if (result.errorMessage == "Quota has been exceeded!") {
+        if (result.errorMessage == _kQuotaError) {
           shouldAbortUpload = true;
+        }
+        if (result.errorMessage!.contains(kDeadStackParentError)) {
+          // The stamped prior no longer exists server-side; drop the stamps so
+          // the next cycle re-resolves fresh instead of looping on the dead id.
+          unawaited(
+            _localAssetRepository
+                .clearSyncStamps(asset.localId!)
+                .catchError(
+                  (Object error, StackTrace stack) =>
+                      _logger.warning(() => "Failed to clear stamps for ${asset.localId}", error, stack),
+                ),
+          );
         }
       }
     } catch (error, stackTrace) {
@@ -412,6 +502,149 @@ class ForegroundUploadService {
           _logger.severe(() => "ERROR deleting file: ${error.toString()}", stackTrace);
         }
       }
+    }
+  }
+
+  /// iOS still-image cloudId metadata as a JSON field, or null when there's
+  /// nothing to attach. The base resource omits adjustmentTime (it's the
+  /// unedited original); the edit includes it.
+  String? _cloudMetadata(LocalAsset asset, {required bool includeAdjustment}) {
+    return cloudMetadataJson(
+      cloudId: asset.cloudId,
+      createdAt: asset.createdAt,
+      adjustmentTime: includeAdjustment ? asset.adjustmentTime?.toIso8601String() : null,
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
+    );
+  }
+
+  /// Persists the uploaded base as the asset's prior so an interrupted run resumes
+  /// by stacking onto it (AbsorbIntoPrior) instead of re-reading and re-uploading
+  /// the original. syncedChecksum stays null: the edit itself is still pending.
+  Future<void> _stampBaseUpload(LocalAsset asset, String baseRemoteId) async {
+    try {
+      await _localAssetRepository.markSynced(asset.localId!, priorRemoteId: baseRemoteId, syncedChecksum: null);
+    } catch (error, stack) {
+      _logger.warning(() => "Failed to stamp base upload for ${asset.localId}", error, stack);
+    }
+  }
+
+  /// For an edited iOS photo, uploads the original camera bytes so the edit can
+  /// stack onto it. See [_StackParent] for the outcome.
+  Future<_StackParent> _resolveStackParent(
+    LocalAsset asset,
+    Map<String, String> baseFields,
+    Completer<void>? cancelToken, {
+    bool isLivePhoto = false,
+  }) async {
+    if (!CurrentPlatform.isIOS) {
+      return const _StackParent.none();
+    }
+
+    final plan = await resolveEditPair(
+      _nativeSyncApi,
+      asset,
+      stackRepository: _stackRepository,
+      ownerId: Store.tryGet(StoreKey.currentUser)?.id,
+      log: _logger,
+      isLivePhoto: isLivePhoto,
+    );
+    switch (plan) {
+      case NoEditPair():
+        return const _StackParent.none();
+      case DeferEditPair():
+        return const _StackParent.deferred();
+      case AbsorbIntoPrior(:final parentId):
+        return _StackParent.parent(parentId);
+      case UploadBaseLivePhotoFirst(:final still, :final video):
+        return _uploadBaseLivePair(asset, baseFields, still, video, cancelToken);
+      case UploadBaseFirst(:final base):
+        final baseFile = File(base.path);
+        try {
+          final fields = Map.of(baseFields);
+          final metadata = _cloudMetadata(asset, includeAdjustment: false);
+          if (metadata != null) {
+            fields['metadata'] = metadata;
+          }
+          final result = await _uploadRepository.uploadFile(
+            file: baseFile,
+            originalFileName: p.setExtension(asset.name, p.extension(base.path)),
+            fields: fields,
+            cancelToken: cancelToken,
+            logContext: 'baseResource[${asset.localId}]',
+          );
+          if (result.isSuccess && result.remoteAssetId != null) {
+            await _stampBaseUpload(asset, result.remoteAssetId!);
+            return _StackParent.parent(result.remoteAssetId!);
+          }
+          return _StackParent.failed(errorMessage: result.errorMessage, isCancelled: result.isCancelled);
+        } finally {
+          try {
+            await baseFile.delete();
+          } catch (_) {}
+        }
+    }
+  }
+
+  /// Uploads the original live pair (paired video then still) so the edited live photo
+  /// can stack onto the original still. Returns the still's remote id as the parent, or
+  /// [_StackParent.failed] if either hop fails so the edit isn't left unstacked.
+  Future<_StackParent> _uploadBaseLivePair(
+    LocalAsset asset,
+    Map<String, String> baseFields,
+    BaseResource still,
+    BaseResource? video,
+    Completer<void>? cancelToken,
+  ) async {
+    final stillFile = File(still.path);
+    final videoFile = video != null ? File(video.path) : null;
+    try {
+      final fields = Map.of(baseFields);
+
+      String? baseVideoId;
+      if (videoFile != null) {
+        final videoResult = await _uploadRepository.uploadFile(
+          file: videoFile,
+          originalFileName: p.setExtension(asset.name, p.extension(videoFile.path)),
+          // hidden so the original motion never flashes onto the timeline (copy: the
+          // base still upload below reuses `fields`).
+          fields: {...fields, 'visibility': kHiddenVisibility},
+          cancelToken: cancelToken,
+          logContext: 'baseLiveVideo[${asset.localId}]',
+        );
+        if (!(videoResult.isSuccess && videoResult.remoteAssetId != null)) {
+          return _StackParent.failed(errorMessage: videoResult.errorMessage, isCancelled: videoResult.isCancelled);
+        }
+        baseVideoId = videoResult.remoteAssetId;
+      }
+
+      if (baseVideoId != null) {
+        fields['livePhotoVideoId'] = baseVideoId;
+      }
+      final metadata = _cloudMetadata(asset, includeAdjustment: false);
+      if (metadata != null) {
+        fields['metadata'] = metadata;
+      }
+
+      final stillResult = await _uploadRepository.uploadFile(
+        file: stillFile,
+        originalFileName: p.setExtension(asset.name, p.extension(still.path)),
+        fields: fields,
+        cancelToken: cancelToken,
+        logContext: 'baseLiveStill[${asset.localId}]',
+      );
+      if (stillResult.isSuccess && stillResult.remoteAssetId != null) {
+        await _stampBaseUpload(asset, stillResult.remoteAssetId!);
+        return _StackParent.parent(stillResult.remoteAssetId!);
+      }
+      return _StackParent.failed(errorMessage: stillResult.errorMessage, isCancelled: stillResult.isCancelled);
+    } finally {
+      try {
+        await stillFile.delete();
+      } catch (_) {}
+      try {
+        await videoFile?.delete();
+      } catch (_) {}
     }
   }
 
@@ -460,4 +693,43 @@ class ForegroundUploadService {
     }
     return true;
   }
+}
+
+// Server's quota-rejection message (asset-media.service.ts requireQuota).
+const String _kQuotaError = "Quota has been exceeded!";
+
+/// Outcome of resolving an edit's stack parent. [stackParentId] is the remote id
+/// to stack onto (null when the asset isn't an edit). [baseFailed] is true only
+/// when the original was found but its upload failed, so the edit must not be
+/// uploaded on its own; [deferred] means skip the asset this cycle (it stays a
+/// candidate); [errorMessage]/[isCancelled] carry why a failure happened so the
+/// caller can surface it and react to quota/cancel like the main upload does.
+class _StackParent {
+  final String? stackParentId;
+  final bool baseFailed;
+  final bool deferred;
+  final String? errorMessage;
+  final bool isCancelled;
+
+  const _StackParent.none()
+    : stackParentId = null,
+      baseFailed = false,
+      deferred = false,
+      errorMessage = null,
+      isCancelled = false;
+  const _StackParent.parent(String this.stackParentId)
+    : baseFailed = false,
+      deferred = false,
+      errorMessage = null,
+      isCancelled = false;
+  const _StackParent.failed({this.errorMessage, this.isCancelled = false})
+    : stackParentId = null,
+      baseFailed = true,
+      deferred = false;
+  const _StackParent.deferred()
+    : stackParentId = null,
+      baseFailed = false,
+      deferred = true,
+      errorMessage = null,
+      isCancelled = false;
 }

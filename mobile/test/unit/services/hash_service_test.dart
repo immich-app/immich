@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -18,6 +20,8 @@ void main() {
       localAssetRepository: mocks.localAsset,
       nativeSyncApi: mocks.nativeApi,
       trashedLocalAssetRepository: mocks.trashedAsset,
+      stackRepository: mocks.stack,
+      assetApiRepository: mocks.assetApi,
     );
 
     when(() => mocks.localAsset.reconcileHashesFromCloudId()).thenAnswer((_) async => {});
@@ -110,6 +114,8 @@ void main() {
           nativeSyncApi: mocks.nativeApi,
           batchSize: batchSize,
           trashedLocalAssetRepository: mocks.trashedAsset,
+          stackRepository: mocks.stack,
+          assetApiRepository: mocks.assetApi,
         );
 
         final album = LocalAlbumFactory.create();
@@ -181,6 +187,75 @@ void main() {
 
         verify(() => mocks.nativeApi.hashAssets([asset1.id], allowNetworkAccess: true)).called(1);
         verify(() => mocks.nativeApi.hashAssets([asset2.id], allowNetworkAccess: false)).called(1);
+      });
+    });
+
+    group('iOS revert reconcile', () {
+      test('flips the stack primary for a non-styled revert that re-hashed to the base', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+        final album = LocalAlbumFactory.create();
+        final asset = LocalAssetFactory.create();
+        when(() => mocks.localAlbum.getBackupAlbums()).thenAnswer((_) async => [album]);
+        when(() => mocks.localAlbum.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
+        when(
+          () => mocks.nativeApi.hashAssets([asset.id], allowNetworkAccess: false),
+        ).thenAnswer((_) async => [HashResult(assetId: asset.id, hash: 'h')]);
+
+        const target = StackReconcileTarget(
+          stackId: 'stack-1',
+          newPrimaryId: 'base-1',
+          localAssetId: 'local-1',
+          localAssetChecksum: 'reverted-sha1',
+        );
+        when(() => mocks.stack.findRevertReconcileTargets()).thenAnswer((_) async => [target]);
+        when(() => mocks.assetApi.setStackPrimary('stack-1', 'base-1')).thenAnswer((_) async {});
+        when(() => mocks.stack.setPrimary('stack-1', 'base-1')).thenAnswer((_) async {});
+        when(
+          () => mocks.localAsset.markSynced('local-1', priorRemoteId: 'base-1', syncedChecksum: 'reverted-sha1'),
+        ).thenAnswer((_) async {});
+
+        await sut.hashAssets();
+
+        verify(() => mocks.assetApi.setStackPrimary('stack-1', 'base-1')).called(1);
+        verify(() => mocks.stack.setPrimary('stack-1', 'base-1')).called(1);
+        verify(
+          () => mocks.localAsset.markSynced('local-1', priorRemoteId: 'base-1', syncedChecksum: 'reverted-sha1'),
+        ).called(1);
+      });
+
+      test('reconciles even when nothing was hashed this cycle (offline-flip retry)', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+        final album = LocalAlbumFactory.create();
+        when(() => mocks.localAlbum.getBackupAlbums()).thenAnswer((_) async => [album]);
+        when(() => mocks.localAlbum.getAssetsToHash(album.id)).thenAnswer((_) async => []);
+        when(() => mocks.stack.findRevertReconcileTargets()).thenAnswer((_) async => []);
+
+        await sut.hashAssets();
+
+        verifyNever(() => mocks.nativeApi.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')));
+        verify(() => mocks.stack.findRevertReconcileTargets()).called(1);
+      });
+
+      test('does not reconcile on a non-iOS platform', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+        final album = LocalAlbumFactory.create();
+        final asset = LocalAssetFactory.create();
+        when(() => mocks.localAlbum.getBackupAlbums()).thenAnswer((_) async => [album]);
+        when(() => mocks.localAlbum.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
+        when(() => mocks.trashedAsset.getAssetsToHash(any())).thenAnswer((_) async => []);
+        when(
+          () => mocks.nativeApi.hashAssets([asset.id], allowNetworkAccess: false),
+        ).thenAnswer((_) async => [HashResult(assetId: asset.id, hash: 'h')]);
+
+        await sut.hashAssets();
+
+        verifyNever(() => mocks.stack.findRevertReconcileTargets());
       });
     });
   });

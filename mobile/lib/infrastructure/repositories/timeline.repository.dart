@@ -88,6 +88,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   livePhotoVideoId: row.livePhotoVideoId,
                   stackId: row.stackId,
                   isEdited: row.isEdited,
+                  localChecksum: row.localChecksum,
                 )
               : LocalAsset(
                   id: row.localId!,

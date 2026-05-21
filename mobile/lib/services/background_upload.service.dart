@@ -6,20 +6,27 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/edit_revert.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/stack.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/cloud_metadata.dart';
+import 'package:immich_mobile/services/edit_pair.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -31,41 +38,85 @@ final backgroundUploadServiceProvider = Provider((ref) {
     ref.watch(localAssetRepository),
     ref.watch(backupRepositoryProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(nativeSyncApiProvider),
+    ref.watch(editRevertServiceProvider),
+    ref.watch(driftStackProvider),
   );
 
   ref.onDispose(service.dispose);
   return service;
 });
 
+/// Which hop of an iOS edit chain a background task is, so its completion knows
+/// what to enqueue next. A live-photo edit runs all four hops; a plain photo edit
+/// is the two-still chain baseStill -> editStill. none = a normal upload.
+enum LiveEditPhase { none, baseVideo, baseStill, editVideo, editStill }
+
 /// Metadata for upload tasks to track live photo handling
 class UploadTaskMetadata {
   final String localAssetId;
+
+  // Legacy live-photo auto-chain trigger (video upload -> enqueue its still), not
+  // a media-type flag; edit-chain hops keep it false. livePhotoVideoId is no
+  // longer written but stays so persisted task metadata keeps decoding.
   final bool isLivePhotos;
   final String livePhotoVideoId;
 
-  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
+  // Path of the temp/cache file backing this task, so it can be cleaned up on a
+  // terminal status.
+  final String basePath;
 
-  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
-    return UploadTaskMetadata(
-      localAssetId: localAssetId ?? this.localAssetId,
-      isLivePhotos: isLivePhotos ?? this.isLivePhotos,
-      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
-    );
-  }
+  // Edit chain state: which hop this is, the base still temp path (carried by the
+  // base video so its completion can enqueue the base still), the base still remote
+  // id threaded to the edit still as its stackParentId, and the local checksum at
+  // task-build time so a re-edit racing this upload can't be marked synced.
+  final LiveEditPhase liveEditPhase;
+  final String baseStillPath;
+  final String pendingStackParentId;
+  final String? checksum;
+
+  // The dead prior a rebuild chain is replacing (prior pointed at a hard-deleted
+  // remote at plan time). Lets the base junctions tell a rebuild in progress
+  // (row prior still == this) from a replayed completion (prior re-stamped).
+  final String stalePriorId;
+
+  const UploadTaskMetadata({
+    required this.localAssetId,
+    this.isLivePhotos = false,
+    this.livePhotoVideoId = '',
+    this.basePath = '',
+    this.liveEditPhase = LiveEditPhase.none,
+    this.baseStillPath = '',
+    this.pendingStackParentId = '',
+    this.checksum,
+    this.stalePriorId = '',
+  });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'localAssetId': localAssetId,
       'isLivePhotos': isLivePhotos,
       'livePhotoVideoId': livePhotoVideoId,
+      'basePath': basePath,
+      'liveEditPhase': liveEditPhase.name,
+      'baseStillPath': baseStillPath,
+      'pendingStackParentId': pendingStackParentId,
+      'checksum': checksum,
+      'stalePriorId': stalePriorId,
     };
   }
 
   factory UploadTaskMetadata.fromMap(Map<String, dynamic> map) {
     return UploadTaskMetadata(
       localAssetId: map['localAssetId'] as String,
-      isLivePhotos: map['isLivePhotos'] as bool,
-      livePhotoVideoId: map['livePhotoVideoId'] as String,
+      isLivePhotos: (map['isLivePhotos'] as bool?) ?? false,
+      livePhotoVideoId: (map['livePhotoVideoId'] as String?) ?? '',
+      basePath: (map['basePath'] as String?) ?? '',
+      liveEditPhase: LiveEditPhase.values.asNameMap()[map['liveEditPhase'] as String?] ?? LiveEditPhase.none,
+      baseStillPath: (map['baseStillPath'] as String?) ?? '',
+      pendingStackParentId: (map['pendingStackParentId'] as String?) ?? '',
+      checksum: map['checksum'] as String?,
+      stalePriorId: (map['stalePriorId'] as String?) ?? '',
     );
   }
 
@@ -76,7 +127,7 @@ class UploadTaskMetadata {
 
   @override
   String toString() =>
-      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId)';
+      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId, basePath: $basePath, liveEditPhase: $liveEditPhase, baseStillPath: $baseStillPath, pendingStackParentId: $pendingStackParentId, checksum: $checksum, stalePriorId: $stalePriorId)';
 
   @override
   bool operator ==(covariant UploadTaskMetadata other) {
@@ -86,11 +137,26 @@ class UploadTaskMetadata {
 
     return other.localAssetId == localAssetId &&
         other.isLivePhotos == isLivePhotos &&
-        other.livePhotoVideoId == livePhotoVideoId;
+        other.livePhotoVideoId == livePhotoVideoId &&
+        other.basePath == basePath &&
+        other.liveEditPhase == liveEditPhase &&
+        other.baseStillPath == baseStillPath &&
+        other.pendingStackParentId == pendingStackParentId &&
+        other.checksum == checksum &&
+        other.stalePriorId == stalePriorId;
   }
 
   @override
-  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+  int get hashCode =>
+      localAssetId.hashCode ^
+      isLivePhotos.hashCode ^
+      livePhotoVideoId.hashCode ^
+      basePath.hashCode ^
+      liveEditPhase.hashCode ^
+      baseStillPath.hashCode ^
+      pendingStackParentId.hashCode ^
+      checksum.hashCode ^
+      stalePriorId.hashCode;
 }
 
 /// Service for handling background uploads using iOS URLSession (background_downloader)
@@ -104,6 +170,9 @@ class BackgroundUploadService {
     this._localAssetRepository,
     this._backupRepository,
     this._assetMediaRepository,
+    this._nativeSyncApi,
+    this._editRevertService,
+    this._stackRepository,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -114,6 +183,9 @@ class BackgroundUploadService {
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftBackupRepository _backupRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final NativeSyncApi _nativeSyncApi;
+  final EditRevertService _editRevertService;
+  final DriftStackRepository _stackRepository;
   final Logger _logger = Logger('BackgroundUploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -152,12 +224,27 @@ class BackgroundUploadService {
     return _uploadRepository.getActiveTasks(group);
   }
 
+  /// Active tasks across every backup group. The resume gate needs this so a chain
+  /// stalled mid-flight in the live/edit groups (with the normal group already empty)
+  /// resumes instead of kicking off a duplicate cycle.
+  Future<int> getActiveBackupTaskCount() async {
+    final counts = await Future.wait([
+      _uploadRepository.getActiveTasks(kBackupGroup),
+      _uploadRepository.getActiveTasks(kBackupEditPairGroup),
+      _uploadRepository.getActiveTasks(kBackupLivePhotoGroup),
+    ]);
+    return counts.fold<int>(0, (sum, tasks) => sum + tasks.length);
+  }
+
   /// Start background upload using iOS URLSession
   ///
   /// Finds backup candidates, builds upload tasks, and enqueues them
   /// for background processing.
   Future<void> uploadBackupCandidates(String userId) async {
     await _storageRepository.clearCache();
+    // Safe here: the caller only starts a fresh cycle when no tasks are active in
+    // any backup group, so no pending chain still references these base temps.
+    await _storageRepository.clearEditBaseCache();
     shouldAbortQueuingTasks = false;
 
     final candidates = await _backupRepository.getCandidates(userId);
@@ -168,12 +255,17 @@ class BackgroundUploadService {
 
     _logger.info("Found ${candidates.length} backup candidates for background tasks");
 
+    final ownerId = Store.tryGet(StoreKey.currentUser)?.id;
     const batchSize = 100;
-    final batch = candidates.take(batchSize).toList();
     List<UploadTask> tasks = [];
 
-    for (final asset in batch) {
-      final task = await getUploadTask(asset);
+    // Walk the full candidate list until a batch is filled: deferred or
+    // unbuildable assets return no task and must not starve what's behind them.
+    for (final asset in candidates) {
+      if (tasks.length >= batchSize || shouldAbortQueuingTasks) {
+        break;
+      }
+      final task = await getUploadTask(asset, ownerId: ownerId);
       if (task != null) {
         tasks.add(task);
       }
@@ -192,11 +284,15 @@ class BackgroundUploadService {
     shouldAbortQueuingTasks = true;
 
     await _storageRepository.clearCache();
+    await _storageRepository.clearEditBaseCache();
     await _uploadRepository.reset(kBackupGroup);
+    await _uploadRepository.reset(kBackupEditPairGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
+    await _uploadRepository.deleteDatabaseRecords(kBackupEditPairGroup);
 
     final activeTasks = await _uploadRepository.getActiveTasks(kBackupGroup);
-    return activeTasks.length;
+    final activeEditTasks = await _uploadRepository.getActiveTasks(kBackupEditPairGroup);
+    return activeTasks.length + activeEditTasks.length;
   }
 
   /// Resume background backup processing
@@ -205,9 +301,20 @@ class BackgroundUploadService {
   }
 
   void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
+    UploadTaskMetadata? metadata;
+    if (update.task.metaData.isNotEmpty) {
+      try {
+        metadata = UploadTaskMetadata.fromJson(update.task.metaData);
+      } catch (_) {
+        metadata = null;
+      }
+    }
+
     switch (update.status) {
       case TaskStatus.complete:
-        unawaited(_handleLivePhoto(update));
+        unawaited(_handleLivePhoto(update, metadata));
+        unawaited(handleLiveEditChain(update, metadata));
+        unawaited(recordPriorRemoteIdOnSuccess(update, metadata));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -220,33 +327,42 @@ class BackgroundUploadService {
 
         break;
 
+      case TaskStatus.failed:
+      case TaskStatus.canceled:
+      case TaskStatus.notFound:
+        unawaited(_cleanupTempResourceOnFailure(metadata));
+        unawaited(_clearDeadPriorOnStack400(update, metadata));
+        break;
+
       default:
         break;
     }
   }
 
-  Future<void> _handleLivePhoto(TaskStatusUpdate update) async {
+  Future<void> _handleLivePhoto(TaskStatusUpdate update, UploadTaskMetadata? metadata) async {
     try {
-      if (update.task.metaData.isEmpty || update.task.metaData == '') {
+      if (metadata == null || !metadata.isLivePhotos) {
         return;
       }
 
-      final metadata = UploadTaskMetadata.fromJson(update.task.metaData);
-      if (!metadata.isLivePhotos) {
+      final remoteId = _remoteIdFromResponse(update);
+      if (remoteId == null) {
         return;
       }
-
-      if (update.responseBody == null || update.responseBody!.isEmpty) {
-        return;
-      }
-      final response = jsonDecode(update.responseBody!);
 
       final localAsset = await _localAssetRepository.getById(metadata.localAssetId);
       if (localAsset == null) {
         return;
       }
 
-      final uploadTask = await getLivePhotoUploadTask(localAsset, response['id'] as String);
+      // Edited since the video task was built (redelivered completion): uploading
+      // the still now would ship the edit standalone and stamp it synced. Drop —
+      // the asset is a candidate and the edit chain handles it.
+      if (metadata.checksum != null && metadata.checksum != localAsset.checksum) {
+        return;
+      }
+
+      final uploadTask = await getLivePhotoUploadTask(localAsset, remoteId);
 
       if (uploadTask == null) {
         return;
@@ -258,12 +374,452 @@ class BackgroundUploadService {
     }
   }
 
+  /// Advances the edit chain on each hop's completion. Live photo:
+  /// base video → base still → edit video → edit still; plain photo:
+  /// base still → edit still. The base still completion stamps priorRemoteId so
+  /// an app kill mid-chain resumes onto the already-uploaded original (via
+  /// AbsorbIntoPrior) instead of re-uploading it; the base junctions skip once
+  /// the stamp advances past what the chain knew (stalePriorId tells a rebuild
+  /// over a dead prior apart from a replay) and every enqueue is skipped while a
+  /// task with the same id is already active, so a replayed completion can't
+  /// fork a second chain. Completions redelivered on a later launch after the
+  /// chain has finished (syncedChecksum already matches) are dropped outright,
+  /// and the edit hops are dropped when the photo was re-edited or reverted
+  /// while the chain was in flight.
   @visibleForTesting
-  Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
+  Future<void> handleLiveEditChain(TaskStatusUpdate update, UploadTaskMetadata? metadata) async {
+    try {
+      if (metadata == null || metadata.liveEditPhase == LiveEditPhase.none) {
+        return;
+      }
+      final remoteId = _remoteIdFromResponse(update);
+      if (remoteId == null) {
+        return;
+      }
+      final localAsset = await _localAssetRepository.getById(metadata.localAssetId);
+      if (localAsset == null) {
+        return;
+      }
+
+      // Finished-chain replays drop here; gated on stalePriorId because a REBUILD
+      // chain starts while the row still carries the previous terminal stamps
+      // (synced == checksum) and only the base-still hop clears them.
+      if (metadata.stalePriorId.isEmpty &&
+          localAsset.checksum != null &&
+          localAsset.syncedChecksum == localAsset.checksum) {
+        return;
+      }
+
+      switch (metadata.liveEditPhase) {
+        case LiveEditPhase.baseVideo:
+          if (_priorAdvanced(localAsset, metadata) || await _hasActiveTask('${localAsset.id}_bs')) {
+            return;
+          }
+          final next = await _buildBaseStillTask(
+            localAsset,
+            metadata.baseStillPath,
+            baseVideoId: remoteId,
+            stalePriorId: metadata.stalePriorId,
+          );
+          if (!await _enqueueChainTask(next)) {
+            await _deleteTempFile(metadata.baseStillPath);
+          }
+        case LiveEditPhase.baseStill:
+          if (_priorAdvanced(localAsset, metadata)) {
+            return;
+          }
+          await _localAssetRepository.markSynced(metadata.localAssetId, priorRemoteId: remoteId, syncedChecksum: null);
+          if (await _editDriftedMidChain(localAsset, metadata)) {
+            return;
+          }
+          final next = await _buildEditTask(localAsset, stackParentId: remoteId);
+          if (next != null) {
+            await _enqueueChainTask(next);
+          }
+        case LiveEditPhase.editVideo:
+          if (await _hasActiveTask(localAsset.id)) {
+            return;
+          }
+          if (await _editDriftedMidChain(localAsset, metadata)) {
+            return;
+          }
+          final next = await _buildEditStillTask(
+            localAsset,
+            editVideoId: remoteId,
+            stackParentId: metadata.pendingStackParentId,
+          );
+          if (next != null) {
+            await _enqueueChainTask(next);
+          }
+        case LiveEditPhase.editStill:
+          await _localAssetRepository.markSynced(
+            metadata.localAssetId,
+            priorRemoteId: remoteId,
+            syncedChecksum: metadata.checksum ?? localAsset.checksum,
+          );
+        case LiveEditPhase.none:
+          break;
+      }
+    } catch (error, stackTrace) {
+      dPrint(() => "Error handling live edit chain: $error $stackTrace");
+    }
+  }
+
+  /// The next hop after the base still: the edit video for a live photo (so the
+  /// edit keeps its motion), the edit still for a plain photo.
+  Future<UploadTask?> _buildEditTask(LocalAsset asset, {required String stackParentId}) async {
+    final entity = await _storageRepository.getAssetEntityForAsset(asset);
+    if (entity == null) {
+      return null;
+    }
+    return entity.isLivePhoto
+        ? _buildEditVideoTask(asset, stackParentId: stackParentId)
+        : _buildEditStillTask(asset, editVideoId: null, stackParentId: stackParentId);
+  }
+
+  Future<bool> _hasActiveTask(String taskId) async {
+    try {
+      return await _uploadRepository.getTaskById(taskId) != null;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// The row's prior moved past what this chain knew: stamped by a normal chain
+  /// (no stale prior) or re-stamped past the dead prior a rebuild was replacing.
+  /// Either way this completion is a replay, not a live junction.
+  bool _priorAdvanced(LocalAsset asset, UploadTaskMetadata metadata) {
+    final prior = asset.priorRemoteId;
+    if (prior == null) {
+      return false;
+    }
+    return metadata.stalePriorId.isEmpty || prior != metadata.stalePriorId;
+  }
+
+  /// The photo changed under a mid-flight chain: re-edited (checksum moved since
+  /// the hop was built) or reverted (positive notEdited probe, cheap offline
+  /// read). The chain drops its edit hops — the asset is still a candidate and
+  /// re-plans fresh next cycle; the uploaded base stays stamped for resume.
+  Future<bool> _editDriftedMidChain(LocalAsset asset, UploadTaskMetadata metadata) async {
+    if (metadata.checksum != null && metadata.checksum != asset.checksum) {
+      return true;
+    }
+    try {
+      final state = await _nativeSyncApi
+          .getEditState(asset.id, allowNetworkAccess: false)
+          .timeout(const Duration(seconds: 30));
+      return state == EditState.notEdited;
+    } catch (_) {
+      // No positive revert evidence; let the chain finish.
+      return false;
+    }
+  }
+
+  Future<bool> _enqueueChainTask(UploadTask task) async {
+    try {
+      final results = await enqueueTasks([task]);
+      if (results.every((enqueued) => enqueued)) {
+        return true;
+      }
+    } catch (error, stack) {
+      _logger.warning(() => "Failed to enqueue chain task ${task.taskId}", error, stack);
+      return false;
+    }
+    _logger.warning(() => "Failed to enqueue chain task ${task.taskId}");
+    return false;
+  }
+
+  Future<void> _deleteTempFile(String path) async {
+    if (path.isEmpty) {
+      return;
+    }
+    try {
+      await File(path).delete();
+    } catch (_) {}
+  }
+
+  /// Saves the uploaded remote id as the asset's priorRemoteId so a later edit
+  /// stacks onto it. Edit-chain hops are skipped here; the chain router stamps them.
+  @visibleForTesting
+  Future<void> recordPriorRemoteIdOnSuccess(TaskStatusUpdate update, UploadTaskMetadata? metadata) async {
+    try {
+      // Edit stacking is iOS-only; don't stamp prior/synced state on Android.
+      if (!CurrentPlatform.isIOS ||
+          metadata == null ||
+          metadata.isLivePhotos ||
+          metadata.liveEditPhase != LiveEditPhase.none ||
+          metadata.localAssetId.isEmpty) {
+        return;
+      }
+      final remoteId = _remoteIdFromResponse(update);
+      if (remoteId == null) {
+        return;
+      }
+      final syncedChecksum =
+          metadata.checksum ?? (await _localAssetRepository.getById(metadata.localAssetId))?.checksum;
+      await _localAssetRepository.markSynced(
+        metadata.localAssetId,
+        priorRemoteId: remoteId,
+        syncedChecksum: syncedChecksum,
+      );
+    } catch (error, stackTrace) {
+      dPrint(() => "Error recording priorRemoteId: $error $stackTrace");
+    }
+  }
+
+  @visibleForTesting
+  Future<void> cleanupTempResourceOnFailure(UploadTaskMetadata? metadata) => _cleanupTempResourceOnFailure(metadata);
+
+  Future<void> _cleanupTempResourceOnFailure(UploadTaskMetadata? metadata) async {
+    if (metadata == null) {
+      return;
+    }
+    // basePath = the failed hop's own temp; baseStillPath = the base still a live-edit
+    // base video carries forward (leaks otherwise when the chain aborts at hop one).
+    for (final path in [metadata.basePath, metadata.baseStillPath]) {
+      await _deleteTempFile(path);
+    }
+  }
+
+  /// A failed hop naming a dead stack parent means the stamped prior no longer
+  /// exists server-side; clear the stamps so the next cycle re-resolves fresh
+  /// instead of looping on the same dead id.
+  Future<void> _clearDeadPriorOnStack400(TaskStatusUpdate update, UploadTaskMetadata? metadata) async {
+    try {
+      if (metadata == null || metadata.localAssetId.isEmpty) {
+        return;
+      }
+      final serverMessage = '${update.responseBody ?? ''} ${update.exception?.description ?? ''}';
+      if (!serverMessage.contains(kDeadStackParentError)) {
+        return;
+      }
+      await _localAssetRepository.clearSyncStamps(metadata.localAssetId);
+    } catch (error, stackTrace) {
+      dPrint(() => "Error clearing dead prior: $error $stackTrace");
+    }
+  }
+
+  /// The new asset's remote id from an upload's response body, or null if the
+  /// body is missing/malformed.
+  String? _remoteIdFromResponse(TaskStatusUpdate update) {
+    final body = update.responseBody;
+    if (body == null || body.isEmpty) {
+      return null;
+    }
+    try {
+      return jsonDecode(body)['id'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Entry of the live-photo edit chain. With an original video, upload it first so
+  /// the base still can link to it; without one (the edit turned Live off) the base
+  /// degrades to a still-only stack parent.
+  Future<UploadTask?> _buildLiveEntryTask(
+    LocalAsset asset,
+    BaseResource still,
+    BaseResource? video, {
+    required String stalePriorId,
+  }) {
+    if (video != null) {
+      return _buildBaseVideoTask(asset, still.path, video.path, stalePriorId: stalePriorId);
+    }
+    return _buildBaseStillTask(asset, still.path, baseVideoId: null, chainEntry: true, stalePriorId: stalePriorId);
+  }
+
+  Future<UploadTask> _buildBaseVideoTask(
+    LocalAsset asset,
+    String baseStillPath,
+    String baseVideoPath, {
+    String stalePriorId = '',
+  }) {
+    final metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      liveEditPhase: LiveEditPhase.baseVideo,
+      basePath: baseVideoPath,
+      baseStillPath: baseStillPath,
+      checksum: asset.checksum,
+      stalePriorId: stalePriorId,
+    ).toJson();
+
+    return buildUploadTask(
+      File(baseVideoPath),
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
+      originalFileName: p.setExtension(asset.name, p.extension(baseVideoPath)),
+      deviceAssetId: '${asset.id}_bv',
+      metadata: metadata,
+      fields: {'visibility': kHiddenVisibility},
+      group: kBackupGroup,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: _shouldRequireWiFi(asset),
+    );
+  }
+
+  /// [chainEntry] = this base still starts the chain (plain-photo edit, or a live
+  /// edit with no recoverable original video), so it queues like any new upload;
+  /// a continuation hop runs at top priority to finish the started chain first.
+  Future<UploadTask> _buildBaseStillTask(
+    LocalAsset asset,
+    String baseStillPath, {
+    required String? baseVideoId,
+    bool chainEntry = false,
+    String stalePriorId = '',
+  }) {
+    final metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      liveEditPhase: LiveEditPhase.baseStill,
+      basePath: baseStillPath,
+      checksum: asset.checksum,
+      stalePriorId: stalePriorId,
+    ).toJson();
+
+    return buildUploadTask(
+      File(baseStillPath),
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
+      originalFileName: p.setExtension(asset.name, p.extension(baseStillPath)),
+      deviceAssetId: '${asset.id}_bs',
+      metadata: metadata,
+      fields: baseVideoId != null ? {'livePhotoVideoId': baseVideoId} : null,
+      group: chainEntry ? kBackupGroup : kBackupEditPairGroup,
+      priority: chainEntry ? null : 0,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: _shouldRequireWiFi(asset),
+      // base = the unedited original, so cloudId but no adjustmentTime
+      cloudId: asset.cloudId,
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
+    );
+  }
+
+  Future<UploadTask?> _buildEditVideoTask(LocalAsset asset, {required String stackParentId}) async {
+    final motion = await _storageRepository.getMotionFileForAsset(asset);
+    if (motion == null) {
+      _logger.warning("Failed to get motion file for live edit ${asset.id} - ${asset.name}");
+      return null;
+    }
+    final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      liveEditPhase: LiveEditPhase.editVideo,
+      basePath: motion.path,
+      pendingStackParentId: stackParentId,
+      checksum: asset.checksum,
+    ).toJson();
+
+    return buildUploadTask(
+      motion,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
+      originalFileName: p.setExtension(originalFileName, p.extension(motion.path)),
+      deviceAssetId: '${asset.id}_ev',
+      metadata: metadata,
+      fields: {'visibility': kHiddenVisibility},
+      group: kBackupGroup,
+      priority: 0,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: _shouldRequireWiFi(asset),
+    );
+  }
+
+  /// The terminal hop: the edited still, linked to its own motion ([editVideoId],
+  /// live photos only) and stacked onto the base still ([stackParentId]).
+  Future<UploadTask?> _buildEditStillTask(
+    LocalAsset asset, {
+    required String? editVideoId,
+    required String stackParentId,
+  }) async {
+    final file = await _storageRepository.getFileForAsset(asset.id);
+    if (file == null) {
+      _logger.warning("Failed to get still file for live edit ${asset.id} - ${asset.name}");
+      return null;
+    }
+    final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      liveEditPhase: LiveEditPhase.editStill,
+      basePath: file.path,
+      checksum: asset.checksum,
+    ).toJson();
+
+    return buildUploadTask(
+      file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
+      originalFileName: originalFileName,
+      deviceAssetId: asset.id,
+      metadata: metadata,
+      fields: {
+        if (editVideoId != null) 'livePhotoVideoId': editVideoId,
+        if (stackParentId.isNotEmpty) 'stackParentId': stackParentId,
+      },
+      group: kBackupEditPairGroup,
+      priority: 0,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: _shouldRequireWiFi(asset),
+      // edit = WITH adjustmentTime so the server keeps the edit timestamp
+      cloudId: asset.cloudId,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
+    );
+  }
+
+  @visibleForTesting
+  Future<UploadTask?> getUploadTask(
+    LocalAsset asset, {
+    String group = kBackupGroup,
+    int? priority,
+    String? ownerId,
+  }) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       _logger.warning("Asset entity not found for ${asset.id} - ${asset.name}");
       return null;
+    }
+
+    // iOS edit pair: stack a user edit onto its original. resolveEditPair reads the edit
+    // state and decides whether to reuse a prior upload or upload the original first.
+    if (CurrentPlatform.isIOS) {
+      // A reverted edit flips the stack back to the original and skips the upload.
+      if (asset.priorRemoteId != null && await _editRevertService.tryHandleRevert(asset)) {
+        return null;
+      }
+      final plan = await resolveEditPair(
+        _nativeSyncApi,
+        asset,
+        stackRepository: _stackRepository,
+        ownerId: ownerId ?? Store.tryGet(StoreKey.currentUser)?.id,
+        log: _logger,
+        isLivePhoto: entity.isLivePhoto,
+      );
+      switch (plan) {
+        case UploadBaseFirst(:final base):
+          return _buildBaseStillTask(
+            asset,
+            base.path,
+            baseVideoId: null,
+            chainEntry: true,
+            stalePriorId: asset.priorRemoteId ?? '',
+          );
+        case UploadBaseLivePhotoFirst(:final still, :final video):
+          return _buildLiveEntryTask(asset, still, video, stalePriorId: asset.priorRemoteId ?? '');
+        case AbsorbIntoPrior(:final parentId):
+          // Re-editing an already-stacked live photo uploads its new video then still so
+          // the edit keeps its motion; a plain photo just stacks the still.
+          return entity.isLivePhoto
+              ? _buildEditVideoTask(asset, stackParentId: parentId)
+              : _buildEditStillTask(asset, editVideoId: null, stackParentId: parentId);
+        case NoEditPair():
+          break;
+        case DeferEditPair():
+          // Undecidable right now (prior in server trash, or the original
+          // couldn't be read). The asset stays a candidate; retry next cycle.
+          _logger.fine(() => "Deferring upload for ${asset.id} - ${asset.name}");
+          return null;
+      }
     }
 
     File? file;
@@ -300,7 +856,7 @@ class BackgroundUploadService {
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
-      livePhotoVideoId: '',
+      checksum: asset.checksum,
     ).toJson();
 
     final requiresWiFi = _shouldRequireWiFi(asset);
@@ -312,6 +868,9 @@ class BackgroundUploadService {
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
       metadata: metadata,
+      // for a live photo this is the motion video — upload it hidden so it never
+      // flashes onto the timeline before its still (a later fire) links it.
+      fields: entity.isLivePhoto ? {'visibility': kHiddenVisibility} : null,
       group: group,
       priority: priority,
       isFavorite: asset.isFavorite,
@@ -346,6 +905,9 @@ class BackgroundUploadService {
       modifiedAt: asset.updatedAt,
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
+      // so recordPriorRemoteIdOnSuccess stamps the still's remote id and a later
+      // edit absorbs onto it instead of rebuilding the whole base pair.
+      metadata: UploadTaskMetadata(localAssetId: asset.id, checksum: asset.checksum).toJson(),
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
@@ -391,6 +953,13 @@ class BackgroundUploadService {
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
+    final cloudMetadata = cloudMetadataJson(
+      cloudId: cloudId,
+      createdAt: createdAt,
+      adjustmentTime: adjustmentTime,
+      latitude: latitude,
+      longitude: longitude,
+    );
     final fieldsMap = {
       'filename': originalFileName ?? filename,
       // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
@@ -401,19 +970,7 @@ class BackgroundUploadService {
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
-      if (CurrentPlatform.isIOS && cloudId != null)
-        'metadata': jsonEncode([
-          RemoteAssetMetadataItem(
-            key: RemoteAssetMetadataKey.mobileApp,
-            value: RemoteAssetMobileAppMetadata(
-              cloudId: cloudId,
-              createdAt: createdAt.toIso8601String(),
-              adjustmentTime: adjustmentTime,
-              latitude: latitude,
-              longitude: longitude,
-            ),
-          ),
-        ]),
+      if (cloudMetadata != null) 'metadata': cloudMetadata,
     };
 
     return UploadTask(

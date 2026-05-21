@@ -6,7 +6,7 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { StackTable } from 'src/schema/tables/stack.table';
-import { asUuid, withDefaultVisibility } from 'src/utils/database';
+import { asUuid, isStackPrimaryConstraint, withDefaultVisibility } from 'src/utils/database';
 
 export interface StackSearch {
   ownerId: string;
@@ -122,6 +122,63 @@ export class StackRepository {
         .where('id', '=', newRecord.id)
         .executeTakeFirstOrThrow();
     });
+  }
+
+  async linkAsset(
+    ownerId: string,
+    newAssetId: string,
+    parentId: string,
+  ): Promise<{ stackId: string; created: boolean } | null> {
+    try {
+      return await this.db.transaction().execute(async (tx) => {
+        // Lock the parent so two concurrent uploads can't each create a stack for it.
+        const parent = await tx
+          .selectFrom('asset')
+          .select(['id', 'ownerId', 'stackId', 'deletedAt'])
+          .where('id', '=', asUuid(parentId))
+          .forUpdate()
+          .executeTakeFirst();
+
+        if (!parent || parent.ownerId !== ownerId || parent.deletedAt) {
+          return null;
+        }
+
+        if (parent.stackId) {
+          await tx
+            .updateTable('asset')
+            .set({ stackId: parent.stackId, updatedAt: new Date() })
+            .where('id', '=', asUuid(newAssetId))
+            .execute();
+          await tx
+            .updateTable('stack')
+            .set({ primaryAssetId: newAssetId, updatedAt: new Date() })
+            .where('id', '=', parent.stackId)
+            .execute();
+          return { stackId: parent.stackId, created: false };
+        }
+
+        const stack = await tx
+          .insertInto('stack')
+          .values({ ownerId, primaryAssetId: newAssetId })
+          .returning('id')
+          .executeTakeFirstOrThrow();
+
+        await tx
+          .updateTable('asset')
+          .set({ stackId: stack.id, updatedAt: new Date() })
+          .where('id', 'in', [asUuid(newAssetId), parent.id])
+          .execute();
+
+        return { stackId: stack.id, created: true };
+      });
+    } catch (error) {
+      // newAssetId may already be another stack's primary (e.g. a retried upload).
+      // Treat the unique-constraint hit as "couldn't stack" rather than a 500.
+      if (isStackPrimaryConstraint(error)) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

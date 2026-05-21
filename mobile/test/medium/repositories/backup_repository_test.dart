@@ -135,6 +135,59 @@ void main() {
       expect(result.remainder, 2); // local2 + local3
       expect(result.processing, 1); // local3
     });
+
+    test('reconciled asset with live prior remote counts in total but not remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // uploaded as edit pair: prior remote is live, but no remote row matches the local checksum
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(checksum: 'edited-1', syncedChecksum: 'edited-1', priorRemoteId: prior.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 0);
+      expect(result.processing, 0);
+    });
+
+    test('reverted-handled asset counts in total but not remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // revert handled: local re-hashed fresh, stamped synced + prior pointing at the base remote
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(
+        checksum: 'reverted-1',
+        syncedChecksum: 'reverted-1',
+        priorRemoteId: prior.id,
+      );
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 0);
+    });
+
+    test('reconciled asset with trashed prior remote stays out of remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // prior was trashed, not hard-deleted: the row still exists, so the revert
+      // stays handled — only a missing row re-opens the asset
+      final prior = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2025, 6));
+      final local = await ctx.newLocalAsset(checksum: 'edited-3', syncedChecksum: 'edited-3', priorRemoteId: prior.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 0);
+    });
+
+    test('reconciled asset with hard-deleted prior remote counts in remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // prior remote row is gone -> needs re-upload
+      final local = await ctx.newLocalAsset(checksum: 'edited-2', syncedChecksum: 'edited-2', priorRemoteId: 'gone');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 1);
+    });
   });
 
   group('getCandidates', () {
@@ -237,6 +290,65 @@ void main() {
       await ctx.newLocalAlbumAsset(albumId: album2.id, assetId: asset.id);
 
       final result = await sut.getCandidates(userId);
+      expect(result.length, 1);
+      expect(result.first.id, asset.id);
+    });
+
+    test('includes re-edited asset whose synced checksum is stale', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(checksum: 'edit-v2', syncedChecksum: 'edit-v1', priorRemoteId: prior.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result.length, 1);
+      expect(result.first.id, local.id);
+    });
+
+    test('excludes reconciled asset with live prior remote', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(
+        checksum: 'reverted-2',
+        syncedChecksum: 'reverted-2',
+        priorRemoteId: prior.id,
+      );
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
+    });
+
+    test('excludes reconciled asset whose prior remote was trashed', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final prior = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2025, 6));
+      final local = await ctx.newLocalAsset(
+        checksum: 'reverted-3',
+        syncedChecksum: 'reverted-3',
+        priorRemoteId: prior.id,
+      );
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
+    });
+
+    test('includes reconciled asset whose prior remote was hard-deleted', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final local = await ctx.newLocalAsset(checksum: 'edit-v3', syncedChecksum: 'edit-v3', priorRemoteId: 'gone');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result.length, 1);
+      expect(result.first.id, local.id);
+    });
+
+    test('includes asset with null checksum and synced checksum set when onlyHashed is false', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset(checksumOption: const Option.none(), syncedChecksum: 'old');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      final result = await sut.getCandidates(userId, onlyHashed: false);
       expect(result.length, 1);
       expect(result.first.id, asset.id);
     });

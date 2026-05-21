@@ -120,7 +120,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 30;
+  int get schemaVersion => 31;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -310,6 +310,11 @@ class Drift extends $Drift {
           },
           from29To30: (m, v30) async {
             await m.alterTable(TableMigration(v30.settings));
+          },
+          from30To31: (m, v31) async {
+            await m.addColumn(v31.localAssetEntity, v31.localAssetEntity.priorRemoteId);
+            await m.addColumn(v31.localAssetEntity, v31.localAssetEntity.syncedChecksum);
+            await m.createIndex(v31.idxLocalAssetPriorRemoteId);
           },
         ),
       );

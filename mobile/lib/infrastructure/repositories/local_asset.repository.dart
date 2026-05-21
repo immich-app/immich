@@ -64,6 +64,20 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> markSynced(String localId, {required String priorRemoteId, required String? syncedChecksum}) {
+    return (_db.localAssetEntity.update()..where((e) => e.id.equals(localId))).write(
+      LocalAssetEntityCompanion(priorRemoteId: Value(priorRemoteId), syncedChecksum: Value(syncedChecksum)),
+    );
+  }
+
+  /// Drops the edit-stacking stamps so the next backup cycle re-resolves the
+  /// asset from scratch (used when the server says the stamped prior is gone).
+  Future<void> clearSyncStamps(String localId) {
+    return (_db.localAssetEntity.update()..where((e) => e.id.equals(localId))).write(
+      const LocalAssetEntityCompanion(priorRemoteId: Value(null), syncedChecksum: Value(null)),
+    );
+  }
+
   Future<void> delete(List<String> ids) {
     if (ids.isEmpty) {
       return Future.value();

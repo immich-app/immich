@@ -663,6 +663,8 @@ export type AssetMediaCreateDto = {
     metadata?: AssetMetadataUpsertItemDto[];
     /** Sidecar file data */
     sidecarData?: Blob;
+    /** Stack this asset onto the parent asset, with the new asset as the stack primary */
+    stackParentId?: string;
     visibility?: AssetVisibility;
 };
 export type AssetMediaResponseDto = {

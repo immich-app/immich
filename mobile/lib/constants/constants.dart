@@ -20,6 +20,16 @@ const String kSecuredPinCode = "secured_pin_code";
 const String kManualUploadGroup = 'manual_upload_group';
 const String kBackupGroup = 'backup_group';
 const String kBackupLivePhotoGroup = 'backup_live_photo_group';
+const String kBackupEditPairGroup = 'backup_edit_pair_group';
+
+// Upload multipart 'visibility' value for motion videos (server AssetVisibility.Hidden)
+// so they never flash onto the timeline before their still links them.
+const String kHiddenVisibility = 'hidden';
+
+// Server's 400 message when stackParentId points at a trashed/deleted asset
+// (asset-media.service.ts). Matching it clears the stale prior stamps so the
+// next backup cycle re-resolves instead of looping on the same dead id.
+const String kDeadStackParentError = 'Cannot stack onto a trashed or missing asset';
 const String kDownloadGroupImage = 'group_image';
 const String kDownloadGroupVideo = 'group_video';
 const String kDownloadGroupLivePhoto = 'group_livephoto';

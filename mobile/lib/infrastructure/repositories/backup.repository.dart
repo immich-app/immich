@@ -34,14 +34,27 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   /// - total:     number of distinct assets in selected albums, excluding those that are also in excluded albums
   /// - backup:    number of those assets that already exist on the server for [userId]
   /// - remainder: number of those assets that do not yet exist on the server for [userId]
-  ///              (includes processing)
+  ///              (includes processing), excluding handled iOS reverts (syncedChecksum == checksum
+  ///              with the prior upload still on the server — trashed counts, like the
+  ///              checksum arm; only a hard delete re-opens the asset)
   /// - processing: number of those assets that are still preparing/have a null checksum
   Future<({int total, int remainder, int processing})> getAllCounts(String userId) async {
     const sql = '''
         SELECT
         COUNT(*) AS total_count,
         COUNT(*) FILTER (WHERE lae.checksum IS NULL) AS processing_count,
-        COUNT(*) FILTER (WHERE rae.id IS NULL) AS remainder_count
+        COUNT(*) FILTER (
+            WHERE rae.id IS NULL
+            AND (
+                lae.checksum IS NULL
+                OR lae.synced_checksum IS NULL
+                OR lae.synced_checksum != lae.checksum
+                OR NOT EXISTS (
+                    SELECT 1 FROM main.remote_asset_entity pr
+                    WHERE pr.id = lae.prior_remote_id
+                )
+            )
+        ) AS remainder_count
         FROM local_asset_entity lae
         LEFT JOIN main.remote_asset_entity rae
             ON lae.checksum = rae.checksum AND rae.owner_id = ?1
@@ -104,6 +117,20 @@ class DriftBackupRepository extends DriftDatabaseRepository {
                   _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
                 ),
             ) &
+            // iOS revert: a reverted local hashes fresh (matches nothing remote),
+            // but if it was already reconciled (syncedChecksum == current checksum)
+            // it's handled, so don't re-queue it as a fresh upload. Suppress while
+            // the prior row exists at all — trashed stays suppressed (same
+            // convention as the checksum arm above); only a hard-deleted remote
+            // must become a candidate again.
+            (lae.checksum.isNull() |
+                lae.syncedChecksum.isNull() |
+                lae.syncedChecksum.equalsExp(lae.checksum).not() |
+                notExistsQuery(
+                  _db.remoteAssetEntity.selectOnly()
+                    ..addColumns([_db.remoteAssetEntity.id])
+                    ..where(_db.remoteAssetEntity.id.equalsExp(lae.priorRemoteId)),
+                )) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
       )
       ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);

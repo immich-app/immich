@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
@@ -380,19 +379,19 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
     _logger.info("Start background backup sequence");
     state = state.copyWith(error: BackupError.none);
-    final tasks = await _backgroundUploadService.getActiveTasks(kBackupGroup);
+    final pending = await _backgroundUploadService.getActiveBackupTaskCount();
     if (!mounted) {
       _logger.warning("Skip handleBackupResume (post-call): notifier disposed");
       return;
     }
-    _logger.info("Found ${tasks.length} pending tasks");
+    _logger.info("Found $pending pending tasks");
 
-    if (tasks.isEmpty) {
+    if (pending == 0) {
       _logger.info("No pending tasks, starting new upload");
       return _backgroundUploadService.uploadBackupCandidates(userId);
     }
 
-    _logger.info("Resuming upload ${tasks.length} assets");
+    _logger.info("Resuming upload $pending assets");
     return _backgroundUploadService.resume();
   }
 }

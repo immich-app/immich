@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:logging/logging.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class StorageRepository {
@@ -148,6 +149,36 @@ class StorageRepository {
       }
     } catch (error, stackTrace) {
       log.warning("Error deleting temporary directory", error, stackTrace);
+    }
+  }
+
+  /// Base originals for the edit chain live under Library/Caches (immich_base),
+  /// not tmp, so [clearCache] can't wipe a chain still in flight across
+  /// launches. Sweeps only files older than a day: live chains and concurrent
+  /// foreground pair uploads keep their temps; orphans from dead chains go.
+  Future<void> clearEditBaseCache() async {
+    if (!CurrentPlatform.isIOS) {
+      return;
+    }
+    try {
+      final cache = await getApplicationCacheDirectory();
+      final dir = Directory('${cache.path}/immich_base');
+      if (!await dir.exists()) {
+        return;
+      }
+      final cutoff = DateTime.now().subtract(const Duration(days: 1));
+      await for (final entry in dir.list()) {
+        try {
+          final stat = await entry.stat();
+          if (stat.modified.isBefore(cutoff)) {
+            await entry.delete(recursive: true);
+          }
+        } catch (error, stackTrace) {
+          log.warning("Error sweeping ${entry.path}", error, stackTrace);
+        }
+      }
+    } catch (error, stackTrace) {
+      log.warning("Error sweeping edit base cache", error, stackTrace);
     }
   }
 }

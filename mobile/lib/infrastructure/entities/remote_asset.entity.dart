@@ -55,6 +55,8 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
+  // localId callers attach it via a checksum-equality join, so the local's
+  // bytes are the remote's — key local renders by the same checksum.
   RemoteAsset toDto({String? localId}) => RemoteAsset(
     id: id,
     name: name,
@@ -72,6 +74,7 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     visibility: visibility,
     livePhotoVideoId: livePhotoVideoId,
     localId: localId,
+    localChecksum: localId == null ? null : checksum,
     stackId: stackId,
     isEdited: isEdited,
     deletedAt: deletedAt,

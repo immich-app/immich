@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/services/edit_revert.service.dart';
 import 'package:immich_mobile/domain/services/partner.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
@@ -14,3 +15,5 @@ class MockNativeSyncApi extends Mock implements NativeSyncApi {}
 class MockAppSettingsService extends Mock implements AppSettingsService {}
 
 class MockPartnerService extends Mock implements PartnerService {}
+
+class MockEditRevertService extends Mock implements EditRevertService {}
