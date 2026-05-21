@@ -181,7 +181,11 @@ export const automock = <T>(
   const mocks: Mock[] = [];
 
   const instance = new Dependency(...args);
-  for (const property of Object.getOwnPropertyNames(Dependency.prototype)) {
+  const propertyNames = new Set([
+    ...Object.getOwnPropertyNames(Dependency.prototype),
+    ...Object.getOwnPropertyNames(instance),
+  ]);
+  for (const property of propertyNames) {
     if (property === 'constructor') {
       continue;
     }
@@ -346,7 +350,7 @@ export const getMocks = () => {
     trash: automock(TrashRepository),
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
-    videoStream: automock(VideoStreamRepository),
+    videoStream: automock(VideoStreamRepository, { strict: false }),
     view: automock(ViewRepository),
     // eslint-disable-next-line no-sparse-arrays
     websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
@@ -500,6 +504,7 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
         callback(exitCode);
       }
     }),
+    kill: vitest.fn(),
   } as unknown as ChildProcessWithoutNullStreams;
 });
 
