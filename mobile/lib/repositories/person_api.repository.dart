@@ -23,11 +23,39 @@ class PersonApiRepository extends ApiRepository {
     return _toPerson(response);
   }
 
+  Future<List<DriftPerson>> getAllWithHidden() async {
+    final dto = await checkNull(_api.getAllPeople(withHidden: true));
+    return dto.people.map(_toDriftPerson).toList();
+  }
+
+  Future<void> updatePeople(List<PeopleUpdateItem> items) async {
+    final dto = PeopleUpdateDto(people: items);
+    await checkNull(_api.updatePeople(dto));
+  }
+
+  Future<void> mergePerson(String id, List<String> sourceIds) async {
+    final dto = MergePersonDto(ids: sourceIds);
+    await _api.mergePerson(id, dto);
+  }
+
   static PersonDto _toPerson(PersonResponseDto dto) => PersonDto(
     birthDate: dto.birthDate,
     id: dto.id,
     isHidden: dto.isHidden,
     name: dto.name,
     thumbnailPath: dto.thumbnailPath,
+  );
+
+  static DriftPerson _toDriftPerson(PersonResponseDto dto) => DriftPerson(
+    id: dto.id,
+    createdAt: dto.updatedAt ?? DateTime.now(),
+    updatedAt: dto.updatedAt ?? DateTime.now(),
+    ownerId: '',
+    name: dto.name,
+    faceAssetId: null,
+    isFavorite: dto.isFavorite ?? false,
+    isHidden: dto.isHidden,
+    color: dto.color,
+    birthDate: dto.birthDate,
   );
 }

@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/presentation/dialogs/people/merge_person_dialog.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
@@ -49,6 +51,15 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
     }
   }
 
+  Future<void> handleMerge(BuildContext context) async {
+    final result = await showMergePersonDialog(context, _person);
+    if (result == true && mounted) {
+      // Key point: invalidate the people-list provider after merge so the list page refreshes on return
+      ref.invalidate(driftGetAllPeopleProvider);
+      ContextHelper(context).pop();
+    }
+  }
+
   void showOptionSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -63,6 +74,10 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
           onEditBirthday: () async {
             await handleEditBirthday(context);
             ContextHelper(context).pop();
+          },
+          onMerge: () async {
+            ContextHelper(context).pop();
+            await handleMerge(context);
           },
           birthdayExists: _person.birthDate != null,
         );

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
@@ -71,6 +72,41 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
+  }
+
+  Future<int> updateIsHidden(String personId, bool isHidden) {
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.write(PersonEntityCompanion(isHidden: Value(isHidden), updatedAt: Value(DateTime.now())));
+  }
+
+  Future<int> deletePerson(String personId) {
+    final query = _db.delete(_db.personEntity)..where((row) => row.id.equals(personId));
+    return query.go();
+  }
+
+  /// Bulk-reassign all faces from multiple source persons to one target person
+  /// Used during person merge to update local DB immediately instead of waiting for sync
+  Future<int> reassignAllFaces(List<String> oldPersonIds, String newPersonId) async {
+    if (oldPersonIds.isEmpty) {
+      return 0;
+    }
+    final query = _db.update(_db.assetFaceEntity)
+      ..where((row) => row.personId.isIn(oldPersonIds))
+      ..where((row) => row.deletedAt.isNull())
+      ..where((row) => row.isVisible.equals(true));
+    return query.write(AssetFaceEntityCompanion(personId: Value(newPersonId)));
+  }
+
+  /// Update person fields (name, birthDate), used for merge-time inheritance
+  Future<int> updatePersonFields(String personId, {String? name, DateTime? birthDate}) {
+    final companion = PersonEntityCompanion(
+      name: name != null ? Value(name) : const Value.absent(),
+      birthDate: birthDate != null ? Value(birthDate) : const Value.absent(),
+      updatedAt: Value(DateTime.now()),
+    );
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+    return query.write(companion);
   }
 }
 

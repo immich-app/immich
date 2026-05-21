@@ -3,10 +3,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class PersonOptionSheet extends ConsumerWidget {
-  const PersonOptionSheet({super.key, this.onEditName, this.onEditBirthday, this.birthdayExists = false});
+  const PersonOptionSheet({super.key, this.onEditName, this.onEditBirthday, this.onMerge, this.birthdayExists = false});
 
   final VoidCallback? onEditName;
   final VoidCallback? onEditBirthday;
+  final VoidCallback? onMerge;
   final bool birthdayExists;
 
   @override
@@ -28,6 +29,11 @@ class PersonOptionSheet extends ConsumerWidget {
               leading: const Icon(Icons.cake),
               title: Text((birthdayExists ? 'edit_birthday' : "add_birthday").t(context: context), style: textStyle),
               onTap: onEditBirthday,
+            ),
+            ListTile(
+              leading: const Icon(Icons.merge),
+              title: Text('merge_people'.t(context: context), style: textStyle),
+              onTap: onMerge,
             ),
           ],
         ),
