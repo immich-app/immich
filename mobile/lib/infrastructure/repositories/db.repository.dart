@@ -282,6 +282,10 @@ class Drift extends $Drift {
             await m.create(v27.trashSyncEntity);
             await m.createIndex(v27.idxTrashSyncIsSyncApproved);
             await m.createIndex(v27.idxTrashSyncChecksumStatus);
+            await m.addColumn(v27.trashedLocalAssetEntity, v27.trashedLocalAssetEntity.iCloudId);
+            await m.addColumn(v27.trashedLocalAssetEntity, v27.trashedLocalAssetEntity.adjustmentTime);
+            await m.addColumn(v27.trashedLocalAssetEntity, v27.trashedLocalAssetEntity.latitude);
+            await m.addColumn(v27.trashedLocalAssetEntity, v27.trashedLocalAssetEntity.longitude);
           },
         ),
       );

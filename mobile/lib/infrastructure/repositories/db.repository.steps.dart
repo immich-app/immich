@@ -13982,13 +13982,22 @@ final class Schema27 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape47 trashedLocalAssetEntity = Shape47(
+  late final Shape51 trashedLocalAssetEntity = Shape51(
     source: i0.VersionedTable(
       entityName: 'trashed_local_asset_entity',
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(id, album_id)'],
       columns: [
+        _column_107,
+        _column_131,
+        _column_120,
+        _column_132,
+        _column_133,
+        _column_134,
+        _column_135,
+        _column_136,
+        _column_137,
         _column_108,
         _column_113,
         _column_114,
@@ -13996,13 +14005,8 @@ final class Schema27 extends i0.VersionedSchema {
         _column_116,
         _column_117,
         _column_118,
-        _column_107,
         _column_205,
-        _column_131,
-        _column_120,
-        _column_132,
         _column_206,
-        _column_137,
       ],
       attachedDatabase: database,
     ),
@@ -14036,7 +14040,7 @@ final class Schema27 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape51 trashSyncEntity = Shape51(
+  late final Shape52 trashSyncEntity = Shape52(
     source: i0.VersionedTable(
       entityName: 'trash_sync_entity',
       withoutRowId: true,
@@ -14107,13 +14111,50 @@ final class Schema27 extends i0.VersionedSchema {
 
 class Shape51 extends i0.VersionedTable {
   Shape51({required super.source, required super.alias}) : super.aliased();
-
+  i1.GeneratedColumn<String> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get checksum =>
       columnsByName['checksum']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get isFavorite =>
+      columnsByName['is_favorite']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get orientation =>
+      columnsByName['orientation']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get iCloudId =>
+      columnsByName['i_cloud_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get adjustmentTime =>
+      columnsByName['adjustment_time']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<double> get latitude =>
+      columnsByName['latitude']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<double> get longitude =>
+      columnsByName['longitude']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<int> get playbackStyle =>
+      columnsByName['playback_style']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get name =>
+      columnsByName['name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get type =>
+      columnsByName['type']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get width =>
+      columnsByName['width']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get height =>
+      columnsByName['height']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get durationMs =>
+      columnsByName['duration_ms']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get albumId =>
+      columnsByName['album_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get source =>
+      columnsByName['source']! as i1.GeneratedColumn<int>;
+}
 
+class Shape52 extends i0.VersionedTable {
+  Shape52({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get checksum =>
+      columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<int> get isSyncApproved =>
       columnsByName['is_sync_approved']! as i1.GeneratedColumn<int>;
-
   i1.GeneratedColumn<String> get remoteDeletedAt =>
       columnsByName['remote_deleted_at']! as i1.GeneratedColumn<String>;
 }
@@ -14126,7 +14167,6 @@ i1.GeneratedColumn<int> _column_213(String aliasedName) =>
       type: i1.DriftSqlType.int,
       $customConstraints: 'NULL CHECK (is_sync_approved IN (0, 1))',
     );
-
 i1.GeneratedColumn<String> _column_214(String aliasedName) =>
     i1.GeneratedColumn<String>(
       'remote_deleted_at',
