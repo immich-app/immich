@@ -38,19 +38,19 @@ const TagBulkAssetsResponseSchema = z
   })
   .meta({ id: 'TagBulkAssetsResponseDto' });
 
-const TagsForAssetsQuerySchema = z
+export const TagsForAssetsQuerySchema = z
   .object({
     assetIds: z.preprocess(
       (val) => (typeof val === 'string' ? [val] : val),
-      z.array(z.string()).describe('Asset IDs to retrieve tags for'),
+      z.array(z.uuidv4()).describe('Asset IDs to retrieve tags for'),
     ),
   })
   .meta({ id: 'TagsForAssetsQueryDto' });
 
-const AssetsForTagResponseSchema = z
+export const AssetsForTagResponseSchema = z
   .object({
-    tagId: z.string().describe('Tag ID'),
-    assetIds: z.array(z.string()).optional().describe('Asset IDs associated with the tag'),
+    tagId: z.uuidv4().describe('Tag ID'),
+    assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs associated with the tag'),
   })
   .meta({ id: 'AssetsForTagResponseDto' });
 
