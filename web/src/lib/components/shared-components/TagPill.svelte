@@ -14,7 +14,7 @@
 </script>
 
 <div class="group flex transition-all">
-  <Tooltip text={tooltipText || null}>
+  <Tooltip text={tooltipText || null} delayDuration={300}>
     {#snippet child({ props })}
       <span
         {...props}
@@ -24,6 +24,7 @@
           hover:bg-immich-primary/80 dark:text-immich-dark-gray dark:hover:bg-immich-dark-primary/80
           ${partial ? 'bg-gray-500' : 'bg-primary'}
         `}
+        data-testid="tag-pill-label"
       >
         <p class="text-sm">
           {label}
@@ -38,6 +39,7 @@
         `}
         title={$t('remove_tag')}
         onclick={onRemove}
+        data-testid="tag-pill-remove-button"
       >
         <Icon icon={mdiClose} />
       </button>

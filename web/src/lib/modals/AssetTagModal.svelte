@@ -33,6 +33,7 @@
   onMount(async () => {
     allTags = await getAllTags();
     existingTagsForAssets = await getAllTagsForAssets({ assetIds });
+
     for (const tagForAsset of existingTagsForAssets) {
       selectedTags.add({
         id: tagForAsset.tagId,
