@@ -34,6 +34,24 @@ class MediaCapabilitiesManager {
     }
   }
 
+  async efficientLevels(levels: Level[]) {
+    const decodingInfo = await Promise.all(levels.map((level) => this.decodingInfo(level)));
+    const lowestBitrateByHeight = new Map<number, number>();
+    for (let i = 0; i < levels.length; i++) {
+      if (!decodingInfo[i].powerEfficient) {
+        continue;
+      }
+
+      const { bitrate, height } = levels[i];
+      const cur = lowestBitrateByHeight.get(height);
+      if (cur === undefined || bitrate < levels[cur].bitrate) {
+        lowestBitrateByHeight.set(height, i);
+      }
+    }
+
+    return new Set(lowestBitrateByHeight.values());
+  }
+
   decodingInfo(level: Level) {
     const key = this.cacheKey(level);
     const existing = this.cache.get(key);

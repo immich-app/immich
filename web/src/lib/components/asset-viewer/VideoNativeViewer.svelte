@@ -158,22 +158,7 @@
         activeSession = { assetId, id };
       }
 
-      const decodingInfo = await Promise.all(api.levels.map((level) => mediaCapabilitiesManager.decodingInfo(level)));
-      // eslint-disable-next-line svelte/prefer-svelte-reactivity
-      const lowestBitrateByHeight = new Map<number, number>();
-      for (let i = 0; i < api.levels.length; i++) {
-        if (!decodingInfo[i].powerEfficient) {
-          continue;
-        }
-
-        const { bitrate, height } = api.levels[i];
-        const cur = lowestBitrateByHeight.get(height);
-        if (cur === undefined || bitrate < api.levels[cur].bitrate) {
-          lowestBitrateByHeight.set(height, i);
-        }
-      }
-
-      const keep = new Set(lowestBitrateByHeight.values());
+      const keep = await mediaCapabilitiesManager.efficientLevels(api.levels);
       for (let i = api.levels.length - 1; i >= 0; i--) {
         if (!keep.has(i)) {
           api.removeLevel(i);
