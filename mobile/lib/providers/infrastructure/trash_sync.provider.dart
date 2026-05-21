@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});
@@ -19,8 +20,14 @@ final trashedAssetsCountProvider = StreamProvider<TrashedAssetsCount>((ref) {
   final hashed$ = repo.watchHashedCount();
   return StreamZip<int>([total$, hashed$]).map((values) => (total: values[0], hashed: values[1]));
 });
+
 final trashSyncServiceProvider = Provider(
-  (ref) => TrashSyncService(trashSyncRepository: ref.watch(trashSyncRepositoryProvider)),
+  (ref) => TrashSyncService(
+    localAssetRepository: ref.watch(localAssetRepository),
+    trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
+    trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
+    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
+  ),
 );
 
 final outOfSyncAssetsCountProvider = StreamProvider<int>((ref) {

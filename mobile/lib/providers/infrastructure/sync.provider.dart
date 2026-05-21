@@ -20,10 +20,7 @@ final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
     syncApiRepository: ref.watch(syncApiRepositoryProvider),
     syncStreamRepository: ref.watch(syncStreamRepositoryProvider),
-    localAssetRepository: ref.watch(localAssetRepository),
-    trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
-    trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
+    trashSyncService: ref.watch(trashSyncServiceProvider),
     syncMigrationRepository: ref.watch(syncMigrationRepositoryProvider),
     api: ref.watch(apiServiceProvider),
     cancelChecker: ref.watch(cancellationProvider),

@@ -68,7 +68,11 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
-      if (isManageMediaSupported.value) const _TrashSyncModeSelector(),
+      // Android 12+: full selector (Off / Auto sync / Review) + MANAGE_MEDIA tile.
+      // iOS:          reduced selector (Off / Review) — no MANAGE_MEDIA on this
+      //               platform; auto-sync is dropped because PhotoKit prompts on
+      //               every batch, which would defeat the "set and forget" intent.
+      if (isManageMediaSupported.value || Platform.isIOS) const _TrashSyncModeSelector(),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,
@@ -170,6 +174,15 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         : _TrashSyncMode.none;
 
     Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
+      if (Platform.isIOS) {
+        // No MANAGE_MEDIA on iOS; review is the only mode the user can pick.
+        if (key == AppSettingsEnum.reviewOutOfSyncChangesAndroid) {
+          reviewOutOfSyncChanges.value = true;
+          autoSyncChanges.value = false;
+        }
+        ref.invalidate(appSettingsServiceProvider);
+        return;
+      }
       final result = await ref.read(assetMediaRepositoryProvider).requestManageMediaPermission();
       ref.invalidate(_manageMediaPermissionProvider);
       if (key == AppSettingsEnum.manageLocalMediaAndroid) {
@@ -227,11 +240,15 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
               subtitle: 'advanced_settings_sync_remote_deletions_off_subtitle'.tr(),
               value: _TrashSyncMode.none,
             ),
-            SettingsRadioGroup(
-              title: 'advanced_settings_sync_remote_deletions_title'.tr(),
-              subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
-              value: _TrashSyncMode.auto,
-            ),
+            // Auto-sync requires MANAGE_MEDIA to run silently. iOS has no
+            // equivalent permission and every batch would trigger a PhotoKit
+            // prompt — so the auto mode is intentionally hidden there.
+            if (!Platform.isIOS)
+              SettingsRadioGroup(
+                title: 'advanced_settings_sync_remote_deletions_title'.tr(),
+                subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
+                value: _TrashSyncMode.auto,
+              ),
             SettingsRadioGroup(
               title: 'advanced_settings_review_remote_deletions_title'.tr(),
               subtitle: 'advanced_settings_review_remote_deletions_subtitle'.tr(),
@@ -241,23 +258,25 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
           groupBy: selectedTrashSyncMode,
           onRadioChanged: (mode) => handleTrashSyncModeChange(mode),
         ),
-        SettingsActionTile(
-          title: "manage_media_access_title".tr(),
-          statusText: manageMediaAndroidPermissionValue == null
-              ? null
-              : manageMediaAndroidPermissionValue == true
-              ? "allowed".tr()
-              : "not_allowed".tr(),
-          subtitle: "manage_media_access_rationale".tr(),
-          statusColor:
-              manageMediaAndroidPermissionValue == false && (autoSyncChanges.value || reviewOutOfSyncChanges.value)
-              ? const Color.fromARGB(255, 243, 188, 106)
-              : null,
-          onActionTap: () async {
-            await ref.read(assetMediaRepositoryProvider).manageMediaPermission();
-            ref.invalidate(_manageMediaPermissionProvider);
-          },
-        ),
+        // MANAGE_MEDIA permission tile is Android-only; iOS has no equivalent.
+        if (Platform.isAndroid)
+          SettingsActionTile(
+            title: "manage_media_access_title".tr(),
+            statusText: manageMediaAndroidPermissionValue == null
+                ? null
+                : manageMediaAndroidPermissionValue == true
+                ? "allowed".tr()
+                : "not_allowed".tr(),
+            subtitle: "manage_media_access_rationale".tr(),
+            statusColor:
+                manageMediaAndroidPermissionValue == false && (autoSyncChanges.value || reviewOutOfSyncChanges.value)
+                ? const Color.fromARGB(255, 243, 188, 106)
+                : null,
+            onActionTap: () async {
+              await ref.read(assetMediaRepositoryProvider).manageMediaPermission();
+              ref.invalidate(_manageMediaPermissionProvider);
+            },
+          ),
       ],
     );
   }
