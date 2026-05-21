@@ -36,6 +36,7 @@ class MediaCapabilitiesManager {
 
   async efficientLevels(levels: Level[]) {
     const decodingInfo = await Promise.all(levels.map((level) => this.decodingInfo(level)));
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const lowestBitrateByHeight = new Map<number, number>();
     for (let i = 0; i < levels.length; i++) {
       if (!decodingInfo[i].powerEfficient) {
