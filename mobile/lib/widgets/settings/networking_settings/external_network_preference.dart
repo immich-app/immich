@@ -36,10 +36,6 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     }
 
     handleReorder(int oldIndex, int newIndex) {
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
-
       final entry = entries.value.removeAt(oldIndex);
       entries.value.insert(newIndex, entry);
       entries.value = [...entries.value];
@@ -113,7 +109,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: entries.value.length,
-                    onReorder: handleReorder,
+                    onReorderItem: handleReorder,
                     itemBuilder: (context, index) {
                       return EndpointInput(
                         key: Key(index.toString()),

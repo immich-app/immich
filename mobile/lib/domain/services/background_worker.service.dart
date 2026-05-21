@@ -61,11 +61,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required Drift drift, required DriftLogger driftLogger})
-    : _drift = drift,
-      _driftLogger = driftLogger,
-      _backgroundHostApi = BackgroundWorkerBgHostApi() {
-    _ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(drift))]);
+  BackgroundWorkerBgService({required this._drift, required this._driftLogger})
+    : _backgroundHostApi = BackgroundWorkerBgHostApi() {
+    _ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
