@@ -72,10 +72,6 @@ jobs:
         run: flutter pub get
         working-directory: ./mobile/packages/ui
 
-      - name: Install dependencies for UI Showcase
-        run: flutter pub get
-        working-directory: ./mobile/packages/ui/showcase
-
       - name: Generate translation files
         run: mise //mobile:codegen:translation
 
