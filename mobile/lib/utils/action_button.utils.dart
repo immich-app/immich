@@ -27,6 +27,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_pi
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/slideshow_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
@@ -75,6 +76,7 @@ enum ActionButtonType {
   similarPhotos,
   setProfilePicture,
   viewInTimeline,
+  slideshow,
   download,
   upload,
   openInBrowser,
@@ -189,6 +191,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.syncTrash &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ActionButtonType.slideshow => true,
     };
   }
 
@@ -210,6 +213,7 @@ enum ActionButtonType {
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
+      ActionButtonType.slideshow => SlideshowActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.archive => ArchiveActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unarchive => UnArchiveActionButton(
         source: context.source,

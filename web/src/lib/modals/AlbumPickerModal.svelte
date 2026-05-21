@@ -21,9 +21,9 @@
   let search = $state('');
   let selectedRowIndex: number = $state(-1);
 
-  interface Props {
+  type Props = {
     onClose: (albums?: AlbumResponseDto[]) => void;
-  }
+  };
 
   let { onClose }: Props = $props();
 

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
@@ -139,9 +140,38 @@ extension<T extends Object> on MetadataDomain<T> {
             autoPlayVideo: repo._read(.viewerAutoPlayVideo),
             tapToNavigate: repo._read(.viewerTapToNavigate),
           ),
+          slideshow: .new(
+            transition: repo._read(.slideshowTransition),
+            repeat: repo._read(.slideshowRepeat),
+            duration: repo._read(.slideshowDuration),
+            look: repo._read(.slideshowLook),
+            direction: repo._read(.slideshowDirection),
+          ),
+          album: .new(
+            sortMode: repo._read(.albumSortMode),
+            isReverse: repo._read(.albumIsReverse),
+            isGrid: repo._read(.albumIsGrid),
+          ),
+          backup: .new(
+            enabled: repo._read(.backupEnabled),
+            useCellularForVideos: repo._read(.backupUseCellularForVideos),
+            useCellularForPhotos: repo._read(.backupUseCellularForPhotos),
+            requireCharging: repo._read(.backupRequireCharging),
+            triggerDelay: repo._read(.backupTriggerDelay),
+            syncAlbums: repo._read(.backupSyncAlbums),
+          ),
         );
       case .systemConfig:
-        repo._systemConfig = .new(logLevel: repo._read(.logLevel));
+        repo._systemConfig = .new(
+          logLevel: repo._read(.logLevel),
+          network: .new(
+            autoEndpointSwitching: repo._read(.networkAutoEndpointSwitching),
+            preferredWifiName: repo._read(.networkPreferredWifiName).nullIfEmpty,
+            localEndpoint: repo._read(.networkLocalEndpoint).nullIfEmpty,
+            externalEndpointList: repo._read(.networkExternalEndpointList),
+            customHeaders: repo._read(.networkCustomHeaders),
+          ),
+        );
     }
   }
 }
