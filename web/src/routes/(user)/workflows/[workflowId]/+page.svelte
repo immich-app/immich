@@ -173,7 +173,8 @@
       return;
     }
     const next = [...steps];
-    [next[from], next[index]] = [next[index], next[from]];
+    const [moved] = next.splice(from, 1);
+    next.splice(index, 0, moved);
     steps = next;
   };
 
