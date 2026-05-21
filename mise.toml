@@ -73,7 +73,6 @@ run = "bash ./bin/generate-dart-sdk.sh"
 env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
 run = [
   { task = "//:plugins" },
-  { task = "//server:build" },
   { task = "//server:install" },
   { task = "//server:build" },
   { task = "//server:sync-open-api" },
