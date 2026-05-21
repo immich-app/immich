@@ -31,7 +31,7 @@
   import 'media-chrome/media-play-button';
   import 'media-chrome/media-playback-rate-button';
   import 'media-chrome/media-time-display';
-  import 'media-chrome/media-time-range';
+  import './immich-time-range';
   import 'media-chrome/media-volume-range';
   import 'media-chrome/menu/media-playback-rate-menu';
   import 'media-chrome/menu/media-rendition-menu';
@@ -279,43 +279,9 @@
     }
   });
 
-  // Suppress mediaseekrequest events while the user is dragging the time range and
-  // replay only the last one on pointerup.
-  const commitOnRelease = (node: HTMLElement) => {
-    let dragging = false;
-    let pending: number | undefined;
-    const onPointerDown = () => (dragging = true);
-    const onPointerUp = () => {
-      if (!dragging) {
-        return;
-      }
-      dragging = false;
-      if (pending !== undefined) {
-        node.dispatchEvent(new CustomEvent('mediaseekrequest', { composed: true, bubbles: true, detail: pending }));
-        // Update time display immediately without waiting for the new fragment to load
-        videoPlayer?.dispatchEvent(new Event('timeupdate'));
-        pending = undefined;
-      }
-    };
-    const onSeekRequest = (event: Event) => {
-      if (dragging) {
-        pending = (event as CustomEvent<number>).detail;
-        event.stopImmediatePropagation();
-      }
-    };
-    node.addEventListener('pointerdown', onPointerDown);
-    node.addEventListener('pointerup', onPointerUp);
-    node.addEventListener('pointercancel', onPointerUp);
-    node.addEventListener('mediaseekrequest', onSeekRequest, { capture: true });
-    return {
-      destroy() {
-        node.removeEventListener('pointerdown', onPointerDown);
-        node.removeEventListener('pointerup', onPointerUp);
-        node.removeEventListener('pointercancel', onPointerUp);
-        node.removeEventListener('mediaseekrequest', onSeekRequest, { capture: true });
-      },
-    };
-  };
+  // The time is only refreshed on HLS fragment decode by default,
+  // so manually emit events on seek to update it immediately.
+  const onSeeking = (event: Event) => event.currentTarget?.dispatchEvent(new Event('timeupdate'));
 </script>
 
 {#if showVideo}
@@ -356,6 +322,7 @@
             class="h-full object-contain"
             oncanplay={(e: Event) => handleCanPlay(e.currentTarget as HTMLVideoElement)}
             onended={onVideoEnded}
+            onseeking={onSeeking}
             onplaying={(e: Event) => {
               if (!hasFocused) {
                 (e.currentTarget as HTMLElement).focus();
@@ -377,6 +344,7 @@
             class="h-full object-contain"
             oncanplay={(e) => handleCanPlay(e.currentTarget)}
             onended={onVideoEnded}
+            onseeking={onSeeking}
             onplaying={(e) => {
               if (!hasFocused) {
                 e.currentTarget.focus();
@@ -442,7 +410,7 @@
               <media-settings-menu-button class="shrink-0 rounded-full p-2 outline-none"></media-settings-menu-button>
             {/if}
           </media-control-bar>
-          <media-time-range use:commitOnRelease class="h-8 w-full rounded-lg px-2 pb-3 outline-none"></media-time-range>
+          <immich-time-range class="h-8 w-full rounded-lg px-2 pb-3 outline-none"></immich-time-range>
         </div>
       </media-controller>
 
@@ -495,12 +463,12 @@
     font-variant-numeric: tabular-nums;
   }
 
-  media-time-range,
+  immich-time-range,
   media-volume-range {
     --media-control-hover-background: none;
   }
 
-  media-time-range:hover,
+  immich-time-range:hover,
   media-volume-range:hover {
     --media-range-thumb-opacity: 1;
   }
