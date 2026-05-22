@@ -17,6 +17,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
 import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,10 +43,11 @@ sealed class AssetResult {
 private const val TAG = "NativeSyncApiImplBase"
 
 @SuppressLint("InlinedApi")
-open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
+open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAware {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
+  private val mediaTrashDelegate = MediaTrashDelegate(ctx)
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
@@ -508,6 +511,26 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   fun cancelHashing() {
     hashTask?.cancel()
     hashTask = null
+  }
+
+  fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
+    mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
+  }
+
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    mediaTrashDelegate.onAttachedToActivity(binding)
+  }
+
+  override fun onDetachedFromActivityForConfigChanges() {
+    mediaTrashDelegate.onDetachedFromActivity()
+  }
+
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    mediaTrashDelegate.onAttachedToActivity(binding)
+  }
+
+  override fun onDetachedFromActivity() {
+    mediaTrashDelegate.onDetachedFromActivity()
   }
 
   // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs

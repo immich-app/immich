@@ -13,7 +13,7 @@ import '../../fixtures/user.stub.dart';
 
 const _kTestAccessToken = "#TestToken";
 const _kTestVersion = 10;
-const _kTestBackupRequireCharging = false;
+const _kTestAdvancedTroubleshooting = false;
 final _kTestUser = UserStub.admin;
 
 Future<void> _populateStore(Drift db) async {
@@ -21,8 +21,8 @@ Future<void> _populateStore(Drift db) async {
     batch.insert(
       db.storeEntity,
       StoreEntityCompanion(
-        id: Value(StoreKey.backupRequireCharging.id),
-        intValue: const Value(_kTestBackupRequireCharging ? 1 : 0),
+        id: Value(StoreKey.advancedTroubleshooting.id),
+        intValue: const Value(_kTestAdvancedTroubleshooting ? 1 : 0),
         stringValue: const Value(null),
       ),
     );
@@ -76,11 +76,11 @@ void main() {
     });
 
     test('converts bool', () async {
-      bool? backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
-      expect(backupRequireCharging, isNull);
-      await sut.upsert(StoreKey.backupRequireCharging, _kTestBackupRequireCharging);
-      backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
-      expect(backupRequireCharging, _kTestBackupRequireCharging);
+      bool? advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      expect(advancedTroubleshooting, isNull);
+      await sut.upsert(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting);
+      advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      expect(advancedTroubleshooting, _kTestAdvancedTroubleshooting);
     });
 
     test('converts user', () async {
@@ -98,11 +98,11 @@ void main() {
     });
 
     test('delete()', () async {
-      bool? backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
-      expect(backupRequireCharging, isFalse);
-      await sut.delete(StoreKey.backupRequireCharging);
-      backupRequireCharging = await sut.tryGet(StoreKey.backupRequireCharging);
-      expect(backupRequireCharging, isNull);
+      bool? advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      expect(advancedTroubleshooting, isFalse);
+      await sut.delete(StoreKey.advancedTroubleshooting);
+      advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      expect(advancedTroubleshooting, isNull);
     });
 
     test('deleteAll()', () async {
@@ -147,13 +147,13 @@ void main() {
           emitsInOrder([
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion),
-              const StoreDto<Object>(StoreKey.backupRequireCharging, _kTestBackupRequireCharging),
               const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+              const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
-              const StoreDto<Object>(StoreKey.backupRequireCharging, _kTestBackupRequireCharging),
               const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+              const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
           ]),
         ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 const int targetVersion = 26;
 
@@ -37,12 +39,35 @@ Future<void> _migrateTo25() async {
     return;
   }
 
-  final serverUrls = ApiService.getServerUrls();
-  if (serverUrls.isEmpty) {
+  final urls = <String>[];
+  final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+  if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
+    urls.add(serverEndpoint);
+  }
+  final localEndpoint = Store.tryGet(StoreKey.legacyLocalEndpoint);
+  if (localEndpoint != null && localEndpoint.isNotEmpty) {
+    urls.add(localEndpoint);
+  }
+  final externalJson = Store.tryGet(StoreKey.legacyExternalEndpointList);
+  if (externalJson != null) {
+    final List<dynamic> list = jsonDecode(externalJson);
+    for (final entry in list) {
+      final url = AuxilaryEndpoint.fromJson(entry).url;
+      if (url.isNotEmpty) {
+        urls.add(url);
+      }
+    }
+  }
+  if (urls.isEmpty) {
     return;
   }
 
-  await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
+  final customHeadersStr = Store.get(StoreKey.legacyCustomHeaders, "");
+  final headers = customHeadersStr.isEmpty
+      ? const <String, String>{}
+      : (jsonDecode(customHeadersStr) as Map).cast<String, String>();
+
+  await NetworkRepository.setHeaders(headers, urls, token: accessToken);
 }
 
 Future<void> _migrateTo26(Drift drift) async {
@@ -57,14 +82,7 @@ Future<void> _migrateTo26(Drift drift) async {
   final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
   if (cleanupKeepAlbumIds != null) {
     final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
-    await drift.metadataEntity.insertOnConflictUpdate(
-      MetadataEntityCompanion.insert(
-        key: MetadataKey.cleanupKeepAlbumIds.key,
-        value: MetadataKey.cleanupKeepAlbumIds.encode(ids),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-    await migrator.deleteLegacyStoreRows([StoreKey.legacyCleanupKeepAlbumIds.id]);
+    migrator.stage(StoreKey.legacyCleanupKeepAlbumIds, MetadataKey.cleanupKeepAlbumIds, ids);
   }
   await migrator.migrateBool(StoreKey.legacyCleanupKeepFavorites, MetadataKey.cleanupKeepFavorites);
   await migrator.migrateEnumIndex(
@@ -96,7 +114,85 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, MetadataKey.viewerLoadOriginalVideo);
   await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, MetadataKey.viewerAutoPlayVideo);
   await migrator.migrateBool(StoreKey.legacyTapToNavigate, MetadataKey.viewerTapToNavigate);
+  // Network
+  await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, MetadataKey.networkAutoEndpointSwitching);
+  await migrator.migrateString(StoreKey.legacyPreferredWifiName, MetadataKey.networkPreferredWifiName);
+  await migrator.migrateString(StoreKey.legacyLocalEndpoint, MetadataKey.networkLocalEndpoint);
+  await _migrateExternalEndpointList(migrator);
+  await _migrateCustomHeaders(migrator);
+  // Album
+  await _migrateAlbumSortMode(migrator);
+  await migrator.migrateBool(StoreKey.legacySelectedAlbumSortReverse, MetadataKey.albumIsReverse);
+  await migrator.migrateBool(StoreKey.legacyAlbumGridView, MetadataKey.albumIsGrid);
+  // Backup
+  await migrator.migrateBool(StoreKey.legacyEnableBackup, MetadataKey.backupEnabled);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadVideos, MetadataKey.backupUseCellularForVideos);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadPhotos, MetadataKey.backupUseCellularForPhotos);
+  await migrator.migrateBool(StoreKey.legacyBackupRequireCharging, MetadataKey.backupRequireCharging);
+  await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, MetadataKey.backupTriggerDelay);
+  await migrator.migrateBool(StoreKey.legacySyncAlbums, MetadataKey.backupSyncAlbums);
   await migrator.complete();
+}
+
+Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreInt(StoreKey.legacySelectedAlbumSortOrder.id);
+  if (raw == null) {
+    return;
+  }
+
+  final mode = AlbumSortMode.values.firstWhere(
+    (e) => e.storeIndex == raw,
+    orElse: () => MetadataKey.albumSortMode.defaultValue,
+  );
+
+  migrator.stage(StoreKey.legacySelectedAlbumSortOrder, MetadataKey.albumSortMode, mode);
+}
+
+Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreString(StoreKey.legacyExternalEndpointList.id);
+  if (raw == null) {
+    return;
+  }
+
+  final urls = <String>[];
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is List) {
+      for (final entry in decoded) {
+        final url = AuxilaryEndpoint.fromJson(entry).url;
+        if (url.isNotEmpty) {
+          urls.add(url);
+        }
+      }
+    }
+  } on FormatException {
+    // ignore invalid entries
+  }
+
+  migrator.stage(StoreKey.legacyExternalEndpointList, MetadataKey.networkExternalEndpointList, urls);
+}
+
+Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
+  final raw = await migrator.readLegacyStoreString(StoreKey.legacyCustomHeaders.id);
+  if (raw == null) {
+    return;
+  }
+
+  final headers = <String, String>{};
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map) {
+      decoded.forEach((key, value) {
+        if (key is String && value is String) {
+          headers[key] = value;
+        }
+      });
+    }
+  } on FormatException {
+    // ignore invalid entries
+  }
+
+  migrator.stage(StoreKey.legacyCustomHeaders, MetadataKey.networkCustomHeaders, headers);
 }
 
 class _StoreMigrator {
@@ -150,6 +246,21 @@ class _StoreMigrator {
     }
 
     _cache[newKey] = intValue;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateString(StoreKey<String> legacyKey, MetadataKey<String> newKey) async {
+    final value = await readLegacyStoreString(legacyKey.id);
+    if (value == null) {
+      return;
+    }
+
+    _cache[newKey] = value;
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  void stage<T extends Object>(StoreKey legacyKey, MetadataKey<T> newKey, T value) {
+    _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }
 

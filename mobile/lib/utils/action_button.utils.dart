@@ -27,6 +27,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_pi
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/slideshow_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
@@ -73,6 +74,7 @@ enum ActionButtonType {
   similarPhotos,
   setProfilePicture,
   viewInTimeline,
+  slideshow,
   download,
   upload,
   openInBrowser,
@@ -123,9 +125,8 @@ enum ActionButtonType {
             context.timelineOrigin == TimelineOrigin.trash,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
-                context.asset.hasRemote && //
-                !context.isTrashEnabled ||
-            context.isInLockedView,
+            context.asset.hasRemote && //
+            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView),
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -180,6 +181,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ActionButtonType.slideshow => true,
     };
   }
 
@@ -201,6 +203,7 @@ enum ActionButtonType {
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
+      ActionButtonType.slideshow => SlideshowActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.archive => ArchiveActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unarchive => UnArchiveActionButton(
         source: context.source,
@@ -324,13 +327,14 @@ class ActionButtonBuilder {
     ActionButtonType.archive,
     ActionButtonType.unarchive,
     ActionButtonType.restoreTrash,
+    ActionButtonType.deletePermanent,
   };
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
     final visibleButtons = defaultViewerKebabMenuOrder
         .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
         .toList();
@@ -346,7 +350,7 @@ class ActionButtonBuilder {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, false, true));
+      result.add(type.buildButton(context, buildContext, false, true).build(buildContext, ref));
       lastGroup = type.kebabMenuGroup;
     }
 

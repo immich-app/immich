@@ -1,11 +1,3 @@
-[tools]
-flutter = "3.41.9"
-
-[tools."github:CQLabs/homebrew-dcm"]
-version = "1.30.0"
-bin = "dcm"
-postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
-
 [tasks."codegen:dart"]
 alias = "codegen"
 description = "Execute build_runner to auto-generate dart code"

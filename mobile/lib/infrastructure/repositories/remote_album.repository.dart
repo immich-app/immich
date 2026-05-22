@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
@@ -159,7 +160,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         createdAt: Value(album.createdAt),
         updatedAt: Value(album.updatedAt),
         description: Value(album.description),
-        thumbnailAssetId: Value(album.thumbnailAssetId),
+        thumbnailAssetId: Value(album.thumbnailAssetId ?? (assetIds.isNotEmpty ? assetIds.first : null)),
         isActivityEnabled: Value(album.isActivityEnabled),
         order: Value(album.order),
       );
@@ -274,15 +275,57 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<int> addAssets(String albumId, List<String> assetIds) async {
+    if (assetIds.isEmpty) {
+      return 0;
+    }
+
     final albumAssets = assetIds.map(
       (assetId) => RemoteAlbumAssetEntityCompanion(albumId: Value(albumId), assetId: Value(assetId)),
     );
 
-    await _db.batch((batch) {
-      batch.insertAll(_db.remoteAlbumAssetEntity, albumAssets);
+    await _db.transaction(() async {
+      await _db.batch((batch) {
+        batch.insertAll(_db.remoteAlbumAssetEntity, albumAssets);
+      });
+
+      final album = _db.update(_db.remoteAlbumEntity)
+        ..where((row) => row.id.equals(albumId) & row.thumbnailAssetId.isNull());
+
+      await album.write(RemoteAlbumEntityCompanion(thumbnailAssetId: Value(assetIds.first)));
     });
 
     return assetIds.length;
+  }
+
+  /// Inserts a placeholder `remote_asset_entity` row from a freshly-uploaded
+  /// local asset. Skips silently if a row with the same id or
+  /// (owner_id, checksum) already exists — sync will overwrite with the
+  /// authoritative server data once the AssetUploadReadyV1 event is processed.
+  Future<void> upsertRemoteAssetStub({
+    required String remoteId,
+    required String ownerId,
+    required LocalAsset source,
+  }) async {
+    await _db
+        .into(_db.remoteAssetEntity)
+        .insert(
+          RemoteAssetEntityCompanion(
+            id: Value(remoteId),
+            ownerId: Value(ownerId),
+            checksum: Value(source.checksum ?? remoteId),
+            name: Value(source.name),
+            type: Value(source.type),
+            createdAt: Value(source.createdAt),
+            updatedAt: Value(source.updatedAt),
+            width: Value(source.width),
+            height: Value(source.height),
+            durationMs: Value(source.durationMs),
+            isFavorite: Value(source.isFavorite),
+            visibility: const Value(AssetVisibility.timeline),
+            isEdited: Value(source.isEdited),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
   }
 
   Future<void> addUsers(String albumId, List<String> userIds) {
