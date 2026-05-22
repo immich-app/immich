@@ -17,7 +17,12 @@
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { TimelineMonth } from '$lib/managers/timeline-manager/timeline-month.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+  import type {
+    TimelineAsset,
+    TimelineManagerLayoutOptions,
+    TimelineManagerOptions,
+    ViewportTopMonth,
+  } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
@@ -36,6 +41,7 @@
     enableRouting: boolean;
     timelineManager?: TimelineManager;
     options?: TimelineManagerOptions;
+    layoutOptions?: Partial<TimelineManagerLayoutOptions>;
     assetInteraction: AssetMultiSelectManager;
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
     withStacked?: boolean;
@@ -68,6 +74,7 @@
     enableRouting,
     timelineManager = $bindable(),
     options,
+    layoutOptions: layoutOptionsOverride = {},
     assetInteraction,
     removeAction = null,
     withStacked = false,
@@ -89,7 +96,6 @@
   $effect(() => options && void timelineManager.updateOptions(options));
 
   let scrollableElement: HTMLElement | undefined = $state();
-  let timelineElement: HTMLElement | undefined = $state();
   let invisible = $state(true);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
   // Note: There may be multiple months visible within the viewport at any given time.
@@ -114,7 +120,7 @@
           rowHeight: 235,
           headerHeight: 48,
         };
-    timelineManager.setLayoutOptions(layoutOptions);
+    timelineManager.setLayoutOptions({ ...layoutOptions, ...layoutOptionsOverride });
   });
 
   $effect(() => {
@@ -256,6 +262,12 @@
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
+
+  const handleAssetGridScroll = () => {
+    handleTimelineScroll();
+    timelineManager.updateSlidingWindow();
+    updateIsScrolling();
+  };
 
   onMount(() => {
     if (!enableRouting) {
@@ -622,14 +634,9 @@
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
   bind:this={scrollableElement}
-  onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
+  onscroll={handleAssetGridScroll}
 >
-  <section
-    bind:this={timelineElement}
-    id="virtual-timeline"
-    class:invisible
-    style:height={timelineManager.totalViewerHeight + 'px'}
-  >
+  <section id="virtual-timeline" class:invisible style:height={timelineManager.totalViewerHeight + 'px'}>
     <section
       bind:clientHeight={timelineManager.topSectionHeight}
       class:invisible

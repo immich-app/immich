@@ -21,7 +21,7 @@ export const lang = persisted<string>('lang', preferredLocale || defaultLang.cod
 });
 
 export interface MapSettings {
-  allowDarkMode: boolean;
+  theme: 'light' | 'dark' | 'system';
   includeArchived: boolean;
   onlyFavorites: boolean;
   withPartners: boolean;
@@ -31,8 +31,8 @@ export interface MapSettings {
   dateBefore?: DateTime<true>;
 }
 
-const defaultMapSettings = {
-  allowDarkMode: true,
+const defaultMapSettings: MapSettings = {
+  theme: 'system',
   includeArchived: false,
   onlyFavorites: false,
   withPartners: false,
@@ -40,15 +40,17 @@ const defaultMapSettings = {
   relativeDate: '',
 };
 
-const persistedObject = <T>(key: string, defaults: T) =>
-  persisted<T>(key, defaults, {
-    serializer: {
-      parse: (text) => ({ ...defaults, ...JSON.parse(text ?? null) }),
-      stringify: JSON.stringify,
-    },
-  });
+export const mapShowHeatmap = persisted<boolean>('map-show-heatmap', false, {});
 
-export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
+export const mapSettings = persisted<MapSettings>('map-settings', defaultMapSettings, {
+  serializer: {
+    parse: (text) => {
+      const parsed = (JSON.parse(text ?? 'null') ?? {}) as Partial<MapSettings>;
+      return { ...defaultMapSettings, ...parsed };
+    },
+    stringify: JSON.stringify,
+  },
+});
 
 export interface AlbumViewSettings {
   view: string;
@@ -69,11 +71,6 @@ export interface PlacesViewSettings {
     // Grouping Option => Array<Group ID>
     [group: string]: string[];
   };
-}
-
-export interface SidebarSettings {
-  people: boolean;
-  sharing: boolean;
 }
 
 export enum SortOrder {

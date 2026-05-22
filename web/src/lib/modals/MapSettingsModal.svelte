@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { MapSettings } from '$lib/stores/preferences.store';
+  import { mapShowHeatmap, type MapSettings } from '$lib/stores/preferences.store';
   import { Button, DatePicker, Field, FormModal, Select, Stack, Switch } from '@immich/ui';
   import { Duration } from 'luxon';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
@@ -11,31 +12,33 @@
   };
 
   let { settings: initialValues, onClose }: Props = $props();
-  let settings = $state(initialValues);
+  let settings = $state({ ...untrack(() => initialValues) });
+  let showHeatmap = $state($mapShowHeatmap);
 
   let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
 
   const onSubmit = () => {
+    $mapShowHeatmap = showHeatmap;
     onClose(settings);
   };
 </script>
 
 <FormModal title={$t('map_settings')} {onClose} {onSubmit} size="small">
   <Stack gap={4}>
-    <Field label={$t('allow_dark_mode')}>
-      <Switch bind:checked={settings.allowDarkMode} />
-    </Field>
-    <Field label={$t('only_favorites')}>
+    <Field label={$t('map_settings_only_show_favorites')}>
       <Switch bind:checked={settings.onlyFavorites} />
     </Field>
-    <Field label={$t('include_archived')}>
+    <Field label={$t('map_settings_include_show_archived')}>
       <Switch bind:checked={settings.includeArchived} />
     </Field>
-    <Field label={$t('include_shared_partner_assets')}>
+    <Field label={$t('map_settings_include_show_partners')}>
       <Switch bind:checked={settings.withPartners} />
     </Field>
     <Field label={$t('include_shared_albums')}>
       <Switch bind:checked={settings.withSharedAlbums} />
+    </Field>
+    <Field label="Show Heatmap">
+      <Switch bind:checked={showHeatmap} />
     </Field>
 
     {#if customDateRange}

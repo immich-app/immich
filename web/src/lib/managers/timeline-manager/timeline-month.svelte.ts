@@ -181,28 +181,28 @@ export class TimelineMonth {
       const timelineAsset: TimelineAsset = {
         city: bucketAssets.city?.[i] ?? null,
         country: bucketAssets.country?.[i] ?? null,
-        duration: bucketAssets.duration[i],
+        duration: bucketAssets.duration?.[i] ?? null,
         id: bucketAssets.id[i],
-        visibility: bucketAssets.visibility[i],
-        isFavorite: bucketAssets.isFavorite[i],
-        isImage: bucketAssets.isImage[i],
-        isTrashed: bucketAssets.isTrashed[i],
-        isVideo: !bucketAssets.isImage[i],
-        livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
+        visibility: bucketAssets.visibility?.[i] ?? bucketAssets.visibility?.[0],
+        isFavorite: bucketAssets.isFavorite?.[i] ?? false,
+        isImage: bucketAssets.isImage?.[i] ?? true,
+        isTrashed: bucketAssets.isTrashed?.[i] ?? false,
+        isVideo: !(bucketAssets.isImage?.[i] ?? true),
+        livePhotoVideoId: bucketAssets.livePhotoVideoId?.[i] ?? null,
         localDateTime,
         createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).setZone('local'),
         fileCreatedAt,
-        ownerId: bucketAssets.ownerId[i],
-        projectionType: bucketAssets.projectionType[i],
-        ratio: bucketAssets.ratio[i],
+        ownerId: bucketAssets.ownerId?.[i] ?? '',
+        projectionType: bucketAssets.projectionType?.[i] ?? null,
+        ratio: bucketAssets.ratio?.[i] ?? 1,
         stack: bucketAssets.stack?.[i]
           ? {
-              id: bucketAssets.stack[i]![0],
-              primaryAssetId: bucketAssets.id[i],
-              assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
-            }
+            id: bucketAssets.stack[i]![0],
+            primaryAssetId: bucketAssets.id[i],
+            assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
+          }
           : null,
-        thumbhash: bucketAssets.thumbhash[i],
+        thumbhash: bucketAssets.thumbhash?.[i] ?? null,
         people: null, // People are not included in the bucket assets
       };
 
