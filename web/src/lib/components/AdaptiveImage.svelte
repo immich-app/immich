@@ -149,29 +149,35 @@
     return { width: 1, height: 1 };
   });
 
-  const { insetInlineStart, top, rasterWidth, rasterHeight, rasterScale } = $derived.by(() => {
-    const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
-    const { width, height } = scaleFn(imageDimensions, container);
-    if (maxRasterPixels === 0) {
+  const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
+    () => {
+      const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
+      const { width, height } = scaleFn(imageDimensions, container);
+      if (maxRasterPixels === 0) {
+        return {
+          insetInlineStart: (container.width - width) / 2 + 'px',
+          top: (container.height - height) / 2 + 'px',
+          displayWidth: width + 'px',
+          displayHeight: height + 'px',
+          rasterWidth: width + 'px',
+          rasterHeight: height + 'px',
+          rasterScale: 1,
+        };
+      }
+      const nativeRatio = imageDimensions.width / width;
+      const budgetRatio = Math.sqrt(maxRasterPixels / Math.max(width * height, 1));
+      const rasterRatio = Math.max(1, Math.min(nativeRatio, budgetRatio));
       return {
         insetInlineStart: (container.width - width) / 2 + 'px',
         top: (container.height - height) / 2 + 'px',
-        rasterWidth: width + 'px',
-        rasterHeight: height + 'px',
-        rasterScale: 1,
+        displayWidth: width + 'px',
+        displayHeight: height + 'px',
+        rasterWidth: width * rasterRatio + 'px',
+        rasterHeight: height * rasterRatio + 'px',
+        rasterScale: 1 / rasterRatio,
       };
-    }
-    const nativeRatio = imageDimensions.width / width;
-    const budgetRatio = Math.sqrt(maxRasterPixels / Math.max(width * height, 1));
-    const rasterRatio = Math.max(1, Math.min(nativeRatio, budgetRatio));
-    return {
-      insetInlineStart: (container.width - width) / 2 + 'px',
-      top: (container.height - height) / 2 + 'px',
-      rasterWidth: width * rasterRatio + 'px',
-      rasterHeight: height * rasterRatio + 'px',
-      rasterScale: 1 / rasterRatio,
-    };
-  });
+    },
+  );
 
   const { status } = $derived(adaptiveImageLoader);
   const alt = $derived(status.urls.preview ? $getAltText(toTimelineAsset(asset)) : '');
@@ -261,7 +267,6 @@
         {alt}
         width={rasterWidth}
         height={rasterHeight}
-        {overlays}
         quality="preview"
         src={status.urls.preview}
         bind:ref={previewElement}
@@ -274,11 +279,22 @@
         {alt}
         width={rasterWidth}
         height={rasterHeight}
-        {overlays}
         quality="original"
         src={status.urls.original}
         bind:ref={originalElement}
       />
     {/if}
   </div>
+
+  {#if overlays}
+    <div
+      class="pointer-events-none absolute"
+      style:inset-inline-start={insetInlineStart}
+      style:top
+      style:width={displayWidth}
+      style:height={displayHeight}
+    >
+      {@render overlays()}
+    </div>
+  {/if}
 </div>

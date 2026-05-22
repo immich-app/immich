@@ -1,7 +1,6 @@
 <script lang="ts">
   import Image from '$lib/components/Image.svelte';
   import type { AdaptiveImageLoader, ImageQuality } from '$lib/utils/adaptive-image-loader.svelte';
-  import type { Snippet } from 'svelte';
 
   type Props = {
     adaptiveImageLoader: AdaptiveImageLoader;
@@ -12,7 +11,6 @@
     ref?: HTMLImageElement;
     width: string;
     height: string;
-    overlays?: Snippet;
   };
 
   let {
@@ -24,7 +22,6 @@
     ref = $bindable(),
     width,
     height,
-    overlays,
   }: Props = $props();
 </script>
 
@@ -42,6 +39,5 @@
       draggable={false}
       data-testid={quality}
     />
-    {@render overlays?.()}
   </div>
 {/key}
