@@ -1,6 +1,6 @@
 <script lang="ts">
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { tagAssets, untagAssets } from '$lib/utils/asset-utils';
+  import { tagUntagAssets } from '$lib/utils/asset-utils';
   import {
     getAllTags,
     getAllTagsForAssets,
@@ -27,7 +27,6 @@
   let existingTagsForAssets: TagsForAssetsResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedTags = new SvelteSet<{ id: string; count: number; partial: boolean }>();
-  let disabled = $derived(selectedTags.size === 0 && existingTagsForAssets.length === 0);
   let allowCreate: boolean = $state(true);
 
   onMount(async () => {
@@ -53,26 +52,28 @@
   };
 
   const onSubmit = async () => {
-    const tagIdsToAdd = [...selectedTags].filter((tag) => tag.partial === false).map((tag) => tag.id);
-    if (tagIdsToAdd?.length > 0) {
-      const updatedIds = await tagAssets({
-        tagIds: tagIdsToAdd,
-        assetIds,
-        showNotification: false,
-      });
-      eventManager.emit('AssetsTag', updatedIds);
-    }
+    // Only add tags from the selected tags list that are not partials and are not in the existing tags list. This ensures only newly added tags are sent server-side.
+    const tagIdsToAdd = [...selectedTags]
+      .filter(
+        (tag) =>
+          tag.partial === false &&
+          !existingTagsForAssets.some((t) => t.tagId === tag.id && t.assetIds.length === assetIds.length),
+      )
+      .map((tag) => tag.id);
 
+    // Only remove tags that were in the existing tags list, but are no longer in the selected tags list. This ensures only removed tags are sent server-side.
     const tagIdsToRemove: string[] = existingTagsForAssets
       .filter((tagForAsset) => !tagIsSelected(tagForAsset.tagId, false))
       .map((tagForAsset) => tagForAsset.tagId);
-    if (tagIdsToRemove?.length > 0) {
-      const removedIds = await untagAssets({
-        tagIds: tagIdsToRemove,
+
+    if (tagIdsToAdd.length > 0 || tagIdsToRemove.length > 0) {
+      await tagUntagAssets({
+        tagIdsToAdd,
+        tagIdsToRemove,
         assetIds,
         showNotification: false,
       });
-      eventManager.emit('AssetsUntag', removedIds);
+      eventManager.emit('AssetsTag', assetIds);
     }
 
     onClose(true);
@@ -116,7 +117,7 @@
   {onSubmit}
   submitText={$t('save') + ' ' + $t('tags')}
   onOpenAutoFocus={(event) => event.preventDefault()}
-  {disabled}
+  disabled={selectedTags.size === 0 && existingTagsForAssets.length === 0}
 >
   <div class="my-4 flex flex-col gap-2">
     <Combobox

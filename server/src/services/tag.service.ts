@@ -131,12 +131,9 @@ export class TagService extends BaseService {
 
     for (const assetId of new Set([...addResults, ...removeResults].map((item) => item.assetId))) {
       await this.updateTags(assetId);
-      if (addResults.some((item) => item.assetId === assetId)) {
-        await this.eventRepository.emit('AssetTag', { assetId });
-      }
-      if (removeResults.some((item) => item.assetId === assetId)) {
-        await this.eventRepository.emit('AssetUntag', { assetId });
-      }
+      // AssetTag and AssetUntag events perform the same function, and we only want one event to be emitted for each asset
+      // to avoid sidecar file clashes, so we can emit AssetTag for all changes.
+      await this.eventRepository.emit('AssetTag', { assetId });
     }
 
     return { addedCount: addResults.length, removedCount: removeResults.length };

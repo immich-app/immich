@@ -2,6 +2,7 @@ import {
   AssetVisibility,
   bulkTagAssets,
   bulkUntagAssets,
+  bulkTagUntagAssets,
   createStack,
   deleteAssets,
   deleteStacks,
@@ -42,11 +43,11 @@ export const tagAssets = async ({
   tagIds: string[];
   showNotification?: boolean;
 }) => {
-  await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
+  const assetCount = await bulkTagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.primary($t('tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('tagged_assets', { values: { count: assetCount } }));
   }
 
   return assetIds;
@@ -61,11 +62,35 @@ export const untagAssets = async ({
   tagIds: string[];
   showNotification?: boolean;
 }) => {
-  await bulkUntagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
+  const assetCount = await bulkUntagAssets({ tagBulkAssetsDto: { tagIds, assetIds } });
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.primary($t('removed_tagged_assets', { values: { count: assetIds.length } }));
+    toastManager.primary($t('removed_tagged_assets', { values: { count: assetCount } }));
+  }
+
+  return assetIds;
+};
+
+export const tagUntagAssets = async ({
+  assetIds,
+  tagIdsToAdd,
+  tagIdsToRemove,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIdsToAdd: string[];
+  tagIdsToRemove: string[];
+  showNotification?: boolean;
+}) => {
+  const { addedCount, removedCount } = await bulkTagUntagAssets({
+    tagBulkAddRemoveAssetsDto: { tagIdsToAdd, tagIdsToRemove, assetIds },
+  });
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
+    toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
   }
 
   return assetIds;
