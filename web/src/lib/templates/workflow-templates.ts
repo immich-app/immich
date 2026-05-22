@@ -1,5 +1,5 @@
 import { WorkflowTrigger, type WorkflowStepDto } from '@immich/sdk';
-import { mdiAccountGroupOutline, mdiMonitorScreenshot } from '@mdi/js';
+import { mdiMonitorScreenshot } from '@mdi/js';
 
 export type WorkflowTemplate = {
   id: string;
@@ -33,23 +33,6 @@ export const workflowTemplates: WorkflowTemplate[] = [
       {
         method: 'immich-plugin-core#assetArchive',
         config: { inverse: false },
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Add person to album',
-    description: 'Add assets to an album when a specific person is recognized',
-    icon: mdiAccountGroupOutline,
-    trigger: WorkflowTrigger.PersonRecognized,
-    steps: [
-      {
-        method: 'immich-plugin-core#filterPerson',
-        config: { personIds: [], matchAny: true },
-      },
-      {
-        method: 'immich-plugin-core#assetAddToAlbums',
-        config: { albumIds: [] },
       },
     ],
   },
