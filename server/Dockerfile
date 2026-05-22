@@ -88,8 +88,8 @@ ENV NODE_ENV=production \
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
-COPY --from=plugins /app/packages/plugin-core/dist /build/plugins/immich-core-plugin/dist
-COPY --from=plugins /app/packages/plugin-core/manifest.json /build/plugins/immich-core-plugin/manifest.json
+COPY --from=plugins /app/packages/plugin-core/dist /build/plugins/immich-plugin-core/dist
+COPY --from=plugins /app/packages/plugin-core/manifest.json /build/plugins/immich-plugin-core/manifest.json
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
