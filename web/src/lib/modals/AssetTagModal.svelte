@@ -8,7 +8,7 @@
     type TagResponseDto,
     type TagsForAssetsResponseDto,
   } from '@immich/sdk';
-  import { FormModal } from '@immich/ui';
+  import { FormModal, modalManager } from '@immich/ui';
   import { mdiTag } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -66,7 +66,14 @@
       .filter((tagForAsset) => !tagIsSelected(tagForAsset.tagId, false))
       .map((tagForAsset) => tagForAsset.tagId);
 
-    if (tagIdsToAdd.length > 0 || tagIdsToRemove.length > 0) {
+    const isConfirmed =
+      assetIds.length > 40
+        ? await modalManager.showDialog({
+            prompt: $t('modify_tags_confirmation', { values: { count: assetIds.length } }),
+          })
+        : true;
+
+    if (isConfirmed && (tagIdsToAdd.length > 0 || tagIdsToRemove.length > 0)) {
       await tagUntagAssets({
         tagIdsToAdd,
         tagIdsToRemove,
@@ -74,9 +81,10 @@
         showNotification: false,
       });
       eventManager.emit('AssetsTag', assetIds);
+      onClose(true);
+    } else {
+      onClose(false);
     }
-
-    onClose(true);
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {

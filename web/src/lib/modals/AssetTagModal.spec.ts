@@ -362,6 +362,31 @@ describe('AssetTagModal component', () => {
     expect(tagPills[0]).toHaveTextContent('NewTag');
   });
 
+  test('displays confirmation dialog with correct asset count if modifying tags for over 40 assets', async () => {
+    mockGetAllTags.mockResolvedValueOnce(tagDtos);
+    mockGetAllTagsForAssets.mockResolvedValueOnce([] as TagsForAssetsResponseDto[]);
+
+    render(AssetTagModal, {
+      props: {
+        assetIds: Array.from({ length: 41 }).fill('asset-id') as string[],
+        onClose,
+      },
+    });
+
+    await waitFor(() => {
+      expect(mockGetAllTagsForAssets).toHaveBeenCalled();
+    });
+
+    await fireEvent.focus(getTagsCombobox());
+    const options = getTagComboboxOptions();
+    await fireEvent.click(options[0]);
+
+    // Click save button
+    await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
+
+    expect(screen.getByText(/modify_tags_confirmation/i)).toBeInTheDocument();
+  });
+
   test('calls tagUntagAssets correctly with the correct set of tag/asset ids', async () => {
     const addedTag1: TagResponseDto = {
       id: 'tag-id-added1',

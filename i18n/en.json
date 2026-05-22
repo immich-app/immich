@@ -1589,6 +1589,7 @@
   "mobile_app_download_onboarding_note": "Download the companion mobile app using the following options",
   "model": "Model",
   "modify_date": "Modify Date",
+  "modify_tags_confirmation": "Are you sure you want to modify tags for {count} selected assets?",
   "month": "Month",
   "more": "More",
   "motion": "Motion",
