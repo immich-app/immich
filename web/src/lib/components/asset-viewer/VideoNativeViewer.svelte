@@ -21,7 +21,7 @@
     mdiVolumeMedium,
     mdiVolumeMute,
   } from '@mdi/js';
-  import Hls, { AbrController, type HlsConfig } from 'hls.js';
+  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
   import 'hls-video-element';
   import type HlsVideoElement from 'hls-video-element';
   import 'media-chrome/media-control-bar';
@@ -98,8 +98,40 @@
   // hls.js can abandon fetching an in-flight fragment if it thinks it'll take too long, in which case
   // it emergency switches to a different variant. This extends the delay even further due to
   // cold starting another transcode, so let the fragment finish and have steady ABR decide the next level.
+  //
+  // It can also emergency switch between fragments: while a switch's first segment is still loading,
+  // it can run out of buffer and drop to a lower level for just one segment before continuing at the switched quality.
+  // This can cause multiple redundant transcoding restarts when it occurs.
+  // Hold the committed level until its first fragment lands, then resume normal ABR.
   class NoAbandonAbrController extends AbrController {
-    protected override onFragLoading() {}
+    private switchTarget = -1;
+
+    protected override onFragLoading(_event: Events.FRAG_LOADING, data: FragLoadingData) {
+      if (data.frag.sn === 'initSegment') {
+        this.switchTarget = data.frag.level;
+      }
+    }
+
+    protected override onFragLoaded(event: Events.FRAG_LOADED, data: FragLoadedData) {
+      if (data.frag.sn !== 'initSegment') {
+        this.switchTarget = -1;
+      }
+      super.onFragLoaded(event, data);
+    }
+
+    override get nextAutoLevel(): number {
+      const level = super.nextAutoLevel;
+      const target = this.hls.levels[this.switchTarget];
+      // Hold the committed level, but only while hls.js still considers it healthy.
+      if (target && level < this.switchTarget && target.loadError === 0 && target.fragmentError === 0) {
+        return this.switchTarget;
+      }
+      return level;
+    }
+
+    override set nextAutoLevel(level: number) {
+      super.nextAutoLevel = level;
+    }
   }
 
   const hlsConfig: Partial<HlsConfig> = {
