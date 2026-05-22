@@ -22,7 +22,7 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -193,7 +193,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     getManageMediaPermission() async {
-      final hasPermission = await ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission();
+      final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
       if (!hasPermission) {
         await showDialog(
           context: context,
@@ -224,7 +224,7 @@ class LoginForm extends HookConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+                    unawaited(ref.read(permissionRepositoryProvider).requestManageMediaPermission());
                     Navigator.of(context).pop();
                   },
                   child: Text(
