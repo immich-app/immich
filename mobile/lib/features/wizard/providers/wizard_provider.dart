@@ -58,18 +58,27 @@ class WizardLogic extends _$WizardLogic {
     }
 
     state = state.copyWith(isLoading: true, errorMessage: null, discoveryStatus: WizardDiscoveryStatus.discovering);
+    debugPrint('[Wizard] startDiscovery: kicking off mDNS sweep');
 
     try {
       await ref.read(hearthDiscoveryProvider.notifier).discoverServer();
       final discoveredUrl = ref.read(hearthDiscoveryProvider).valueOrNull;
+      debugPrint('[Wizard] startDiscovery: mDNS resolved url="$discoveredUrl"');
 
       if (discoveredUrl == null || discoveredUrl.isEmpty) {
         state = state.copyWith(isLoading: false, discoveryStatus: WizardDiscoveryStatus.discoveryFailed);
         return;
       }
 
+      // Auto-advance: connectToServer awaits validateServerUrl and, on
+      // success, sets step=login + discoveryStatus=discovered, which the
+      // WizardScreen ref.listen will pick up to swap views.
       await connectToServer(discoveredUrl, WizardDiscoveryStatus.discovered);
-    } catch (_) {
+      debugPrint(
+        '[Wizard] startDiscovery: connectToServer returned step=${state.step} status=${state.discoveryStatus}',
+      );
+    } catch (e, st) {
+      debugPrint('[Wizard] startDiscovery FAILED: $e\n$st');
       state = state.copyWith(isLoading: false, discoveryStatus: WizardDiscoveryStatus.discoveryFailed);
     }
   }

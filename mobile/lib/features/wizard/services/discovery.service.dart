@@ -24,29 +24,57 @@ class HearthDiscovery extends _$HearthDiscovery {
   Future<void> discoverServer() async {
     state = const AsyncValue.loading();
 
+    // Completer short-circuits the 5s budget the instant a matching service
+    // is found, so callers awaiting discoverServer() resume immediately
+    // rather than waiting out the full timeout.
+    final completer = Completer<String?>();
+    Discovery? discovery;
+
+    void resolve(String? url) {
+      if (!completer.isCompleted) completer.complete(url);
+    }
+
     try {
-      final discovery = await startDiscovery('_http._tcp');
+      discovery = await startDiscovery('_http._tcp');
 
       discovery.addServiceListener((service, status) {
-        if (status == ServiceStatus.found) {
-          final name = service.name?.toLowerCase() ?? '';
-          if (name.contains('hearth') || name.contains('immich')) {
-            final host = service.host;
-            if (host != null && host.isNotEmpty) {
-              stopDiscovery(discovery);
-              state = AsyncValue.data(_forceHearthPort(host));
-            }
-          }
-        }
+        if (status != ServiceStatus.found) return;
+        final name = service.name?.toLowerCase() ?? '';
+        final type = service.type?.toLowerCase() ?? '';
+        // Accept either the new "hearth-hub" broadcast or legacy "immich"
+        // advertisements. Check both name and type fields, since some mDNS
+        // stacks place the human-readable identifier in either slot.
+        final matches =
+            name.contains('hearth-hub') ||
+            name.contains('hearth') ||
+            name.contains('immich') ||
+            type.contains('hearth') ||
+            type.contains('immich');
+        if (!matches) return;
+
+        final host = service.host;
+        if (host == null || host.isEmpty) return;
+
+        // Aggressive short-circuit: resolve on the very first valid match.
+        resolve(_forceHearthPort(host));
       });
 
-      await Future.delayed(const Duration(seconds: 5));
-      if (state.isLoading) {
-        stopDiscovery(discovery);
-        state = const AsyncValue.data(null);
-      }
+      // Race the listener against a 5s ceiling so we never hang forever
+      // when no appliance is on the network.
+      final url = await completer.future.timeout(const Duration(seconds: 5), onTimeout: () => null);
+
+      state = AsyncValue.data(url);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+    } finally {
+      final d = discovery;
+      if (d != null) {
+        try {
+          await stopDiscovery(d);
+        } catch (_) {
+          // best-effort teardown
+        }
+      }
     }
   }
 }

@@ -43,8 +43,8 @@ const String kWidgetCustomHeaders = "widget_custom_headers";
 // these are used to force a widget refresh
 // (iOSName, androidFQDN)
 const List<(String, String)> kWidgetNames = [
-  ('com.immich.widget.random', 'com.hearth.hub.app.widget.RandomReceiver'),
-  ('com.immich.widget.memory', 'com.hearth.hub.app.widget.MemoryReceiver'),
+  ('com.immich.widget.random', 'com.immich.app.widget.RandomReceiver'),
+  ('com.immich.widget.memory', 'com.immich.app.widget.MemoryReceiver'),
 ];
 
 const double kUploadStatusFailed = -1.0;
