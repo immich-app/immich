@@ -54,7 +54,16 @@ class ManageMediaPermissionDelegate(
     val intent = Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA).apply {
       data = "package:${activity.packageName}".toUri()
     }
-    activity.startActivityForResult(intent, requestCode)
+    try {
+      activity.startActivityForResult(intent, requestCode)
+    } catch (e: Exception) {
+      pendingResult = null
+      callback(
+        Result.failure(
+          FlutterError("ACTIVITY_LAUNCH_FAILED", "Failed to launch MANAGE_MEDIA settings", e.toString())
+        )
+      )
+    }
   }
 
   fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -63,17 +72,25 @@ class ManageMediaPermissionDelegate(
   }
 
   fun onDetachedFromActivity() {
+    failPending("ACTIVITY_DETACHED", "Activity detached before MANAGE_MEDIA result")
     activityBinding?.removeActivityResultListener(this)
     activityBinding = null
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
     if (requestCode == this.requestCode) {
-      pendingResult?.invoke(Result.success(hasManageMediaPermission()))
+      val callback = pendingResult
       pendingResult = null
+      callback?.invoke(Result.success(hasManageMediaPermission()))
       return true
     }
 
     return false
+  }
+
+  private fun failPending(code: String, message: String) {
+    val callback = pendingResult ?: return
+    pendingResult = null
+    callback(Result.failure(FlutterError(code, message, null)))
   }
 }

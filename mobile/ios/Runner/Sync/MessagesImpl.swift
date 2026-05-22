@@ -383,21 +383,9 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
   }
 
-    func hasManageMediaPermission() throws -> Bool {
-        throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
-    }
-
-    func requestManageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void) {
-        completion(.failure(PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)))
-    }
-
-    func manageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void) {
-        completion(.failure(PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)))
-    }
-
-    func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
-        completion(.failure(PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)))
-    }
+  func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
+    completion(.success(false))
+  }
   
   private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
     // Ensure to actually getting all assets for the Recents album

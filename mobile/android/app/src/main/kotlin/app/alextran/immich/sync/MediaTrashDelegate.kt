@@ -72,7 +72,12 @@ class MediaTrashDelegate(
         0,
       )
     } catch (e: Exception) {
-      callback(Result.failure(FlutterError("TRASH_ERROR", "Error creating or starting trash request", null)))
+      pendingResult = null
+      callback(
+        Result.failure(
+          FlutterError("TRASH_ERROR", "Error creating or starting trash request", e.toString())
+        )
+      )
     }
   }
 
@@ -104,17 +109,25 @@ class MediaTrashDelegate(
   }
 
   fun onDetachedFromActivity() {
+    failPending("ACTIVITY_DETACHED", "Activity detached before trash result")
     activityBinding?.removeActivityResultListener(this)
     activityBinding = null
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
     if (requestCode == trashRequestCode) {
-      pendingResult?.invoke(Result.success(resultCode == Activity.RESULT_OK))
+      val callback = pendingResult
       pendingResult = null
+      callback?.invoke(Result.success(resultCode == Activity.RESULT_OK))
       return true
     }
 
     return false
+  }
+
+  private fun failPending(code: String, message: String) {
+    val callback = pendingResult ?: return
+    pendingResult = null
+    callback(Result.failure(FlutterError(code, message, null)))
   }
 }

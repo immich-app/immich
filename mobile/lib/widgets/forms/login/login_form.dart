@@ -224,7 +224,7 @@ class LoginForm extends HookConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    ref.read(permissionRepositoryProvider).requestManageMediaPermission();
+                    unawaited(ref.read(permissionRepositoryProvider).requestManageMediaPermission());
                     Navigator.of(context).pop();
                   },
                   child: Text(
