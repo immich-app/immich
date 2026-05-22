@@ -7,7 +7,6 @@
     backIcon?: string;
     class?: string;
     forceDark?: boolean;
-    multiRow?: boolean;
     onClose?: () => void;
     title?: Snippet | string;
     leading?: Snippet;
@@ -28,7 +27,7 @@
 </script>
 
 <div class={['absolute top-0 w-full bg-transparent p-2', forceDark && 'dark']}>
-  <ControlBar closeIcon={backIcon} {onClose} shape="round">
+  <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
     {#if title || leading}
       <ControlBarHeader>
         {#if title}
