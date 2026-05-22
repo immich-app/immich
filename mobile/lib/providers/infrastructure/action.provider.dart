@@ -536,7 +536,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: false, error: 'Expected single asset for applying edits');
     }
 
-    final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
+    final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV2", (dynamic data) {
       final eventAsset = SyncAssetV1.fromJson(data["asset"]);
       return eventAsset?.id == ids.first;
     }, const Duration(seconds: 10));
