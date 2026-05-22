@@ -454,6 +454,30 @@ describe(PersonService.name, () => {
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
+
+    it('should reject creating a face on an asset the user does not own', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create({ faceAssetId: null });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+
+      await expect(
+        sut.createFace(auth, {
+          assetId: asset.id,
+          personId: person.id,
+          imageHeight: 500,
+          imageWidth: 400,
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 110,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.person.createAssetFace).not.toHaveBeenCalled();
+    });
   });
 
   describe('createNewFeaturePhoto', () => {
