@@ -153,7 +153,7 @@ class AdvancedSettings extends HookConsumerWidget {
 enum _TrashSyncMode { none, auto, review }
 
 final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
-  return ref.watch(assetMediaRepositoryProvider).hasManageMediaPermission();
+  return ref.watch(permissionRepositoryProvider).hasManageMediaPermission();
 });
 
 class _TrashSyncModeSelector extends HookConsumerWidget {
@@ -183,7 +183,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         ref.invalidate(appSettingsServiceProvider);
         return;
       }
-      final result = await ref.read(assetMediaRepositoryProvider).requestManageMediaPermission();
+      final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
       ref.invalidate(_manageMediaPermissionProvider);
       if (key == AppSettingsEnum.manageLocalMediaAndroid) {
         autoSyncChanges.value = result;
@@ -273,7 +273,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
                 ? const Color.fromARGB(255, 243, 188, 106)
                 : null,
             onActionTap: () async {
-              await ref.read(assetMediaRepositoryProvider).manageMediaPermission();
+              await ref.read(permissionRepositoryProvider).manageMediaPermission();
               ref.invalidate(_manageMediaPermissionProvider);
             },
           ),

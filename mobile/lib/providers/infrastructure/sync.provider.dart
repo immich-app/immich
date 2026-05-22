@@ -11,10 +11,9 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 
 final syncMigrationRepositoryProvider = Provider((ref) => SyncMigrationRepository(ref.watch(driftProvider)));
 
@@ -22,10 +21,6 @@ final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
     syncApiRepository: ref.watch(syncApiRepositoryProvider),
     syncStreamRepository: ref.watch(syncStreamRepositoryProvider),
-    localAssetRepository: ref.watch(localAssetRepository),
-    trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
-    permissionRepository: ref.watch(permissionRepositoryProvider),
     trashSyncService: ref.watch(trashSyncServiceProvider),
     syncMigrationRepository: ref.watch(syncMigrationRepositoryProvider),
     api: ref.watch(apiServiceProvider),
@@ -45,7 +40,6 @@ final localSyncServiceProvider = Provider(
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
   ),
 );

@@ -14,7 +14,6 @@ import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.re
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -395,7 +394,7 @@ class LocalSyncService {
   }
 
   Future<bool> _hasManageMediaPermission(String logContext) async {
-    final hasPermission = await _assetMediaRepository.hasManageMediaPermission();
+    final hasPermission = await _permissionRepository.hasManageMediaPermission();
     if (!hasPermission) {
       _log.warning("syncTrashedAssets $logContext cannot proceed because MANAGE_MEDIA permission is missing");
     }

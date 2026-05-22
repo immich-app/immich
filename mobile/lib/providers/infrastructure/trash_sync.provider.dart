@@ -6,6 +6,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});
@@ -26,6 +27,7 @@ final trashSyncServiceProvider = Provider(
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
+    permissionRepository: ref.watch(permissionRepositoryProvider),
   ),
 );
 

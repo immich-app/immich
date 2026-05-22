@@ -12,7 +12,6 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/asset.stub.dart';
@@ -23,7 +22,8 @@ void main() {
   late TrashSyncService sut;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
   late DriftTrashSyncRepository mockTrashSyncRepo;
-  late AssetMediaRepository mockAssetMediaRepo;
+  late MockAssetMediaRepository mockAssetMediaRepo;
+  late MockPermissionRepository mockPermissionRepo;
   late Drift db;
   late bool hasManageMediaPermission;
 
@@ -51,11 +51,13 @@ void main() {
     mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
     mockTrashSyncRepo = MockTrashSyncRepository();
     mockAssetMediaRepo = MockAssetMediaRepository();
+    mockPermissionRepo = MockPermissionRepository();
 
     sut = TrashSyncService(
       trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
       trashSyncRepository: mockTrashSyncRepo,
       assetMediaRepository: mockAssetMediaRepo,
+      permissionRepository: mockPermissionRepo,
     );
 
     when(
@@ -68,7 +70,7 @@ void main() {
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => <LocalAsset>[]);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
     hasManageMediaPermission = false;
-    when(() => mockAssetMediaRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
+    when(() => mockPermissionRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
     when(() => mockAssetMediaRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => <String>[]);
     when(() => mockAssetMediaRepo.deleteAll(any())).thenAnswer((invocation) async {
       return (invocation.positionalArguments.first as List<String>).toList();
@@ -237,7 +239,7 @@ void main() {
       await sut.syncRemoteTrashState([(id: 'remote-1', deletedAt: DateTime(2025, 5, 1))]);
 
       verify(() => mockTrashSyncRepo.upsertReviewCandidates(any())).called(1);
-      verifyNever(() => mockAssetMediaRepo.hasManageMediaPermission());
+      verifyNever(() => mockPermissionRepo.hasManageMediaPermission());
       verifyNever(() => mockAssetMediaRepo.deleteAll(any()));
       verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
     });
@@ -252,7 +254,7 @@ void main() {
       await sut.syncRemoteTrashState([(id: 'remote-1', deletedAt: null)]);
 
       verify(() => mockTrashSyncRepo.deleteOutdated(any())).called(1);
-      verifyNever(() => mockAssetMediaRepo.hasManageMediaPermission());
+      verifyNever(() => mockPermissionRepo.hasManageMediaPermission());
       verifyNever(() => mockAssetMediaRepo.restoreAssetsFromTrash(any()));
     });
 

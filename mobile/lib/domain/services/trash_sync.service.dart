@@ -5,6 +5,7 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:logging/logging.dart';
 
 typedef RemoteAssetTrashState = ({String id, DateTime? deletedAt});
@@ -17,14 +18,17 @@ class TrashSyncService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final DriftTrashSyncRepository _trashSyncRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final IPermissionRepository _permissionRepository;
 
   TrashSyncService({
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required DriftTrashSyncRepository trashSyncRepository,
     required AssetMediaRepository assetMediaRepository,
+    required IPermissionRepository permissionRepository,
   }) : _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _trashSyncRepository = trashSyncRepository,
-       _assetMediaRepository = assetMediaRepository;
+       _assetMediaRepository = assetMediaRepository,
+       _permissionRepository = permissionRepository;
 
   TrashSyncMode get mode {
     if (Store.get(StoreKey.reviewRemoteDeletions, false)) {
@@ -125,7 +129,7 @@ class TrashSyncService {
   }
 
   Future<bool> _hasManageMediaPermission(String logContext) async {
-    final hasPermission = await _assetMediaRepository.hasManageMediaPermission();
+    final hasPermission = await _permissionRepository.hasManageMediaPermission();
     if (!hasPermission) {
       _logger.warning("sync $logContext cannot proceed because MANAGE_MEDIA permission is missing");
     }
