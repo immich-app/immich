@@ -1,3 +1,4 @@
+import { MediaUIEvents } from 'media-chrome/constants';
 import MediaTimeRange from 'media-chrome/media-time-range';
 
 const COMMIT_DELAY_MS = 750;
@@ -5,49 +6,45 @@ const COMMIT_DELAY_MS = 750;
 /** Custom MediaTimeRange that only seeks after pointer release to avoid hammering the server.
  * Keyboard input uses timed debouncing instead since there's no release event. */
 class ImmichTimeRange extends MediaTimeRange {
-  private pointerSeek = false;
-  private pendingSeek = false;
-  private commitTimer: ReturnType<typeof setTimeout> | undefined;
+  private seeking = false;
+  private pending: number | undefined;
+  private idleTimer: ReturnType<typeof setTimeout> | undefined;
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('pointercancel', this); // The base only wires pointerdown/up
+    this.addEventListener('pointerdown', this.hold);
+    this.addEventListener('keydown', this.hold);
+    this.addEventListener('pointerup', this.release);
+    this.addEventListener('pointercancel', this.release);
+    this.addEventListener(MediaUIEvents.MEDIA_SEEK_REQUEST, this.intercept, { capture: true });
   }
 
-  override handleEvent(event: Event) {
-    switch (event.type) {
-      case 'pointerdown': {
-        this.pointerSeek = true;
-        break;
-      }
-      case 'input': {
-        this.pendingSeek = true;
-        this.updateBar();
-        if (this.pointerSeek) {
-          return;
-        }
-        clearTimeout(this.commitTimer);
-        this.commitTimer = setTimeout(() => this.commit(), COMMIT_DELAY_MS);
+  private hold(event: Event) {
+    if (event instanceof KeyboardEvent) {
+      if (!this.keysUsed.includes(event.key)) {
         return;
       }
-      case 'pointerup':
-      case 'pointercancel': {
-        super.handleEvent(event);
-        if (this.pointerSeek) {
-          this.pointerSeek = false;
-          this.commit();
-        }
-        return;
-      }
+      clearTimeout(this.idleTimer);
+      this.idleTimer = setTimeout(this.release, COMMIT_DELAY_MS);
     }
-    super.handleEvent(event);
+    this.seeking = true;
   }
 
-  private commit() {
-    clearTimeout(this.commitTimer);
-    if (this.pendingSeek) {
-      this.pendingSeek = false;
-      super.handleEvent(new Event('input'));
+  private intercept(event: Event) {
+    if (!this.seeking) {
+      return; // not mid-scrub, or this is the request we replay in release()
+    }
+    this.pending = (event as CustomEvent<number>).detail;
+    event.stopImmediatePropagation();
+  }
+
+  private release() {
+    clearTimeout(this.idleTimer);
+    this.seeking = false;
+    if (this.pending !== undefined) {
+      const detail = this.pending;
+      this.pending = undefined;
+      this.dispatchEvent(new CustomEvent(MediaUIEvents.MEDIA_SEEK_REQUEST, { bubbles: true, composed: true, detail }));
     }
   }
 }
