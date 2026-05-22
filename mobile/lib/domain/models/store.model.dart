@@ -18,7 +18,7 @@ enum StoreKey<T> {
 
   syncMigrationStatus<String>._(1013),
 
-  reviewOutOfSyncChangesAndroid<bool>._(1014),
+  reviewRemoteDeletions<bool>._(1014),
   trashSyncLastCleanup<int>._(1015),
 
   // Legacy keys that have been migrated to the new metadata store

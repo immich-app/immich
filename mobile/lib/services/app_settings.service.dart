@@ -4,7 +4,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 enum AppSettingsEnum<T> {
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
-  reviewOutOfSyncChangesAndroid<bool>(StoreKey.reviewOutOfSyncChangesAndroid, null, false),
+  reviewRemoteDeletions<bool>(StoreKey.reviewRemoteDeletions, null, false),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
 

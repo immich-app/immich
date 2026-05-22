@@ -8,7 +8,6 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
@@ -188,30 +187,20 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>().toList();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid) {
-          await _trashSyncService.handleRemoteAssetTrashState(
-            remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)),
-          );
-        }
+        await _trashSyncService.syncRemoteTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
         return;
       case SyncEntityType.assetV2:
         final remoteSyncAssets = data.cast<SyncAssetV2>().toList();
         await _syncStreamRepository.updateAssetsV2(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid) {
-          await _trashSyncService.handleRemoteAssetTrashState(
-            remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)),
-          );
-        }
+        await _trashSyncService.syncRemoteTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
         return;
       case SyncEntityType.assetDeleteV1:
-        final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
-        if (CurrentPlatform.isAndroid) {
-          final now = DateTime.now();
-          final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
-            remoteSyncAssets.map((e) => MapEntry(e.assetId, now)),
-          );
-          await _trashSyncService.handleRemoteDeletedOrTrashed(remoteDeletedAtByRemoteId);
-        }
+        final remoteSyncAssets = data.cast<SyncAssetDeleteV1>().toList();
+        final now = DateTime.now();
+        final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
+          remoteSyncAssets.map((e) => MapEntry(e.assetId, now)),
+        );
+        await _trashSyncService.applyRemoteRemovalToLocal(remoteDeletedAtByRemoteId);
         return _syncStreamRepository.deleteAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());

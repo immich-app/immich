@@ -23,7 +23,6 @@ final trashedAssetsCountProvider = StreamProvider<TrashedAssetsCount>((ref) {
 
 final trashSyncServiceProvider = Provider(
   (ref) => TrashSyncService(
-    localAssetRepository: ref.watch(localAssetRepository),
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
@@ -31,7 +30,7 @@ final trashSyncServiceProvider = Provider(
 );
 
 final outOfSyncAssetsCountProvider = StreamProvider<int>((ref) {
-  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewRemoteDeletions));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(
     data: (enabled) => enabled ? service.watchPendingApprovalAssetCount() : Stream<int>.value(0),
@@ -41,7 +40,7 @@ final outOfSyncAssetsCountProvider = StreamProvider<int>((ref) {
 });
 
 final isWaitingForTrashApprovalProvider = StreamProvider.family<bool, String?>((ref, checksum) {
-  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewRemoteDeletions));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(
     data: (enabled) =>

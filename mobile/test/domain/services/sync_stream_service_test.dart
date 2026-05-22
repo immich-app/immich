@@ -142,8 +142,8 @@ void main() {
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset()).thenAnswer(successHandler);
-    when(() => mockTrashSyncService.handleRemoteAssetTrashState(any())).thenAnswer((_) async {});
-    when(() => mockTrashSyncService.handleRemoteDeletedOrTrashed(any())).thenAnswer((_) async {});
+    when(() => mockTrashSyncService.syncRemoteTrashState(any())).thenAnswer((_) async {});
+    when(() => mockTrashSyncService.applyRemoteRemovalToLocal(any())).thenAnswer((_) async {});
 
     sut = SyncStreamService(
       syncApiRepository: mockSyncApiRepo,
@@ -154,7 +154,7 @@ void main() {
     );
 
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
-    await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+    await Store.put(StoreKey.reviewRemoteDeletions, false);
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -390,7 +390,7 @@ void main() {
       await simulateEvents(events);
 
       final states =
-          verify(() => mockTrashSyncService.handleRemoteAssetTrashState(captureAny())).captured.single
+          verify(() => mockTrashSyncService.syncRemoteTrashState(captureAny())).captured.single
               as Iterable<RemoteAssetTrashState>;
       expect(
         states,
@@ -403,7 +403,7 @@ void main() {
       verify(() => mockSyncApiRepo.ack(['asset-remote-merged-2'])).called(1);
     });
 
-    test("does not forward trash state on non-Android platforms", () async {
+    test("forwards trash state on non-Android platforms", () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
 
@@ -411,7 +411,10 @@ void main() {
 
       await simulateEvents(events);
 
-      verifyNever(() => mockTrashSyncService.handleRemoteAssetTrashState(any()));
+      final states =
+          verify(() => mockTrashSyncService.syncRemoteTrashState(captureAny())).captured.single
+              as Iterable<RemoteAssetTrashState>;
+      expect(states, [(id: 'remote-1', deletedAt: null)]);
     });
 
     test("forwards permanent remote delete events to trash sync before deleting remote assets locally", () async {
@@ -420,7 +423,7 @@ void main() {
       await simulateEvents(events);
 
       final lookup =
-          verify(() => mockTrashSyncService.handleRemoteDeletedOrTrashed(captureAny())).captured.single
+          verify(() => mockTrashSyncService.applyRemoteRemovalToLocal(captureAny())).captured.single
               as Map<String, DateTime>;
       expect(lookup.keys.toList(), ['remote-asset']);
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);

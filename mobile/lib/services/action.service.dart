@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -325,32 +324,31 @@ class ActionService {
       await _trashSyncRepository.updateApproves(trashedChecksums, false);
       return (displayCount: trashedChecksums.length, success: true);
     }
-    final assetsByAlbum = await _localAssetRepository.getTrashSyncCandidatesByAlbum(trashedChecksums);
-    if (assetsByAlbum.isEmpty) {
+    final assetsToTrash = await _trashSyncRepository.getTrashSyncMoveCandidates(trashedChecksums);
+    if (assetsToTrash.isEmpty) {
       // No localAssetEntity found; close review to avoid re-showing the same items.
       await _trashSyncRepository.updateApproves(trashedChecksums, true);
       return (displayCount: trashedChecksums.length, success: true);
     }
 
-    final assetsToTrash = assetsByAlbum.entries.expand(
-      (entry) => entry.value.map((candidate) => (albumId: entry.key, candidate: candidate)),
-    );
-    final localIds = assetsToTrash.map((item) => item.candidate.asset.id).toList(growable: false);
+    final localIds = assetsToTrash.map((item) => item.candidate.asset.id).toSet().toList();
     _logger.info("Moving assets to trash: ${localIds.join(", ")}");
     final deletedIds = await _assetMediaRepository.deleteAll(localIds);
     if (deletedIds.isEmpty) {
       return (displayCount: 0, success: false);
     }
-    final deletedAssetsToTrash = assetsToTrash.where((item) => deletedIds.contains(item.candidate.asset.id));
+    final deletedIdLookup = deletedIds.toSet();
+    final deletedAssetsToTrash = assetsToTrash.where((item) => deletedIdLookup.contains(item.candidate.asset.id));
 
-    final deletedAssetsByAlbum = groupBy(
-      deletedAssetsToTrash,
-      (item) => item.albumId,
-    ).map((albumId, items) => MapEntry(albumId, items.map((item) => item.candidate)));
-    await _trashedLocalAssetRepository.trashLocalAssets(deletedAssetsByAlbum);
-
-    final resolvedChecksums = deletedAssetsToTrash.map((item) => item.candidate.asset.checksum).nonNulls.toSet();
-    await _trashSyncRepository.updateApproves(resolvedChecksums, true);
+    final resolvedChecksums = deletedAssetsToTrash.map((item) => item.candidate.asset.checksum!).toSet();
+    await _trashSyncRepository.transaction<void>(() async {
+      if (CurrentPlatform.isAndroid) {
+        await _trashedLocalAssetRepository.trashLocalAssets(deletedAssetsToTrash);
+      } else {
+        await _localAssetRepository.delete(deletedIds);
+      }
+      await _trashSyncRepository.updateApproves(resolvedChecksums, true);
+    });
 
     return (displayCount: resolvedChecksums.length, success: resolvedChecksums.length == trashedChecksums.length);
   }

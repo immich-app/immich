@@ -4,14 +4,133 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+
+typedef RemoteTrashMoveCandidate = ({String albumId, RemoteDeletedLocalAsset candidate});
 
 class DriftTrashSyncRepository extends DriftDatabaseRepository {
   final Drift _db;
 
   const DriftTrashSyncRepository(this._db) : super(_db);
+
+  Future<List<RemoteDeletedLocalAsset>> getRemoteTrashCandidates(
+    Map<String, DateTime> remoteDeletedAtByRemoteId,
+  ) async {
+    if (remoteDeletedAtByRemoteId.isEmpty) {
+      return [];
+    }
+
+    final result = <RemoteDeletedLocalAsset>[];
+
+    for (final slice in remoteDeletedAtByRemoteId.keys.toSet().slices(kDriftMaxChunk)) {
+      final rows =
+          await (_db.select(_db.localAssetEntity).join([
+                  innerJoin(
+                    _db.remoteAssetEntity,
+                    _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+                    useColumns: false,
+                  ),
+                  leftOuterJoin(
+                    _db.trashSyncEntity,
+                    _db.localAssetEntity.checksum.equalsExp(_db.trashSyncEntity.checksum) &
+                        _db.trashSyncEntity.isSyncApproved.isNotNull(),
+                    useColumns: false,
+                  ),
+                ])
+                ..addColumns([_db.remoteAssetEntity.id])
+                ..where(
+                  //todo should we filter hidden assets?
+                  //_db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+                  _db.remoteAssetEntity.id.isIn(slice) & _db.trashSyncEntity.checksum.isNull(),
+                ))
+              .get();
+
+      for (final row in rows) {
+        final assetData = row.readTable(_db.localAssetEntity);
+        final remoteId = row.read(_db.remoteAssetEntity.id)!;
+        result.add(
+          RemoteDeletedLocalAsset(
+            asset: assetData.toDto(remoteId: remoteId),
+            remoteDeletedAt: remoteDeletedAtByRemoteId[remoteId]!,
+          ),
+        );
+      }
+    }
+
+    return result;
+  }
+
+  Future<List<RemoteTrashMoveCandidate>> getSelectedBackupRemoteTrashMoveCandidates(
+    Iterable<RemoteDeletedLocalAsset> candidates,
+  ) async {
+    if (candidates.isEmpty) {
+      return [];
+    }
+
+    final result = <RemoteTrashMoveCandidate>[];
+    final candidatesById = {for (final candidate in candidates) candidate.asset.id: candidate};
+
+    for (final slice in candidatesById.keys.slices(kDriftMaxChunk)) {
+      final rows =
+          await (_db.select(_db.localAlbumAssetEntity).join([
+                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+              ])..where(
+                _db.localAlbumAssetEntity.assetId.isIn(slice) &
+                    _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
+              ))
+              .get();
+
+      for (final row in rows) {
+        final albumAsset = row.readTable(_db.localAlbumAssetEntity);
+        result.add((albumId: albumAsset.albumId, candidate: candidatesById[albumAsset.assetId]!));
+      }
+    }
+
+    return result;
+  }
+
+  Future<List<RemoteTrashMoveCandidate>> getTrashSyncMoveCandidates(Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return [];
+    }
+
+    final result = <RemoteTrashMoveCandidate>[];
+
+    for (final slice in checksums.slices(kDriftMaxChunk)) {
+      final rows =
+          await (_db.select(_db.localAlbumAssetEntity).join([
+                  innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                  innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                  innerJoin(
+                    _db.trashSyncEntity,
+                    _db.localAssetEntity.checksum.equalsExp(_db.trashSyncEntity.checksum),
+                    useColumns: false,
+                  ),
+                ])
+                ..addColumns([_db.trashSyncEntity.remoteDeletedAt])
+                ..where(
+                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                      _db.localAssetEntity.checksum.isIn(slice) &
+                      _db.trashSyncEntity.isSyncApproved.isNull(),
+                ))
+              .get();
+
+      for (final row in rows) {
+        final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
+        final assetData = row.readTable(_db.localAssetEntity);
+        final remoteDeletedAt = row.read(_db.trashSyncEntity.remoteDeletedAt)!;
+        result.add((
+          albumId: albumId,
+          candidate: RemoteDeletedLocalAsset(asset: assetData.toDto(), remoteDeletedAt: remoteDeletedAt),
+        ));
+      }
+    }
+
+    return result;
+  }
 
   Future<void> upsertReviewCandidates(Iterable<RemoteDeletedLocalAsset> itemsToReview) async {
     if (itemsToReview.isEmpty) {

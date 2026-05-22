@@ -84,7 +84,7 @@ void main() {
 
     await Store.clear();
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
-    await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+    await Store.put(StoreKey.reviewRemoteDeletions, false);
     hasManageMediaPermission = false;
     when(() => mockAssetMediaRepository.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
   });
@@ -116,7 +116,7 @@ void main() {
 
     test('syncs trashed snapshot but does not handle remote trash intents', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
+      await Store.put(StoreKey.reviewRemoteDeletions, false);
       hasManageMediaPermission = false;
 
       await sut.sync();
@@ -131,7 +131,7 @@ void main() {
 
     test('syncs trashed snapshot but skips review restore when MANAGE_MEDIA permission absent', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
+      await Store.put(StoreKey.reviewRemoteDeletions, true);
       when(() => mockTrashedLocalAssetRepository.getToRestore()).thenAnswer((_) async => [LocalAssetStub.image1]);
       hasManageMediaPermission = false;
 
@@ -186,13 +186,36 @@ void main() {
 
       verifyNever(() => mockNativeSyncApi.getTrashedAssets());
     });
+
+    test('cleans trash sync after iOS delta sync updates local assets', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+      when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
+        (_) async => SyncDelta(hasChanges: true, updates: const [], deletes: const [], assetAlbums: const {}),
+      );
+      when(() => mockNativeSyncApi.getAlbums()).thenAnswer((_) async => []);
+      when(() => mockLocalAlbumRepository.updateAll(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalAlbumRepository.processDelta(
+          updates: any(named: 'updates'),
+          deletes: any(named: 'deletes'),
+          assetAlbums: any(named: 'assetAlbums'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => mockLocalAlbumRepository.getAll()).thenAnswer((_) async => []);
+
+      await sut.sync();
+
+      verifyNever(() => mockNativeSyncApi.getTrashedAssets());
+      verify(() => mockTrashSyncRepo.cleanupLocalTrashSync()).called(1);
+    });
   });
 
   group('LocalSyncService - syncTrashedAssets behavior', () {
     test('review mode only restores local trash and does not clean trash sync directly', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, true);
-      expect(Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false), isTrue);
+      await Store.put(StoreKey.reviewRemoteDeletions, true);
+      expect(Store.get(StoreKey.reviewRemoteDeletions, false), isTrue);
 
       final platformAsset = PlatformAsset(
         id: 'remote-id',

@@ -162,22 +162,22 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final autoSyncChanges = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
-    final reviewOutOfSyncChanges = useAppSettingsState(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
+    final reviewRemoteDeletions = useAppSettingsState(AppSettingsEnum.reviewRemoteDeletions);
 
     final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
     final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
 
     final selectedTrashSyncMode = autoSyncChanges.value
         ? _TrashSyncMode.auto
-        : reviewOutOfSyncChanges.value
+        : reviewRemoteDeletions.value
         ? _TrashSyncMode.review
         : _TrashSyncMode.none;
 
     Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
       if (Platform.isIOS) {
         // No MANAGE_MEDIA on iOS; review is the only mode the user can pick.
-        if (key == AppSettingsEnum.reviewOutOfSyncChangesAndroid) {
-          reviewOutOfSyncChanges.value = true;
+        if (key == AppSettingsEnum.reviewRemoteDeletions) {
+          reviewRemoteDeletions.value = true;
           autoSyncChanges.value = false;
         }
         ref.invalidate(appSettingsServiceProvider);
@@ -188,11 +188,11 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
       if (key == AppSettingsEnum.manageLocalMediaAndroid) {
         autoSyncChanges.value = result;
         if (result) {
-          reviewOutOfSyncChanges.value = false;
+          reviewRemoteDeletions.value = false;
         }
       }
-      if (key == AppSettingsEnum.reviewOutOfSyncChangesAndroid) {
-        reviewOutOfSyncChanges.value = result;
+      if (key == AppSettingsEnum.reviewRemoteDeletions) {
+        reviewRemoteDeletions.value = result;
         if (result) {
           autoSyncChanges.value = false;
         }
@@ -207,11 +207,11 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
 
       switch (mode) {
         case _TrashSyncMode.none:
-          if (!autoSyncChanges.value && !reviewOutOfSyncChanges.value) {
+          if (!autoSyncChanges.value && !reviewRemoteDeletions.value) {
             break;
           }
           autoSyncChanges.value = false;
-          reviewOutOfSyncChanges.value = false;
+          reviewRemoteDeletions.value = false;
           ref.invalidate(appSettingsServiceProvider);
           break;
         case _TrashSyncMode.auto:
@@ -221,10 +221,10 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
           await attemptToEnableSetting(AppSettingsEnum.manageLocalMediaAndroid);
           break;
         case _TrashSyncMode.review:
-          if (reviewOutOfSyncChanges.value) {
+          if (reviewRemoteDeletions.value) {
             break;
           }
-          await attemptToEnableSetting(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
+          await attemptToEnableSetting(AppSettingsEnum.reviewRemoteDeletions);
           break;
       }
     }
@@ -269,7 +269,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
                 : "not_allowed".tr(),
             subtitle: "manage_media_access_rationale".tr(),
             statusColor:
-                manageMediaAndroidPermissionValue == false && (autoSyncChanges.value || reviewOutOfSyncChanges.value)
+                manageMediaAndroidPermissionValue == false && (autoSyncChanges.value || reviewRemoteDeletions.value)
                 ? const Color.fromARGB(255, 243, 188, 106)
                 : null,
             onActionTap: () async {

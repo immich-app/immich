@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:logging/logging.dart';
@@ -37,6 +38,7 @@ void main() {
 
   setUpAll(() async {
     registerFallbackValue(LocalAssetStub.image1);
+    registerFallbackValue(<String>[]);
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
@@ -76,10 +78,14 @@ void main() {
       Logger('ActionServiceTest'),
     );
 
-    when(() => localAssetRepository.getRemoteTrashCandidatesByAlbum(any())).thenAnswer((_) async => {});
-    when(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).thenAnswer((_) async => {});
+    when(() => trashSyncRepository.getTrashSyncMoveCandidates(any())).thenAnswer((_) async => []);
+    when(() => localAssetRepository.delete(any())).thenAnswer((_) async {});
     when(() => trashedLocalAssetRepository.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => trashSyncRepository.updateApproves(any(), any())).thenAnswer((_) async {});
+    when(() => trashSyncRepository.transaction<void>(any())).thenAnswer((invocation) {
+      final callback = invocation.positionalArguments.first as Future<void> Function();
+      return callback();
+    });
   });
 
   tearDown(() async {
@@ -140,18 +146,18 @@ void main() {
 
       expect(result, (displayCount: 1, success: true));
       verify(() => trashSyncRepository.updateApproves(any(), false)).called(1);
-      verifyNever(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any()));
+      verifyNever(() => trashSyncRepository.getTrashSyncMoveCandidates(any()));
       verifyNever(() => assetMediaRepository.deleteAll(any()));
     });
 
     test('returns 0 when no local assets match', () async {
-      when(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).thenAnswer((_) async => {});
+      when(() => trashSyncRepository.getTrashSyncMoveCandidates(any())).thenAnswer((_) async => []);
       when(() => trashSyncRepository.updateApproves(any(), true)).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
       expect(result, (displayCount: 1, success: true));
-      verify(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).called(1);
+      verify(() => trashSyncRepository.getTrashSyncMoveCandidates(any())).called(1);
       verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
       verifyNever(() => assetMediaRepository.deleteAll(any()));
     });
@@ -159,11 +165,9 @@ void main() {
     test('keeps review pending when media plugin deletes no local files', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
-      when(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).thenAnswer(
-        (_) async => {
-          'album-1': [remoteDeleted],
-        },
-      );
+      when(
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => [(albumId: 'album-1', candidate: remoteDeleted)]);
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => []);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
@@ -176,11 +180,9 @@ void main() {
     test('moves files to trash through media plugin and updates approvals on success', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', remoteId: 'remote-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
-      when(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).thenAnswer(
-        (_) async => {
-          'album-1': [remoteDeleted],
-        },
-      );
+      when(
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => [(albumId: 'album-1', candidate: remoteDeleted)]);
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [localAsset.id]);
       when(() => trashSyncRepository.updateApproves(any(), true)).thenAnswer((_) async {});
 
@@ -194,11 +196,9 @@ void main() {
     test('does not update approvals when media plugin delete fails', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
-      when(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).thenAnswer(
-        (_) async => {
-          'album-1': [remoteDeleted],
-        },
-      );
+      when(
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => [(albumId: 'album-1', candidate: remoteDeleted)]);
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => []);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
@@ -211,11 +211,9 @@ void main() {
     test('updates approvals and syncs trash after media plugin delete', () async {
       final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', remoteId: 'remote-1');
       final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
-      when(() => localAssetRepository.getTrashSyncCandidatesByAlbum(any())).thenAnswer(
-        (_) async => {
-          'album-1': [remoteDeleted],
-        },
-      );
+      when(
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => [(albumId: 'album-1', candidate: remoteDeleted)]);
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [localAsset.id]);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
@@ -228,6 +226,27 @@ void main() {
       ]);
     });
 
+    test('updates approvals and deletes local rows on iOS without writing local trash state', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+
+      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', remoteId: 'remote-1');
+      final remoteDeleted = RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2024, 1, 1));
+      when(
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => [(albumId: 'album-1', candidate: remoteDeleted)]);
+      when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [localAsset.id]);
+
+      final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
+
+      expect(result, (displayCount: 1, success: true));
+      final deletedLocalIds =
+          verify(() => localAssetRepository.delete(captureAny())).captured.single as Iterable<String>;
+      expect(deletedLocalIds, [localAsset.id]);
+      verifyNever(() => trashedLocalAssetRepository.trashLocalAssets(any()));
+      verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
+    });
+
     test('moves trash sync candidates preserving remote deletion dates', () async {
       final asset1 = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', remoteId: 'remote-1');
       final asset2 = LocalAssetStub.image1.copyWith(checksum: 'checksum-2', remoteId: 'remote-2');
@@ -238,8 +257,8 @@ void main() {
         RemoteDeletedLocalAsset(asset: asset2, remoteDeletedAt: deletedAt2),
       ];
       when(
-        () => localAssetRepository.getTrashSyncCandidatesByAlbum(any()),
-      ).thenAnswer((_) async => {'album-1': remoteDeleted});
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => remoteDeleted.map((candidate) => (albumId: 'album-1', candidate: candidate)).toList());
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [asset1.id, asset2.id]);
 
       final result = await sut.resolveRemoteTrash(['checksum-1', 'checksum-2'], isSyncApproved: true);
@@ -247,8 +266,9 @@ void main() {
       expect(result, (displayCount: 2, success: true));
       final captured =
           verify(() => trashedLocalAssetRepository.trashLocalAssets(captureAny())).captured.single
-              as Map<String, Iterable<RemoteDeletedLocalAsset>>;
-      expect(captured['album-1']!.map((item) => item.remoteDeletedAt), [deletedAt1, deletedAt2]);
+              as Iterable<RemoteTrashMoveCandidate>;
+      expect(captured.map((item) => item.albumId), ['album-1', 'album-1']);
+      expect(captured.map((item) => item.candidate.remoteDeletedAt), [deletedAt1, deletedAt2]);
     });
 
     test('updates only deleted assets on partial media plugin success', () async {
@@ -261,17 +281,18 @@ void main() {
         RemoteDeletedLocalAsset(asset: asset2, remoteDeletedAt: deletedAt2),
       ];
       when(
-        () => localAssetRepository.getTrashSyncCandidatesByAlbum(any()),
-      ).thenAnswer((_) async => {'album-1': remoteDeleted});
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => remoteDeleted.map((candidate) => (albumId: 'album-1', candidate: candidate)).toList());
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [asset1.id]);
 
       final result = await sut.resolveRemoteTrash(['checksum-1', 'checksum-2'], isSyncApproved: true);
 
       expect(result, (displayCount: 1, success: false));
-      final capturedByAlbum =
+      final captured =
           verify(() => trashedLocalAssetRepository.trashLocalAssets(captureAny())).captured.single
-              as Map<String, Iterable<RemoteDeletedLocalAsset>>;
-      expect(capturedByAlbum['album-1']!.map((item) => item.remoteDeletedAt), [deletedAt1]);
+              as Iterable<RemoteTrashMoveCandidate>;
+      expect(captured.map((item) => item.albumId), ['album-1']);
+      expect(captured.map((item) => item.candidate.remoteDeletedAt), [deletedAt1]);
       final capturedChecksums =
           verify(() => trashSyncRepository.updateApproves(captureAny(), true)).captured.single as Iterable<String>;
       expect(capturedChecksums.toSet(), {'checksum-1'});
@@ -287,17 +308,18 @@ void main() {
         RemoteDeletedLocalAsset(asset: asset2, remoteDeletedAt: deletedAt2),
       ];
       when(
-        () => localAssetRepository.getTrashSyncCandidatesByAlbum(any()),
-      ).thenAnswer((_) async => {'album-1': remoteDeleted});
+        () => trashSyncRepository.getTrashSyncMoveCandidates(any()),
+      ).thenAnswer((_) async => remoteDeleted.map((candidate) => (albumId: 'album-1', candidate: candidate)).toList());
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((_) async => [asset1.id, asset2.id]);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
       expect(result, (displayCount: 1, success: true));
-      final capturedByAlbum =
+      final captured =
           verify(() => trashedLocalAssetRepository.trashLocalAssets(captureAny())).captured.single
-              as Map<String, Iterable<RemoteDeletedLocalAsset>>;
-      expect(capturedByAlbum['album-1']!.map((item) => item.remoteDeletedAt), [deletedAt1, deletedAt2]);
+              as Iterable<RemoteTrashMoveCandidate>;
+      expect(captured.map((item) => item.albumId), ['album-1', 'album-1']);
+      expect(captured.map((item) => item.candidate.remoteDeletedAt), [deletedAt1, deletedAt2]);
       final capturedChecksums =
           verify(() => trashSyncRepository.updateApproves(captureAny(), true)).captured.single as Iterable<String>;
       expect(capturedChecksums.toSet(), {'checksum-1'});

@@ -56,9 +56,7 @@ class LocalSyncService {
       if (full || await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Full sync request from ${full ? "user" : "native"}");
         await fullSync();
-        if (CurrentPlatform.isAndroid) {
-          await _cleanupTrashSync();
-        }
+        await _cleanupTrashSync();
         return;
       }
 
@@ -88,8 +86,6 @@ class LocalSyncService {
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
-
-        await _cleanupTrashSync();
       }
 
       if (CurrentPlatform.isIOS) {
@@ -107,6 +103,7 @@ class LocalSyncService {
 
         await _mapIosCloudIds(newAssets);
       }
+      await _cleanupTrashSync();
       await _nativeSyncApi.checkpointSync();
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
@@ -379,8 +376,7 @@ class LocalSyncService {
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
     await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
 
-    if (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-        Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+    if (Store.get(StoreKey.manageLocalMediaAndroid, false) || Store.get(StoreKey.reviewRemoteDeletions, false)) {
       final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
       if (assetsToRestore.isNotEmpty) {
         if (await _hasManageMediaPermission("restore from trash")) {

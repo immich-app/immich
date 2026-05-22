@@ -3,11 +3,11 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
@@ -127,48 +127,45 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         .map((row) => row.read<int>(_db.trashedLocalAssetEntity.id.count()) ?? 0);
   }
 
-  Future<void> trashLocalAssets(Map<String, Iterable<RemoteDeletedLocalAsset>> assetsByAlbums) async {
-    if (assetsByAlbums.isEmpty) {
+  Future<void> trashLocalAssets(Iterable<RemoteTrashMoveCandidate> candidates) async {
+    if (candidates.isEmpty) {
       return Future.value();
     }
 
     final companions = <TrashedLocalAssetEntityCompanion>[];
     final idToDelete = <String>{};
 
-    for (final entry in assetsByAlbums.entries) {
-      for (final record in entry.value) {
-        final asset = record.asset;
-        idToDelete.add(asset.id);
-        companions.add(
-          TrashedLocalAssetEntityCompanion(
-            id: Value(asset.id),
-            name: Value(asset.name),
-            albumId: Value(entry.key),
-            checksum: Value(asset.checksum),
-            type: Value(asset.type),
-            width: Value(asset.width),
-            height: Value(asset.height),
-            durationMs: Value(asset.durationMs),
-            isFavorite: Value(asset.isFavorite),
-            orientation: Value(asset.orientation),
-            playbackStyle: Value(asset.playbackStyle),
-            createdAt: Value(asset.createdAt),
-            updatedAt: Value(asset.updatedAt),
-            source: const Value(TrashOrigin.remoteSync),
-          ),
-        );
-      }
+    for (final candidate in candidates) {
+      final asset = candidate.candidate.asset;
+      idToDelete.add(asset.id);
+      companions.add(
+        TrashedLocalAssetEntityCompanion(
+          id: Value(asset.id),
+          name: Value(asset.name),
+          albumId: Value(candidate.albumId),
+          checksum: Value(asset.checksum),
+          type: Value(asset.type),
+          width: Value(asset.width),
+          height: Value(asset.height),
+          durationMs: Value(asset.durationMs),
+          isFavorite: Value(asset.isFavorite),
+          orientation: Value(asset.orientation),
+          playbackStyle: Value(asset.playbackStyle),
+          createdAt: Value(asset.createdAt),
+          updatedAt: Value(asset.updatedAt),
+          source: const Value(TrashOrigin.remoteSync),
+        ),
+      );
     }
 
-    await _db.transaction(() async {
-      await _db.batch((batch) {
-        for (final companion in companions) {
-          batch.insert(_db.trashedLocalAssetEntity, companion, onConflict: DoUpdate((_) => companion));
-        }
-        for (final slice in idToDelete.slices(kDriftMaxChunk)) {
-          batch.deleteWhere(_db.localAssetEntity, (t) => t.id.isIn(slice));
-        }
-      });
+    // Keep this transaction-free; callers commit it together with trashSyncEntity updates.
+    await _db.batch((batch) {
+      for (final companion in companions) {
+        batch.insert(_db.trashedLocalAssetEntity, companion, onConflict: DoUpdate((_) => companion));
+      }
+      for (final slice in idToDelete.slices(kDriftMaxChunk)) {
+        batch.deleteWhere(_db.localAssetEntity, (t) => t.id.isIn(slice));
+      }
     });
   }
 

@@ -358,7 +358,7 @@ class _SyncStatsCounts extends ConsumerWidget {
             if ((kDebugMode || kProfileMode) &&
                 CurrentPlatform.isAndroid &&
                 (appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid) ||
-                    appSettingsService.getSetting<bool>(AppSettingsEnum.reviewOutOfSyncChangesAndroid))) ...[
+                    appSettingsService.getSetting<bool>(AppSettingsEnum.reviewRemoteDeletions))) ...[
               SettingGroupTitle(title: "trash".t(context: context)),
               Consumer(
                 builder: (context, ref, _) {

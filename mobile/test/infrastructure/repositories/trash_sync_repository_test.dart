@@ -118,6 +118,146 @@ void main() {
         );
   }
 
+  group('getRemoteTrashCandidates', () {
+    test('returns local assets matched by remote id without requiring selected backup albums', () async {
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      await insertRemoteAsset(checksum: 'matched-checksum', deletedAt: remoteDeletedAt);
+      await insertRemoteAsset(checksum: 'remote-only-checksum', deletedAt: DateTime(2025, 6, 2));
+      await insertLocalAsset(checksum: 'matched-checksum');
+      await insertLocalAlbum(id: 'selected-album');
+      await insertLocalAlbum(id: 'unselected-album', backupSelection: BackupSelection.none);
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-matched-checksum');
+      await insertLocalAlbumAsset(albumId: 'unselected-album', assetId: 'local-matched-checksum');
+
+      final result = await repository.getRemoteTrashCandidates({
+        'remote-matched-checksum': remoteDeletedAt,
+        'remote-remote-only-checksum': DateTime(2025, 6, 2),
+      });
+
+      expect(result, hasLength(1));
+      expect(result.single.asset.id, 'local-matched-checksum');
+      expect(result.single.asset.remoteId, 'remote-matched-checksum');
+      expect(result.single.remoteDeletedAt, remoteDeletedAt);
+    });
+
+    test('excludes assets with accepted or rejected trash sync decisions', () async {
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      await insertLocalAlbum(id: 'selected-album');
+
+      await insertRemoteAsset(checksum: 'pending-checksum', deletedAt: remoteDeletedAt);
+      await insertRemoteAsset(checksum: 'rejected-checksum', deletedAt: remoteDeletedAt);
+      await insertRemoteAsset(checksum: 'approved-checksum', deletedAt: remoteDeletedAt);
+      await insertLocalAsset(checksum: 'pending-checksum');
+      await insertLocalAsset(checksum: 'rejected-checksum');
+      await insertLocalAsset(checksum: 'approved-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-pending-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-rejected-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-approved-checksum');
+
+      await insertTrashSync(checksum: 'pending-checksum', isSyncApproved: null, remoteDeletedAt: remoteDeletedAt);
+      await insertTrashSync(checksum: 'rejected-checksum', isSyncApproved: false, remoteDeletedAt: remoteDeletedAt);
+      await insertTrashSync(checksum: 'approved-checksum', isSyncApproved: true, remoteDeletedAt: remoteDeletedAt);
+
+      final result = await repository.getRemoteTrashCandidates({
+        'remote-pending-checksum': remoteDeletedAt,
+        'remote-rejected-checksum': remoteDeletedAt,
+        'remote-approved-checksum': remoteDeletedAt,
+      });
+
+      expect(result.map((item) => item.asset.id), ['local-pending-checksum']);
+    });
+  });
+
+  group('getSelectedBackupRemoteTrashMoveCandidates', () {
+    test('returns only candidates from selected backup albums', () async {
+      await insertLocalAsset(checksum: 'selected-checksum');
+      await insertLocalAsset(checksum: 'unselected-checksum');
+      await insertLocalAlbum(id: 'selected-album');
+      await insertLocalAlbum(id: 'unselected-album', backupSelection: BackupSelection.none);
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-selected-checksum');
+      await insertLocalAlbumAsset(albumId: 'unselected-album', assetId: 'local-selected-checksum');
+      await insertLocalAlbumAsset(albumId: 'unselected-album', assetId: 'local-unselected-checksum');
+
+      final selectedCandidate = RemoteDeletedLocalAsset(
+        asset: LocalAssetStub.image1.copyWith(id: 'local-selected-checksum', checksum: 'selected-checksum'),
+        remoteDeletedAt: DateTime(2025, 6, 1),
+      );
+      final unselectedCandidate = RemoteDeletedLocalAsset(
+        asset: LocalAssetStub.image2.copyWith(id: 'local-unselected-checksum', checksum: 'unselected-checksum'),
+        remoteDeletedAt: DateTime(2025, 6, 2),
+      );
+
+      final result = await repository.getSelectedBackupRemoteTrashMoveCandidates([
+        selectedCandidate,
+        unselectedCandidate,
+      ]);
+
+      expect(result, [(albumId: 'selected-album', candidate: selectedCandidate)]);
+    });
+
+    test('returns one candidate per selected album for the same asset', () async {
+      await insertLocalAsset(checksum: 'selected-checksum');
+      await insertLocalAlbum(id: 'selected-1');
+      await insertLocalAlbum(id: 'selected-2');
+      await insertLocalAlbumAsset(albumId: 'selected-1', assetId: 'local-selected-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-2', assetId: 'local-selected-checksum');
+
+      final candidate = RemoteDeletedLocalAsset(
+        asset: LocalAssetStub.image1.copyWith(id: 'local-selected-checksum', checksum: 'selected-checksum'),
+        remoteDeletedAt: DateTime(2025, 6, 1),
+      );
+
+      final result = await repository.getSelectedBackupRemoteTrashMoveCandidates([candidate]);
+
+      expect(result.map((item) => item.candidate), [candidate, candidate]);
+      expect(result.map((item) => item.albumId), unorderedEquals(['selected-1', 'selected-2']));
+    });
+  });
+
+  group('getTrashSyncMoveCandidates', () {
+    test('returns local assets from selected backup albums matched by trash sync checksum', () async {
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      await insertLocalAsset(checksum: 'checksum-1');
+      await insertLocalAlbum(id: 'selected-album');
+      await insertLocalAlbum(id: 'unselected-album', backupSelection: BackupSelection.none);
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-checksum-1');
+      await insertLocalAlbumAsset(albumId: 'unselected-album', assetId: 'local-checksum-1');
+      await insertTrashSync(checksum: 'checksum-1', isSyncApproved: null, remoteDeletedAt: remoteDeletedAt);
+
+      final result = await repository.getTrashSyncMoveCandidates(['checksum-1']);
+
+      expect(result, hasLength(1));
+      expect(result.single.albumId, 'selected-album');
+      expect(result.single.candidate.asset.id, 'local-checksum-1');
+      expect(result.single.candidate.asset.remoteId, isNull);
+      expect(result.single.candidate.remoteDeletedAt, remoteDeletedAt);
+    });
+
+    test('excludes non-pending trash sync decisions', () async {
+      final remoteDeletedAt = DateTime(2025, 6, 1);
+      await insertLocalAlbum(id: 'selected-album');
+      await insertLocalAsset(checksum: 'pending-checksum');
+      await insertLocalAsset(checksum: 'rejected-checksum');
+      await insertLocalAsset(checksum: 'approved-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-pending-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-rejected-checksum');
+      await insertLocalAlbumAsset(albumId: 'selected-album', assetId: 'local-approved-checksum');
+
+      await insertTrashSync(checksum: 'pending-checksum', isSyncApproved: null, remoteDeletedAt: remoteDeletedAt);
+      await insertTrashSync(checksum: 'rejected-checksum', isSyncApproved: false, remoteDeletedAt: remoteDeletedAt);
+      await insertTrashSync(checksum: 'approved-checksum', isSyncApproved: true, remoteDeletedAt: remoteDeletedAt);
+
+      final result = await repository.getTrashSyncMoveCandidates([
+        'pending-checksum',
+        'rejected-checksum',
+        'approved-checksum',
+      ]);
+
+      expect(result.map((item) => item.albumId), ['selected-album']);
+      expect(result.map((item) => item.candidate.asset.id), ['local-pending-checksum']);
+    });
+  });
+
   group('upsertReviewCandidates', () {
     test('inserts new entries and updates pending entries when newer', () async {
       final oldTime = DateTime(2025, 1, 1);
