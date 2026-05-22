@@ -37,6 +37,9 @@ const resetEnv = () => {
     'REDIS_PASSWORD',
     'REDIS_SOCKET',
     'REDIS_URL',
+    'PU_API_HOST',
+    'PU_TENANT_NAME',
+    'PU_SERVICE_ACCOUNT_TOKEN_PATH',
 
     'NO_COLOR',
   ]) {
@@ -207,6 +210,25 @@ describe('getEnv', () => {
       process.env.NO_COLOR = 'true';
       const { noColor } = getEnv();
       expect(noColor).toBe(true);
+    });
+  });
+
+  describe('pu api config', () => {
+    it('should default PU API values', () => {
+      const { puApiHost, puTenantName, puServiceAccountTokenPath } = getEnv();
+      expect(puApiHost).toBeNull();
+      expect(puTenantName).toBeNull();
+      expect(puServiceAccountTokenPath).toBe('/var/run/secrets/kubernetes.io/serviceaccount/token');
+    });
+
+    it('should map PU API env vars', () => {
+      process.env.PU_API_HOST = 'http://pu-api';
+      process.env.PU_TENANT_NAME = 'pond';
+      process.env.PU_SERVICE_ACCOUNT_TOKEN_PATH = '/var/run/secrets/custom/token';
+      const { puApiHost, puTenantName, puServiceAccountTokenPath } = getEnv();
+      expect(puApiHost).toBe('http://pu-api');
+      expect(puTenantName).toBe('pond');
+      expect(puServiceAccountTokenPath).toBe('/var/run/secrets/custom/token');
     });
   });
 

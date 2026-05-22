@@ -10,6 +10,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PuApiRepository } from 'src/repositories/pu-api.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { DB } from 'src/schema';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
@@ -55,6 +56,7 @@ export class MapRepository {
   constructor(
     private configRepository: ConfigRepository,
     private metadataRepository: SystemMetadataRepository,
+    private puApiRepository: PuApiRepository,
     private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<MapDB>,
   ) {
@@ -62,10 +64,10 @@ export class MapRepository {
   }
 
   async init(): Promise<void> {
-    const { geodataApiUrl, resourcePaths } = this.configRepository.getEnv();
+    const { puApiHost, resourcePaths } = this.configRepository.getEnv();
 
     // Skip geodata import when using external API
-    if (geodataApiUrl) {
+    if (puApiHost) {
       this.logger.log('Using external geodata API, skipping local geodata import');
       return;
     }
@@ -154,41 +156,25 @@ export class MapRepository {
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
-    const { geodataApiUrl } = this.configRepository.getEnv();
+    const { puApiHost } = this.configRepository.getEnv();
 
     // Use external API if configured
-    if (geodataApiUrl) {
-      return this.reverseGeocodeViaApi(point, geodataApiUrl);
+    if (puApiHost) {
+      return this.reverseGeocodeViaApi(point);
     }
 
     // Fall back to local database query
     return this.reverseGeocodeViaDatabase(point);
   }
 
-  private async reverseGeocodeViaApi(point: GeoPoint, apiUrl: string): Promise<ReverseGeocodeResult> {
-    try {
-      const url = `${apiUrl}/reverse-geocode?lat=${point.latitude}&lon=${point.longitude}`;
-      this.logger.debug(`Reverse geocoding API URL: ${url}`);
-      const response = await fetch(url);
+  private async reverseGeocodeViaApi(point: GeoPoint): Promise<ReverseGeocodeResult> {
+    const data = await this.puApiRepository.reverseGeocode<GeodataApiReverseGeocodeResponse>(point);
 
-      if (!response.ok) {
-        this.logger.error(`Geodata API error: ${response.status} ${response.statusText}`);
-        return { country: null, state: null, city: null };
-      }
-
-      const data: GeodataApiReverseGeocodeResponse = await response.json();
-      this.logger.verboseFn(() => `API response: ${JSON.stringify(data, null, 2)}`);
-
-      return {
-        country: data.country ?? null,
-        state: data.state ?? null,
-        city: data.city ?? null,
-      };
-    } catch (error) {
-      this.logger.error(`Reverse geocoding API URL: ${apiUrl}`);
-      this.logger.error(`Failed to call geodata API blabla: ${error}`);
-      return { country: null, state: null, city: null };
-    }
+    return {
+      country: data?.country ?? null,
+      state: data?.state ?? null,
+      city: data?.city ?? null,
+    };
   }
 
   private async reverseGeocodeViaDatabase(point: GeoPoint): Promise<ReverseGeocodeResult> {

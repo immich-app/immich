@@ -110,7 +110,9 @@ const envData: EnvData = {
 
   noColor: false,
 
-  geodataApiUrl: null,
+  puApiHost: null,
+  puTenantName: null,
+  puServiceAccountTokenPath: '/var/run/secrets/kubernetes.io/serviceaccount/token',
 };
 
 export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });

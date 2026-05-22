@@ -488,7 +488,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     }
 
     case MapRepository: {
-      return automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] });
+      return automock(MapRepository, { args: [undefined, undefined, undefined, { setContext: () => {} }] });
     }
 
     case TelemetryRepository: {

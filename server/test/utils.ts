@@ -312,7 +312,7 @@ export const getMocks = () => {
     apiKey: automock(ApiKeyRepository),
     library: automock(LibraryRepository, { strict: false }),
     machineLearning: automock(MachineLearningRepository, { args: [loggerMock], strict: false }),
-    map: automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] }),
+    map: automock(MapRepository, { args: [undefined, undefined, undefined, { setContext: () => {} }] }),
     media: newMediaRepositoryMock(),
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
@@ -325,7 +325,7 @@ export const getMocks = () => {
     plugin: automock(PluginRepository, { strict: true }),
     process: automock(ProcessRepository),
     // eslint-disable-next-line no-sparse-arrays
-    search: automock(SearchRepository, { args: [, configMock, loggerMock], strict: false }),
+    search: automock(SearchRepository, { args: [undefined, configMock, undefined, loggerMock], strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
     session: automock(SessionRepository),

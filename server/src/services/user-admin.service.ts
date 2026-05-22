@@ -88,6 +88,7 @@ export class UserAdminService extends BaseService {
     }
 
     const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date() });
+    await this.eventRepository.emit('UserUpdate', updatedUser);
 
     return mapUserAdmin(updatedUser);
   }

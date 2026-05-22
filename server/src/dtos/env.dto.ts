@@ -230,5 +230,13 @@ export class EnvDto {
 
   @IsString()
   @Optional()
-  GEODATA_API_URL?: string;
+  PU_API_HOST?: string;
+
+  @IsString()
+  @Optional()
+  PU_TENANT_NAME?: string;
+
+  @IsString()
+  @Optional()
+  PU_SERVICE_ACCOUNT_TOKEN_PATH?: string;
 }

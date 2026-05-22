@@ -8,6 +8,7 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { probes } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PuApiRepository } from 'src/repositories/pu-api.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { anyUuid, searchAssetBuilder, withExifInner } from 'src/utils/database';
@@ -202,6 +203,7 @@ export class SearchRepository {
   constructor(
     @InjectKysely() private db: Kysely<DB>,
     private configRepository: ConfigRepository,
+    private puApiRepository: PuApiRepository,
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(SearchRepository.name);
@@ -386,49 +388,33 @@ export class SearchRepository {
 
   @GenerateSql({ params: [DummyValue.STRING] })
   searchPlaces(placeName: string) {
-    const { geodataApiUrl } = this.configRepository.getEnv();
+    const { puApiHost } = this.configRepository.getEnv();
 
     // Use external API if configured
-    if (geodataApiUrl) {
-      return this.searchPlacesViaApi(placeName, geodataApiUrl);
+    if (puApiHost) {
+      return this.searchPlacesViaApi(placeName);
     }
 
     // Fall back to local database query
     return this.searchPlacesViaDatabase(placeName);
   }
 
-  private async searchPlacesViaApi(placeName: string, apiUrl: string) {
-    try {
-      const url = `${apiUrl}/search-places?q=${encodeURIComponent(placeName)}`;
-      this.logger.debug(`Search places API URL: ${url}`);
-      const response = await fetch(url);
+  private async searchPlacesViaApi(placeName: string) {
+    const data = await this.puApiRepository.searchPlaces<GeodataApiPlaceResponse[]>(placeName);
 
-      if (!response.ok) {
-        this.logger.error(`Geodata API error: ${response.status} ${response.statusText}`);
-        return [];
-      }
-
-      const data: GeodataApiPlaceResponse[] = await response.json();
-      this.logger.debug(`API returned ${data.length} places for query: ${placeName}`);
-
-      // Transform API response to match expected format
-      return data.map((place) => ({
-        id: place.id,
-        name: place.name,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        countryCode: place.countryCode,
-        admin1Code: place.admin1Code,
-        admin2Code: place.admin2Code,
-        modificationDate: new Date(place.modificationDate),
-        admin1Name: place.admin1Name,
-        admin2Name: place.admin2Name,
-        alternateNames: place.alternateNames,
-      }));
-    } catch (error) {
-      this.logger.error(`Failed to call geodata API: ${error}`);
-      return [];
-    }
+    return (data || []).map((place) => ({
+      id: place.id,
+      name: place.name,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      countryCode: place.countryCode,
+      admin1Code: place.admin1Code,
+      admin2Code: place.admin2Code,
+      modificationDate: new Date(place.modificationDate),
+      admin1Name: place.admin1Name,
+      admin2Name: place.admin2Name,
+      alternateNames: place.alternateNames,
+    }));
   }
 
   private searchPlacesViaDatabase(placeName: string) {

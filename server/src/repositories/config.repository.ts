@@ -131,7 +131,9 @@ export interface EnvData {
   noColor: boolean;
   nodeVersion?: string;
 
-  geodataApiUrl: string | null;
+  puApiHost: string | null;
+  puTenantName: string | null;
+  puServiceAccountTokenPath: string;
 }
 
 const productionKeys = {
@@ -390,7 +392,10 @@ const getEnv = (): EnvData => {
 
     noColor: !!dto.NO_COLOR,
 
-    geodataApiUrl: dto.GEODATA_API_URL || null,
+    puApiHost: dto.PU_API_HOST || null,
+    puTenantName: dto.PU_TENANT_NAME || null,
+    puServiceAccountTokenPath:
+      dto.PU_SERVICE_ACCOUNT_TOKEN_PATH || '/var/run/secrets/kubernetes.io/serviceaccount/token',
   };
 };
 
