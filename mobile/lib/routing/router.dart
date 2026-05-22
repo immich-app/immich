@@ -120,6 +120,7 @@ import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/gallery_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
+import 'package:immich_mobile/features/wizard/views/wizard_screen.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
@@ -166,6 +167,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SplashScreenRoute.page, initial: true),
     AutoRoute(page: PermissionOnboardingRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: LoginRoute.page),
+    AutoRoute(page: WizardRoute.page),
     AutoRoute(page: ChangePasswordRoute.page),
     AutoRoute(page: SearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
     AutoRoute(

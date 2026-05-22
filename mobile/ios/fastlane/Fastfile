@@ -19,7 +19,7 @@ platform :ios do
   # Constants
   TEAM_ID = "2F67MQ8R79"
   CODE_SIGN_IDENTITY = "Apple Distribution: Hau Tran (#{TEAM_ID})"
-  BASE_BUNDLE_ID = "app.alextran.immich"
+  BASE_BUNDLE_ID = "com.hearth.hub.app"
   
   # Helper method to get App Store Connect API key
   def get_api_key

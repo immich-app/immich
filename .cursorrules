@@ -1,0 +1,10 @@
+# Hearth Hub Collaboration Rules (Linux Native v2.0)
+
+- **Architecture:** - **Dev Machine (Precision):** High-speed Flutter/Next.js builds in `~/development`.
+  - **Production (HP Server):** Runs Docker/Immich with 4TB Bulk Storage at `/mnt/vault`.
+- **Environment:** Ubuntu 24.04 (Precision) -> Remote Deployment to HP Server.
+- **Paths:** - Local Code: `~/development/hearth-hub`
+  - Local Wrapper: `~/development/hearth-hub-wrapper`
+  - Remote Storage: `/mnt/vault/immich` (Targeted via the Wrapper API)
+- **Identity:** Use 'joel' for local dev. Use 'jhadmin' ONLY for legacy HP Server scripts if required.
+- **Goal:** The Next.js wrapper (on the Precision) must orchestrate the HP Server via API calls.

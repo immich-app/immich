@@ -6,7 +6,7 @@ part of 'wizard_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$wizardLogicHash() => r'76db589209b7f5056002c3a2e59e47430f8fb603';
+String _$wizardLogicHash() => r'5fe41fb3e92a63518ae3e720020c4755a4d82875';
 
 /// See also [WizardLogic].
 @ProviderFor(WizardLogic)

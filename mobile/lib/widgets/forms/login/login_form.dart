@@ -15,6 +15,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/hearth_config.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -154,9 +155,14 @@ class LoginForm extends HookConsumerWidget {
     }
 
     useEffect(() {
-      final serverUrl = getServerUrl();
+      final serverUrl = HearthConfig.useHardcodedServerUrl ? HearthConfig.serverUrl : getServerUrl();
       if (serverUrl != null) {
         serverEndpointController.text = serverUrl;
+        if (HearthConfig.useHardcodedServerUrl) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            getServerAuthSettings();
+          });
+        }
       }
       return null;
     }, []);
@@ -484,12 +490,13 @@ class LoginForm extends HookConsumerWidget {
                   ),
                 if (!isOauthEnable.value && !isPasswordLoginEnable.value)
                   Center(child: const Text('login_disabled').tr()),
-                ImmichTextButton(
-                  labelText: 'back'.t(context: context),
-                  icon: Icons.arrow_back,
-                  variant: ImmichVariant.ghost,
-                  onPressed: () => serverEndpoint.value = null,
-                ),
+                if (!HearthConfig.useHardcodedServerUrl)
+                  ImmichTextButton(
+                    labelText: 'back'.t(context: context),
+                    icon: Icons.arrow_back,
+                    variant: ImmichVariant.ghost,
+                    onPressed: () => serverEndpoint.value = null,
+                  ),
               ],
             ),
           );

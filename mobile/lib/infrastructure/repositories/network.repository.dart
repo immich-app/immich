@@ -57,6 +57,9 @@ class NetworkRepository {
   /// On iOS: Uses SharedURLSessionManager's URLSession.
   /// On Android: Uses SharedHttpClientManager's OkHttpClient.
   ///
-  /// Must call [init] before using this method.
-  static http.Client get client => _client!;
+  /// If [init] has not yet completed (e.g. during early Wizard validation
+  /// before the native platform-channel handshake finishes), a plain Dart
+  /// [http.Client] is used as a fallback. [init] will later close this
+  /// fallback and replace it with the native client.
+  static http.Client get client => _client ??= http.Client();
 }

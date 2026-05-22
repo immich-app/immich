@@ -6,7 +6,7 @@ import 'package:pigeon/pigeon.dart';
     swiftOut: 'ios/Runner/Connectivity/Connectivity.g.swift',
     swiftOptions: SwiftOptions(includeErrorClass: false),
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/connectivity/Connectivity.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.connectivity'),
+    kotlinOptions: KotlinOptions(package: 'com.hearth.hub.app.connectivity'),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),

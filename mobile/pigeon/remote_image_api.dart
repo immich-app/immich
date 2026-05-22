@@ -6,7 +6,7 @@ import 'package:pigeon/pigeon.dart';
     swiftOut: 'ios/Runner/Images/RemoteImages.g.swift',
     swiftOptions: SwiftOptions(includeErrorClass: false),
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/images/RemoteImages.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.images', includeErrorClass: false),
+    kotlinOptions: KotlinOptions(package: 'com.hearth.hub.app.images', includeErrorClass: false),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),

@@ -23,7 +23,7 @@ class ClientCertPrompt {
     swiftOptions: SwiftOptions(includeErrorClass: false),
     kotlinOut:
         'android/app/src/main/kotlin/app/alextran/immich/core/Network.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.core', includeErrorClass: true),
+    kotlinOptions: KotlinOptions(package: 'com.hearth.hub.app.core', includeErrorClass: true),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),

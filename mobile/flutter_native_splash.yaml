@@ -11,14 +11,14 @@ flutter_native_splash:
   # splash screen to a png image.  This is useful for gradients. The image will be stretch to the
   # size of the app. Only one parameter can be used, color and background_image cannot both be set.
   #background_image: "assets/immich-logo.png"
-  color: "#f6f8fe"
+  color: "#FF5722"
 
   # Optional parameters are listed below.  To enable a parameter, uncomment the line by removing
   # the leading # character.
 
   # The image parameter allows you to specify an image used in the splash screen.  It must be a
   # png file and should be sized for 4x pixel density.
-  image: assets/immich-splash.png
+  image: assets/hearth-hub-splash.png
 
   # The branding property allows you to specify an image used as branding in the splash screen.
   # It must be a png file. It is supported for Android, iOS and the Web.  For Android 12,
@@ -34,7 +34,7 @@ flutter_native_splash:
   # parameters from above. If the image_dark parameter is specified, color_dark or
   # background_image_dark must be specified.  color_dark and background_image_dark cannot both be
   # set.
-  color_dark: "#000000"
+  color_dark: "#2196F3"
   #background_image_dark: "assets/dark-background.png"
   #image_dark: assets/splash-invert.png
   #branding_dark: assets/dart_dark.png
@@ -50,13 +50,13 @@ flutter_native_splash:
     # 640 pixels in diameter.
     # App icon without an icon background: This should be 1152×1152 pixels, and fit within a circle
     # 768 pixels in diameter.
-    image: assets/immich-splash-android12.png
+    image: assets/hearth-hub-splash-android12.png
 
     # Splash screen background color.
-    #color: "#42a5f5"
+    color: "#FF5722"
 
     # App icon background color.
-    #icon_background_color: "#111111"
+    icon_background_color: "#FF5722"
 
     # The branding property allows you to specify an image used as branding in the splash screen.
     #branding: assets/dart.png

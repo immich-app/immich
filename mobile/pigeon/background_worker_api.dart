@@ -6,7 +6,7 @@ import 'package:pigeon/pigeon.dart';
     swiftOut: 'ios/Runner/Background/BackgroundWorker.g.swift',
     swiftOptions: SwiftOptions(includeErrorClass: false),
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/background/BackgroundWorker.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.background'),
+    kotlinOptions: KotlinOptions(package: 'com.hearth.hub.app.background'),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),

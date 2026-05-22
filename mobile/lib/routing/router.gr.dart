@@ -1990,6 +1990,25 @@ class LoginRoute extends PageRouteInfo<void> {
   );
 }
 
+/// hand-written route for
+/// [WizardScreen] (Hearth Hub onboarding wizard - replaces LoginPage as the
+/// post-bootstrap destination for unauthenticated users). Kept manually
+/// because we don't run build_runner on the fork; mirrors the LoginRoute
+/// pattern above so AutoRoute can navigate to it the same way.
+class WizardRoute extends PageRouteInfo<void> {
+  const WizardRoute({List<PageRouteInfo>? children})
+    : super(WizardRoute.name, initialChildren: children);
+
+  static const String name = 'WizardRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const WizardScreen();
+    },
+  );
+}
+
 /// generated route for
 /// [MainTimelinePage]
 class MainTimelineRoute extends PageRouteInfo<void> {

@@ -82,5 +82,7 @@
     "web/src/app.css": "web/src/**"
   },
   "js/ts.preferences.importModuleSpecifier": "non-relative",
-  "vitest.maximumConfigs": 10
+  "vitest.maximumConfigs": 10,
+  "dart.flutterSdkPath": "/home/joel/.local/share/mise/http-tarballs/463ffee0e2a782144974706b37691c7310b3d4c630fb26a8c0622ac5f1be890b",
+  "dart.sdkPath": "/home/joel/.local/share/mise/http-tarballs/463ffee0e2a782144974706b37691c7310b3d4c630fb26a8c0622ac5f1be890b/bin/cache/dart-sdk"
 }

@@ -20,17 +20,17 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     }
 
     //  Pause the application in XCode, then enter
-    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.backgroundFetch"]
+    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"com.hearth.hub.app.backgroundFetch"]
     // or
-    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.backgroundProcessing"]
+    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"com.hearth.hub.app.backgroundProcessing"]
     // Then resume the application see the background code run
     // Tested on a physical device, not a simulator
     // This will submit either the Fetch or Processing command to the BGTaskScheduler for immediate processing.
-    // In my tests, I can only get app.alextran.immich.backgroundProcessing simulated by running the above command
+    // In my tests, I can only get com.hearth.hub.app.backgroundProcessing simulated by running the above command
     
     // This is the task ID in Info.plist to register as our background task ID
-    public static let backgroundFetchTaskID = "app.alextran.immich.backgroundFetch"
-    public static let backgroundProcessingTaskID = "app.alextran.immich.backgroundProcessing"
+    public static let backgroundFetchTaskID = "com.hearth.hub.app.backgroundFetch"
+    public static let backgroundProcessingTaskID = "com.hearth.hub.app.backgroundProcessing"
     
     // Establish communication with the main isolate and set up the channel call
     // to this BackgroundServicePlugion()

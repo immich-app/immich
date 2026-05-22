@@ -47,7 +47,7 @@ class BootstrapErrorWidget extends StatelessWidget {
       assetLoader: const CodegenLoader(),
       child: Builder(
         builder: (lCtx) => MaterialApp(
-          title: 'Immich',
+          title: 'Hearth',
           debugShowCheckedModeBanner: true,
           localizationsDelegates: lCtx.localizationDelegates,
           supportedLocales: lCtx.supportedLocales,
@@ -354,14 +354,19 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
           onError: (exception) => {
             log.severe('Failed to update auth info with access token: $accessToken'),
             ref.read(authProvider.notifier).logout(),
-            context.replaceRoute(const LoginRoute()),
+            // Redirect into the Hearth Hub onboarding wizard instead of the legacy
+            // Immich login page so the user re-discovers/validates their appliance.
+            context.replaceRoute(const WizardRoute()),
           },
         ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
       unawaited(ref.read(authProvider.notifier).logout());
-      unawaited(context.replaceRoute(const LoginRoute()));
+      // First-launch / signed-out state: take the user through the Hearth
+      // onboarding wizard (mDNS discovery, manual URL, QR scan, then login)
+      // instead of the legacy Immich login page.
+      unawaited(context.replaceRoute(const WizardRoute()));
       return;
     }
 

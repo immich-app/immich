@@ -2,7 +2,8 @@
 <resources>
   <string name="memory_widget_title">Memories</string>
   <string name="random_widget_title">Random</string>
+  <string name="app_name">Hearth</string>
 
-  <string name="memory_widget_description">See memories from Immich.</string>
+  <string name="memory_widget_description">See memories from Hearth.</string>
   <string name="random_widget_description">View a random image from your library or a specific album.</string>
 </resources>

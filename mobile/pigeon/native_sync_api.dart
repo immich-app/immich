@@ -6,7 +6,7 @@ import 'package:pigeon/pigeon.dart';
     swiftOut: 'ios/Runner/Sync/Messages.g.swift',
     swiftOptions: SwiftOptions(),
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/sync/Messages.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.sync'),
+    kotlinOptions: KotlinOptions(package: 'com.hearth.hub.app.sync'),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),

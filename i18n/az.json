@@ -42,7 +42,7 @@
   "admin": {
     "add_exclusion_pattern_description": "Çıxarma nümunələri əlavə et. *, ** və ? istifadə edilərək globbing dəstəklənir. Hər hansı bir \"Raw\" adlı qovluqdakı bütün faylları görməməzlikdən gəlmək üçün **/Raw/** istifadə et. “.tif” ilə bitən bütün faylları görməməzlikdən gəlmək üçün **/*.tif istifadə et. Tam yolu görməməzlikdən gəlmək üçün /path/to/ignore/** istifadə et.",
     "admin_user": "İdarəçi İstifadəçi",
-    "asset_offline_description": "Bu xarici kitabxana varlığı diskdə artıq tapılmadı və zibil qutusuna köçürüldü. Əgər fayl kitabxana içərisində köçürülübsə, zaman şkalanızı yeni uyğun gələn varlıq üçün yoxlayın. Varlığı yenidən qaytarmaq üçün aşağıda verilmiş fayl yolunun Immich tərəfindən əlçatan olduğundan əmin olduqdan sonra kitabxananı skan edin.",
+    "asset_offline_description": "Bu xarici kitabxana varlığı diskdə artıq tapılmadı və zibil qutusuna köçürüldü. Əgər fayl kitabxana içərisində köçürülübsə, zaman şkalanızı yeni uyğun gələn varlıq üçün yoxlayın. Varlığı yenidən qaytarmaq üçün aşağıda verilmiş fayl yolunun Hearth tərəfindən əlçatan olduğundan əmin olduqdan sonra kitabxananı skan edin.",
     "authentication_settings": "Səlahiyyətləndirmə parametrləri",
     "authentication_settings_description": "Şifrə, OAuth və digər səlahiyyətləndirmə parametrləri",
     "authentication_settings_disable_all": "Bütün giriş etmə metodlarını söndürmək istədiyinizdən əminsinizmi? Giriş etmə funksiyası tamamilə söndürüləcəkdir.",
@@ -54,7 +54,7 @@
     "backup_onboarding_1_description": "buludda və ya başqa fiziki yerdə saytdan kənar surət.",
     "backup_onboarding_2_description": "müxtəlif cihazlarda yerli nüsxələr. Bura əsas fayllar və həmin faylların ehtiyat lokal nüsxəsi daxildir.",
     "backup_onboarding_3_description": "orijinal fayllar da daxil olmaqla məlumatlarınızın ümumi surətləri. Buraya 1 kənar nüsxə və 2 lokal nüsxə daxildir.",
-    "backup_onboarding_footer": "Immich-in ehtiyat nüsxəsini çıxarmaq haqqında ətraflı məlumat üçün <link>sənədlərə</link> müraciət edin.",
+    "backup_onboarding_footer": "Hearth-in ehtiyat nüsxəsini çıxarmaq haqqında ətraflı məlumat üçün <link>sənədlərə</link> müraciət edin.",
     "backup_onboarding_parts_title": "3-2-1 ehtiyat nüsxəsinə aşağıdakılar daxildir:",
     "backup_onboarding_title": "Ehtiyat surətlər",
     "backup_settings": "Bazanın Dump Parametrləri",

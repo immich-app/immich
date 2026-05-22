@@ -1,4 +1,4 @@
-app_identifier "app.alextran.immich" # The bundle identifier of your app
+app_identifier "com.hearth.hub.app" # The bundle identifier of your app
 apple_id "alex.tran1502@gmail.com" # Your Apple email address
 
 

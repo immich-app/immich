@@ -26,7 +26,7 @@ class BackupUploadProgressBar extends ConsumerWidget {
       padding: const EdgeInsets.only(top: 8.0),
       child: Row(
         children: [
-          if (isIcloudAsset) SizedBox(width: 110, child: Text("Immich Upload", style: context.textTheme.labelSmall)),
+          if (isIcloudAsset) SizedBox(width: 110, child: Text("Hearth Upload", style: context.textTheme.labelSmall)),
           Expanded(
             child: LinearProgressIndicator(
               minHeight: 10.0,

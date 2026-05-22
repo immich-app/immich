@@ -1,10 +1,22 @@
-.PHONY: build watch create_app_icon create_splash build_release_android pigeon test analyze format
+.PHONY: setup build watch create_app_icon create_splash build_release_android pigeon test analyze format migration translation run clean
 
+# --- 1. THE "CIO" ONE-TOUCH SETUP ---
+# Use this for a fresh environment sync
+setup:
+	flutter pub get
+	cd openapi && flutter pub get && dart run build_runner build --delete-conflicting-outputs
+	$(MAKE) build
+
+# --- 2. CORE BUILD LOGIC ---
 build:
 	dart run build_runner build --delete-conflicting-outputs
-# Remove once auto_route updated to 10.1.0
+# Keep this until auto_route is patched
 	dart format lib/routing/router.gr.dart
 
+watch:
+	dart run build_runner watch --delete-conflicting-outputs
+
+# --- 3. PLATFORM & ASSETS ---
 pigeon:
 	dart run pigeon --input pigeon/native_sync_api.dart
 	dart run pigeon --input pigeon/local_image_api.dart
@@ -13,26 +25,15 @@ pigeon:
 	dart run pigeon --input pigeon/background_worker_lock_api.dart
 	dart run pigeon --input pigeon/connectivity_api.dart
 	dart run pigeon --input pigeon/network_api.dart
-	dart format lib/platform/native_sync_api.g.dart
-	dart format lib/platform/local_image_api.g.dart
-	dart format lib/platform/remote_image_api.g.dart
-	dart format lib/platform/background_worker_api.g.dart
-	dart format lib/platform/background_worker_lock_api.g.dart
-	dart format lib/platform/connectivity_api.g.dart
-	dart format lib/platform/network_api.g.dart
-
-watch:
-	dart run build_runner watch --delete-conflicting-outputs
+	dart format lib/platform/*.g.dart
 
 create_app_icon:
-	flutter pub run flutter_launcher_icons:main
+	dart run flutter_launcher_icons
 
 create_splash:
-	flutter pub run flutter_native_splash:create
+	dart run flutter_native_splash:create
 
-build_release_android:
-	flutter build appbundle
-
+# --- 4. DATA & LOCALIZATION ---
 migration:
 	dart run drift_dev make-migrations
 
@@ -40,16 +41,24 @@ translation:
 	pnpm --prefix ../i18n run format:fix
 	dart run easy_localization:generate -S ../i18n
 	dart run bin/generate_keys.dart
-	dart format lib/generated/codegen_loader.g.dart
-	dart format lib/generated/translations.g.dart
+	dart format lib/generated/*.g.dart
 
+# --- 5. QUALITY CONTROL ---
 analyze:
 	dart analyze --fatal-infos
 	dcm analyze lib --fatal-style --fatal-warnings
 
 format:
-# Ignore generated files manually until https://github.com/dart-lang/dart_style/issues/864 is resolved
 	dart format --set-exit-if-changed $$(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \))
 
 test:
 	flutter test
+
+# --- 6. EXECUTION ---
+run:
+	flutter run
+
+clean:
+	flutter clean
+	cd openapi && flutter clean
+	flutter pub get

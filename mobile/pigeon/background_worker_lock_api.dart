@@ -4,7 +4,7 @@ import 'package:pigeon/pigeon.dart';
   PigeonOptions(
     dartOut: 'lib/platform/background_worker_lock_api.g.dart',
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/background/BackgroundWorkerLock.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.background', includeErrorClass: false),
+    kotlinOptions: KotlinOptions(package: 'com.hearth.hub.app.background', includeErrorClass: false),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),
