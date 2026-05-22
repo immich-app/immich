@@ -13030,6 +13030,64 @@
         "x-immich-permission": "tag.asset",
         "x-immich-state": "Stable"
       },
+      "post": {
+        "description": "Add or remove multiple tags from multiple assets in a single request.",
+        "operationId": "bulkTagUntagAssets",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBulkAddRemoveAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagBulkAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Tag/Untag assets",
+        "tags": [
+          "Tags"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          },
+          {
+            "version": "v2",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "tag.asset",
+        "x-immich-state": "Stable"
+      },
       "put": {
         "description": "Add multiple tags to multiple assets in a single request.",
         "operationId": "bulkTagAssets",
@@ -24980,6 +25038,43 @@
         },
         "required": [
           "deleteDelay"
+        ],
+        "type": "object"
+      },
+      "TagBulkAddRemoveAssetsDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs to tag/untag",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagIdsToAdd": {
+            "description": "Tag IDs to add to assets",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tagIdsToRemove": {
+            "description": "Tag IDs to remove from assets",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds",
+          "tagIdsToAdd",
+          "tagIdsToRemove"
         ],
         "type": "object"
       },

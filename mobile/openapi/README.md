@@ -271,6 +271,7 @@ Class | Method | HTTP request | Description
 *SystemMetadataApi* | [**getVersionCheckState**](doc//SystemMetadataApi.md#getversioncheckstate) | **GET** /system-metadata/version-check-state | Retrieve version check state
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | Update admin onboarding
 *TagsApi* | [**bulkTagAssets**](doc//TagsApi.md#bulktagassets) | **PUT** /tags/assets | Tag assets
+*TagsApi* | [**bulkTagUntagAssets**](doc//TagsApi.md#bulktaguntagassets) | **POST** /tags/assets | Tag/Untag assets
 *TagsApi* | [**bulkUntagAssets**](doc//TagsApi.md#bulkuntagassets) | **DELETE** /tags/assets | Untag assets
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | Create a tag
 *TagsApi* | [**deleteTag**](doc//TagsApi.md#deletetag) | **DELETE** /tags/{id} | Delete a tag
@@ -624,6 +625,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
+ - [TagBulkAddRemoveAssetsDto](doc//TagBulkAddRemoveAssetsDto.md)
  - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)

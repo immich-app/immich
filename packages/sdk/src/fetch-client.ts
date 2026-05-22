@@ -2584,6 +2584,14 @@ export type TagBulkAssetsResponseDto = {
     /** Number of assets tagged */
     count: number;
 };
+export type TagBulkAddRemoveAssetsDto = {
+    /** Asset IDs to tag/untag */
+    assetIds: string[];
+    /** Tag IDs to add to assets */
+    tagIdsToAdd: string[];
+    /** Tag IDs to remove from assets */
+    tagIdsToRemove: string[];
+};
 export type TagsForAssetsResponseDto = {
     /** Asset IDs associated with the tag */
     assetIds?: string[];
@@ -6207,6 +6215,21 @@ export function bulkUntagAssets({ tagBulkAssetsDto }: {
         ...opts,
         method: "DELETE",
         body: tagBulkAssetsDto
+    })));
+}
+/**
+ * Tag/Untag assets
+ */
+export function bulkTagUntagAssets({ tagBulkAddRemoveAssetsDto }: {
+    tagBulkAddRemoveAssetsDto: TagBulkAddRemoveAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: TagBulkAssetsResponseDto;
+    }>("/tags/assets", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: tagBulkAddRemoveAssetsDto
     })));
 }
 /**

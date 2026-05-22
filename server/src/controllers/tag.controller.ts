@@ -4,6 +4,7 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  TagBulkAddRemoveAssetsDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
@@ -76,6 +77,17 @@ export class TagController {
   })
   bulkUntagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     return this.service.bulkUntagAssets(auth, dto);
+  }
+
+  @Post('assets')
+  @Authenticated({ permission: Permission.TagAsset })
+  @Endpoint({
+    summary: 'Tag/Untag assets',
+    description: 'Add or remove multiple tags from multiple assets in a single request.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  bulkTagUntagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAddRemoveAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    return this.service.bulkTagUntagAssets(auth, dto);
   }
 
   @Get('getAllTagsForAssets')

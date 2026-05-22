@@ -5,6 +5,7 @@ import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   mapTag,
+  TagBulkAddRemoveAssetsDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
@@ -88,14 +89,7 @@ export class TagService extends BaseService {
       this.checkAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds }),
     ]);
 
-    const items: Insertable<TagAssetTable>[] = [];
-    for (const tagId of tagIds) {
-      for (const assetId of assetIds) {
-        items.push({ tagId, assetId });
-      }
-    }
-
-    const results = await this.tagRepository.upsertAssetIds(items);
+    const results = await this.tagRepository.upsertAssetIds(this.createTagAssetInsertableList(tagIds, assetIds));
     for (const assetId of new Set(results.map((item) => item.assetId))) {
       await this.updateTags(assetId);
       await this.eventRepository.emit('AssetTag', { assetId });
@@ -110,20 +104,36 @@ export class TagService extends BaseService {
       this.checkAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds }),
     ]);
 
-    const items: Insertable<TagAssetTable>[] = [];
-    for (const tagId of tagIds) {
-      for (const assetId of assetIds) {
-        items.push({ tagId, assetId });
-      }
-    }
-
-    const results = await this.tagRepository.deleteAssetIds(items);
+    const results = await this.tagRepository.deleteAssetIds(this.createTagAssetInsertableList(tagIds, assetIds));
     for (const assetId of new Set(results.map((item) => item.assetId))) {
       await this.updateTags(assetId);
       await this.eventRepository.emit('AssetUntag', { assetId });
     }
 
     return { count: results.length };
+  }
+
+  // Add and remove tags from assets in bulk as part of once service, removing potential for race conditions.
+  async bulkTagUntagAssets(auth: AuthDto, dto: TagBulkAddRemoveAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    const [tagIdsToAdd, tagIdsToRemove, assetIds] = await Promise.all([
+      this.checkAccess({ auth, permission: Permission.TagAsset, ids: dto.tagIdsToAdd }),
+      this.checkAccess({ auth, permission: Permission.TagAsset, ids: dto.tagIdsToRemove }),
+      this.checkAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds }),
+    ]);
+
+    const addResults = await this.tagRepository.upsertAssetIds(
+      this.createTagAssetInsertableList(tagIdsToAdd, assetIds),
+    );
+    const removeResults = await this.tagRepository.deleteAssetIds(
+      this.createTagAssetInsertableList(tagIdsToRemove, assetIds),
+    );
+
+    for (const assetId of new Set([...addResults, ...removeResults].map((item) => item.assetId))) {
+      await this.updateTags(assetId);
+      await this.eventRepository.emit('AssetUntag', { assetId });
+    }
+
+    return { count: removeResults.length + addResults.length };
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
@@ -184,5 +194,15 @@ export class TagService extends BaseService {
       exif: updateLockedColumns({ assetId, tags: tags.map(({ value }) => value) }),
       lockedPropertiesBehavior: 'append',
     });
+  }
+
+  private createTagAssetInsertableList(tagIds: Set<string>, assetIds: Set<string>): Insertable<TagAssetTable>[] {
+    const items: Insertable<TagAssetTable>[] = [];
+    for (const tagId of tagIds) {
+      for (const assetId of assetIds) {
+        items.push({ tagId, assetId });
+      }
+    }
+    return items;
   }
 }
