@@ -72,13 +72,12 @@ describe(PuApiRepository.name, () => {
     expect(logger.debug).toHaveBeenCalledWith('Skipping PU API tenant sync, PU_API_HOST or PU_TENANT_NAME is not configured');
   });
 
-  it('should return null request when token cannot be read', async () => {
+  it('should return null reverse geocode when token cannot be read', async () => {
     vitest.mocked(readFile).mockRejectedValue(new Error('not found'));
 
-    const result = await sut.requestGeodata({
-      path: '/reverse-geocode',
-      query: { lat: 1.23, lon: 4.56 },
-      context: 'reverse geocode',
+    const result = await sut.reverseGeocode<{ country: string; state: string; city: string }>({
+      latitude: 1.23,
+      longitude: 4.56,
     });
 
     expect(result).toBeNull();
@@ -86,7 +85,7 @@ describe(PuApiRepository.name, () => {
     expect(logger.error).toHaveBeenCalled();
   });
 
-  it('should return geodata response payload', async () => {
+  it('should return reverse geocode payload', async () => {
     vitest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       headers: new Headers(),
@@ -99,36 +98,49 @@ describe(PuApiRepository.name, () => {
       statusText: 'OK',
     } as Response);
 
-    const result = await sut.requestGeodata<{ country: string; state: string; city: string }>({
-      path: '/reverse-geocode',
-      query: { lat: 52.37, lon: 4.89 },
-      context: 'reverse geocode',
+    const result = await sut.reverseGeocode<{ country: string; state: string; city: string }>({
+      latitude: 52.37,
+      longitude: 4.89,
     });
 
     expect(result).toEqual({ country: 'NL', state: 'North Holland', city: 'Amsterdam' });
+    expect(global.fetch).toHaveBeenCalledWith(
+      new URL('/internal/api/map/reverse-geocode?lat=52.37&lon=4.89', 'http://pu-api'),
+      expect.anything(),
+    );
   });
 
-  it('should call reverse geocode endpoint via helper method', async () => {
-    const requestSpy = vitest.spyOn(sut, 'requestGeodata').mockResolvedValue({ country: null, state: null, city: null });
+  it('should call reverse geocode endpoint', async () => {
+    vitest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      headers: new Headers(),
+      json: async () => ({ country: null, state: null, city: null }),
+      status: 200,
+      statusText: 'OK',
+    } as Response);
 
     await sut.reverseGeocode({ latitude: 52.37, longitude: 4.89 });
 
-    expect(requestSpy).toHaveBeenCalledWith({
-      path: '/reverse-geocode',
-      query: { lat: 52.37, lon: 4.89 },
-      context: 'reverse geocode',
-    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      new URL('/internal/api/map/reverse-geocode?lat=52.37&lon=4.89', 'http://pu-api'),
+      expect.anything(),
+    );
   });
 
-  it('should call search places endpoint via helper method', async () => {
-    const requestSpy = vitest.spyOn(sut, 'requestGeodata').mockResolvedValue([]);
+  it('should call search places endpoint', async () => {
+    vitest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      headers: new Headers(),
+      json: async () => [],
+      status: 200,
+      statusText: 'OK',
+    } as Response);
 
     await sut.searchPlaces('amst');
 
-    expect(requestSpy).toHaveBeenCalledWith({
-      path: '/search-places',
-      query: { q: 'amst' },
-      context: 'search places',
-    });
+    expect(global.fetch).toHaveBeenCalledWith(
+      new URL('/internal/api/map/search-places?q=amst', 'http://pu-api'),
+      expect.anything(),
+    );
   });
 });

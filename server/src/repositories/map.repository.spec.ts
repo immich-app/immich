@@ -16,17 +16,13 @@ describe(MapRepository.name, () => {
       getEnv: vitest.fn().mockReturnValue({ puApiHost: 'http://pu-api' }),
     } as unknown as ConfigRepository;
     const puApiRepository = {
-      requestGeodata: vitest.fn().mockResolvedValue({ country: 'NL', state: 'NH', city: 'Amsterdam' }),
+      reverseGeocode: vitest.fn().mockResolvedValue({ country: 'NL', state: 'NH', city: 'Amsterdam' }),
     } as unknown as PuApiRepository;
     const sut = new MapRepository(configRepository, metadataRepository, puApiRepository, logger as never, db as never);
 
     const result = await sut.reverseGeocode({ latitude: 1, longitude: 2 });
 
-    expect(puApiRepository.requestGeodata).toHaveBeenCalledWith({
-      path: '/reverse-geocode',
-      query: { lat: 1, lon: 2 },
-      context: 'reverse geocode',
-    });
+    expect(puApiRepository.reverseGeocode).toHaveBeenCalledWith({ latitude: 1, longitude: 2 });
     expect(result).toEqual({ country: 'NL', state: 'NH', city: 'Amsterdam' });
   });
 
@@ -35,7 +31,7 @@ describe(MapRepository.name, () => {
       getEnv: vitest.fn().mockReturnValue({ puApiHost: null }),
     } as unknown as ConfigRepository;
     const puApiRepository = {
-      requestGeodata: vitest.fn(),
+      reverseGeocode: vitest.fn(),
     } as unknown as PuApiRepository;
     const sut = new MapRepository(configRepository, metadataRepository, puApiRepository, logger as never, db as never);
     const fallbackSpy = vitest
@@ -45,7 +41,7 @@ describe(MapRepository.name, () => {
     const result = await sut.reverseGeocode({ latitude: 3, longitude: 4 });
 
     expect(fallbackSpy).toHaveBeenCalledWith({ latitude: 3, longitude: 4 });
-    expect(puApiRepository.requestGeodata).not.toHaveBeenCalled();
+    expect(puApiRepository.reverseGeocode).not.toHaveBeenCalled();
     expect(result).toEqual({ country: null, state: null, city: null });
   });
 });
