@@ -2,11 +2,11 @@
   import { ControlBar, ControlBarContent, ControlBarHeader, ControlBarOverflow, ControlBarTitle } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
+  import type { ClassValue } from 'svelte/elements';
 
   interface Props {
     backIcon?: string;
-    class?: string;
-    forceDark?: boolean;
+    class?: ClassValue;
     onClose?: () => void;
     title?: Snippet | string;
     leading?: Snippet;
@@ -14,19 +14,10 @@
     trailing?: Snippet;
   }
 
-  let {
-    backIcon = mdiClose,
-    class: className = '',
-    forceDark = false,
-    onClose,
-    title,
-    leading,
-    children,
-    trailing,
-  }: Props = $props();
+  let { backIcon = mdiClose, class: className = '', onClose, title, leading, children, trailing }: Props = $props();
 </script>
 
-<div class={['absolute top-0 w-full bg-transparent p-2', forceDark && 'dark']}>
+<div class={['absolute top-0 w-full bg-transparent p-2']}>
   <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
     {#if title || leading}
       <ControlBarHeader>
