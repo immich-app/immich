@@ -59,6 +59,13 @@ describe(TagController.name, () => {
     });
   });
 
+  describe('POST /tags/assets', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/tags/assets');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /tags/getAllTagsForAssets', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${factory.uuid()}`);

@@ -1,10 +1,9 @@
-import { TagsForAssetsQuerySchema, TagsForAssetsResponseSchema } from 'src/dtos/tag.dto';
+import { TagBulkAddRemoveAssetsSchema, TagsForAssetsQuerySchema, TagsForAssetsResponseSchema } from 'src/dtos/tag.dto';
 
 describe('Tag DTOs', () => {
   describe('TagsForAssetsQueryDto', () => {
     it('should validate a valid TagsForAssetsQueryDto', () => {
       const result = TagsForAssetsQuerySchema.safeParse({ assetIds: ['3fe388e4-2078-44d7-b36c-39d9dee3a657'] });
-      console.log(result);
       expect(result.success).toBe(true);
     });
 
@@ -41,6 +40,44 @@ describe('Tag DTOs', () => {
       const result = TagsForAssetsResponseSchema.safeParse({
         tagId: '3fe388e4-2078-44d7-b36c-39d9dee3a657',
         assetIds: ['invalid-uuid'],
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('TagBulkAddRemoveAssetsDto', () => {
+    it('should validate a valid TagBulkAddRemoveAssetsDto', () => {
+      const result = TagBulkAddRemoveAssetsSchema.safeParse({
+        tagIdsToAdd: ['2fe388e4-2078-44d7-b36c-39d9dee3a657'],
+        tagIdsToRemove: ['4fe388e4-2078-44d7-b36c-39d9dee3a657'],
+        assetIds: ['3fe388e4-2078-44d7-b36c-39d9dee3a657'],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should throw error for invalid assetIds', () => {
+      const result = TagBulkAddRemoveAssetsSchema.safeParse({
+        tagIdsToAdd: ['2fe388e4-2078-44d7-b36c-39d9dee3a657'],
+        tagIdsToRemove: ['4fe388e4-2078-44d7-b36c-39d9dee3a657'],
+        assetIds: ['invalid-uuid'],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should throw error for invalid tagIdsToAdd', () => {
+      const result = TagBulkAddRemoveAssetsSchema.safeParse({
+        tagIdsToAdd: ['invalid-uuid'],
+        tagIdsToRemove: ['4fe388e4-2078-44d7-b36c-39d9dee3a657'],
+        assetIds: ['3fe388e4-2078-44d7-b36c-39d9dee3a657'],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should throw error for invalid tagIdsToRemove', () => {
+      const result = TagBulkAddRemoveAssetsSchema.safeParse({
+        tagIdsToAdd: ['2fe388e4-2078-44d7-b36c-39d9dee3a657'],
+        tagIdsToRemove: ['invalid-uuid'],
+        assetIds: ['3fe388e4-2078-44d7-b36c-39d9dee3a657'],
       });
       expect(result.success).toBe(false);
     });

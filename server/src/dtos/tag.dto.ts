@@ -32,7 +32,7 @@ const TagBulkAssetsSchema = z
   })
   .meta({ id: 'TagBulkAssetsDto' });
 
-const TagBulkAddRemoveAssetsSchema = z
+export const TagBulkAddRemoveAssetsSchema = z
   .object({
     tagIdsToAdd: z.array(z.uuidv4()).describe('Tag IDs to add to assets'),
     tagIdsToRemove: z.array(z.uuidv4()).describe('Tag IDs to remove from assets'),
