@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { JsonSchemaSchema } from 'src/dtos/json-schema.dto';
-import { WorkflowTypeSchema } from 'src/enum';
+import { WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum';
 import z from 'zod';
 
 const pluginNameRegex = /^[a-z0-9-]+[a-z0-9]$/;
@@ -23,6 +23,23 @@ const PluginManifestMethodSchema = z
   })
   .meta({ id: 'PluginManifestMethodDto' });
 
+const PluginManifestTemplateStepSchema = z
+  .object({
+    method: z.string().min(1).describe('Step plugin method (pluginName#methodName)'),
+    config: z.record(z.string(), z.unknown()).nullable().optional().describe('Step configuration'),
+    enabled: z.boolean().optional().describe('Whether the step is enabled'),
+  })
+  .meta({ id: 'PluginManifestTemplateStepDto' });
+
+const PluginManifestTemplateSchema = z
+  .object({
+    name: z.string().min(1).describe('Template name'),
+    description: z.string().min(1).describe('Template description'),
+    trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
+    steps: z.array(PluginManifestTemplateStepSchema).describe('Workflow steps'),
+  })
+  .meta({ id: 'PluginManifestTemplateDto' });
+
 const PluginManifestSchema = z
   .object({
     name: z
@@ -39,6 +56,7 @@ const PluginManifestSchema = z
     wasmPath: z.string().min(1).describe('WASM file path'),
     author: z.string().min(1).describe('Plugin author'),
     methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
+    templates: z.array(PluginManifestTemplateSchema).optional().default([]).describe('Workflow templates'),
   })
   .meta({ id: 'PluginManifestDto' });
 

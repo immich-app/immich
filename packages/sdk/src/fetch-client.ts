@@ -1514,6 +1514,30 @@ export type PluginResponseDto = {
     /** Plugin version */
     version: string;
 };
+export type PluginTemplateStepResponseDto = {
+    /** Step configuration */
+    config: {
+        [key: string]: any;
+    } | null;
+    /** Whether the step is enabled */
+    enabled?: boolean;
+    /** Step plugin method */
+    method: string;
+};
+export type PluginTemplateResponseDto = {
+    /** Template description */
+    description: string;
+    /** Template identifier (pluginName#templateName) */
+    id: string;
+    /** Template name */
+    name: string;
+    /** Owning plugin name */
+    pluginName: string;
+    /** Workflow steps */
+    steps: PluginTemplateStepResponseDto[];
+    /** Workflow trigger */
+    trigger: WorkflowTrigger;
+};
 export type QueueResponseDto = {
     /** Whether the queue is paused */
     isPaused: boolean;
@@ -5239,6 +5263,17 @@ export function searchPluginMethods({ description, enabled, id, name, pluginName
         trigger,
         "type": $type
     }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Retrieve workflow templates
+ */
+export function getTemplates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTemplateResponseDto[];
+    }>("/plugins/templates", {
         ...opts
     }));
 }

@@ -205,6 +205,7 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | Update people
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | Update person
 *PluginsApi* | [**getPlugin**](doc//PluginsApi.md#getplugin) | **GET** /plugins/{id} | Retrieve a plugin
+*PluginsApi* | [**getTemplates**](doc//PluginsApi.md#gettemplates) | **GET** /plugins/templates | Retrieve workflow templates
 *PluginsApi* | [**searchPluginMethods**](doc//PluginsApi.md#searchpluginmethods) | **GET** /plugins/methods | Retrieve plugin methods
 *PluginsApi* | [**searchPlugins**](doc//PluginsApi.md#searchplugins) | **GET** /plugins | List all plugins
 *QueuesApi* | [**emptyQueue**](doc//QueuesApi.md#emptyqueue) | **DELETE** /queues/{name}/jobs | Empty a queue
@@ -491,6 +492,8 @@ Class | Method | HTTP request | Description
  - [PlacesResponseDto](doc//PlacesResponseDto.md)
  - [PluginMethodResponseDto](doc//PluginMethodResponseDto.md)
  - [PluginResponseDto](doc//PluginResponseDto.md)
+ - [PluginTemplateResponseDto](doc//PluginTemplateResponseDto.md)
+ - [PluginTemplateStepResponseDto](doc//PluginTemplateStepResponseDto.md)
  - [PurchaseResponse](doc//PurchaseResponse.md)
  - [PurchaseUpdate](doc//PurchaseUpdate.md)
  - [QueueCommand](doc//QueueCommand.md)

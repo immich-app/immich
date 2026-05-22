@@ -37,19 +37,7 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
   const UseTemplate: ActionItem = {
     title: $t('use_template'),
     icon: mdiFileDocumentMultipleOutline,
-    onAction: async () => {
-      const template = await modalManager.show(WorkflowTemplatePicker, {});
-      if (!template) {
-        return;
-      }
-      await handleCreateWorkflow({
-        trigger: template.trigger,
-        steps: template.steps,
-        name: template.name,
-        description: template.description,
-        enabled: false,
-      });
-    },
+    onAction: () => modalManager.show(WorkflowTemplatePicker, {}),
   };
 
   return { Create, UseTemplate };
@@ -91,12 +79,13 @@ export const getWorkflowShowSchemaAction = (
   onAction: onToggle,
 });
 
-const handleCreateWorkflow = async (dto: WorkflowCreateDto) => {
+export const handleCreateWorkflow = async (dto: WorkflowCreateDto) => {
   const $t = await getFormatter();
 
   try {
     const response = await createWorkflow({ workflowCreateDto: dto });
     eventManager.emit('WorkflowCreate', response);
+    return response;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create'));
   }

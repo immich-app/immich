@@ -520,6 +520,10 @@ class ApiClient {
           return PluginMethodResponseDto.fromJson(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
+        case 'PluginTemplateResponseDto':
+          return PluginTemplateResponseDto.fromJson(value);
+        case 'PluginTemplateStepResponseDto':
+          return PluginTemplateStepResponseDto.fromJson(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':

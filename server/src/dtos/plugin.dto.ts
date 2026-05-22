@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
-import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
+import { WorkflowTrigger, WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
 import { asMethodString } from 'src/utils/workflow';
 import z from 'zod';
 
@@ -43,6 +43,25 @@ const PluginResponseSchema = z
   })
   .meta({ id: 'PluginResponseDto' });
 
+const PluginTemplateStepResponseSchema = z
+  .object({
+    method: z.string().describe('Step plugin method'),
+    config: z.record(z.string(), z.unknown()).nullable().describe('Step configuration'),
+    enabled: z.boolean().optional().describe('Whether the step is enabled'),
+  })
+  .meta({ id: 'PluginTemplateStepResponseDto' });
+
+const PluginTemplateResponseSchema = z
+  .object({
+    id: z.string().describe('Template identifier (pluginName#templateName)'),
+    pluginName: z.string().describe('Owning plugin name'),
+    name: z.string().describe('Template name'),
+    description: z.string().describe('Template description'),
+    trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
+    steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
+  })
+  .meta({ id: 'PluginTemplateResponseDto' });
+
 const PluginMethodSearchSchema = z
   .object({
     id: z.uuidv4().optional().describe('Plugin method ID'),
@@ -61,6 +80,34 @@ export class PluginSearchDto extends createZodDto(PluginSearchSchema) {}
 export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
 export class PluginMethodSearchDto extends createZodDto(PluginMethodSearchSchema) {}
 export class PluginMethodResponseDto extends createZodDto(PluginMethodResponseSchema) {}
+export class PluginTemplateResponseDto extends createZodDto(PluginTemplateResponseSchema) {}
+
+export type PluginTemplate = {
+  pluginName: string;
+  name: string;
+  description: string;
+  trigger: WorkflowTrigger;
+  steps: Array<{
+    method: string;
+    config?: Record<string, unknown> | null;
+    enabled?: boolean;
+  }>;
+};
+
+export const mapTemplate = (template: PluginTemplate): PluginTemplateResponseDto => {
+  return {
+    id: `${template.pluginName}#${template.name}`,
+    pluginName: template.pluginName,
+    name: template.name,
+    description: template.description,
+    trigger: template.trigger,
+    steps: template.steps.map((step) => ({
+      method: step.method,
+      config: step.config ?? null,
+      enabled: step.enabled,
+    })),
+  };
+};
 
 type Plugin = {
   id: string;
