@@ -5,6 +5,7 @@ import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   TagBulkAddRemoveAssetsDto,
+  TagBulkAddRemoveAssetsResponseDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
@@ -86,7 +87,10 @@ export class TagController {
     description: 'Add or remove multiple tags from multiple assets in a single request.',
     history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
   })
-  bulkTagUntagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAddRemoveAssetsDto): Promise<TagBulkAssetsResponseDto> {
+  bulkTagUntagAssets(
+    @Auth() auth: AuthDto,
+    @Body() dto: TagBulkAddRemoveAssetsDto,
+  ): Promise<TagBulkAddRemoveAssetsResponseDto> {
     return this.service.bulkTagUntagAssets(auth, dto);
   }
 

@@ -626,6 +626,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
  - [TagBulkAddRemoveAssetsDto](doc//TagBulkAddRemoveAssetsDto.md)
+ - [TagBulkAddRemoveAssetsResponseDto](doc//TagBulkAddRemoveAssetsResponseDto.md)
  - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)

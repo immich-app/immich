@@ -6,6 +6,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import {
   mapTag,
   TagBulkAddRemoveAssetsDto,
+  TagBulkAddRemoveAssetsResponseDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
@@ -114,7 +115,7 @@ export class TagService extends BaseService {
   }
 
   // Add and remove tags from assets in bulk as part of once service, removing potential for race conditions.
-  async bulkTagUntagAssets(auth: AuthDto, dto: TagBulkAddRemoveAssetsDto): Promise<TagBulkAssetsResponseDto> {
+  async bulkTagUntagAssets(auth: AuthDto, dto: TagBulkAddRemoveAssetsDto): Promise<TagBulkAddRemoveAssetsResponseDto> {
     const [tagIdsToAdd, tagIdsToRemove, assetIds] = await Promise.all([
       this.checkAccess({ auth, permission: Permission.TagAsset, ids: dto.tagIdsToAdd }),
       this.checkAccess({ auth, permission: Permission.TagAsset, ids: dto.tagIdsToRemove }),
@@ -130,10 +131,15 @@ export class TagService extends BaseService {
 
     for (const assetId of new Set([...addResults, ...removeResults].map((item) => item.assetId))) {
       await this.updateTags(assetId);
-      await this.eventRepository.emit('AssetUntag', { assetId });
+      if (addResults.some((item) => item.assetId === assetId)) {
+        await this.eventRepository.emit('AssetTag', { assetId });
+      }
+      if (removeResults.some((item) => item.assetId === assetId)) {
+        await this.eventRepository.emit('AssetUntag', { assetId });
+      }
     }
 
-    return { count: removeResults.length + addResults.length };
+    return { addedCount: addResults.length, removedCount: removeResults.length };
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {

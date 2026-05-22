@@ -113,7 +113,7 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagBulkAddRemoveAssetsDto] tagBulkAddRemoveAssetsDto (required):
-  Future<TagBulkAssetsResponseDto?> bulkTagUntagAssets(TagBulkAddRemoveAssetsDto tagBulkAddRemoveAssetsDto,) async {
+  Future<TagBulkAddRemoveAssetsResponseDto?> bulkTagUntagAssets(TagBulkAddRemoveAssetsDto tagBulkAddRemoveAssetsDto,) async {
     final response = await bulkTagUntagAssetsWithHttpInfo(tagBulkAddRemoveAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -122,7 +122,7 @@ class TagsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagBulkAssetsResponseDto',) as TagBulkAssetsResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagBulkAddRemoveAssetsResponseDto',) as TagBulkAddRemoveAssetsResponseDto;
     
     }
     return null;

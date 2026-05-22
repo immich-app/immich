@@ -784,6 +784,8 @@ class ApiClient {
           return SystemConfigUserDto.fromJson(value);
         case 'TagBulkAddRemoveAssetsDto':
           return TagBulkAddRemoveAssetsDto.fromJson(value);
+        case 'TagBulkAddRemoveAssetsResponseDto':
+          return TagBulkAddRemoveAssetsResponseDto.fromJson(value);
         case 'TagBulkAssetsDto':
           return TagBulkAssetsDto.fromJson(value);
         case 'TagBulkAssetsResponseDto':

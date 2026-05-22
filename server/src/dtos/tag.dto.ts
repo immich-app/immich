@@ -42,9 +42,15 @@ const TagBulkAddRemoveAssetsSchema = z
 
 const TagBulkAssetsResponseSchema = z
   .object({
-    count: z.int().describe('Number of assets tagged'),
+    count: z.int().describe('Number of assets tagged/untagged'),
   })
   .meta({ id: 'TagBulkAssetsResponseDto' });
+const TagBulkAddRemoveAssetsResponseSchema = z
+  .object({
+    addedCount: z.int().describe('Number of assets tagged'),
+    removedCount: z.int().describe('Number of assets untagged'),
+  })
+  .meta({ id: 'TagBulkAddRemoveAssetsResponseDto' });
 
 export const TagsForAssetsQuerySchema = z
   .object({
@@ -82,6 +88,7 @@ export class TagUpsertDto extends createZodDto(TagUpsertSchema) {}
 export class TagBulkAssetsDto extends createZodDto(TagBulkAssetsSchema) {}
 export class TagBulkAddRemoveAssetsDto extends createZodDto(TagBulkAddRemoveAssetsSchema) {}
 export class TagBulkAssetsResponseDto extends createZodDto(TagBulkAssetsResponseSchema) {}
+export class TagBulkAddRemoveAssetsResponseDto extends createZodDto(TagBulkAddRemoveAssetsResponseSchema) {}
 export class TagResponseDto extends createZodDto(TagResponseSchema) {}
 export class TagsForAssetsQueryDto extends createZodDto(TagsForAssetsQuerySchema) {}
 export class TagsForAssetsResponseDto extends createZodDto(TagsForAssetsResponseSchema) {}

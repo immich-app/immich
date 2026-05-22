@@ -13049,7 +13049,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagBulkAssetsResponseDto"
+                  "$ref": "#/components/schemas/TagBulkAddRemoveAssetsResponseDto"
                 }
               }
             },
@@ -25078,6 +25078,27 @@
         ],
         "type": "object"
       },
+      "TagBulkAddRemoveAssetsResponseDto": {
+        "properties": {
+          "addedCount": {
+            "description": "Number of assets tagged",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "removedCount": {
+            "description": "Number of assets untagged",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "addedCount",
+          "removedCount"
+        ],
+        "type": "object"
+      },
       "TagBulkAssetsDto": {
         "properties": {
           "assetIds": {
@@ -25108,7 +25129,7 @@
       "TagBulkAssetsResponseDto": {
         "properties": {
           "count": {
-            "description": "Number of assets tagged",
+            "description": "Number of assets tagged/untagged",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"
