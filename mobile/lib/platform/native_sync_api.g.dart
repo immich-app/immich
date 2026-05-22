@@ -654,6 +654,25 @@ class NativeSyncApi {
     return (pigeonVar_replyValue! as Map<Object?, Object?>).cast<String, List<PlatformAsset>>();
   }
 
+  Future<bool> restoreFromTrashById(String mediaId, int type) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.restoreFromTrashById$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[mediaId, type]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as bool;
+  }
+
   Future<List<CloudIdResult>> getCloudIdForAssetIds(List<String> assetIds) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$pigeonVar_messageChannelSuffix';
