@@ -10,10 +10,11 @@ import {
   type WorkflowUpdateDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay, mdiPlus } from '@mdi/js';
+import { mdiCodeJson, mdiDelete, mdiFileDocumentMultipleOutline, mdiPause, mdiPencil, mdiPlay, mdiPlus } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import WorkflowTemplatePicker from '$lib/modals/WorkflowTemplatePicker.svelte';
 import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -33,7 +34,25 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
       }),
   };
 
-  return { Create };
+  const UseTemplate: ActionItem = {
+    title: $t('use_template'),
+    icon: mdiFileDocumentMultipleOutline,
+    onAction: async () => {
+      const template = await modalManager.show(WorkflowTemplatePicker, {});
+      if (!template) {
+        return;
+      }
+      await handleCreateWorkflow({
+        trigger: template.trigger,
+        steps: template.steps,
+        name: template.name,
+        description: template.description,
+        enabled: false,
+      });
+    },
+  };
+
+  return { Create, UseTemplate };
 };
 
 export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowResponseDto) => {

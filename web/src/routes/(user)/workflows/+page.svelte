@@ -59,7 +59,7 @@
     });
   };
 
-  const { Create } = $derived(getWorkflowsActions($t));
+  const { Create, UseTemplate } = $derived(getWorkflowsActions($t));
 
   const onWorkflowCreate = async (response: WorkflowResponseDto) => {
     await goto(Route.viewWorkflow(response));
@@ -76,7 +76,7 @@
 
 <OnEvents {onWorkflowCreate} {onWorkflowUpdate} {onWorkflowDelete} />
 
-<UserPageLayout title={data.meta.title} actions={[Create]} scrollbar={false}>
+<UserPageLayout title={data.meta.title} actions={[UseTemplate, Create]} scrollbar={false}>
   <section class="flex place-content-center sm:mx-4">
     <Container center size="large" class="pb-28">
       {#if workflows.length === 0}
