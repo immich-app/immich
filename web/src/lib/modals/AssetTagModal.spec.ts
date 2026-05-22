@@ -10,7 +10,7 @@ import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
-import { tagAssets, untagAssets } from '$lib/utils/asset-utils';
+import { tagUntagAssets } from '$lib/utils/asset-utils';
 import AssetTagModal from './AssetTagModal.svelte';
 
 vi.mock('@immich/sdk', () => {
@@ -22,12 +22,10 @@ vi.mock('@immich/sdk', () => {
 });
 vi.mock('$lib/utils/asset-utils', () => {
   return {
-    tagAssets: vi.fn(),
-    untagAssets: vi.fn(),
+    tagUntagAssets: vi.fn(),
   };
 });
-const mockTagAssets = vi.mocked(tagAssets);
-const mockUntagAssets = vi.mocked(untagAssets);
+const mockTagUntagAssets = vi.mocked(tagUntagAssets);
 const mockGetAllTags = vi.mocked(getAllTags);
 const mockGetAllTagsForAssets = vi.mocked(getAllTagsForAssets);
 const mockUpsertTags = vi.mocked(upsertTags);
@@ -364,7 +362,7 @@ describe('AssetTagModal component', () => {
     expect(tagPills[0]).toHaveTextContent('NewTag');
   });
 
-  test('calls add or remove functions correctly with the correct set of tag/asset ids', async () => {
+  test('calls tagUntagAssets correctly with the correct set of tag/asset ids', async () => {
     const addedTag1: TagResponseDto = {
       id: 'tag-id-added1',
       value: 'TagAdded1',
@@ -423,18 +421,12 @@ describe('AssetTagModal component', () => {
     await fireEvent.click(screen.getByRole('button', { name: /save tags/i }));
 
     // Check tagAssets is called with correct tag and asset ids
-    // The partial tag ID should not be included here.
-    expect(mockTagAssets).toHaveBeenCalledWith({
+    // The partial tag ID should not be included in the tag ids to add.
+    expect(mockTagUntagAssets).toHaveBeenCalledWith({
       assetIds: ['asset-id', 'asset-id2', 'asset-id3'],
       showNotification: false,
-      tagIds: [addedTag2.id, addedTag1.id],
-    });
-
-    // Check untagAssets is called with correct tag and asset ids
-    expect(mockUntagAssets).toHaveBeenCalledWith({
-      assetIds: ['asset-id', 'asset-id2', 'asset-id3'],
-      showNotification: false,
-      tagIds: [simpleTag.id, parentTag.id],
+      tagIdsToAdd: [addedTag2.id, addedTag1.id],
+      tagIdsToRemove: [simpleTag.id, parentTag.id],
     });
   });
 });
