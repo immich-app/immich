@@ -36,8 +36,8 @@
     for (const tagForAsset of existingTagsForAssets) {
       selectedTags.add({
         id: tagForAsset.tagId,
-        count: tagForAsset.assetIds.length,
-        partial: tagForAsset.assetIds.length < assetIds.length,
+        count: tagForAsset.assetIds?.length || 0,
+        partial: (tagForAsset.assetIds?.length || 0) < assetIds.length,
       });
     }
   });
@@ -57,7 +57,7 @@
       .filter(
         (tag) =>
           tag.partial === false &&
-          !existingTagsForAssets.some((t) => t.tagId === tag.id && t.assetIds.length === assetIds.length),
+          !existingTagsForAssets.some((t) => t.tagId === tag.id && t.assetIds?.length === assetIds.length),
       )
       .map((tag) => tag.id);
 
