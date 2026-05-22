@@ -7,69 +7,28 @@ export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }
 
-export const getShortDateRange = (startTimestamp: string, endTimestamp: string) => {
+const getDateRange = (startTimestamp: string, endTimestamp: string, format: 'short' | 'long') => {
   const userLocale = get(locale);
-  let startDate = DateTime.fromISO(startTimestamp).setZone('UTC');
-  let endDate = DateTime.fromISO(endTimestamp).setZone('UTC');
+  const startDate = DateTime.fromISO(startTimestamp).setZone('UTC');
+  const endDate = DateTime.fromISO(endTimestamp).setZone('UTC').setLocale(userLocale);
 
-  if (userLocale) {
-    startDate = startDate.setLocale(userLocale);
-    endDate = endDate.setLocale(userLocale);
+  if (startDate.year === endDate.year && startDate.month === endDate.month && format === 'short') {
+    return endDate.toLocaleString({ month: 'long', year: 'numeric' });
   }
 
-  const endDateLocalized = endDate.toLocaleString({
-    month: 'short',
-    year: 'numeric',
-  });
-
-  if (startDate.year === endDate.year) {
-    if (startDate.month === endDate.month) {
-      // Same year and month.
-      // e.g.: aug. 2024
-      return endDateLocalized;
-    } else {
-      // Same year but different month.
-      // e.g.: jul. - sept. 2024
-      const startMonthLocalized = startDate.toLocaleString({
-        month: 'short',
-      });
-      return `${startMonthLocalized} - ${endDateLocalized}`;
-    }
-  } else {
-    // Different year.
-    // e.g.: feb. 2021 - sept. 2024
-    const startDateLocalized = startDate.toLocaleString({
-      month: 'short',
-      year: 'numeric',
-    });
-    return `${startDateLocalized} - ${endDateLocalized}`;
-  }
+  const formatter = new Intl.DateTimeFormat(
+    userLocale,
+    format === 'short' ? dateFormats.albumShort : dateFormats.album,
+  );
+  return formatter.formatRange(startDate.toJSDate(), endDate.toJSDate());
 };
 
-const formatDate = (date?: string) => {
-  if (!date) {
-    return;
-  }
+/**
+ * Get localized date range in short format like 'Oct – Nov 2026', with full month if start and end are the same: 'October 2026'
+ */
+export const getShortDateRange = (start: string, end: string) => getDateRange(start, end, 'short');
 
-  // without timezone
-  const localDate = date.replace(/Z$/, '').replace(/\+.+$/, '');
-  return localDate ? new Date(localDate).toLocaleDateString(get(locale), dateFormats.album) : undefined;
-};
-
-export const getAlbumDateRange = (album: { startDate?: string; endDate?: string }) => {
-  const start = formatDate(album.startDate);
-  const end = formatDate(album.endDate);
-
-  if (start && end && start !== end) {
-    return `${start} - ${end}`;
-  }
-
-  if (start) {
-    return start;
-  }
-
-  return '';
-};
+export const getAlbumDateRange = (start: string, end: string) => getDateRange(start, end, 'long');
 
 /**
  * Use this to convert from "5pm EST" to "5pm UTC"
