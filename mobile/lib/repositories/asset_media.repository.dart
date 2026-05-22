@@ -50,33 +50,6 @@ class AssetMediaRepository {
     return PhotoManager.editor.deleteWithIds(ids);
   }
 
-  Future<bool> requestManageMediaPermission() async {
-    try {
-      return await _nativeSyncApi.requestManageMediaPermission();
-    } catch (e, s) {
-      _log.warning('Error requesting manage media permission', e, s);
-      return false;
-    }
-  }
-
-  Future<bool> hasManageMediaPermission() async {
-    try {
-      return await _nativeSyncApi.hasManageMediaPermission();
-    } catch (e, s) {
-      _log.warning('Error requesting manage media permission state', e, s);
-      return false;
-    }
-  }
-
-  Future<bool> manageMediaPermission() async {
-    try {
-      return await _nativeSyncApi.manageMediaPermission();
-    } catch (e, s) {
-      _log.warning('Error requesting manage media permission settings', e, s);
-      return false;
-    }
-  }
-
   Future<bool> _restoreFromTrashById(String mediaId, int type) async {
     try {
       return await _nativeSyncApi.restoreFromTrashById(mediaId, type);

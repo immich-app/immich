@@ -553,9 +553,6 @@ interface NativeSyncApi {
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
   fun getTrashedAssets(): Map<String, List<PlatformAsset>>
-  fun hasManageMediaPermission(): Boolean
-  fun requestManageMediaPermission(callback: (Result<Boolean>) -> Unit)
-  fun manageMediaPermission(callback: (Result<Boolean>) -> Unit)
   fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit)
   fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult>
 
@@ -746,57 +743,6 @@ interface NativeSyncApi {
               MessagesPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hasManageMediaPermission$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              listOf(api.hasManageMediaPermission())
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.requestManageMediaPermission$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.requestManageMediaPermission{ result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(MessagesPigeonUtils.wrapResult(data))
-              }
-            }
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.manageMediaPermission$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.manageMediaPermission{ result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(MessagesPigeonUtils.wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(MessagesPigeonUtils.wrapResult(data))
-              }
-            }
           }
         } else {
           channel.setMessageHandler(null)

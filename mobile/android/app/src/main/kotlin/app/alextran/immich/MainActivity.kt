@@ -17,6 +17,8 @@ import app.alextran.immich.images.LocalImageApi
 import app.alextran.immich.images.LocalImagesImpl
 import app.alextran.immich.images.RemoteImageApi
 import app.alextran.immich.images.RemoteImagesImpl
+import app.alextran.immich.permission.PermissionApi
+import app.alextran.immich.permission.PermissionApiImpl
 import app.alextran.immich.sync.NativeSyncApi
 import app.alextran.immich.sync.NativeSyncApiImpl26
 import app.alextran.immich.sync.NativeSyncApiImpl30
@@ -44,7 +46,9 @@ class MainActivity : FlutterFragmentActivity() {
         } else {
           NativeSyncApiImpl30(ctx)
         }
+      val permissionApiImpl = PermissionApiImpl(ctx)
       NativeSyncApi.setUp(messenger, nativeSyncApiImpl)
+      PermissionApi.setUp(messenger, permissionApiImpl)
       LocalImageApi.setUp(messenger, LocalImagesImpl(ctx))
       RemoteImageApi.setUp(messenger, RemoteImagesImpl(ctx))
 
@@ -53,6 +57,7 @@ class MainActivity : FlutterFragmentActivity() {
 
       flutterEngine.plugins.add(backgroundEngineLockImpl)
       flutterEngine.plugins.add(nativeSyncApiImpl)
+      flutterEngine.plugins.add(permissionApiImpl)
     }
 
     fun cancelPlugins(flutterEngine: FlutterEngine) {
@@ -60,6 +65,8 @@ class MainActivity : FlutterFragmentActivity() {
         flutterEngine.plugins.get(NativeSyncApiImpl26::class.java) as ImmichPlugin?
           ?: flutterEngine.plugins.get(NativeSyncApiImpl30::class.java) as ImmichPlugin?
       nativeApi?.detachFromEngine()
+      val permissionApi = flutterEngine.plugins.get(PermissionApiImpl::class.java) as ImmichPlugin?
+      permissionApi?.detachFromEngine()
     }
   }
 }

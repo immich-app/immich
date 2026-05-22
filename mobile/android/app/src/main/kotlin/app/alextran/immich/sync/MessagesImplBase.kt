@@ -451,16 +451,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     hashTask = null
   }
 
-  fun hasManageMediaPermission(): Boolean = mediaTrashDelegate.hasManageMediaPermission()
-
-  fun requestManageMediaPermission(callback: (Result<Boolean>) -> Unit) {
-    mediaTrashDelegate.requestManageMediaPermission { completeWhenActive(callback, it) }
-  }
-
-  fun manageMediaPermission(callback: (Result<Boolean>) -> Unit) {
-    mediaTrashDelegate.manageMediaPermission { completeWhenActive(callback, it) }
-  }
-
   fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
     mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
   }

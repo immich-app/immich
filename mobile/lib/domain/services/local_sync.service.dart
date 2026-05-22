@@ -13,6 +13,8 @@ import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -23,22 +25,25 @@ class LocalSyncService {
   final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
-  final DriftTrashSyncRepository _trashSyncRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final IPermissionRepository _permissionRepository;
+  final DriftTrashSyncRepository _trashSyncRepository;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
     required DriftLocalAlbumRepository localAlbumRepository,
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
-    required DriftTrashSyncRepository trashSyncRepository,
     required AssetMediaRepository assetMediaRepository,
+    required IPermissionRepository permissionRepository,
+    required DriftTrashSyncRepository trashSyncRepository,
     required NativeSyncApi nativeSyncApi,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
-       _trashSyncRepository = trashSyncRepository,
        _assetMediaRepository = assetMediaRepository,
+       _permissionRepository = permissionRepository,
+       _trashSyncRepository = trashSyncRepository,
        _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
@@ -79,9 +84,9 @@ class LocalSyncService {
       );
 
       final dbAlbums = await _localAlbumRepository.getAll();
+      // On Android, we need to sync all albums since it is not possible to
+      // detect album deletions from the native side
       if (CurrentPlatform.isAndroid) {
-        // On Android, we need to sync all albums since it is not possible to
-        // detect album deletions from the native side
         for (final album in dbAlbums) {
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
