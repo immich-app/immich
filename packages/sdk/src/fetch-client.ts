@@ -630,6 +630,8 @@ export type AssetMediaCreateDto = {
     metadata?: AssetMetadataUpsertItemDto[];
     /** Sidecar file data */
     sidecarData?: Blob;
+    /** IANA time zone of the upload client */
+    timeZone?: string;
     visibility?: AssetVisibility;
 };
 export type AssetMediaResponseDto = {

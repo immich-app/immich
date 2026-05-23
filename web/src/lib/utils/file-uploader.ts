@@ -168,6 +168,7 @@ async function fileUploader({
   isLockedAssets = false,
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const $t = get(t);
   const wasInitiallyLoggedIn = !!authManager.authenticated;
 
@@ -182,6 +183,9 @@ async function fileUploader({
       assetData: new File([assetFile], assetFile.name),
     })) {
       formData.append(key, value);
+    }
+    if (timeZone) {
+      formData.append('timeZone', timeZone);
     }
 
     if (isLockedAssets) {

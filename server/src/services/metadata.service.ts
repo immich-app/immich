@@ -41,6 +41,7 @@ import { Tasks } from 'src/utils/tasks';
 
 const POSTGRES_INT_MAX = 2_147_483_647;
 const POSTGRES_INT_MIN = -2_147_483_648;
+const MINIMUM_TIME_ZONE_OFFSET_MILLISECONDS = 60_000;
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
@@ -134,6 +135,7 @@ type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['Re
 type Dates = {
   dateTimeOriginal: Date;
   localDateTime: Date;
+  timeZone: string | null;
 };
 
 @Injectable()
@@ -963,7 +965,7 @@ export class MetadataService extends BaseService {
   }
 
   private getDates(
-    asset: { id: string; originalPath: string; fileCreatedAt: Date },
+    asset: { id: string; originalPath: string; fileCreatedAt: Date; localDateTime: Date },
     exifTags: ImmichTags,
     stats: Stats,
   ) {
@@ -1016,10 +1018,16 @@ export class MetadataService extends BaseService {
           stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
         ),
       );
+      const localOffset = asset.localDateTime.getTime() - asset.fileCreatedAt.getTime();
       this.logger.debug(
         `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
       );
-      dateTimeOriginal = localDateTime = earliestDate;
+      dateTimeOriginal = earliestDate;
+      // Upload clients can seed localDateTime from their local time zone when the file timestamp has no timezone
+      // information (for example, pasted screenshots). Preserve that offset during metadata extraction, while
+      // ignoring millisecond-level differences from tests or clock precision.
+      const meaningfulLocalOffset = Math.abs(localOffset) >= MINIMUM_TIME_ZONE_OFFSET_MILLISECONDS ? localOffset : 0;
+      localDateTime = DateTime.fromMillis(earliestDate.toMillis() + meaningfulLocalOffset);
     }
 
     this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${asset.originalPath}`);

@@ -9,6 +9,23 @@ import * as utils from '$lib/utils';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { fileUploadHandler } from './file-uploader';
 
+vi.hoisted(() => {
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  });
+});
+
+vi.mock('@immich/ui', () => ({
+  toastManager: {
+    warning: vi.fn(),
+  },
+}));
+
 describe('fileUploader error handling', () => {
   const mockFile = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
   const mockUserObject = { id: 'user-123', email: 'test@example.com' } as UserAdminResponseDto;
@@ -68,5 +85,15 @@ describe('fileUploader error handling', () => {
     const items = get(uploadAssetsStore);
     expect(items.length).toBe(1);
     expect(items[0].state).toBe(UploadState.STARTED);
+  });
+
+  it('should include the browser time zone in the upload request', async () => {
+    const uploadRequest = vi.spyOn(utils, 'uploadRequest').mockResolvedValue({ status: 200, data: mockUploadResponse });
+
+    await fileUploadHandler({ files: [mockFile] });
+
+    expect(uploadRequest).toHaveBeenCalled();
+    const formData = uploadRequest.mock.calls[0]![0].data as FormData;
+    expect(formData.get('timeZone')).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
   });
 });

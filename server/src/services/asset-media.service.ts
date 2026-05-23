@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
@@ -41,6 +42,15 @@ import { fromChecksum } from 'src/utils/request';
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
 }
+
+const getLocalDateTime = (date: Date, timeZone?: string) => {
+  if (!timeZone) {
+    return date;
+  }
+
+  const localDateTime = DateTime.fromJSDate(date, { zone: 'UTC' }).setZone(timeZone);
+  return localDateTime.isValid ? localDateTime.setZone('UTC', { keepLocalTime: true }).toJSDate() : date;
+};
 
 @Injectable()
 export class AssetMediaService extends BaseService {
@@ -328,7 +338,7 @@ export class AssetMediaService extends BaseService {
 
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,
-      localDateTime: dto.fileCreatedAt,
+      localDateTime: getLocalDateTime(dto.fileCreatedAt, dto.timeZone),
 
       type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,

@@ -16490,6 +16490,10 @@
             "format": "binary",
             "type": "string"
           },
+          "timeZone": {
+            "description": "IANA time zone of the upload client",
+            "type": "string"
+          },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           }

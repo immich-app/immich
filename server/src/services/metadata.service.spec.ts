@@ -272,6 +272,42 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should preserve the upload local time offset when missing exif', async () => {
+      const fileCreatedAt = new Date('2026-05-23T07:30:00.000Z');
+      const localDateTime = new Date('2026-05-23T15:30:00.000Z');
+      const asset = AssetFactory.from({
+        fileCreatedAt,
+        fileModifiedAt: fileCreatedAt,
+        localDateTime,
+      }).build();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.storage.stat.mockResolvedValue({
+        size: 123_456,
+        mtime: fileCreatedAt,
+        mtimeMs: fileCreatedAt.valueOf(),
+        birthtimeMs: fileCreatedAt.valueOf(),
+      } as Stats);
+      mockReadTags();
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({ dateTimeOriginal: fileCreatedAt }),
+          lockedPropertiesBehavior: 'skip',
+        }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: asset.id,
+        duration: null,
+        fileCreatedAt,
+        fileModifiedAt: fileCreatedAt,
+        localDateTime,
+        width: null,
+        height: null,
+      });
+    });
+
     it('should determine dateTimeOriginal regardless of the server time zone', async () => {
       process.env.TZ = 'America/Los_Angeles';
       const asset = AssetFactory.create();

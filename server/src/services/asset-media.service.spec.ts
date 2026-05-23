@@ -347,6 +347,32 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    it('should use the upload time zone for the initial local date time', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      const dto = { ...createDto, timeZone: 'Asia/Shanghai' };
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await expect(sut.uploadAsset(authStub.user1, dto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.asset.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fileCreatedAt: createDto.fileCreatedAt,
+          localDateTime: new Date('2022-06-20T07:41:36.910Z'),
+        }),
+      );
+    });
+
     it('should handle a duplicate', async () => {
       const file = {
         uuid: 'random-uuid',
