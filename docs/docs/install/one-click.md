@@ -21,6 +21,10 @@ Go to the provider's marketplace and choose Immich, then follow the provided ins
 
 https://marketplace.digitalocean.com/apps/immich
 
+### PikaPods
+
+https://www.pikapods.com/pods?run=immich
+
 ### Vultr
 
 https://www.vultr.com/marketplace/apps/immich
