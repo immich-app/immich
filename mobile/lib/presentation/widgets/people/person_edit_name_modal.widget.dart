@@ -81,7 +81,9 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
     List<DriftPerson> containsMatches = [];
 
     for (final p in people) {
-      if (p.id == widget.person.id) continue;
+      if (p.id == widget.person.id) {
+        continue;
+      }
 
       final nameParts = p.name.toLowerCase().split(' ').where((e) => e.isNotEmpty).toList();
 
@@ -96,7 +98,10 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
       }
     }
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       // TODO:  What happens if there are more than 3 matches with the exact same name?
       _filteredPeople = query.isEmpty ? [] : (startsWithMatches + containsMatches).take(3).toList();
@@ -149,7 +154,9 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
                                 return PersonTile(
                                   isSelected: false,
                                   onTap: () {
-                                    if (!mounted) return;
+                                    if (!mounted) {
+                                      return;
+                                    }
                                     setState(() {
                                       _formController.text = person.name;
                                     });
