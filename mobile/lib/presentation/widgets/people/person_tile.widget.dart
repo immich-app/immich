@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 // TODO: Only pass person object, instead of id and name when PersonDto and DriftPerson are unified
 class PersonTile extends StatelessWidget {
@@ -23,8 +23,6 @@ class PersonTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headers = ApiService.getRequestHeaders();
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 2.0),
       child: LargeLeadingTile(
@@ -43,7 +41,7 @@ class PersonTile extends StatelessWidget {
             elevation: 3,
             child: CircleAvatar(
               maxRadius: imageSize / 2,
-              backgroundImage: NetworkImage(getFaceThumbnailUrl(personId), headers: headers),
+              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(personId)),
             ),
           ),
         ),

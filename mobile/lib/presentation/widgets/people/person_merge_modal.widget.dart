@@ -4,9 +4,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 class DriftPersonMergeForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -58,8 +58,6 @@ class _DriftPersonMergeFormState extends ConsumerState<DriftPersonMergeForm> {
 
   @override
   Widget build(BuildContext context) {
-    final headers = ApiService.getRequestHeaders();
-
     return AlertDialog(
       title: const Text("merge_people", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       content: Column(
@@ -70,14 +68,14 @@ class _DriftPersonMergeFormState extends ConsumerState<DriftPersonMergeForm> {
             children: [
               CircleAvatar(
                 radius: 32,
-                backgroundImage: NetworkImage(getFaceThumbnailUrl(widget.person.id), headers: headers),
+                backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(widget.person.id)),
               ),
               const SizedBox(width: 16),
               const RotatedBox(quarterTurns: 1, child: Icon(Icons.merge_type, size: 32)),
               const SizedBox(width: 16),
               CircleAvatar(
                 radius: 32,
-                backgroundImage: NetworkImage(getFaceThumbnailUrl(widget.mergeTarget.id), headers: headers),
+                backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(widget.mergeTarget.id)),
               ),
             ],
           ),
@@ -88,9 +86,9 @@ class _DriftPersonMergeFormState extends ConsumerState<DriftPersonMergeForm> {
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "they_will_be_merged_together",
-            style: TextStyle(fontSize: 14, color: Colors.black54),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color),
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 24),
