@@ -13,16 +13,7 @@
     height: string;
   };
 
-  let {
-    adaptiveImageLoader,
-    quality,
-    src,
-    alt = '',
-    role,
-    ref = $bindable(),
-    width,
-    height,
-  }: Props = $props();
+  let { adaptiveImageLoader, quality, src, alt = '', role, ref = $bindable(), width, height }: Props = $props();
 </script>
 
 {#key adaptiveImageLoader}

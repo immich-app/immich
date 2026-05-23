@@ -222,79 +222,78 @@
   {@render backdrop?.()}
 
   <div
-    class="pointer-events-none absolute"
+    class="pointer-events-none absolute overflow-hidden"
     style:inset-inline-start={insetInlineStart}
     style:top
-    style:width={rasterWidth}
-    style:height={rasterHeight}
-    style:transform="scale({rasterScale})"
-    style:transform-origin="0 0"
-    style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
+    style:width={displayWidth}
+    style:height={displayHeight}
   >
-    {#if show.alphaBackground}
-      <AlphaBackground />
-    {/if}
-
-    {#if show.thumbhash}
-      {#if asset.thumbhash}
-        <!-- Thumbhash / spinner layer  -->
-        <Thumbhash base64ThumbHash={asset.thumbhash} class="absolute size-full" />
-      {:else if show.spinner}
-        <DelayedLoadingSpinner />
+    <div
+      style:width={rasterWidth}
+      style:height={rasterHeight}
+      style:transform="scale({rasterScale})"
+      style:transform-origin="0 0"
+      style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
+    >
+      {#if show.alphaBackground}
+        <AlphaBackground />
       {/if}
-    {/if}
 
-    {#if show.thumbnail}
-      <ImageLayer
-        {adaptiveImageLoader}
-        width={rasterWidth}
-        height={rasterHeight}
-        quality="thumbnail"
-        src={status.urls.thumbnail}
-        alt=""
-        role="presentation"
-        bind:ref={thumbnailElement}
-      />
-    {/if}
+      {#if show.thumbhash}
+        {#if asset.thumbhash}
+          <!-- Thumbhash / spinner layer  -->
+          <Thumbhash base64ThumbHash={asset.thumbhash} class="absolute size-full" />
+        {:else if show.spinner}
+          <DelayedLoadingSpinner />
+        {/if}
+      {/if}
 
-    {#if show.brokenAsset}
-      <BrokenAsset class="absolute size-full text-xl" />
-    {/if}
+      {#if show.thumbnail}
+        <ImageLayer
+          {adaptiveImageLoader}
+          width={rasterWidth}
+          height={rasterHeight}
+          quality="thumbnail"
+          src={status.urls.thumbnail}
+          alt=""
+          role="presentation"
+          bind:ref={thumbnailElement}
+        />
+      {/if}
 
-    {#if show.preview}
-      <ImageLayer
-        {adaptiveImageLoader}
-        {alt}
-        width={rasterWidth}
-        height={rasterHeight}
-        quality="preview"
-        src={status.urls.preview}
-        bind:ref={previewElement}
-      />
-    {/if}
+      {#if show.brokenAsset}
+        <BrokenAsset class="absolute size-full text-xl" />
+      {/if}
 
-    {#if show.original}
-      <ImageLayer
-        {adaptiveImageLoader}
-        {alt}
-        width={rasterWidth}
-        height={rasterHeight}
-        quality="original"
-        src={status.urls.original}
-        bind:ref={originalElement}
-      />
+      {#if show.preview}
+        <ImageLayer
+          {adaptiveImageLoader}
+          {alt}
+          width={rasterWidth}
+          height={rasterHeight}
+          quality="preview"
+          src={status.urls.preview}
+          bind:ref={previewElement}
+        />
+      {/if}
+
+      {#if show.original}
+        <ImageLayer
+          {adaptiveImageLoader}
+          {alt}
+          width={rasterWidth}
+          height={rasterHeight}
+          quality="original"
+          src={status.urls.original}
+          bind:ref={originalElement}
+        />
+      {/if}
+    </div>
+
+    {#if overlays}
+      <div class="pointer-events-none absolute inset-0">
+        {@render overlays()}
+      </div>
     {/if}
   </div>
-
-  {#if overlays}
-    <div
-      class="pointer-events-none absolute"
-      style:inset-inline-start={insetInlineStart}
-      style:top
-      style:width={displayWidth}
-      style:height={displayHeight}
-    >
-      {@render overlays()}
-    </div>
-  {/if}
 </div>
