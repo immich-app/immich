@@ -26,12 +26,15 @@ class PersonTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2.0),
       child: LargeLeadingTile(
-        title: Text(
-          personName,
-          style: context.textTheme.bodyLarge?.copyWith(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
+        title: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Text(
+            personName,
+            style: context.textTheme.bodyLarge?.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
+            ),
           ),
         ),
         leading: SizedBox(
@@ -46,7 +49,6 @@ class PersonTile extends StatelessWidget {
           ),
         ),
         onTap: () => onTap(),
-
         selected: isSelected,
         selectedTileColor: context.primaryColor,
         tileColor: context.primaryColor.withAlpha(25),
