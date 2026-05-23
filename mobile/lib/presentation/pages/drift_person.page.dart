@@ -96,6 +96,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
 
         _person = personByIdProvider;
         return ProviderScope(
+          key: ValueKey(_person.id),
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
               final user = ref.watch(currentUserProvider);
