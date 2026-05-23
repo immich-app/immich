@@ -19,6 +19,8 @@
 		B21E34AC2E5B09190031FDB9 /* BackgroundWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21E34AB2E5B09100031FDB9 /* BackgroundWorker.swift */; };
 		B25D377A2E72CA15008B6CA7 /* Connectivity.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25D37782E72CA15008B6CA7 /* Connectivity.g.swift */; };
 		B25D377C2E72CA26008B6CA7 /* ConnectivityApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25D377B2E72CA20008B6CA7 /* ConnectivityApiImpl.swift */; };
+		B2EE00022E72CA15008B6CA7 /* PermissionApi.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2EE00012E72CA15008B6CA7 /* PermissionApi.g.swift */; };
+		B2EE00042E72CA15008B6CA7 /* PermissionApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2EE00032E72CA15008B6CA7 /* PermissionApiImpl.swift */; };
 		B2BE315F2E5E5229006EEF88 /* BackgroundWorker.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BE315E2E5E5229006EEF88 /* BackgroundWorker.g.swift */; };
 		D218389C4A4C4693F141F7D1 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 886774DBDDE6B35BF2B4F2CD /* Pods_Runner.framework */; };
 		F02538E92DFBCBDD008C3FA3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -105,6 +107,8 @@
 		B21E34AB2E5B09100031FDB9 /* BackgroundWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorker.swift; sourceTree = "<group>"; };
 		B25D37782E72CA15008B6CA7 /* Connectivity.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connectivity.g.swift; sourceTree = "<group>"; };
 		B25D377B2E72CA20008B6CA7 /* ConnectivityApiImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityApiImpl.swift; sourceTree = "<group>"; };
+		B2EE00012E72CA15008B6CA7 /* PermissionApi.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionApi.g.swift; sourceTree = "<group>"; };
+		B2EE00032E72CA15008B6CA7 /* PermissionApiImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionApiImpl.swift; sourceTree = "<group>"; };
 		B2BE315E2E5E5229006EEF88 /* BackgroundWorker.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorker.g.swift; sourceTree = "<group>"; };
 		E0E99CDC17B3EB7FA8BA2332 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		F0B57D382DF764BD00DC5BCC /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -283,6 +287,7 @@
 				B25D37792E72CA15008B6CA7 /* Connectivity */,
 				B21E34A62E5AF9760031FDB9 /* Background */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
+				B2EE00052E72CA15008B6CA7 /* Permission */,
 				FA9973382CF6DF4B000EF859 /* Runner.entitlements */,
 				FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -315,6 +320,15 @@
 				B25D37782E72CA15008B6CA7 /* Connectivity.g.swift */,
 			);
 			path = Connectivity;
+			sourceTree = "<group>";
+		};
+		B2EE00052E72CA15008B6CA7 /* Permission */ = {
+			isa = PBXGroup;
+			children = (
+				B2EE00032E72CA15008B6CA7 /* PermissionApiImpl.swift */,
+				B2EE00012E72CA15008B6CA7 /* PermissionApi.g.swift */,
+			);
+			path = Permission;
 			sourceTree = "<group>";
 		};
 		FAC6F8B62D287F120078CB2F /* ShareExtension */ = {
@@ -619,6 +633,8 @@
 				FE5499F42F1197D8006016CB /* RemoteImages.g.swift in Sources */,
 				FE5FE4AE2F30FBC000A71243 /* ImageProcessing.swift in Sources */,
 				B25D377A2E72CA15008B6CA7 /* Connectivity.g.swift in Sources */,
+				B2EE00022E72CA15008B6CA7 /* PermissionApi.g.swift in Sources */,
+				B2EE00042E72CA15008B6CA7 /* PermissionApiImpl.swift in Sources */,
 				FE5499F82F1198E2006016CB /* RemoteImagesImpl.swift in Sources */,
 				FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */,
 				B25D377C2E72CA26008B6CA7 /* ConnectivityApiImpl.swift in Sources */,
@@ -718,6 +734,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CUSTOM_GROUP_ID = group.app.immich.share.profile;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -750,8 +767,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -760,7 +776,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile;
+				PRODUCT_BUNDLE_IDENTIFIER = app.futo.immich.profile;
 				PRODUCT_NAME = "Immich-Profile";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -801,6 +817,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CUSTOM_GROUP_ID = group.app.immich.share.debug;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -860,6 +877,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -894,8 +912,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -904,7 +921,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug;
+				PRODUCT_BUNDLE_IDENTIFIER = app.futo.immich.debug;
 				PRODUCT_NAME = "Immich-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -924,8 +941,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -958,7 +974,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -975,7 +991,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.futo.immich.debug.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -1001,7 +1017,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1041,7 +1057,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1057,7 +1073,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.futo.immich.profile.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1080,8 +1096,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1098,7 +1113,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.futo.immich.debug.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1124,8 +1139,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1165,8 +1179,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240;
-				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 2F67MQ8R79;
+				DEVELOPMENT_TEAM = 2W7AC6T8T5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1182,7 +1195,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.futo.immich.profile.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;

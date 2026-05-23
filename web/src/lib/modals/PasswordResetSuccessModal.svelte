@@ -16,7 +16,7 @@
   <div class="flex flex-col gap-4">
     <Text>{$t('admin.user_password_has_been_reset')}</Text>
 
-    <div class="flex justify-center gap-2 items-center">
+    <div class="flex items-center justify-center gap-2">
       <Code color="primary">{newPassword}</Code>
       <IconButton
         icon={mdiContentCopy}

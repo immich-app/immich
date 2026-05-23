@@ -22,7 +22,7 @@ export enum ImmichHeader {
   SharedLinkKey = 'x-immich-share-key',
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
-  Cid = 'x-immich-cid',
+  CorrelationId = 'X-Correlation-ID',
 }
 
 export enum ImmichQuery {
@@ -61,6 +61,7 @@ export enum AssetFileType {
 
 export enum AlbumUserRole {
   Editor = 'editor',
+  Owner = 'owner',
   Viewer = 'viewer',
 }
 
@@ -72,6 +73,13 @@ export enum AssetOrder {
 }
 
 export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ id: 'AssetOrder' });
+
+export enum AssetOrderBy {
+  TakenAt = 'takenAt',
+  CreatedAt = 'createdAt',
+}
+
+export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting property').meta({ id: 'AssetOrderBy' });
 
 export enum MemoryType {
   /** pictures taken on this day X years ago */
@@ -444,11 +452,15 @@ export enum VideoCodec {
 
 export const VideoCodecSchema = z.enum(VideoCodec).describe('Target video codec').meta({ id: 'VideoCodec' });
 
+export enum VideoSegmentCodec {
+  Av1 = 'av1',
+  Hevc = 'hevc',
+  H264 = 'h264',
+}
+
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  /** @deprecated Use `Opus` instead */
-  Libopus = 'libopus',
   Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
@@ -596,11 +608,137 @@ export enum ExifOrientation {
   Rotate270CW = 8,
 }
 
+/** ITU-T H.273 colour primaries codes. */
+export enum ColorPrimaries {
+  Reserved = 0,
+  Bt709 = 1,
+  Unknown = 2,
+  Bt470M = 4,
+  Bt470Bg = 5,
+  Smpte170M = 6,
+  Smpte240M = 7,
+  Film = 8,
+  Bt2020 = 9,
+  Smpte428 = 10,
+  Smpte431 = 11,
+  Smpte432 = 12,
+  Ebu3213 = 22,
+}
+
+/** ITU-T H.273 transfer characteristics codes. */
+export enum ColorTransfer {
+  Reserved = 0,
+  Bt709 = 1,
+  Unknown = 2,
+  Bt470M = 4,
+  Bt470Bg = 5,
+  Smpte170M = 6,
+  Smpte240M = 7,
+  Linear = 8,
+  Log100 = 9,
+  Log316 = 10,
+  Iec6196624 = 11,
+  Bt1361E = 12,
+  Iec6196621 = 13,
+  Bt202010 = 14,
+  Bt202012 = 15,
+  Smpte2084 = 16,
+  Smpte428 = 17,
+  AribStdB67 = 18,
+}
+
+/** ITU-T H.273 matrix coefficients codes. */
+export enum ColorMatrix {
+  Gbr = 0,
+  Bt709 = 1,
+  Unknown = 2,
+  Reserved = 3,
+  Fcc = 4,
+  Bt470Bg = 5,
+  Smpte170M = 6,
+  Smpte240M = 7,
+  Ycgco = 8,
+  Bt2020Nc = 9,
+  Bt2020C = 10,
+  Smpte2085 = 11,
+  ChromaDerivedNc = 12,
+  ChromaDerivedC = 13,
+  Ictcp = 14,
+}
+
+/** H.264 `profile_idc` values. */
+// H.264 has a few profiles that have the same value but different names, included so lookup by name works
+export enum H264Profile {
+  ConstrainedBaseline = 66,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  Baseline = 66,
+  Main = 77,
+  Extended = 88,
+  ConstrainedHigh = 100,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  ProgressiveHigh = 100,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  High = 100,
+  High10 = 110,
+  High422 = 122,
+  High444Predictive = 244,
+}
+
+/** HEVC `profile_idc` values. */
+export enum HevcProfile {
+  Main = 1,
+  Main10 = 2,
+  MainStillPicture = 3,
+  Rext = 4,
+}
+
+/** AV1 `seq_profile` values. */
+export enum Av1Profile {
+  Main = 0,
+  High = 1,
+  Professional = 2,
+}
+
+/** MPEG-4 Audio Object Type values for AAC. */
+export enum AacProfile {
+  Main = 1,
+  Lc = 2,
+  Ssr = 3,
+  Ltp = 4,
+  HeAac = 5,
+  Ld = 23,
+  HeAacv2 = 29,
+  Eld = 39,
+  XheAac = 42,
+}
+
+/** Dolby Vision bitstream profile numbers from the DOVI configuration record. */
+export enum DvProfile {
+  Dvhe03 = 3,
+  Dvhe04 = 4,
+  Dvhe05 = 5,
+  Dvhe07 = 7,
+  Dvhe08 = 8,
+  Dvav09 = 9,
+  Dav110 = 10,
+}
+
+/**
+ * Dolby Vision base-layer signal-compatibility ID from the DOVI configuration record.
+ * Identifies what the base HEVC/AVC layer renders as on a non-DV decoder.
+ */
+export enum DvSignalCompatibility {
+  None = 0,
+  Hdr10 = 1,
+  Sdr709 = 2,
+  Hlg = 4,
+  Sdr2020 = 6,
+}
+
 export enum DatabaseExtension {
   Cube = 'cube',
   EarthDistance = 'earthdistance',
   Vector = 'vector',
-  Vectors = 'vectors',
   VectorChord = 'vchord',
 }
 
@@ -611,8 +749,11 @@ export enum BootstrapEventPriority {
   StorageService = -195,
   // Other services may need to queue jobs on bootstrap.
   JobService = -190,
-  // Initialise config after other bootstrap services, stop other services from using config on bootstrap
+  // Initialize config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
+  PluginSync = 190,
+  // Load plugins into memory after sync
+  PluginLoad = 200,
 }
 
 export enum QueueName {
@@ -725,7 +866,7 @@ export enum JobName {
   Ocr = 'Ocr',
 
   // Workflow
-  WorkflowRun = 'WorkflowRun',
+  WorkflowAssetCreate = 'WorkflowAssetCreate',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -771,6 +912,7 @@ export enum DatabaseLock {
   CLIPDimSize = 512,
   Library = 1337,
   NightlyJobs = 600,
+  PluginImport = 666,
   MediaLocation = 700,
   GetSystemConfig = 69,
   BackupDatabase = 42,
@@ -797,11 +939,16 @@ export enum ExitCode {
 
 export enum SyncRequestType {
   AlbumsV1 = 'AlbumsV1',
+  AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
+  /** @deprecated */
   AlbumAssetsV1 = 'AlbumAssetsV1',
+  AlbumAssetsV2 = 'AlbumAssetsV2',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
+  /** @deprecated */
   AssetsV1 = 'AssetsV1',
+  AssetsV2 = 'AssetsV2',
   AssetExifsV1 = 'AssetExifsV1',
   AssetEditsV1 = 'AssetEditsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
@@ -809,12 +956,15 @@ export enum SyncRequestType {
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
+  /** @deprecated */
   PartnerAssetsV1 = 'PartnerAssetsV1',
+  PartnerAssetsV2 = 'PartnerAssetsV2',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
+  /** @deprecated */
   AssetFacesV1 = 'AssetFacesV1',
   AssetFacesV2 = 'AssetFacesV2',
   UserMetadataV1 = 'UserMetadataV1',
@@ -831,7 +981,9 @@ export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
+  /** @deprecated */
   AssetV1 = 'AssetV1',
+  AssetV2 = 'AssetV2',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
   AssetEditV1 = 'AssetEditV1',
@@ -842,8 +994,12 @@ export enum SyncEntityType {
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
 
+  /** @deprecated */
   PartnerAssetV1 = 'PartnerAssetV1',
+  PartnerAssetV2 = 'PartnerAssetV2',
+  /** @deprecated */
   PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
+  PartnerAssetBackfillV2 = 'PartnerAssetBackfillV2',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
   PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
@@ -852,15 +1008,22 @@ export enum SyncEntityType {
   PartnerStackV1 = 'PartnerStackV1',
 
   AlbumV1 = 'AlbumV1',
+  AlbumV2 = 'AlbumV2',
   AlbumDeleteV1 = 'AlbumDeleteV1',
 
   AlbumUserV1 = 'AlbumUserV1',
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
+  /** @deprecated */
   AlbumAssetCreateV1 = 'AlbumAssetCreateV1',
+  AlbumAssetCreateV2 = 'AlbumAssetCreateV2',
+  /** @deprecated */
   AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1',
+  AlbumAssetUpdateV2 = 'AlbumAssetUpdateV2',
+  /** @deprecated */
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
+  AlbumAssetBackfillV2 = 'AlbumAssetBackfillV2',
   AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1',
   AlbumAssetExifUpdateV1 = 'AlbumAssetExifUpdateV1',
   AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
@@ -1001,12 +1164,19 @@ export enum PluginContext {
 
 export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
 
-export enum PluginTriggerType {
+export enum WorkflowTrigger {
   AssetCreate = 'AssetCreate',
   PersonRecognized = 'PersonRecognized',
 }
 
-export const PluginTriggerTypeSchema = z
-  .enum(PluginTriggerType)
+export const WorkflowTriggerSchema = z
+  .enum(WorkflowTrigger)
   .describe('Plugin trigger type')
-  .meta({ id: 'PluginTriggerType' });
+  .meta({ id: 'WorkflowTrigger' });
+
+export enum WorkflowType {
+  AssetV1 = 'AssetV1',
+  AssetPersonV1 = 'AssetPersonV1',
+}
+
+export const WorkflowTypeSchema = z.enum(WorkflowType).describe('Workflow type').meta({ id: 'WorkflowType' });

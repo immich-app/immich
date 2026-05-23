@@ -3,8 +3,16 @@
   "version": "2.7.5",
   "description": "Monorepo for Immich",
   "private": true,
-  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
+  "scripts": {
+    "format": "prettier --cache --check i18n/",
+    "format:fix": "prettier --cache --write --list-different i18n"
+  },
+  "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800",
   "engines": {
     "pnpm": ">=10.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "prettier-plugin-sort-json": "^4.2.0"
   }
 }

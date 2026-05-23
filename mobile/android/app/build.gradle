@@ -64,8 +64,15 @@ android {
     }
 
     release {
-      signingConfig signingConfigs.release
+      def hasKeystore = file("../key.jks").exists() && file("../key.jks").length() > 0
+      signingConfig hasKeystore ? signingConfigs.release : signingConfigs.debug
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+      def prNumber = System.getenv("PR_NUMBER")
+      if (prNumber) {
+        applicationIdSuffix ".pr${prNumber}"
+        versionNameSuffix "-pr${prNumber}"
+      }
     }
   }
   namespace 'app.alextran.immich'
@@ -82,6 +89,13 @@ flutter {
 }
 
 dependencies {
+  constraints {
+    implementation("androidx.glance:glance-appwidget") {
+      version { strictly libs.versions.glance.get() }
+      because 'home_widget requests 1.+ which can resolve to pre-releases incompatible with our compileSdk/AGP'
+    }
+  }
+
   implementation libs.okhttp
   implementation libs.cronet.embedded
   implementation libs.media3.datasource.okhttp

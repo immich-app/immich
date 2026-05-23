@@ -57,7 +57,8 @@ class SystemConfigOAuthDto {
   /// Default storage quota
   ///
   /// Minimum value: 0
-  num? defaultStorageQuota;
+  /// Maximum value: 9007199254740991
+  int? defaultStorageQuota;
 
   /// Enabled
   bool enabled;
@@ -200,9 +201,7 @@ class SystemConfigOAuthDto {
         buttonText: mapValueOfType<String>(json, r'buttonText')!,
         clientId: mapValueOfType<String>(json, r'clientId')!,
         clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
-        defaultStorageQuota: json[r'defaultStorageQuota'] == null
-            ? null
-            : num.parse('${json[r'defaultStorageQuota']}'),
+        defaultStorageQuota: mapValueOfType<int>(json, r'defaultStorageQuota'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         endSessionEndpoint: mapValueOfType<String>(json, r'endSessionEndpoint')!,
         issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,

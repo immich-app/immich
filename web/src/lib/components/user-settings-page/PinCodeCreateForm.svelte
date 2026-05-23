@@ -42,7 +42,7 @@
 </script>
 
 <form autocomplete="off" onsubmit={handleSubmit}>
-  <div class="flex flex-col gap-6 place-items-center place-content-center">
+  <div class="flex flex-col place-content-center place-items-center gap-6">
     {#if showLabel}
       <Heading>{$t('setup_pin_code')}</Heading>
     {/if}
@@ -54,7 +54,7 @@
     </Field>
   </div>
 
-  <div class="flex justify-end gap-2 mt-4">
+  <div class="mt-4 flex justify-end gap-2">
     <Button shape="round" color="secondary" type="button" size="small" onclick={resetForm}>
       {$t('clear')}
     </Button>

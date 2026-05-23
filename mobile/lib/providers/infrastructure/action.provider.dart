@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -239,6 +240,26 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> emptyTrash(String userId) async {
+    try {
+      final count = await _service.emptyTrash(userId);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to empty trash', error, stack);
+      return ActionResult(count: 0, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> restoreAllTrash(String userId) async {
+    try {
+      final count = await _service.restoreAllTrash(userId);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to restore all trash assets', error, stack);
+      return ActionResult(count: 0, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> trashRemoteAndDeleteLocal(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     final localIds = _getLocalIdsForSource(source);
@@ -329,6 +350,23 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit date and time for assets', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult?> tagAssets(ActionSource source, BuildContext context) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    try {
+      final count = await _service.tagAssets(ids, context);
+      if (count == null) {
+        return null;
+      }
+
+      ref.invalidate(tagProvider);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to tag assets', error, stack);
+      ref.invalidate(tagProvider);
       return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
@@ -518,7 +556,9 @@ extension on Iterable<RemoteAsset> {
   Iterable<String> toIds() => map((e) => e.id);
 
   Iterable<RemoteAsset> ownedAssets(String? ownerId) {
-    if (ownerId == null) return const [];
+    if (ownerId == null) {
+      return const [];
+    }
     return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
   }
 }

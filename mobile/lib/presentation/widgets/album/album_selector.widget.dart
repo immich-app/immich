@@ -15,15 +15,15 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -58,19 +58,11 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appSettings = ref.read(appSettingsServiceProvider);
-      final savedSortMode = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortOrder);
-      final savedIsReverse = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortReverse);
-      final savedIsGrid = appSettings.getSetting(AppSettingsEnum.albumGridView);
-
-      final albumSortMode = AlbumSortMode.values.firstWhere(
-        (e) => e.storeIndex == savedSortMode,
-        orElse: () => AlbumSortMode.lastModified,
-      );
+      final albumConfig = ref.read(metadataProvider).appConfig.album;
 
       setState(() {
-        sort = AlbumSort(mode: albumSortMode, isReverse: savedIsReverse);
-        isGrid = savedIsGrid;
+        sort = AlbumSort(mode: albumConfig.sortMode, isReverse: albumConfig.isReverse);
+        isGrid = albumConfig.isGrid;
       });
 
       ref.read(remoteAlbumProvider.notifier).refresh();
@@ -102,7 +94,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.albumGridView, isGrid);
+    ref.read(metadataProvider).write(MetadataKey.albumIsGrid, isGrid);
   }
 
   void changeFilter(QuickFilterMode mode) {
@@ -118,9 +110,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       this.sort = sort;
     });
 
-    final appSettings = ref.read(appSettingsServiceProvider);
-    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, sort.mode.storeIndex);
-    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortReverse, sort.isReverse);
+    final metadata = ref.read(metadataProvider);
+    await metadata.write(MetadataKey.albumSortMode, sort.mode);
+    await metadata.write(MetadataKey.albumIsReverse, sort.isReverse);
 
     await sortAlbums();
   }

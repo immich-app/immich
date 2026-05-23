@@ -4,7 +4,7 @@ import z from 'zod';
 const DatabaseBackupSchema = z
   .object({
     filename: z.string().describe('Backup filename'),
-    filesize: z.number().describe('Backup file size'),
+    filesize: z.int().describe('Backup file size'),
     timezone: z.string().describe('Backup timezone'),
   })
   .meta({ id: 'DatabaseBackupDto' });

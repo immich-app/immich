@@ -3,11 +3,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'cli/**'
+      - 'packages/cli/**'
       - '.github/workflows/cli.yml'
   pull_request:
     paths:
-      - 'cli/**'
+      - 'packages/cli/**'
       - '.github/workflows/cli.yml'
   release:
     types: [published]
@@ -28,38 +28,28 @@ jobs:
       packages: write
     defaults:
       run:
-        working-directory: ./cli
+        working-directory: ./packages/cli
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
         with:
-          node-version-file: './cli/.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
 
-      - name: Setup typescript-sdk
-        run: pnpm install && pnpm run build
-        working-directory: ./open-api/typescript-sdk
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm publish --provenance --no-git-checks
+      - name: Publish
         if: ${{ github.event_name == 'release' }}
+        run: mise run ci-publish
 
   docker:
     name: Docker
@@ -71,9 +61,9 @@ jobs:
 
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout
@@ -99,7 +89,7 @@ jobs:
       - name: Get package version
         id: package-version
         run: |
-          version=$(jq -r '.version' cli/package.json)
+          version=$(jq -r '.version' packages/cli/package.json)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Generate docker image tags
@@ -117,7 +107,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
-          file: cli/Dockerfile
+          file: packages/cli/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'release' }}
           cache-from: type=gha

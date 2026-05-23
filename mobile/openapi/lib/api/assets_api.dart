@@ -1234,8 +1234,8 @@ class AssetsApi {
   /// * [String] xImmichChecksum:
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
   ///
-  /// * [String] duration:
-  ///   Duration (for videos)
+  /// * [int] duration:
+  ///   Duration in milliseconds (for videos)
   ///
   /// * [String] filename:
   ///   Filename
@@ -1253,7 +1253,7 @@ class AssetsApi {
   ///   Sidecar file data
   ///
   /// * [AssetVisibility] visibility:
-  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, int? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets';
 
@@ -1358,8 +1358,8 @@ class AssetsApi {
   /// * [String] xImmichChecksum:
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
   ///
-  /// * [String] duration:
-  ///   Duration (for videos)
+  /// * [int] duration:
+  ///   Duration in milliseconds (for videos)
   ///
   /// * [String] filename:
   ///   Filename
@@ -1377,7 +1377,7 @@ class AssetsApi {
   ///   Sidecar file data
   ///
   /// * [AssetVisibility] visibility:
-  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, int? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     final response = await uploadAssetWithHttpInfo(assetData, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, metadata: metadata, sidecarData: sidecarData, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));

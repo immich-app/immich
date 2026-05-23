@@ -76,6 +76,9 @@ String parameterToString(dynamic value) {
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
+  if (value is AssetOrderBy) {
+    return AssetOrderByTypeTransformer().encode(value).toString();
+  }
   if (value is AssetRejectReason) {
     return AssetRejectReasonTypeTransformer().encode(value).toString();
   }
@@ -139,15 +142,6 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
-  if (value is PluginContextType) {
-    return PluginContextTypeTypeTransformer().encode(value).toString();
-  }
-  if (value is PluginJsonSchemaType) {
-    return PluginJsonSchemaTypeTypeTransformer().encode(value).toString();
-  }
-  if (value is PluginTriggerType) {
-    return PluginTriggerTypeTypeTransformer().encode(value).toString();
-  }
   if (value is QueueCommand) {
     return QueueCommandTypeTransformer().encode(value).toString();
   }
@@ -204,6 +198,12 @@ String parameterToString(dynamic value) {
   }
   if (value is VideoContainer) {
     return VideoContainerTypeTransformer().encode(value).toString();
+  }
+  if (value is WorkflowTrigger) {
+    return WorkflowTriggerTypeTransformer().encode(value).toString();
+  }
+  if (value is WorkflowType) {
+    return WorkflowTypeTypeTransformer().encode(value).toString();
   }
   return value.toString();
 }

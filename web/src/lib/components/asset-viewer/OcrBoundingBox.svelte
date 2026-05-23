@@ -44,12 +44,12 @@
 
 <div
   class={[
-    'absolute left-0 top-0 flex items-center justify-center',
-    'border-2 border-blue-500 pointer-events-auto cursor-text',
-    'focus:z-1 focus:border-blue-600 focus:border-3 focus:outline-none',
+    'absolute top-0 left-0 flex items-center justify-center',
+    'pointer-events-auto cursor-text border-2 border-blue-500',
+    'focus:z-1 focus:border-3 focus:border-blue-600 focus:outline-none',
     isTouch
-      ? 'text-white bg-black/60 select-all'
-      : 'select-text text-transparent bg-blue-500/10 transition-colors hover:z-1 hover:text-white hover:bg-black/60 hover:border-blue-600 hover:border-3',
+      ? 'bg-black/60 text-white select-all'
+      : 'bg-blue-500/10 text-transparent transition-colors select-text hover:z-1 hover:border-3 hover:border-blue-600 hover:bg-black/60 hover:text-white',
     ocrBox.verticalMode === 'none' ? 'px-2 py-1 whitespace-nowrap' : 'px-1 py-2',
   ]}
   style="font-size: {fontSize}; width: {dimensions.width}px; height: {dimensions.height}px; transform: {transform}; transform-origin: 0 0; touch-action: none; {verticalStyle}"

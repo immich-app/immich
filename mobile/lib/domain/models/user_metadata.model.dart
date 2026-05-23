@@ -35,7 +35,9 @@ isOnboarded: $isOnboarded,
 
   @override
   bool operator ==(covariant Onboarding other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return isOnboarded == other.isOnboarded;
   }
@@ -132,7 +134,9 @@ showSupportBadge: $showSupportBadge,
 
   @override
   bool operator ==(covariant Preferences other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.foldersEnabled == foldersEnabled &&
         other.memoriesEnabled == memoriesEnabled &&
@@ -199,7 +203,9 @@ licenseKey: $licenseKey,
 
   @override
   bool operator ==(covariant License other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return activatedAt == other.activatedAt && activationKey == other.activationKey && licenseKey == other.licenseKey;
   }
@@ -251,7 +257,9 @@ license: ${license ?? "<NA>"},
 
   @override
   bool operator ==(covariant UserMetadata other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.userId == userId &&
         other.key == key &&

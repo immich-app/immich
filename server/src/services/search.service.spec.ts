@@ -65,7 +65,7 @@ describe(SearchService.name, () => {
   });
 
   describe('getExploreData', () => {
-    it('should get assets by city and tag', async () => {
+    it('should get recent assets and assets by city and tag', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.from()
         .exif({ latitude: 42, longitude: 69, city: 'city', state: 'state', country: 'country' })
@@ -74,9 +74,17 @@ describe(SearchService.name, () => {
         fieldName: 'exifInfo.city',
         items: [{ value: 'city', data: asset.id }],
       });
+      mocks.asset.getRecentlyCreatedAssetIds.mockResolvedValue({
+        fieldName: 'createdAt',
+        items: [{ value: asset.createdAt, data: asset.id }],
+      });
       mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
       const expectedResponse = [
         { fieldName: 'exifInfo.city', items: [{ value: 'city', data: mapAsset(getForAsset(asset)) }] },
+        {
+          fieldName: 'createdAt',
+          items: [{ value: asset.createdAt.toISOString(), data: mapAsset(getForAsset(asset)) }],
+        },
       ];
 
       const result = await sut.getExploreData(auth);

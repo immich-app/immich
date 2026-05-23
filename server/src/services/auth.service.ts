@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, UnauthorizedExcept
 import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
-import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
+import { LOGIN_DUMMY_HASH, LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import {
   AuthDto,
@@ -62,15 +62,12 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
-    if (user) {
-      const isAuthenticated = this.validateSecret(dto.password, user.password);
-      if (!isAuthenticated) {
-        user = undefined;
-      }
-    }
+    const user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
+    // Always run bcrypt so response time is constant regardless of whether the email
+    // is registered, preventing timing-based user enumeration.
+    const authenticated = this.cryptoRepository.compareBcrypt(dto.password, user?.password ?? LOGIN_DUMMY_HASH);
 
-    if (!user) {
+    if (!user || !user.password || !authenticated) {
       this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}`);
       throw new UnauthorizedException('Incorrect email or password');
     }
@@ -325,7 +322,8 @@ export class AuthService extends BaseService {
       const emailUser = await this.userRepository.getByEmail(normalizedEmail);
       if (emailUser) {
         if (emailUser.oauthId) {
-          throw new BadRequestException('User already exists, but is linked to another account.');
+          this.logger.debug('OAuth login conflict: email already linked to different account');
+          throw new BadRequestException('OAuth authentication failed');
         }
         user = await this.userRepository.update(emailUser.id, { oauthId: profile.sub });
       }
@@ -335,9 +333,9 @@ export class AuthService extends BaseService {
     if (!user) {
       if (!autoRegister) {
         this.logger.warn(
-          `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. To enable set OAuth Auto Register to true in admin settings.`,
+          `Unable to register ${profile.sub}/${normalizedEmail || '(no email)'}. User does not exist and auto registering is disabled. To enable set OAuth Auto Register to true in admin settings.`,
         );
-        throw new BadRequestException(`User does not exist and auto registering is disabled.`);
+        throw new BadRequestException('OAuth authentication failed');
       }
 
       if (!normalizedEmail) {

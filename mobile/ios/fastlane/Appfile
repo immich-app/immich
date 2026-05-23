@@ -1,5 +1,5 @@
 app_identifier "app.alextran.immich" # The bundle identifier of your app
-apple_id "alex.tran1502@gmail.com" # Your Apple email address
+apple_id "altran@futo.org" # Your Apple email address
 
 
 # For more information about the Appfile, see:

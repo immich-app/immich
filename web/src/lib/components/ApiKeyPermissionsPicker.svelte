@@ -50,7 +50,7 @@
 </script>
 
 <Label label={$t('permission')} for="permission-container" />
-<div class="flex items-center gap-2 m-4" id="permission-container">
+<div class="m-4 flex items-center gap-2" id="permission-container">
   <Checkbox id="input-select-all" size="tiny" checked={allItemsSelected} onCheckedChange={onCheckedAllChange} />
   <Label label={$t('select_all')} for="input-select-all" />
 </div>
