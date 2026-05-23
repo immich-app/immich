@@ -10,7 +10,6 @@ class AssetViewerState {
   final bool isZoomed;
   final BaseAsset? currentAsset;
   final int stackIndex;
-  final bool isViewerTransitionInProgress;
 
   const AssetViewerState({
     this.backgroundOpacity = 1.0,
@@ -19,7 +18,6 @@ class AssetViewerState {
     this.isZoomed = false,
     this.currentAsset,
     this.stackIndex = 0,
-    this.isViewerTransitionInProgress = false,
   });
 
   AssetViewerState copyWith({
@@ -29,7 +27,6 @@ class AssetViewerState {
     bool? isZoomed,
     BaseAsset? currentAsset,
     int? stackIndex,
-    bool? isViewerTransitionInProgress,
   }) {
     return AssetViewerState(
       backgroundOpacity: backgroundOpacity ?? this.backgroundOpacity,
@@ -38,7 +35,6 @@ class AssetViewerState {
       isZoomed: isZoomed ?? this.isZoomed,
       currentAsset: currentAsset ?? this.currentAsset,
       stackIndex: stackIndex ?? this.stackIndex,
-      isViewerTransitionInProgress: isViewerTransitionInProgress ?? this.isViewerTransitionInProgress,
     );
   }
 
@@ -61,8 +57,7 @@ class AssetViewerState {
         other.showingControls == showingControls &&
         other.isZoomed == isZoomed &&
         other.currentAsset == currentAsset &&
-        other.stackIndex == stackIndex &&
-        other.isViewerTransitionInProgress == isViewerTransitionInProgress;
+        other.stackIndex == stackIndex;
   }
 
   @override
@@ -72,8 +67,7 @@ class AssetViewerState {
       showingControls.hashCode ^
       isZoomed.hashCode ^
       currentAsset.hashCode ^
-      stackIndex.hashCode ^
-      isViewerTransitionInProgress.hashCode;
+      stackIndex.hashCode;
 }
 
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
@@ -143,27 +137,9 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     }
     state = state.copyWith(stackIndex: index);
   }
-
-  void setViewerTransitionInProgress(bool isInProgress) {
-    if (isInProgress == state.isViewerTransitionInProgress) {
-      return;
-    }
-    state = state.copyWith(isViewerTransitionInProgress: isInProgress);
-  }
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
-
-void prepareAssetViewerState(AssetViewerStateNotifier notifier, BaseAsset asset) {
-  notifier.reset();
-
-  // Hide controls by default for videos before the viewer is shown.
-  if (asset.isVideo) {
-    notifier.setControls(false);
-  }
-
-  notifier.setAsset(asset);
-}
 
 final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
   ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));

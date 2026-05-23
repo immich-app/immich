@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -328,9 +327,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required String? localFilePath,
   }) {
     final size = context.sizeData;
-    final imageProvider = localFilePath != null
-        ? FileImage(File(localFilePath))
-        : getFullImageProvider(asset, size: size);
+    final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
 
     if (asset.isImage && !isPlayingMotionVideo) {
       return PhotoView(

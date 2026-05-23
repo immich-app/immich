@@ -130,10 +130,6 @@ abstract class NativeSyncApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<HashResult> hashAssets(List<String> assetIds, {bool allowNetworkAccess = false});
 
-  @async
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<HashResult> hashFiles(List<String> paths);
-
   void cancelHashing();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

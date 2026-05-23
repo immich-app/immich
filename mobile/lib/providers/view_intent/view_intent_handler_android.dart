@@ -1,16 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_main_timeline_ready.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -55,18 +52,8 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   }
 
   Future<void> _flushPending() async {
-    if (_ref.read(viewIntentPendingProvider) == null) {
-      return;
-    }
-
-    try {
-      await _ref.read(viewIntentMainTimelineReadyProvider.notifier).wait(timeout: const Duration(seconds: 3));
-    } catch (_) {
-      return;
-    }
-
     final pendingAttachment = _ref.read(viewIntentPendingProvider.notifier).takeIfFresh();
-    _logger.info('flushPending, pendingAttachment:$pendingAttachment}');
+    _logger.info('flushPending, pendingAttachment:$pendingAttachment');
     if (pendingAttachment != null) {
       await handle(pendingAttachment);
     }
@@ -83,66 +70,34 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       return;
     }
 
-    final resolvedAsset = await _viewIntentAssetResolver.resolve(
-      attachment,
-      timelineUsers: _resolveMainTimelineUsers(),
-      mainTimelineService: _ref.read(timelineServiceProvider),
-    );
+    final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
       resolvedAsset.asset,
       resolvedAsset.timelineService,
-      resolvedAsset.initialIndex,
       viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
   }
 
-  List<String> _resolveMainTimelineUsers() {
-    final timelineUsers = _ref.read(timelineUsersProvider).valueOrNull;
-    final currentUserId = _ref.read(authProvider).userId;
-    final effectiveTimelineUsers = timelineUsers != null && timelineUsers.isNotEmpty ? timelineUsers : [currentUserId];
-    _logger.fine(
-      'resolve main timeline users source, timelineUsers=$timelineUsers, currentUserId=$currentUserId, effective=$effectiveTimelineUsers',
-    );
-    return effectiveTimelineUsers;
-  }
-
-  Future<void> _openAssetViewer(
-    BaseAsset asset,
-    TimelineService timelineService,
-    int initialIndex, {
-    String? viewIntentFilePath,
-  }) async {
+  Future<void> _openAssetViewer(BaseAsset asset, TimelineService timelineService, {String? viewIntentFilePath}) async {
     final notifier = _ref.read(assetViewerProvider.notifier);
-    notifier.setViewerTransitionInProgress(true);
-    try {
-      _router.removeWhere((route) => route.name == AssetViewerRoute.name);
-
-      await _waitForNextFrame();
-
-      prepareAssetViewerState(notifier, asset);
-      if (viewIntentFilePath != null) {
-        _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
-        unawaited(_viewIntentService.setManagedTempFilePath(viewIntentFilePath));
-      } else {
-        _ref.read(viewIntentFilePathProvider.notifier).clear();
-        unawaited(_viewIntentService.cleanupManagedTempFile());
-      }
-
-      unawaited(_router.push(AssetViewerRoute(initialIndex: initialIndex, timelineService: timelineService)));
-      await _waitForNextFrame();
-    } finally {
-      notifier.setViewerTransitionInProgress(false);
+    notifier.reset();
+    if (asset.isVideo) {
+      notifier.setControls(false);
     }
-  }
+    notifier.setAsset(asset);
 
-  Future<void> _waitForNextFrame() {
-    final completer = Completer<void>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!completer.isCompleted) {
-        completer.complete();
-      }
-    });
-    return completer.future;
+    if (viewIntentFilePath != null) {
+      _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
+      unawaited(_viewIntentService.setManagedTempFilePath(viewIntentFilePath));
+    } else {
+      _ref.read(viewIntentFilePathProvider.notifier).clear();
+      unawaited(_viewIntentService.cleanupManagedTempFile());
+    }
+
+    await _router.replaceAll([
+      const TabShellRoute(),
+      AssetViewerRoute(initialIndex: 0, timelineService: timelineService),
+    ]);
   }
 }

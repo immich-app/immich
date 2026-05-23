@@ -8,13 +8,12 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/main_timeline_handoff.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -61,34 +60,30 @@ class UploadActionButton extends ConsumerWidget {
     }
 
     var success = false;
-    String? uploadedRemoteAssetId;
     if (!isTimeline && viewerIntentFilePath != null) {
+      final viewIntentService = ref.read(viewIntentServiceProvider);
+      viewIntentService.markUploadActive(viewerIntentFilePath);
       var hasError = false;
-      await ref
-          .read(foregroundUploadServiceProvider)
-          .uploadShareIntent(
-            [File(viewerIntentFilePath)],
-            onSuccess: (_, remoteAssetId) {
-              uploadedRemoteAssetId = remoteAssetId;
-            },
-            onError: (fileId, errorMessage) {
-              hasError = true;
-            },
-          );
+      try {
+        await ref
+            .read(foregroundUploadServiceProvider)
+            .uploadShareIntent(
+              [File(viewerIntentFilePath)],
+              onError: (_, _) {
+                hasError = true;
+              },
+            );
+      } finally {
+        await viewIntentService.markUploadInactive(viewerIntentFilePath);
+      }
       success = !hasError;
     } else {
       final result = await ref.read(actionProvider.notifier).upload(source, assets: assets);
       success = result.success;
-      uploadedRemoteAssetId = result.remoteAssetIds.isNotEmpty ? result.remoteAssetIds.first : null;
     }
 
     if (!isTimeline && context.mounted && isUploadDialogOpen) {
       Navigator.of(context, rootNavigator: true).pop();
-    }
-
-    if (!isTimeline && success) {
-      final origin = ref.read(timelineServiceProvider).origin;
-      unawaited(ref.read(mainTimelineHandoffProvider).startIfNeeded(origin, remoteAssetId: uploadedRemoteAssetId));
     }
 
     if (context.mounted && !success && !wasUploadCancelled) {

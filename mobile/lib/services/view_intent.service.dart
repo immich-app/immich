@@ -11,6 +11,7 @@ class ViewIntentService {
   final ViewIntentHostApi _viewIntentHostApi;
   final Future<Directory> Function() _temporaryDirectory;
   String? _managedTempFilePath;
+  final Set<String> _activeUploadPaths = {};
 
   ViewIntentService(this._viewIntentHostApi, {Future<Directory> Function()? temporaryDirectory})
     : _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
@@ -54,6 +55,9 @@ class ViewIntentService {
     if (!_isManagedTempFile(path)) {
       return;
     }
+    if (_activeUploadPaths.contains(path)) {
+      return;
+    }
 
     try {
       final file = File(path);
@@ -74,7 +78,9 @@ class ViewIntentService {
         }
 
         final path = entity.path;
-        if (!_isManagedTempFile(path) || path == _managedTempFilePath) {
+        if (!_isManagedTempFile(path) ||
+            path == _managedTempFilePath ||
+            _activeUploadPaths.contains(path)) {
           continue;
         }
 
@@ -82,6 +88,19 @@ class ViewIntentService {
       }
     } catch (_) {
       // Best-effort cleanup only.
+    }
+  }
+
+  void markUploadActive(String path) {
+    _activeUploadPaths.add(path);
+  }
+
+  Future<void> markUploadInactive(String path) async {
+    if (!_activeUploadPaths.remove(path)) {
+      return;
+    }
+    if (_managedTempFilePath != path) {
+      await cleanupTempFile(path);
     }
   }
 

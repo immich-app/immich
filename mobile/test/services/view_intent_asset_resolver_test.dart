@@ -5,39 +5,26 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../infrastructure/repository.mock.dart';
 
-class MockTimelineRepository extends Mock implements DriftTimelineRepository {}
-
 class MockTimelineFactory extends Mock implements TimelineFactory {}
-
-class MockNativeSyncApi extends Mock implements NativeSyncApi {}
 
 void main() {
   late MockDriftLocalAssetRepository mockLocalAssetRepository;
-  late MockNativeSyncApi nativeSyncApi;
-  late MockTimelineRepository timelineRepository;
   late MockTimelineFactory timelineFactory;
-  late TimelineService mainTimelineService;
   late List<TimelineService> createdTimelineServices;
   late ProviderContainer container;
 
-  setUp(() async {
+  setUp(() {
     mockLocalAssetRepository = MockDriftLocalAssetRepository();
-    nativeSyncApi = MockNativeSyncApi();
-    timelineRepository = MockTimelineRepository();
     timelineFactory = MockTimelineFactory();
     createdTimelineServices = [];
-    mainTimelineService = await _setMainTimelineService(const [], createdTimelineServices);
 
     when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenAnswer((invocation) {
       final assets = List<BaseAsset>.from(invocation.positionalArguments[0] as List<BaseAsset>);
@@ -49,8 +36,6 @@ void main() {
     container = ProviderContainer(
       overrides: [
         localAssetRepository.overrideWith((ref) => mockLocalAssetRepository),
-        nativeSyncApiProvider.overrideWith((ref) => nativeSyncApi),
-        timelineRepositoryProvider.overrideWith((ref) => timelineRepository),
         timelineFactoryProvider.overrideWith((ref) => timelineFactory),
       ],
     );
@@ -63,124 +48,53 @@ void main() {
     });
   });
 
-  test('resolves main timeline asset by local id without hashing', () async {
-    final localAsset = _localAsset(id: 'local-1');
-    final mainAsset = _remoteAsset(id: 'remote-1', localId: 'local-1', checksum: 'checksum-1');
-    mainTimelineService = await _setMainTimelineService([mainAsset], createdTimelineServices);
-
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
-    when(() => timelineRepository.getMainTimelineIndexByLocalId(['user-1'], 'local-1')).thenAnswer((_) async => 0);
-
-    final result = await _resolve(container, _payload(localAssetId: 'local-1'), mainTimelineService);
-
-    expect(result.asset, same(mainAsset));
-    expect(result.timelineService, same(mainTimelineService));
-    expect(result.initialIndex, 0);
-    expect(result.viewIntentFilePath, isNull);
-    verifyNever(() => nativeSyncApi.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')));
-    verifyNever(() => timelineRepository.getMainTimelineIndexByChecksum(any(), any()));
-  });
-
-  test('falls back to checksum from local db when local id is not in main timeline', () async {
+  test('returns DB-backed local asset wrapped in a 1-element deep-link timeline', () async {
     final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
-    final mainAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
-    mainTimelineService = await _setMainTimelineService([mainAsset], createdTimelineServices);
-
     when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
-    when(() => timelineRepository.getMainTimelineIndexByLocalId(['user-1'], 'local-1')).thenAnswer((_) async => null);
-    when(() => timelineRepository.getMainTimelineIndexByChecksum(['user-1'], 'checksum-1')).thenAnswer((_) async => 0);
 
-    final result = await _resolve(container, _payload(localAssetId: 'local-1'), mainTimelineService);
-
-    expect(result.asset, same(mainAsset));
-    expect(result.timelineService, same(mainTimelineService));
-    verifyNever(() => nativeSyncApi.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')));
-  });
-
-  test('computes checksum for local asset when db checksum is missing', () async {
-    final localAsset = _localAsset(id: 'local-1', checksum: null);
-    final mainAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
-    mainTimelineService = await _setMainTimelineService([mainAsset], createdTimelineServices);
-
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
-    when(() => timelineRepository.getMainTimelineIndexByLocalId(['user-1'], 'local-1')).thenAnswer((_) async => null);
-    when(
-      () => nativeSyncApi.hashAssets(['local-1'], allowNetworkAccess: false),
-    ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
-    when(() => timelineRepository.getMainTimelineIndexByChecksum(['user-1'], 'checksum-1')).thenAnswer((_) async => 0);
-
-    final result = await _resolve(container, _payload(localAssetId: 'local-1'), mainTimelineService);
-
-    expect(result.asset, same(mainAsset));
-    expect(result.timelineService, same(mainTimelineService));
-    verify(() => nativeSyncApi.hashAssets(['local-1'], allowNetworkAccess: false)).called(1);
-  });
-
-  test('returns deep-link local asset when no main timeline match is found', () async {
-    final localAsset = _localAsset(id: 'local-1', checksum: null);
-
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
-    when(() => timelineRepository.getMainTimelineIndexByLocalId(['user-1'], 'local-1')).thenAnswer((_) async => null);
-    when(() => nativeSyncApi.hashAssets(['local-1'], allowNetworkAccess: false)).thenThrow(Exception('hash failed'));
-
-    final result = await _resolve(container, _payload(localAssetId: 'local-1'), mainTimelineService);
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
     expect(result.asset, equals(localAsset));
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
-    expect(result.initialIndex, 0);
-    expect(result.viewIntentFilePath, isNull);
+    expect(result.viewIntentFilePath, isNull, reason: 'DB-backed assets carry their own source — no temp file needed');
   });
 
-  test('matches path-only attachment to main timeline by checksum', () async {
-    final mainAsset = _remoteAsset(id: 'remote-2', checksum: 'checksum-2');
-    mainTimelineService = await _setMainTimelineService([mainAsset], createdTimelineServices);
+  test('returns transient asset with temp file path when localAssetId has no DB row', () async {
+    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => null);
 
-    when(
-      () => nativeSyncApi.hashFiles(['/tmp/incoming.jpg']),
-    ).thenAnswer((_) async => [HashResult(assetId: '/tmp/incoming.jpg', hash: 'checksum-2')]);
-    when(() => timelineRepository.getMainTimelineIndexByChecksum(['user-1'], 'checksum-2')).thenAnswer((_) async => 0);
+    final result = await _resolve(container, _payload(localAssetId: 'local-1', path: '/tmp/incoming.jpg'));
 
-    final result = await _resolve(
-      container,
-      _payload(path: '/tmp/incoming.jpg', localAssetId: null),
-      mainTimelineService,
-    );
-
-    expect(result.asset, same(mainAsset));
-    expect(result.timelineService, same(mainTimelineService));
-    expect(result.viewIntentFilePath, isNull);
+    expect(result.asset, isA<LocalAsset>());
+    expect(result.timelineService.origin, TimelineOrigin.deepLink);
+    expect(result.viewIntentFilePath, '/tmp/incoming.jpg');
   });
 
-  test('returns transient deep-link asset for unmatched path-only attachment', () async {
-    when(() => nativeSyncApi.hashFiles(['/tmp/incoming.webp'])).thenAnswer((_) async => const []);
-
+  test('returns transient asset for path-only attachment', () async {
     final result = await _resolve(
       container,
-      _payload(path: '/tmp/incoming.webp', localAssetId: null, mimeType: 'image/webp'),
-      mainTimelineService,
+      _payload(localAssetId: null, path: '/tmp/incoming.webp', mimeType: 'image/webp'),
     );
 
     expect(result.asset, isA<LocalAsset>());
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
-    expect(result.initialIndex, 0);
     expect(result.viewIntentFilePath, '/tmp/incoming.webp');
 
     final asset = result.asset as LocalAsset;
     expect(asset.localId, startsWith('-'));
     expect(asset.name, 'incoming.webp');
-    expect(asset.checksum, isNull);
     expect(asset.playbackStyle, AssetPlaybackStyle.imageAnimated);
+  });
+
+  test('throws when neither localAssetId nor path is provided', () async {
+    await expectLater(
+      _resolve(container, _payload(localAssetId: null, path: null)),
+      throwsA(isA<StateError>()),
+    );
   });
 }
 
-Future<ViewIntentResolvedAsset> _resolve(
-  ProviderContainer container,
-  ViewIntentPayload payload,
-  TimelineService mainTimelineService,
-) {
-  return container
-      .read(viewIntentAssetResolverProvider)
-      .resolve(payload, timelineUsers: const ['user-1'], mainTimelineService: mainTimelineService);
+Future<ViewIntentResolvedAsset> _resolve(ProviderContainer container, ViewIntentPayload payload) {
+  return container.read(viewIntentAssetResolverProvider).resolve(payload);
 }
 
 ViewIntentPayload _payload({String? localAssetId = 'local-1', String? path, String mimeType = 'image/jpeg'}) {
@@ -200,43 +114,10 @@ LocalAsset _localAsset({required String id, String? checksum}) {
   );
 }
 
-RemoteAsset _remoteAsset({required String id, String? localId, String? checksum}) {
-  return RemoteAsset(
-    id: id,
-    localId: localId,
-    ownerId: 'user-1',
-    name: '$id.jpg',
-    checksum: checksum,
-    type: AssetType.image,
-    createdAt: DateTime(2026, 4, 20),
-    updatedAt: DateTime(2026, 4, 20),
-    isEdited: false,
-  );
-}
-
 TimelineService _timelineServiceFromAssets(List<BaseAsset> assets, TimelineOrigin origin) {
   return TimelineService((
     assetSource: (index, count) async => assets.skip(index).take(count).toList(),
     bucketSource: () => Stream.value([Bucket(assetCount: assets.length)]),
     origin: origin,
   ));
-}
-
-Future<TimelineService> _createReadyTimelineService(List<BaseAsset> assets, TimelineOrigin origin) async {
-  final timelineService = _timelineServiceFromAssets(assets, origin);
-
-  for (var i = 0; i < 20 && !timelineService.isReady; i++) {
-    await Future<void>.delayed(Duration.zero);
-  }
-
-  return timelineService;
-}
-
-Future<TimelineService> _setMainTimelineService(
-  List<BaseAsset> assets,
-  List<TimelineService> createdTimelineServices,
-) async {
-  final timelineService = await _createReadyTimelineService(assets, TimelineOrigin.main);
-  createdTimelineServices.add(timelineService);
-  return timelineService;
 }

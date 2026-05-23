@@ -94,7 +94,6 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:scheme="content" android:mimeType="image/*" />
-        <data android:scheme="file" android:mimeType="image/*" />
       </intent-filter>
 
       <!-- Allow Immich to act as a video viewer -->
@@ -102,7 +101,6 @@
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:scheme="content" android:mimeType="video/*" />
-        <data android:scheme="file" android:mimeType="video/*" />
       </intent-filter>
 
       <!-- immich:// URL scheme handling -->

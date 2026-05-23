@@ -678,36 +678,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       return query.map((row) => row.toDto()).get();
     }
   }
-
-  Future<int?> getMainTimelineIndexByChecksum(List<String> userIds, String checksum) async {
-    if (userIds.isEmpty) {
-      return null;
-    }
-    final result = await _db.mergedAssetDrift
-        .mergedAssetIndexByChecksum(userIds: userIds, checksum: checksum)
-        .getSingleOrNull();
-    return result;
-  }
-
-  Future<int?> getMainTimelineIndexByLocalId(List<String> userIds, String localAssetId) async {
-    if (userIds.isEmpty) {
-      return null;
-    }
-    final result = await _db.mergedAssetDrift
-        .mergedAssetIndexByLocalId(userIds: userIds, localAssetId: localAssetId)
-        .getSingleOrNull();
-    return result;
-  }
-
-  Future<int?> getMainTimelineIndexByRemoteId(List<String> userIds, String remoteAssetId) async {
-    if (userIds.isEmpty) {
-      return null;
-    }
-    final result = await _db.mergedAssetDrift
-        .mergedAssetIndexByRemoteId(userIds: userIds, remoteId: remoteAssetId)
-        .getSingleOrNull();
-    return result;
-  }
 }
 
 List<Bucket> _generateBuckets(int count) {

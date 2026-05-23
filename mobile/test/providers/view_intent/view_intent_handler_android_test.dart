@@ -10,9 +10,7 @@ import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_main_timeline_ready.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -88,8 +86,6 @@ class TestAuthNotifier extends AuthNotifier {
   }
 }
 
-bool _pageRoutePredicate(PageRouteInfo<dynamic> route) => false;
-
 final _handlerProvider = Provider<AndroidViewIntentHandler>((ref) => AndroidViewIntentHandler(ref));
 
 void main() {
@@ -107,10 +103,11 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FakePageRouteInfo());
-    registerFallbackValue(_pageRoutePredicate);
-    registerFallbackValue(_localAsset(id: 'fallback'));
-    registerFallbackValue(<String>[]);
+    registerFallbackValue(<PageRouteInfo<dynamic>>[]);
     registerFallbackValue(FakeTimelineService());
+    registerFallbackValue(
+      ViewIntentPayload(path: '/tmp/fallback.jpg', mimeType: 'image/jpeg', localAssetId: 'fallback'),
+    );
   });
 
   setUp(() async {
@@ -121,16 +118,13 @@ void main() {
     deepLinkAsset = _localAsset(id: 'local-1');
     deepLinkTimelineService = await _createReadyTimelineService([deepLinkAsset], TimelineOrigin.deepLink);
 
-    when(() => router.removeWhere(any())).thenReturn(false);
-    when(() => router.push(any())).thenAnswer((_) async => null);
+    when(() => router.replaceAll(any())).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
         viewIntentServiceProvider.overrideWithValue(viewIntentService),
         viewIntentAssetResolverProvider.overrideWithValue(resolver),
         appRouterProvider.overrideWithValue(router),
-        timelineServiceProvider.overrideWithValue(deepLinkTimelineService),
-        timelineUsersProvider.overrideWith((ref) => Stream.value(['user-1'])),
         authProvider.overrideWith((ref) {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
           return authNotifier;
@@ -139,7 +133,6 @@ void main() {
     );
 
     authNotifier = container.read(authProvider.notifier) as TestAuthNotifier;
-    await container.read(timelineUsersProvider.future);
     handler = container.read(_handlerProvider);
 
     addTearDown(() async {
@@ -154,65 +147,31 @@ void main() {
     await handler.handle(payload);
 
     expect(container.read(viewIntentPendingProvider), payload);
-    verifyNever(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    );
+    verifyNever(() => resolver.resolve(any()));
   });
 
-  testWidgets('flushDeferredViewIntent waits for main timeline readiness before flushing pending attachment', (
-    tester,
-  ) async {
+  testWidgets('flushDeferredViewIntent consumes the pending attachment and routes the viewer', (tester) async {
     authNotifier.setAuthenticated(false);
     container.read(viewIntentPendingProvider.notifier).defer(payload);
     authNotifier.setAuthenticated(true);
 
-    when(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    ).thenAnswer((_) async {
-      return ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService, initialIndex: 0);
+    when(() => resolver.resolve(payload)).thenAnswer((_) async {
+      return ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService);
     });
 
     unawaited(handler.flushDeferredViewIntent());
-    await tester.pump();
-
-    expect(container.read(viewIntentPendingProvider), payload);
-    verifyNever(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    );
-
-    container.read(viewIntentMainTimelineReadyProvider.notifier).markMountedOnce();
     await tester.pump();
     await tester.pump();
     await tester.idle();
 
     expect(container.read(viewIntentPendingProvider), isNull);
-    verify(
-      () => resolver.resolve(payload, timelineUsers: ['user-1'], mainTimelineService: deepLinkTimelineService),
-    ).called(1);
+    verify(() => resolver.resolve(payload)).called(1);
   });
 
   test('flushDeferredViewIntent does nothing when there is no pending attachment', () async {
     await handler.flushDeferredViewIntent();
 
-    verifyNever(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    );
+    verifyNever(() => resolver.resolve(any()));
   });
 
   test('onAppResumed cleans stale temp files when no attachment is present', () async {
@@ -221,13 +180,7 @@ void main() {
     await handler.onAppResumed();
 
     expect(viewIntentService.cleanupStaleTempFilesCalls, 1);
-    verifyNever(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    );
+    verifyNever(() => resolver.resolve(any()));
   });
 
   test('onAppResumed does not clean stale temp files while pending attachment exists', () async {
@@ -237,26 +190,13 @@ void main() {
     await handler.onAppResumed();
 
     expect(viewIntentService.cleanupStaleTempFilesCalls, 0);
-    verifyNever(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    );
+    verifyNever(() => resolver.resolve(any()));
   });
 
   testWidgets('onAppResumed handles attachment immediately when authenticated', (tester) async {
     viewIntentService.consumedAttachment = payload;
-    when(
-      () => resolver.resolve(
-        payload,
-        timelineUsers: any(named: 'timelineUsers'),
-        mainTimelineService: any(named: 'mainTimelineService'),
-      ),
-    ).thenAnswer(
-      (_) async =>
-          ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService, initialIndex: 0),
+    when(() => resolver.resolve(payload)).thenAnswer(
+      (_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService),
     );
 
     unawaited(handler.onAppResumed());
@@ -265,9 +205,15 @@ void main() {
     await tester.pump();
     await tester.idle();
 
-    verify(
-      () => resolver.resolve(payload, timelineUsers: ['user-1'], mainTimelineService: deepLinkTimelineService),
-    ).called(1);
+    verify(() => resolver.resolve(payload)).called(1);
+    // Routes the user to [TabShell, AssetViewer] so back-press lands on the
+    // main timeline — mirrors the home-screen widget navigation pattern.
+    final captured = verify(() => router.replaceAll(captureAny())).captured;
+    expect(captured, hasLength(1));
+    final routes = captured.single as List<PageRouteInfo<dynamic>>;
+    expect(routes, hasLength(2));
+    expect(routes[0].routeName, TabShellRoute.name);
+    expect(routes[1].routeName, AssetViewerRoute.name);
   });
 }
 
@@ -306,10 +252,10 @@ TimelineService _timelineServiceFromAssets(List<BaseAsset> assets, TimelineOrigi
 
 Future<TimelineService> _createReadyTimelineService(List<BaseAsset> assets, TimelineOrigin origin) async {
   final timelineService = _timelineServiceFromAssets(assets, origin);
-
-  if (!timelineService.isReady) {
-    await timelineService.watchStatus().firstWhere((status) => status == TimelineStatus.ready);
+  // Spin a few async ticks so the internal bucket subscription has populated
+  // the buffer before tests start asserting against totalAssets.
+  for (var i = 0; i < 20 && timelineService.totalAssets != assets.length; i++) {
+    await Future<void>.delayed(Duration.zero);
   }
-
   return timelineService;
 }

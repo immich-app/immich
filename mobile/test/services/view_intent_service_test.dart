@@ -74,6 +74,18 @@ void main() {
     expect(await secondFile.exists(), isFalse);
   });
 
+  test('cleanupTempFile defers deletion while an upload is active', () async {
+    final tempFile = File('${cacheDir.path}/view_intent_in_flight.jpg')..writeAsStringSync('bytes');
+
+    service.markUploadActive(tempFile.path);
+    await service.cleanupTempFile(tempFile.path);
+
+    expect(await tempFile.exists(), isTrue, reason: 'active uploads block cleanup');
+
+    await service.markUploadInactive(tempFile.path);
+    expect(await tempFile.exists(), isFalse);
+  });
+
   test('cleanupTempFile ignores non-managed paths', () async {
     final nonManagedFile = File('${tempRoot.path}/plain_file.jpg')..writeAsStringSync('content');
 
@@ -92,5 +104,16 @@ void main() {
     expect(await firstFile.exists(), isFalse);
     expect(await secondFile.exists(), isFalse);
     expect(await unrelatedFile.exists(), isTrue);
+  });
+
+  test('cleanupStaleTempFiles skips paths with active uploads', () async {
+    final stale = File('${cacheDir.path}/view_intent_stale.jpg')..writeAsStringSync('stale');
+    final active = File('${cacheDir.path}/view_intent_active.jpg')..writeAsStringSync('active');
+    service.markUploadActive(active.path);
+
+    await service.cleanupStaleTempFiles();
+
+    expect(await stale.exists(), isFalse);
+    expect(await active.exists(), isTrue);
   });
 }
