@@ -12,7 +12,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
-import 'package:logging/logging.dart';
 
 @RoutePage()
 class DriftPersonPage extends ConsumerStatefulWidget {
@@ -27,16 +26,23 @@ class DriftPersonPage extends ConsumerStatefulWidget {
 class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
   late DriftPerson _person;
 
-  final Logger mergeLogger = Logger("PersonMerge");
-
   @override
-  initState() {
+  void initState() {
     super.initState();
     _person = widget.initialPerson;
   }
 
-  Future<void> handleEditName(BuildContext context) async {
-    await showNameEditModal(context, _person);
+  Future<bool> handleEditName(BuildContext context) async {
+    final result = await showNameEditModal(context, _person);
+
+    // result is not null && different person => merge occurred
+    if (result != null && result.id != _person.id && mounted) {
+      setState(() => _person = result);
+
+      await this.context.replaceRoute(DriftPersonRoute(initialPerson: result));
+      return true;
+    }
+    return false;
   }
 
   Future<void> handleEditBirthday(BuildContext context) async {
@@ -51,8 +57,10 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
       builder: (context) {
         return PersonOptionSheet(
           onEditName: () async {
-            await handleEditName(context);
-            ContextHelper(context).pop();
+            final isMerge = await handleEditName(context);
+            if (!isMerge) {
+              ContextHelper(context).pop();
+            }
           },
           onEditBirthday: () async {
             await handleEditBirthday(context);
@@ -67,63 +75,25 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
   @override
   Widget build(BuildContext context) {
     final personAsync = ref.watch(driftGetPersonByIdProvider(_person.id));
-    final mergeTracker = ref.read(personMergeTrackerProvider);
     ref.watch(currentRouteNameProvider.select((name) => name ?? DriftPersonRoute.name));
 
     return personAsync.when(
       data: (personByIdProvider) {
         if (personByIdProvider == null) {
-          // Check if the person was merged and redirect if necessary
-          final targetPersonId = mergeTracker.getTargetPersonId(_person.id);
-          if (targetPersonId != null) {
-            bool isOnPersonDetailPage = ModalRoute.of(context)?.isCurrent ?? false;
-
-            // Only redirect if we're currently on the person detail page, not in a nested view, e.g. image viewer
-            if (!isOnPersonDetailPage) {
-              return const Center(child: CircularProgressIndicator());
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              final currentRoute = AutoRouter.of(context).current;
+              // Check if we are currently on the DriftPersonRoute that corresponds to the deleted _person
+              if (currentRoute.name == DriftPersonRoute.name &&
+                  (currentRoute.args is DriftPersonRouteArgs &&
+                      (currentRoute.args as DriftPersonRouteArgs).initialPerson.id == _person.id)) {
+                AutoRouter.of(context).replace(const DriftPeopleCollectionRoute());
+              }
             }
-            // Person was merged, redirect to the target person
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                ref
-                    .read(driftPeopleServiceProvider)
-                    .watchPersonById(targetPersonId)
-                    .first
-                    .then((targetPerson) {
-                      if (targetPerson != null && mounted) {
-                        // Open the target person's page
-                        if (mounted) {
-                          ContextHelper(context).pop();
-                          context.pushRoute(DriftPersonRoute(initialPerson: targetPerson));
-                        }
-                      } else {
-                        // Target person not found, go back
-                        context.maybePop();
-                      }
-                    })
-                    .catchError((error) {
-                      // If we can't load the target person, go back
-                      mergeLogger.severe("Error during read of targetPerson", error);
-                      if (mounted) {
-                        context.maybePop();
-                      }
-                    });
-              }
-            });
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            mergeLogger.info(
-              'Person ${_person.name} (${_person.id}) not found and no merge records exist, it was probably deleted',
-            );
-
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                context.maybePop();
-              }
-            });
-            return const Center(child: CircularProgressIndicator());
-          }
+          });
+          return const Center(child: CircularProgressIndicator());
         }
+
         _person = personByIdProvider;
         return ProviderScope(
           overrides: [
