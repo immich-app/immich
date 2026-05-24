@@ -61,8 +61,13 @@ class WizardLogic extends _$WizardLogic {
     debugPrint('[Wizard] startDiscovery: kicking off mDNS sweep');
 
     try {
-      await ref.read(hearthDiscoveryProvider.notifier).discoverServer();
-      final discoveredUrl = ref.read(hearthDiscoveryProvider).valueOrNull;
+      // Capture the URL from the method's return value directly. Reading
+      // hearthDiscoveryProvider's AsyncValue.state here previously raced
+      // with Riverpod's internal FutureHandler when the native nsd plugin
+      // threw on a background thread, producing "Bad state: Future
+      // already completed". The discovery service no longer mutates its
+      // state at all - the URL is the contract.
+      final discoveredUrl = await ref.read(hearthDiscoveryProvider.notifier).discoverServer();
       debugPrint('[Wizard] startDiscovery: mDNS resolved url="$discoveredUrl"');
 
       if (discoveredUrl == null || discoveredUrl.isEmpty) {
