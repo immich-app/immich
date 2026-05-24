@@ -4,7 +4,7 @@ import { pinCodeRegex } from 'src/dtos/auth.dto';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
 import { MaybeDehydrated, UserMetadataItem } from 'src/types';
 import { asDateString } from 'src/utils/date';
-import { emptyStringToNull, isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
+import { emptyStringToNull, isoDateToDate, isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
 import z from 'zod';
 
 export const UserUpdateMeSchema = z
@@ -21,6 +21,35 @@ export const UserUpdateMeSchema = z
   .meta({ id: 'UserUpdateMeDto' });
 
 export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
+
+const UserUploadStatsSchema = z
+  .object({
+    from: isoDateToDate.optional().describe('Start date in UTC'),
+    to: isoDateToDate.optional().describe('End date in UTC'),
+  })
+  .refine((dto) => !dto.from || !dto.to || dto.from <= dto.to, { message: 'from must be before to', path: ['from'] })
+  .meta({ id: 'UserUploadStatsDto' });
+
+export class UserUploadStatsDto extends createZodDto(UserUploadStatsSchema) {}
+
+const UserUploadStatsResponseSchema = z
+  .object({
+    userId: z.uuidv4().describe('User ID'),
+    from: z.string().describe('Start date in UTC').meta({ example: '2024-01-01' }),
+    to: z.string().describe('End date in UTC').meta({ example: '2024-12-31' }),
+    series: z.array(
+      z.object({
+        date: z.string().describe('Date in UTC').meta({ example: '2024-01-01' }),
+        count: z.int().describe('Number of uploads'),
+      }),
+    ),
+    summary: z.object({
+      totalCount: z.int().describe('Total number of uploads'),
+    }),
+  })
+  .meta({ id: 'UserUploadStatsResponseDto' });
+
+export class UserUploadStatsResponseDto extends createZodDto(UserUploadStatsResponseSchema) {}
 
 export const UserResponseSchema = z
   .object({

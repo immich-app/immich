@@ -97,6 +97,16 @@ export interface TimeBucketItem {
   count: number;
 }
 
+export interface UploadStatisticsOptions {
+  from: Date;
+  to: Date;
+}
+
+export interface UploadStatisticsItem {
+  date: string;
+  count: number;
+}
+
 export interface YearMonthDay {
   day: number;
   month: number;
@@ -704,6 +714,23 @@ export class AssetRepository {
       .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { from: DummyValue.DATE, to: DummyValue.DATE }] })
+  getUploadStatistics(ownerId: string, options: UploadStatisticsOptions): Promise<UploadStatisticsItem[]> {
+    const uploadDate = sql<Date>`date_trunc('day', "createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+
+    return this.db
+      .selectFrom('asset')
+      .select(sql<string>`(${uploadDate} AT TIME ZONE 'UTC')::date::text`.as('date'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('createdAt', '>=', options.from)
+      .where('createdAt', '<', options.to)
+      .where('deletedAt', 'is', null)
+      .groupBy(uploadDate)
+      .orderBy('date', 'asc')
+      .execute();
   }
 
   @GenerateSql({ params: [{}] })

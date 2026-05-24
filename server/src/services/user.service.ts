@@ -9,7 +9,15 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
+import {
+  UserAdminResponseDto,
+  UserResponseDto,
+  UserUpdateMeDto,
+  UserUploadStatsDto,
+  UserUploadStatsResponseDto,
+  mapUser,
+  mapUserAdmin,
+} from 'src/dtos/user.dto';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -43,6 +51,32 @@ export class UserService extends BaseService {
     }
 
     return mapUserAdmin(user);
+  }
+
+  async getUploadStatistics(auth: AuthDto, dto: UserUploadStatsDto): Promise<UserUploadStatsResponseDto> {
+    const toDate = DateTime.fromJSDate(dto.to ?? new Date(), { zone: 'utc' }).startOf('day');
+    const fromDate = DateTime.fromJSDate(dto.from ?? toDate.minus({ weeks: 52 }).plus({ days: 1 }).toJSDate(), {
+      zone: 'utc',
+    }).startOf('day');
+    const uploadCounts = await this.assetRepository.getUploadStatistics(auth.user.id, {
+      from: fromDate.toJSDate(),
+      to: toDate.plus({ days: 1 }).toJSDate(),
+    });
+    const countsByDate = new Map(uploadCounts.map((item) => [item.date, item.count]));
+    const series: UserUploadStatsResponseDto['series'] = [];
+
+    for (let date = fromDate; date <= toDate; date = date.plus({ days: 1 })) {
+      const dateKey = date.toISODate()!;
+      series.push({ date: dateKey, count: countsByDate.get(dateKey) ?? 0 });
+    }
+
+    return {
+      userId: auth.user.id,
+      from: fromDate.toISODate()!,
+      to: toDate.toISODate()!,
+      series,
+      summary: { totalCount: series.reduce((totalCount, item) => totalCount + item.count, 0) },
+    };
   }
 
   async updateMe({ user }: AuthDto, dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {

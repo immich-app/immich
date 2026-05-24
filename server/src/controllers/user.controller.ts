@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -21,7 +22,13 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
+import {
+  UserAdminResponseDto,
+  UserResponseDto,
+  UserUpdateMeDto,
+  UserUploadStatsDto,
+  UserUploadStatsResponseDto,
+} from 'src/dtos/user.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -58,6 +65,20 @@ export class UserController {
   })
   getMyUser(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.getMe(auth);
+  }
+
+  @Get('me/stats/uploads')
+  @Authenticated({ permission: Permission.UserRead })
+  @Endpoint({
+    summary: 'Get current user upload statistics',
+    description: 'Retrieve daily upload counts for the current user.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  getMyUploadStatistics(
+    @Auth() auth: AuthDto,
+    @Query() dto: UserUploadStatsDto,
+  ): Promise<UserUploadStatsResponseDto> {
+    return this.service.getUploadStatistics(auth, dto);
   }
 
   @Put('me')
