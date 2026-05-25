@@ -206,7 +206,7 @@
     }
   });
 
-  let album = $derived(data.album);
+  let album = $state(data.album);
   let albumId = $derived(album.id);
 
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
@@ -331,7 +331,9 @@
   {onAlbumShare}
   {onAlbumUserUpdate}
   onAlbumUserDelete={refreshAlbum}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
+  onAlbumUpdate={(newAlbum) => {
+    Object.assign(album, newAlbum);
+  }}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
