@@ -64,6 +64,7 @@ class TextRecognizer(InferenceModel):
                 rec_batch_num=max_batch_size if max_batch_size else 6,
                 rec_img_shape=(3, 48, 320),
                 lang_type=self.language,
+                model_root_dir=settings.cache_folder,
             )
         )
         return session
