@@ -172,6 +172,25 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         : reviewRemoteDeletions.value
         ? _TrashSyncMode.review
         : _TrashSyncMode.none;
+    final reviewRemoteDeletionsSubtitle = [
+      "advanced_settings_review_remote_deletions_subtitle".tr(),
+      if (Platform.isAndroid) "advanced_settings_review_remote_deletions_subtitle_android".tr(),
+    ].join(' ');
+
+    void showManageMediaRequiredSnackBar() {
+      if (!context.mounted) {
+        return;
+      }
+      context.scaffoldMessenger.showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 3),
+          content: Text(
+            "manage_media_access_review_rationale".tr(),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+          ),
+        ),
+      );
+    }
 
     Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
       if (Platform.isIOS) {
@@ -192,9 +211,10 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         }
       }
       if (key == AppSettingsEnum.reviewRemoteDeletions) {
-        reviewRemoteDeletions.value = result;
-        if (result) {
-          autoSyncChanges.value = false;
+        reviewRemoteDeletions.value = true;
+        autoSyncChanges.value = false;
+        if (!result) {
+          showManageMediaRequiredSnackBar();
         }
       }
       ref.invalidate(appSettingsServiceProvider);
@@ -251,7 +271,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
               ),
             SettingsRadioGroup(
               title: 'advanced_settings_review_remote_deletions_title'.tr(),
-              subtitle: 'advanced_settings_review_remote_deletions_subtitle'.tr(),
+              subtitle: reviewRemoteDeletionsSubtitle,
               value: _TrashSyncMode.review,
             ),
           ],

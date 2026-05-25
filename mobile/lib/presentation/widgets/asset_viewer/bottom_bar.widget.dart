@@ -50,10 +50,6 @@ class ViewerBottomBar extends ConsumerWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (isInTrash && isOwner && asset.hasRemote && !isSyncTrashTimeline)
-        const RestoreActionButton(source: ActionSource.viewer)
-      else
-        const ShareActionButton(source: ActionSource.viewer),
       if (isSyncTrashTimeline) ...[
         KeepOnDeviceActionButton(
           source: ActionSource.viewer,
@@ -70,7 +66,10 @@ class ViewerBottomBar extends ConsumerWidget {
           },
         ),
       ] else ...[
-        const ShareActionButton(source: ActionSource.viewer),
+        if (isInTrash && isOwner && asset.hasRemote)
+          const RestoreActionButton(source: ActionSource.viewer)
+        else
+          const ShareActionButton(source: ActionSource.viewer),
 
         if (!isInLockedView) ...[
           if (!isInTrash) ...[
