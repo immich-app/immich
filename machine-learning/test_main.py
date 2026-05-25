@@ -924,7 +924,12 @@ class TestOcr:
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
-            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+            OcrOptions(
+              session=ort_session.return_value,
+              rec_batch_num=6,
+              rec_img_shape=(3, 48, 320),
+              model_root_dir=settings.cache_folder,
+            )
         )
 
     def test_set_custom_max_batch_size(self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture) -> None:
@@ -937,7 +942,12 @@ class TestOcr:
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
-            OcrOptions(session=ort_session.return_value, rec_batch_num=4, rec_img_shape=(3, 48, 320))
+            OcrOptions(
+              session=ort_session.return_value,
+              rec_batch_num=4,
+              rec_img_shape=(3, 48, 320),
+              model_root_dir=settings.cache_folder,
+            )
         )
 
     def test_ignore_other_custom_max_batch_size(
@@ -952,7 +962,12 @@ class TestOcr:
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
-            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+            OcrOptions(
+              session=ort_session.return_value,
+              rec_batch_num=6,
+              rec_img_shape=(3, 48, 320),
+              model_root_dir=settings.cache_folder,
+            )
         )
 
 
