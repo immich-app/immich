@@ -34,6 +34,7 @@
     userSettings: AlbumViewSettings;
     allowEdit?: boolean;
     showOwner?: boolean;
+    previousRoute?: string | undefined;
     albumGroupIds?: string[];
     empty?: Snippet;
   }
@@ -45,6 +46,7 @@
     userSettings,
     allowEdit = false,
     showOwner = false,
+    previousRoute = undefined,
     // eslint-disable-next-line no-useless-assignment
     albumGroupIds = $bindable([]),
     empty,
@@ -265,6 +267,7 @@
       <AlbumCardGroup
         albums={groupedAlbums[0].albums}
         {showOwner}
+        {previousRoute}
         showDateRange
         showItemCount
         onShowContextMenu={showAlbumContextMenu}
@@ -275,6 +278,7 @@
           albums={albumGroup.albums}
           group={albumGroup}
           {showOwner}
+          {previousRoute}
           showDateRange
           showItemCount
           onShowContextMenu={showAlbumContextMenu}
@@ -283,7 +287,7 @@
     {/if}
   {:else if userSettings.view === AlbumViewMode.List}
     <!-- Album Table -->
-    <AlbumsTable {groupedAlbums} {albumGroupOption} onShowContextMenu={showAlbumContextMenu} />
+    <AlbumsTable {groupedAlbums} {albumGroupOption} {previousRoute} onShowContextMenu={showAlbumContextMenu} />
   {/if}
 {:else}
   <!-- Empty Message -->
