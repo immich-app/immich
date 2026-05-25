@@ -9,6 +9,7 @@ export type AssetMultiSelectOptions = {
 };
 export class AssetMultiSelectManager {
   #selectedMap = new SvelteMap<string, TimelineAsset>();
+  #candidateSet = new SvelteSet<string>();
 
   selectAll = $state(false);
   startAsset = $state<TimelineAsset | null>(null);
@@ -55,7 +56,7 @@ export class AssetMultiSelectManager {
   }
 
   hasSelectionCandidate(assetId: string) {
-    return this.candidates.some((asset) => asset.id === assetId);
+    return this.#candidateSet.has(assetId);
   }
 
   selectAsset(asset: TimelineAsset) {
@@ -64,7 +65,7 @@ export class AssetMultiSelectManager {
 
   selectAssets(assets: TimelineAsset[]) {
     for (const asset of assets) {
-      this.selectAsset(asset);
+      this.#selectedMap.set(asset.id, asset);
     }
   }
 
@@ -86,10 +87,15 @@ export class AssetMultiSelectManager {
 
   setAssetSelectionCandidates(assets: TimelineAsset[]) {
     this.candidates = assets;
+    this.#candidateSet.clear();
+    for (const asset of assets) {
+      this.#candidateSet.add(asset.id);
+    }
   }
 
   clearCandidates() {
     this.candidates = [];
+    this.#candidateSet.clear();
   }
 
   clear() {
@@ -101,6 +107,7 @@ export class AssetMultiSelectManager {
 
     // Range selection
     this.candidates = [];
+    this.#candidateSet.clear();
     this.startAsset = null;
   }
 }

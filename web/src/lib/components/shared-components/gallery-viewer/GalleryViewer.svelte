@@ -85,6 +85,15 @@
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
   let scrollTop = $state(0);
+
+  // Asset ID index lookup map for O(1) range computation
+  let assetIndexMap = $derived.by(() => {
+    const map = new Map<string, number>();
+    for (let i = 0; i < assets.length; i++) {
+      map.set(assets[i].id, i);
+    }
+    return map;
+  });
   let slidingWindow = $derived.by(() => {
     const top = (scrollTop || 0) - slidingWindowOffset;
     const bottom = top + viewport.height + slidingWindowOffset;
@@ -175,8 +184,12 @@
       return;
     }
 
-    let start = assets.findIndex((a) => a.id === startAsset.id);
-    let end = assets.findIndex((a) => a.id === endAsset.id);
+    let start = assetIndexMap.get(startAsset.id);
+    let end = assetIndexMap.get(endAsset.id);
+
+    if (start === undefined || end === undefined) {
+      return;
+    }
 
     if (start > end) {
       [start, end] = [end, start];
