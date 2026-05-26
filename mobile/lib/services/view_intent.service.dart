@@ -78,9 +78,7 @@ class ViewIntentService {
         }
 
         final path = entity.path;
-        if (!_isManagedTempFile(path) ||
-            path == _managedTempFilePath ||
-            _activeUploadPaths.contains(path)) {
+        if (!_isManagedTempFile(path) || path == _managedTempFilePath || _activeUploadPaths.contains(path)) {
           continue;
         }
 
