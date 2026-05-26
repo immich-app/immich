@@ -17,7 +17,7 @@
   let { backIcon = mdiClose, class: className = '', onClose, title, leading, children, trailing }: Props = $props();
 </script>
 
-<div class={['absolute top-0 w-full bg-transparent p-2']}>
+<div class="absolute top-0 w-full bg-transparent p-2" id="control-bar">
   <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
     {#if title || leading}
       <ControlBarHeader>

@@ -327,7 +327,7 @@
 />
 
 {#if assetMultiSelectManager.selectionActive}
-  <div class="sticky top-0 z-1 dark">
+  <div class="dark sticky top-0 z-1">
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
       <CreateSharedLink />
@@ -365,17 +365,15 @@
 
 <section
   id="memory-viewer"
-  class="dark w-full text-white bg-immich-dark-gray"
+  class="dark w-full bg-immich-dark-gray text-white"
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >
   {#if current}
-    <div
-      class="max-md:h-auto max-md:flex-col dark grid grid-cols-[100%] md:grid-cols-[25%_50%_25%] px-2 py-2 md:px-4 md:py-4"
-    >
+    <div class="dark grid grid-cols-[100%] p-2 max-md:h-auto max-md:flex-col md:grid-cols-[25%_50%_25%] md:p-4">
       {#if current}
-        <div class="flex gap-2 md:gap-6 items-center">
+        <div class="flex items-center gap-2 md:gap-6">
           <IconButton
             shape="round"
             variant="ghost"
