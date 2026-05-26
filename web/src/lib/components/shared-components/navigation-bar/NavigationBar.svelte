@@ -22,6 +22,7 @@
   import ThemeButton from '../ThemeButton.svelte';
   import UserAvatar from '../UserAvatar.svelte';
   import AccountInfoPanel from './AccountInfoPanel.svelte';
+  import { useDashboardAsLanding } from '$lib/stores/preferences.store';
 
   type Props = {
     onUploadClick?: () => void;
@@ -35,6 +36,8 @@
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
+
+  let logoHref = $derived($useDashboardAsLanding ? Route.dashboard() : Route.photos());
 
   onMount(async () => {
     try {
@@ -76,7 +79,7 @@
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={Route.photos()}>
+      <a data-sveltekit-preload-data="hover" href={logoHref}>
         <Logo variant={mediaQueryManager.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>

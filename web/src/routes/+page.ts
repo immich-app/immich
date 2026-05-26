@@ -1,7 +1,9 @@
 import { redirect } from '@sveltejs/kit';
+import { get } from 'svelte/store';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { Route } from '$lib/route';
+import { useDashboardAsLanding } from '$lib/stores/preferences.store';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
 import type { PageLoad } from './$types';
@@ -19,7 +21,8 @@ export const load = (async ({ fetch }) => {
 
     await authManager.load();
     if (authManager.authenticated) {
-      redirect(307, Route.photos());
+      const useDashboard = get(useDashboardAsLanding);
+      redirect(307, useDashboard ? Route.dashboard() : Route.photos());
     }
 
     if (serverConfigManager.value.isInitialized) {

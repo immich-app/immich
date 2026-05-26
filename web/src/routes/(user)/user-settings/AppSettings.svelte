@@ -11,6 +11,7 @@
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
+    useDashboardAsLanding,
   } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { Field, Switch, Text, Theme, themeManager, ThemePreference } from '@immich/ui';
@@ -114,6 +115,10 @@
 
       <Field label={$t('permanent_deletion_warning')} description={$t('permanent_deletion_warning_setting_description')}
         ><Switch bind:checked={$showDeleteModal} />
+      </Field>
+
+      <Field label={$t('dashboard_landing_page')} description={$t('dashboard_landing_page_description')}
+        ><Switch bind:checked={$useDashboardAsLanding} />
       </Field>
     </div>
   </div>

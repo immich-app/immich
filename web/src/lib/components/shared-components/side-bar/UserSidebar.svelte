@@ -14,6 +14,8 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiViewDashboard,
+    mdiViewDashboardOutline,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -37,6 +39,13 @@
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
+  <NavbarItem
+    title={$t('dashboard')}
+    href={Route.dashboard()}
+    icon={mdiViewDashboardOutline}
+    activeIcon={mdiViewDashboard}
+  />
+
   <NavbarItem title={$t('photos')} href={Route.photos()} icon={mdiImageMultipleOutline} activeIcon={mdiImageMultiple} />
 
   {#if featureFlagsManager.value.search}

@@ -140,3 +140,7 @@ export const autoPlayVideo = persisted<boolean>('auto-play-video', true, {});
 export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-video', false, {});
 
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
+
+export const useDashboardAsLanding = persisted<boolean>('use-dashboard-as-landing', false, {});
+
+export const dashboardMemoryTag = persisted<string>('dashboard-memory-tag', '', {});

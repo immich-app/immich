@@ -66,6 +66,9 @@ export const Route = {
   // buy
   buy: () => '/buy',
 
+  // dashboard
+  dashboard: () => '/dashboard',
+
   // explore
   explore: () => '/explore',
   places: () => '/places',
