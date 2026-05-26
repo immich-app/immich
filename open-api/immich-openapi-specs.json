@@ -8818,6 +8818,50 @@
         "x-immich-permission": "plugin.read"
       }
     },
+    "/plugins/templates": {
+      "get": {
+        "description": "Retrieve workflow templates provided by installed plugins",
+        "operationId": "searchPluginTemplates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginTemplateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve workflow templates",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "plugin.read"
+      }
+    },
     "/plugins/{id}": {
       "get": {
         "description": "Retrieve information about a specific plugin by its ID.",
@@ -20128,6 +20172,64 @@
           "title",
           "updatedAt",
           "version"
+        ],
+        "type": "object"
+      },
+      "PluginTemplateResponseDto": {
+        "properties": {
+          "description": {
+            "description": "Template description",
+            "type": "string"
+          },
+          "key": {
+            "description": "Template key (unique across all templates)",
+            "type": "string"
+          },
+          "steps": {
+            "description": "Workflow steps",
+            "items": {
+              "$ref": "#/components/schemas/PluginTemplateStepResponseDto"
+            },
+            "type": "array"
+          },
+          "title": {
+            "description": "Template title",
+            "type": "string"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger"
+          }
+        },
+        "required": [
+          "description",
+          "key",
+          "steps",
+          "title",
+          "trigger"
+        ],
+        "type": "object"
+      },
+      "PluginTemplateStepResponseDto": {
+        "properties": {
+          "config": {
+            "additionalProperties": {},
+            "description": "Step configuration",
+            "nullable": true,
+            "type": "object"
+          },
+          "enabled": {
+            "description": "Whether the step is enabled",
+            "type": "boolean"
+          },
+          "method": {
+            "description": "Step plugin method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "method"
         ],
         "type": "object"
       },

@@ -100,6 +100,11 @@ export const assetTrash = () => {
 
 export const assetAddToAlbums = () => {
   return wrapper<WorkflowType.AssetV1, { albumIds: string[] }>(({ config, data, functions }) => {
+    if (config.albumIds.length === 0) {
+      // noop
+      return {};
+    }
+
     if (config.albumIds.length === 1) {
       functions.albumAddAssets(config.albumIds[0], [data.asset.id]);
       return {};
