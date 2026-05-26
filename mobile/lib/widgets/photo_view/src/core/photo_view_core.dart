@@ -139,8 +139,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   PhotoViewHeroAttributes? get heroAttributes => widget.heroAttributes;
 
-  late ScaleBoundaries cachedScaleBoundaries = widget.scaleBoundaries;
-
   void handleScaleAnimation() {
     scale = _scaleAnimation!.value;
   }
@@ -303,7 +301,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     controller.scaleAnimationBuilder(_animateControllerScale);
     controller.rotationAnimationBuilder(_animateControllerRotation);
 
-    cachedScaleBoundaries = widget.scaleBoundaries;
+    _updateScaleBoundaries();
 
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
@@ -334,14 +332,27 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     widget.onTapDown?.call(context, details, controller.value);
   }
 
+  void _updateScaleBoundaries() {
+    final prev = controller.scaleBoundaries;
+    if (prev == widget.scaleBoundaries) return;
+
+    if (prev != null && controller.scale != null && prev.initialScale > 0) {
+      final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
+      controller.setScaleInvisibly(controller.scale! * ratio);
+    } else {
+      markNeedsScaleRecalc = true;
+    }
+    controller.scaleBoundaries = widget.scaleBoundaries;
+  }
+
+  @override
+  void didUpdateWidget(PhotoViewCore oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateScaleBoundaries();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Check if we need a recalc on the scale
-    if (widget.scaleBoundaries != cachedScaleBoundaries) {
-      markNeedsScaleRecalc = true;
-      cachedScaleBoundaries = widget.scaleBoundaries;
-    }
-
     return StreamBuilder(
       stream: controller.outputStateStream,
       initialData: controller.prevValue,

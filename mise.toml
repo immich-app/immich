@@ -16,8 +16,8 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-flutter = "3.41.9"
-pnpm = "10.33.1"
+"aqua:flutter/flutter" = "3.41.9"
+pnpm = "10.33.4"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
 java = "21.0.2"
@@ -50,11 +50,12 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 [settings]
 experimental = true
 pin = true
+lockfile = true
 
 [tasks.plugins]
 run = [
   "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build"
+  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build",
 ]
 
 [tasks.open-api-typescript]
@@ -72,12 +73,11 @@ run = "bash ./bin/generate-dart-sdk.sh"
 env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
 run = [
   { task = "//:plugins" },
-  { task = "//server:build" },
   { task = "//server:install" },
   { task = "//server:build" },
   { task = "//server:sync-open-api" },
-  { task = ":open-api-typescript"},
-  { task = ":open-api-dart"},
+  { task = ":open-api-typescript" },
+  { task = ":open-api-dart" },
 ]
 
 [tasks.sql]

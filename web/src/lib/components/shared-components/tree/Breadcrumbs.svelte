@@ -35,7 +35,7 @@
   {/if}
 
   <div
-    class="w-full overflow-y-auto rounded-2xl border border-gray-100 bg-gray-50 p-2 immich-scrollbar dark:border-gray-900 dark:bg-immich-dark-gray/50"
+    class="w-full immich-scrollbar overflow-y-auto rounded-2xl border border-gray-100 bg-gray-50 p-2 dark:border-gray-900 dark:bg-immich-dark-gray/50"
   >
     <ol class="flex items-center gap-2">
       <li>

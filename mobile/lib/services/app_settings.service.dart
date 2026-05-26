@@ -5,13 +5,7 @@ enum AppSettingsEnum<T> {
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
-  syncAlbums<bool>(StoreKey.syncAlbums, null, false),
-  enableBackup<bool>(StoreKey.enableBackup, null, false),
-  useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
-  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
-  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
-  backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
+  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

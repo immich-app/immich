@@ -11,9 +11,6 @@
             "required": true,
             "in": "query",
             "description": "Album ID",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -25,9 +22,6 @@
             "required": false,
             "in": "query",
             "description": "Asset ID (if activity is for an asset)",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -38,9 +32,6 @@
             "name": "level",
             "required": false,
             "in": "query",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "$ref": "#/components/schemas/ReactionLevel"
             }
@@ -49,9 +40,6 @@
             "name": "type",
             "required": false,
             "in": "query",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "$ref": "#/components/schemas/ReactionType"
             }
@@ -61,9 +49,6 @@
             "required": false,
             "in": "query",
             "description": "Filter by user ID",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity search"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -187,9 +172,6 @@
             "required": true,
             "in": "query",
             "description": "Album ID",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -201,9 +183,6 @@
             "required": false,
             "in": "query",
             "description": "Asset ID (if activity is for an asset)",
-            "x-nestjs_zod-parent-metadata": {
-              "description": "Activity"
-            },
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -20916,7 +20895,14 @@
             "description": "Total number of matching assets",
             "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "integer"
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v3.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "required": [

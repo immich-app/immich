@@ -8,19 +8,24 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
-final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)));
+final assetMediaRepositoryProvider = Provider(
+  (ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider), ref.watch(nativeSyncApiProvider)),
+);
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
+  final NativeSyncApi _nativeSyncApi;
   static final Logger _log = Logger("AssetMediaRepository");
 
-  const AssetMediaRepository(this._assetApiRepository);
+  const AssetMediaRepository(this._assetApiRepository, this._nativeSyncApi);
 
   Future<bool> _androidSupportsTrash() async {
     if (Platform.isAndroid) {
@@ -43,6 +48,27 @@ class AssetMediaRepository {
       }
     }
     return PhotoManager.editor.deleteWithIds(ids);
+  }
+
+  Future<bool> _restoreFromTrashById(String mediaId, int type) async {
+    try {
+      return await _nativeSyncApi.restoreFromTrashById(mediaId, type);
+    } catch (e, s) {
+      _log.warning('Error restore file from trash by Id', e, s);
+      return false;
+    }
+  }
+
+  Future<List<String>> restoreAssetsFromTrash(Iterable<LocalAsset> assets) async {
+    final restoredIds = <String>[];
+    for (final asset in assets) {
+      _log.info("Restoring from trash, localId: ${asset.id}, checksum: ${asset.checksum}");
+      final result = await _restoreFromTrashById(asset.id, asset.type.index);
+      if (result) {
+        restoredIds.add(asset.id);
+      }
+    }
+    return restoredIds;
   }
 
   Future<AssetEntity?> get(String id) async {

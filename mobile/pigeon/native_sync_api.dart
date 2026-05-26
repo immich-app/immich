@@ -11,14 +11,7 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
-enum PlatformAssetPlaybackStyle {
-  unknown,
-  image,
-  video,
-  imageAnimated,
-  livePhoto,
-  videoLooping,
-}
+enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
 
 class PlatformAsset {
   final String id;
@@ -141,6 +134,9 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
+
+  @async
+  bool restoreFromTrashById(String mediaId, int type);
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);

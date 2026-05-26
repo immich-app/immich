@@ -1004,7 +1004,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.95.2,<1.0" },
     { name = "gunicorn", specifier = ">=21.1.0" },
     { name = "huggingface-hub", specifier = ">=1.0,<2.0" },
-    { name = "insightface", specifier = ">=0.7.3,<1.0" },
+    { name = "insightface", specifier = ">=0.7.3,<2.0" },
     { name = "numpy", specifier = ">=2.4.0,<3.0" },
     { name = "onnxruntime", marker = "extra == 'armnn'", specifier = ">=1.23.2,<2" },
     { name = "onnxruntime", marker = "extra == 'cpu'", specifier = ">=1.23.2,<2" },
