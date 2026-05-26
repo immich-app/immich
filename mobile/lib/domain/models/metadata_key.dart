@@ -27,6 +27,7 @@ enum MetadataKey<T extends Object> {
 
   // Image
   imagePreferRemote<bool>(.appConfig, 'image.preferRemote', false),
+  imageLoadPreview<bool>(.appConfig, 'image.loadPreview', true),
   imageLoadOriginal<bool>(.appConfig, 'image.loadOriginal', false),
 
   // Viewer

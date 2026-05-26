@@ -133,7 +133,11 @@ extension<T extends Object> on MetadataDomain<T> {
             groupAssetsBy: repo._read(.timelineGroupAssetsBy),
             storageIndicator: repo._read(.timelineStorageIndicator),
           ),
-          image: .new(preferRemote: repo._read(.imagePreferRemote), loadOriginal: repo._read(.imageLoadOriginal)),
+          image: .new(
+            preferRemote: repo._read(.imagePreferRemote),
+            loadPreview: repo._read(.imageLoadPreview),
+            loadOriginal: repo._read(.imageLoadOriginal),
+          ),
           viewer: .new(
             loopVideo: repo._read(.viewerLoopVideo),
             loadOriginalVideo: repo._read(.viewerLoadOriginalVideo),
