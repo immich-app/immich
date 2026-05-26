@@ -37,7 +37,7 @@ export class PluginTable {
   @Column({ type: 'bytea' })
   wasmBytes!: Buffer;
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'jsonb' })
   templates!: Generated<PluginTemplate[]>;
 
   @Column({ type: 'bytea' })
