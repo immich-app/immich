@@ -334,7 +334,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   void _updateScaleBoundaries() {
     final prev = controller.scaleBoundaries;
-    if (prev == widget.scaleBoundaries) return;
+    if (prev == widget.scaleBoundaries) {
+      return;
+    }
 
     if (prev != null && controller.scale != null && prev.initialScale > 0) {
       final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
