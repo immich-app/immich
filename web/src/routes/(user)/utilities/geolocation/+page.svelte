@@ -43,9 +43,14 @@
       return;
     }
 
+    const assets = assetMultiSelectManager.ownedAssets;
+    if (assets.length === 0) {
+      return;
+    }
+
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
       point,
-      assetCount: assetMultiSelectManager.assets.length,
+      assetCount: assets.length,
     });
 
     if (!confirmed) {
@@ -54,14 +59,14 @@
 
     await updateAssets({
       assetBulkUpdateDto: {
-        ids: assetMultiSelectManager.assets.map((asset) => asset.id),
+        ids: assets.map((asset) => asset.id),
         latitude: point.lat,
         longitude: point.lng,
       },
     });
 
     const updatedAssets = await Promise.all(
-      assetMultiSelectManager.assets.map(async (asset) => {
+      assets.map(async (asset) => {
         const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
         return toTimelineAsset(updatedAsset);
       }),
@@ -171,11 +176,11 @@
         leadingIcon={mdiMapMarkerMultipleOutline}
         size="small"
         color="primary"
-        disabled={assetMultiSelectManager.assets.length === 0}
+        disabled={assetMultiSelectManager.ownedAssets.length === 0}
         onclick={() => handleUpdate()}
       >
         <Text class="hidden sm:inline-block">
-          {$t('apply_count', { values: { count: assetMultiSelectManager.assets.length } })}
+          {$t('apply_count', { values: { count: assetMultiSelectManager.ownedAssets.length } })}
         </Text>
       </Button>
     </div>
@@ -192,6 +197,7 @@
     enableRouting={true}
     bind:timelineManager
     {options}
+    albumUsers={data.partners}
     assetInteraction={assetMultiSelectManager}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
@@ -200,11 +206,11 @@
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
-        <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
+        <div class="absolute inset-s-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
           {asset.city || $t('gps')}
         </div>
       {:else}
-        <div class="absolute inset-e-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
+        <div class="absolute inset-s-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
           {$t('gps_missing')}
         </div>
       {/if}
