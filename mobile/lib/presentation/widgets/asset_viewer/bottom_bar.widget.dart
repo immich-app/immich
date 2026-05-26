@@ -15,7 +15,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/restore_action
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -53,14 +52,14 @@ class ViewerBottomBar extends ConsumerWidget {
           source: ActionSource.viewer,
           onResult: (result) {
             showKeepResultToast(context, result);
-            _updateView(result, ref);
+            _updateView(ref);
           },
         ),
         MoveToTrashActionButton(
           source: ActionSource.viewer,
           onResult: (result) {
             showTrashResultToast(context, result);
-            _updateView(result, ref);
+            _updateView(ref);
           },
         ),
       ] else ...[
@@ -136,7 +135,7 @@ class ViewerBottomBar extends ConsumerWidget {
     );
   }
 
-  void _updateView(ActionResult result, WidgetRef ref) {
+  void _updateView(WidgetRef ref) {
     Future.delayed(Durations.extralong4, () {
       if (ref.context.mounted) {
         ref.read(assetViewerProvider.notifier).setControls(true);
