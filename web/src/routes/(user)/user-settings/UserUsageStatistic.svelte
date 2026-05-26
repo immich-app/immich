@@ -160,7 +160,7 @@
     </TableBody>
   </Table>
 
-  <Heading size="tiny" class="mt-8">Upload activity</Heading>
+  <Heading size="tiny" class="mt-8">{$t('upload_activity')}</Heading>
   <div class="mt-4 w-full">
     <div class="w-full">
       <div class="mb-1 ml-7 flex justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -172,11 +172,11 @@
       <div class="flex gap-1">
         <div class="grid w-6 shrink-0 grid-rows-7 gap-px py-0.5 text-xs text-gray-500 sm:gap-1 dark:text-gray-400">
           <div></div>
-          <div>Mon</div>
+          <div>{$t('upload_activity_day_monday')}</div>
           <div></div>
-          <div>Wed</div>
+          <div>{$t('upload_activity_day_wednesday')}</div>
           <div></div>
-          <div>Fri</div>
+          <div>{$t('upload_activity_day_friday')}</div>
           <div></div>
         </div>
 
@@ -186,8 +186,8 @@
               {#each week as day}
                 <div
                   class={`aspect-square w-full min-w-0 rounded-sm ${getUploadActivityLevel(day.count)}`}
-                  title={`${day.date}: ${day.count.toLocaleString($locale)} uploads`}
-                  aria-label={`${day.date}: ${day.count.toLocaleString($locale)} uploads`}
+                  title={$t('upload_activity_day_count', { values: { date: day.date, count: day.count } })}
+                  aria-label={$t('upload_activity_day_count', { values: { date: day.date, count: day.count } })}
                 ></div>
               {/each}
             </div>
@@ -196,14 +196,16 @@
       </div>
 
       <div class="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-        <span>Less</span>
+        <span>{$t('less')}</span>
         <span class="size-3 rounded-sm bg-gray-200 dark:bg-gray-700"></span>
         <span class="size-3 rounded-sm bg-immich-primary/30"></span>
         <span class="size-3 rounded-sm bg-immich-primary/50"></span>
         <span class="size-3 rounded-sm bg-immich-primary/70"></span>
         <span class="size-3 rounded-sm bg-immich-primary"></span>
-        <span>More</span>
-        <span class="ml-4">{uploadStats.summary.totalCount.toLocaleString($locale)} uploads</span>
+        <span>{$t('more')}</span>
+        <span class="ml-4"
+          >{$t('upload_activity_total_count', { values: { count: uploadStats.summary.totalCount } })}</span
+        >
       </div>
     </div>
   </div>

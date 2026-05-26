@@ -54,15 +54,16 @@ export class UserService extends BaseService {
   }
 
   async getUploadStatistics(auth: AuthDto, dto: UserUploadStatsDto): Promise<UserUploadStatsResponseDto> {
+    const formatUploadDate = (date: Date) => date.toISOString().slice(0, 10);
     const toDate = DateTime.fromJSDate(dto.to ?? new Date(), { zone: 'utc' }).startOf('day');
-    const fromDate = DateTime.fromJSDate(dto.from ?? toDate.minus({ weeks: 52 }).plus({ days: 1 }).toJSDate(), {
-      zone: 'utc',
-    }).startOf('day');
+    const fromDate = (
+      dto.from ? DateTime.fromJSDate(dto.from, { zone: 'utc' }) : toDate.minus({ weeks: 52 }).plus({ days: 1 })
+    ).startOf('day');
     const uploadCounts = await this.assetRepository.getUploadStatistics(auth.user.id, {
       from: fromDate.toJSDate(),
       to: toDate.plus({ days: 1 }).toJSDate(),
     });
-    const countsByDate = new Map(uploadCounts.map((item) => [item.date, item.count]));
+    const countsByDate = new Map(uploadCounts.map((item) => [formatUploadDate(item.date), item.count]));
     const series: UserUploadStatsResponseDto['series'] = [];
 
     for (let date = fromDate; date <= toDate; date = date.plus({ days: 1 })) {

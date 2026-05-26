@@ -72,12 +72,9 @@ export class UserController {
   @Endpoint({
     summary: 'Get current user upload statistics',
     description: 'Retrieve daily upload counts for the current user.',
-    history: new HistoryBuilder().added('v2'),
+    history: new HistoryBuilder().added('v3').stable('v3'),
   })
-  getMyUploadStatistics(
-    @Auth() auth: AuthDto,
-    @Query() dto: UserUploadStatsDto,
-  ): Promise<UserUploadStatsResponseDto> {
+  getMyUploadStatistics(@Auth() auth: AuthDto, @Query() dto: UserUploadStatsDto): Promise<UserUploadStatsResponseDto> {
     return this.service.getUploadStatistics(auth, dto);
   }
 

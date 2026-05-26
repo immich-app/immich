@@ -14477,6 +14477,77 @@
         "x-immich-state": "Stable"
       }
     },
+    "/users/me/stats/uploads": {
+      "get": {
+        "description": "Retrieve daily upload counts for the current user.",
+        "operationId": "getMyUploadStatistics",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserUploadStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get current user upload statistics",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/users/profile-image": {
       "delete": {
         "description": "Delete the profile image of the current user.",
@@ -25947,6 +26018,71 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UserUploadStatsResponseDto": {
+        "properties": {
+          "from": {
+            "description": "Start date in UTC",
+            "example": "2024-01-01",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "properties": {
+                "count": {
+                  "description": "Number of uploads",
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "date": {
+                  "description": "Date in UTC",
+                  "example": "2024-01-01",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "date",
+                "count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "properties": {
+              "totalCount": {
+                "description": "Total number of uploads",
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "totalCount"
+            ],
+            "type": "object"
+          },
+          "to": {
+            "description": "End date in UTC",
+            "example": "2024-12-31",
+            "type": "string"
+          },
+          "userId": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "series",
+          "summary",
+          "to",
+          "userId"
+        ],
         "type": "object"
       },
       "ValidateAccessTokenResponseDto": {
