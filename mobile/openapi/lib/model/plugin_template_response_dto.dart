@@ -14,59 +14,52 @@ class PluginTemplateResponseDto {
   /// Returns a new [PluginTemplateResponseDto] instance.
   PluginTemplateResponseDto({
     required this.description,
-    required this.id,
-    required this.name,
-    required this.pluginName,
+    required this.key,
     this.steps = const [],
+    required this.title,
     required this.trigger,
   });
 
   /// Template description
   String description;
 
-  /// Template identifier (pluginName#templateName)
-  String id;
-
-  /// Template name
-  String name;
-
-  /// Owning plugin name
-  String pluginName;
+  /// Template key (unique across all templates)
+  String key;
 
   /// Workflow steps
   List<PluginTemplateStepResponseDto> steps;
+
+  /// Template title
+  String title;
 
   WorkflowTrigger trigger;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginTemplateResponseDto &&
     other.description == description &&
-    other.id == id &&
-    other.name == name &&
-    other.pluginName == pluginName &&
+    other.key == key &&
     _deepEquality.equals(other.steps, steps) &&
+    other.title == title &&
     other.trigger == trigger;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (description.hashCode) +
-    (id.hashCode) +
-    (name.hashCode) +
-    (pluginName.hashCode) +
+    (key.hashCode) +
     (steps.hashCode) +
+    (title.hashCode) +
     (trigger.hashCode);
 
   @override
-  String toString() => 'PluginTemplateResponseDto[description=$description, id=$id, name=$name, pluginName=$pluginName, steps=$steps, trigger=$trigger]';
+  String toString() => 'PluginTemplateResponseDto[description=$description, key=$key, steps=$steps, title=$title, trigger=$trigger]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'description'] = this.description;
-      json[r'id'] = this.id;
-      json[r'name'] = this.name;
-      json[r'pluginName'] = this.pluginName;
+      json[r'key'] = this.key;
       json[r'steps'] = this.steps;
+      json[r'title'] = this.title;
       json[r'trigger'] = this.trigger;
     return json;
   }
@@ -81,10 +74,9 @@ class PluginTemplateResponseDto {
 
       return PluginTemplateResponseDto(
         description: mapValueOfType<String>(json, r'description')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        pluginName: mapValueOfType<String>(json, r'pluginName')!,
+        key: mapValueOfType<String>(json, r'key')!,
         steps: PluginTemplateStepResponseDto.listFromJson(json[r'steps']),
+        title: mapValueOfType<String>(json, r'title')!,
         trigger: WorkflowTrigger.fromJson(json[r'trigger'])!,
       );
     }
@@ -134,10 +126,9 @@ class PluginTemplateResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'description',
-    'id',
-    'name',
-    'pluginName',
+    'key',
     'steps',
+    'title',
     'trigger',
   };
 }

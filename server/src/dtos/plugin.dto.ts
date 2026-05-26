@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
 import { WorkflowTrigger, WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
-import { asMethodString } from 'src/utils/workflow';
+import { asPluginKey } from 'src/utils/workflow';
 import z from 'zod';
 
 const PluginSearchSchema = z
@@ -53,9 +53,8 @@ const PluginTemplateStepResponseSchema = z
 
 const PluginTemplateResponseSchema = z
   .object({
-    id: z.string().describe('Template identifier (pluginName#templateName)'),
-    pluginName: z.string().describe('Owning plugin name'),
-    name: z.string().describe('Template name'),
+    key: z.string().describe('Template key (unique across all templates)'),
+    title: z.string().describe('Template title'),
     description: z.string().describe('Template description'),
     trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
     steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
@@ -83,8 +82,8 @@ export class PluginMethodResponseDto extends createZodDto(PluginMethodResponseSc
 export class PluginTemplateResponseDto extends createZodDto(PluginTemplateResponseSchema) {}
 
 export type PluginTemplate = {
-  pluginName: string;
   name: string;
+  title: string;
   description: string;
   trigger: WorkflowTrigger;
   steps: Array<{
@@ -94,11 +93,10 @@ export type PluginTemplate = {
   }>;
 };
 
-export const mapTemplate = (template: PluginTemplate): PluginTemplateResponseDto => {
+export const mapTemplate = (plugin: { name: string }, template: PluginTemplate): PluginTemplateResponseDto => {
   return {
-    id: `${template.pluginName}#${template.name}`,
-    pluginName: template.pluginName,
-    name: template.name,
+    key: asPluginKey({ pluginName: plugin.name, name: template.name }),
+    title: template.title,
     description: template.description,
     trigger: template.trigger,
     steps: template.steps.map((step) => ({
@@ -148,7 +146,7 @@ export function mapPlugin(plugin: Plugin): PluginResponseDto {
 
 export const mapMethod = (method: PluginMethod): PluginMethodResponseDto => {
   return {
-    key: asMethodString({ pluginName: method.pluginName, methodName: method.name }),
+    key: asPluginKey({ pluginName: method.pluginName, name: method.name }),
     name: method.name,
     title: method.title,
     hostFunctions: method.hostFunctions,

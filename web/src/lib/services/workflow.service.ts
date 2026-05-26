@@ -35,7 +35,7 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
   };
 
   const UseTemplate: ActionItem = {
-    title: $t('use_template'),
+    title: $t('browse_templates'),
     icon: mdiFileDocumentMultipleOutline,
     onAction: () => modalManager.show(WorkflowTemplatePicker, {}),
   };
@@ -85,9 +85,10 @@ export const handleCreateWorkflow = async (dto: WorkflowCreateDto) => {
   try {
     const response = await createWorkflow({ workflowCreateDto: dto });
     eventManager.emit('WorkflowCreate', response);
-    return response;
+    return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create'));
+    return false;
   }
 };
 

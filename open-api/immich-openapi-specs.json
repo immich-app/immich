@@ -8841,8 +8841,8 @@
     },
     "/plugins/templates": {
       "get": {
-        "description": "Retrieve premade workflow templates provided by installed plugins",
-        "operationId": "getTemplates",
+        "description": "Retrieve workflow templates provided by installed plugins",
+        "operationId": "searchPluginTemplates",
         "parameters": [],
         "responses": {
           "200": {
@@ -20202,16 +20202,8 @@
             "description": "Template description",
             "type": "string"
           },
-          "id": {
-            "description": "Template identifier (pluginName#templateName)",
-            "type": "string"
-          },
-          "name": {
-            "description": "Template name",
-            "type": "string"
-          },
-          "pluginName": {
-            "description": "Owning plugin name",
+          "key": {
+            "description": "Template key (unique across all templates)",
             "type": "string"
           },
           "steps": {
@@ -20221,6 +20213,10 @@
             },
             "type": "array"
           },
+          "title": {
+            "description": "Template title",
+            "type": "string"
+          },
           "trigger": {
             "$ref": "#/components/schemas/WorkflowTrigger",
             "description": "Workflow trigger"
@@ -20228,10 +20224,9 @@
         },
         "required": [
           "description",
-          "id",
-          "name",
-          "pluginName",
+          "key",
           "steps",
+          "title",
           "trigger"
         ],
         "type": "object"

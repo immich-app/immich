@@ -21,6 +21,7 @@ const setup = (db?: Kysely<DB>) => {
 };
 
 const wasmBytes = Buffer.from('random-wasm-bytes');
+const sha256hash = Buffer.from('some-manifest-hash');
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
@@ -42,6 +43,7 @@ describe(WorkflowService.name, () => {
         author: 'Test Author',
         version: '1.0.0',
         wasmBytes,
+        sha256hash,
       },
       [
         {

@@ -33,7 +33,8 @@ const PluginManifestTemplateStepSchema = z
 
 const PluginManifestTemplateSchema = z
   .object({
-    name: z.string().min(1).describe('Template name'),
+    name: z.string().min(1).describe('Template name (must be unique within the manifest)'),
+    title: z.string().min(1).describe('Template title'),
     description: z.string().min(1).describe('Template description'),
     trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
     steps: z.array(PluginManifestTemplateStepSchema).describe('Workflow steps'),
@@ -56,7 +57,14 @@ const PluginManifestSchema = z
     wasmPath: z.string().min(1).describe('WASM file path'),
     author: z.string().min(1).describe('Plugin author'),
     methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
-    templates: z.array(PluginManifestTemplateSchema).optional().default([]).describe('Workflow templates'),
+    templates: z
+      .array(PluginManifestTemplateSchema)
+      .optional()
+      .default([])
+      .refine((templates) => new Set(templates.map((t) => t.name)).size === templates.length, {
+        error: 'Template names must be unique within the manifest',
+      })
+      .describe('Workflow templates'),
   })
   .meta({ id: 'PluginManifestDto' });
 

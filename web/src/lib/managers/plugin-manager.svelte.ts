@@ -1,7 +1,7 @@
 import {
-  getTemplates,
   getWorkflowTriggers,
   searchPluginMethods,
+  searchPluginTemplates,
   WorkflowTrigger,
   type PluginMethodResponseDto,
   type PluginTemplateResponseDto,
@@ -80,7 +80,7 @@ class PluginManager {
     const [methods, triggers, templates] = await Promise.all([
       searchPluginMethods({}),
       getWorkflowTriggers(),
-      getTemplates(),
+      searchPluginTemplates(),
     ]);
 
     this.#methods = methods;

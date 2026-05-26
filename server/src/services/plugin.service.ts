@@ -1,6 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { join } from 'node:path';
-import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import {
   mapMethod,
   mapPlugin,
@@ -9,7 +7,6 @@ import {
   PluginMethodSearchDto,
   PluginResponseDto,
   PluginSearchDto,
-  PluginTemplate,
   PluginTemplateResponseDto,
 } from 'src/dtos/plugin.dto';
 import { BaseService } from 'src/services/base.service';
@@ -37,31 +34,8 @@ export class PluginService extends BaseService {
       .map((method) => mapMethod(method));
   }
 
-  async getTemplates(): Promise<PluginTemplateResponseDto[]> {
-    const templates = await this.loadTemplates();
-    return templates.map((template) => mapTemplate(template));
-  }
-
-  private async loadTemplates(): Promise<PluginTemplate[]> {
-    const { resourcePaths } = this.configRepository.getEnv();
-
-    try {
-      const templates: PluginTemplate[] = [];
-      const dto = await this.storageRepository.readJsonFile(join(resourcePaths.corePlugin, 'manifest.json'));
-      const result = PluginManifestDto.schema.safeParse(dto);
-
-      if (!result.success) {
-        return [];
-      }
-
-      for (const template of result.data.templates) {
-        templates.push({ ...template, pluginName: result.data.name });
-      }
-
-      return templates;
-    } catch {
-      this.logger.warn(`Failed to load plugin templates from folder: ${resourcePaths.corePlugin}`);
-      return [];
-    }
+  async searchTemplates(): Promise<PluginTemplateResponseDto[]> {
+    const plugins = await this.pluginRepository.search();
+    return plugins.flatMap((plugin) => plugin.templates.map((template) => mapTemplate(plugin, template)));
   }
 }

@@ -18,23 +18,37 @@
     if (!selected) {
       return;
     }
-    const response = await handleCreateWorkflow({
+
+    const success = await handleCreateWorkflow({
       trigger: selected.trigger,
       steps: selected.steps,
-      name: selected.name,
+      name: selected.title,
       description: selected.description,
       enabled: false,
     });
-    if (response) {
+
+    if (success) {
       onClose();
     }
   };
+
+  const isSelected = (template: PluginTemplateResponseDto) => selected?.key === template.key;
 </script>
 
-<FormModal title={$t('workflow_templates')} {onClose} {onSubmit} disabled={!selected} size="medium">
+<FormModal
+  title={$t('workflow_templates')}
+  {onClose}
+  {onSubmit}
+  disabled={!selected}
+  size="medium"
+  submitText={$t('use_template')}
+>
   <div class="flex flex-col gap-2">
-    {#each pluginManager.templates as template (template.id)}
-      <ListButton selected={selected?.id === template.id} onclick={() => (selected = template)}>
+    {#each pluginManager.templates as template (template.key)}
+      <ListButton
+        selected={isSelected(template)}
+        onclick={() => (selected = isSelected(template) ? undefined : template)}
+      >
         <div class="flex w-full items-center gap-3 text-start">
           <div
             class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-immich-primary/10 text-immich-primary dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary"
@@ -42,7 +56,7 @@
             <Icon icon={mdiFlashOutline} size="18" />
           </div>
           <div class="min-w-0 grow">
-            <Text fontWeight="medium">{template.name}</Text>
+            <Text fontWeight="medium">{template.title}</Text>
             <Text size="tiny" color="muted">{template.description}</Text>
           </div>
         </div>

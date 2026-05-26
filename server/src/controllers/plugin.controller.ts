@@ -44,11 +44,11 @@ export class PluginController {
   @Authenticated({ permission: Permission.PluginRead })
   @Endpoint({
     summary: 'Retrieve workflow templates',
-    description: 'Retrieve premade workflow templates provided by installed plugins',
+    description: 'Retrieve workflow templates provided by installed plugins',
     history: HistoryBuilder.v3(),
   })
-  getTemplates(): Promise<PluginTemplateResponseDto[]> {
-    return this.service.getTemplates();
+  searchPluginTemplates(): Promise<PluginTemplateResponseDto[]> {
+    return this.service.searchTemplates();
   }
 
   @Get(':id')

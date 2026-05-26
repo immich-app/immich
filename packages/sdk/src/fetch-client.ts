@@ -1527,14 +1527,12 @@ export type PluginTemplateStepResponseDto = {
 export type PluginTemplateResponseDto = {
     /** Template description */
     description: string;
-    /** Template identifier (pluginName#templateName) */
-    id: string;
-    /** Template name */
-    name: string;
-    /** Owning plugin name */
-    pluginName: string;
+    /** Template key (unique across all templates) */
+    key: string;
     /** Workflow steps */
     steps: PluginTemplateStepResponseDto[];
+    /** Template title */
+    title: string;
     /** Workflow trigger */
     trigger: WorkflowTrigger;
 };
@@ -5269,7 +5267,7 @@ export function searchPluginMethods({ description, enabled, id, name, pluginName
 /**
  * Retrieve workflow templates
  */
-export function getTemplates(opts?: Oazapfts.RequestOpts) {
+export function searchPluginTemplates(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PluginTemplateResponseDto[];
