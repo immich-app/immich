@@ -38,7 +38,7 @@ export class PluginTable {
   wasmBytes!: Buffer;
 
   @Column({ type: 'jsonb' })
-  templates!: Generated<PluginTemplate[]>;
+  templates!: PluginTemplate[];
 
   @Column({ type: 'bytea' })
   sha256hash!: Buffer;

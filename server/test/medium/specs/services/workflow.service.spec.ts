@@ -42,6 +42,7 @@ describe(WorkflowService.name, () => {
         description: 'A test core plugin for workflow tests',
         author: 'Test Author',
         version: '1.0.0',
+        templates: [],
         wasmBytes,
         sha256hash,
       },
