@@ -35,7 +35,7 @@
 </script>
 
 {#if method}
-  <FormModal title={$t('step_details')} {onClose} {onSubmit} disabled={!method} size="small">
+  <FormModal title={$t('step_details')} {onClose} {onSubmit} disabled={!method} size="medium">
     <div class="flex items-center justify-between gap-2">
       <div class="grow text-start">
         <Text fontWeight="medium">{method.title}</Text>
