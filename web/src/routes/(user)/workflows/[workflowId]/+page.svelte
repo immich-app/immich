@@ -6,7 +6,7 @@
   import WorkflowEditStepModal from '$lib/modals/WorkflowEditStepModal.svelte';
   import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
   import { Route } from '$lib/route';
-  import { handleUpdateWorkflow } from '$lib/services/workflow.service';
+  import { getWorkflowActions, handleUpdateWorkflow } from '$lib/services/workflow.service';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
   import type { WorkflowResponseDto, WorkflowStepDto, WorkflowUpdateDto } from '@immich/sdk';
   import {
@@ -83,7 +83,7 @@
   let dropTargetIndex = $state<number | null>(null);
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ description, enabled, name, steps, trigger });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -217,6 +217,12 @@
     }
   };
 
+  const onWorkflowDelete = async (response: WorkflowResponseDto) => {
+    if (id === response.id) {
+      await goto(Route.workflows());
+    }
+  };
+
   const confirmNavigation = async () => {
     if (!hasChanges) {
       return true;
@@ -273,60 +279,73 @@
       }
     });
   });
+
+  const { Download, Duplicate, CopyJson, Delete } = $derived(
+    getWorkflowActions($t, { ...savedWorkflow, name, description, enabled, trigger, steps }),
+  );
 </script>
 
-<OnEvents {onWorkflowUpdate} />
+<OnEvents {onWorkflowUpdate} {onWorkflowDelete} />
 
 <AppShell class="">
   <AppShellBar>
-    <ActionBar static {onClose} translations={{ close: $t('back') }} closeIcon={mdiArrowLeft}>
+    <ActionBar
+      shape="round"
+      static
+      {onClose}
+      translations={{ close: $t('back') }}
+      closeIcon={mdiArrowLeft}
+      actions={[Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
+    >
       <ControlBarHeader>
         <ControlBarTitle>{data.workflow.name}</ControlBarTitle>
         <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
       </ControlBarHeader>
       <ControlBarContent class="flex items-center justify-end gap-6">
-        <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
+        {#if hasChanges}
           <Button
-            variant={editMode === 'visual' ? 'filled' : 'ghost'}
-            color={editMode === 'visual' ? 'primary' : 'secondary'}
+            variant="filled"
             size="small"
-            leadingIcon={mdiFormatListBulletedSquare}
-            aria-pressed={editMode === 'visual'}
-            onclick={() => (editMode = 'visual')}
-            shape="round"
+            color="primary"
+            leadingIcon={mdiContentSave}
+            disabled={!hasChanges || isSaving}
+            loading={isSaving}
+            onclick={saveWorkflow}
           >
-            {$t('visual')}
+            {$t('save')}
           </Button>
-          <Button
-            variant={editMode === 'json' ? 'filled' : 'ghost'}
-            color={editMode === 'json' ? 'primary' : 'secondary'}
-            size="small"
-            leadingIcon={mdiCodeJson}
-            aria-pressed={editMode === 'json'}
-            onclick={() => (editMode = 'json')}
-            shape="round"
-          >
-            JSON
-          </Button>
-        </div>
-
-        <Button
-          variant="filled"
-          size="small"
-          color="primary"
-          leadingIcon={mdiContentSave}
-          disabled={!hasChanges || isSaving}
-          loading={isSaving}
-          onclick={saveWorkflow}
-        >
-          {$t('save')}
-        </Button>
+        {/if}
       </ControlBarContent>
     </ActionBar>
   </AppShellBar>
 
   <Container size="medium" class="pt-8 pb-24" center>
     <VStack gap={4}>
+      <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
+        <Button
+          variant={editMode === 'visual' ? 'filled' : 'ghost'}
+          color={editMode === 'visual' ? 'primary' : 'secondary'}
+          size="small"
+          leadingIcon={mdiFormatListBulletedSquare}
+          aria-pressed={editMode === 'visual'}
+          onclick={() => (editMode = 'visual')}
+          shape="round"
+        >
+          {$t('visual')}
+        </Button>
+        <Button
+          variant={editMode === 'json' ? 'filled' : 'ghost'}
+          color={editMode === 'json' ? 'primary' : 'secondary'}
+          size="small"
+          leadingIcon={mdiCodeJson}
+          aria-pressed={editMode === 'json'}
+          onclick={() => (editMode = 'json')}
+          shape="round"
+        >
+          JSON
+        </Button>
+      </div>
+
       {#if editMode === 'visual'}
         <Card class="shadow-none" expandable>
           <CardHeader>
@@ -354,9 +373,8 @@
                   bind:value={() => name ?? '', (value) => (name = value || null)}
                 />
               </Field>
-              <Field label={$t('description')} for="workflow-description">
+              <Field label={$t('description')}>
                 <Textarea
-                  id="workflow-description"
                   grow
                   placeholder={$t('workflow_description')}
                   bind:value={() => description ?? '', (value) => (description = value || null)}
