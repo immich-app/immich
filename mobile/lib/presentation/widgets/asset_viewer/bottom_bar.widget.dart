@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
@@ -140,9 +138,6 @@ class ViewerBottomBar extends ConsumerWidget {
 
   void _updateView(ActionResult result, WidgetRef ref) {
     Future.delayed(Durations.extralong4, () {
-      if (result.success) {
-        EventStream.shared.emit(const TimelineReloadEvent());
-      }
       if (ref.context.mounted) {
         ref.read(assetViewerProvider.notifier).setControls(true);
       }

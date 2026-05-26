@@ -86,6 +86,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   late int _currentPage = widget.initialIndex;
   late int _totalAssets = ref.read(timelineServiceProvider).totalAssets;
+  bool _isPopping = false;
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
@@ -228,6 +229,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final totalAssets = timelineService.totalAssets;
 
     if (totalAssets == 0) {
+      if (_isPopping) {
+        return;
+      }
+      _isPopping = true;
       context.maybePop();
       return;
     }
