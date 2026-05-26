@@ -43,10 +43,9 @@ export interface S3StorageConfig {
 export class S3StorageAdapter implements IStorageAdapter {
   readonly name = 's3';
   private readonly client: S3Client;
+  private readonly presignClient: S3Client;
   private readonly bucket: string;
   private readonly prefix: string;
-  private readonly publicEndpoint?: string;
-  private readonly internalEndpoint?: string;
 
   /** Maximum file size (50MB) that can be safely read into memory */
   private static readonly MAX_READ_SIZE = 50 * 1024 * 1024;
@@ -58,8 +57,8 @@ export class S3StorageAdapter implements IStorageAdapter {
   constructor(private readonly config: S3StorageConfig) {
     this.bucket = config.bucket;
     this.prefix = config.prefix || '';
-    this.publicEndpoint = config.publicEndpoint;
-    this.internalEndpoint = config.endpoint;
+
+    const forcePathStyle = config.forcePathStyle ?? true;
 
     this.client = new S3Client({
       endpoint: config.endpoint,
@@ -68,38 +67,25 @@ export class S3StorageAdapter implements IStorageAdapter {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
       },
-      forcePathStyle: config.forcePathStyle ?? true,
+      forcePathStyle,
     });
-  }
 
-  /**
-   * Rewrite presigned URL to use custom public endpoint if configured.
-   * Handles path-style URLs: https://endpoint/bucket/key -> https://publicEndpoint/key
-   */
-  private rewritePresignedUrl(url: string): string {
-    if (!this.publicEndpoint) {
-      return url;
-    }
-
-    try {
-      const parsed = new URL(url);
-      const publicParsed = new URL(this.publicEndpoint);
-
-      // Remove bucket name from path if present (path-style URL)
-      let newPath = parsed.pathname;
-      if (newPath.startsWith(`/${this.bucket}/`)) {
-        newPath = newPath.slice(this.bucket.length + 1); // Remove /bucket prefix
-      }
-
-      parsed.hostname = publicParsed.hostname;
-      parsed.protocol = publicParsed.protocol;
-      parsed.port = publicParsed.port;
-      parsed.pathname = newPath;
-
-      return parsed.toString();
-    } catch {
-      return url;
-    }
+    // SigV4 signs over the host header and request URI. Rewriting either
+    // after signing invalidates the signature, so when a distinct public
+    // endpoint is configured, use a dedicated client whose endpoint matches
+    // the URL clients will actually call.
+    const usePresignClient = !!config.publicEndpoint && config.publicEndpoint !== config.endpoint;
+    this.presignClient = usePresignClient
+      ? new S3Client({
+          endpoint: config.publicEndpoint,
+          region: config.region,
+          credentials: {
+            accessKeyId: config.accessKeyId,
+            secretAccessKey: config.secretAccessKey,
+          },
+          forcePathStyle,
+        })
+      : this.client;
   }
 
   /**
@@ -389,11 +375,9 @@ export class S3StorageAdapter implements IStorageAdapter {
       Key: this.getKey(key),
     });
 
-    const url = await getSignedUrl(this.client, command, {
+    return getSignedUrl(this.presignClient, command, {
       expiresIn: options?.expiresIn ?? 86_400,
     });
-
-    return this.rewritePresignedUrl(url);
   }
 
   async getPresignedUploadUrl(key: string, options?: PresignedUrlOptions): Promise<string> {
@@ -403,11 +387,9 @@ export class S3StorageAdapter implements IStorageAdapter {
       ContentType: options?.contentType,
     });
 
-    const url = await getSignedUrl(this.client, command, {
+    return getSignedUrl(this.presignClient, command, {
       expiresIn: options?.expiresIn ?? 86_400,
     });
-
-    return this.rewritePresignedUrl(url);
   }
 
   async createMultipartUpload(key: string, options?: StorageWriteOptions): Promise<string> {
