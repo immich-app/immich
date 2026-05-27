@@ -11,6 +11,7 @@ import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import {
   BootstrapEventPriority,
   DatabaseLock,
+  ImmichEnvironment,
   ImmichWorker,
   JobName,
   JobStatus,
@@ -43,8 +44,8 @@ export class WorkflowExecutionService extends BaseService {
       // TODO avoid importing plugins in each worker
       // Can this use system metadata similar to geocoding?
 
-      const { resourcePaths, plugins } = this.configRepository.getEnv();
-      await this.importFolder(resourcePaths.corePlugin, { force: true });
+      const { environment, resourcePaths, plugins } = this.configRepository.getEnv();
+      await this.importFolder(resourcePaths.corePlugin, { force: environment === ImmichEnvironment.Development });
 
       if (plugins.external.allow && plugins.external.installFolder) {
         await this.importFolders(plugins.external.installFolder);
@@ -166,7 +167,19 @@ export class WorkflowExecutionService extends BaseService {
   private async importFolder(folder: string, options?: { force?: boolean }) {
     try {
       const manifestPath = join(folder, 'manifest.json');
-      const dto = await this.storageRepository.readJsonFile(manifestPath);
+      const bytes = await this.storageRepository.readFile(manifestPath);
+      const contents = bytes.toString('utf8');
+      const sha256hash = this.cryptoRepository.hashSha256(contents) as Buffer;
+
+      if (!options?.force) {
+        const match = await this.pluginRepository.getByHash(sha256hash);
+        if (match) {
+          this.logger.log(`Plugin up to date (name=${match.name}@${match.version}, hash=${sha256hash.toString('hex')}`);
+          return;
+        }
+      }
+
+      const dto = JSON.parse(contents);
       const result = PluginManifestDto.schema.safeParse(dto);
       if (!result.success) {
         const issues = result.error.issues.map((issue) => `  - [${issue.path.join('.')}] ${issue.message}`).join('\n');
@@ -176,22 +189,21 @@ export class WorkflowExecutionService extends BaseService {
       const manifest = result.data;
 
       const existing = await this.pluginRepository.getByName(manifest.name);
-      if (existing && existing.version === manifest.version && options?.force !== true) {
-        return;
-      }
-
       const wasmPath = `${folder}/${manifest.wasmPath}`;
       const wasmBytes = await this.storageRepository.readFile(wasmPath);
 
       const plugin = await this.pluginRepository.upsert(
         {
+          // NOTE: new properties here need to be added to the on conflict clause in the repository
           enabled: true,
           name: manifest.name,
           title: manifest.title,
           description: manifest.description,
           author: manifest.author,
           version: manifest.version,
+          templates: manifest.templates,
           wasmBytes,
+          sha256hash,
         },
         manifest.methods,
       );

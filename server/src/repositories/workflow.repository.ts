@@ -47,6 +47,7 @@ export class WorkflowRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   search(dto: WorkflowSearchDto & { ownerId?: string }) {
     return this.queryBuilder()
+      .$if(!!dto.id, (qb) => qb.where('id', '=', dto.id!))
       .$if(!!dto.ownerId, (qb) => qb.where('ownerId', '=', dto.ownerId!))
       .$if(!!dto.trigger, (qb) => qb.where('trigger', '=', dto.trigger!))
       .$if(dto.enabled !== undefined, (qb) => qb.where('enabled', '=', dto.enabled!))

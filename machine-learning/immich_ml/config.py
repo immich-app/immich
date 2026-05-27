@@ -6,7 +6,7 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
@@ -42,6 +42,10 @@ class MaxBatchSize(BaseModel):
     ocr: int | None = None
 
 
+def default_worker_timeout() -> int:
+    return 900 if os.environ.get("DEVICE") == "rocm" else 300
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="MACHINE_LEARNING_",
@@ -54,7 +58,7 @@ class Settings(BaseSettings):
     model_ttl: int = 300
     model_ttl_poll_s: int = 10
     workers: int = 1
-    worker_timeout: int = 300
+    worker_timeout: int = Field(default_factory=default_worker_timeout)
     http_keepalive_timeout_s: int = 2
     test_full: bool = False
     request_threads: int = os.cpu_count() or 4

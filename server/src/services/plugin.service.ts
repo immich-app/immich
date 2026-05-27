@@ -2,10 +2,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   mapMethod,
   mapPlugin,
+  mapTemplate,
   PluginMethodResponseDto,
   PluginMethodSearchDto,
   PluginResponseDto,
   PluginSearchDto,
+  PluginTemplateResponseDto,
 } from 'src/dtos/plugin.dto';
 import { BaseService } from 'src/services/base.service';
 import { isMethodCompatible } from 'src/utils/workflow';
@@ -30,5 +32,10 @@ export class PluginService extends BaseService {
     return methods
       .filter((method) => !dto.trigger || isMethodCompatible(method, dto.trigger))
       .map((method) => mapMethod(method));
+  }
+
+  async searchTemplates(): Promise<PluginTemplateResponseDto[]> {
+    const plugins = await this.pluginRepository.search();
+    return plugins.flatMap((plugin) => plugin.templates.map((template) => mapTemplate(plugin, template)));
   }
 }
