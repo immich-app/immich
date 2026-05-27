@@ -7,7 +7,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     USING person, asset
     WHERE asset_face."personId" = person.id
       AND asset_face."assetId" = asset.id
-      AND person."ownerId" <> asset."ownerId"
+      AND person."ownerId" != asset."ownerId"
   `.execute(db);
 }
 
