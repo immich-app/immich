@@ -31,7 +31,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
-    final levelId = useState<int>(ref.read(systemConfigProvider).logLevel.index);
+    final levelId = useState<int>(ref.read(appConfigProvider).logLevel.index);
     final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
     useValueChanged(
       preferRemote.value,

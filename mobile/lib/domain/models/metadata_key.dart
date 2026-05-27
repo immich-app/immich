@@ -1,142 +1,105 @@
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-enum MetadataDomain<T extends Object> {
-  appConfig<AppConfig>('config.app'),
-  systemConfig<SystemConfig>('config.system');
+enum MetadataScope {
+  user, // keys with this scope are deleted on logout
+  system;
 
-  final String prefix;
-  const MetadataDomain(this.prefix);
+  const MetadataScope();
 }
 
 enum MetadataKey<T extends Object> {
   // Theme
-  themePrimaryColor<ImmichColorPreset>(.appConfig, 'theme.primaryColor', .indigo, _EnumCodec(ImmichColorPreset.values)),
-  themeMode<ThemeMode>(.appConfig, 'theme.mode', .system, _EnumCodec(ThemeMode.values)),
-  themeDynamic<bool>(.appConfig, 'theme.dynamic', false),
-  themeColorfulInterface<bool>(.appConfig, 'theme.colorfulInterface', true),
+  themePrimaryColor<ImmichColorPreset>(codec: _EnumCodec(ImmichColorPreset.values)),
+  themeMode<ThemeMode>(codec: _EnumCodec(ThemeMode.values)),
+  themeDynamic<bool>(),
+  themeColorfulInterface<bool>(),
 
   // Image
-  imagePreferRemote<bool>(.appConfig, 'image.preferRemote', false),
-  imageLoadOriginal<bool>(.appConfig, 'image.loadOriginal', false),
+  imagePreferRemote<bool>(),
+  imageLoadOriginal<bool>(),
 
   // Viewer
-  viewerLoopVideo<bool>(.appConfig, 'viewer.loopVideo', true),
-  viewerLoadOriginalVideo<bool>(.appConfig, 'viewer.loadOriginalVideo', false),
-  viewerAutoPlayVideo<bool>(.appConfig, 'viewer.autoPlayVideo', true),
-  viewerTapToNavigate<bool>(.appConfig, 'viewer.tapToNavigate', false),
+  viewerLoopVideo<bool>(),
+  viewerLoadOriginalVideo<bool>(),
+  viewerAutoPlayVideo<bool>(),
+  viewerTapToNavigate<bool>(),
 
   // Network
-  networkAutoEndpointSwitching<bool>(.systemConfig, 'network.autoEndpointSwitching', false),
-  networkPreferredWifiName<String>(.systemConfig, 'network.preferredWifiName', ''),
-  networkLocalEndpoint<String>(.systemConfig, 'network.localEndpoint', ''),
-  networkExternalEndpointList<List<String>>(
-    .systemConfig,
-    'network.externalEndpointList',
-    [],
-    _ListCodec(_PrimitiveCodec.string),
-  ),
+  networkAutoEndpointSwitching<bool>(scope: .system),
+  networkPreferredWifiName<String>(scope: .system),
+  networkLocalEndpoint<String>(scope: .system),
+  networkExternalEndpointList<List<String>>(scope: .system, codec: _ListCodec(_PrimitiveCodec.string)),
   networkCustomHeaders<Map<String, String>>(
-    .systemConfig,
-    'network.customHeaders',
-    {},
-    _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string),
+    scope: .system,
+    codec: _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string),
   ),
 
   // Album
-  albumSortMode<AlbumSortMode>(
-    .appConfig,
-    'album.sortMode',
-    AlbumSortMode.mostRecent,
-    _EnumCodec(AlbumSortMode.values),
-  ),
-  albumIsReverse<bool>(.appConfig, 'album.isReverse', true),
-  albumIsGrid<bool>(.appConfig, 'album.isGrid', false),
+  albumSortMode<AlbumSortMode>(codec: _EnumCodec(AlbumSortMode.values)),
+  albumIsReverse<bool>(),
+  albumIsGrid<bool>(),
 
   // Backup
-  backupEnabled<bool>(.appConfig, 'backup.enabled', false),
-  backupUseCellularForVideos<bool>(.appConfig, 'backup.useCellularForVideos', false),
-  backupUseCellularForPhotos<bool>(.appConfig, 'backup.useCellularForPhotos', false),
-  backupRequireCharging<bool>(.appConfig, 'backup.requireCharging', false),
-  backupTriggerDelay<int>(.appConfig, 'backup.triggerDelay', 30),
-  backupSyncAlbums<bool>(.appConfig, 'backup.syncAlbums', false),
+  backupEnabled<bool>(),
+  backupUseCellularForVideos<bool>(),
+  backupUseCellularForPhotos<bool>(),
+  backupRequireCharging<bool>(),
+  backupTriggerDelay<int>(),
+  backupSyncAlbums<bool>(),
 
   // Timeline
-  timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),
-  timelineGroupAssetsBy<GroupAssetsBy>(
-    .appConfig,
-    'timeline.groupAssetsBy',
-    GroupAssetsBy.day,
-    _EnumCodec(GroupAssetsBy.values),
-  ),
-  timelineStorageIndicator<bool>(.appConfig, 'timeline.storageIndicator', true),
+  timelineTilesPerRow<int>(),
+  timelineGroupAssetsBy<GroupAssetsBy>(codec: _EnumCodec(GroupAssetsBy.values)),
+  timelineStorageIndicator<bool>(),
 
   // Log
-  logLevel<LogLevel>(.systemConfig, 'log.level', .info, _EnumCodec(LogLevel.values)),
+  logLevel<LogLevel>(scope: .system, codec: _EnumCodec(LogLevel.values)),
 
   // Map
-  mapShowFavoriteOnly<bool>(.appConfig, 'map.showFavoriteOnly', false),
-  mapRelativeDate<int>(.appConfig, 'map.relativeDate', 0),
-  mapIncludeArchived<bool>(.appConfig, 'map.includeArchived', false),
-  mapThemeMode<ThemeMode>(.appConfig, 'map.themeMode', .system, _EnumCodec(ThemeMode.values)),
-  mapWithPartners<bool>(.appConfig, 'map.withPartners', false),
+  mapShowFavoriteOnly<bool>(),
+  mapRelativeDate<int>(),
+  mapIncludeArchived<bool>(),
+  mapThemeMode<ThemeMode>(codec: _EnumCodec(ThemeMode.values)),
+  mapWithPartners<bool>(),
 
   // Cleanup
-  cleanupKeepFavorites<bool>(.appConfig, 'cleanup.keepFavorites', true),
-  cleanupKeepMediaType<AssetKeepType>(
-    .appConfig,
-    'cleanup.keepMediaType',
-    AssetKeepType.none,
-    _EnumCodec(AssetKeepType.values),
-  ),
-  cleanupKeepAlbumIds<List<String>>(.appConfig, 'cleanup.keepAlbumIds', [], _ListCodec(_PrimitiveCodec.string)),
-  cleanupCutoffDaysAgo<int>(.appConfig, 'cleanup.cutoffDaysAgo', -1),
-  cleanupDefaultsInitialized<bool>(.appConfig, 'cleanup.defaultsInitialized', false),
+  cleanupKeepFavorites<bool>(),
+  cleanupKeepMediaType<AssetKeepType>(codec: _EnumCodec(AssetKeepType.values)),
+  cleanupKeepAlbumIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
+  cleanupCutoffDaysAgo<int>(),
+  cleanupDefaultsInitialized<bool>(),
 
   // Slideshow
-  slideshowTransition<bool>(.appConfig, 'slideshow.transition', true),
-  slideshowRepeat<bool>(.appConfig, 'slideshow.repeat', true),
-  slideshowDuration<int>(.appConfig, 'slideshow.duration', 5),
-  slideshowLook<SlideshowLook>(.appConfig, 'slideshow.look', SlideshowLook.contain, _EnumCodec(SlideshowLook.values)),
-  slideshowDirection<SlideshowDirection>(
-    .appConfig,
-    'slideshow.direction',
-    SlideshowDirection.forward,
-    _EnumCodec(SlideshowDirection.values),
-  );
+  slideshowTransition<bool>(),
+  slideshowRepeat<bool>(),
+  slideshowDuration<int>(),
+  slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
+  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values));
 
-  final MetadataDomain domain;
-  final String name;
-  final T defaultValue;
+  final MetadataScope scope;
   final _MetadataCodec<T>? _codecOverride;
 
-  const MetadataKey(this.domain, this.name, this.defaultValue, [this._codecOverride]);
+  const MetadataKey({this.scope = .user, _MetadataCodec<T>? codec}) : _codecOverride = codec;
 
-  String get key => '${domain.prefix}.$name';
-
-  _MetadataCodec<T> get _codec => _codecOverride ?? _MetadataCodec.forPrimitive(defaultValue);
+  _MetadataCodec<T> get _codec => _codecOverride ?? _MetadataCodec.forType(T);
 
   String encode(T value) => _codec.encode(value);
 
-  T decode(String raw) => _codec.decode(raw) ?? defaultValue;
-
-  static Map<String, MetadataKey<Object>> asKeyMap() => {for (var value in MetadataKey.values) value.key: value};
+  T decode(String raw) => _codec.decode(raw);
 }
 
 sealed class _MetadataCodec<T extends Object> {
   const _MetadataCodec();
 
   String encode(T value);
-  T? decode(String raw);
+  T decode(String raw);
 
   static const Map<Type, _MetadataCodec<Object>> _primitives = {
     int: _PrimitiveCodec.integer,
@@ -146,12 +109,10 @@ sealed class _MetadataCodec<T extends Object> {
     DateTime: _DateTimeCodec(),
   };
 
-  static _MetadataCodec<T> forPrimitive<T extends Object>(T sample) {
-    final codec = _primitives[sample.runtimeType];
+  static _MetadataCodec<T> forType<T extends Object>(Type runtimeType) {
+    final codec = _primitives[runtimeType];
     if (codec == null) {
-      throw StateError(
-        'No primitive codec for ${sample.runtimeType}. Provide an explicit codec when defining the MetadataKey.',
-      );
+      throw StateError('No primitive codec for $runtimeType. Provide an explicit codec when defining the MetadataKey.');
     }
     return codec as _MetadataCodec<T>;
   }
@@ -166,7 +127,7 @@ final class _EnumCodec<T extends Enum> extends _MetadataCodec<T> {
   String encode(T value) => value.name;
 
   @override
-  T? decode(String raw) => values.firstWhereOrNull((v) => v.name == raw);
+  T decode(String raw) => values.firstWhere((v) => v.name == raw);
 }
 
 final class _DateTimeCodec extends _MetadataCodec<DateTime> {
@@ -176,7 +137,7 @@ final class _DateTimeCodec extends _MetadataCodec<DateTime> {
   String encode(DateTime value) => value.toIso8601String();
 
   @override
-  DateTime? decode(String raw) => DateTime.tryParse(raw);
+  DateTime decode(String raw) => DateTime.parse(raw);
 }
 
 final class _MapCodec<K extends Object, V extends Object> extends _MetadataCodec<Map<K, V>> {
@@ -193,29 +154,26 @@ final class _MapCodec<K extends Object, V extends Object> extends _MetadataCodec
   }
 
   @override
-  Map<K, V>? decode(String raw) {
+  Map<K, V> decode(String raw) {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        return null;
+        return {};
       }
       final result = <K, V>{};
       for (final entry in decoded.entries) {
         final rawKey = entry.key;
         final rawValue = entry.value;
         if (rawKey is! String || rawValue is! String) {
-          return null;
+          return {};
         }
         final k = _keyCodec.decode(rawKey);
         final v = _valueCodec.decode(rawValue);
-        if (k == null || v == null) {
-          return null;
-        }
         result[k] = v;
       }
       return result;
     } on FormatException {
-      return null;
+      return {};
     }
   }
 }
@@ -229,32 +187,29 @@ final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
   String encode(List<T> value) => jsonEncode(value.map(_elementCodec.encode).toList());
 
   @override
-  List<T>? decode(String raw) {
+  List<T> decode(String raw) {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! List) {
-        return null;
+        return [];
       }
       final result = <T>[];
       for (final item in decoded) {
         if (item is! String) {
-          return null;
+          return [];
         }
         final element = _elementCodec.decode(item);
-        if (element == null) {
-          return null;
-        }
         result.add(element);
       }
       return result;
     } on FormatException {
-      return null;
+      return [];
     }
   }
 }
 
 final class _PrimitiveCodec<T extends Object> extends _MetadataCodec<T> {
-  final T? Function(String) _parse;
+  final T Function(String) _parse;
 
   const _PrimitiveCodec._(this._parse);
 
@@ -262,12 +217,12 @@ final class _PrimitiveCodec<T extends Object> extends _MetadataCodec<T> {
   String encode(T value) => value.toString();
 
   @override
-  T? decode(String raw) => _parse(raw);
+  T decode(String raw) => _parse(raw);
 
-  static const integer = _PrimitiveCodec<int>._(int.tryParse);
-  static const real = _PrimitiveCodec<double>._(double.tryParse);
-  static const boolean = _PrimitiveCodec<bool>._(bool.tryParse);
+  static const integer = _PrimitiveCodec<int>._(int.parse);
+  static const real = _PrimitiveCodec<double>._(double.parse);
+  static const boolean = _PrimitiveCodec<bool>._(bool.parse);
   static const string = _PrimitiveCodec<String>._(_identity);
 
-  static String? _identity(String s) => s;
+  static String _identity(String s) => s;
 }

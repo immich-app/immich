@@ -23,7 +23,7 @@ void main() {
 
   setUp(() async {
     await ctx.db.delete(ctx.db.metadataEntity).go();
-    await MetadataRepository.refresh();
+    await MetadataRepository.instance.refresh();
   });
 
   group('defaults', () {
@@ -31,8 +31,8 @@ void main() {
       expect(sut.appConfig.theme.mode, ThemeMode.system);
     });
 
-    test('systemConfig returns key defaults when DB is empty', () {
-      expect(sut.systemConfig.logLevel, LogLevel.info);
+    test('appConfig returns key defaults when DB is empty', () {
+      expect(sut.appConfig.logLevel, LogLevel.info);
     });
   });
 
@@ -46,16 +46,14 @@ void main() {
       await sut.write(.themeMode, ThemeMode.light);
       await sut.write(.logLevel, LogLevel.severe);
       expect(sut.appConfig.theme.mode, ThemeMode.light);
-      expect(sut.systemConfig.logLevel, LogLevel.severe);
+      expect(sut.appConfig.logLevel, LogLevel.severe);
     });
-  });
 
-  group('delete', () {
     test('removes the row and reverts to default', () async {
       await sut.write(.themeMode, ThemeMode.dark);
       expect(sut.appConfig.theme.mode, ThemeMode.dark);
 
-      await sut.delete(.themeMode);
+      await sut.write(.themeMode, ThemeMode.system);
       expect(sut.appConfig.theme.mode, ThemeMode.system);
 
       final rows = await ctx.db.select(ctx.db.metadataEntity).get();
@@ -63,13 +61,15 @@ void main() {
     });
   });
 
-  group('refresh', () {
+  group('delete', () {});
+
+  group('sync', () {
     test('picks up rows that were inserted directly into the DB', () async {
       await ctx.db
           .into(ctx.db.metadataEntity)
           .insert(
             MetadataEntityCompanion.insert(
-              key: MetadataKey.themeMode.key,
+              key: MetadataKey.themeMode.name,
               value: ThemeMode.dark.name,
               updatedAt: Value(DateTime.now()),
             ),
@@ -78,7 +78,7 @@ void main() {
       // Cache hasn't seen this row yet — view still returns the default.
       expect(sut.appConfig.theme.mode, ThemeMode.system);
 
-      await MetadataRepository.refresh();
+      await MetadataRepository.instance.refresh();
       expect(sut.appConfig.theme.mode, ThemeMode.dark);
     });
 
@@ -88,7 +88,7 @@ void main() {
       await ctx.db.delete(ctx.db.metadataEntity).go();
       expect(sut.appConfig.theme.mode, ThemeMode.dark);
 
-      await MetadataRepository.refresh();
+      await MetadataRepository.instance.refresh();
       expect(sut.appConfig.theme.mode, ThemeMode.system);
     });
 
@@ -103,32 +103,20 @@ void main() {
             ),
           );
 
-      await MetadataRepository.refresh();
+      await MetadataRepository.instance.refresh();
       expect(sut.appConfig.theme.mode, ThemeMode.system);
     });
   });
 
   group('watch', () {
     test('watchAppConfig emits the new value after a write', () async {
-      final expectation = expectLater(sut.watchAppConfig().map((c) => c.theme.mode), emitsThrough(ThemeMode.dark));
+      final expectation = expectLater(sut.watchConfig().map((c) => c.theme.mode), emitsThrough(ThemeMode.dark));
       await sut.write(MetadataKey.themeMode, ThemeMode.dark);
       await expectation;
     });
 
-    test('watchAppConfig does not emit when only system-config rows change', () async {
-      final emissions = <ThemeMode>[];
-      // skip(1) drops the on-subscribe replay so we only capture emissions caused by the write below.
-      final sub = sut.watchAppConfig().skip(1).listen((c) => emissions.add(c.theme.mode));
-
-      await sut.write(MetadataKey.logLevel, LogLevel.severe);
-      await pumpEventQueue();
-      await sub.cancel();
-
-      expect(emissions, isEmpty);
-    });
-
-    test('watchSystemConfig emits the new value after a write', () async {
-      final expectation = expectLater(sut.watchSystemConfig().map((c) => c.logLevel), emitsThrough(LogLevel.warning));
+    test('watchConfig emits the new value after a write', () async {
+      final expectation = expectLater(sut.watchConfig().map((c) => c.logLevel), emitsThrough(LogLevel.warning));
       await sut.write(MetadataKey.logLevel, LogLevel.warning);
       await expectation;
     });

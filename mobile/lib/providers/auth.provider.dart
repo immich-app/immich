@@ -130,7 +130,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final headerMap = _ref.read(metadataProvider).systemConfig.network.customHeaders;
+    final headerMap = _ref.read(metadataProvider).appConfig.network.customHeaders;
     final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
@@ -187,11 +187,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   String? getSavedWifiName() {
-    return _ref.read(metadataProvider).systemConfig.network.preferredWifiName;
+    return _ref.read(metadataProvider).appConfig.network.preferredWifiName;
   }
 
   String? getSavedLocalEndpoint() {
-    return _ref.read(metadataProvider).systemConfig.network.localEndpoint;
+    return _ref.read(metadataProvider).appConfig.network.localEndpoint;
   }
 
   /// Returns the current server endpoint (with /api) URL from the store
