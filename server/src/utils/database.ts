@@ -428,6 +428,16 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
         .where('asset_exif.rating', options.rating === null ? 'is' : '=', options.rating!),
     )
+    .$if(options.minAspectRatio !== undefined, (qb) =>
+      qb.where(sql`asset.width::double precision / nullif(asset.height, 0)`, '>=', options.minAspectRatio!),
+    )
+    .$if(options.maxAspectRatio !== undefined, (qb) =>
+      qb.where(sql`asset.width::double precision / nullif(asset.height, 0)`, '<=', options.maxAspectRatio!),
+    )
+    .$if(options.minWidth !== undefined, (qb) => qb.where('asset.width', '>=', options.minWidth!))
+    .$if(options.maxWidth !== undefined, (qb) => qb.where('asset.width', '<=', options.maxWidth!))
+    .$if(options.minHeight !== undefined, (qb) => qb.where('asset.height', '>=', options.minHeight!))
+    .$if(options.maxHeight !== undefined, (qb) => qb.where('asset.height', '<=', options.maxHeight!))
     .$if(!!options.checksum, (qb) => qb.where('asset.checksum', '=', options.checksum!))
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))

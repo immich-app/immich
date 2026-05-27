@@ -69,6 +69,12 @@ export interface SearchExifOptions {
   country?: string | null;
   lensModel?: string | null;
   make?: string | null;
+  maxAspectRatio?: number;
+  maxHeight?: number;
+  maxWidth?: number;
+  minAspectRatio?: number;
+  minHeight?: number;
+  minWidth?: number;
   model?: string | null;
   state?: string | null;
   description?: string | null;

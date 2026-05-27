@@ -120,6 +120,42 @@ describe(SearchController.name, () => {
       );
     });
 
+    it('should reject minWidth as a negative number', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ minWidth: -1 });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['minWidth'], message: 'Too small: expected number to be >=1' }]),
+      );
+    });
+
+    it('should reject minAspectRatio as zero', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ minAspectRatio: 0 });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['minAspectRatio'], message: expect.stringContaining('Too small') }]),
+      );
+    });
+
+    it('should reject maxAspectRatio as zero', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ maxAspectRatio: 0 });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['maxAspectRatio'], message: expect.stringContaining('Too small') }]),
+      );
+    });
+
+    it('should reject minAspectRatio as a string', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ minAspectRatio: 'abc' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['minAspectRatio'], message: 'Invalid input: expected number, received NaN' },
+        ]),
+      );
+    });
+
     describe('POST /search/random', () => {
       it('should be an authenticated route', async () => {
         await request(ctx.getHttpServer()).post('/search/random');

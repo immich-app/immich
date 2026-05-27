@@ -110,6 +110,83 @@ describe(SearchService.name, () => {
     });
   });
 
+  describe('aspect ratio filter', () => {
+    it('should filter by minAspectRatio', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: wideAsset } = await ctx.newAsset({ ownerId: user.id, width: 4000, height: 1000 });
+      await ctx.newAsset({ ownerId: user.id, width: 3000, height: 3000 });
+      await ctx.newAsset({ ownerId: user.id, width: 1000, height: 4000 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { minAspectRatio: 2 });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: wideAsset.id })]);
+    });
+
+    it('should filter by maxAspectRatio', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, width: 4000, height: 3000 });
+      const { asset: narrowAsset } = await ctx.newAsset({ ownerId: user.id, width: 1000, height: 4000 });
+      await ctx.newAsset({ ownerId: user.id, width: 3000, height: 3000 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { maxAspectRatio: 0.5 });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: narrowAsset.id })]);
+    });
+
+    it('should filter by both minAspectRatio and maxAspectRatio', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      // ratio 4:3 = 1.333 — within [1.2, 1.5]
+      const { asset: inRangeAsset } = await ctx.newAsset({ ownerId: user.id, width: 4000, height: 3000 });
+      // ratio 4:1 = 4.0 — above max
+      await ctx.newAsset({ ownerId: user.id, width: 4000, height: 1000 });
+      // ratio 1:4 = 0.25 — below min
+      await ctx.newAsset({ ownerId: user.id, width: 1000, height: 4000 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { minAspectRatio: 1.2, maxAspectRatio: 1.5 });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: inRangeAsset.id })]);
+    });
+  });
+
+  describe('resolution filter', () => {
+    it('should filter by minimum width and height', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: highResAsset } = await ctx.newAsset({ ownerId: user.id, width: 4000, height: 3000 });
+      await ctx.newAsset({ ownerId: user.id, width: 3000, height: 3000 });
+      await ctx.newAsset({ ownerId: user.id, width: 4000, height: 2000 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { minWidth: 3500, minHeight: 2500 });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: highResAsset.id })]);
+    });
+
+    it('should filter by maximum width and height', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, width: 2000, height: 1500 });
+      const { asset: lowResAsset } = await ctx.newAsset({ ownerId: user.id, width: 1000, height: 800 });
+      await ctx.newAsset({ ownerId: user.id, width: 1200, height: 1600 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { maxWidth: 1200, maxHeight: 1000 });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: lowResAsset.id })]);
+    });
+  });
+
   describe('getSearchSuggestions', () => {
     it('should filter out empty search suggestions', async () => {
       const { sut, ctx } = setup();

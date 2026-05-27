@@ -63,6 +63,17 @@ export type SearchDisplayFilters = {
   isFavorite: boolean;
 };
 
+export type SearchImagePropsFilter = {
+  minAspectRatioWidth?: string;
+  minAspectRatioHeight?: string;
+  maxAspectRatioWidth?: string;
+  maxAspectRatioHeight?: string;
+  minWidth?: string;
+  maxWidth?: string;
+  minHeight?: string;
+  maxHeight?: string;
+};
+
 export type SearchLocationFilter = {
   country?: string;
   state?: string;
@@ -82,6 +93,7 @@ export type SearchFilter = {
   display: SearchDisplayFilters;
   mediaType: MediaType;
   rating?: number | null;
+  imageProperties: SearchImagePropsFilter;
 };
 
 export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';

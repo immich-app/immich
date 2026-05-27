@@ -397,8 +397,26 @@ class SearchApi {
   /// * [String] make:
   ///   Filter by camera make
   ///
+  /// * [num] maxAspectRatio:
+  ///   Filter by maximum aspect ratio (width/height)
+  ///
+  /// * [int] maxHeight:
+  ///   Filter by maximum image height
+  ///
+  /// * [int] maxWidth:
+  ///   Filter by maximum image width
+  ///
+  /// * [num] minAspectRatio:
+  ///   Filter by minimum aspect ratio (width/height)
+  ///
   /// * [int] minFileSize:
   ///   Minimum file size in bytes
+  ///
+  /// * [int] minHeight:
+  ///   Filter by minimum image height
+  ///
+  /// * [int] minWidth:
+  ///   Filter by minimum image width
   ///
   /// * [String] model:
   ///   Filter by camera model
@@ -448,7 +466,7 @@ class SearchApi {
   ///
   /// * [bool] withExif:
   ///   Include EXIF data in response
-  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, int? rating, int? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, Future<void>? abortTrigger, }) async {
+  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, num? maxAspectRatio, int? maxHeight, int? maxWidth, num? minAspectRatio, int? minFileSize, int? minHeight, int? minWidth, String? model, String? ocr, List<String>? personIds, int? rating, int? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/large-assets';
 
@@ -498,8 +516,26 @@ class SearchApi {
     if (make != null) {
       queryParams.addAll(_queryParams('', 'make', make));
     }
+    if (maxAspectRatio != null) {
+      queryParams.addAll(_queryParams('', 'maxAspectRatio', maxAspectRatio));
+    }
+    if (maxHeight != null) {
+      queryParams.addAll(_queryParams('', 'maxHeight', maxHeight));
+    }
+    if (maxWidth != null) {
+      queryParams.addAll(_queryParams('', 'maxWidth', maxWidth));
+    }
+    if (minAspectRatio != null) {
+      queryParams.addAll(_queryParams('', 'minAspectRatio', minAspectRatio));
+    }
     if (minFileSize != null) {
       queryParams.addAll(_queryParams('', 'minFileSize', minFileSize));
+    }
+    if (minHeight != null) {
+      queryParams.addAll(_queryParams('', 'minHeight', minHeight));
+    }
+    if (minWidth != null) {
+      queryParams.addAll(_queryParams('', 'minWidth', minWidth));
     }
     if (model != null) {
       queryParams.addAll(_queryParams('', 'model', model));
@@ -613,8 +649,26 @@ class SearchApi {
   /// * [String] make:
   ///   Filter by camera make
   ///
+  /// * [num] maxAspectRatio:
+  ///   Filter by maximum aspect ratio (width/height)
+  ///
+  /// * [int] maxHeight:
+  ///   Filter by maximum image height
+  ///
+  /// * [int] maxWidth:
+  ///   Filter by maximum image width
+  ///
+  /// * [num] minAspectRatio:
+  ///   Filter by minimum aspect ratio (width/height)
+  ///
   /// * [int] minFileSize:
   ///   Minimum file size in bytes
+  ///
+  /// * [int] minHeight:
+  ///   Filter by minimum image height
+  ///
+  /// * [int] minWidth:
+  ///   Filter by minimum image width
   ///
   /// * [String] model:
   ///   Filter by camera model
@@ -664,8 +718,8 @@ class SearchApi {
   ///
   /// * [bool] withExif:
   ///   Include EXIF data in response
-  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, int? rating, int? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, Future<void>? abortTrigger, }) async {
-    final response = await searchLargeAssetsWithHttpInfo(albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, ocr: ocr, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, abortTrigger: abortTrigger,);
+  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, num? maxAspectRatio, int? maxHeight, int? maxWidth, num? minAspectRatio, int? minFileSize, int? minHeight, int? minWidth, String? model, String? ocr, List<String>? personIds, int? rating, int? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, Future<void>? abortTrigger, }) async {
+    final response = await searchLargeAssetsWithHttpInfo(albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, maxAspectRatio: maxAspectRatio, maxHeight: maxHeight, maxWidth: maxWidth, minAspectRatio: minAspectRatio, minFileSize: minFileSize, minHeight: minHeight, minWidth: minWidth, model: model, ocr: ocr, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
