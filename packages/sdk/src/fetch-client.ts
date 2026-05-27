@@ -2612,9 +2612,9 @@ export type TagUpdateDto = {
 };
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
-    city: (string | null)[];
+    city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
-    country: (string | null)[];
+    country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
