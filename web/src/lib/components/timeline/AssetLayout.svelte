@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { filterIsInOrNearViewport } from '$lib/managers/timeline-manager/utils.svelte';
   import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
@@ -31,11 +30,14 @@
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
+
+  const firstInOrNearViewport = $derived(viewerAssets.findIndex((a) => a.isInOrNearViewport));
+  const lastInOrNearViewport = $derived(viewerAssets.findLastIndex((a) => a.isInOrNearViewport));
 </script>
 
 <!-- Image grid -->
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
-  {#each filterIsInOrNearViewport(viewerAssets) as viewerAsset (viewerAsset.id)}
+  {#each viewerAssets.slice(firstInOrNearViewport, lastInOrNearViewport + 1) as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
 

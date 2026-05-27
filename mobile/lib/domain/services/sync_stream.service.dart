@@ -9,12 +9,12 @@ import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
@@ -34,8 +34,8 @@ class SyncStreamService {
   final SyncStreamRepository _syncStreamRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
-  final LocalFilesManagerRepository _localFilesManager;
-  final StorageRepository _storageRepository;
+  final AssetMediaRepository _assetMediaRepository;
+  final IPermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final bool Function()? _cancelChecker;
@@ -45,8 +45,8 @@ class SyncStreamService {
     required SyncStreamRepository syncStreamRepository,
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
-    required LocalFilesManagerRepository localFilesManager,
-    required StorageRepository storageRepository,
+    required AssetMediaRepository assetMediaRepository,
+    required IPermissionRepository permissionRepository,
     required SyncMigrationRepository syncMigrationRepository,
     required ApiService api,
     bool Function()? cancelChecker,
@@ -54,8 +54,8 @@ class SyncStreamService {
        _syncStreamRepository = syncStreamRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
-       _localFilesManager = localFilesManager,
-       _storageRepository = storageRepository,
+       _assetMediaRepository = assetMediaRepository,
+       _permissionRepository = permissionRepository,
        _syncMigrationRepository = syncMigrationRepository,
        _api = api,
        _cancelChecker = cancelChecker;
@@ -500,22 +500,22 @@ class SyncStreamService {
   }
 
   Future<void> _trashLocalAssets(Map<String, List<LocalAsset>> localAssetsToTrash) async {
-    final mediaUrls = await Future.wait(
-      localAssetsToTrash.values
-          .expand((e) => e)
-          .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
-    );
-    _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-    final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-    if (result) {
-      await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+    final localIds = localAssetsToTrash.values.expand((assets) => assets).map((asset) => asset.id).toList();
+    _logger.info("Moving to trash ${localIds.join(", ")} assets");
+    final movedIds = await _assetMediaRepository.deleteAll(localIds);
+    if (movedIds.isNotEmpty) {
+      final movedAssetsByAlbum = localAssetsToTrash.map(
+        (albumId, assets) => MapEntry(albumId, assets.where((asset) => movedIds.contains(asset.id)).toList()),
+      )..removeWhere((_, assets) => assets.isEmpty);
+
+      await _trashedLocalAssetRepository.trashLocalAsset(movedAssetsByAlbum);
     }
   }
 
   Future<void> _applyRemoteRestoreToLocal() async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (assetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+      final restoredIds = await _assetMediaRepository.restoreAssetsFromTrash(assetsToRestore);
       await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _logger.info("No remote assets found for restoration");
@@ -523,7 +523,7 @@ class SyncStreamService {
   }
 
   Future<void> _syncAssetTrashStatus(List<String> remoteIds) async {
-    if (!(await _localFilesManager.hasManageMediaPermission())) {
+    if (!(await _permissionRepository.hasManageMediaPermission())) {
       _logger.warning("Syncing asset trash status cannot proceed because MANAGE_MEDIA permission is missing");
       return;
     }
@@ -533,7 +533,7 @@ class SyncStreamService {
   }
 
   Future<void> _syncAssetDeletion(List<String> remoteIds) async {
-    if (!(await _localFilesManager.hasManageMediaPermission())) {
+    if (!(await _permissionRepository.hasManageMediaPermission())) {
       _logger.warning("Syncing asset deletion cannot proceed because MANAGE_MEDIA permission is missing");
       return;
     }
