@@ -909,7 +909,7 @@ class TestOcr:
     def test_set_rec_min_score(self, path: mock.Mock) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
-        text_recognizer = TextRecognizer("PP-OCRv5_mobile", min_score=0.8)
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
 
         assert text_recognizer.min_score == 0.8
 
@@ -920,7 +920,7 @@ class TestOcr:
         mocker.patch("immich_ml.models.base.InferenceModel.download")
         rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
 
-        text_recognizer = TextRecognizer("PP-OCRv5_mobile")
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
@@ -938,7 +938,7 @@ class TestOcr:
         rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
         mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=4))
 
-        text_recognizer = TextRecognizer("PP-OCRv5_mobile")
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
@@ -958,7 +958,7 @@ class TestOcr:
         rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
         mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=3))
 
-        text_recognizer = TextRecognizer("PP-OCRv5_mobile")
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
