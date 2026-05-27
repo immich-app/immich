@@ -27,7 +27,9 @@ function waitForServerVersion(): Promise<{ major: number; minor: number; patch: 
   return new Promise((resolve) => {
     let settled = false;
     const finish = (version: { major: number; minor: number; patch: number } | undefined) => {
-      if (settled) return;
+      if (settled) {
+        return;
+      }
       settled = true;
       try {
         clearTimeout(timer);
@@ -148,7 +150,7 @@ class ActivityManager {
     return activity;
   }
 
-  async deleteActivity(activity: ActivityResponseDto, index?: number) {
+  async deleteActivity(activity: ActivityResponseDto) {
     if (!this.#albumId) {
       return;
     }

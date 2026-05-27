@@ -68,9 +68,9 @@
     hour12: false,
   };
 
-  const handleDeleteReaction = async (reaction: ActivityResponseDto, index: number) => {
+  const handleDeleteReaction = async (reaction: ActivityResponseDto) => {
     try {
-      await activityManager.deleteActivity(reaction, index);
+      await activityManager.deleteActivity(reaction);
 
       const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
@@ -119,7 +119,9 @@
   });
 
   const loadMoreAndPreserveScroll = async () => {
-    if (!scrollContainer) return;
+    if (!scrollContainer) {
+      return;
+    }
     const prevScrollHeight = scrollContainer.scrollHeight;
     const prevScrollTop = scrollContainer.scrollTop;
     await activityManager.loadMore();
@@ -130,7 +132,9 @@
   };
 
   const onScrollContainer = () => {
-    if (isAdjustingScroll || !scrollContainer || activityManager.isLoadingMore || !activityManager.hasMore) return;
+    if (isAdjustingScroll || !scrollContainer || activityManager.isLoadingMore || !activityManager.hasMore) {
+      return;
+    }
     if (scrollContainer.scrollTop < 200) {
       void loadMoreAndPreserveScroll();
     }
@@ -142,9 +146,11 @@
     void activityManager.activities.length;
     void activityManager.isLoadingMore;
 
-    if (!scrollContainer || !activityManager.hasMore || activityManager.isLoadingMore) return;
+    if (!scrollContainer || !activityManager.hasMore || activityManager.isLoadingMore) {
+      return;
+    }
     // After rendering, check if there's no scrollable overflow
-    tick().then(() => {
+    void tick().then(() => {
       if (scrollContainer && scrollContainer.scrollHeight <= scrollContainer.clientHeight) {
         void loadMoreAndPreserveScroll();
       }
@@ -215,7 +221,7 @@
                       activeColor="bg-red-200"
                       icon={mdiDeleteOutline}
                       text={$t('remove')}
-                      onClick={() => handleDeleteReaction(reaction, index)}
+                      onClick={() => handleDeleteReaction(reaction)}
                     />
                   </ButtonContextMenu>
                 </div>
@@ -265,7 +271,7 @@
                         activeColor="bg-red-200"
                         icon={mdiDeleteOutline}
                         text={$t('remove')}
-                        onClick={() => handleDeleteReaction(reaction, index)}
+                        onClick={() => handleDeleteReaction(reaction)}
                       />
                     </ButtonContextMenu>
                   </div>

@@ -141,7 +141,7 @@ class ActivitiesApi {
   /// * [ReactionLevel] level:
   ///
   /// * [int] take:
-  ///   Maximum number of activities to return
+  ///   Approximate maximum number of activities to return. The response may exceed this value to include all activities sharing the oldest returned timestamp, preserving pagination boundaries.
   ///
   /// * [ReactionType] type:
   ///
@@ -210,7 +210,7 @@ class ActivitiesApi {
   /// * [ReactionLevel] level:
   ///
   /// * [int] take:
-  ///   Maximum number of activities to return
+  ///   Approximate maximum number of activities to return. The response may exceed this value to include all activities sharing the oldest returned timestamp, preserving pagination boundaries.
   ///
   /// * [ReactionType] type:
   ///

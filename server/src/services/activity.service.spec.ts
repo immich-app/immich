@@ -151,9 +151,7 @@ describe(ActivityService.name, () => {
 
       await sut.getAll(AuthFactory.create(), { albumId, take: 2, before });
 
-      expect(mocks.activity.search).toHaveBeenCalledWith(
-        expect.objectContaining({ albumId, take: 2, before }),
-      );
+      expect(mocks.activity.search).toHaveBeenCalledWith(expect.objectContaining({ albumId, take: 2, before }));
     });
 
     it('should query boundary with at parameter', async () => {
@@ -162,15 +160,11 @@ describe(ActivityService.name, () => {
       const a1 = ActivityFactory.create({ albumId, createdAt: boundaryTime });
 
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
-      mocks.activity.search
-        .mockResolvedValueOnce([a1])
-        .mockResolvedValueOnce([a1]);
+      mocks.activity.search.mockResolvedValueOnce([a1]).mockResolvedValueOnce([a1]);
 
       await sut.getAll(AuthFactory.create(), { albumId, take: 2 });
 
-      expect(mocks.activity.search).toHaveBeenCalledWith(
-        expect.objectContaining({ at: boundaryTime }),
-      );
+      expect(mocks.activity.search).toHaveBeenCalledWith(expect.objectContaining({ at: boundaryTime }));
     });
   });
 
