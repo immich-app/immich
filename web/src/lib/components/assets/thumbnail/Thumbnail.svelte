@@ -206,7 +206,7 @@
 
 <div
   class={[
-    'group flex overflow-hidden transition-[background-color,border-radius] focus-visible:outline-none',
+    'group flex overflow-hidden focus-visible:outline-none',
     backgroundColorClass,
     { 'rounded-xl': selected },
   ]}
@@ -250,12 +250,12 @@
     >
       <ImageThumbnail
         class={[
-          'absolute transition-[border-radius] group-focus-visible:rounded-lg',
+          'absolute group-focus-visible:rounded-lg',
           { 'rounded-xl': selected },
           imageClass,
         ]}
         brokenAssetClass={[
-          'z-1 absolute group-focus-visible:rounded-lg transition-[border-radius]',
+          'z-1 absolute group-focus-visible:rounded-lg',
           { 'rounded-xl': selected },
           brokenAssetClass,
         ]}
