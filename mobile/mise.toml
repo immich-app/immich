@@ -78,6 +78,15 @@ alias = "migration"
 description = "Generate database migrations"
 run = "dart run drift_dev make-migrations"
 
+[tasks.install]
+alias = "install"
+description = "Install flutter dependencies"
+run = "flutter pub get"
+
+[tasks.start]
+alias = "start"
+description = "Start flutter app"
+run = "flutter run"
 
 # Internal tasks
 [tasks."i18n:loader"]
