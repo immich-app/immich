@@ -64,7 +64,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     }
 
     useEffect(() {
-      final urls = ref.read(metadataProvider).systemConfig.network.externalEndpointList;
+      final urls = ref.read(appConfigProvider).network.externalEndpointList;
 
       if (urls.isEmpty) {
         return null;

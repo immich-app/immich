@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -136,14 +138,10 @@ Future<void> _migrateTo26(Drift drift) async {
 
 Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
   final raw = await migrator.readLegacyStoreInt(StoreKey.legacySelectedAlbumSortOrder.id);
-  if (raw == null) {
+  final mode = AlbumSortMode.values.firstWhereOrNull((e) => raw != null && e.storeIndex == raw);
+  if (mode == null) {
     return;
   }
-
-  final mode = AlbumSortMode.values.firstWhere(
-    (e) => e.storeIndex == raw,
-    orElse: () => MetadataKey.albumSortMode.defaultValue,
-  );
 
   migrator.stage(StoreKey.legacySelectedAlbumSortOrder, MetadataKey.albumSortMode, mode);
 }
@@ -208,7 +206,11 @@ class _StoreMigrator {
       return;
     }
 
-    final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
+    final enumValue = values.elementAtOrNull(index);
+    if (enumValue == null) {
+      return;
+    }
+
     _cache[newKey] = enumValue;
     _migratedStoreIds.add(legacyKey.id);
   }
@@ -223,7 +225,11 @@ class _StoreMigrator {
       return;
     }
 
-    final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
+    final enumValue = values.firstWhereOrNull((e) => e.name == name);
+    if (enumValue == null) {
+      return;
+    }
+
     _cache[newKey] = enumValue;
     _migratedStoreIds.add(legacyKey.id);
   }
@@ -267,9 +273,12 @@ class _StoreMigrator {
   Future<void> complete() async {
     await _db.batch((batch) {
       for (final entry in _cache.entries) {
+        if (entry.value == defaultConfig.read(entry.key)) {
+          continue;
+        }
         batch.insert(
           _db.metadataEntity,
-          MetadataEntityCompanion(key: Value(entry.key.key), value: Value(entry.key.encode(entry.value))),
+          MetadataEntityCompanion(key: Value(entry.key.name), value: Value(entry.key.encode(entry.value))),
           mode: InsertMode.insertOrReplace,
         );
       }
