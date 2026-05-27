@@ -21,18 +21,13 @@ class HashService {
   final _log = Logger('HashService');
 
   HashService({
-    required DriftLocalAlbumRepository localAlbumRepository,
-    required DriftLocalAssetRepository localAssetRepository,
-    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
-    required NativeSyncApi nativeSyncApi,
-    bool Function()? cancelChecker,
+    required this._localAlbumRepository,
+    required this._localAssetRepository,
+    required this._trashedLocalAssetRepository,
+    required this._nativeSyncApi,
+    this._cancelChecker,
     int? batchSize,
-  }) : _localAlbumRepository = localAlbumRepository,
-       _localAssetRepository = localAssetRepository,
-       _trashedLocalAssetRepository = trashedLocalAssetRepository,
-       _cancelChecker = cancelChecker,
-       _nativeSyncApi = nativeSyncApi,
-       _batchSize = batchSize ?? kBatchHashFileLimit;
+  }) : _batchSize = batchSize ?? kBatchHashFileLimit;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 

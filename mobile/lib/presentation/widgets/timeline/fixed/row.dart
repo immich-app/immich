@@ -62,14 +62,11 @@ class RenderFixedRow extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, _RowParentData> {
   RenderFixedRow({
     List<RenderBox>? children,
-    required double height,
-    required List<double> widths,
-    required double spacing,
-    required TextDirection textDirection,
-  }) : _height = height,
-       _widths = widths,
-       _spacing = spacing,
-       _textDirection = textDirection {
+    required this._height,
+    required this._widths,
+    required this._spacing,
+    required this._textDirection,
+  }) {
     addAll(children);
   }
 

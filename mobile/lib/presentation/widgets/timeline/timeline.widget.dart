@@ -397,7 +397,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               final grid = CustomScrollView(
                 primary: true,
                 physics: _scrollPhysics,
-                cacheExtent: maxHeight * 2,
+                scrollCacheExtent: .pixels(maxHeight * 2),
                 slivers: [
                   if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
                   if (widget.topSliverWidget != null) widget.topSliverWidget!,
@@ -503,7 +503,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 class _SliverSegmentedList extends SliverMultiBoxAdaptorWidget {
   final List<Segment> _segments;
 
-  const _SliverSegmentedList({required List<Segment> segments, required super.delegate}) : _segments = segments;
+  const _SliverSegmentedList({required this._segments, required super.delegate});
 
   @override
   _RenderSliverTimelineBoxAdaptor createRenderObject(BuildContext context) =>
@@ -527,8 +527,7 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     markNeedsLayout();
   }
 
-  _RenderSliverTimelineBoxAdaptor({required super.childManager, required List<Segment> segments})
-    : _segments = segments;
+  _RenderSliverTimelineBoxAdaptor({required super.childManager, required this._segments});
 
   int getMinChildIndexForScrollOffset(double offset) =>
       _segments.findByOffset(offset)?.getMinChildIndexForScrollOffset(offset) ?? 0;
