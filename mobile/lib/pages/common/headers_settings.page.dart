@@ -22,7 +22,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    final storedHeaders = ref.read(metadataProvider).systemConfig.network.customHeaders;
+    final storedHeaders = ref.read(metadataProvider).appConfig.network.customHeaders;
     if (!setInitialHeaders.value) {
       storedHeaders.forEach((k, v) {
         final header = SettingsHeader();

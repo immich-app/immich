@@ -1,14 +1,12 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class MetadataRepository extends DriftDatabaseRepository {
   final Drift _db;
-  final Map<MetadataKey, Object> _cache = {};
 
   MetadataRepository._(this._db) : super(_db);
 
@@ -25,153 +23,50 @@ class MetadataRepository extends DriftDatabaseRepository {
   AppConfig _appConfig = const .new();
   AppConfig get appConfig => _appConfig;
 
-  SystemConfig _systemConfig = const .new();
-  SystemConfig get systemConfig => _systemConfig;
-
   static Future<MetadataRepository> ensureInitialized(Drift db) async {
     if (_instance == null) {
       final instance = MetadataRepository._(db);
-      await instance._hydrate();
+      await instance.refresh();
       _instance = instance;
     }
     return _instance!;
   }
 
-  static Future<void> refresh() async {
-    instance._cache.clear();
-    instance._appConfig = const .new();
-    instance._systemConfig = const .new();
-    await instance._hydrate();
-  }
-
-  Future<void> _hydrate() async => _hydrateCache(await _db.select(_db.metadataEntity).get());
-
-  T _read<T extends Object>(MetadataKey<T> key) => (_cache[key] as T?) ?? key.defaultValue;
+  Future<void> refresh() async => _applyOverrides(await _db.select(_db.metadataEntity).get());
 
   Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
-    if (_read(key) == value) {
+    if (value == _appConfig.read(key)) {
       return;
     }
 
-    await _db
-        .into(_db.metadataEntity)
-        .insertOnConflictUpdate(
-          MetadataEntityCompanion.insert(key: key.key, value: key.encode(value), updatedAt: Value(DateTime.now())),
-        );
-    _updateCache(key, value);
-  }
-
-  Future<void> delete<T extends Object>(MetadataKey<T> key) async {
-    await (_db.delete(_db.metadataEntity)..where((t) => t.key.equals(key.key))).go();
-    _updateCache(key, key.defaultValue);
-  }
-
-  Stream<AppConfig> watchAppConfig() => _watchDomain(.appConfig).distinct();
-
-  Stream<SystemConfig> watchSystemConfig() => _watchDomain(.systemConfig).distinct();
-
-  Stream<T> _watchDomain<T extends Object>(MetadataDomain<T> domain) {
-    final query = _db.select(_db.metadataEntity)..where((t) => t.key.like('${domain.prefix}.%'));
-    return query.watch().map((rows) {
-      _hydrateCache(rows);
-      return domain.config(this);
-    });
-  }
-
-  void _hydrateCache(List<MetadataEntityData> rows) {
-    final keyMap = MetadataKey.asKeyMap();
-    for (final row in rows) {
-      final key = keyMap[row.key];
-      if (key == null) {
-        continue;
-      }
-      _updateCache(key, key.decode(row.value));
+    if (value == defaultConfig.read(key)) {
+      await (_db.delete(_db.metadataEntity)..where((t) => t.key.equals(key.name))).go();
+    } else {
+      await _db
+          .into(_db.metadataEntity)
+          .insertOnConflictUpdate(
+            MetadataEntityCompanion.insert(key: key.name, value: key.encode(value), updatedAt: Value(DateTime.now())),
+          );
     }
+
+    _appConfig = _appConfig.write(key, value);
   }
 
-  void _updateCache<T extends Object>(MetadataKey<T> key, T value) {
-    if (_cache[key] == value) {
-      return;
-    }
-    _cache[key] = value;
-    key.domain.rebuild(this);
-  }
-}
+  Stream<AppConfig> watchConfig() => _db.select(_db.metadataEntity).watch().map((rows) {
+    _applyOverrides(rows);
+    return _appConfig;
+  });
 
-extension<T extends Object> on MetadataDomain<T> {
-  T config(MetadataRepository repo) => switch (this) {
-    .appConfig => repo._appConfig as T,
-    .systemConfig => repo._systemConfig as T,
-  };
+  void _applyOverrides(List<MetadataEntityData> rows) {
+    _appConfig = AppConfig.fromEntries(
+      rows.fold({}, (overrides, row) {
+        final metadataKey = MetadataKey.values.firstWhereOrNull((key) => key.name == row.key);
+        if (metadataKey == null) {
+          return overrides;
+        }
 
-  void rebuild(MetadataRepository repo) {
-    switch (this) {
-      case .appConfig:
-        repo._appConfig = .new(
-          theme: .new(
-            mode: repo._read(.themeMode),
-            primaryColor: repo._read(.themePrimaryColor),
-            dynamicTheme: repo._read(.themeDynamic),
-            colorfulInterface: repo._read(.themeColorfulInterface),
-          ),
-          cleanup: .new(
-            keepFavorites: repo._read(.cleanupKeepFavorites),
-            keepMediaType: repo._read(.cleanupKeepMediaType),
-            keepAlbumIds: repo._read(.cleanupKeepAlbumIds),
-            cutoffDaysAgo: repo._read(.cleanupCutoffDaysAgo),
-            defaultsInitialized: repo._read(.cleanupDefaultsInitialized),
-          ),
-          map: .new(
-            relativeDays: repo._read(.mapRelativeDate),
-            favoritesOnly: repo._read(.mapShowFavoriteOnly),
-            includeArchived: repo._read(.mapIncludeArchived),
-            themeMode: repo._read(.mapThemeMode),
-            withPartners: repo._read(.mapWithPartners),
-          ),
-          timeline: .new(
-            tilesPerRow: repo._read(.timelineTilesPerRow),
-            groupAssetsBy: repo._read(.timelineGroupAssetsBy),
-            storageIndicator: repo._read(.timelineStorageIndicator),
-          ),
-          image: .new(preferRemote: repo._read(.imagePreferRemote), loadOriginal: repo._read(.imageLoadOriginal)),
-          viewer: .new(
-            loopVideo: repo._read(.viewerLoopVideo),
-            loadOriginalVideo: repo._read(.viewerLoadOriginalVideo),
-            autoPlayVideo: repo._read(.viewerAutoPlayVideo),
-            tapToNavigate: repo._read(.viewerTapToNavigate),
-          ),
-          slideshow: .new(
-            transition: repo._read(.slideshowTransition),
-            repeat: repo._read(.slideshowRepeat),
-            duration: repo._read(.slideshowDuration),
-            look: repo._read(.slideshowLook),
-            direction: repo._read(.slideshowDirection),
-          ),
-          album: .new(
-            sortMode: repo._read(.albumSortMode),
-            isReverse: repo._read(.albumIsReverse),
-            isGrid: repo._read(.albumIsGrid),
-          ),
-          backup: .new(
-            enabled: repo._read(.backupEnabled),
-            useCellularForVideos: repo._read(.backupUseCellularForVideos),
-            useCellularForPhotos: repo._read(.backupUseCellularForPhotos),
-            requireCharging: repo._read(.backupRequireCharging),
-            triggerDelay: repo._read(.backupTriggerDelay),
-            syncAlbums: repo._read(.backupSyncAlbums),
-          ),
-        );
-      case .systemConfig:
-        repo._systemConfig = .new(
-          logLevel: repo._read(.logLevel),
-          network: .new(
-            autoEndpointSwitching: repo._read(.networkAutoEndpointSwitching),
-            preferredWifiName: repo._read(.networkPreferredWifiName).nullIfEmpty,
-            localEndpoint: repo._read(.networkLocalEndpoint).nullIfEmpty,
-            externalEndpointList: repo._read(.networkExternalEndpointList),
-            customHeaders: repo._read(.networkCustomHeaders),
-          ),
-        );
-    }
+        return {...overrides, metadataKey: metadataKey.decode(row.value)};
+      }),
+    );
   }
 }

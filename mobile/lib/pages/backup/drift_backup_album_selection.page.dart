@@ -43,7 +43,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _searchController = TextEditingController();
     _searchFocusNode = FocusNode();
 
-    _enableSyncUploadAlbum.value = ref.read(metadataProvider).appConfig.backup.syncAlbums;
+    _enableSyncUploadAlbum.value = ref.read(appConfigProvider).backup.syncAlbums;
     ref.read(backupAlbumProvider.notifier).getAll();
 
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
@@ -55,7 +55,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       return;
     }
 
-    final enableSyncUploadAlbum = ref.read(metadataProvider).appConfig.backup.syncAlbums;
+    final enableSyncUploadAlbum = ref.read(appConfigProvider).backup.syncAlbums;
     final selectedAlbums = ref
         .read(backupAlbumProvider)
         .where((a) => a.backupSelection == BackupSelection.selected)
