@@ -160,6 +160,7 @@ extension<T extends Object> on MetadataDomain<T> {
             triggerDelay: repo._read(.backupTriggerDelay),
             syncAlbums: repo._read(.backupSyncAlbums),
           ),
+          trashSync: .new(mode: repo._read(.trashSyncMode)),
         );
       case .systemConfig:
         repo._systemConfig = .new(

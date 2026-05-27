@@ -5,9 +5,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -150,8 +150,6 @@ class AdvancedSettings extends HookConsumerWidget {
   }
 }
 
-enum _TrashSyncMode { none, auto, review }
-
 final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
   return ref.watch(permissionRepositoryProvider).hasManageMediaPermission();
 });
@@ -161,17 +159,11 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final autoSyncChanges = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
-    final reviewRemoteDeletions = useAppSettingsState(AppSettingsEnum.reviewRemoteDeletions);
+    final selectedTrashSyncMode = ref.watch(appConfigProvider.select((config) => config.trashSync.mode));
 
     final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
     final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
-
-    final selectedTrashSyncMode = autoSyncChanges.value
-        ? _TrashSyncMode.auto
-        : reviewRemoteDeletions.value
-        ? _TrashSyncMode.review
-        : _TrashSyncMode.none;
+    final isTrashSyncEnabled = selectedTrashSyncMode != TrashSyncMode.off;
     final reviewRemoteDeletionsSubtitle = [
       "advanced_settings_review_remote_deletions_subtitle".tr(),
       if (Platform.isAndroid) "advanced_settings_review_remote_deletions_subtitle_android".tr(),
@@ -192,61 +184,42 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
       );
     }
 
-    Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
+    Future<void> setTrashSyncMode(TrashSyncMode mode) {
+      return ref.read(metadataProvider).write(.trashSyncMode, mode);
+    }
+
+    Future<void> attemptToEnableSetting(TrashSyncMode mode) async {
       if (Platform.isIOS) {
         // No MANAGE_MEDIA on iOS; review is the only mode the user can pick.
-        if (key == AppSettingsEnum.reviewRemoteDeletions) {
-          reviewRemoteDeletions.value = true;
-          autoSyncChanges.value = false;
+        if (mode == TrashSyncMode.review) {
+          await setTrashSyncMode(TrashSyncMode.review);
         }
-        ref.invalidate(appSettingsServiceProvider);
         return;
       }
       final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
       ref.invalidate(_manageMediaPermissionProvider);
-      if (key == AppSettingsEnum.manageLocalMediaAndroid) {
-        autoSyncChanges.value = result;
-        if (result) {
-          reviewRemoteDeletions.value = false;
-        }
+      if (mode == TrashSyncMode.autoSync && result) {
+        await setTrashSyncMode(TrashSyncMode.autoSync);
       }
-      if (key == AppSettingsEnum.reviewRemoteDeletions) {
-        reviewRemoteDeletions.value = true;
-        autoSyncChanges.value = false;
+      if (mode == TrashSyncMode.review) {
+        await setTrashSyncMode(TrashSyncMode.review);
         if (!result) {
           showManageMediaRequiredSnackBar();
         }
       }
-      ref.invalidate(appSettingsServiceProvider);
     }
 
-    Future<void> handleTrashSyncModeChange(_TrashSyncMode? mode) async {
-      if (mode == null) {
+    Future<void> handleTrashSyncModeChange(TrashSyncMode? mode) async {
+      if (mode == null || mode == selectedTrashSyncMode) {
         return;
       }
 
-      switch (mode) {
-        case _TrashSyncMode.none:
-          if (!autoSyncChanges.value && !reviewRemoteDeletions.value) {
-            break;
-          }
-          autoSyncChanges.value = false;
-          reviewRemoteDeletions.value = false;
-          ref.invalidate(appSettingsServiceProvider);
-          break;
-        case _TrashSyncMode.auto:
-          if (autoSyncChanges.value) {
-            break;
-          }
-          await attemptToEnableSetting(AppSettingsEnum.manageLocalMediaAndroid);
-          break;
-        case _TrashSyncMode.review:
-          if (reviewRemoteDeletions.value) {
-            break;
-          }
-          await attemptToEnableSetting(AppSettingsEnum.reviewRemoteDeletions);
-          break;
+      if (mode == TrashSyncMode.off) {
+        await setTrashSyncMode(TrashSyncMode.off);
+        return;
       }
+
+      await attemptToEnableSetting(mode);
     }
 
     return Column(
@@ -258,7 +231,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
             SettingsRadioGroup(
               title: 'off'.tr(),
               subtitle: 'advanced_settings_sync_remote_deletions_off_subtitle'.tr(),
-              value: _TrashSyncMode.none,
+              value: TrashSyncMode.off,
             ),
             // Auto-sync requires MANAGE_MEDIA to run silently. iOS has no
             // equivalent permission and every batch would trigger a PhotoKit
@@ -267,16 +240,16 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
               SettingsRadioGroup(
                 title: 'advanced_settings_sync_remote_deletions_title'.tr(),
                 subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
-                value: _TrashSyncMode.auto,
+                value: TrashSyncMode.autoSync,
               ),
             SettingsRadioGroup(
               title: 'advanced_settings_review_remote_deletions_title'.tr(),
               subtitle: reviewRemoteDeletionsSubtitle,
-              value: _TrashSyncMode.review,
+              value: TrashSyncMode.review,
             ),
           ],
           groupBy: selectedTrashSyncMode,
-          onRadioChanged: (mode) => handleTrashSyncModeChange(mode),
+          onRadioChanged: handleTrashSyncModeChange,
         ),
         // MANAGE_MEDIA permission tile is Android-only; iOS has no equivalent.
         if (Platform.isAndroid)
@@ -288,8 +261,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
                 ? "allowed".tr()
                 : "not_allowed".tr(),
             subtitle: "manage_media_access_rationale".tr(),
-            statusColor:
-                manageMediaAndroidPermissionValue == false && (autoSyncChanges.value || reviewRemoteDeletions.value)
+            statusColor: manageMediaAndroidPermissionValue == false && isTrashSyncEnabled
                 ? const Color.fromARGB(255, 243, 188, 106)
                 : null,
             onActionTap: () async {

@@ -1,13 +1,13 @@
 import 'package:async/async.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});
 
@@ -28,26 +28,22 @@ final trashSyncServiceProvider = Provider(
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
+    metadataRepository: ref.watch(metadataProvider),
   ),
 );
 
 final outOfSyncAssetsCountProvider = StreamProvider<int>((ref) {
-  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewRemoteDeletions));
-  final service = ref.watch(trashSyncServiceProvider);
-  return enabledReviewMode.when(
-    data: (enabled) => enabled ? service.watchPendingApprovalAssetCount() : Stream<int>.value(0),
-    loading: () => Stream<int>.value(0),
-    error: (_, __) => Stream<int>.value(0),
+  final enabledReviewMode = ref.watch(
+    appConfigProvider.select((config) => config.trashSync.mode == TrashSyncMode.review),
   );
+  final service = ref.watch(trashSyncServiceProvider);
+  return enabledReviewMode ? service.watchPendingApprovalAssetCount() : Stream<int>.value(0);
 });
 
 final isWaitingForTrashApprovalProvider = StreamProvider.family<bool, String?>((ref, checksum) {
-  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewRemoteDeletions));
-  final service = ref.watch(trashSyncServiceProvider);
-  return enabledReviewMode.when(
-    data: (enabled) =>
-        enabled && checksum != null ? service.watchIsAssetApprovalPending(checksum) : Stream.value(false),
-    loading: () => Stream.value(false),
-    error: (_, __) => Stream.value(false),
+  final enabledReviewMode = ref.watch(
+    appConfigProvider.select((config) => config.trashSync.mode == TrashSyncMode.review),
   );
+  final service = ref.watch(trashSyncServiceProvider);
+  return enabledReviewMode && checksum != null ? service.watchIsAssetApprovalPending(checksum) : Stream.value(false);
 });

@@ -4,9 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
@@ -27,6 +27,7 @@ class LocalSyncService {
   final AssetMediaRepository _assetMediaRepository;
   final IPermissionRepository _permissionRepository;
   final DriftTrashSyncRepository _trashSyncRepository;
+  final MetadataRepository _metadataRepository;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
@@ -37,12 +38,14 @@ class LocalSyncService {
     required IPermissionRepository permissionRepository,
     required DriftTrashSyncRepository trashSyncRepository,
     required NativeSyncApi nativeSyncApi,
+    required MetadataRepository metadataRepository,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _assetMediaRepository = assetMediaRepository,
        _permissionRepository = permissionRepository,
        _trashSyncRepository = trashSyncRepository,
+       _metadataRepository = metadataRepository,
        _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
@@ -380,15 +383,16 @@ class LocalSyncService {
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
     await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
 
-    if (Store.get(StoreKey.manageLocalMediaAndroid, false) || Store.get(StoreKey.reviewRemoteDeletions, false)) {
+    final trashSyncMode = _metadataRepository.appConfig.trashSync.mode;
+    if (trashSyncMode != TrashSyncMode.off) {
       final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-      if (assetsToRestore.isNotEmpty) {
-        if (await _hasManageMediaPermission("restore from trash")) {
-          final restoredIds = await _assetMediaRepository.restoreAssetsFromTrash(assetsToRestore);
-          await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
-        }
-      } else {
+      if (assetsToRestore.isEmpty) {
         _log.info("syncTrashedAssets, No remote assets found for restoration");
+        return;
+      }
+      if (await _hasManageMediaPermission("restore from trash")) {
+        final restoredIds = await _assetMediaRepository.restoreAssetsFromTrash(assetsToRestore);
+        await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
       }
     }
   }

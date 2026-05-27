@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/system_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 enum MetadataDomain<T extends Object> {
@@ -69,6 +70,9 @@ enum MetadataKey<T extends Object> {
   backupRequireCharging<bool>(.appConfig, 'backup.requireCharging', false),
   backupTriggerDelay<int>(.appConfig, 'backup.triggerDelay', 30),
   backupSyncAlbums<bool>(.appConfig, 'backup.syncAlbums', false),
+
+  // Trash sync
+  trashSyncMode<TrashSyncMode>(.appConfig, 'trashSync.mode', TrashSyncMode.off, _EnumCodec(TrashSyncMode.values)),
 
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),

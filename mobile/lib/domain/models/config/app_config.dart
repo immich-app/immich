@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/config/timeline_config.dart';
+import 'package:immich_mobile/domain/models/config/trash_sync_config.dart';
 import 'package:immich_mobile/domain/models/config/viewer_config.dart';
 
 class AppConfig {
@@ -18,6 +19,7 @@ class AppConfig {
   final SlideshowConfig slideshow;
   final AlbumConfig album;
   final BackupConfig backup;
+  final TrashSyncConfig trashSync;
 
   const AppConfig({
     this.theme = const .new(),
@@ -29,6 +31,7 @@ class AppConfig {
     this.slideshow = const .new(),
     this.album = const .new(),
     this.backup = const .new(),
+    this.trashSync = const .new(),
   });
 
   AppConfig copyWith({
@@ -41,6 +44,7 @@ class AppConfig {
     SlideshowConfig? slideshow,
     AlbumConfig? album,
     BackupConfig? backup,
+    TrashSyncConfig? trashSync,
   }) => .new(
     theme: theme ?? this.theme,
     cleanup: cleanup ?? this.cleanup,
@@ -51,6 +55,7 @@ class AppConfig {
     slideshow: slideshow ?? this.slideshow,
     album: album ?? this.album,
     backup: backup ?? this.backup,
+    trashSync: trashSync ?? this.trashSync,
   );
 
   @override
@@ -65,12 +70,13 @@ class AppConfig {
           other.viewer == viewer &&
           other.slideshow == slideshow &&
           other.album == album &&
-          other.backup == backup);
+          other.backup == backup &&
+          other.trashSync == trashSync);
 
   @override
-  int get hashCode => Object.hash(theme, cleanup, map, timeline, image, viewer, slideshow, album, backup);
+  int get hashCode => Object.hash(theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, trashSync);
 
   @override
   String toString() =>
-      'AppConfig(theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup)';
+      'AppConfig(theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, trashSync: $trashSync)';
 }

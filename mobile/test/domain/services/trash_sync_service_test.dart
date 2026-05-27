@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/config/trash_sync_config.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -24,8 +26,10 @@ void main() {
   late DriftTrashSyncRepository mockTrashSyncRepo;
   late MockAssetMediaRepository mockAssetMediaRepo;
   late MockPermissionRepository mockPermissionRepo;
+  late MockMetadataRepository mockMetadataRepository;
   late Drift db;
   late bool hasManageMediaPermission;
+  late TrashSyncMode trashSyncMode;
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -52,12 +56,18 @@ void main() {
     mockTrashSyncRepo = MockTrashSyncRepository();
     mockAssetMediaRepo = MockAssetMediaRepository();
     mockPermissionRepo = MockPermissionRepository();
+    mockMetadataRepository = MockMetadataRepository();
+    trashSyncMode = TrashSyncMode.off;
+    when(
+      () => mockMetadataRepository.appConfig,
+    ).thenAnswer((_) => AppConfig(trashSync: TrashSyncConfig(mode: trashSyncMode)));
 
     sut = TrashSyncService(
       trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
       trashSyncRepository: mockTrashSyncRepo,
       assetMediaRepository: mockAssetMediaRepo,
       permissionRepository: mockPermissionRepo,
+      metadataRepository: mockMetadataRepository,
     );
 
     when(
@@ -82,13 +92,11 @@ void main() {
       final callback = invocation.positionalArguments.first as Future<void> Function();
       return callback();
     });
-    await Store.put(StoreKey.manageLocalMediaAndroid, false);
-    await Store.put(StoreKey.reviewRemoteDeletions, false);
   });
 
   group("TrashSyncService - remote trash & restore", () {
     test("moves backed up local and merged assets to device trash when remote trash events are received", () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       hasManageMediaPermission = true;
 
       final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-local', remoteId: null);
@@ -150,7 +158,7 @@ void main() {
     });
 
     test("records only unresolved candidates after automatic trash move", () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       hasManageMediaPermission = true;
 
       final resolvedAsset = LocalAssetStub.image1.copyWith(id: 'resolved-local', checksum: 'checksum-resolved');
@@ -189,7 +197,7 @@ void main() {
     });
 
     test("records all candidates when automatic trash move returns no moved ids", () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       hasManageMediaPermission = true;
 
       final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-failed');
@@ -215,7 +223,7 @@ void main() {
     });
 
     test("uses review mode without moving assets to trash", () async {
-      await Store.put(StoreKey.reviewRemoteDeletions, true);
+      trashSyncMode = TrashSyncMode.review;
       final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-review', remoteId: null);
       final candidates = [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))];
       when(
@@ -259,7 +267,7 @@ void main() {
     });
 
     test("restores trashed local assets when matching remote assets leave the trash", () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       hasManageMediaPermission = true;
 
       final trashedAssets = [
@@ -280,7 +288,7 @@ void main() {
     test("does not auto restore on iOS review mode", () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
-      await Store.put(StoreKey.reviewRemoteDeletions, true);
+      trashSyncMode = TrashSyncMode.review;
 
       await sut.syncRemoteTrashState([(id: 'remote-1', deletedAt: null)]);
 

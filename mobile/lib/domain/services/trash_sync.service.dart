@@ -1,7 +1,7 @@
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -10,8 +10,6 @@ import 'package:logging/logging.dart';
 
 typedef RemoteAssetTrashState = ({String id, DateTime? deletedAt});
 
-enum TrashSyncMode { off, autoSync, review }
-
 class TrashSyncService {
   final Logger _logger = Logger('TrashSyncService');
 
@@ -19,26 +17,21 @@ class TrashSyncService {
   final DriftTrashSyncRepository _trashSyncRepository;
   final AssetMediaRepository _assetMediaRepository;
   final IPermissionRepository _permissionRepository;
+  final MetadataRepository _metadataRepository;
 
   TrashSyncService({
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required DriftTrashSyncRepository trashSyncRepository,
     required AssetMediaRepository assetMediaRepository,
     required IPermissionRepository permissionRepository,
+    required MetadataRepository metadataRepository,
   }) : _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _trashSyncRepository = trashSyncRepository,
        _assetMediaRepository = assetMediaRepository,
-       _permissionRepository = permissionRepository;
+       _permissionRepository = permissionRepository,
+       _metadataRepository = metadataRepository;
 
-  TrashSyncMode get mode {
-    if (Store.get(StoreKey.reviewRemoteDeletions, false)) {
-      return TrashSyncMode.review;
-    }
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-      return TrashSyncMode.autoSync;
-    }
-    return TrashSyncMode.off;
-  }
+  TrashSyncMode get mode => _metadataRepository.appConfig.trashSync.mode;
 
   bool get isAutoRestoreEnabled =>
       CurrentPlatform.isAndroid && (mode == TrashSyncMode.autoSync || mode == TrashSyncMode.review);
@@ -138,5 +131,5 @@ class TrashSyncService {
   }
 
   Future<bool> _canMoveLocalMediaToTrash() async =>
-      mode == TrashSyncMode.autoSync && await _hasManageMediaPermission("move to trash");
+      CurrentPlatform.isAndroid && mode == TrashSyncMode.autoSync && await _hasManageMediaPermission("move to trash");
 }

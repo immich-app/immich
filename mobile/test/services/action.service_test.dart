@@ -3,7 +3,6 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -93,8 +92,7 @@ void main() {
   });
 
   group('ActionService.deleteLocal', () {
-    test('routes deleted ids to trashed repository when Android trash handling is enabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+    test('routes deleted ids to trashed repository on Android', () async {
       const ids = ['a', 'b'];
 
       when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
@@ -108,8 +106,9 @@ void main() {
       verifyNever(() => localAssetRepository.delete(any()));
     });
 
-    test('deletes locally when Android trash handling is disabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+    test('deletes local rows directly on iOS', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
       const ids = ['c'];
 
       when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
@@ -124,7 +123,6 @@ void main() {
     });
 
     test('short-circuits when nothing was deleted', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
       const ids = ['x'];
 
       when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => <String>[]);

@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/config/trash_sync_config.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -31,8 +33,10 @@ void main() {
   late DriftTrashSyncRepository mockTrashSyncRepo;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late MockNativeSyncApi mockNativeSyncApi;
+  late MockMetadataRepository mockMetadataRepository;
   late Drift db;
   late bool hasManageMediaPermission;
+  late TrashSyncMode trashSyncMode;
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +67,11 @@ void main() {
     mockPermissionRepository = MockPermissionRepository();
     mockTrashSyncRepo = MockTrashSyncRepository();
     mockNativeSyncApi = MockNativeSyncApi();
+    mockMetadataRepository = MockMetadataRepository();
+    trashSyncMode = TrashSyncMode.off;
+    when(
+      () => mockMetadataRepository.appConfig,
+    ).thenAnswer((_) => AppConfig(trashSync: TrashSyncConfig(mode: trashSyncMode)));
 
     when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => false);
     when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
@@ -87,19 +96,18 @@ void main() {
       permissionRepository: mockPermissionRepository,
       nativeSyncApi: mockNativeSyncApi,
       trashSyncRepository: mockTrashSyncRepo,
+      metadataRepository: mockMetadataRepository,
     );
 
     await Store.clear();
-    await Store.put(StoreKey.manageLocalMediaAndroid, false);
     when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
-    await Store.put(StoreKey.reviewRemoteDeletions, false);
     hasManageMediaPermission = false;
     when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
   });
 
   group('LocalSyncService - syncTrashedAssets gating', () {
     test('invokes syncTrashedAssets when Android flag enabled and permission granted', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
       hasManageMediaPermission = true;
 
@@ -111,7 +119,7 @@ void main() {
     });
 
     test('syncs trashed snapshot when store flags are disabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      trashSyncMode = TrashSyncMode.off;
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
       hasManageMediaPermission = true;
 
@@ -125,8 +133,7 @@ void main() {
     });
 
     test('syncs trashed snapshot but does not handle remote trash intents', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      await Store.put(StoreKey.reviewRemoteDeletions, false);
+      trashSyncMode = TrashSyncMode.autoSync;
       hasManageMediaPermission = false;
 
       await sut.sync();
@@ -139,8 +146,7 @@ void main() {
     });
 
     test('syncs trashed snapshot but skips review restore when MANAGE_MEDIA permission absent', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      await Store.put(StoreKey.reviewRemoteDeletions, true);
+      trashSyncMode = TrashSyncMode.review;
       when(() => mockTrashedLocalAssetRepository.getToRestore()).thenAnswer((_) async => [LocalAssetStub.image1]);
       hasManageMediaPermission = false;
 
@@ -188,7 +194,6 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
 
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
       hasManageMediaPermission = false;
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
 
@@ -214,7 +219,7 @@ void main() {
       ).thenAnswer((_) async {});
       when(() => mockLocalAlbumRepository.getAll()).thenAnswer((_) async => []);
 
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();
@@ -226,9 +231,7 @@ void main() {
 
   group('LocalSyncService - syncTrashedAssets behavior', () {
     test('review mode only restores local trash and does not clean trash sync directly', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      await Store.put(StoreKey.reviewRemoteDeletions, true);
-      expect(Store.get(StoreKey.reviewRemoteDeletions, false), isTrue);
+      trashSyncMode = TrashSyncMode.review;
 
       final platformAsset = PlatformAsset(
         id: 'remote-id',
@@ -249,7 +252,7 @@ void main() {
     });
 
     test('processes trashed snapshot and restores assets', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      trashSyncMode = TrashSyncMode.autoSync;
       hasManageMediaPermission = true;
 
       final platformAsset = PlatformAsset(
