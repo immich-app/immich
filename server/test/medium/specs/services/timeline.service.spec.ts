@@ -51,13 +51,13 @@ describe(TimelineService.name, () => {
       const response1 = sut.getTimeBuckets(auth, { withPartners: true, visibility: AssetVisibility.Archive });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
 
       const response2 = sut.getTimeBuckets(auth, { withPartners: true });
       await expect(response2).rejects.toBeInstanceOf(BadRequestException);
       await expect(response2).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
     });
 
@@ -67,13 +67,13 @@ describe(TimelineService.name, () => {
       const response1 = sut.getTimeBuckets(auth, { withPartners: true, isFavorite: false });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
 
       const response2 = sut.getTimeBuckets(auth, { withPartners: true, isFavorite: true });
       await expect(response2).rejects.toBeInstanceOf(BadRequestException);
       await expect(response2).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
     });
 
@@ -83,7 +83,7 @@ describe(TimelineService.name, () => {
       const response = sut.getTimeBuckets(auth, { withPartners: true, isTrashed: true });
       await expect(response).rejects.toBeInstanceOf(BadRequestException);
       await expect(response).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
     });
 
