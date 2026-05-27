@@ -1,8 +1,10 @@
 import {
   getWorkflowTriggers,
   searchPluginMethods,
+  searchPluginTemplates,
   WorkflowTrigger,
   type PluginMethodResponseDto,
+  type PluginTemplateResponseDto,
   type WorkflowTriggerResponseDto,
 } from '@immich/sdk';
 import { t } from 'svelte-i18n';
@@ -16,6 +18,7 @@ class PluginManager {
   #methodMap = new SvelteMap<string, PluginMethodResponseDto>();
   #methods = $state<PluginMethodResponseDto[]>([]);
   #triggers = $state<WorkflowTriggerResponseDto[]>([]);
+  #templates = $state<PluginTemplateResponseDto[]>([]);
 
   constructor() {
     eventManager.on({
@@ -31,6 +34,10 @@ class PluginManager {
 
   get triggers() {
     return this.#triggers;
+  }
+
+  get templates() {
+    return this.#templates;
   }
 
   ready() {
@@ -70,7 +77,11 @@ class PluginManager {
   }
 
   private async load() {
-    const [methods, triggers] = await Promise.all([searchPluginMethods({}), getWorkflowTriggers()]);
+    const [methods, triggers, templates] = await Promise.all([
+      searchPluginMethods({}),
+      getWorkflowTriggers(),
+      searchPluginTemplates(),
+    ]);
 
     this.#methods = methods;
     for (const method of this.#methods) {
@@ -78,6 +89,7 @@ class PluginManager {
     }
 
     this.#triggers = triggers;
+    this.#templates = templates;
   }
 }
 

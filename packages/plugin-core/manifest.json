@@ -5,6 +5,36 @@
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
   "wasmPath": "dist/plugin.wasm",
+  "templates": [
+    {
+      "name": "auto-archive-screenshots",
+      "title": "Auto-archive screenshots",
+      "description": "Archive uploads with \"screenshot\" in the filename and optionally add them to an album",
+      "trigger": "AssetCreate",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetFileFilter",
+          "config": {
+            "pattern": "screenshot",
+            "matchType": "contains",
+            "caseSensitive": false
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumIds": []
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetArchive",
+          "config": {
+            "inverse": false
+          }
+        }
+      ]
+    }
+  ],
   "methods": [
     {
       "name": "assetFileFilter",
