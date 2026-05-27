@@ -928,7 +928,7 @@ class TestOcr:
               session=ort_session.return_value,
               rec_batch_num=6,
               rec_img_shape=(3, 48, 320),
-              model_root_dir=settings.cache_folder,
+              model_root_dir=text_recognizer.cache_dir,
             )
         )
 
@@ -946,7 +946,7 @@ class TestOcr:
               session=ort_session.return_value,
               rec_batch_num=4,
               rec_img_shape=(3, 48, 320),
-              model_root_dir=settings.cache_folder,
+              model_root_dir=text_recognizer.cache_dir,
             )
         )
 
@@ -966,7 +966,7 @@ class TestOcr:
               session=ort_session.return_value,
               rec_batch_num=6,
               rec_img_shape=(3, 48, 320),
-              model_root_dir=settings.cache_folder,
+              model_root_dir=text_recognizer.cache_dir,
             )
         )
 
