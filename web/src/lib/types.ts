@@ -55,6 +55,10 @@ export type SearchDisplayFilters = {
   isFavorite: boolean;
 };
 
+export type SearchImagePropsFilter = {
+  orientation?: 'landscape' | 'portrait';
+};
+
 export type SearchLocationFilter = {
   country?: string;
   state?: string;
@@ -74,6 +78,7 @@ export type SearchFilter = {
   display: SearchDisplayFilters;
   mediaType: MediaType;
   rating?: number | null;
+  imageProperties: SearchImagePropsFilter;
 };
 
 export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';

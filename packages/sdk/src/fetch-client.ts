@@ -1658,6 +1658,8 @@ export type MetadataSearchDto = {
     ocr?: string;
     /** Sort order */
     order?: AssetOrder;
+    /** Filter by image orientation (landscape or portrait) */
+    orientation?: Orientation;
     /** Filter by original file name */
     originalFileName?: string;
     /** Filter by original file path */
@@ -1777,6 +1779,8 @@ export type RandomSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by image orientation (landscape or portrait) */
+    orientation?: Orientation;
     /** Filter by person IDs */
     personIds?: string[];
     /** Filter by rating [1-5], or null for unrated */
@@ -1843,6 +1847,8 @@ export type SmartSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by image orientation (landscape or portrait) */
+    orientation?: Orientation;
     /** Page number */
     page?: number;
     /** Filter by person IDs */
@@ -1911,6 +1917,8 @@ export type StatisticsSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Filter by image orientation (landscape or portrait) */
+    orientation?: Orientation;
     /** Filter by person IDs */
     personIds?: string[];
     /** Filter by rating [1-5], or null for unrated */
@@ -5724,7 +5732,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, orientation, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -5741,6 +5749,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     minFileSize?: number;
     model?: string | null;
     ocr?: string;
+    orientation?: "landscape" | "portrait";
     personIds?: string[];
     rating?: number | null;
     size?: number;
@@ -5777,6 +5786,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         minFileSize,
         model,
         ocr,
+        orientation,
         personIds,
         rating,
         size,
@@ -7561,6 +7571,10 @@ export enum JobName {
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
     IntegrityDeleteReports = "IntegrityDeleteReports"
+}
+export enum Orientation {
+    Landscape = "landscape",
+    Portrait = "portrait"
 }
 export enum SearchSuggestionType {
     Country = "country",

@@ -1,4 +1,4 @@
-import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, Orientation, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import type { DateTime } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
@@ -68,6 +68,9 @@ class SearchManager {
         isFavorite: searchQuery.isFavorite ?? false,
         isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
       },
+      imageProperties: {
+        orientation: searchQuery.orientation,
+      },
       mediaType:
         searchQuery.type === AssetTypeEnum.Image
           ? MediaType.Image
@@ -110,6 +113,12 @@ class SearchManager {
       visibility: this.filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: this.filter.display.isFavorite || undefined,
       isNotInAlbum: this.filter.display.isNotInAlbum || undefined,
+      orientation:
+        this.filter.imageProperties.orientation === 'landscape'
+          ? Orientation.Landscape
+          : this.filter.imageProperties.orientation === 'portrait'
+            ? Orientation.Portrait
+            : undefined,
       personIds: this.filter.personIds.size > 0 ? [...this.filter.personIds] : undefined,
       tagIds: this.filter.tagIds === null ? null : this.filter.tagIds.size > 0 ? [...this.filter.tagIds] : undefined,
       type,

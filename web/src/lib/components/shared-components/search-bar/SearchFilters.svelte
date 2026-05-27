@@ -18,6 +18,7 @@
   import { getAllTags, type PersonResponseDto, type TagResponseDto } from '@immich/sdk';
   import SearchMediaSection from './SearchMediaSection.svelte';
   import SearchCameraSection from './SearchCameraSection.svelte';
+  import SearchImagePropsSection from './SearchImagePropsSection.svelte';
   import SearchDateSection from './SearchDateSection.svelte';
   import SearchPeopleSection from './SearchPeopleSection.svelte';
   import SearchTagsSection from './SearchTagsSection.svelte';
@@ -219,6 +220,7 @@
           {#if authManager.authenticated && authManager.preferences.ratings.enabled}
             <SearchRatingsSection />
           {/if}
+          <SearchImagePropsSection />
           <SearchDisplaySection />
         </div>
       {:else if activeFilter}

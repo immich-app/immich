@@ -193,6 +193,7 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      orientation: $t('orientation'),
     };
     return keyMap[key] || key;
   }
@@ -283,6 +284,10 @@
                 {/await}
               {:else if searchKey === 'rating'}
                 {$t('rating_count', { values: { count: value ?? 0 } })}
+              {:else if searchKey === 'orientation' && value === 'landscape'}
+                {$t('landscape')}
+              {:else if searchKey === 'orientation' && value === 'portrait'}
+                {$t('portrait')}
               {:else if value === null || value === ''}
                 {$t('unknown')}
               {:else}
