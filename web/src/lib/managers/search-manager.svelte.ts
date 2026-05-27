@@ -68,6 +68,16 @@ class SearchManager {
         isFavorite: searchQuery.isFavorite ?? false,
         isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
       },
+      imageProperties: {
+        minAspectRatioWidth: this.#withNullAsEmptyString(searchQuery.minAspectRatioWidth?.toString()),
+        minAspectRatioHeight: this.#withNullAsEmptyString(searchQuery.minAspectRatioHeight?.toString()),
+        maxAspectRatioWidth: this.#withNullAsEmptyString(searchQuery.maxAspectRatioWidth?.toString()),
+        maxAspectRatioHeight: this.#withNullAsEmptyString(searchQuery.maxAspectRatioHeight?.toString()),
+        minWidth: this.#withNullAsEmptyString(searchQuery.minWidth?.toString()),
+        maxWidth: this.#withNullAsEmptyString(searchQuery.maxWidth?.toString()),
+        minHeight: this.#withNullAsEmptyString(searchQuery.minHeight?.toString()),
+        maxHeight: this.#withNullAsEmptyString(searchQuery.maxHeight?.toString()),
+      },
       mediaType:
         searchQuery.type === AssetTypeEnum.Image
           ? MediaType.Image
@@ -114,6 +124,14 @@ class SearchManager {
       tagIds: this.filter.tagIds === null ? null : this.filter.tagIds.size > 0 ? [...this.filter.tagIds] : undefined,
       type,
       rating: this.filter.rating,
+      minAspectRatioWidth: this.#emptyStringToNumber(this.filter.imageProperties.minAspectRatioWidth),
+      minAspectRatioHeight: this.#emptyStringToNumber(this.filter.imageProperties.minAspectRatioHeight),
+      maxAspectRatioWidth: this.#emptyStringToNumber(this.filter.imageProperties.maxAspectRatioWidth),
+      maxAspectRatioHeight: this.#emptyStringToNumber(this.filter.imageProperties.maxAspectRatioHeight),
+      minWidth: this.#emptyStringToNumber(this.filter.imageProperties.minWidth),
+      maxWidth: this.#emptyStringToNumber(this.filter.imageProperties.maxWidth),
+      minHeight: this.#emptyStringToNumber(this.filter.imageProperties.minHeight),
+      maxHeight: this.#emptyStringToNumber(this.filter.imageProperties.maxHeight),
     };
   }
 
@@ -123,6 +141,10 @@ class SearchManager {
 
   #emptyStringToNull(value: string | undefined) {
     return value === '' ? null : value;
+  }
+
+  #emptyStringToNumber(value: string | undefined) {
+    return value === '' || value === undefined ? undefined : Number(value);
   }
 
   #toStartOfDayDate(dateString: string) {

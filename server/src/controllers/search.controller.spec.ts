@@ -115,6 +115,46 @@ describe(SearchController.name, () => {
       );
     });
 
+    it('should reject minWidth as a negative number', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ minWidth: -1 });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['minWidth'], message: 'Too small: expected number to be >=1' }]),
+      );
+    });
+
+    it('should reject minAspectRatioWidth as zero', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ minAspectRatioWidth: 0 });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['minAspectRatioWidth'], message: expect.stringContaining('Too small') }]),
+      );
+    });
+
+    it('should reject maxAspectRatioWidth as zero', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ maxAspectRatioWidth: 0 });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['maxAspectRatioWidth'], message: expect.stringContaining('Too small') }]),
+      );
+    });
+
+    it('should reject minAspectRatioWidth as a string', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ minAspectRatioWidth: 'abc' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['minAspectRatioWidth'], message: 'Invalid input: expected number, received NaN' },
+        ]),
+      );
+    });
+
     describe('POST /search/random', () => {
       it('should reject if withStacked is not a boolean', async () => {
         const { status, body } = await request(ctx.getHttpServer())
