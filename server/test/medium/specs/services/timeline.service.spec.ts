@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility } from 'src/enum';
+import { AssetVisibility, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { DB } from 'src/schema';
 import { TimelineService } from 'src/services/timeline.service';
 import { newMediumService } from 'test/medium.factory';
@@ -206,5 +207,33 @@ describe(TimelineService.name, () => {
       const response2 = JSON.parse(rawResponse2);
       expect(response2).toEqual(expect.objectContaining({ id: [asset2.id, asset1.id], isFavorite: [true, false] }));
     });
+  });
+
+  it('should strip geodata metadata if shared link without exif', async () => {
+    const { sut, ctx } = setup();
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({
+      ownerId: user.id,
+      localDateTime: new Date('1970-02-12'),
+      deletedAt: new Date(),
+    });
+    const { album } = await ctx.newAlbum({ ownerId: user.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+    const { id: sharedLinkId } = await sharedLinkRepo.create({
+      allowUpload: false,
+      key: Buffer.from('123'),
+      type: SharedLinkType.Album,
+      userId: user.id,
+      albumId: album.id,
+    });
+
+    await ctx.newExif({ assetId: asset.id, city: 'Austin', country: 'USA' });
+    const auth = factory.auth({ sharedLink: { id: sharedLinkId, showExif: false } });
+    const rawResponse = await sut.getTimeBucket(auth, { albumId: album.id, timeBucket: '1970-02-01', isTrashed: true });
+    const response = JSON.parse(rawResponse);
+    expect(response).not.toEqual(expect.objectContaining({ city: expect.any(Array), country: expect.any(Array) }));
   });
 });

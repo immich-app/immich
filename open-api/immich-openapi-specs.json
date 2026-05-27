@@ -25324,8 +25324,6 @@
           }
         },
         "required": [
-          "city",
-          "country",
           "createdAt",
           "duration",
           "fileCreatedAt",
