@@ -10,7 +10,7 @@
     mdiPlus,
     mdiTrashCanOutline,
   } from '@mdi/js';
-  import { flushSync, mount } from 'svelte';
+  import { mount } from 'svelte';
   import { t } from 'svelte-i18n';
   import WorkflowStepDragImage from './WorkflowStepDragImage.svelte';
 
@@ -30,7 +30,7 @@
   const configEntries = $derived(
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
-  let isDragging = $state(false);
+  let dragImage = $state<Element>();
   let isDropTarget = $state(false);
   let hoverDrag = $state(false);
 
@@ -68,15 +68,11 @@
       return;
     }
 
-    isDragging = true;
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', String(index));
 
-    const dragElement = document.createElement('div');
-    document.body.append(dragElement);
-
     mount(WorkflowStepDragImage, {
-      target: dragElement,
+      target: document.body,
       props: {
         description: method?.description,
         isFilter: method?.uiHints?.includes('filter') ?? false,
@@ -84,9 +80,9 @@
         stepNumber: index + 1,
       },
     });
-    flushSync();
 
-    event.dataTransfer.setDragImage(dragElement, 16, 22);
+    dragImage = document.body.querySelector('#workflow-step-drag-image')!;
+    event.dataTransfer.setDragImage(dragImage, 16, 22);
   };
 
   const handleDrop = (index: number, event: DragEvent) => {
@@ -109,7 +105,8 @@
   };
 
   const handleDragEnd = () => {
-    isDragging = false;
+    dragImage?.remove();
+    dragImage = undefined;
     isDropTarget = false;
   };
 </script>
@@ -132,8 +129,8 @@
 
   <div
     class="w-full transition-all"
-    class:opacity-40={isDragging}
-    class:scale-[0.99]={isDragging}
+    class:opacity-40={!!dragImage}
+    class:scale-[0.99]={!!dragImage}
     ondragover={handleDragOver}
     ondragleave={() => (isDropTarget = false)}
     ondrop={(event) => handleDrop(index, event)}
