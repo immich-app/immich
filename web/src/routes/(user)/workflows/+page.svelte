@@ -16,12 +16,11 @@
     CardTitle,
     CodeBlock,
     Container,
+    ContextMenuButton,
     Icon,
-    IconButton,
     MenuItemType,
-    menuManager,
   } from '@immich/ui';
-  import { mdiClose, mdiDotsVertical, mdiFlashOutline } from '@mdi/js';
+  import { mdiClose, mdiFlashOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -36,7 +35,7 @@
 
   const expandedIds = new SvelteSet<string>();
 
-  const toggleExpanded = (id: string) => {
+  const onToggleExpand = (id: string) => {
     if (expandedIds.has(id)) {
       expandedIds.delete(id);
     } else {
@@ -44,22 +43,7 @@
     }
   };
 
-  const showWorkflowMenu = (event: MouseEvent, workflow: WorkflowResponseDto) => {
-    const { ToggleEnabled, Edit, Delete } = getWorkflowActions($t, workflow);
-    void menuManager.show({
-      target: event.currentTarget as HTMLElement,
-      position: 'top-left',
-      items: [
-        ToggleEnabled,
-        Edit,
-        getWorkflowShowSchemaAction($t, expandedIds.has(workflow.id), () => toggleExpanded(workflow.id)),
-        MenuItemType.Divider,
-        Delete,
-      ],
-    });
-  };
-
-  const { Create } = $derived(getWorkflowsActions($t));
+  const { Create, UseTemplate } = $derived(getWorkflowsActions($t));
 
   const onWorkflowCreate = async (response: WorkflowResponseDto) => {
     await goto(Route.viewWorkflow(response));
@@ -76,7 +60,7 @@
 
 <OnEvents {onWorkflowCreate} {onWorkflowUpdate} {onWorkflowDelete} />
 
-<UserPageLayout title={data.meta.title} actions={[Create]} scrollbar={false}>
+<UserPageLayout title={data.meta.title} actions={[UseTemplate, Create]} scrollbar={false}>
   <section class="flex place-content-center sm:mx-4">
     <Container center size="large" class="pb-28">
       {#if workflows.length === 0}
@@ -91,6 +75,8 @@
       {:else}
         <div class="my-6 flex flex-col gap-3">
           {#each workflows as workflow (workflow.id)}
+            {@const { ToggleEnabled, Duplicate, Edit, Delete } = getWorkflowActions($t, workflow)}
+
             <Card class="group shadow-none transition-colors hover:border-primary">
               <CardHeader>
                 <a
@@ -128,17 +114,16 @@
                     {/if}
                   </div>
 
-                  <IconButton
-                    shape="round"
-                    variant="ghost"
-                    color="secondary"
-                    icon={mdiDotsVertical}
-                    aria-label={$t('menu')}
-                    onclick={(event: MouseEvent) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      showWorkflowMenu(event, workflow);
-                    }}
+                  <ContextMenuButton
+                    position="top-left"
+                    items={[
+                      ToggleEnabled,
+                      Edit,
+                      Duplicate,
+                      getWorkflowShowSchemaAction($t, expandedIds.has(workflow.id), () => onToggleExpand(workflow.id)),
+                      MenuItemType.Divider,
+                      Delete,
+                    ]}
                   />
                 </a>
 
@@ -152,7 +137,7 @@
                         fullWidth
                         variant="ghost"
                         color="secondary"
-                        onclick={() => toggleExpanded(workflow.id)}
+                        onclick={() => onToggleExpand(workflow.id)}
                       >
                         {$t('close')}
                       </Button>

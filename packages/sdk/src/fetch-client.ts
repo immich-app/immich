@@ -1518,6 +1518,28 @@ export type PluginResponseDto = {
     /** Plugin version */
     version: string;
 };
+export type PluginTemplateStepResponseDto = {
+    /** Step configuration */
+    config: {
+        [key: string]: any;
+    } | null;
+    /** Whether the step is enabled */
+    enabled?: boolean;
+    /** Step plugin method */
+    method: string;
+};
+export type PluginTemplateResponseDto = {
+    /** Template description */
+    description: string;
+    /** Template key (unique across all templates) */
+    key: string;
+    /** Workflow steps */
+    steps: PluginTemplateStepResponseDto[];
+    /** Template title */
+    title: string;
+    /** Workflow trigger */
+    trigger: WorkflowTrigger;
+};
 export type QueueResponseDto = {
     /** Whether the queue is paused */
     isPaused: boolean;
@@ -2596,9 +2618,9 @@ export type TagUpdateDto = {
 };
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
-    city: (string | null)[];
+    city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
-    country: (string | null)[];
+    country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
@@ -5245,6 +5267,17 @@ export function searchPluginMethods({ description, enabled, id, name, pluginName
         trigger,
         "type": $type
     }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Retrieve workflow templates
+ */
+export function searchPluginTemplates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTemplateResponseDto[];
+    }>("/plugins/templates", {
         ...opts
     }));
 }

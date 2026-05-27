@@ -1,5 +1,4 @@
 {
-  "originHash" : "9be33bfaa68721646604aefff3cabbdaf9a193da192aae024c265065671f6c49",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -17,6 +16,24 @@
       "state" : {
         "revision" : "aa0079aeb82a4bf00324561a40bffe68c6fe1c26",
         "version" : "7.9.0"
+      }
+    },
+    {
+      "identity" : "keychainaccess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kishikawakatsumi/KeychainAccess",
+      "state" : {
+        "revision" : "84e546727d66f1adc5439debad16270d0fdd04e7",
+        "version" : "4.2.2"
+      }
+    },
+    {
+      "identity" : "maplibre-gl-native-distribution",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/maplibre/maplibre-gl-native-distribution.git",
+      "state" : {
+        "revision" : "60d9bb85c94ce6e7fc4406cd32529fd12bdb7809",
+        "version" : "6.14.0"
       }
     },
     {
@@ -146,5 +163,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

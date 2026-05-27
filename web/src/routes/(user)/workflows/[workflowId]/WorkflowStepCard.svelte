@@ -10,49 +10,29 @@
     mdiPlus,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { flushSync, mount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import WorkflowStepDragImage from './WorkflowStepDragImage.svelte';
 
   type Props = {
     step: WorkflowStepDto;
     index: number;
-    isDragging: boolean;
-    isDragHandleHovered: boolean;
-    isDropTarget: boolean;
     onEdit: (index: number) => void;
     onDelete: (index: number) => void;
     onInsertBefore: (index: number) => void;
-    onDragStart: (index: number, event: DragEvent) => void;
-    onDragEnd: () => void;
-    onDragOver: (index: number, event: DragEvent) => void;
-    onDragLeave: (index: number) => void;
     onDrop: (index: number, event: DragEvent) => void;
-    onDragHandleEnter: (index: number) => void;
-    onDragHandleLeave: () => void;
   };
 
-  let {
-    step,
-    index,
-    isDragging,
-    isDragHandleHovered,
-    isDropTarget,
-    onEdit,
-    onDelete,
-    onInsertBefore,
-    onDragStart,
-    onDragEnd,
-    onDragOver,
-    onDragLeave,
-    onDrop,
-    onDragHandleEnter,
-    onDragHandleLeave,
-  }: Props = $props();
+  let { step, index, onEdit, onDelete, onInsertBefore, onDrop }: Props = $props();
 
   const method = $derived(pluginManager.getMethod(step.method));
   const isFilter = $derived(method?.uiHints?.includes('filter') ?? false);
   const configEntries = $derived(
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
+  let isDragging = $state(false);
+  let isDropTarget = $state(false);
+  let hoverDrag = $state(false);
 
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
@@ -73,14 +53,64 @@
       if (value.length === 0) {
         return $t('none');
       }
-      const items = value.map((v) => (v !== null && typeof v === 'object' ? '{…}' : String(v)));
+      const items = value.map((v) => (v !== null && typeof v === 'object' ? JSON.stringify(v) : String(v)));
       const joined = items.join(' · ');
       if (joined.length <= 28) {
         return `"${joined}"`;
       }
       return $t('items_count', { values: { count: value.length } });
     }
-    return '{…}';
+    return JSON.stringify(value);
+  };
+
+  const handleDragStart = (index: number, event: DragEvent) => {
+    if (!event.dataTransfer) {
+      return;
+    }
+
+    isDragging = true;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(index));
+
+    const dragElement = document.createElement('div');
+    document.body.append(dragElement);
+
+    mount(WorkflowStepDragImage, {
+      target: dragElement,
+      props: {
+        description: method?.description,
+        isFilter: method?.uiHints?.includes('filter') ?? false,
+        label: step ? pluginManager.getMethodLabel(step.method) : '',
+        stepNumber: index + 1,
+      },
+    });
+    flushSync();
+
+    event.dataTransfer.setDragImage(dragElement, 16, 22);
+  };
+
+  const handleDrop = (index: number, event: DragEvent) => {
+    if (!event.dataTransfer) {
+      return;
+    }
+    event.preventDefault();
+
+    const from = Number(event.dataTransfer.getData('text/plain'));
+    if (from === index) {
+      return;
+    }
+
+    onDrop(index, event);
+  };
+
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+    isDropTarget = true;
+  };
+
+  const handleDragEnd = () => {
+    isDragging = false;
+    isDropTarget = false;
   };
 </script>
 
@@ -104,15 +134,15 @@
     class="w-full transition-all"
     class:opacity-40={isDragging}
     class:scale-[0.99]={isDragging}
-    ondragover={(event) => onDragOver(index, event)}
-    ondragleave={() => onDragLeave(index)}
-    ondrop={(event) => onDrop(index, event)}
+    ondragover={handleDragOver}
+    ondragleave={() => (isDropTarget = false)}
+    ondrop={(event) => handleDrop(index, event)}
     role="listitem"
   >
     <Card
       class="shadow-none transition-colors {isDropTarget
         ? 'border-primary ring-2 ring-primary-200'
-        : isDragHandleHovered
+        : hoverDrag
           ? 'border-dashed border-primary'
           : ''}"
     >
@@ -123,10 +153,10 @@
             class="flex shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent p-1 text-light-400 select-none hover:border-primary-200 hover:bg-primary-50 hover:text-primary active:cursor-grabbing"
             aria-label={$t('drag_to_reorder')}
             draggable="true"
-            onmouseenter={() => onDragHandleEnter(index)}
-            onmouseleave={onDragHandleLeave}
-            ondragstart={(event) => onDragStart(index, event)}
-            ondragend={onDragEnd}
+            onmouseenter={() => (hoverDrag = true)}
+            onmouseleave={() => (hoverDrag = false)}
+            ondragstart={(event) => handleDragStart(index, event)}
+            ondragend={handleDragEnd}
             title={$t('drag_to_reorder')}
           >
             <Icon icon={mdiDragVertical} size="20" />

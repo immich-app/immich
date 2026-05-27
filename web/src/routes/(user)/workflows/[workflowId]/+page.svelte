@@ -1,14 +1,13 @@
 <script lang="ts">
   import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import WorkflowAddStepModal from '$lib/modals/WorkflowAddStepModal.svelte';
   import WorkflowEditStepModal from '$lib/modals/WorkflowEditStepModal.svelte';
   import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
   import { Route } from '$lib/route';
-  import { handleUpdateWorkflow } from '$lib/services/workflow.service';
+  import { getWorkflowActions, handleUpdateWorkflow } from '$lib/services/workflow.service';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
-  import type { WorkflowResponseDto, WorkflowStepDto, WorkflowUpdateDto } from '@immich/sdk';
+  import type { WorkflowResponseDto, WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,
     AppShell,
@@ -44,12 +43,10 @@
     mdiPlus,
   } from '@mdi/js';
   import { cloneDeep, isEqual } from 'lodash-es';
-  import { flushSync } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowStepCard from './WorkflowStepCard.svelte';
-  import WorkflowStepDragImage from './WorkflowStepDragImage.svelte';
   import WorkflowSummary from './WorkflowSummary.svelte';
 
   type WorkflowJsonContent = Required<
@@ -57,12 +54,6 @@
   >;
 
   type EditMode = 'visual' | 'json';
-  type StepDragImage = {
-    description?: string;
-    isFilter: boolean;
-    label: string;
-    stepNumber: number;
-  };
 
   type Props = {
     data: PageData;
@@ -70,20 +61,16 @@
 
   let { data }: Props = $props();
 
-  let { id, enabled, name, description, trigger, steps } = $derived(data.workflow);
+  let { id, enabled, name, description, trigger } = $derived(data.workflow);
+  let steps = $state(data.workflow.steps);
   let savedWorkflow = $state(cloneDeep(data.workflow));
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
   let editMode = $state<EditMode>('visual');
-  let draggedIndex = $state<number | null>(null);
-  let dragHandleHoverIndex = $state<number | null>(null);
-  let dragImageElement = $state<HTMLElement | null>(null);
-  let dragImage = $state<StepDragImage>({ isFilter: false, label: '', stepNumber: 1 });
-  let dropTargetIndex = $state<number | null>(null);
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ description, enabled, name, steps, trigger });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -96,7 +83,7 @@
   const handleAddStep = async () => {
     const step = await modalManager.show(WorkflowAddStepModal, { trigger });
     if (step) {
-      steps = [...steps, step];
+      steps.push(step);
     }
   };
 
@@ -107,10 +94,6 @@
     }
   };
 
-  const replaceStep = (index: number, step: WorkflowStepDto) => {
-    steps = steps.map((current, i) => (i === index ? cloneDeep(step) : current));
-  };
-
   const handleEditStep = async (index: number) => {
     const step = steps[index];
     if (!step) {
@@ -119,76 +102,27 @@
 
     const result = await modalManager.show(WorkflowEditStepModal, { trigger, step: cloneDeep(step) });
     if (result) {
-      replaceStep(index, result);
-    }
-  };
-
-  const handleDragStart = (index: number, event: DragEvent) => {
-    draggedIndex = index;
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', String(index));
-
-      const step = steps[index];
-      const method = step ? pluginManager.getMethod(step.method) : undefined;
-      dragImage = {
-        description: method?.description,
-        isFilter: method?.uiHints?.includes('filter') ?? false,
-        label: step ? pluginManager.getMethodLabel(step.method) : '',
-        stepNumber: index + 1,
-      };
-      flushSync();
-
-      if (dragImageElement) {
-        event.dataTransfer.setDragImage(dragImageElement, 16, 22);
-      }
-    }
-  };
-
-  const handleDragOver = (index: number, event: DragEvent) => {
-    if (draggedIndex === null) {
-      return;
-    }
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-    if (dropTargetIndex !== index) {
-      dropTargetIndex = index;
-    }
-  };
-
-  const handleDragLeave = (index: number) => {
-    if (dropTargetIndex === index) {
-      dropTargetIndex = null;
+      steps[index] = result;
     }
   };
 
   const handleDrop = (index: number, event: DragEvent) => {
-    event.preventDefault();
-    const from = draggedIndex;
-    draggedIndex = null;
-    dropTargetIndex = null;
-    if (from === null || from === index) {
+    if (!event.dataTransfer) {
       return;
     }
+
+    const from = Number(event.dataTransfer.getData('text/plain'));
+
     const next = [...steps];
     const [moved] = next.splice(from, 1);
     next.splice(index, 0, moved);
     steps = next;
   };
 
-  const handleDragEnd = () => {
-    draggedIndex = null;
-    dragHandleHoverIndex = null;
-    dropTargetIndex = null;
-  };
-
   const handleDeleteStep = async (index: number) => {
     const confirmed = await modalManager.showDialog({ title: $t('step_delete'), prompt: $t('step_delete_confirm') });
     if (confirmed) {
       steps.splice(index, 1);
-      steps = [...steps];
     }
   };
 
@@ -214,6 +148,12 @@
       data.workflow = response;
       savedWorkflow = cloneDeep(response);
       await invalidate('workflow:data');
+    }
+  };
+
+  const onWorkflowDelete = async (response: WorkflowResponseDto) => {
+    if (id === response.id) {
+      await goto(Route.workflows());
     }
   };
 
@@ -273,60 +213,73 @@
       }
     });
   });
+
+  const { Download, Duplicate, CopyJson, Delete } = $derived(
+    getWorkflowActions($t, { ...savedWorkflow, name, description, enabled, trigger, steps }),
+  );
 </script>
 
-<OnEvents {onWorkflowUpdate} />
+<OnEvents {onWorkflowUpdate} {onWorkflowDelete} />
 
 <AppShell class="">
   <AppShellBar>
-    <ActionBar static {onClose} translations={{ close: $t('back') }} closeIcon={mdiArrowLeft}>
+    <ActionBar
+      shape="round"
+      static
+      {onClose}
+      translations={{ close: $t('back') }}
+      closeIcon={mdiArrowLeft}
+      actions={[Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
+    >
       <ControlBarHeader>
         <ControlBarTitle>{data.workflow.name}</ControlBarTitle>
         <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
       </ControlBarHeader>
       <ControlBarContent class="flex items-center justify-end gap-6">
-        <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
+        {#if hasChanges}
           <Button
-            variant={editMode === 'visual' ? 'filled' : 'ghost'}
-            color={editMode === 'visual' ? 'primary' : 'secondary'}
+            variant="filled"
             size="small"
-            leadingIcon={mdiFormatListBulletedSquare}
-            aria-pressed={editMode === 'visual'}
-            onclick={() => (editMode = 'visual')}
-            shape="round"
+            color="primary"
+            leadingIcon={mdiContentSave}
+            disabled={!hasChanges || isSaving}
+            loading={isSaving}
+            onclick={saveWorkflow}
           >
-            {$t('visual')}
+            {$t('save')}
           </Button>
-          <Button
-            variant={editMode === 'json' ? 'filled' : 'ghost'}
-            color={editMode === 'json' ? 'primary' : 'secondary'}
-            size="small"
-            leadingIcon={mdiCodeJson}
-            aria-pressed={editMode === 'json'}
-            onclick={() => (editMode = 'json')}
-            shape="round"
-          >
-            JSON
-          </Button>
-        </div>
-
-        <Button
-          variant="filled"
-          size="small"
-          color="primary"
-          leadingIcon={mdiContentSave}
-          disabled={!hasChanges || isSaving}
-          loading={isSaving}
-          onclick={saveWorkflow}
-        >
-          {$t('save')}
-        </Button>
+        {/if}
       </ControlBarContent>
     </ActionBar>
   </AppShellBar>
 
   <Container size="medium" class="pt-8 pb-24" center>
     <VStack gap={4}>
+      <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
+        <Button
+          variant={editMode === 'visual' ? 'filled' : 'ghost'}
+          color={editMode === 'visual' ? 'primary' : 'secondary'}
+          size="small"
+          leadingIcon={mdiFormatListBulletedSquare}
+          aria-pressed={editMode === 'visual'}
+          onclick={() => (editMode = 'visual')}
+          shape="round"
+        >
+          {$t('visual')}
+        </Button>
+        <Button
+          variant={editMode === 'json' ? 'filled' : 'ghost'}
+          color={editMode === 'json' ? 'primary' : 'secondary'}
+          size="small"
+          leadingIcon={mdiCodeJson}
+          aria-pressed={editMode === 'json'}
+          onclick={() => (editMode = 'json')}
+          shape="round"
+        >
+          JSON
+        </Button>
+      </div>
+
       {#if editMode === 'visual'}
         <Card class="shadow-none" expandable>
           <CardHeader>
@@ -354,9 +307,8 @@
                   bind:value={() => name ?? '', (value) => (name = value || null)}
                 />
               </Field>
-              <Field label={$t('description')} for="workflow-description">
+              <Field label={$t('description')}>
                 <Textarea
-                  id="workflow-description"
                   grow
                   placeholder={$t('workflow_description')}
                   bind:value={() => description ?? '', (value) => (description = value || null)}
@@ -392,23 +344,14 @@
           </CardHeader>
         </Card>
 
-        {#each steps as step, index (index)}
+        {#each steps as step, index (step.method + index)}
           <WorkflowStepCard
             {step}
             {index}
-            isDragging={draggedIndex === index}
-            isDragHandleHovered={dragHandleHoverIndex === index}
-            isDropTarget={dropTargetIndex === index && draggedIndex !== null && draggedIndex !== index}
             onEdit={handleEditStep}
             onDelete={handleDeleteStep}
             onInsertBefore={handleInsertStep}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onDragHandleEnter={(i) => (dragHandleHoverIndex = i)}
-            onDragHandleLeave={() => (dragHandleHoverIndex = null)}
           />
         {/each}
 
@@ -428,12 +371,5 @@
     </VStack>
   </Container>
 
-  <WorkflowStepDragImage
-    bind:ref={dragImageElement}
-    description={dragImage.description}
-    isFilter={dragImage.isFilter}
-    label={dragImage.label}
-    stepNumber={dragImage.stepNumber}
-  />
   <WorkflowSummary workflow={workflowSummary} />
 </AppShell>

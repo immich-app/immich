@@ -237,6 +237,8 @@ part 'model/pin_code_setup_dto.dart';
 part 'model/places_response_dto.dart';
 part 'model/plugin_method_response_dto.dart';
 part 'model/plugin_response_dto.dart';
+part 'model/plugin_template_response_dto.dart';
+part 'model/plugin_template_step_response_dto.dart';
 part 'model/purchase_response.dart';
 part 'model/purchase_update.dart';
 part 'model/queue_command.dart';
