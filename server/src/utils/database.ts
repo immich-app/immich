@@ -455,6 +455,8 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
         .where('asset_exif.rating', options.rating === null ? 'is' : '=', options.rating!),
     )
+    .$if(options.orientation === 'landscape', (qb) => qb.whereRef('asset.width', '>', 'asset.height'))
+    .$if(options.orientation === 'portrait', (qb) => qb.whereRef('asset.height', '>', 'asset.width'))
     .$if(!!options.checksum, (qb) => qb.where('asset.checksum', '=', options.checksum!))
     .$if(!!options.id, (qb) => qb.where('asset.id', '=', asUuid(options.id!)))
     .$if(!!options.libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(options.libraryId!)))
