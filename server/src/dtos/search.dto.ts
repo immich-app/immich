@@ -29,6 +29,10 @@ const BaseSearchSchema = z.object({
   make: z.string().nullable().optional().describe('Filter by camera make'),
   model: z.string().nullable().optional().describe('Filter by camera model'),
   lensModel: z.string().nullable().optional().describe('Filter by lens model'),
+  orientation: z
+    .enum(['landscape', 'portrait'])
+    .optional()
+    .describe('Filter by image orientation (landscape or portrait)'),
   isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album'),
   personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs'),
   tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),

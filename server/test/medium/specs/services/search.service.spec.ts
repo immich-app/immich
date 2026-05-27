@@ -110,6 +110,36 @@ describe(SearchService.name, () => {
     });
   });
 
+  describe('orientation filter', () => {
+    it('should filter landscape assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: landscapeAsset } = await ctx.newAsset({ ownerId: user.id, width: 4000, height: 3000 });
+      await ctx.newAsset({ ownerId: user.id, width: 3000, height: 4000 });
+      await ctx.newAsset({ ownerId: user.id, width: 3000, height: 3000 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { orientation: 'landscape' });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: landscapeAsset.id })]);
+    });
+
+    it('should filter portrait assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, width: 4000, height: 3000 });
+      const { asset: portraitAsset } = await ctx.newAsset({ ownerId: user.id, width: 3000, height: 4000 });
+      await ctx.newAsset({ ownerId: user.id, width: 3000, height: 3000 });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { orientation: 'portrait' });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: portraitAsset.id })]);
+    });
+  });
+
   describe('getSearchSuggestions', () => {
     it('should filter out empty search suggestions', async () => {
       const { sut, ctx } = setup();
