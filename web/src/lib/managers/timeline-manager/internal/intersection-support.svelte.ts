@@ -67,3 +67,11 @@ export function calculateViewerAssetViewportProximity(
     timelineManager.visibleWindow.bottom + headerHeight,
   );
 }
+
+export function calculateViewerAssetIsInOrNearViewport(
+  timelineManager: TimelineManager,
+  positionTop: number,
+  positionHeight: number,
+) {
+  return isInOrNearViewport(calculateViewerAssetViewportProximity(timelineManager, positionTop, positionHeight));
+}

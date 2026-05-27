@@ -1,28 +1,24 @@
 import type { CommonPosition } from '$lib/utils/layout-utils';
-import {
-  ViewportProximity,
-  calculateViewerAssetViewportProximity,
-  isInOrNearViewport,
-} from './internal/intersection-support.svelte';
+import { calculateViewerAssetIsInOrNearViewport } from './internal/intersection-support.svelte';
 import type { TimelineDay } from './timeline-day.svelte';
 import type { TimelineAsset } from './types';
 
 export class ViewerAsset {
   readonly #group: TimelineDay;
 
-  #viewportProximity = $derived.by(() => {
+  #isInOrNearViewport = $derived.by(() => {
     if (!this.position) {
-      return ViewportProximity.FarFromViewport;
+      return false;
     }
 
     const store = this.#group.timelineMonth.timelineManager;
     const positionTop = this.#group.absoluteTimelineDayTop + this.position.top;
 
-    return calculateViewerAssetViewportProximity(store, positionTop, this.position.height);
+    return calculateViewerAssetIsInOrNearViewport(store, positionTop, this.position.height);
   });
 
   get isInOrNearViewport() {
-    return isInOrNearViewport(this.#viewportProximity);
+    return this.#isInOrNearViewport;
   }
 
   position: CommonPosition | undefined = $state.raw();

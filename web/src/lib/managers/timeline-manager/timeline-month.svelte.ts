@@ -29,7 +29,8 @@ import type { AssetDescriptor, Direction, MoveAsset, TimelineAsset } from './typ
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class TimelineMonth {
-  #viewportProximity: ViewportProximity = $state(ViewportProximity.FarFromViewport);
+  #isInOrNearViewport = $state(false);
+  #isInViewport = $state(false);
   isLoaded: boolean = $state(false);
   timelineDays: TimelineDay[] = $state([]);
   readonly timelineManager: TimelineManager;
@@ -85,24 +86,28 @@ export class TimelineMonth {
   }
 
   set viewportProximity(newValue: ViewportProximity) {
-    const old = this.#viewportProximity;
-    if (old === newValue) {
-      return;
+    const isInOrNearViewport = isInOrNearViewportUtil(newValue);
+    if (this.#isInOrNearViewport !== isInOrNearViewport) {
+      this.#isInOrNearViewport = isInOrNearViewport;
+      if (isInOrNearViewport) {
+        void this.timelineManager.loadTimelineMonth(this.yearMonth);
+      } else {
+        this.cancel();
+      }
     }
-    this.#viewportProximity = newValue;
-    if (isInOrNearViewportUtil(newValue)) {
-      void this.timelineManager.loadTimelineMonth(this.yearMonth);
-    } else {
-      this.cancel();
+
+    const isInViewport = isInViewportUtil(newValue);
+    if (this.#isInViewport !== isInViewport) {
+      this.#isInViewport = isInViewport;
     }
   }
 
   get isInOrNearViewport() {
-    return isInOrNearViewportUtil(this.#viewportProximity);
+    return this.#isInOrNearViewport;
   }
 
   get isInViewport() {
-    return isInViewportUtil(this.#viewportProximity);
+    return this.#isInViewport;
   }
 
   get lastTimelineDay() {
