@@ -5,6 +5,7 @@ class BackupConfig {
   final bool requireCharging;
   final int triggerDelay;
   final bool syncAlbums;
+  final DateTime? startDate;
 
   const BackupConfig({
     this.enabled = false,
@@ -13,6 +14,7 @@ class BackupConfig {
     this.requireCharging = false,
     this.triggerDelay = 30,
     this.syncAlbums = false,
+    this.startDate,
   });
 
   BackupConfig copyWith({
@@ -22,6 +24,7 @@ class BackupConfig {
     bool? requireCharging,
     int? triggerDelay,
     bool? syncAlbums,
+    DateTime? startDate,
   }) => BackupConfig(
     enabled: enabled ?? this.enabled,
     useCellularForVideos: useCellularForVideos ?? this.useCellularForVideos,
@@ -29,6 +32,7 @@ class BackupConfig {
     requireCharging: requireCharging ?? this.requireCharging,
     triggerDelay: triggerDelay ?? this.triggerDelay,
     syncAlbums: syncAlbums ?? this.syncAlbums,
+    startDate: startDate ?? this.startDate,
   );
 
   @override
@@ -40,13 +44,21 @@ class BackupConfig {
           other.useCellularForPhotos == useCellularForPhotos &&
           other.requireCharging == requireCharging &&
           other.triggerDelay == triggerDelay &&
-          other.syncAlbums == syncAlbums);
+          other.syncAlbums == syncAlbums &&
+          other.startDate == startDate);
 
   @override
-  int get hashCode =>
-      Object.hash(enabled, useCellularForVideos, useCellularForPhotos, requireCharging, triggerDelay, syncAlbums);
+  int get hashCode => Object.hash(
+    enabled,
+    useCellularForVideos,
+    useCellularForPhotos,
+    requireCharging,
+    triggerDelay,
+    syncAlbums,
+    startDate,
+  );
 
   @override
   String toString() =>
-      'BackupConfig(enabled: $enabled, useCellularForVideos: $useCellularForVideos, useCellularForPhotos: $useCellularForPhotos, requireCharging: $requireCharging, triggerDelay: $triggerDelay, syncAlbums: $syncAlbums)';
+      'BackupConfig(enabled: $enabled, useCellularForVideos: $useCellularForVideos, useCellularForPhotos: $useCellularForPhotos, requireCharging: $requireCharging, triggerDelay: $triggerDelay, syncAlbums: $syncAlbums, startDate: $startDate)';
 }

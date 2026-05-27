@@ -6,6 +6,8 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
+DateTime? _dateFromEpochMilliseconds(int value) => value > 0 ? DateTime.fromMillisecondsSinceEpoch(value) : null;
+
 class MetadataRepository extends DriftDatabaseRepository {
   final Drift _db;
   final Map<MetadataKey, Object> _cache = {};
@@ -159,6 +161,7 @@ extension<T extends Object> on MetadataDomain<T> {
             requireCharging: repo._read(.backupRequireCharging),
             triggerDelay: repo._read(.backupTriggerDelay),
             syncAlbums: repo._read(.backupSyncAlbums),
+            startDate: _dateFromEpochMilliseconds(repo._read(.backupStartDate)),
           ),
         );
       case .systemConfig:

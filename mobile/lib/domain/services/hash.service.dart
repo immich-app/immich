@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:logging/logging.dart';
@@ -36,6 +37,14 @@ class HashService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
+  DateTime? get _backupStartDate {
+    try {
+      return MetadataRepository.instance.appConfig.backup.startDate;
+    } on StateError {
+      return null;
+    }
+  }
+
   Future<void> hashAssets() async {
     _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -45,6 +54,7 @@ class HashService {
 
       // Sorted by backupSelection followed by isCloud
       final localAlbums = await _localAlbumRepository.getBackupAlbums();
+      final backupStartDate = _backupStartDate;
 
       for (final album in localAlbums) {
         if (isCancelled) {
@@ -52,7 +62,7 @@ class HashService {
           break;
         }
 
-        final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
+        final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id, createdAfter: backupStartDate);
         if (assetsToHash.isNotEmpty) {
           await _hashAssets(album, assetsToHash);
         }

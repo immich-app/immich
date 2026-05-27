@@ -69,6 +69,7 @@ enum MetadataKey<T extends Object> {
   backupRequireCharging<bool>(.appConfig, 'backup.requireCharging', false),
   backupTriggerDelay<int>(.appConfig, 'backup.triggerDelay', 30),
   backupSyncAlbums<bool>(.appConfig, 'backup.syncAlbums', false),
+  backupStartDate<int>(.appConfig, 'backup.startDate', 0),
 
   // Timeline
   timelineTilesPerRow<int>(.appConfig, 'timeline.tilesPerRow', 4),

@@ -22,6 +22,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
     final previousBackup = ref.read(metadataProvider).appConfig.backup;
     final previousCellularForVideos = previousBackup.useCellularForVideos;
     final previousCellularForPhotos = previousBackup.useCellularForPhotos;
+    final previousStartDate = previousBackup.startDate;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         // There is an issue with Flutter where the pop event
@@ -30,9 +31,11 @@ class DriftBackupOptionsPage extends ConsumerWidget {
         final currentBackup = ref.read(metadataProvider).appConfig.backup;
         final currentCellularForVideos = currentBackup.useCellularForVideos;
         final currentCellularForPhotos = currentBackup.useCellularForPhotos;
+        final currentStartDate = currentBackup.startDate;
 
         if (currentCellularForVideos == previousCellularForVideos &&
-            currentCellularForPhotos == previousCellularForPhotos) {
+            currentCellularForPhotos == previousCellularForPhotos &&
+            currentStartDate == previousStartDate) {
           return;
         }
 
@@ -52,7 +55,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("network_requirements_updated".t(context: context)),
+              content: Text("backup_options_updated".t(context: context)),
               duration: const Duration(seconds: 4),
             ),
           );

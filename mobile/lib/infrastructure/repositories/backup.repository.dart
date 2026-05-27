@@ -36,7 +36,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   /// - remainder: number of those assets that do not yet exist on the server for [userId]
   ///              (includes processing)
   /// - processing: number of those assets that are still preparing/have a null checksum
-  Future<({int total, int remainder, int processing})> getAllCounts(String userId) async {
+  Future<({int total, int remainder, int processing})> getAllCounts(String userId, {DateTime? createdAfter}) async {
     const sql = '''
         SELECT
         COUNT(*) AS total_count,
@@ -58,7 +58,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             INNER JOIN main.local_album_entity la on laa.album_id = la.id
             WHERE laa.asset_id = lae.id
                 AND la.backup_selection = ?3
-        );
+        )
+        AND (?4 IS NULL OR lae.created_at >= ?4);
       ''';
 
     final row = await _db
@@ -68,6 +69,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             Variable.withString(userId),
             Variable.withInt(BackupSelection.selected.index),
             Variable.withInt(BackupSelection.excluded.index),
+            Variable<DateTime>(createdAfter),
           ],
           readsFrom: {_db.localAlbumAssetEntity, _db.localAlbumEntity, _db.localAssetEntity, _db.remoteAssetEntity},
         )
@@ -81,7 +83,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true}) async {
+  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true, DateTime? createdAfter}) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
@@ -110,6 +112,10 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
     if (onlyHashed) {
       query.where((lae) => lae.checksum.isNotNull());
+    }
+
+    if (createdAfter != null) {
+      query.where((lae) => lae.createdAt.isBiggerOrEqualValue(createdAfter));
     }
 
     return query.map((localAsset) => localAsset.toDto()).get();

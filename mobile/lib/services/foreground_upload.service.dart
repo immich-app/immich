@@ -65,12 +65,20 @@ class ForegroundUploadService {
 
   bool shouldAbortUpload = false;
 
+  DateTime? get _backupStartDate {
+    try {
+      return MetadataRepository.instance.appConfig.backup.startDate;
+    } on StateError {
+      return null;
+    }
+  }
+
   Future<({int total, int remainder, int processing})> getBackupCounts(String userId) {
-    return _backupRepository.getAllCounts(userId);
+    return _backupRepository.getAllCounts(userId, createdAfter: _backupStartDate);
   }
 
   Future<List<LocalAsset>> getBackupCandidates(String userId, {bool onlyHashed = true}) {
-    return _backupRepository.getCandidates(userId, onlyHashed: onlyHashed);
+    return _backupRepository.getCandidates(userId, onlyHashed: onlyHashed, createdAfter: _backupStartDate);
   }
 
   /// Bulk upload of backup candidates from selected albums
@@ -80,7 +88,7 @@ class ForegroundUploadService {
     UploadCallbacks callbacks = const UploadCallbacks(),
     bool useSequentialUpload = false,
   }) async {
-    final candidates = await _backupRepository.getCandidates(userId);
+    final candidates = await _backupRepository.getCandidates(userId, createdAfter: _backupStartDate);
     if (candidates.isEmpty) {
       return;
     }

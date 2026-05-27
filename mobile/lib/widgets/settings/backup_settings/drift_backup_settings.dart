@@ -43,11 +43,64 @@ class DriftBackupSettings extends ConsumerWidget {
         ],
         const Divider(),
         SettingGroupTitle(
+          title: "backup_date".t(context: context),
+          icon: Icons.event,
+        ),
+        const _BackupStartDateButton(),
+        const Divider(),
+        SettingGroupTitle(
           title: "backup_albums_sync".t(context: context),
           icon: Icons.sync,
         ),
         const _AlbumSyncActionButton(),
       ],
+    );
+  }
+}
+
+class _BackupStartDateButton extends ConsumerWidget {
+  const _BackupStartDateButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final startDate = ref.watch(appConfigProvider.select((c) => c.backup.startDate));
+    final formattedDate = startDate != null
+        ? DateFormat.yMMMd().format(startDate)
+        : "backup_start_date_all".t(context: context);
+
+    Future<void> pickDate() async {
+      final now = DateTime.now();
+      final pickedDate = await showDatePicker(
+        context: context,
+        initialDate: startDate != null && startDate.isBefore(now) ? startDate : now,
+        firstDate: DateTime(1800),
+        lastDate: now,
+      );
+
+      if (pickedDate == null) {
+        return;
+      }
+
+      final date = DateTime(pickedDate.year, pickedDate.month, pickedDate.day);
+      await ref.read(metadataProvider).write(MetadataKey.backupStartDate, date.millisecondsSinceEpoch);
+    }
+
+    Future<void> clearDate() => ref.read(metadataProvider).write(MetadataKey.backupStartDate, 0);
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: SettingListTile(
+        title: "backup_start_date".t(context: context),
+        subtitle: formattedDate,
+        onTap: pickDate,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (startDate != null) IconButton(onPressed: clearDate, icon: const Icon(Icons.clear_rounded)),
+            IconButton(onPressed: pickDate, icon: const Icon(Icons.calendar_month_rounded)),
+          ],
+        ),
+      ),
     );
   }
 }

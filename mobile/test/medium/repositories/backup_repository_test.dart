@@ -135,6 +135,21 @@ void main() {
       expect(result.remainder, 2); // local2 + local3
       expect(result.processing, 1); // local3
     });
+
+    test('filters counts by backup start date', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final before = await ctx.newLocalAsset(createdAt: DateTime(2024, 1, 1));
+      final onDate = await ctx.newLocalAsset(createdAt: DateTime(2024, 2, 1));
+      final after = await ctx.newLocalAsset(createdAt: DateTime(2024, 3, 1));
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: before.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: onDate.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: after.id);
+
+      final result = await sut.getAllCounts(userId, createdAfter: DateTime(2024, 2, 1));
+      expect(result.total, 2);
+      expect(result.remainder, 2);
+      expect(result.processing, 0);
+    });
   });
 
   group('getCandidates', () {
@@ -239,6 +254,19 @@ void main() {
       final result = await sut.getCandidates(userId);
       expect(result.length, 1);
       expect(result.first.id, asset.id);
+    });
+
+    test('filters candidates by backup start date', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final before = await ctx.newLocalAsset(createdAt: DateTime(2024, 1, 1));
+      final onDate = await ctx.newLocalAsset(createdAt: DateTime(2024, 2, 1));
+      final after = await ctx.newLocalAsset(createdAt: DateTime(2024, 3, 1));
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: before.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: onDate.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: after.id);
+
+      final result = await sut.getCandidates(userId, createdAfter: DateTime(2024, 2, 1));
+      expect(result.map((a) => a.id).toList(), [after.id, onDate.id]);
     });
   });
 }

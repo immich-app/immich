@@ -124,6 +124,14 @@ class BackgroundUploadService {
 
   bool shouldAbortQueuingTasks = false;
 
+  DateTime? get _backupStartDate {
+    try {
+      return MetadataRepository.instance.appConfig.backup.startDate;
+    } on StateError {
+      return null;
+    }
+  }
+
   void _onTaskProgressCallback(TaskProgressUpdate update) {
     if (!_taskProgressController.isClosed) {
       _taskProgressController.add(update);
@@ -160,7 +168,7 @@ class BackgroundUploadService {
     await _storageRepository.clearCache();
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId);
+    final candidates = await _backupRepository.getCandidates(userId, createdAfter: _backupStartDate);
     if (candidates.isEmpty) {
       _logger.info("No new backup candidates found, finishing background upload");
       return;

@@ -235,13 +235,17 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<List<LocalAsset>> getAssetsToHash(String albumId) {
+  Future<List<LocalAsset>> getAssetsToHash(String albumId, {DateTime? createdAfter}) {
     final query =
         _db.localAlbumAssetEntity.select().join([
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
           ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
+
+    if (createdAfter != null) {
+      query.where(_db.localAssetEntity.createdAt.isBiggerOrEqualValue(createdAfter));
+    }
 
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
