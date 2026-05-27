@@ -13,6 +13,7 @@
 </script>
 
 <div
+  id="workflow-step-drag-image"
   aria-hidden="true"
   class="pointer-events-none fixed top-[-1000px] left-0 flex w-80 items-center gap-2.5 rounded-lg border border-light-200 bg-light px-3 py-2.5 text-sm/5 text-dark shadow-2xl"
 >
