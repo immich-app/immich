@@ -45,9 +45,9 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
-  import WorkflowStepCard from './WorkflowStepCard.svelte';
-  import WorkflowSummary from './WorkflowSummary.svelte';
+  import WorkflowStepCard from '$lib/components/workflows/WorkflowStepCard.svelte';
+  import WorkflowJsonEditor from '$lib/components/workflows/WorkflowJsonEditor.svelte';
+  import WorkflowSummary from '$lib/components/workflows/WorkflowSummary.svelte';
 
   type WorkflowJsonContent = Required<
     Pick<WorkflowUpdateDto, 'description' | 'enabled' | 'name' | 'steps' | 'trigger'>
