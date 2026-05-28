@@ -26,7 +26,7 @@
   let { step, index, onEdit, onDelete, onInsertBefore, onDrop }: Props = $props();
 
   const method = $derived(pluginManager.getMethod(step.method));
-  const isFilter = $derived(method?.uiHints?.includes('filter') ?? false);
+  const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
   const configEntries = $derived(
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
@@ -75,7 +75,7 @@
       target: document.body,
       props: {
         description: method?.description,
-        isFilter: method?.uiHints?.includes('filter') ?? false,
+        isFilter: method?.uiHints?.includes('Filter') ?? false,
         label: step ? pluginManager.getMethodLabel(step.method) : '',
         stepNumber: index + 1,
       },

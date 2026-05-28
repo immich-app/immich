@@ -2,7 +2,7 @@
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import { handleCreateWorkflow } from '$lib/services/workflow.service';
   import { type PluginTemplateResponseDto } from '@immich/sdk';
-  import { FormModal, Icon, ListButton, Text } from '@immich/ui';
+  import { Badge, FormModal, Icon, ListButton, Text } from '@immich/ui';
   import { mdiFlashOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -59,6 +59,11 @@
             <Text fontWeight="medium">{template.title}</Text>
             <Text size="tiny" color="muted">{template.description}</Text>
           </div>
+          {#if template.uiHints.includes('SmartAlbum')}
+            <div class="shrink-0">
+              <Badge size="small">{$t('smart_album')}</Badge>
+            </div>
+          {/if}
         </div>
       </ListButton>
     {/each}

@@ -18,6 +18,7 @@ class PluginTemplateResponseDto {
     this.steps = const [],
     required this.title,
     required this.trigger,
+    this.uiHints = const [],
   });
 
   /// Template description
@@ -34,13 +35,17 @@ class PluginTemplateResponseDto {
 
   WorkflowTrigger trigger;
 
+  /// Ui hints, for example \"smart-album\"
+  List<String> uiHints;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginTemplateResponseDto &&
     other.description == description &&
     other.key == key &&
     _deepEquality.equals(other.steps, steps) &&
     other.title == title &&
-    other.trigger == trigger;
+    other.trigger == trigger &&
+    _deepEquality.equals(other.uiHints, uiHints);
 
   @override
   int get hashCode =>
@@ -49,10 +54,11 @@ class PluginTemplateResponseDto {
     (key.hashCode) +
     (steps.hashCode) +
     (title.hashCode) +
-    (trigger.hashCode);
+    (trigger.hashCode) +
+    (uiHints.hashCode);
 
   @override
-  String toString() => 'PluginTemplateResponseDto[description=$description, key=$key, steps=$steps, title=$title, trigger=$trigger]';
+  String toString() => 'PluginTemplateResponseDto[description=$description, key=$key, steps=$steps, title=$title, trigger=$trigger, uiHints=$uiHints]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -61,6 +67,7 @@ class PluginTemplateResponseDto {
       json[r'steps'] = this.steps;
       json[r'title'] = this.title;
       json[r'trigger'] = this.trigger;
+      json[r'uiHints'] = this.uiHints;
     return json;
   }
 
@@ -78,6 +85,9 @@ class PluginTemplateResponseDto {
         steps: PluginTemplateStepResponseDto.listFromJson(json[r'steps']),
         title: mapValueOfType<String>(json, r'title')!,
         trigger: WorkflowTrigger.fromJson(json[r'trigger'])!,
+        uiHints: json[r'uiHints'] is Iterable
+            ? (json[r'uiHints'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;
@@ -130,6 +140,7 @@ class PluginTemplateResponseDto {
     'steps',
     'title',
     'trigger',
+    'uiHints',
   };
 }
 

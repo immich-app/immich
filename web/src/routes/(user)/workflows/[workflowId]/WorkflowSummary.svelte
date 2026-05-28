@@ -67,7 +67,7 @@
 
     for (const [i, step] of workflow.steps.entries()) {
       const method = pluginManager.getMethod(step.method);
-      const isFilter = method?.uiHints?.includes('filter') ?? false;
+      const isFilter = method?.uiHints?.includes('Filter') ?? false;
       const type = isFilter ? $t('filter') : $t('action');
       const label = pluginManager.getMethodLabel(step.method);
       lines.push(`    [${i + 1}] ${type.toUpperCase()} · ${label}`);

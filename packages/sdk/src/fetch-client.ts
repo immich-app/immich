@@ -1535,6 +1535,8 @@ export type PluginTemplateResponseDto = {
     title: string;
     /** Workflow trigger */
     trigger: WorkflowTrigger;
+    /** Ui hints, for example "smart-album" */
+    uiHints: string[];
 };
 export type QueueResponseDto = {
     /** Whether the queue is paused */
@@ -7144,7 +7146,7 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowAssetCreate = "WorkflowAssetCreate"
+    WorkflowAssetTrigger = "WorkflowAssetTrigger"
 }
 export enum SearchSuggestionType {
     Country = "country",

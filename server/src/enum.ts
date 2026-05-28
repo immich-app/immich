@@ -866,7 +866,7 @@ export enum JobName {
   Ocr = 'Ocr',
 
   // Workflow
-  WorkflowAssetCreate = 'WorkflowAssetCreate',
+  WorkflowAssetTrigger = 'WorkflowAssetTrigger',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
