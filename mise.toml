@@ -165,3 +165,14 @@ run = "pnpm format"
 
 [tasks."i18n:format-fix"]
 run = "pnpm format:fix"
+
+[tasks.clean]
+run = [
+  "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'build' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.svelte-kit' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'coverage' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.pnpm-store' -type d -prune -exec rm -rf '{}' +",
+  { task = "//:*-down" },
+]
