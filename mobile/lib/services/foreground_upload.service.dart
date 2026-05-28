@@ -20,7 +20,6 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
-import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 /// Callbacks for upload progress and status updates
 class UploadCallbacks {
@@ -216,7 +215,7 @@ class ForegroundUploadService {
 
         final item = items[index];
 
-        if (shouldSkip?.call(item) ?? false) {
+        if (shouldSkip != null && shouldSkip(item)) {
           continue;
         }
 
@@ -251,61 +250,29 @@ class ForegroundUploadService {
         return;
       }
 
-      final isAvailableLocally = await _storageRepository.isAssetAvailableLocally(asset.id);
-
-      if (!isAvailableLocally && CurrentPlatform.isIOS) {
-        _logger.info("Loading iCloud asset ${asset.id} - ${asset.name}");
-
-        // Create progress handler for iCloud download
-        PMProgressHandler? progressHandler;
-        StreamSubscription? progressSubscription;
-
-        progressHandler = PMProgressHandler();
-        progressSubscription = progressHandler.stream.listen((event) {
-          onICloudProgress?.call(asset.localId!, event.progress);
-        });
-
-        try {
-          file = await _storageRepository.loadFileFromCloud(asset.id, progressHandler: progressHandler);
-          if (entity.isLivePhoto) {
-            livePhotoFile = await _storageRepository.loadMotionFileFromCloud(
-              asset.id,
-              progressHandler: progressHandler,
-            );
-          }
-        } finally {
-          await progressSubscription.cancel();
-        }
-      } else {
-        // Get files locally
-        file = await _storageRepository.getFileForAsset(asset.id);
-        if (file == null) {
-          _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
+      if (entity.isLivePhoto) {
+        final liveFile = await _storageRepository.getMotionFileForAsset(asset.id, onProgress: onICloudProgress);
+        if (liveFile == null) {
+          _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
           onError?.call(
             asset.localId!,
             CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
           );
           return;
         }
-
-        // For live photos, get the motion video file
-        if (entity.isLivePhoto) {
-          livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
-          if (livePhotoFile == null) {
-            _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
-            onError?.call(
-              asset.localId!,
-              CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
-            );
-          }
-        }
+        livePhotoFile = liveFile;
       }
 
-      if (file == null) {
-        _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
-        onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
+      final assetFile = await _storageRepository.getFileForAsset(asset.id, onProgress: onICloudProgress);
+      if (assetFile == null) {
+        _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
+        onError?.call(
+          asset.localId!,
+          CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
+        );
         return;
       }
+      file = assetFile;
 
       String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
 
@@ -349,7 +316,8 @@ class ForegroundUploadService {
           case UploadSuccess(:final remoteAssetId):
             fields['livePhotoVideoId'] = remoteAssetId;
           case UploadError(:final message):
-            return onError?.call(asset.localId!, "Failed to upload live photo video: $message");
+            onError?.call(asset.localId!, "Failed to upload live photo video: $message");
+            return;
           case UploadCancelled():
         }
       }
@@ -395,16 +363,19 @@ class ForegroundUploadService {
           onError?.call(asset.localId!, message);
       }
     } catch (error, stackTrace) {
-      _logger.severe("Error backup asset: ${error.toString()}", stackTrace);
+      _logger.severe("Asset backup failed", error, stackTrace);
       onError?.call(asset.localId!, error.toString());
     } finally {
       if (Platform.isIOS) {
-        try {
-          await file?.delete();
-          await livePhotoFile?.delete();
-        } catch (error, stackTrace) {
-          _logger.severe("ERROR deleting file: ${error.toString()}", stackTrace);
-        }
+        unawaited(
+          Future.wait([if (file != null) file.delete(), if (livePhotoFile != null) livePhotoFile.delete()]).onError((
+            error,
+            stackTrace,
+          ) {
+            _logger.severe("Post-upload file cleanup failed", error, stackTrace);
+            return const [];
+          }),
+        );
       }
     }
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:logging/logging.dart';
 
 import 'package:immich_mobile/constants/constants.dart';
@@ -273,7 +274,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
         onError: _handleForegroundBackupError,
-        onICloudProgress: _handleICloudProgress,
+        onICloudProgress: CurrentPlatform.isIOS ? _handleICloudProgress : null,
       ),
     );
   }
