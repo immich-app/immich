@@ -404,7 +404,7 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowAssetCreate; data: { workflowId: string; assetId: string } }
+  | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string } }
 
   // Editor
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };

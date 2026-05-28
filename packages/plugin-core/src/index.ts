@@ -93,7 +93,7 @@ export const assetTrash = () => {
     changes: {
       asset: config.inverse
         ? { deletedAt: null, status: AssetStatus.Active }
-        : { deletedAt: new Date(), status: AssetStatus.Trashed },
+        : { deletedAt: new Date().toISOString(), status: AssetStatus.Trashed },
     },
   }));
 };
