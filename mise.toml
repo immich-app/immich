@@ -54,8 +54,8 @@ lockfile = true
 
 [tasks.plugins]
 run = [
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build",
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core build",
 ]
 
 [tasks.open-api-typescript]
@@ -108,7 +108,7 @@ depends = "//:plugins"
 dir = "docker"
 interactive = true
 env = { COMPOSE_BAKE = true }
-run = "docker compose -f ./docker-compose.prod.yml up --remove-orphans"
+run = "docker compose -f ./docker-compose.prod.yml up --build --remove-orphans"
 depends_post = "//:prod-down"
 
 [tasks.prod-scale]
