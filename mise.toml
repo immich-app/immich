@@ -84,6 +84,72 @@ run = [
 dir = "server"
 run = "node ./dist/bin/sync-sql.js"
 
+# TODO dev, prod, and e2e should be de-duplicated by using env but for some reason I ran into issues
+[tasks.dev]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:dev-down"
+
+[tasks.dev-update]
+run = { task = "//:dev", args = ["--build", "-V"] }
+
+[tasks.dev-scale]
+run = { task = "//:dev", args = ["--build", "-V", "--scale immich-server=3"] }
+
+[tasks.dev-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
+
+[tasks.prod]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.prod.yml up --remove-orphans"
+depends_post = "//:prod-down"
+
+[tasks.prod-scale]
+run = { task = "//:prod", args = [
+  "--build",
+  "-V",
+  "--scale immich-server=3",
+  "--scale immich-microservices",
+] }
+
+[tasks.prod-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.prod.yml down --remove-orphans"
+
+[tasks.e2e]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.yml up --remove-orphans"
+depends_post = "//:e2e-down"
+
+[tasks.e2e-dev]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:e2e-dev-down"
+
+[tasks.e2e-update]
+run = { task = "//:e2e", args = ["--build", '-V'] }
+
+[tasks.e2e-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.yml down --remove-orphans"
+
+[tasks.e2e-dev-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
+
 # SDK tasks
 [tasks."sdk:install"]
 dir = "packages/sdk"

@@ -1,39 +1,39 @@
 dev:
-	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise dev          # or mise //:dev from another directory\n\n"\n\n >&2 && exit 1
 
 dev-down:
-	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise dev-down          # or mise //:dev-down from another directory\n\n"\n\n >&2 && exit 1
 
 dev-update:
-	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise dev-update          # or mise //:dev-update from another directory\n\n"\n\n >&2 && exit 1
 
 dev-scale:
-	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise dev-scale          # or mise //:dev-scale from another directory\n\n"\n\n >&2 && exit 1
 
 dev-docs:
 	npm --prefix docs run start
 
 .PHONY: e2e
 e2e:
-	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise e2e          # or mise //:e2e from another directory\n\n"\n\n >&2 && exit 1
 
 e2e-dev:
-	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.dev.yml up --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise e2e-dev          # or mise //:e2e-dev from another directory\n\n"\n\n >&2 && exit 1
 
 e2e-update:
-	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise e2e-update          # or mise //:e2e-update from another directory\n\n"\n\n >&2 && exit 1
 
 e2e-down:
-	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise e2e-down          # or mise //:e2e-down from another directory\n\n"\n\n >&2 && exit 1
 
 prod:
-	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise prod          # or mise //:prod from another directory\n\n"\n\n >&2 && exit 1
 
 prod-down:
-	docker compose -f ./docker/docker-compose.prod.yml down --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise prod-down          # or mise //:prod-down from another directory\n\n"\n\n >&2 && exit 1
 
 prod-scale:
-	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
+	@printf "This command has been removed. Please use:\n\n    mise prod-scale          # or mise //:prod-scale from another directory\n\n"\n\n >&2 && exit 1
 
 .PHONY: open-api
 open-api:
