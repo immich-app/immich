@@ -13,7 +13,7 @@ part of openapi.api;
 class ApiClient {
   ApiClient({this.basePath = '/api', this.authentication,});
 
-  final String basePath;
+  String basePath;
   final Authentication? authentication;
 
   var _client = Client();

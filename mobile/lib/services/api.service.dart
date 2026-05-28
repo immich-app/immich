@@ -13,7 +13,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class ApiService {
-  late ApiClient _apiClient;
+  final ApiClient _apiClient = ApiClient(basePath: '');
 
   late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
@@ -54,7 +54,7 @@ class ApiService {
   }
 
   setEndpoint(String endpoint) {
-    _apiClient = ApiClient(basePath: endpoint);
+    _apiClient.basePath = endpoint;
     _apiClient.client = NetworkRepository.client;
     usersApi = UsersApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
