@@ -98,7 +98,7 @@ class ForegroundUploadService {
           final requireWifi = _shouldRequireWiFi(asset);
           return requireWifi && !hasWifi;
         },
-        processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+        processItem: (asset) => _uploadSingleAsset(asset, cancelToken: cancelToken, callbacks: callbacks),
       );
     }
   }
@@ -124,14 +124,14 @@ class ForegroundUploadService {
         continue;
       }
 
-      await _uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
+      await _uploadSingleAsset(asset, cancelToken: cancelToken, callbacks: callbacks);
     }
   }
 
   /// Manually upload picked local assets
   Future<void> uploadManual(
     List<LocalAsset> localAssets, {
-    Completer<void>? cancelToken,
+    required Completer<void>? cancelToken,
     UploadCallbacks callbacks = const UploadCallbacks(),
   }) async {
     if (localAssets.isEmpty) {
@@ -141,7 +141,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      processItem: (asset) => _uploadSingleAsset(asset, cancelToken: cancelToken, callbacks: callbacks),
     );
   }
 
@@ -232,12 +232,12 @@ class ForegroundUploadService {
   }
 
   Future<void> _uploadSingleAsset(
-    LocalAsset asset,
-    Completer<void>? cancelToken, {
+    LocalAsset asset, {
+    required Completer<void>? cancelToken,
     required UploadCallbacks callbacks,
   }) async {
     final UploadCallbacks(:onProgress, :onSuccess, :onError, :onICloudProgress) = callbacks;
-    File? file;
+    File? assetFile;
     File? livePhotoFile;
 
     try {
@@ -250,9 +250,10 @@ class ForegroundUploadService {
         return;
       }
 
+      File? file;
       if (entity.isLivePhoto) {
-        final liveFile = await _storageRepository.getMotionFileForAsset(asset.id, onProgress: onICloudProgress);
-        if (liveFile == null) {
+        file = await _storageRepository.getMotionFile(asset.id, cancelToken: cancelToken, onProgress: onICloudProgress);
+        if (file == null) {
           _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
           onError?.call(
             asset.localId!,
@@ -260,11 +261,11 @@ class ForegroundUploadService {
           );
           return;
         }
-        livePhotoFile = liveFile;
+        livePhotoFile = file;
       }
 
-      final assetFile = await _storageRepository.getFileForAsset(asset.id, onProgress: onICloudProgress);
-      if (assetFile == null) {
+      file = await _storageRepository.getAssetFile(asset.id, cancelToken: cancelToken, onProgress: onICloudProgress);
+      if (file == null) {
         _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
         onError?.call(
           asset.localId!,
@@ -272,7 +273,7 @@ class ForegroundUploadService {
         );
         return;
       }
-      file = assetFile;
+      assetFile = file;
 
       String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
 
@@ -368,10 +369,10 @@ class ForegroundUploadService {
     } finally {
       if (Platform.isIOS) {
         unawaited(
-          Future.wait([if (file != null) file.delete(), if (livePhotoFile != null) livePhotoFile.delete()]).onError((
-            error,
-            stackTrace,
-          ) {
+          Future.wait([
+            if (assetFile != null) assetFile.delete(),
+            if (livePhotoFile != null) livePhotoFile.delete(),
+          ]).onError((error, stackTrace) {
             _logger.severe("Post-upload file cleanup failed", error, stackTrace);
             return const [];
           }),

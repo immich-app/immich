@@ -6,31 +6,25 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+typedef OnProgress = void Function(String id, double progress);
+
 class StorageRepository {
   static final log = Logger('StorageRepository');
 
   const StorageRepository();
 
-  Future<File?> getFileForAsset(
-    String assetId, {
-    void Function(String id, double progress)? onProgress,
-    Completer<void>? cancelToken,
-  }) {
+  Future<File?> getAssetFile(String assetId, {OnProgress? onProgress, Completer<void>? cancelToken}) {
     return _getFileForAsset(assetId, isMotion: false, onProgress: onProgress, cancelToken: cancelToken);
   }
 
-  Future<File?> getMotionFileForAsset(
-    String assetId, {
-    void Function(String id, double progress)? onProgress,
-    Completer<void>? cancelToken,
-  }) {
+  Future<File?> getMotionFile(String assetId, {OnProgress? onProgress, Completer<void>? cancelToken}) {
     return _getFileForAsset(assetId, isMotion: true, onProgress: onProgress, cancelToken: cancelToken);
   }
 
   Future<File?> _getFileForAsset(
     String assetId, {
     bool isMotion = false,
-    void Function(String id, double progress)? onProgress,
+    OnProgress? onProgress,
     Completer<void>? cancelToken,
   }) async {
     final entity = await AssetEntity.fromId(assetId);

@@ -266,8 +266,6 @@ class BackgroundUploadService {
       return null;
     }
 
-    File? file;
-
     /// iOS LivePhoto has two files: a photo and a video.
     /// They are uploaded separately, with video file being upload first, then returned with the assetId
     /// The assetId is then used as a metadata for the photo file upload task.
@@ -278,11 +276,9 @@ class BackgroundUploadService {
     /// The cancel operation will only cancel the video group (normal group), the photo group will not
     /// be touched, as the video file is already uploaded.
 
-    if (entity.isLivePhoto) {
-      file = await _storageRepository.getMotionFileForAsset(asset);
-    } else {
-      file = await _storageRepository.getFileForAsset(asset.id);
-    }
+    final file = await (entity.isLivePhoto
+        ? _storageRepository.getMotionFile(asset.id)
+        : _storageRepository.getAssetFile(asset.id));
 
     if (file == null) {
       _logger.warning("Failed to get file for asset ${asset.id} - ${asset.name}");
@@ -330,7 +326,7 @@ class BackgroundUploadService {
       return null;
     }
 
-    final file = await _storageRepository.getFileForAsset(asset.id);
+    final file = await _storageRepository.getAssetFile(asset.id);
     if (file == null) {
       return null;
     }

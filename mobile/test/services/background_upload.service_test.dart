@@ -75,7 +75,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(asset.id)).thenAnswer((_) async => mockFile);
       when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'OriginalPhoto.jpg');
 
       final task = await sut.getUploadTask(asset);
@@ -92,7 +92,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(asset.id)).thenAnswer((_) async => mockFile);
       when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => null);
 
       final task = await sut.getUploadTask(asset);
@@ -109,7 +109,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getMotionFile(asset.id)).thenAnswer((_) async => mockFile);
       when(
         () => mockAssetMediaRepository.getOriginalFilename(asset.id),
       ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
@@ -130,7 +130,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(asset.id)).thenAnswer((_) async => mockFile);
       when(
         () => mockAssetMediaRepository.getOriginalFilename(asset.id),
       ).thenAnswer((_) async => 'OriginalLivePhoto.HEIC');
@@ -150,7 +150,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(asset.id)).thenAnswer((_) async => mockFile);
       when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => null);
 
       final task = await sut.getLivePhotoUploadTask(asset, 'video-id-456');
@@ -194,7 +194,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
       when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id)).thenAnswer((_) async => 'test.jpg');
 
       final task = await sutWithV24.getUploadTask(assetWithCloudId);
@@ -243,7 +243,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
       when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id)).thenAnswer((_) async => 'test.jpg');
 
       final task = await sutAndroid.getUploadTask(assetWithCloudId);
@@ -281,7 +281,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(assetWithoutCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithoutCloudId.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(assetWithoutCloudId.id)).thenAnswer((_) async => mockFile);
       when(
         () => mockAssetMediaRepository.getOriginalFilename(assetWithoutCloudId.id),
       ).thenAnswer((_) async => 'test.jpg');
@@ -323,7 +323,7 @@ void main() {
 
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
+      when(() => mockStorageRepository.getAssetFile(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
       when(
         () => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id),
       ).thenAnswer((_) async => 'livephoto.heic');

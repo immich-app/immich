@@ -283,7 +283,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     _cancelToken?.complete();
     _cancelToken = null;
     _uploadSpeedManager.clear();
-    state = state.copyWith(uploadItems: {}, iCloudDownloadProgress: {});
+    state = state.copyWith(uploadItems: const {}, iCloudDownloadProgress: const {});
   }
 
   void _handleICloudProgress(String localAssetId, double progress) {
