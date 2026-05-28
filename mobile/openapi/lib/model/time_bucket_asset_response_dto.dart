@@ -276,8 +276,6 @@ class TimeBucketAssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'city',
-    'country',
     'createdAt',
     'duration',
     'fileCreatedAt',

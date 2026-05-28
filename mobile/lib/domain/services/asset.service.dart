@@ -8,11 +8,7 @@ class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
 
-  const AssetService({
-    required RemoteAssetRepository remoteAssetRepository,
-    required DriftLocalAssetRepository localAssetRepository,
-  }) : _remoteAssetRepository = remoteAssetRepository,
-       _localAssetRepository = localAssetRepository;
+  const AssetService({required this._remoteAssetRepository, required this._localAssetRepository});
 
   Future<BaseAsset?> getAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;

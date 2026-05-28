@@ -578,9 +578,7 @@ class _SlideFadeTransition extends StatelessWidget {
   final Animation<double> _animation;
   final Widget _child;
 
-  const _SlideFadeTransition({required Animation<double> animation, required Widget child})
-    : _animation = animation,
-      _child = child;
+  const _SlideFadeTransition({required this._animation, required this._child});
 
   @override
   Widget build(BuildContext context) {

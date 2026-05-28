@@ -230,6 +230,10 @@ jobs:
       - name: Generate platform APIs
         run: mise //mobile:codegen:pigeon
 
+      - name: Resolve iOS Swift Packages
+        working-directory: ./mobile
+        run: flutter build ios --config-only --no-codesign
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1.310.0
         with:

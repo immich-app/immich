@@ -41,11 +41,7 @@ class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
   final MetadataRepository _metadataRepository;
 
-  const TimelineFactory({
-    required DriftTimelineRepository timelineRepository,
-    required MetadataRepository metadataRepository,
-  }) : _timelineRepository = timelineRepository,
-       _metadataRepository = metadataRepository;
+  const TimelineFactory({required this._timelineRepository, required this._metadataRepository});
 
   GroupAssetsBy get groupBy {
     final group = _metadataRepository.appConfig.timeline.groupAssetsBy;
@@ -108,12 +104,7 @@ class TimelineService {
   TimelineService(TimelineQuery query)
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
-  TimelineService._({
-    required TimelineAssetSource assetSource,
-    required TimelineBucketSource bucketSource,
-    required this.origin,
-  }) : _assetSource = assetSource,
-       _bucketSource = bucketSource {
+  TimelineService._({required this._assetSource, required this._bucketSource, required this.origin}) {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _mutex.run(() async {
         final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);

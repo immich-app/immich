@@ -465,11 +465,17 @@ class ActionNotifier extends Notifier<void> {
     ActionSource source,
     BuildContext context, {
     Completer<void>? cancelCompleter,
+    void Function(double progress)? onAssetDownloadProgress,
   }) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(ids, context, cancelCompleter: cancelCompleter);
+      await _service.shareAssets(
+        ids,
+        context,
+        cancelCompleter: cancelCompleter,
+        onAssetDownloadProgress: onAssetDownloadProgress,
+      );
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);

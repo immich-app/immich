@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/config/system_config.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -39,7 +39,7 @@ void main() {
     registerFallbackValue(LogLevel.info);
 
     when(() => mockLogRepo.truncate(limit: any(named: 'limit'))).thenAnswer((_) async => {});
-    when(() => mockMetadataRepository.systemConfig).thenReturn(const SystemConfig(logLevel: LogLevel.fine));
+    when(() => mockMetadataRepository.appConfig).thenReturn(const AppConfig(logLevel: LogLevel.fine));
     when(() => mockMetadataRepository.write<LogLevel, LogLevel>(MetadataKey.logLevel, any())).thenAnswer((_) async {});
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('Sets log level based on the metadata repository', () {
-      verify(() => mockMetadataRepository.systemConfig).called(1);
+      verify(() => mockMetadataRepository.appConfig).called(1);
       expect(Logger.root.level, Level.FINE);
     });
   });
