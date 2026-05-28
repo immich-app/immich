@@ -8,6 +8,7 @@
     type AssetStatsResponseDto,
   } from '@immich/sdk';
   import { Heading, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
+  import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -57,12 +58,9 @@
     summary: { totalCount: 0 },
   });
 
-  const formatDate = (date: Date) => date.toISOString().slice(0, 10);
-  const today = new Date();
-  const uploadActivityTo = formatDate(today);
-  const uploadActivityFromDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-  uploadActivityFromDate.setUTCDate(uploadActivityFromDate.getUTCDate() - 52 * 7 + 1);
-  const uploadActivityFrom = formatDate(uploadActivityFromDate);
+  const today = DateTime.utc().startOf('day');
+  const uploadActivityTo = today.toISODate();
+  const uploadActivityFrom = today.minus({ weeks: 52 }).plus({ days: 1 }).toISODate();
 
   const getMyUploadStatistics = async (from: string, to: string) => {
     const response = await fetch(`/api/users/me/stats/uploads?${new URLSearchParams({ from, to })}`);
@@ -108,7 +106,7 @@
   };
 
   const getUploadActivityMonths = () => {
-    const endDate = uploadStats.to ? new Date(`${uploadStats.to}T00:00:00.000Z`) : today;
+    const endDate = uploadStats.to ? new Date(`${uploadStats.to}T00:00:00.000Z`) : today.toJSDate();
     return Array.from({ length: 12 }, (_, index) => {
       const monthDate = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth() - 11 + index, 1));
       return monthDate.toLocaleString($locale, { month: 'short', timeZone: 'UTC' });
@@ -164,7 +162,7 @@
   <div class="mt-4 w-full">
     <div class="w-full">
       <div class="mb-1 ml-7 flex justify-between text-xs text-gray-500 dark:text-gray-400">
-        {#each getUploadActivityMonths() as month}
+        {#each getUploadActivityMonths() as month (month)}
           <div>{month}</div>
         {/each}
       </div>
@@ -180,10 +178,10 @@
           <div></div>
         </div>
 
-        <div class="grid flex-1 grid-cols-[repeat(52,minmax(0,1fr))] gap-px sm:gap-1">
-          {#each getUploadActivityWeeks() as week}
+        <div class="grid flex-1 grid-cols-52 gap-px sm:gap-1">
+          {#each getUploadActivityWeeks() as week (week[0]?.date)}
             <div class="grid grid-rows-7 gap-px sm:gap-1">
-              {#each week as day}
+              {#each week as day (day.date)}
                 <div
                   class={`aspect-square w-full min-w-0 rounded-sm ${getUploadActivityLevel(day.count)}`}
                   title={$t('upload_activity_day_count', { values: { date: day.date, count: day.count } })}
