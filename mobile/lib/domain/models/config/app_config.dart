@@ -143,13 +143,8 @@ class AppConfig {
           })
           as T;
 
-  factory AppConfig.fromEntries(Map<MetadataKey<Object>, Object> entries) {
-    var config = const AppConfig();
-    for (final MapEntry(key: key, value: value) in entries.entries) {
-      config = config.write(key, value);
-    }
-    return config;
-  }
+  factory AppConfig.fromEntries(Map<MetadataKey<Object>, Object> overrides) =>
+      overrides.entries.fold(const AppConfig(), (config, entry) => config.write(entry.key, entry.value));
 
   AppConfig write<T extends Object>(MetadataKey<T> key, T value) {
     return switch (key) {

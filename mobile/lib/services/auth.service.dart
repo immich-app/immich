@@ -110,7 +110,7 @@ class AuthService {
   /// - Authentication repository data
   /// - Current user information
   /// - Access token
-  /// - Asset ETag
+  /// - Server-specific endpoint configuration
   ///
   /// All deletions are executed in parallel using [Future.wait].
   Future<void> clearLocalData() async {
@@ -120,6 +120,12 @@ class AuthService {
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),
+      MetadataRepository.instance.clear(const [
+        .networkAutoEndpointSwitching,
+        .networkPreferredWifiName,
+        .networkLocalEndpoint,
+        .networkExternalEndpointList,
+      ]),
     ]);
   }
 

@@ -34,21 +34,33 @@ class MetadataRepository extends DriftDatabaseRepository {
 
   Future<void> refresh() async => _applyOverrides(await _db.select(_db.metadataEntity).get());
 
+  Future<void> clear(Iterable<MetadataKey> keys) async {
+    if (keys.isEmpty) {
+      return;
+    }
+
+    final names = keys.map((key) => key.name).toList();
+    await (_db.delete(_db.metadataEntity)..where((row) => row.key.isIn(names))).go();
+
+    for (final key in keys) {
+      _appConfig = _appConfig.write(key, defaultConfig.read(key));
+    }
+  }
+
   Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
     if (value == _appConfig.read(key)) {
       return;
     }
 
     if (value == defaultConfig.read(key)) {
-      await (_db.delete(_db.metadataEntity)..where((t) => t.key.equals(key.name))).go();
-    } else {
-      await _db
-          .into(_db.metadataEntity)
-          .insertOnConflictUpdate(
-            MetadataEntityCompanion.insert(key: key.name, value: key.encode(value), updatedAt: Value(DateTime.now())),
-          );
+      return clear([key]);
     }
 
+    await _db
+        .into(_db.metadataEntity)
+        .insertOnConflictUpdate(
+          MetadataEntityCompanion.insert(key: key.name, value: key.encode(value), updatedAt: Value(DateTime.now())),
+        );
     _appConfig = _appConfig.write(key, value);
   }
 

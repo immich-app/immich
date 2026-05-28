@@ -7,13 +7,6 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-enum MetadataScope {
-  user, // keys with this scope are deleted on logout
-  system;
-
-  const MetadataScope();
-}
-
 enum MetadataKey<T extends Object> {
   // Theme
   themePrimaryColor<ImmichColorPreset>(codec: _EnumCodec(ImmichColorPreset.values)),
@@ -32,14 +25,11 @@ enum MetadataKey<T extends Object> {
   viewerTapToNavigate<bool>(),
 
   // Network
-  networkAutoEndpointSwitching<bool>(scope: .system),
-  networkPreferredWifiName<String>(scope: .system),
-  networkLocalEndpoint<String>(scope: .system),
-  networkExternalEndpointList<List<String>>(scope: .system, codec: _ListCodec(_PrimitiveCodec.string)),
-  networkCustomHeaders<Map<String, String>>(
-    scope: .system,
-    codec: _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string),
-  ),
+  networkAutoEndpointSwitching<bool>(),
+  networkPreferredWifiName<String>(),
+  networkLocalEndpoint<String>(),
+  networkExternalEndpointList<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
+  networkCustomHeaders<Map<String, String>>(codec: _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string)),
 
   // Album
   albumSortMode<AlbumSortMode>(codec: _EnumCodec(AlbumSortMode.values)),
@@ -60,7 +50,7 @@ enum MetadataKey<T extends Object> {
   timelineStorageIndicator<bool>(),
 
   // Log
-  logLevel<LogLevel>(scope: .system, codec: _EnumCodec(LogLevel.values)),
+  logLevel<LogLevel>(codec: _EnumCodec(LogLevel.values)),
 
   // Map
   mapShowFavoriteOnly<bool>(),
@@ -83,10 +73,9 @@ enum MetadataKey<T extends Object> {
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
   slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values));
 
-  final MetadataScope scope;
   final _MetadataCodec<T>? _codecOverride;
 
-  const MetadataKey({this.scope = .user, _MetadataCodec<T>? codec}) : _codecOverride = codec;
+  const MetadataKey({_MetadataCodec<T>? codec}) : _codecOverride = codec;
 
   _MetadataCodec<T> get _codec => _codecOverride ?? _MetadataCodec.forType(T);
 
