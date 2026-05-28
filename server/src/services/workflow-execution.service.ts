@@ -359,7 +359,6 @@ export class WorkflowExecutionService extends BaseService {
               },
               session: {
                 id: DummyValue.UUID,
-                // TODO move this to auth.elevated or similar
                 hasElevatedPermission: true,
               },
             } as AuthDto,
