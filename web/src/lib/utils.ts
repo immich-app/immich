@@ -411,26 +411,8 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
   };
 }
 
-export const getReleaseType = (
-  current: ServerVersionResponseDto,
-  newVersion: ServerVersionResponseDto,
-): 'major' | 'minor' | 'patch' | 'none' => {
-  if (current.major !== newVersion.major) {
-    return 'major';
-  }
-
-  if (current.minor !== newVersion.minor) {
-    return 'minor';
-  }
-
-  if (current.patch !== newVersion.patch) {
-    return 'patch';
-  }
-
-  return 'none';
-};
-
-export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+export const semverToName = ({ major, minor, patch, prerelease }: ServerVersionResponseDto) =>
+  `v${major}.${minor}.${patch}${prerelease ? `-rc.${prerelease}` : ''}`;
 
 export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));

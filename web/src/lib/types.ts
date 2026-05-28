@@ -1,4 +1,4 @@
-import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -6,14 +6,6 @@ import { MediaType } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
 export type LatLng = { lng: number; lat: number };
-
-export interface ReleaseEvent {
-  isAvailable: boolean;
-  /** ISO8601 */
-  checkedAt: string;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
-}
 
 export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
 

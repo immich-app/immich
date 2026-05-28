@@ -151,8 +151,15 @@ const SystemConfigMapSchema = z
   })
   .meta({ id: 'SystemConfigMapDto' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 const SystemConfigNewVersionCheckSchema = z
-  .object({ enabled: configBool.describe('Enabled') })
+  .object({ enabled: configBool.describe('Enabled'), channel: ReleaseChannelSchema })
   .meta({ id: 'SystemConfigNewVersionCheckDto' });
 
 const SystemConfigNightlyTasksSchema = z

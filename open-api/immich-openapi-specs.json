@@ -20800,6 +20800,58 @@
         ],
         "type": "string"
       },
+      "ReleaseChannel": {
+        "description": "Release channel",
+        "enum": [
+          "stable",
+          "releaseCandidate"
+        ],
+        "type": "string"
+      },
+      "ReleaseEventV1": {
+        "properties": {
+          "checkedAt": {
+            "description": "When the server last checked for a latest version. As an ISO timestamp",
+            "type": "string"
+          },
+          "isAvailable": {
+            "description": "Whether a new version is available",
+            "type": "boolean"
+          },
+          "releaseVersion": {
+            "$ref": "#/components/schemas/ServerVersionResponseDto"
+          },
+          "serverVersion": {
+            "$ref": "#/components/schemas/ServerVersionResponseDto"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReleaseType",
+            "description": "Release type",
+            "nullable": true
+          }
+        },
+        "required": [
+          "checkedAt",
+          "isAvailable",
+          "releaseVersion",
+          "serverVersion",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ReleaseType": {
+        "enum": [
+          "major",
+          "premajor",
+          "minor",
+          "preminor",
+          "patch",
+          "prepatch",
+          "prerelease",
+          "release"
+        ],
+        "type": "string"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -21469,26 +21521,40 @@
           "major": {
             "description": "Major version number",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "minor": {
             "description": "Minor version number",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "patch": {
             "description": "Patch version number",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
+          },
+          "prerelease": {
+            "description": "Pre-release version number",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v3.0.0",
+                "state": "Added"
+              }
+            ]
           }
         },
         "required": [
           "major",
           "minor",
-          "patch"
+          "patch",
+          "prerelease"
         ],
         "type": "object"
       },
@@ -24509,12 +24575,16 @@
       },
       "SystemConfigNewVersionCheckDto": {
         "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ReleaseChannel"
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
           }
         },
         "required": [
+          "channel",
           "enabled"
         ],
         "type": "object"

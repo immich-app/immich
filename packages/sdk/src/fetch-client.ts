@@ -2074,6 +2074,8 @@ export type ServerVersionResponseDto = {
     minor: number;
     /** Patch version number */
     patch: number;
+    /** Pre-release version number */
+    prerelease: number | null;
 };
 export type VersionCheckStateResponseDto = {
     /** Last check timestamp */
@@ -2421,6 +2423,7 @@ export type SystemConfigMetadataDto = {
     faces: SystemConfigFacesDto;
 };
 export type SystemConfigNewVersionCheckDto = {
+    channel: ReleaseChannel;
     /** Enabled */
     enabled: boolean;
 };
@@ -2766,6 +2769,16 @@ export type WorkflowShareResponseDto = {
     trigger: WorkflowTrigger;
 };
 export type LicenseResponseDto = UserLicense;
+export type ReleaseEventV1 = {
+    /** When the server last checked for a latest version. As an ISO timestamp */
+    checkedAt: string;
+    /** Whether a new version is available */
+    isAvailable: boolean;
+    releaseVersion: ServerVersionResponseDto;
+    serverVersion: ServerVersionResponseDto;
+    /** Release type */
+    "type": ReleaseType;
+};
 export type SyncAckV1 = {};
 export type SyncAlbumDeleteV1 = {
     /** Album ID */
@@ -7305,6 +7318,10 @@ export enum LogLevel {
     Error = "error",
     Fatal = "fatal"
 }
+export enum ReleaseChannel {
+    Stable = "stable",
+    ReleaseCandidate = "releaseCandidate"
+}
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
@@ -7312,6 +7329,16 @@ export enum OAuthTokenEndpointAuthMethod {
 export enum AssetOrderBy {
     TakenAt = "takenAt",
     CreatedAt = "createdAt"
+}
+export enum ReleaseType {
+    Major = "major",
+    Premajor = "premajor",
+    Minor = "minor",
+    Preminor = "preminor",
+    Patch = "patch",
+    Prepatch = "prepatch",
+    Prerelease = "prerelease",
+    Release = "release"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",
