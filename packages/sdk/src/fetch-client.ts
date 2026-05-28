@@ -2655,6 +2655,24 @@ export type OnboardingDto = {
     /** Is user onboarded */
     isOnboarded: boolean;
 };
+export type UserUploadStatsResponseDto = {
+    /** Start date in UTC */
+    "from": string;
+    series: {
+        /** Number of uploads */
+        count: number;
+        /** Date in UTC */
+        date: string;
+    }[];
+    summary: {
+        /** Total number of uploads */
+        totalCount: number;
+    };
+    /** End date in UTC */
+    to: string;
+    /** User ID */
+    userId: string;
+};
 export type CreateProfileImageDto = {
     /** Profile image file */
     file: Blob;
@@ -6534,6 +6552,23 @@ export function updateMyPreferences({ userPreferencesUpdateDto }: {
         method: "PUT",
         body: userPreferencesUpdateDto
     })));
+}
+/**
+ * Get current user upload statistics
+ */
+export function getMyUploadStatistics({ $from, to }: {
+    $from?: string;
+    to?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserUploadStatsResponseDto;
+    }>(`/users/me/stats/uploads${QS.query(QS.explode({
+        "from": $from,
+        to
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Delete user profile image

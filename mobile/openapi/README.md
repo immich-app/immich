@@ -289,6 +289,7 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**deleteUserLicense**](doc//UsersApi.md#deleteuserlicense) | **DELETE** /users/me/license | Delete user product key
 *UsersApi* | [**deleteUserOnboarding**](doc//UsersApi.md#deleteuseronboarding) | **DELETE** /users/me/onboarding | Delete user onboarding
 *UsersApi* | [**getMyPreferences**](doc//UsersApi.md#getmypreferences) | **GET** /users/me/preferences | Get my preferences
+*UsersApi* | [**getMyUploadStatistics**](doc//UsersApi.md#getmyuploadstatistics) | **GET** /users/me/stats/uploads | Get current user upload statistics
 *UsersApi* | [**getMyUser**](doc//UsersApi.md#getmyuser) | **GET** /users/me | Get current user
 *UsersApi* | [**getProfileImage**](doc//UsersApi.md#getprofileimage) | **GET** /users/{id}/profile-image | Retrieve user profile image
 *UsersApi* | [**getUser**](doc//UsersApi.md#getuser) | **GET** /users/{id} | Retrieve a user
@@ -656,6 +657,9 @@ Class | Method | HTTP request | Description
  - [UserResponseDto](doc//UserResponseDto.md)
  - [UserStatus](doc//UserStatus.md)
  - [UserUpdateMeDto](doc//UserUpdateMeDto.md)
+ - [UserUploadStatsResponseDto](doc//UserUploadStatsResponseDto.md)
+ - [UserUploadStatsResponseDtoSeriesInner](doc//UserUploadStatsResponseDtoSeriesInner.md)
+ - [UserUploadStatsResponseDtoSummary](doc//UserUploadStatsResponseDtoSummary.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)
