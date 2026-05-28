@@ -170,11 +170,11 @@ class ForegroundUploadService {
           onProgress: (bytes, totalBytes) => onProgress?.call(fileId, bytes, totalBytes),
         );
 
-        if (result.isSuccess) {
-          onSuccess?.call(fileId);
-        } else if (!result.isCancelled && result.errorMessage != null) {
-          onError?.call(fileId, result.errorMessage!);
-        }
+        return switch (result) {
+          UploadSuccess() => onSuccess?.call(fileId),
+          UploadError(:final message) => onError?.call(fileId, message),
+          UploadCancelled() => null,
+        };
       },
     );
   }
@@ -237,13 +237,14 @@ class ForegroundUploadService {
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
   }) async {
+    final UploadCallbacks(:onProgress, :onSuccess, :onError, :onICloudProgress) = callbacks;
     File? file;
     File? livePhotoFile;
 
     try {
       final entity = await _storageRepository.getAssetEntityForAsset(asset);
       if (entity == null) {
-        callbacks.onError?.call(
+        onError?.call(
           asset.localId!,
           CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
         );
@@ -261,7 +262,7 @@ class ForegroundUploadService {
 
         progressHandler = PMProgressHandler();
         progressSubscription = progressHandler.stream.listen((event) {
-          callbacks.onICloudProgress?.call(asset.localId!, event.progress);
+          onICloudProgress?.call(asset.localId!, event.progress);
         });
 
         try {
@@ -280,7 +281,7 @@ class ForegroundUploadService {
         file = await _storageRepository.getFileForAsset(asset.id);
         if (file == null) {
           _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
-          callbacks.onError?.call(
+          onError?.call(
             asset.localId!,
             CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
           );
@@ -292,7 +293,7 @@ class ForegroundUploadService {
           livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
           if (livePhotoFile == null) {
             _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
-            callbacks.onError?.call(
+            onError?.call(
               asset.localId!,
               CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
             );
@@ -302,7 +303,7 @@ class ForegroundUploadService {
 
       if (file == null) {
         _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
-        callbacks.onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
+        onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
         return;
       }
 
@@ -330,11 +331,9 @@ class ForegroundUploadService {
       };
 
       // Upload live photo video first if available
-      String? livePhotoVideoId;
       if (entity.isLivePhoto && livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
 
-        final onProgress = callbacks.onProgress;
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
@@ -346,13 +345,13 @@ class ForegroundUploadService {
           logContext: 'livePhotoVideo[${asset.localId}]',
         );
 
-        if (livePhotoResult.isSuccess && livePhotoResult.remoteAssetId != null) {
-          livePhotoVideoId = livePhotoResult.remoteAssetId;
+        switch (livePhotoResult) {
+          case UploadSuccess(:final remoteAssetId):
+            fields['livePhotoVideoId'] = remoteAssetId;
+          case UploadError(:final message):
+            return onError?.call(asset.localId!, "Failed to upload live photo video: $message");
+          case UploadCancelled():
         }
-      }
-
-      if (livePhotoVideoId != null) {
-        fields['livePhotoVideoId'] = livePhotoVideoId;
       }
 
       // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.
@@ -371,7 +370,6 @@ class ForegroundUploadService {
         ]);
       }
 
-      final onProgress = callbacks.onProgress;
       final result = await _uploadRepository.uploadFile(
         file: file,
         originalFileName: originalFileName,
@@ -383,33 +381,29 @@ class ForegroundUploadService {
         logContext: 'asset[${asset.localId}]',
       );
 
-      if (result.isSuccess && result.remoteAssetId != null) {
-        callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
-      } else if (result.isCancelled) {
-        _logger.warning(() => "Backup was cancelled by the user");
-        shouldAbortUpload = true;
-      } else if (result.errorMessage != null) {
-        _logger.severe(
-          () =>
-              "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | ${result.errorMessage}",
-        );
-
-        callbacks.onError?.call(asset.localId!, result.errorMessage!);
-
-        if (result.errorMessage == "Quota has been exceeded!") {
+      switch (result) {
+        case UploadSuccess(:final remoteAssetId):
+          onSuccess?.call(asset.localId!, remoteAssetId);
+        case UploadCancelled():
           shouldAbortUpload = true;
-        }
+          _logger.warning("Upload was cancelled by the user for asset ${asset.localId}");
+        case UploadError(:final message, :final statusCode):
+          shouldAbortUpload |= message == "Quota has been exceeded!";
+          _logger.severe(
+            "Error(${statusCode ?? 'unknown'}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | $message",
+          );
+          onError?.call(asset.localId!, message);
       }
     } catch (error, stackTrace) {
-      _logger.severe(() => "Error backup asset: ${error.toString()}", stackTrace);
-      callbacks.onError?.call(asset.localId!, error.toString());
+      _logger.severe("Error backup asset: ${error.toString()}", stackTrace);
+      onError?.call(asset.localId!, error.toString());
     } finally {
       if (Platform.isIOS) {
         try {
           await file?.delete();
           await livePhotoFile?.delete();
         } catch (error, stackTrace) {
-          _logger.severe(() => "ERROR deleting file: ${error.toString()}", stackTrace);
+          _logger.severe("ERROR deleting file: ${error.toString()}", stackTrace);
         }
       }
     }
@@ -446,7 +440,7 @@ class ForegroundUploadService {
         logContext: 'shareIntent[$deviceAssetId]',
       );
     } catch (e) {
-      return UploadResult.error(errorMessage: e.toString());
+      return UploadError(message: e.toString());
     }
   }
 
