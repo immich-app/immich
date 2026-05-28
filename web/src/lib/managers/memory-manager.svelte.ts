@@ -1,9 +1,16 @@
-import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
+import {
+  deleteMemory,
+  type MemoryResponseDto,
+  removeMemoryAssets,
+  searchMemories,
+  updateMemory,
+  MemorySearchOrder,
+  MemoryType,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 type MemoryIndex = {
@@ -22,8 +29,21 @@ export type MemoryAsset = MemoryIndex & {
 
 class MemoryManager {
   #loading: Promise<void> | undefined;
+  #filters:
+    | {
+        $for?: string;
+        isSaved?: boolean;
+        isTrashed?: boolean;
+        order?: MemorySearchOrder;
+        page?: number;
+        size?: number;
+        $type?: MemoryType;
+      }
+    | undefined;
 
   constructor() {
+    this.#filters = undefined;
+
     eventManager.on({
       AuthLogout: () => this.clearCache(),
       AuthUserLoaded: () => this.initialize(),
@@ -35,6 +55,20 @@ class MemoryManager {
     }
 
     this.scheduleHourlyRefresh();
+  }
+
+  get filters() {
+    return this.#filters;
+  }
+
+  set filters(filters) {
+    this.#filters = filters;
+    this.clearCache();
+    if (this.#loading === undefined) {
+      this.#loading = this.load();
+    } else {
+      void this.#loading.then(() => (this.#loading = this.load()));
+    }
   }
 
   ready() {
@@ -131,8 +165,10 @@ class MemoryManager {
   }
 
   private async load() {
-    const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
-    this.memories = memories.filter((memory) => memory.assets.length > 0);
+    if (this.#filters !== undefined) {
+      const memories = await searchMemories(this.#filters);
+      this.memories = memories.filter((memory) => memory.assets.length > 0);
+    }
   }
 
   private scheduleHourlyRefresh() {

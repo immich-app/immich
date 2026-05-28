@@ -33,12 +33,14 @@
     type OnLink,
     type OnUnlink,
   } from '$lib/utils/actions';
+  import { asLocalTimeISO } from '$lib/utils/date-time';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -80,6 +82,10 @@
     timelineManager.removeAssets(assetIds);
     assetMultiSelectManager.clear();
   };
+
+  if (memoryManager.filters === undefined || memoryManager.filters.$for !== asLocalTimeISO(DateTime.now())) {
+    memoryManager.filters = { $for: asLocalTimeISO(DateTime.now()) };
+  }
 
   const items = $derived(
     memoryManager.memories.map((memory) => ({
