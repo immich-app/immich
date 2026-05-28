@@ -1628,6 +1628,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Album ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isOwned",
             "required": false,
             "in": "query",
@@ -1643,6 +1654,15 @@
             "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Album name (exact match)",
+            "schema": {
+              "type": "string"
             }
           }
         ],
