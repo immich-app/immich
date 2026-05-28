@@ -205,11 +205,7 @@
 </script>
 
 <div
-  class={[
-    'group flex overflow-hidden focus-visible:outline-none',
-    backgroundColorClass,
-    { 'rounded-xl': selected },
-  ]}
+  class={['group flex overflow-hidden focus-visible:outline-none', backgroundColorClass, { 'rounded-xl': selected }]}
   style:width="{width}px"
   style:height="{height}px"
   onmouseenter={onMouseEnter}
@@ -249,16 +245,8 @@
       ]}
     >
       <ImageThumbnail
-        class={[
-          'absolute group-focus-visible:rounded-lg',
-          { 'rounded-xl': selected },
-          imageClass,
-        ]}
-        brokenAssetClass={[
-          'z-1 absolute group-focus-visible:rounded-lg',
-          { 'rounded-xl': selected },
-          brokenAssetClass,
-        ]}
+        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
+        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
