@@ -44,8 +44,9 @@ class ApiClient {
     Object? body,
     Map<String, String> headerParams,
     Map<String, String> formParams,
-    String? contentType,
-  ) async {
+    String? contentType, {
+    Future<void>? abortTrigger,
+  }) async {
     await authentication?.applyToParams(queryParams, headerParams);
 
     headerParams.addAll(_defaultHeaderMap);
@@ -63,7 +64,7 @@ class ApiClient {
         body is MultipartFile && (contentType == null ||
         !contentType.toLowerCase().startsWith('multipart/form-data'))
       ) {
-        final request = StreamedRequest(method, uri);
+        final request = AbortableStreamedRequest(method, uri, abortTrigger: abortTrigger);
         request.headers.addAll(headerParams);
         request.contentLength = body.length;
         body.finalize().listen(
@@ -78,7 +79,7 @@ class ApiClient {
       }
 
       if (body is MultipartRequest) {
-        final request = MultipartRequest(method, uri);
+        final request = AbortableMultipartRequest(method, uri, abortTrigger: abortTrigger);
         request.fields.addAll(body.fields);
         request.files.addAll(body.files);
         request.headers.addAll(body.headers);
@@ -92,14 +93,19 @@ class ApiClient {
         : await serializeAsync(body);
       final nullableHeaderParams = headerParams.isEmpty ? null : headerParams;
 
-      switch(method) {
-        case 'POST': return await _client.post(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'PUT': return await _client.put(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'DELETE': return await _client.delete(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'PATCH': return await _client.patch(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'HEAD': return await _client.head(uri, headers: nullableHeaderParams,);
-        case 'GET': return await _client.get(uri, headers: nullableHeaderParams,);
+      final request = AbortableRequest(method, uri, abortTrigger: abortTrigger);
+      if (nullableHeaderParams != null) {
+        request.headers.addAll(nullableHeaderParams);
       }
+      if (msgBody is String) {
+        request.body = msgBody;
+      } else if (msgBody is List<int>) {
+        request.bodyBytes = msgBody;
+      } else if (msgBody is Map<String, String>) {
+        request.bodyFields = msgBody;
+      }
+      final response = await _client.send(request);
+      return Response.fromStream(response);
     } on SocketException catch (error, trace) {
       throw ApiException.withInner(
         HttpStatus.badRequest,
@@ -136,11 +142,6 @@ class ApiClient {
         trace,
       );
     }
-
-    throw ApiException(
-      HttpStatus.badRequest,
-      'Invalid HTTP operation: $method $path',
-    );
   }
 
   Future<dynamic> deserializeAsync(String value, String targetType, {bool growable = false,}) =>
