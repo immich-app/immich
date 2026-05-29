@@ -1,0 +1,33 @@
+import 'remote_asset.entity.dart';
+import 'stack.entity.dart';
+
+CREATE VIEW visible_stack_representative AS
+SELECT
+	se.id AS stack_id,
+	se.owner_id,
+	COALESCE(
+		(
+			SELECT primary_asset.id
+			FROM remote_asset_entity primary_asset
+			WHERE
+				primary_asset.id = se.primary_asset_id
+				AND primary_asset.deleted_at IS NULL
+				AND primary_asset.visibility = 0 -- timeline visibility
+				AND primary_asset.owner_id = se.owner_id
+			LIMIT 1
+		),
+		(
+			SELECT candidate.id
+			FROM remote_asset_entity candidate
+			WHERE
+				candidate.stack_id = se.id
+				AND candidate.deleted_at IS NULL
+				AND candidate.visibility = 0 -- timeline visibility
+				AND candidate.owner_id = se.owner_id
+			ORDER BY
+				candidate.created_at DESC,
+				candidate.id ASC
+			LIMIT 1
+		)
+	) AS asset_id
+FROM stack_entity se;
