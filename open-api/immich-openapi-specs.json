@@ -26355,6 +26355,7 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
+          "AssetMetadataExtraction",
           "PersonRecognized"
         ],
         "type": "string"

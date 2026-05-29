@@ -1,5 +1,6 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { Kysely } from 'kysely';
-import { WorkflowTrigger, WorkflowType } from 'src/enum';
+import { WorkflowType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';

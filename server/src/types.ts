@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
@@ -29,7 +30,6 @@ import {
   TranscodeTarget,
   UserMetadataKey,
   VideoCodec,
-  WorkflowTrigger,
   WorkflowType,
 } from 'src/enum';
 

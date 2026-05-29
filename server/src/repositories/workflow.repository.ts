@@ -103,6 +103,10 @@ export class WorkflowRepository {
     });
   }
 
+  async updateStep(id: string, dto: Updateable<WorkflowStepTable>) {
+    await this.db.updateTable('workflow_step').where('workflow_step.id', '=', id).set(dto).execute();
+  }
+
   private async replaceAndReturn(tx: Kysely<DB>, workflowId: string, steps?: WorkflowStepUpsert[]) {
     if (steps) {
       await tx.deleteFrom('workflow_step').where('workflowId', '=', workflowId).execute();

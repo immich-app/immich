@@ -7081,6 +7081,7 @@ export enum WorkflowType {
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
+    AssetMetadataExtraction = "AssetMetadataExtraction",
     PersonRecognized = "PersonRecognized"
 }
 export enum QueueJobStatus {

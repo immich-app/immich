@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import z from 'zod';
 
 export enum AuthType {
@@ -1163,11 +1164,6 @@ export enum PluginContext {
 }
 
 export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
-
-export enum WorkflowTrigger {
-  AssetCreate = 'AssetCreate',
-  PersonRecognized = 'PersonRecognized',
-}
 
 export const WorkflowTriggerSchema = z
   .enum(WorkflowTrigger)

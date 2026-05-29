@@ -1,10 +1,4 @@
-import type {
-  AssetStatus,
-  AssetType,
-  AssetVisibility,
-  WorkflowTrigger,
-  WorkflowType,
-} from 'src/enum.js';
+import type { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
 
 type DeepPartial<T> = T extends Date
   ? T
@@ -20,6 +14,12 @@ export type WorkflowEventMap = {
 };
 
 export type WorkflowEventData<T extends WorkflowType> = WorkflowEventMap[T];
+
+export enum WorkflowTrigger {
+  AssetCreate = 'AssetCreate',
+  AssetMetadataExtraction = 'AssetMetadataExtraction',
+  PersonRecognized = 'PersonRecognized',
+}
 
 export type WorkflowEventPayload<
   T extends WorkflowType = WorkflowType,
@@ -48,6 +48,8 @@ export type WorkflowResponse<T extends WorkflowType = WorkflowType> = {
   changes?: WorkflowChanges<T>;
   /** data to be passed to the next workflow step */
   data?: Record<string, unknown>;
+  /** update step config */
+  config?: WorkflowStepConfig;
 };
 
 export type WorkflowStepConfig = {
@@ -66,7 +68,7 @@ export type AssetV1 = {
   asset: {
     id: string;
     ownerId: string;
-    type: AssetType;
+    type: AssetTypeEnum;
     originalPath: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
@@ -83,7 +85,6 @@ export type AssetV1 = {
     localDateTime: string;
     stackId: string | null;
     duplicateId: string | null;
-    status: AssetStatus;
     visibility: AssetVisibility;
     isEdited: boolean;
     exifInfo: {
