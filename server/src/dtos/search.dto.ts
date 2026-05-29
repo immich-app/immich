@@ -3,7 +3,14 @@ import { Place } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema } from 'src/dtos/album.dto';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/enum';
+import {
+  AssetOrder,
+  AssetOrderSchema,
+  AssetTypeSchema,
+  AssetVisibilitySchema,
+  SearchOrderField,
+  SearchOrderFieldSchema,
+} from 'src/enum';
 import { isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
 
@@ -141,6 +148,229 @@ const SearchSuggestionRequestSchema = z
       .meta(new HistoryBuilder().added('v1.111.0').stable('v2').getExtensions()),
   })
   .meta({ id: 'SearchSuggestionRequestDto' });
+
+// v3 SearchFilter DTOs — new shape introduced alongside the legacy flat DTOs above.
+
+const atLeastOneKey = <T extends z.ZodObject>(schema: T, allowed: (keyof T['shape'] & string)[]) =>
+  schema.refine((value) => Object.values(value).some((v) => v !== undefined), {
+    message: `At least one of the following keys is required: ${allowed.join(', ')}`,
+  });
+
+const IdFilterSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.uuidv4().optional(),
+    ne: z.uuidv4().optional(),
+  }),
+  ['eq', 'ne'],
+).meta({ id: 'IdFilter' });
+
+const IdFilterNullableSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.uuidv4().nullable().optional(),
+    ne: z.uuidv4().nullable().optional(),
+  }),
+  ['eq', 'ne'],
+).meta({ id: 'IdFilterNullable' });
+
+const IdsFilterSchema = atLeastOneKey(
+  z.strictObject({
+    any: z.array(z.uuidv4()).min(1).optional(),
+    all: z.array(z.uuidv4()).min(1).optional(),
+    none: z.array(z.uuidv4()).min(1).optional(),
+  }),
+  ['any', 'all', 'none'],
+).meta({ id: 'IdsFilter' });
+
+const StringFilterSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.string().optional(),
+    ne: z.string().optional(),
+    in: z.array(z.string()).min(1).optional(),
+    notIn: z.array(z.string()).min(1).optional(),
+  }),
+  ['eq', 'ne', 'in', 'notIn'],
+).meta({ id: 'StringFilter' });
+
+const StringFilterNullableSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.string().nullable().optional(),
+    ne: z.string().nullable().optional(),
+    in: z.array(z.string()).min(1).optional(),
+    notIn: z.array(z.string()).min(1).optional(),
+  }),
+  ['eq', 'ne', 'in', 'notIn'],
+).meta({ id: 'StringFilterNullable' });
+
+const StringPatternFilterSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.string().nullable().optional(),
+    ne: z.string().nullable().optional(),
+    in: z.array(z.string()).min(1).optional(),
+    notIn: z.array(z.string()).min(1).optional(),
+    like: z.string().min(1).optional(),
+    notLike: z.string().min(1).optional(),
+    startsWith: z.string().min(1).optional(),
+    endsWith: z.string().min(1).optional(),
+  }),
+  ['eq', 'ne', 'in', 'notIn', 'like', 'notLike', 'startsWith', 'endsWith'],
+).meta({ id: 'StringPatternFilter' });
+
+const NumberFilterSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.number().optional(),
+    lt: z.number().optional(),
+    lte: z.number().optional(),
+    gt: z.number().optional(),
+    gte: z.number().optional(),
+    in: z.array(z.number()).min(1).optional(),
+    notIn: z.array(z.number()).min(1).optional(),
+  }),
+  ['eq', 'lt', 'lte', 'gt', 'gte', 'in', 'notIn'],
+).meta({ id: 'NumberFilter' });
+
+const NumberFilterNullableSchema = atLeastOneKey(
+  z.strictObject({
+    eq: z.number().nullable().optional(),
+    ne: z.number().nullable().optional(),
+    lt: z.number().optional(),
+    lte: z.number().optional(),
+    gt: z.number().optional(),
+    gte: z.number().optional(),
+    in: z.array(z.number()).min(1).optional(),
+    notIn: z.array(z.number()).min(1).optional(),
+  }),
+  ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'in', 'notIn'],
+).meta({ id: 'NumberFilterNullable' });
+
+const DateFilterSchema = atLeastOneKey(
+  z.strictObject({
+    eq: isoDatetimeToDate.optional(),
+    ne: isoDatetimeToDate.optional(),
+    gt: isoDatetimeToDate.optional(),
+    gte: isoDatetimeToDate.optional(),
+    lt: isoDatetimeToDate.optional(),
+    lte: isoDatetimeToDate.optional(),
+  }),
+  ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
+).meta({ id: 'DateFilter' });
+
+const DateFilterNullableSchema = atLeastOneKey(
+  z.strictObject({
+    eq: isoDatetimeToDate.nullable().optional(),
+    ne: isoDatetimeToDate.nullable().optional(),
+    gt: isoDatetimeToDate.optional(),
+    gte: isoDatetimeToDate.optional(),
+    lt: isoDatetimeToDate.optional(),
+    lte: isoDatetimeToDate.optional(),
+  }),
+  ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
+).meta({ id: 'DateFilterNullable' });
+
+const BoolFilterSchema = z.strictObject({ eq: z.boolean() }).meta({ id: 'BoolFilter' });
+
+const enumFilterSchema = <T extends z.core.util.EnumLike>(values: z.ZodEnum<T>, id: string) =>
+  atLeastOneKey(
+    z.strictObject({
+      eq: values.optional(),
+      ne: values.optional(),
+      in: z.array(values).min(1).optional(),
+      notIn: z.array(values).min(1).optional(),
+    }),
+    ['eq', 'ne', 'in', 'notIn'],
+  ).meta({ id });
+
+const EnumFilterAssetTypeSchema = enumFilterSchema(AssetTypeSchema, 'EnumFilterAssetType');
+const EnumFilterAssetVisibilitySchema = enumFilterSchema(AssetVisibilitySchema, 'EnumFilterAssetVisibility');
+
+const StringSimilarityFilterSchema = z
+  .strictObject({
+    matches: z.string().min(1),
+  })
+  .meta({ id: 'StringSimilarityFilter' });
+
+const SearchOrderSchema = z
+  .strictObject({
+    field: SearchOrderFieldSchema.default(SearchOrderField.FileCreatedAt),
+    direction: AssetOrderSchema.default(AssetOrder.Desc),
+  })
+  .meta({ id: 'SearchOrder' });
+
+const SearchFilterBranchSchema = z
+  .strictObject({
+    id: IdFilterSchema.optional(),
+    libraryId: IdFilterNullableSchema.optional(),
+    type: EnumFilterAssetTypeSchema.optional(),
+    visibility: EnumFilterAssetVisibilitySchema.optional(),
+    isFavorite: BoolFilterSchema.optional(),
+    isMotion: BoolFilterSchema.optional(),
+    isOffline: BoolFilterSchema.optional(),
+    isEncoded: BoolFilterSchema.optional(),
+    hasAlbums: BoolFilterSchema.optional(),
+    hasPeople: BoolFilterSchema.optional(),
+    hasTags: BoolFilterSchema.optional(),
+    city: StringFilterNullableSchema.optional(),
+    state: StringFilterNullableSchema.optional(),
+    country: StringFilterNullableSchema.optional(),
+    make: StringFilterNullableSchema.optional(),
+    model: StringFilterNullableSchema.optional(),
+    lensModel: StringFilterNullableSchema.optional(),
+    description: StringPatternFilterSchema.optional(),
+    originalFileName: StringPatternFilterSchema.optional(),
+    originalPath: StringPatternFilterSchema.optional(),
+    ocr: StringSimilarityFilterSchema.optional(),
+    rating: NumberFilterNullableSchema.optional(),
+    fileSizeInBytes: NumberFilterSchema.optional(),
+    takenAt: DateFilterSchema.optional(),
+    createdAt: DateFilterSchema.optional(),
+    updatedAt: DateFilterSchema.optional(),
+    trashedAt: DateFilterNullableSchema.optional(),
+    personIds: IdsFilterSchema.optional(),
+    tagIds: IdsFilterSchema.optional(),
+    albumIds: IdsFilterSchema.optional(),
+    checksum: StringFilterSchema.optional(),
+    encodedVideoPath: StringFilterSchema.optional(),
+  })
+  .meta({ id: 'SearchFilterBranch' });
+
+const SearchFilterSchema = SearchFilterBranchSchema.extend({
+  or: z.array(SearchFilterBranchSchema).min(1).optional(),
+}).meta({ id: 'SearchFilter' });
+
+export {
+  BoolFilterSchema,
+  DateFilterNullableSchema,
+  DateFilterSchema,
+  EnumFilterAssetTypeSchema,
+  EnumFilterAssetVisibilitySchema,
+  IdFilterNullableSchema,
+  IdFilterSchema,
+  IdsFilterSchema,
+  NumberFilterNullableSchema,
+  NumberFilterSchema,
+  SearchFilterBranchSchema,
+  SearchFilterSchema,
+  SearchOrderSchema,
+  StringFilterNullableSchema,
+  StringFilterSchema,
+  StringPatternFilterSchema,
+  StringSimilarityFilterSchema,
+};
+
+export type IdFilter = z.infer<typeof IdFilterSchema>;
+export type IdFilterNullable = z.infer<typeof IdFilterNullableSchema>;
+export type IdsFilter = z.infer<typeof IdsFilterSchema>;
+export type StringFilter = z.infer<typeof StringFilterSchema>;
+export type StringFilterNullable = z.infer<typeof StringFilterNullableSchema>;
+export type StringPatternFilter = z.infer<typeof StringPatternFilterSchema>;
+export type NumberFilter = z.infer<typeof NumberFilterSchema>;
+export type NumberFilterNullable = z.infer<typeof NumberFilterNullableSchema>;
+export type DateFilter = z.infer<typeof DateFilterSchema>;
+export type DateFilterNullable = z.infer<typeof DateFilterNullableSchema>;
+export type BoolFilter = z.infer<typeof BoolFilterSchema>;
+export type StringSimilarityFilter = z.infer<typeof StringSimilarityFilterSchema>;
+export type SearchOrder = z.infer<typeof SearchOrderSchema>;
+export type SearchFilter = z.infer<typeof SearchFilterSchema>;
+export type SearchFilterBranch = z.infer<typeof SearchFilterBranchSchema>;
 
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}
 export class LargeAssetSearchDto extends createZodDto(LargeAssetSearchSchema) {}
