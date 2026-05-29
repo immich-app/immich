@@ -17,13 +17,34 @@
   type Props = {
     step: WorkflowStepDto;
     index: number;
+    position: number;
+    isGhost: boolean;
+    isSource: boolean;
+    isDragging: boolean;
     onEdit: (index: number) => void;
     onDelete: (index: number) => void;
     onInsertBefore: (index: number) => void;
-    onDrop: (index: number, event: DragEvent) => void;
+    onDragStart: (index: number) => void;
+    onDragOver: (index: number, after: boolean) => void;
+    onDragEnd: () => void;
+    onDrop: () => void;
   };
 
-  let { step, index, onEdit, onDelete, onInsertBefore, onDrop }: Props = $props();
+  let {
+    step,
+    index,
+    position,
+    isGhost,
+    isSource,
+    isDragging,
+    onEdit,
+    onDelete,
+    onInsertBefore,
+    onDragStart,
+    onDragOver,
+    onDragEnd,
+    onDrop,
+  }: Props = $props();
 
   const method = $derived(pluginManager.getMethod(step.method));
   const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
@@ -31,8 +52,23 @@
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
   let dragImage = $state<Element>();
-  let isDropTarget = $state(false);
   let hoverDrag = $state(false);
+
+  const cardStateClass = $derived.by(() => {
+    if (isGhost) {
+      return 'pointer-events-none border-2 border-dashed border-primary bg-primary-50/40 shadow-lg';
+    }
+
+    if (isSource) {
+      return 'border-dashed border-primary-300 bg-primary-50/20';
+    }
+
+    if (hoverDrag) {
+      return 'border-dashed border-primary';
+    }
+
+    return '';
+  });
 
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
@@ -83,31 +119,31 @@
 
     dragImage = document.body.querySelector('#workflow-step-drag-image')!;
     event.dataTransfer.setDragImage(dragImage, 16, 22);
+
+    onDragStart(index);
   };
 
-  const handleDrop = (index: number, event: DragEvent) => {
-    if (!event.dataTransfer) {
-      return;
-    }
+  const handleDrop = (event: DragEvent) => {
     event.preventDefault();
-
-    const from = Number(event.dataTransfer.getData('text/plain'));
-    if (from === index) {
-      return;
-    }
-
-    onDrop(index, event);
+    onDrop();
   };
 
-  const handleDragOver = (event: DragEvent) => {
+  const handleDragOver = (event: DragEvent & { currentTarget: HTMLElement }) => {
     event.preventDefault();
-    isDropTarget = true;
+    if (isGhost) {
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const after = event.clientY > rect.top + rect.height / 2;
+    onDragOver(index, after);
   };
 
   const handleDragEnd = () => {
     dragImage?.remove();
     dragImage = undefined;
-    isDropTarget = false;
+    hoverDrag = false;
+    onDragEnd();
   };
 </script>
 
@@ -118,6 +154,7 @@
       <button
         type="button"
         class="absolute top-1/2 left-1/2 z-10 -translate-1/2 cursor-pointer rounded-full border border-dashed border-primary-200 bg-light p-0.5 text-primary opacity-0 transition-opacity group-hover/step-row:opacity-100 hover:bg-primary-50"
+        class:hidden={isDragging}
         aria-label={$t('add_step')}
         title={$t('add_step')}
         onclick={() => onInsertBefore(index)}
@@ -129,20 +166,12 @@
 
   <div
     class="w-full transition-all"
-    class:opacity-40={!!dragImage}
-    class:scale-[0.99]={!!dragImage}
+    class:opacity-50={isSource}
     ondragover={handleDragOver}
-    ondragleave={() => (isDropTarget = false)}
-    ondrop={(event) => handleDrop(index, event)}
+    ondrop={handleDrop}
     role="listitem"
   >
-    <Card
-      class="shadow-none transition-colors {isDropTarget
-        ? 'border-primary ring-2 ring-primary-200'
-        : hoverDrag
-          ? 'border-dashed border-primary'
-          : ''}"
-    >
+    <Card class="shadow-none transition-colors {cardStateClass}">
       <CardHeader>
         <div class="flex items-center gap-2">
           <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -171,7 +200,9 @@
           </div>
           <div class="flex min-w-0 flex-1 flex-col">
             <CardTitle class="truncate">
-              <span class="mr-1 font-bold text-light-500">{index + 1}</span>
+              {#if !isGhost}
+                <span class="mr-1 font-bold text-light-500">{position}</span>
+              {/if}
               {pluginManager.getMethodLabel(step.method)}
             </CardTitle>
             {#if method?.description}

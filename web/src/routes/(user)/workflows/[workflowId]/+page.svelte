@@ -1,5 +1,6 @@
 <script lang="ts">
   import { beforeNavigate, goto, invalidate } from '$app/navigation';
+  import { dragAutoScroll } from '$lib/attachments/drag-auto-scroll.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import WorkflowAddStepModal from '$lib/modals/WorkflowAddStepModal.svelte';
   import WorkflowEditStepModal from '$lib/modals/WorkflowEditStepModal.svelte';
@@ -7,7 +8,7 @@
   import { Route } from '$lib/route';
   import { getWorkflowActions, handleUpdateWorkflow } from '$lib/services/workflow.service';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
-  import type { WorkflowResponseDto, WorkflowUpdateDto } from '@immich/sdk';
+  import type { WorkflowResponseDto, WorkflowStepDto, WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,
     AppShell,
@@ -43,7 +44,10 @@
     mdiPlus,
   } from '@mdi/js';
   import { cloneDeep, isEqual } from 'lodash-es';
+  import { flip } from 'svelte/animate';
+  import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { createListReorder, GHOST_KEY, type ReorderEntry } from './list-reorder.svelte';
   import type { PageData } from './$types';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowStepCard from './WorkflowStepCard.svelte';
@@ -68,6 +72,11 @@
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
   let editMode = $state<EditMode>('visual');
+
+  const reorder = createListReorder(
+    () => steps,
+    (next) => (steps = next),
+  );
 
   const workflowSummary = $derived({ name, description, trigger, steps });
   const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
@@ -104,19 +113,6 @@
     if (result) {
       steps[index] = result;
     }
-  };
-
-  const handleDrop = (index: number, event: DragEvent) => {
-    if (!event.dataTransfer) {
-      return;
-    }
-
-    const from = Number(event.dataTransfer.getData('text/plain'));
-
-    const next = [...steps];
-    const [moved] = next.splice(from, 1);
-    next.splice(index, 0, moved);
-    steps = next;
   };
 
   const handleDeleteStep = async (index: number) => {
@@ -344,16 +340,50 @@
           </CardHeader>
         </Card>
 
-        {#each steps as step, index (step.method + index)}
+        <div class="hidden" aria-hidden="true" {@attach dragAutoScroll(() => reorder.isDragging)}></div>
+
+        {#snippet stepCard(entry: ReorderEntry<WorkflowStepDto>)}
           <WorkflowStepCard
-            {step}
-            {index}
+            step={entry.item}
+            index={entry.index}
+            position={entry.index + 1}
+            isGhost={entry.isGhost}
+            isSource={entry.isSource}
+            isDragging={reorder.isDragging}
             onEdit={handleEditStep}
             onDelete={handleDeleteStep}
             onInsertBefore={handleInsertStep}
-            onDrop={handleDrop}
+            onDragStart={reorder.start}
+            onDragOver={reorder.over}
+            onDragEnd={reorder.end}
+            onDrop={reorder.drop}
           />
+        {/snippet}
+
+        {#each reorder.entries as entry (entry.isGhost ? GHOST_KEY : entry.item)}
+          <div class="w-full" animate:flip={{ duration: 200 }}>
+            {#if entry.isGhost}
+              <div transition:fade={{ duration: 120 }}>{@render stepCard(entry)}</div>
+            {:else}
+              {@render stepCard(entry)}
+            {/if}
+          </div>
         {/each}
+
+        {#if reorder.isDragging}
+          <div
+            class="-mt-4 min-h-12 w-full"
+            role="listitem"
+            ondragover={(event) => {
+              event.preventDefault();
+              reorder.toEnd();
+            }}
+            ondrop={(event) => {
+              event.preventDefault();
+              reorder.drop();
+            }}
+          ></div>
+        {/if}
 
         <Button
           size="small"
