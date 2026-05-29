@@ -566,8 +566,8 @@ const FIELD_BACKING: Record<keyof Omit<SearchFilterBranch, 'or'>, Backing> = {
 };
 
 function branchNeedsExifJoin(branch: SearchFilterBranch): boolean {
-  for (const key of Object.keys(FIELD_BACKING) as (keyof typeof FIELD_BACKING)[]) {
-    if (FIELD_BACKING[key] === 'asset_exif' && branch[key] !== undefined) {
+  for (const key of Object.keys(branch) as (keyof typeof FIELD_BACKING)[]) {
+    if (FIELD_BACKING[key] === 'asset_exif') {
       return true;
     }
   }
@@ -605,8 +605,6 @@ function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): b
  * because TS can't see through the conditional `.$if(needsExifJoin, …)`.
  */
 type AssetEB = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
-
-// ---- EXISTS expression helpers (returned as Expression<SqlBool>) ----
 
 function existsAlbumLink(eb: AssetEB, want: boolean): Expression<SqlBool> {
   const e = eb.exists((eb2) => eb2.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
@@ -672,8 +670,6 @@ function existsEncodedVideoPath(eb: AssetEB, f: StringFilter): Expression<SqlBoo
   }
   return out;
 }
-
-// ---- IdsFilter EXISTS helpers ----
 
 type IdsKind = 'album' | 'person' | 'tag';
 
@@ -755,14 +751,12 @@ function pushIdsFilter(preds: Expression<SqlBool>[], eb: AssetEB, kind: IdsKind,
     preds.push(idsAnyExists(eb, kind, f.any));
   }
   if (f.all) {
-    preds.push(idsAllExists(eb, kind, f.all));
+    preds.push(f.all.length === 1 ? idsAnyExists(eb, kind, f.all) : idsAllExists(eb, kind, f.all));
   }
   if (f.none) {
     preds.push(eb.not(idsAnyExists(eb, kind, f.none)));
   }
 }
-
-// ---- Per-filter-family pushers ----
 
 function pushIdEqNe(
   preds: Expression<SqlBool>[],
@@ -983,15 +977,12 @@ function pushChecksum(preds: Expression<SqlBool>[], eb: AssetEB, f: StringFilter
 function buildBranchPredicates(eb: AssetEB, b: SearchFilterBranch): Expression<SqlBool>[] {
   const p: Expression<SqlBool>[] = [];
 
-  // id / libraryId
   pushIdEqNe(p, eb, 'asset.id', b.id);
   pushIdEqNe(p, eb, 'asset.libraryId', b.libraryId);
 
-  // enums
   pushEnum(p, eb, 'asset.type', b.type);
   pushEnum(p, eb, 'asset.visibility', b.visibility);
 
-  // bools on asset
   if (b.isFavorite) {
     p.push(eb('asset.isFavorite', '=', b.isFavorite.eq));
   }
@@ -1005,7 +996,6 @@ function buildBranchPredicates(eb: AssetEB, b: SearchFilterBranch): Expression<S
     p.push(existsEncodedVideo(eb, b.isEncoded.eq));
   }
 
-  // membership presence
   if (b.hasAlbums) {
     p.push(existsAlbumLink(eb, b.hasAlbums.eq));
   }
@@ -1016,7 +1006,6 @@ function buildBranchPredicates(eb: AssetEB, b: SearchFilterBranch): Expression<S
     p.push(existsTagLink(eb, b.hasTags.eq));
   }
 
-  // EXIF string columns (nullable)
   pushStringEqNeInNotIn(p, eb, 'asset_exif.city', b.city);
   pushStringEqNeInNotIn(p, eb, 'asset_exif.state', b.state);
   pushStringEqNeInNotIn(p, eb, 'asset_exif.country', b.country);
@@ -1024,27 +1013,22 @@ function buildBranchPredicates(eb: AssetEB, b: SearchFilterBranch): Expression<S
   pushStringEqNeInNotIn(p, eb, 'asset_exif.model', b.model);
   pushStringEqNeInNotIn(p, eb, 'asset_exif.lensModel', b.lensModel);
 
-  // StringPattern columns
   pushStringPattern(p, eb, 'asset_exif.description', b.description);
   pushStringPattern(p, eb, 'asset.originalFileName', b.originalFileName);
   pushStringPattern(p, eb, 'asset.originalPath', b.originalPath);
 
-  // ocr similarity (EXISTS over ocr_search — no top-level join)
   if (b.ocr) {
     p.push(existsOcrMatch(eb, b.ocr.matches));
   }
 
-  // numbers
   pushNumber(p, eb, 'asset_exif.rating', b.rating);
   pushNumber(p, eb, 'asset_exif.fileSizeInByte', b.fileSizeInBytes);
 
-  // dates
   pushDate(p, eb, 'asset.fileCreatedAt', b.takenAt);
   pushDate(p, eb, 'asset.createdAt', b.createdAt);
   pushDate(p, eb, 'asset.updatedAt', b.updatedAt);
   pushDate(p, eb, 'asset.deletedAt', b.trashedAt);
 
-  // IdsFilter — EXISTS-based, composable with OR
   if (b.albumIds) {
     pushIdsFilter(p, eb, 'album', b.albumIds);
   }
@@ -1055,10 +1039,8 @@ function buildBranchPredicates(eb: AssetEB, b: SearchFilterBranch): Expression<S
     pushIdsFilter(p, eb, 'tag', b.tagIds);
   }
 
-  // checksum (bytea, decoded from string on the wire)
   pushChecksum(p, eb, b.checksum);
 
-  // encodedVideoPath — EXISTS over asset_file with path predicate
   if (b.encodedVideoPath) {
     p.push(...existsEncodedVideoPath(eb, b.encodedVideoPath));
   }
