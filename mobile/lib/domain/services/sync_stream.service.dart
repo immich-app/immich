@@ -36,13 +36,10 @@ class SyncStreamService {
   SyncStreamService({
     required this._syncApiRepository,
     required this._syncStreamRepository,
-    required this._localAssetRepository,
-    required this._trashedLocalAssetRepository,
-    required this._assetMediaRepository,
-    required this._permissionRepository,
     required this._syncMigrationRepository,
     required this._api,
     this._cancelChecker,
+    required this._trashSyncService,
   });
 
   bool get isCancelled => _cancelChecker?.call() ?? false;

@@ -42,7 +42,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   await Store.put(StoreKey.version, targetVersion);
   if (migratedMetadata) {
-    await MetadataRepository.refresh();
+    await MetadataRepository.instance.refresh();
   }
   return;
 }
@@ -152,7 +152,7 @@ Future<void> _migrateTo27(Drift drift) async {
   final key = MetadataKey.trashSyncMode;
   final existing = await (drift.select(
     drift.metadataEntity,
-  )..where((row) => row.key.equals(key.key))).getSingleOrNull();
+  )..where((row) => row.key.equals(key.name))).getSingleOrNull();
 
   if (existing == null) {
     final legacy = await (drift.select(
@@ -164,7 +164,7 @@ Future<void> _migrateTo27(Drift drift) async {
           .into(drift.metadataEntity)
           .insertOnConflictUpdate(
             MetadataEntityCompanion.insert(
-              key: key.key,
+              key: key.name,
               value: key.encode(TrashSyncMode.autoSync),
               updatedAt: Value(DateTime.now()),
             ),

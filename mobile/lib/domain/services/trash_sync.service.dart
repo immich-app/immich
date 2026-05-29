@@ -20,16 +20,12 @@ class TrashSyncService {
   final MetadataRepository _metadataRepository;
 
   TrashSyncService({
-    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
-    required DriftTrashSyncRepository trashSyncRepository,
-    required AssetMediaRepository assetMediaRepository,
-    required IPermissionRepository permissionRepository,
-    required MetadataRepository metadataRepository,
-  }) : _trashedLocalAssetRepository = trashedLocalAssetRepository,
-       _trashSyncRepository = trashSyncRepository,
-       _assetMediaRepository = assetMediaRepository,
-       _permissionRepository = permissionRepository,
-       _metadataRepository = metadataRepository;
+    required this._trashedLocalAssetRepository,
+    required this._trashSyncRepository,
+    required this._assetMediaRepository,
+    required this._permissionRepository,
+    required this._metadataRepository,
+  });
 
   TrashSyncMode get mode => _metadataRepository.appConfig.trashSync.mode;
 

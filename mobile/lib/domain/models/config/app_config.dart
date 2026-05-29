@@ -15,6 +15,7 @@ import 'package:immich_mobile/domain/models/config/viewer_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 const defaultConfig = AppConfig();
@@ -90,8 +91,7 @@ class AppConfig {
           other.slideshow == slideshow &&
           other.album == album &&
           other.backup == backup &&
-          other.network == network);
-          other.backup == backup &&
+          other.network == network &&
           other.trashSync == trashSync);
 
   @override
@@ -147,6 +147,7 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .trashSyncMode => trashSync.mode,
           })
           as T;
 
@@ -198,6 +199,7 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .trashSyncMode => copyWith(trashSync: trashSync.copyWith(mode: value as TrashSyncMode)),
     };
   }
 }

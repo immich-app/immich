@@ -46,7 +46,7 @@ enum MetadataKey<T extends Object> {
   backupSyncAlbums<bool>(),
 
   // Trash sync
-  trashSyncMode<TrashSyncMode>(.appConfig, 'trashSync.mode', TrashSyncMode.off, _EnumCodec(TrashSyncMode.values)),
+  trashSyncMode<TrashSyncMode>(codec: _EnumCodec(TrashSyncMode.values)),
 
   // Timeline
   timelineTilesPerRow<int>(),
