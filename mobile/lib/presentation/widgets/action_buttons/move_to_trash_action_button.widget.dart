@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 void showTrashResultToast(BuildContext context, ActionResult result) {
@@ -35,37 +37,47 @@ class MoveToTrashActionButton extends ConsumerWidget {
 
   const MoveToTrashActionButton({super.key, required this.source, required this.onResult});
 
+  Future<bool> _shouldShowConfirmationDialog(WidgetRef ref) async {
+    if (CurrentPlatform.isIOS) {
+      return Future.value(false);
+    }
+    return ref.read(permissionRepositoryProvider).hasManageMediaPermission();
+  }
+
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
-    final selectedCount = source == ActionSource.viewer ? 1 : ref.read(multiSelectProvider).selectedAssets.length;
-    final assetViewerNotifier = ref.read(assetViewerProvider.notifier);
-    assetViewerNotifier.setControls(false);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('asset_out_of_sync_trash_confirmation_title'.tr()),
-          content: Text('asset_out_of_sync_trash_confirmation_text'.t(args: {'count': '$selectedCount'})),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('cancel'.t(context: context)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-              child: Text('control_bottom_app_bar_trash_from_immich'.tr()),
-            ),
-          ],
-        );
-      },
-    );
+    if (await _shouldShowConfirmationDialog(ref)) {
+      if (!context.mounted) {
+        return;
+      }
+      final assetViewerNotifier = ref.read(assetViewerProvider.notifier);
+      assetViewerNotifier.setControls(false);
 
-    if (confirmed != true) {
-      assetViewerNotifier.setControls(true);
-      return;
+      final selectedCount = source == ActionSource.viewer ? 1 : ref.read(multiSelectProvider).selectedAssets.length;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('asset_out_of_sync_trash_confirmation_title'.tr()),
+            content: Text('asset_out_of_sync_trash_confirmation_text'.t(args: {'count': '$selectedCount'})),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text('cancel'.tr())),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+                child: Text('control_bottom_app_bar_trash_from_immich'.tr()),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed != true) {
+        assetViewerNotifier.setControls(true);
+        return;
+      }
     }
 
     final actionNotifier = ref.read(actionProvider.notifier);
