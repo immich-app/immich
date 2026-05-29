@@ -2,7 +2,7 @@ import type { Feature, Point } from 'geojson';
 import type { GeoJSONSource, Map } from 'maplibre-gl';
 import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { autoZoomCluster } from '../map-utils';
+import { autoZoomCluster } from '../utils';
 
 /**
  * Unit tests for the autoZoomCluster function

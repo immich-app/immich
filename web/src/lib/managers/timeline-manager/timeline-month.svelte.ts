@@ -190,17 +190,17 @@ export class TimelineMonth {
         isVideo: !(bucketAssets.isImage?.[i] ?? true),
         livePhotoVideoId: bucketAssets.livePhotoVideoId?.[i] ?? null,
         localDateTime,
-        createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).setZone('local'),
+        createdAt: fromISODateTimeUTC(bucketAssets.createdAt?.[i] ?? bucketAssets.fileCreatedAt[i]).setZone('local'),
         fileCreatedAt,
         ownerId: bucketAssets.ownerId?.[i] ?? '',
         projectionType: bucketAssets.projectionType?.[i] ?? null,
         ratio: bucketAssets.ratio?.[i] ?? 1,
         stack: bucketAssets.stack?.[i]
           ? {
-            id: bucketAssets.stack[i]![0],
-            primaryAssetId: bucketAssets.id[i],
-            assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
-          }
+              id: bucketAssets.stack[i]![0],
+              primaryAssetId: bucketAssets.id[i],
+              assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
+            }
           : null,
         thumbhash: bucketAssets.thumbhash?.[i] ?? null,
         people: null, // People are not included in the bucket assets

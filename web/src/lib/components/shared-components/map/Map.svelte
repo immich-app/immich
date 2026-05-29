@@ -51,7 +51,7 @@
   import { t } from 'svelte-i18n';
   import { GeoJSON, HeatmapLayer, MapLibre, MarkerLayer, Popup } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
-  import { autoZoomCluster } from './map-utils';
+  import { autoZoomCluster } from './utils';
 
   interface Props {
     mapMarkers?: MapMarkerResponseDto[];
