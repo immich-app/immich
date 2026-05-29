@@ -109,6 +109,24 @@ mise //mobile:translation
 
 The mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.
 
+#### UI components and widget previews
+
+Shared design-system widgets (buttons, inputs, forms) live in the
+[`immich_ui` package](https://github.com/immich-app/immich/tree/main/mobile/packages/ui/)
+under `mobile/packages/ui/`. Components are defined in `lib/src/components/`
+and have matching previews in `lib/src/previews/`.
+
+To inspect a component in isolation with a light/dark toggle and hot reload,
+launch [Flutter's Widget Previewer](https://docs.flutter.dev/tools/widget-previewer):
+
+```bash
+cd mobile/packages/ui
+flutter widget-preview start
+```
+
+In VS Code or Android Studio with the Flutter plugin, the previewer
+auto-starts when you open the **Flutter Widget Preview** tab in the sidebar.
+
 ## IDE setup
 
 ### Lint / format extensions
