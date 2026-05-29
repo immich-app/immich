@@ -151,17 +151,18 @@ const SearchSuggestionRequestSchema = z
 
 // v3 SearchFilter DTOs — new shape introduced alongside the legacy flat DTOs above.
 
-const atLeastOneKey = <T extends z.ZodObject>(schema: T, allowed: (keyof T['shape'] & string)[]) =>
-  schema.refine((value) => Object.values(value).some((v) => v !== undefined), {
-    message: `At least one of the following keys is required: ${allowed.join(', ')}`,
+const atLeastOneKey = <T extends z.ZodObject>(schema: T) => {
+  const keys = Object.keys(schema.shape);
+  return schema.refine((value) => Object.values(value).some((v) => v !== undefined), {
+    message: `At least one of the following keys is required: ${keys.join(', ')}`,
   });
+};
 
 const IdFilterSchema = atLeastOneKey(
   z.strictObject({
     eq: z.uuidv4().optional(),
     ne: z.uuidv4().optional(),
   }),
-  ['eq', 'ne'],
 ).meta({ id: 'IdFilter' });
 
 const IdFilterNullableSchema = atLeastOneKey(
@@ -169,7 +170,6 @@ const IdFilterNullableSchema = atLeastOneKey(
     eq: z.uuidv4().nullable().optional(),
     ne: z.uuidv4().nullable().optional(),
   }),
-  ['eq', 'ne'],
 ).meta({ id: 'IdFilterNullable' });
 
 const IdsFilterSchema = atLeastOneKey(
@@ -178,7 +178,6 @@ const IdsFilterSchema = atLeastOneKey(
     all: z.array(z.uuidv4()).min(1).optional(),
     none: z.array(z.uuidv4()).min(1).optional(),
   }),
-  ['any', 'all', 'none'],
 ).meta({ id: 'IdsFilter' });
 
 const StringFilterSchema = atLeastOneKey(
@@ -188,7 +187,6 @@ const StringFilterSchema = atLeastOneKey(
     in: z.array(z.string()).min(1).optional(),
     notIn: z.array(z.string()).min(1).optional(),
   }),
-  ['eq', 'ne', 'in', 'notIn'],
 ).meta({ id: 'StringFilter' });
 
 const StringFilterNullableSchema = atLeastOneKey(
@@ -198,7 +196,6 @@ const StringFilterNullableSchema = atLeastOneKey(
     in: z.array(z.string()).min(1).optional(),
     notIn: z.array(z.string()).min(1).optional(),
   }),
-  ['eq', 'ne', 'in', 'notIn'],
 ).meta({ id: 'StringFilterNullable' });
 
 const StringPatternFilterSchema = atLeastOneKey(
@@ -212,7 +209,6 @@ const StringPatternFilterSchema = atLeastOneKey(
     startsWith: z.string().min(1).optional(),
     endsWith: z.string().min(1).optional(),
   }),
-  ['eq', 'ne', 'in', 'notIn', 'like', 'notLike', 'startsWith', 'endsWith'],
 ).meta({ id: 'StringPatternFilter' });
 
 const NumberFilterSchema = atLeastOneKey(
@@ -225,7 +221,6 @@ const NumberFilterSchema = atLeastOneKey(
     in: z.array(z.number()).min(1).optional(),
     notIn: z.array(z.number()).min(1).optional(),
   }),
-  ['eq', 'lt', 'lte', 'gt', 'gte', 'in', 'notIn'],
 ).meta({ id: 'NumberFilter' });
 
 const NumberFilterNullableSchema = atLeastOneKey(
@@ -239,7 +234,6 @@ const NumberFilterNullableSchema = atLeastOneKey(
     in: z.array(z.number()).min(1).optional(),
     notIn: z.array(z.number()).min(1).optional(),
   }),
-  ['eq', 'ne', 'lt', 'lte', 'gt', 'gte', 'in', 'notIn'],
 ).meta({ id: 'NumberFilterNullable' });
 
 const DateFilterSchema = atLeastOneKey(
@@ -251,7 +245,6 @@ const DateFilterSchema = atLeastOneKey(
     lt: isoDatetimeToDate.optional(),
     lte: isoDatetimeToDate.optional(),
   }),
-  ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
 ).meta({ id: 'DateFilter' });
 
 const DateFilterNullableSchema = atLeastOneKey(
@@ -263,7 +256,6 @@ const DateFilterNullableSchema = atLeastOneKey(
     lt: isoDatetimeToDate.optional(),
     lte: isoDatetimeToDate.optional(),
   }),
-  ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
 ).meta({ id: 'DateFilterNullable' });
 
 const BoolFilterSchema = z.strictObject({ eq: z.boolean() }).meta({ id: 'BoolFilter' });
@@ -276,7 +268,6 @@ const enumFilterSchema = <T extends z.core.util.EnumLike>(values: z.ZodEnum<T>, 
       in: z.array(values).min(1).optional(),
       notIn: z.array(values).min(1).optional(),
     }),
-    ['eq', 'ne', 'in', 'notIn'],
   ).meta({ id });
 
 const EnumFilterAssetTypeSchema = enumFilterSchema(AssetTypeSchema, 'EnumFilterAssetType');
