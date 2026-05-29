@@ -435,7 +435,7 @@ describe(MediaService.name, () => {
         size: 1440,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -485,6 +485,14 @@ describe(MediaService.name, () => {
         {
           assetId: asset.id,
           type: AssetFileType.Thumbnail,
+          path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
+          isTransparent: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Micro,
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
@@ -540,6 +548,14 @@ describe(MediaService.name, () => {
           isProgressive: false,
           isTransparent: false,
         },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Micro,
+          path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
+          isTransparent: false,
+        },
       ]);
     });
 
@@ -584,6 +600,14 @@ describe(MediaService.name, () => {
         {
           assetId: asset.id,
           type: AssetFileType.Thumbnail,
+          path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
+          isTransparent: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Micro,
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
@@ -707,7 +731,7 @@ describe(MediaService.name, () => {
         size: 1440,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -757,7 +781,7 @@ describe(MediaService.name, () => {
         size: 1440,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -824,6 +848,11 @@ describe(MediaService.name, () => {
           isProgressive: false,
           isTransparent: false,
         }),
+        expect.objectContaining({
+          type: AssetFileType.Micro,
+          isProgressive: false,
+          isTransparent: false,
+        }),
       ]);
     });
 
@@ -863,6 +892,11 @@ describe(MediaService.name, () => {
           isProgressive: true,
           isTransparent: false,
         }),
+        expect.objectContaining({
+          type: AssetFileType.Micro,
+          isProgressive: false,
+          isTransparent: false,
+        }),
       ]);
     });
 
@@ -886,6 +920,11 @@ describe(MediaService.name, () => {
         }),
         expect.objectContaining({
           type: AssetFileType.Thumbnail,
+          isProgressive: false,
+          isTransparent: false,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Micro,
           isProgressive: false,
           isTransparent: false,
         }),
@@ -1022,7 +1061,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({ processInvalidImages: true }),
       );
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
@@ -1064,7 +1103,7 @@ describe(MediaService.name, () => {
         size: 1440, // capped to preview size as fullsize conversion is skipped
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         fullsizeBuffer,
         {
@@ -1101,7 +1140,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         fullsizeBuffer,
         {
@@ -1149,7 +1188,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -1201,7 +1240,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -1233,7 +1272,7 @@ describe(MediaService.name, () => {
         size: 1440,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
@@ -1266,7 +1305,7 @@ describe(MediaService.name, () => {
         size: undefined,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -1309,7 +1348,7 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
       });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
@@ -1342,7 +1381,7 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({
@@ -1464,7 +1503,7 @@ describe(MediaService.name, () => {
 
       await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
 
-      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(4);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.anything(),

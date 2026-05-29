@@ -14,6 +14,7 @@ export enum AssetMediaSize {
   FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
+  MICRO = 'micro',
 }
 
 const AssetMediaSizeSchema = z.enum(AssetMediaSize).describe('Asset media size').meta({ id: 'AssetMediaSize' });

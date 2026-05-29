@@ -277,6 +277,12 @@ export class AssetMediaService extends BaseService {
       return { targetSize: AssetMediaSize.PREVIEW };
     }
 
+    if (dto.size === AssetMediaSize.MICRO && !path) {
+      // downgrade to the regular thumbnail when the micro size has not been
+      // generated yet (e.g. an existing library not yet re-thumbnailed).
+      return { targetSize: AssetMediaSize.THUMBNAIL };
+    }
+
     if (!path) {
       throw new NotFoundException('Asset media not found');
     }

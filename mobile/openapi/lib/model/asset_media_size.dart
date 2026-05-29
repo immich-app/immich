@@ -27,6 +27,7 @@ class AssetMediaSize {
   static const fullsize = AssetMediaSize._(r'fullsize');
   static const preview = AssetMediaSize._(r'preview');
   static const thumbnail = AssetMediaSize._(r'thumbnail');
+  static const micro = AssetMediaSize._(r'micro');
 
   /// List of all possible values in this [enum][AssetMediaSize].
   static const values = <AssetMediaSize>[
@@ -34,6 +35,7 @@ class AssetMediaSize {
     fullsize,
     preview,
     thumbnail,
+    micro,
   ];
 
   static AssetMediaSize? fromJson(dynamic value) => AssetMediaSizeTypeTransformer().decode(value);
@@ -76,6 +78,7 @@ class AssetMediaSizeTypeTransformer {
         case r'fullsize': return AssetMediaSize.fullsize;
         case r'preview': return AssetMediaSize.preview;
         case r'thumbnail': return AssetMediaSize.thumbnail;
+        case r'micro': return AssetMediaSize.micro;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
