@@ -1,3 +1,6 @@
+import { type BulkIdResponseDto, type BulkIdsDto } from '@immich/sdk';
+
+// keep in sync with plugin-core/src/index.d.ts';
 declare module 'extism:host' {
   interface user {
     albumAddAssets(ptr: PTR): I64;
@@ -45,7 +48,11 @@ type AlbumsToAssets = {
 
 export const hostFunctions = (authToken: string) => ({
   albumAddAssets: (albumId: string, assetIds: string[]) =>
-    call('albumAddAssets', authToken, [albumId, { ids: assetIds }]),
+    call<[string, BulkIdsDto], BulkIdResponseDto[]>(
+      'albumAddAssets',
+      authToken,
+      [albumId, { ids: assetIds }],
+    ),
   addAssetsToAlbums: ({ assetIds, albumIds }: AlbumsToAssets) =>
     call('addAssetsToAlbums', authToken, [{ albumIds, assetIds }]),
 });

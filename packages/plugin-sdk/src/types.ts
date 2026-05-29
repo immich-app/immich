@@ -68,19 +68,19 @@ export type AssetV1 = {
     ownerId: string;
     type: AssetType;
     originalPath: string;
-    fileCreatedAt: Date;
-    fileModifiedAt: Date;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
     isFavorite: boolean;
     checksum: Buffer; // sha1 checksum
     livePhotoVideoId: string | null;
-    updatedAt: Date;
-    createdAt: Date;
+    updatedAt: string;
+    createdAt: string;
     originalFileName: string;
     isOffline: boolean;
     libraryId: string | null;
     isExternal: boolean;
-    deletedAt: Date | null;
-    localDateTime: Date;
+    deletedAt: string | null;
+    localDateTime: string;
     stackId: string | null;
     duplicateId: string | null;
     status: AssetStatus;
@@ -93,8 +93,8 @@ export type AssetV1 = {
       exifImageHeight: number | null;
       fileSizeInByte: number | null;
       orientation: string | null;
-      dateTimeOriginal: Date | null;
-      modifyDate: Date | null;
+      dateTimeOriginal: string | null;
+      modifyDate: string | null;
       lensModel: string | null;
       fNumber: number | null;
       focalLength: number | null;
@@ -116,7 +116,7 @@ export type AssetV1 = {
       autoStackId: string | null;
       rating: number | null;
       tags: string[] | null;
-      updatedAt: Date | null;
+      updatedAt: string | null;
     } | null;
   };
 };

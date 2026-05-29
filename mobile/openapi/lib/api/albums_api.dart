@@ -508,12 +508,18 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Filter albums containing this asset ID (ignores other parameters)
   ///
+  /// * [String] id:
+  ///   Album ID
+  ///
   /// * [bool] isOwned:
   ///   Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter
   ///
   /// * [bool] isShared:
   ///   Filter by shared status: true = only shared, false = not shared, undefined = no filter
-  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? isOwned, bool? isShared, }) async {
+  ///
+  /// * [String] name:
+  ///   Album name (exact match)
+  Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, String? id, bool? isOwned, bool? isShared, String? name, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
 
@@ -527,11 +533,17 @@ class AlbumsApi {
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
+    }
     if (isOwned != null) {
       queryParams.addAll(_queryParams('', 'isOwned', isOwned));
     }
     if (isShared != null) {
       queryParams.addAll(_queryParams('', 'isShared', isShared));
+    }
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
     }
 
     const contentTypes = <String>[];
@@ -557,13 +569,19 @@ class AlbumsApi {
   /// * [String] assetId:
   ///   Filter albums containing this asset ID (ignores other parameters)
   ///
+  /// * [String] id:
+  ///   Album ID
+  ///
   /// * [bool] isOwned:
   ///   Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter
   ///
   /// * [bool] isShared:
   ///   Filter by shared status: true = only shared, false = not shared, undefined = no filter
-  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? isOwned, bool? isShared, }) async {
-    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, isOwned: isOwned, isShared: isShared, );
+  ///
+  /// * [String] name:
+  ///   Album name (exact match)
+  Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, String? id, bool? isOwned, bool? isShared, String? name, }) async {
+    final response = await getAllAlbumsWithHttpInfo( assetId: assetId, id: id, isOwned: isOwned, isShared: isShared, name: name, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

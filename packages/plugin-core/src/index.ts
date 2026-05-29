@@ -93,13 +93,18 @@ export const assetTrash = () => {
     changes: {
       asset: config.inverse
         ? { deletedAt: null, status: AssetStatus.Active }
-        : { deletedAt: new Date(), status: AssetStatus.Trashed },
+        : { deletedAt: new Date().toISOString(), status: AssetStatus.Trashed },
     },
   }));
 };
 
 export const assetAddToAlbums = () => {
   return wrapper<WorkflowType.AssetV1, { albumIds: string[] }>(({ config, data, functions }) => {
+    if (config.albumIds.length === 0) {
+      // noop
+      return {};
+    }
+
     if (config.albumIds.length === 1) {
       functions.albumAddAssets(config.albumIds[0], [data.asset.id]);
       return {};

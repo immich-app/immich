@@ -5,6 +5,37 @@
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
   "wasmPath": "dist/plugin.wasm",
+  "templates": [
+    {
+      "name": "auto-archive-screenshots",
+      "title": "Auto-archive screenshots",
+      "description": "Archive uploads with \"screenshot\" in the filename and optionally add them to an album",
+      "trigger": "AssetCreate",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetFileFilter",
+          "config": {
+            "pattern": "screenshot",
+            "matchType": "contains",
+            "caseSensitive": false
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetArchive",
+          "config": {
+            "inverse": false
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
+    }
+  ],
   "methods": [
     {
       "name": "assetFileFilter",
@@ -35,7 +66,7 @@
         },
         "required": ["pattern"]
       },
-      "uiHints": ["filter"]
+      "uiHints": ["Filter"]
     },
     {
       "name": "filterFileType",
@@ -55,7 +86,7 @@
         },
         "required": ["fileTypes"]
       },
-      "uiHints": ["filter"]
+      "uiHints": ["Filter"]
     },
     {
       "name": "filterPerson",
@@ -69,7 +100,7 @@
             "array": true,
             "title": "Person IDs",
             "description": "List of person to match",
-            "uiHint": "personI"
+            "uiHint": "personId"
           },
           "matchAny": {
             "type": "boolean",
@@ -80,7 +111,7 @@
         },
         "required": ["personIds"]
       },
-      "uiHints": ["filter"]
+      "uiHints": ["Filter"]
     },
     {
       "name": "assetArchive",
@@ -157,7 +188,7 @@
             "title": "Album IDs",
             "array": true,
             "description": "Target album IDs",
-            "uiHint": "albumId"
+            "uiHint": "AlbumId"
           }
         },
         "required": ["albumIds"]
@@ -242,14 +273,14 @@
             "type": "string",
             "title": "Album ID",
             "description": "Target album ID",
-            "uiHint": "albumId"
+            "uiHint": "AlbumId"
           },
           "albumIds": {
             "type": "string",
             "title": "Album IDs",
             "description": "Target album IDs",
             "array": true,
-            "uiHint": "albumId"
+            "uiHint": "AlbumId"
           }
         }
       }

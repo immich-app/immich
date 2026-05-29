@@ -23,7 +23,7 @@ export class WorkflowService extends BaseService {
   }
 
   async search(auth: AuthDto, dto: WorkflowSearchDto): Promise<WorkflowResponseDto[]> {
-    const workflows = await this.workflowRepository.search({ ...dto, ownerId: auth.user.id });
+    const workflows = await this.workflowRepository.search({ ...dto, userId: auth.user.id });
     return workflows.map((workflow) => mapWorkflow(workflow));
   }
 

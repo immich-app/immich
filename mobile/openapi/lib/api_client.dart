@@ -13,7 +13,7 @@ part of openapi.api;
 class ApiClient {
   ApiClient({this.basePath = '/api', this.authentication,});
 
-  final String basePath;
+  String basePath;
   final Authentication? authentication;
 
   var _client = Client();
@@ -520,6 +520,10 @@ class ApiClient {
           return PluginMethodResponseDto.fromJson(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
+        case 'PluginTemplateResponseDto':
+          return PluginTemplateResponseDto.fromJson(value);
+        case 'PluginTemplateStepResponseDto':
+          return PluginTemplateStepResponseDto.fromJson(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':

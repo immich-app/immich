@@ -1,97 +1,49 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { IconButton } from '@immich/ui';
+  import { ControlBar, ControlBarContent, ControlBarHeader, ControlBarOverflow, ControlBarTitle } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import { t } from 'svelte-i18n';
-  import { fly } from 'svelte/transition';
+  import type { Snippet } from 'svelte';
+  import type { ClassValue } from 'svelte/elements';
 
   interface Props {
-    showBackButton?: boolean;
     backIcon?: string;
-    tailwindClasses?: string;
-    forceDark?: boolean;
-    multiRow?: boolean;
+    class?: ClassValue;
     onClose?: () => void;
+    title?: Snippet | string;
     leading?: Snippet;
     children?: Snippet;
     trailing?: Snippet;
   }
 
-  let {
-    showBackButton = true,
-    backIcon = mdiClose,
-    tailwindClasses = '',
-    forceDark = false,
-    multiRow = false,
-    onClose = () => {},
-    leading,
-    children,
-    trailing,
-  }: Props = $props();
-
-  let appBarBorder = $state('border border-subtle');
-
-  const onScroll = () => {
-    if (window.scrollY > 80) {
-      appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
-
-      if (forceDark) {
-        appBarBorder = 'border border-gray-600';
-      }
-    } else {
-      appBarBorder = 'border border-subtle';
-    }
-  };
-
-  onMount(() => {
-    if (browser) {
-      document.addEventListener('scroll', onScroll, { passive: true });
-    }
-  });
-
-  onDestroy(() => {
-    if (browser) {
-      document.removeEventListener('scroll', onScroll);
-    }
-  });
+  let { backIcon = mdiClose, class: className = '', onClose, title, leading, children, trailing }: Props = $props();
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent">
-  <nav
-    id="asset-selection-app-bar"
-    class={[
-      'grid',
-      multiRow && 'grid-cols-[100%] md:grid-cols-[25%_50%_25%]',
-      !multiRow && 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]',
-      'justify-between lg:grid-cols-[25%_50%_25%]',
-      appBarBorder,
-      'm-2 place-items-center rounded-full p-2 transition-all max-md:p-0',
-      tailwindClasses,
-      forceDark ? 'bg-immich-dark-gray! text-white' : 'bg-light-50 dark:bg-immich-dark-gray',
-    ]}
-  >
-    <div class="flex place-items-center justify-self-start sm:gap-6 dark:text-immich-dark-fg {forceDark ? 'dark' : ''}">
-      {#if showBackButton}
-        <IconButton
-          aria-label={$t('close')}
-          onclick={onClose}
-          color="secondary"
-          shape="round"
-          variant="ghost"
-          icon={backIcon}
-          size="large"
-        />
-      {/if}
-      {@render leading?.()}
-    </div>
+<div class="absolute top-0 w-full bg-transparent p-2" id="control-bar">
+  <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
+    {#if title || leading}
+      <ControlBarHeader>
+        {#if title}
+          <ControlBarTitle>
+            {#if typeof title === 'string'}
+              {title}
+            {:else}
+              {@render title()}
+            {/if}
+          </ControlBarTitle>
+        {/if}
+        {@render leading?.()}
+      </ControlBarHeader>
+    {/if}
 
-    <div class="w-full">
-      {@render children?.()}
-    </div>
+    {#if children}
+      <ControlBarContent>
+        {@render children()}
+      </ControlBarContent>
+    {/if}
 
-    <div class="me-4 flex place-items-center gap-1 justify-self-end max-[350px]:me-0 max-[350px]:gap-0">
-      {@render trailing?.()}
-    </div>
-  </nav>
+    {#if trailing}
+      <ControlBarOverflow>
+        {@render trailing()}
+      </ControlBarOverflow>
+    {/if}
+  </ControlBar>
 </div>

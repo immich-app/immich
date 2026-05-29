@@ -50,8 +50,8 @@ export const resolveMethod = (methods: PluginMethodSearchResponse[], method: str
   return methods.find((method) => method.pluginName === pluginName && method.name === methodName);
 };
 
-export const asMethodString = (method: { pluginName: string; methodName: string }) => {
-  return `${method.pluginName}#${method.methodName}`;
+export const asPluginKey = (method: { pluginName: string; name: string }) => {
+  return `${method.pluginName}#${method.name}`;
 };
 
 const METHOD_REGEX = /^(?<name>[^@#\s]+)(?:@(?<version>[^#\s]*))?#(?<method>[^@#\s]+)$/;

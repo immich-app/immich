@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.da
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -21,6 +22,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -463,11 +465,17 @@ class ActionNotifier extends Notifier<void> {
     ActionSource source,
     BuildContext context, {
     Completer<void>? cancelCompleter,
+    void Function(double progress)? onAssetDownloadProgress,
   }) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(ids, context, cancelCompleter: cancelCompleter);
+      await _service.shareAssets(
+        ids,
+        context,
+        cancelCompleter: cancelCompleter,
+        onAssetDownloadProgress: onAssetDownloadProgress,
+      );
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
@@ -536,14 +544,22 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: false, error: 'Expected single asset for applying edits');
     }
 
-    final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
-      final eventAsset = SyncAssetV1.fromJson(data["asset"]);
-      return eventAsset?.id == ids.first;
-    }, const Duration(seconds: 10));
+    Future<void> editReady;
+    if (ref.read(serverInfoProvider).serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) {
+      editReady = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV2", (dynamic data) {
+        final eventAsset = SyncAssetV2.fromJson(data["asset"]);
+        return eventAsset?.id == ids.first;
+      }, const Duration(seconds: 10));
+    } else {
+      editReady = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
+        final eventAsset = SyncAssetV1.fromJson(data["asset"]);
+        return eventAsset?.id == ids.first;
+      }, const Duration(seconds: 10));
+    }
 
     try {
       await _service.applyEdits(ids.first, edits);
-      await completer;
+      await editReady;
       return const ActionResult(count: 1, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to apply edits to assets', error, stack);
