@@ -1,5 +1,28 @@
+<script module lang="ts">
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { getAlbumInfo } from '@immich/sdk';
+
+  // Shared across all step cards so the same album is only fetched once. This is a plain
+  // (non-reactive) memoization cache — it is read and written during render, so it must not
+  // be a SvelteMap, which would throw `state_unsafe_mutation` when written inside `{#await}`.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const albumNameCache = new Map<string, Promise<string>>();
+
+  const getAlbumName = (id: string): Promise<string> => {
+    let promise = albumNameCache.get(id);
+    if (!promise) {
+      promise = getAlbumInfo({ ...authManager.params, id })
+        .then((album) => album.albumName)
+        .catch(() => id);
+      albumNameCache.set(id, promise);
+    }
+    return promise;
+  };
+</script>
+
 <script lang="ts">
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
+  import type { JSONSchemaProperty } from '$lib/types';
   import type { WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import {
@@ -27,9 +50,13 @@
 
   const method = $derived(pluginManager.getMethod(step.method));
   const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
+  const schema = $derived(method?.schema as JSONSchemaProperty | undefined);
   const configEntries = $derived(
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
+
+  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint;
+  const toIds = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : [String(value)]);
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);
   let hoverDrag = $state(false);
@@ -204,15 +231,28 @@
       {#if configEntries.length > 0}
         <CardBody class="py-3">
           <div class="flex flex-wrap items-center gap-1.5">
-            {#each configEntries as [key, value] (key)}
+            {#snippet badge(key: string, content: string)}
               <Badge
                 color={isFilter ? 'info' : 'warning'}
                 shape="round"
                 size="small"
                 class="border font-mono {isFilter ? 'border-primary-200' : 'border-warning-200'}"
               >
-                <span class="opacity-60">{key}</span>{formatConfigValue(value)}
+                <span class="opacity-60">{key}</span>{content}
               </Badge>
+            {/snippet}
+            {#each configEntries as [key, value] (key)}
+              {#if getUiHint(key) === 'AlbumId'}
+                {#each toIds(value) as albumId (albumId)}
+                  {#await getAlbumName(albumId)}
+                    {@render badge($t('album_name'), '…')}
+                  {:then albumName}
+                    {@render badge($t('album_name'), `"${truncate(albumName)}"`)}
+                  {/await}
+                {/each}
+              {:else}
+                {@render badge(key, formatConfigValue(value))}
+              {/if}
             {/each}
           </div>
         </CardBody>
