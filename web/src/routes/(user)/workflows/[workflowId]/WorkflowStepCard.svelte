@@ -242,9 +242,9 @@
               {#if getUiHint(key) === 'AlbumId'}
                 {#each toIds(value) as albumId (albumId)}
                   {#await getAlbumName(albumId)}
-                    {@render badge($t('album_name'), '…')}
+                    {@render badge($t('album'), '…')}
                   {:then albumName}
-                    {@render badge($t('album_name'), `"${truncate(albumName)}"`)}
+                    {@render badge($t('album'), `"${truncate(albumName)}"`)}
                   {/await}
                 {/each}
               {:else}
