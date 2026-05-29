@@ -188,20 +188,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       if (!_cancellationToken.isCompleted) {
         _cancellationToken.complete();
       }
-      final cleanupFutures = [
-        nativeSyncApi?.cancelHashing(),
-        workerManagerPatch.dispose().catchError((_) async {
-          // Discard any errors on the dispose call
-          return;
-        }),
-        LogService.I.dispose(),
-        Store.dispose(),
 
-        backgroundSyncManager?.cancel(),
-        _drift.optimize(allTables: true),
-      ];
-
-      await Future.wait(cleanupFutures.nonNulls);
+      // Workers share one sqlite connection, so DB teardown must wait until every worker has stopped using it.
+      await Future.wait([
+        if (backgroundSyncManager != null) backgroundSyncManager.cancel(),
+        if (nativeSyncApi != null) nativeSyncApi.cancelHashing(),
+      ]);
+      await workerManagerPatch.dispose().catchError((_) async {});
+      await Future.wait([LogService.I.dispose(), Store.dispose(), _drift.optimize(allTables: true)]);
       await _drift.close();
       await _driftLogger.close();
 

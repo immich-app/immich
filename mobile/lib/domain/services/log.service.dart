@@ -112,10 +112,16 @@ class LogService {
     return _flushBuffer();
   }
 
-  Future<void> dispose() {
+  Future<void> dispose() async {
     _flushTimer?.cancel();
-    _logSubscription.cancel();
-    return _flushBuffer();
+    _flushTimer = null;
+    await _logSubscription.cancel();
+    await _flushBuffer();
+    // Allow a subsequent init() (e.g. when a worker isolate is reused) to
+    // create a fresh instance instead of returning this disposed one.
+    if (identical(_instance, this)) {
+      _instance = null;
+    }
   }
 
   Future<void> _flushBuffer() async {

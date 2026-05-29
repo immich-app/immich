@@ -25,6 +25,7 @@ class LocalSyncService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
   final IPermissionRepository _permissionRepository;
+  final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
@@ -34,7 +35,10 @@ class LocalSyncService {
     required this._trashedLocalAssetRepository,
     required this._assetMediaRepository,
     required this._permissionRepository,
+    this._cancellation,
   });
+
+  bool get _isCancelled => _cancellation?.isCompleted ?? false;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -81,6 +85,10 @@ class LocalSyncService {
       // detect album deletions from the native side
       if (CurrentPlatform.isAndroid) {
         for (final album in dbAlbums) {
+          if (_isCancelled) {
+            _log.warning("Local sync cancelled. Stopped processing albums.");
+            return;
+          }
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
@@ -91,6 +99,10 @@ class LocalSyncService {
         // does not include changes for cloud albums.
         final cloudAlbums = deviceAlbums.where((a) => a.isCloud).toLocalAlbums();
         for (final album in cloudAlbums) {
+          if (_isCancelled) {
+            _log.warning("Local sync cancelled. Stopped processing cloud albums.");
+            return;
+          }
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
           if (dbAlbum == null) {
             _log.warning("Cloud album ${album.name} not found in local database. Skipping sync.");
@@ -135,6 +147,9 @@ class LocalSyncService {
   }
 
   Future<void> addAlbum(LocalAlbum album) async {
+    if (_isCancelled) {
+      return;
+    }
     try {
       _log.fine("Adding device album ${album.name}");
 
@@ -162,6 +177,9 @@ class LocalSyncService {
 
   // The deviceAlbum is ignored since we are going to refresh it anyways
   FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
+    if (_isCancelled) {
+      return false;
+    }
     try {
       _log.fine("Syncing device album ${dbAlbum.name}");
 
