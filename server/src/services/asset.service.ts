@@ -46,7 +46,10 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { getRotatedCanvasDimensions, getStraightenExtractRectangle, splitRotation } from 'src/utils/editor';
 import { transformOcrBoundingBox } from 'src/utils/transform';
+
+const STRAIGHTEN_BOUNDS_EPSILON = 1;
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -581,15 +584,36 @@ export class AssetService extends BaseService {
       }
 
       // check that crop parameters will not go out of bounds
-      const { width: assetWidth, height: assetHeight } = getDimensions(asset);
+      const rotateEdit = edits.find((e) => e.action === AssetEditAction.Rotate);
+      const straightenActive = rotateEdit && splitRotation(rotateEdit.parameters.angle).straightenAngle !== 0;
 
-      if (!assetWidth || !assetHeight) {
-        throw new BadRequestException('Asset dimensions are not available for editing');
-      }
-
-      const { x, y, width, height } = crop.parameters;
-      if (x + width > assetWidth || y + height > assetHeight) {
-        throw new BadRequestException('Crop parameters are out of bounds');
+      if (straightenActive) {
+        const extract = getStraightenExtractRectangle(
+          crop.parameters,
+          { width: assetWidth, height: assetHeight },
+          rotateEdit.parameters.angle,
+          edits,
+          false,
+        );
+        const target = getRotatedCanvasDimensions(
+          { width: assetWidth, height: assetHeight },
+          rotateEdit.parameters.angle,
+        );
+        if (
+          extract.width < 1 ||
+          extract.height < 1 ||
+          extract.left < -STRAIGHTEN_BOUNDS_EPSILON ||
+          extract.top < -STRAIGHTEN_BOUNDS_EPSILON ||
+          extract.left + extract.width > target.width + STRAIGHTEN_BOUNDS_EPSILON ||
+          extract.top + extract.height > target.height + STRAIGHTEN_BOUNDS_EPSILON
+        ) {
+          throw new BadRequestException('Crop parameters are out of bounds');
+        }
+      } else {
+        const { x, y, width, height } = crop.parameters;
+        if (x < 0 || y < 0 || x + width > assetWidth || y + height > assetHeight) {
+          throw new BadRequestException('Crop parameters are out of bounds');
+        }
       }
     }
 

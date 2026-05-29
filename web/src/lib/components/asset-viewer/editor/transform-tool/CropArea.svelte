@@ -26,11 +26,20 @@
   let imageTransform = $derived.by(() => {
     const transforms: string[] = [];
 
+    // Translate image only while straightening, normal crop/rotate/flip moves the grid.
+    if (transformManager.straightenAngle !== 0 && (transformManager.offsetX !== 0 || transformManager.offsetY !== 0)) {
+      transforms.push(`translate(${transformManager.offsetX}px, ${transformManager.offsetY}px)`);
+    }
+
     if (transformManager.mirrorHorizontal) {
       transforms.push('scaleX(-1)');
     }
     if (transformManager.mirrorVertical) {
       transforms.push('scaleY(-1)');
+    }
+
+    if (transformManager.straightenAngle !== 0) {
+      transforms.push(`rotate(${transformManager.straightenAngle}deg)`, `scale(${transformManager.straightenScale})`);
     }
 
     return transforms.join(' ');
@@ -62,27 +71,33 @@
 
 <div class="flex size-full flex-col items-center justify-center p-8" bind:this={canvasContainer}>
   <div
-    class="crop-area max-h-full max-w-full transition-transform motion-reduce:transition-none"
+    class={[
+      'crop-area max-h-full max-w-full',
+      !transformManager.isInteracting && 'transition-transform motion-reduce:transition-none',
+    ]}
     class:rotated={transformManager.normalizedRotation % 180 > 0}
     style:rotate={transformManager.imageRotation + 'deg'}
     bind:this={transformManager.cropAreaEl}
     aria-label="Crop area"
   >
     <img
+      bind:this={transformManager.imgElement}
       draggable="false"
       src={imageSrc}
       alt={$getAltText(toTimelineAsset(asset))}
-      class="h-full transition-transform select-none motion-reduce:transition-none"
+      class={[
+        'h-full select-none',
+        !transformManager.isInteracting && 'transition-transform motion-reduce:transition-none',
+      ]}
       style:transform={imageTransform}
     />
     <div
-      class={[
-        'overlay pointer-events-none absolute top-0 size-full transition-colors motion-reduce:transition-none',
-        transformManager.isInteracting ? 'bg-black/30' : 'bg-black/56',
-      ]}
-      bind:this={transformManager.overlayEl}
-    ></div>
-    <div class="crop-frame absolute border-2 border-white" bind:this={transformManager.cropFrame}>
+      class="crop-frame absolute border-2 border-white"
+      style:box-shadow={transformManager.isInteracting
+        ? '0 0 0 9999px rgba(0, 0, 0, 0.3)'
+        : '0 0 0 9999px rgba(0, 0, 0, 0.56)'}
+      bind:this={transformManager.cropFrame}
+    >
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class={[
@@ -119,6 +134,10 @@
 </div>
 
 <style>
+  .crop-area {
+    position: relative;
+  }
+
   .crop-frame.transition {
     transition: all 0.15s ease;
   }

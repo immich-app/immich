@@ -1,8 +1,210 @@
 import { AssetFace } from 'src/database';
+import { AssetEditAction, MirrorAxis, type AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { SourceType } from 'src/enum';
-import { boundingBoxOverlap, checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
+import {
+  boundingBoxOverlap,
+  checkFaceVisibility,
+  checkOcrVisibility,
+  getEffectiveStraightenRotation,
+  getRotatedCanvasDimensions,
+  getStraightenExtractRectangle,
+  splitRotation,
+} from 'src/utils/editor';
 import { describe, expect, it } from 'vitest';
+
+describe('straighten crop geometry', () => {
+  it('splits total rotation into quarter turn and straighten angle', () => {
+    expect(splitRotation(12)).toEqual({ quarterTurn: 0, straightenAngle: 12 });
+    expect(splitRotation(100)).toEqual({ quarterTurn: 90, straightenAngle: 10 });
+    expect(splitRotation(263)).toEqual({ quarterTurn: 270, straightenAngle: -7 });
+    expect(splitRotation(45)).toEqual({ quarterTurn: 0, straightenAngle: 45 });
+    expect(splitRotation(-45)).toEqual({ quarterTurn: 0, straightenAngle: -45 });
+  });
+
+  it('snaps floating point residue around quarter turns', () => {
+    expect(splitRotation(-90.000_000_000_000_01)).toEqual({ quarterTurn: 270, straightenAngle: 0 });
+    expect(splitRotation(90.000_000_000_000_01)).toEqual({ quarterTurn: 90, straightenAngle: 0 });
+  });
+
+  it('inverts straighten rotation for a single mirror', () => {
+    expect(
+      getEffectiveStraightenRotation(43, [
+        { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+      ]),
+    ).toBe(-43);
+    expect(
+      getEffectiveStraightenRotation(43, [
+        { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+        { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
+      ]),
+    ).toBe(43);
+    expect(
+      getEffectiveStraightenRotation(100, [
+        { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+      ]),
+    ).toBe(80);
+  });
+
+  it('extracts a centered straighten crop inside the rotated canvas', () => {
+    const rect = getStraightenExtractRectangle(
+      { x: 250, y: 200, width: 500, height: 400 },
+      { width: 1000, height: 800 },
+      10,
+    );
+    const target = getRotatedCanvasDimensions({ width: 1000, height: 800 }, 10);
+
+    expect(rect.width).toBeGreaterThan(0);
+    expect(rect.height).toBeGreaterThan(0);
+    expect(rect.left).toBeGreaterThanOrEqual(0);
+    expect(rect.top).toBeGreaterThanOrEqual(0);
+    expect(rect.left + rect.width).toBeLessThanOrEqual(target.width);
+    expect(rect.top + rect.height).toBeLessThanOrEqual(target.height);
+  });
+
+  it('extracts an unclamped crop when clamp = false', () => {
+    const rect = getStraightenExtractRectangle(
+      { x: -500, y: -500, width: 500, height: 400 },
+      { width: 1000, height: 800 },
+      10,
+      [],
+      false,
+    );
+
+    expect(rect.left).toBeLessThan(0);
+    expect(rect.top).toBeLessThan(0);
+  });
+
+  it('preserves an off-center crop by moving the extract center', () => {
+    const centered = getStraightenExtractRectangle(
+      { x: 250, y: 200, width: 500, height: 400 },
+      { width: 1000, height: 800 },
+      10,
+    );
+    const moved = getStraightenExtractRectangle(
+      { x: 100, y: 200, width: 500, height: 400 },
+      { width: 1000, height: 800 },
+      10,
+    );
+
+    expect(moved.left).toBeLessThan(centered.left);
+  });
+
+  it('does not rotate straightened crop-center movement a second time', () => {
+    const upper = getStraightenExtractRectangle(
+      { x: 100, y: 40, width: 800, height: 500 },
+      { width: 1000, height: 800 },
+      10,
+    );
+    const lower = getStraightenExtractRectangle(
+      { x: 100, y: 200, width: 800, height: 500 },
+      { width: 1000, height: 800 },
+      10,
+    );
+
+    expect(lower.left).toBe(upper.left);
+    expect(lower.top).toBeGreaterThan(upper.top);
+  });
+
+  it('swaps crop dimensions for quarter-turn straighten edits', () => {
+    const rect = getStraightenExtractRectangle(
+      { x: 250, y: 200, width: 500, height: 300 },
+      { width: 1000, height: 800 },
+      100,
+    );
+
+    expect(rect.width).toBeLessThan(rect.height);
+  });
+
+  it('maps mirrored straighten crop coordinates after the mirror transform', () => {
+    const unmirrored = getStraightenExtractRectangle(
+      { x: 100, y: 200, width: 300, height: 300 },
+      { width: 1000, height: 800 },
+      10,
+    );
+    const mirrored = getStraightenExtractRectangle(
+      { x: 100, y: 200, width: 300, height: 300 },
+      { width: 1000, height: 800 },
+      10,
+      [{ action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } }],
+    );
+
+    expect(mirrored.left).not.toBe(unmirrored.left);
+    expect(mirrored.top).toBe(unmirrored.top);
+  });
+
+  it('keeps mirrored straighten crop-center movement in crop space', () => {
+    const imageSize = { width: 1000, height: 800 };
+
+    const horizontal = getStraightenExtractRectangle({ x: 100, y: 240, width: 300, height: 300 }, imageSize, 10, [
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+    ]);
+    const horizontalMoved = getStraightenExtractRectangle({ x: 200, y: 240, width: 300, height: 300 }, imageSize, 10, [
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+    ]);
+
+    expect(horizontalMoved.left).toBeLessThan(horizontal.left);
+    expect(horizontalMoved.top).toBe(horizontal.top);
+
+    const vertical = getStraightenExtractRectangle({ x: 200, y: 140, width: 300, height: 300 }, imageSize, 10, [
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
+    ]);
+    const verticalMoved = getStraightenExtractRectangle({ x: 200, y: 240, width: 300, height: 300 }, imageSize, 10, [
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
+    ]);
+
+    expect(verticalMoved.left).toBe(vertical.left);
+    expect(verticalMoved.top).toBeLessThan(vertical.top);
+  });
+
+  it('uses mirrored quarter-turn direction for crop movement after a single mirror', () => {
+    const imageSize = { width: 1000, height: 800 };
+    const mirror: AssetEditActionItem[] = [
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
+    ];
+
+    const upper = getStraightenExtractRectangle({ x: 350, y: 100, width: 300, height: 300 }, imageSize, 240, mirror);
+    const lower = getStraightenExtractRectangle({ x: 350, y: 300, width: 300, height: 300 }, imageSize, 240, mirror);
+
+    expect(lower.left).toBeLessThan(upper.left);
+    expect(lower.top).toBe(upper.top);
+  });
+
+  it('maps mirrored straighten crop coordinates across quarter-turn rotation', () => {
+    const mirrored = getStraightenExtractRectangle(
+      { x: 600, y: 200, width: 300, height: 300 },
+      { width: 1000, height: 800 },
+      100,
+      [{ action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } }],
+    );
+    const target = getRotatedCanvasDimensions({ width: 1000, height: 800 }, 100);
+
+    expect(mirrored.left).toBeGreaterThanOrEqual(0);
+    expect(mirrored.top).toBeGreaterThanOrEqual(0);
+    expect(mirrored.left + mirrored.width).toBeLessThanOrEqual(target.width);
+    expect(mirrored.top + mirrored.height).toBeLessThanOrEqual(target.height);
+  });
+
+  it('maps both mirrored axes with quarter-turn straighten rotation', () => {
+    const imageSize = { width: 1000, height: 800 };
+    const bothMirrors: AssetEditActionItem[] = [
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+      { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Vertical } },
+    ];
+
+    const rect = getStraightenExtractRectangle(
+      { x: 350, y: 220, width: 360, height: 280 },
+      imageSize,
+      100,
+      bothMirrors,
+    );
+    const target = getRotatedCanvasDimensions(imageSize, 100);
+
+    expect(rect).toEqual({ left: 331, top: 387, width: 233, height: 300 });
+    expect(rect.left + rect.width).toBeLessThanOrEqual(target.width);
+    expect(rect.top + rect.height).toBeLessThanOrEqual(target.height);
+  });
+});
 
 describe('boundingBoxOverlap', () => {
   it('should return 1 for identical boxes', () => {
