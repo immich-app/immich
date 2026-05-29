@@ -10,7 +10,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
@@ -20,21 +19,14 @@ class UploadRepository {
   void Function(TaskProgressUpdate)? onTaskProgress;
 
   UploadRepository() {
-    FileDownloader().registerCallbacks(
-      group: kBackupGroup,
-      taskStatusCallback: (update) => onUploadStatus?.call(update),
-      taskProgressCallback: (update) => onTaskProgress?.call(update),
-    );
-    FileDownloader().registerCallbacks(
-      group: kBackupLivePhotoGroup,
-      taskStatusCallback: (update) => onUploadStatus?.call(update),
-      taskProgressCallback: (update) => onTaskProgress?.call(update),
-    );
-    FileDownloader().registerCallbacks(
-      group: kManualUploadGroup,
-      taskStatusCallback: (update) => onUploadStatus?.call(update),
-      taskProgressCallback: (update) => onTaskProgress?.call(update),
-    );
+    final downloader = FileDownloader();
+    for (final group in const [kBackupGroup, kBackupLivePhotoGroup, kManualUploadGroup]) {
+      downloader.registerCallbacks(
+        group: group,
+        taskStatusCallback: onUploadStatus,
+        taskProgressCallback: onTaskProgress,
+      );
+    }
   }
 
   Future<void> enqueueBackground(UploadTask task) {
@@ -66,28 +58,6 @@ class UploadRepository {
     return FileDownloader().start();
   }
 
-  Future<void> getUploadInfo() async {
-    final [enqueuedTasks, runningTasks, canceledTasks, waitingTasks, pausedTasks] = await Future.wait([
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.enqueued, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.running, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.canceled, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.waitingToRetry, group: kBackupGroup),
-      FileDownloader().database.allRecordsWithStatus(TaskStatus.paused, group: kBackupGroup),
-    ]);
-
-    dPrint(
-      () =>
-          """
-      Upload Info:
-      Enqueued: ${enqueuedTasks.length}
-      Running: ${runningTasks.length}
-      Canceled: ${canceledTasks.length}
-      Waiting: ${waitingTasks.length}
-      Paused: ${pausedTasks.length}
-    """,
-    );
-  }
-
   Future<UploadResult> uploadFile({
     required File file,
     required String originalFileName,
@@ -111,41 +81,30 @@ class UploadRepository {
       baseRequest.fields.addAll(fields);
       baseRequest.files.add(assetRawUploadData);
 
-      final response = await NetworkRepository.client.send(baseRequest);
-      final responseBodyString = await response.stream.bytesToString();
+      final StreamedResponse(:statusCode, :stream) = await NetworkRepository.client.send(baseRequest);
+      final responseBodyString = await stream.bytesToString();
 
-      if (![200, 201].contains(response.statusCode)) {
-        String? errorMessage;
-
-        if (response.statusCode == 413) {
-          errorMessage = 'Error(413) File is too large to upload';
-          return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
-        }
-
-        try {
-          final error = jsonDecode(responseBodyString);
-          errorMessage = error['message'] ?? error['error'];
-        } catch (_) {
-          errorMessage = responseBodyString.isNotEmpty
-              ? responseBodyString
-              : 'Upload failed with status ${response.statusCode}';
-        }
-
-        return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
-      }
-
-      try {
-        final responseBody = jsonDecode(responseBodyString);
-        return UploadResult.success(remoteAssetId: responseBody['id'] as String);
-      } catch (e) {
-        return UploadResult.error(errorMessage: 'Failed to parse server response');
-      }
+      return switch ((statusCode, _tryJsonDecode(responseBodyString))) {
+        (200 || 201, {'id': String id}) => UploadSuccess(remoteAssetId: id),
+        (413, _) => const UploadError(statusCode: 413, message: 'File is too large to upload'),
+        (_, {'message': String message}) => UploadError(statusCode: statusCode, message: message),
+        _ => UploadError(statusCode: statusCode, message: 'Upload failed with status $statusCode'),
+      };
     } on RequestAbortedException {
       logger.warning("Upload $logContext was cancelled");
-      return UploadResult.cancelled();
+      return const UploadCancelled();
     } catch (error, stackTrace) {
       logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
-      return UploadResult.error(errorMessage: error.toString());
+      return UploadError(message: error.toString());
+    }
+  }
+
+  @pragma('vm:prefer-inline')
+  Map? _tryJsonDecode(String s) {
+    try {
+      return (jsonDecode(s) as Map);
+    } catch (_) {
+      return null;
     }
   }
 }
@@ -180,30 +139,23 @@ class ProgressMultipartRequest extends MultipartRequest with Abortable {
   }
 }
 
-class UploadResult {
-  final bool isSuccess;
-  final bool isCancelled;
-  final String? remoteAssetId;
-  final String? errorMessage;
+sealed class UploadResult {
+  const UploadResult();
+}
+
+final class UploadSuccess extends UploadResult {
+  final String remoteAssetId;
+
+  const UploadSuccess({required this.remoteAssetId});
+}
+
+final class UploadError extends UploadResult {
+  final String message;
   final int? statusCode;
 
-  const UploadResult({
-    required this.isSuccess,
-    required this.isCancelled,
-    this.remoteAssetId,
-    this.errorMessage,
-    this.statusCode,
-  });
+  const UploadError({required this.message, this.statusCode});
+}
 
-  factory UploadResult.success({required String remoteAssetId}) {
-    return UploadResult(isSuccess: true, isCancelled: false, remoteAssetId: remoteAssetId);
-  }
-
-  factory UploadResult.error({String? errorMessage, int? statusCode}) {
-    return UploadResult(isSuccess: false, isCancelled: false, errorMessage: errorMessage, statusCode: statusCode);
-  }
-
-  factory UploadResult.cancelled() {
-    return const UploadResult(isSuccess: false, isCancelled: true);
-  }
+final class UploadCancelled extends UploadResult {
+  const UploadCancelled();
 }

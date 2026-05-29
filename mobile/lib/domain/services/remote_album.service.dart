@@ -234,24 +234,13 @@ class RemoteAlbumService {
     final pendingAdds = <Future<void>>[];
     final localById = {for (final a in localAssets) a.id: a};
 
+    final UploadCallbacks(:onProgress, :onSuccess, :onError, :onICloudProgress) = userCallbacks;
     final wrappedCallbacks = UploadCallbacks(
-      onProgress: (localId, filename, bytes, totalBytes) => _runUploadCallback(
-        'Upload progress callback failed for $localId',
-        () => userCallbacks.onProgress?.call(localId, filename, bytes, totalBytes),
-      ),
-      onICloudProgress: (localId, progress) => _runUploadCallback(
-        'iCloud progress callback failed for $localId',
-        () => userCallbacks.onICloudProgress?.call(localId, progress),
-      ),
-      onError: (localId, errorMessage) => _runUploadCallback(
-        'Upload error callback failed for $localId',
-        () => userCallbacks.onError?.call(localId, errorMessage),
-      ),
+      onProgress: onProgress,
+      onICloudProgress: onICloudProgress,
+      onError: onError,
       onSuccess: (localId, remoteId) {
-        _runUploadCallback(
-          'Upload success callback failed for $localId',
-          () => userCallbacks.onSuccess?.call(localId, remoteId),
-        );
+        onSuccess?.call(localId, remoteId);
         final source = localById[localId];
         if (source == null) {
           _logger.warning('Upload success for $localId but source LocalAsset missing; skipping album link');
@@ -259,29 +248,22 @@ class RemoteAlbumService {
         }
         pendingAdds.add(
           _linkUploadedAssetToAlbum(albumId, remoteId, uploader, source)
-              .then<void>((added) {
-                addedCount += added;
-              })
-              .catchError((Object error, StackTrace stack) {
-                _logger.warning('Failed to add uploaded asset $remoteId to album $albumId', error, stack);
-              }),
+              .then<void>((added) => addedCount += added)
+              .onError(
+                (error, stack) =>
+                    _logger.warning('Failed to add uploaded asset $remoteId to album $albumId', error, stack),
+              ),
         );
       },
     );
 
-    await _uploadService.uploadManual(localAssets, callbacks: wrappedCallbacks);
+    await _uploadService.uploadManual(localAssets, cancelToken: null, callbacks: wrappedCallbacks);
     await Future.wait(pendingAdds);
     return addedCount;
   }
 
-  void _runUploadCallback(String message, void Function() callback) {
-    try {
-      callback();
-    } catch (error, stack) {
-      _logger.warning(message, error, stack);
-    }
-  }
-
+  // TODO: this is a poorly designed flow; adding a "stub" just to satisfy FK constraints is hacky,
+  // it goes out of its way to insert one at a time, and it swallows errors that should be surfaced to the user.
   /// Links a freshly-uploaded asset to an album, ensuring the local DB
   /// reflects the change without waiting for the next sync. We call the API
   /// (server is the source of truth), then upsert a placeholder
