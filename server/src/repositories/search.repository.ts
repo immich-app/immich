@@ -507,15 +507,13 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
-  // ---------------------------------------------------------------------------
-  // v3 SQL coverage scaffolding — these methods exist solely to give the SQL
-  // generator structurally distinct snapshots of the new `searchAssetBuilder`.
-  // They have no consumer yet. PR 2 rewires the legacy methods above to use
-  // `searchAssetBuilder` and deletes these scaffolding methods.
-  // ---------------------------------------------------------------------------
-
   @GenerateSql(
     { name: 'baseline', params: [{ size: 100 }, { userIds: [DummyValue.UUID] }] },
+    { name: 'empty', params: [{ size: 100 }, {}] },
+    {
+      name: 'or-exif-only',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { or: [{ city: { eq: DummyValue.STRING } }] } }],
+    },
     {
       name: 'string-eq-null',
       params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { city: { eq: null } } }],
@@ -549,6 +547,10 @@ export class SearchRepository {
         { size: 100 },
         { userIds: [DummyValue.UUID], filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
       ],
+    },
+    {
+      name: 'ids-all-single',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { albumIds: { all: [DummyValue.UUID] } } }],
     },
     {
       name: 'ids-none',
