@@ -2,21 +2,18 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAlbumInfo } from '@immich/sdk';
 
-  // Shared across all step cards so the same album is only fetched once. This is a plain
-  // (non-reactive) memoization cache — it is read and written during render, so it must not
-  // be a SvelteMap, which would throw `state_unsafe_mutation` when written inside `{#await}`.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const albumNameCache = new Map<string, Promise<string>>();
 
   const getAlbumName = (id: string): Promise<string> => {
-    let promise = albumNameCache.get(id);
-    if (!promise) {
-      promise = getAlbumInfo({ ...authManager.params, id })
+    let albumName = albumNameCache.get(id);
+    if (!albumName) {
+      albumName = getAlbumInfo({ ...authManager.params, id })
         .then((album) => album.albumName)
         .catch(() => id);
-      albumNameCache.set(id, promise);
+      albumNameCache.set(id, albumName);
     }
-    return promise;
+    return albumName;
   };
 </script>
 
