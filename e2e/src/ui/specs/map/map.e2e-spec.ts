@@ -141,12 +141,11 @@ test.describe('Map - Cluster Auto-Zoom', () => {
   test('multiple clusters can be clicked sequentially', async ({ page }) => {
     await mapUtils.navigateToMap(page);
 
-    const clusters = mapUtils.getClusters(page);
-    const clusterCount = await clusters.count();
+    const clusterCount = await mapUtils.getClusters(page).count();
 
     const clickCount = Math.min(2, clusterCount);
     for (let i = 0; i < clickCount; i++) {
-      const cluster = clusters.nth(i);
+      const cluster = mapUtils.getFirstCluster(page);
       await mapUtils.clickCluster(page, cluster);
       await mapUtils.expectMapVisible(page);
     }

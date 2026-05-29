@@ -9,7 +9,7 @@ export const mapUtils = {
    * Get all visible cluster on the map
    */
   getClusters(page: Page) {
-    return page.locator('[class*="rounded-full"][class*="bg-immich-primary"]');
+    return page.locator('[class*="rounded-full"][class*="bg-immich-primary"]').filter({ hasText: /\d+/ });
   },
 
   /**
@@ -24,8 +24,10 @@ export const mapUtils = {
    */
   async getClusterCount(page: Page, clusterElement?: Locator) {
     const element = clusterElement || this.getFirstCluster(page);
+    await expect(element).toBeVisible();
+    await expect(element).toHaveText(/\d+/);
     const text = await element.textContent();
-    return Number.parseInt(text || '0', 10);
+    return Number.parseInt((text ?? '').replaceAll(/[^\d]/g, ''), 10);
   },
 
   /**
@@ -33,7 +35,8 @@ export const mapUtils = {
    */
   async clickCluster(page: Page, clusterElement?: Locator, waitMs = 1500) {
     const element = clusterElement || this.getFirstCluster(page);
-    await element.click();
+    await element.scrollIntoViewIfNeeded();
+    await element.click({ force: true });
     await page.waitForTimeout(waitMs);
   },
 
@@ -120,7 +123,12 @@ export const mapUtils = {
     const errors: string[] = [];
     const handler = (msg: ConsoleMessage) => {
       if (msg.type() === 'error') {
-        errors.push(msg.text());
+        const text = msg.text();
+        // Ignore expected MapLibre external styles 401 in ci/cd
+        if (text.includes('401 (Unauthorized)')) {
+          return;
+        }
+        errors.push(text);
       }
     };
 

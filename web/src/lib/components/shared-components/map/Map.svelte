@@ -431,6 +431,7 @@
             type="button"
             class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
             title={$t('map_settings')}
+            aria-label={$t('map_settings')}
             onclick={handleSettingsClick}
           >
             <Icon icon={mdiCog} size="24" />
@@ -442,6 +443,7 @@
             type="button"
             class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
             title={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
+            aria-label={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
             aria-pressed={isGlobeView}
             onclick={toggleMapProjection}
           >
@@ -452,6 +454,7 @@
             type="button"
             class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
             title={isFullscreen ? $t('exit_fullscreen') : $t('fullscreen')}
+            aria-label={isFullscreen ? $t('exit_fullscreen') : $t('fullscreen')}
             onclick={toggleFullscreen}
           >
             <Icon icon={isFullscreen ? mdiFullscreenExit : mdiFullscreen} size="24" />
@@ -463,6 +466,7 @@
             type="button"
             class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
             title={$t('open_in_map_view')}
+            aria-label={$t('open_in_map_view')}
             onclick={() => void onOpenInMapView()}
           >
             <Icon icon={mdiMap} size="24" />
@@ -474,6 +478,7 @@
             type="button"
             class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
             title={$t('timeline')}
+            aria-label={$t('timeline')}
             onclick={() => onToggleTimeline?.()}
           >
             <Icon
@@ -498,6 +503,7 @@
             type="button"
             class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
             title={$t('geolocate')}
+            aria-label={$t('geolocate')}
             onclick={handleLocate}
           >
             <Icon icon={mdiCrosshairsGps} size="24" />
@@ -510,6 +516,7 @@
               type="button"
               class="flex size-11 items-center justify-center bg-white/70 text-black/80 transition-all hover:bg-white/90 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
               title={$t('zoom_in')}
+              aria-label={$t('zoom_in')}
               onclick={() => map.zoomIn()}
             >
               <Icon icon={mdiPlus} size="24" />
@@ -519,6 +526,7 @@
               type="button"
               class="flex size-11 items-center justify-center bg-white/70 text-black/80 transition-all hover:bg-white/90 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
               title={$t('zoom_out')}
+              aria-label={$t('zoom_out')}
               onclick={() => map.zoomOut()}
             >
               <Icon icon={mdiMinus} size="24" />
