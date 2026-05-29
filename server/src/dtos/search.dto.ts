@@ -328,26 +328,6 @@ const SearchFilterSchema = SearchFilterBranchSchema.extend({
   or: z.array(SearchFilterBranchSchema).min(1).optional(),
 }).meta({ id: 'SearchFilter' });
 
-export {
-  BoolFilterSchema,
-  DateFilterNullableSchema,
-  DateFilterSchema,
-  EnumFilterAssetTypeSchema,
-  EnumFilterAssetVisibilitySchema,
-  IdFilterNullableSchema,
-  IdFilterSchema,
-  IdsFilterSchema,
-  NumberFilterNullableSchema,
-  NumberFilterSchema,
-  SearchFilterBranchSchema,
-  SearchFilterSchema,
-  SearchOrderSchema,
-  StringFilterNullableSchema,
-  StringFilterSchema,
-  StringPatternFilterSchema,
-  StringSimilarityFilterSchema,
-};
-
 export type IdFilter = z.infer<typeof IdFilterSchema>;
 export type IdFilterNullable = z.infer<typeof IdFilterNullableSchema>;
 export type IdsFilter = z.infer<typeof IdsFilterSchema>;
@@ -358,8 +338,6 @@ export type NumberFilter = z.infer<typeof NumberFilterSchema>;
 export type NumberFilterNullable = z.infer<typeof NumberFilterNullableSchema>;
 export type DateFilter = z.infer<typeof DateFilterSchema>;
 export type DateFilterNullable = z.infer<typeof DateFilterNullableSchema>;
-export type BoolFilter = z.infer<typeof BoolFilterSchema>;
-export type StringSimilarityFilter = z.infer<typeof StringSimilarityFilterSchema>;
 export type SearchOrder = z.infer<typeof SearchOrderSchema>;
 export type SearchFilter = z.infer<typeof SearchFilterSchema>;
 export type SearchFilterBranch = z.infer<typeof SearchFilterBranchSchema>;
