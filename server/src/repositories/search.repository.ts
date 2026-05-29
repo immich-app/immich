@@ -6,7 +6,7 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilder, withExifInner } from 'src/utils/database';
+import { anyUuid, searchAssetBuilderLegacy, withExifInner } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import z from 'zod';
 
@@ -196,7 +196,7 @@ export class SearchRepository {
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
-    const items = await searchAssetBuilder(this.db, options)
+    const items = await searchAssetBuilderLegacy(this.db, options)
       .selectAll('asset')
       .orderBy('asset.fileCreatedAt', orderDirection)
       .limit(pagination.size + 1)
@@ -217,7 +217,7 @@ export class SearchRepository {
     ],
   })
   searchStatistics(options: AssetSearchOptions) {
-    return searchAssetBuilder(this.db, options)
+    return searchAssetBuilderLegacy(this.db, options)
       .select((qb) => qb.fn.countAll<number>().as('total'))
       .executeTakeFirstOrThrow();
   }
@@ -235,7 +235,7 @@ export class SearchRepository {
     ],
   })
   async searchRandom(size: number, options: AssetSearchOptions) {
-    return searchAssetBuilder(this.db, options)
+    return searchAssetBuilderLegacy(this.db, options)
       .selectAll('asset')
       .orderBy(sql`random()`)
       .limit(size)
@@ -256,7 +256,7 @@ export class SearchRepository {
   })
   searchLargeAssets(size: number, options: LargeAssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
-    return searchAssetBuilder(this.db, options)
+    return searchAssetBuilderLegacy(this.db, options)
       .selectAll('asset')
       .$call(withExifInner)
       .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
@@ -285,7 +285,7 @@ export class SearchRepository {
 
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
-      const items = await searchAssetBuilder(trx, options)
+      const items = await searchAssetBuilderLegacy(trx, options)
         .selectAll('asset')
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)

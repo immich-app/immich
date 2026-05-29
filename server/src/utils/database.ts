@@ -502,7 +502,7 @@ export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditAction
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
-export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
+export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
 
   return kysely
