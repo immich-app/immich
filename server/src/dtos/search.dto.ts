@@ -214,6 +214,7 @@ const StringPatternFilterSchema = atLeastOneKey(
 const NumberFilterSchema = atLeastOneKey(
   z.strictObject({
     eq: z.number().optional(),
+    ne: z.number().optional(),
     lt: z.number().optional(),
     lte: z.number().optional(),
     gt: z.number().optional(),
