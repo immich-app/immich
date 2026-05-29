@@ -281,6 +281,135 @@ export function hasTags<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagIds: strin
   );
 }
 
+export function inAlbumsAny<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('album_asset')
+        .select('assetId')
+        .where('albumId', '=', anyUuid(albumIds))
+        .groupBy('assetId')
+        .as('in_albums_any'),
+    (join) => join.onRef('in_albums_any.assetId', '=', 'asset.id'),
+  );
+}
+
+export function inAlbumsAll<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('album_asset')
+        .select('assetId')
+        .where('albumId', '=', anyUuid(albumIds))
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('albumId').distinct(), '=', albumIds.length)
+        .as('in_albums_all'),
+    (join) => join.onRef('in_albums_all.assetId', '=', 'asset.id'),
+  );
+}
+
+export function inAlbumsNone<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
+  return qb.where(({ not, exists, selectFrom }) =>
+    not(
+      exists(
+        selectFrom('album_asset')
+          .select('assetId')
+          .whereRef('album_asset.assetId', '=', 'asset.id')
+          .where('albumId', '=', anyUuid(albumIds)),
+      ),
+    ),
+  );
+}
+
+export function hasPeopleAny<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_face')
+        .select('assetId')
+        .where('personId', '=', anyUuid(personIds))
+        .where('deletedAt', 'is', null)
+        .where('isVisible', 'is', true)
+        .groupBy('assetId')
+        .as('has_people_any'),
+    (join) => join.onRef('has_people_any.assetId', '=', 'asset.id'),
+  );
+}
+
+export function hasPeopleAll<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_face')
+        .select('assetId')
+        .where('personId', '=', anyUuid(personIds))
+        .where('deletedAt', 'is', null)
+        .where('isVisible', 'is', true)
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        .as('has_people_all'),
+    (join) => join.onRef('has_people_all.assetId', '=', 'asset.id'),
+  );
+}
+
+export function hasPeopleNone<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+  return qb.where(({ not, exists, selectFrom }) =>
+    not(
+      exists(
+        selectFrom('asset_face')
+          .select('assetId')
+          .whereRef('asset_face.assetId', '=', 'asset.id')
+          .where('personId', '=', anyUuid(personIds))
+          .where('deletedAt', 'is', null)
+          .where('isVisible', 'is', true),
+      ),
+    ),
+  );
+}
+
+export function hasTagsAny<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetId')
+        .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+        .where('tag_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetId')
+        .as('has_tags_any'),
+    (join) => join.onRef('has_tags_any.assetId', '=', 'asset.id'),
+  );
+}
+
+export function hasTagsAll<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetId')
+        .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+        .where('tag_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        .as('has_tags_all'),
+    (join) => join.onRef('has_tags_all.assetId', '=', 'asset.id'),
+  );
+}
+
+export function hasTagsNone<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagIds: string[]) {
+  return qb.where(({ not, exists, selectFrom }) =>
+    not(
+      exists(
+        selectFrom('tag_asset')
+          .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+          .select('tag_asset.assetId')
+          .whereRef('tag_asset.assetId', '=', 'asset.id')
+          .where('tag_closure.id_ancestor', '=', anyUuid(tagIds)),
+      ),
+    ),
+  );
+}
+
 export function withOwner(eb: ExpressionBuilder<DB, 'asset'>) {
   return jsonObjectFrom(eb.selectFrom('user').select(columns.user).whereRef('user.id', '=', 'asset.ownerId')).as(
     'owner',
