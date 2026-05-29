@@ -1,8 +1,8 @@
-import { WorkflowStepConfig } from '@immich/plugin-sdk';
+import { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { Kysely } from 'kysely';
 import { readFileSync } from 'node:fs';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { AssetVisibility, LogLevel, WorkflowTrigger } from 'src/enum';
+import { AssetVisibility, LogLevel } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -12,6 +12,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { DB } from 'src/schema';
 import { WorkflowExecutionService } from 'src/services/workflow-execution.service';
@@ -33,8 +34,9 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
         CryptoRepository,
         DatabaseRepository,
         LoggingRepository,
-        StorageRepository,
         PluginRepository,
+        StorageRepository,
+        UserRepository,
         WorkflowRepository,
       ],
       mock: [ConfigRepository],
@@ -231,6 +233,52 @@ describe('core plugin', () => {
   });
 
   describe('assetAddToAlbums', () => {
+    it('should create an album by name', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, isFavorite: true });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [{ method: 'immich-plugin-core#assetAddToAlbums', config: { albumIds: [], albumName: 'Screenshots' } }],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+
+      const albums = await ctx.get(AlbumRepository).getAll(user.id);
+      expect(albums).toHaveLength(1);
+
+      const album = albums[0]!;
+      expect(album.albumName).toEqual('Screenshots');
+
+      const updated = await ctx.get(WorkflowRepository).get(workflow.id);
+      expect(updated?.steps[0].config).toEqual({ albumIds: [album.id], albumName: 'Screenshots' });
+
+      await expect(ctx.get(AlbumRepository).getAssetIds(album.id, [asset.id])).resolves.toContain(asset.id);
+    });
+
+    it('should not use the name when there is an albumId', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, isFavorite: true });
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          { method: 'immich-plugin-core#assetAddToAlbums', config: { albumIds: [album.id], albumName: 'Screenshots' } },
+        ],
+      });
+
+      const albums = await ctx.get(AlbumRepository).getAll(user.id);
+      expect(albums).toHaveLength(1);
+      expect(albums[0].albumName).toEqual(album.albumName);
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+
+      await expect(ctx.get(AlbumRepository).getAssetIds(album.id, [asset.id])).resolves.toContain(asset.id);
+    });
+
     it('should add an asset to an album', async () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id, isFavorite: true });

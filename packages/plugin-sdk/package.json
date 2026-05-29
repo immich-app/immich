@@ -2,7 +2,6 @@
   "name": "@immich/plugin-sdk",
   "version": "0.0.0",
   "description": "",
-  "main": "index.js",
   "type": "module",
   "exports": {
     "./host-functions": {
@@ -11,7 +10,8 @@
     },
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {

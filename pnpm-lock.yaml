@@ -320,6 +320,9 @@ importers:
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../plugin-sdk
+      '@immich/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
