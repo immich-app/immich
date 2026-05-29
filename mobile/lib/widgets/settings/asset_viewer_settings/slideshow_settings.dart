@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -23,19 +23,19 @@ class SlideshowSettings extends HookConsumerWidget {
     final useDirection = useState(slideshow.direction);
 
     useValueChanged<bool, void>(useTransition.value, (_, __) {
-      ref.read(metadataProvider).write(.slideshowTransition, useTransition.value);
+      ref.read(settingsProvider).write(.slideshowTransition, useTransition.value);
     });
     useValueChanged<bool, void>(useRepeat.value, (_, __) {
-      ref.read(metadataProvider).write(.slideshowRepeat, useRepeat.value);
+      ref.read(settingsProvider).write(.slideshowRepeat, useRepeat.value);
     });
     useValueChanged<int, void>(useDuration.value, (_, __) {
-      ref.read(metadataProvider).write(.slideshowDuration, useDuration.value);
+      ref.read(settingsProvider).write(.slideshowDuration, useDuration.value);
     });
     useValueChanged<SlideshowLook, void>(useLook.value, (_, __) {
-      ref.read(metadataProvider).write(.slideshowLook, useLook.value);
+      ref.read(settingsProvider).write(.slideshowLook, useLook.value);
     });
     useValueChanged<SlideshowDirection, void>(useDirection.value, (_, __) {
-      ref.read(metadataProvider).write(.slideshowDirection, useDirection.value);
+      ref.read(settingsProvider).write(.slideshowDirection, useDirection.value);
     });
 
     return Column(

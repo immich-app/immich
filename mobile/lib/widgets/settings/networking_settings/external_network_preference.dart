@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
 class ExternalNetworkPreference extends HookConsumerWidget {
@@ -26,7 +26,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
           .map((e) => e.url)
           .toList();
 
-      ref.read(metadataProvider).write(MetadataKey.networkExternalEndpointList, urls);
+      ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
     }
 
     updateValidationStatus(String url, int index, AuxCheckStatus status) {

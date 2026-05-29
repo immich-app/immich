@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-class MetadataEntity extends Table with DriftDefaultsMixin {
-  const MetadataEntity();
+class SettingsEntity extends Table with DriftDefaultsMixin {
+  const SettingsEntity();
 
   TextColumn get key => text()();
 
@@ -14,5 +14,5 @@ class MetadataEntity extends Table with DriftDefaultsMixin {
   Set<Column> get primaryKey => {key};
 
   @override
-  String get tableName => "metadata";
+  String get tableName => "settings";
 }

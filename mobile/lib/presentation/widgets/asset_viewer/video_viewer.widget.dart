@@ -12,7 +12,7 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -128,7 +128,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final remoteId = (videoAsset as RemoteAsset).id;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-      final isOriginalVideo = ref.read(metadataProvider).appConfig.viewer.loadOriginalVideo;
+      final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String videoUrl = videoAsset.livePhotoVideoId != null
           ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
@@ -161,7 +161,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    final autoPlayVideo = ref.read(metadataProvider).appConfig.viewer.autoPlayVideo;
+    final autoPlayVideo = ref.read(appConfigProvider).viewer.autoPlayVideo;
     if (autoPlayVideo || widget.asset.isMotionPhoto) {
       await _notifier.play();
     }
@@ -212,7 +212,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     await _notifier.load(source);
-    final loopVideo = ref.read(metadataProvider).appConfig.viewer.loopVideo;
+    final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
     await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
     await _notifier.setVolume(1);
   }

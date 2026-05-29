@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 
 void main() {
-  group('MetadataKey', () {
-    for (final key in MetadataKey.values) {
+  group('SettingsKey', () {
+    for (final key in SettingsKey.values) {
       test('verify codec for $key', () {
         final defaultValue = defaultConfig.read(key);
         final encoded = key.encode(defaultValue);
