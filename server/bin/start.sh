@@ -16,10 +16,10 @@ log_message() {
 log_message "Initializing Immich $IMMICH_SOURCE_REF"
 
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.3"
-if [ -f "$lib_path" ]; then
+if [ -f "$lib_path" ] && [ "${IMMICH_DISABLE_MIMALLOC:-false}" != "true" ]; then
   export LD_PRELOAD="$lib_path"
 else
-  echo "skipping libmimalloc - path not found $lib_path"
+  echo "skipping libmimalloc"
 fi
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
 SERVER_HOME="$(readlink -f "$(dirname "$0")/..")"
