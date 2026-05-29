@@ -210,34 +210,13 @@ class RemoteAlbumService {
     return addedCount;
   }
 
-  /// Creates an album, seeding it with already-remote asset IDs, then uploads
-  /// local-only assets and links each one as it finishes.
-  Future<RemoteAlbum> createAlbumWithAssets({
-    required String title,
-    required UserDto owner,
-    String? description,
-    AlbumAssetCandidates candidates = const AlbumAssetCandidates(remoteAssetIds: [], localAssetsToUpload: []),
-    UploadCallbacks uploadCallbacks = const UploadCallbacks(),
-  }) async {
-    final album = await createAlbum(
-      title: title,
-      owner: owner,
-      description: description,
-      assetIds: candidates.remoteAssetIds,
-    );
-    if (candidates.localAssetsToUpload.isNotEmpty) {
-      await _uploadAndAddLocals(album.id, owner, candidates.localAssetsToUpload, uploadCallbacks);
-    }
-    return album;
-  }
-
   Future<int> _uploadAndAddLocals(
     String albumId,
     UserDto uploader,
     List<LocalAsset> localAssets,
-    UploadCallbacks userCallbacks, [
+    UploadCallbacks userCallbacks,
     Completer<void>? cancelToken,
-  ]) async {
+  ) async {
     int addedCount = 0;
     final pendingAdds = <Future<void>>[];
     final localById = {for (final a in localAssets) a.id: a};
