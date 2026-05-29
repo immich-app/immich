@@ -71,10 +71,14 @@ export class MemoryService extends BaseService {
   }
 
   async search(auth: AuthDto, dto: MemorySearchDto) {
-    const memories = await this.memoryRepository.search(auth.user.id, dto);
-    return memories
-      .filter((memory: Memory) => memory.assets && memory.assets.length > 0)
-      .map((memory: Memory) => mapMemory(memory, auth));
+    const { items, hasNextPage } = await this.memoryRepository.search(auth.user.id, dto);
+    const { total } = await this.memoryRepository.statistics(auth.user.id, dto);
+
+    return {
+      total,
+      items: items.map((memory: Memory) => mapMemory(memory, auth)),
+      hasNextPage,
+    };
   }
 
   statistics(auth: AuthDto, dto: MemorySearchDto) {

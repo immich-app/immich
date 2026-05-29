@@ -9,6 +9,7 @@ import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
+import { paginationHelper } from 'src/utils/pagination';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
@@ -57,8 +58,8 @@ export class MemoryRepository implements IBulkAsset {
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
-  search(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilder(ownerId, dto)
+  async search(ownerId: string, dto: MemorySearchDto) {
+    const items = await this.searchBuilder(ownerId, dto)
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -89,8 +90,11 @@ export class MemoryRepository implements IBulkAsset {
           ? qb.orderBy(sql`RANDOM()`)
           : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
       )
-      .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
+      .$if(dto.size !== undefined, (qb) => qb.limit(dto.size! + 1))
+      .$if(dto.page !== undefined && dto.size !== undefined, (qb) => qb.offset((dto.page! - 1) * dto.size!))
       .execute();
+
+    return paginationHelper(items, dto.size ?? items.length);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

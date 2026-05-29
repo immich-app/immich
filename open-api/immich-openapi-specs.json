@@ -6364,6 +6364,17 @@
             }
           },
           {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
             "name": "size",
             "required": false,
             "in": "query",
@@ -6388,10 +6399,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MemoryResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/MemorySearchResponseDto"
                 }
               }
             },
@@ -6530,6 +6538,17 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
             }
           },
           {
@@ -18806,6 +18825,32 @@
           "random"
         ],
         "type": "string"
+      },
+      "MemorySearchResponseDto": {
+        "properties": {
+          "hasNextPage": {
+            "description": "Whether there are more pages",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MemoryResponseDto"
+            },
+            "type": "array"
+          },
+          "total": {
+            "description": "Total number of matching memories",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hasNextPage",
+          "items",
+          "total"
+        ],
+        "type": "object"
       },
       "MemoryStatisticsResponseDto": {
         "properties": {

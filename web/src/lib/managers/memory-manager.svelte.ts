@@ -27,6 +27,8 @@ export type MemoryAsset = MemoryIndex & {
   nextMemory?: MemoryResponseDto;
 };
 
+const PAGE_SIZE = 250;
+
 class MemoryManager {
   #loading: Promise<void> | undefined;
   #filters:
@@ -40,9 +42,15 @@ class MemoryManager {
         $type?: MemoryType;
       }
     | undefined;
+  #hasNextPage: boolean;
+  #page: number;
+  #total: number;
 
   constructor() {
     this.#filters = undefined;
+    this.#hasNextPage = true;
+    this.#page = 1;
+    this.#total = 0;
 
     eventManager.on({
       AuthLogout: () => this.clearCache(),
@@ -64,11 +72,7 @@ class MemoryManager {
   set filters(filters) {
     this.#filters = filters;
     this.clearCache();
-    if (this.#loading === undefined) {
-      this.#loading = this.load();
-    } else {
-      void this.#loading.then(() => (this.#loading = this.load()));
-    }
+    void this.loadNextPage();
   }
 
   ready() {
@@ -151,23 +155,45 @@ class MemoryManager {
     }
   }
 
+  loadNextPage() {
+    if (this.#hasNextPage) {
+      if (this.#loading === undefined) {
+        this.#loading = this.load(this.#page++);
+      } else {
+        void this.#loading.then(() => (this.#loading = this.load(this.#page++)));
+      }
+    }
+  }
+
+  get hasNextPage() {
+    return this.#hasNextPage;
+  }
+
+  get total() {
+    return this.#total;
+  }
+
   private clearCache() {
     this.#loading = undefined;
+    this.#hasNextPage = true;
+    this.#page = 1;
     this.memories = [];
   }
 
   private initialize() {
     if (!this.#loading) {
-      this.#loading = this.load();
+      this.#loading = this.load(this.#page++);
     }
 
     return this.#loading;
   }
 
-  private async load() {
+  private async load(page: number) {
     if (this.#filters !== undefined) {
-      const memories = await searchMemories(this.#filters);
-      this.memories = memories.filter((memory) => memory.assets.length > 0);
+      const { items, hasNextPage, total } = await searchMemories({ ...this.#filters, page, size: PAGE_SIZE });
+      this.memories.push(...items);
+      this.#hasNextPage = hasNextPage;
+      this.#total = total;
     }
   }
 
@@ -182,12 +208,14 @@ class MemoryManager {
     const initialDelay = nextEvent.diff(now).as('milliseconds');
 
     setTimeout(() => {
-      this.#loading = this.load();
+      this.clearCache();
+      this.#loading = this.load(0);
 
       // Schedule subsequent events hourly
       setInterval(
         () => {
-          this.#loading = this.load();
+          this.clearCache();
+          this.#loading = this.load(0);
         },
         60 * 60 * 1000,
       );

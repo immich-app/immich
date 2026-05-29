@@ -14,6 +14,7 @@ const MemorySearchSchema = z
     isTrashed: stringToBool.optional().describe('Include trashed memories'),
     isSaved: stringToBool.optional().describe('Filter by saved status'),
     size: z.coerce.number().int().min(1).optional().describe('Number of memories to return'),
+    page: z.coerce.number().int().min(1).optional().describe('Page number'),
     order: AssetOrderWithRandomSchema.optional(),
   })
   .meta({ id: 'MemorySearchDto' });
@@ -75,11 +76,20 @@ const MemoryResponseSchema = z
   })
   .meta({ id: 'MemoryResponseDto' });
 
+const MemorySearchResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of matching memories'),
+    items: z.array(MemoryResponseSchema),
+    hasNextPage: z.boolean().describe('Whether there are more pages'),
+  })
+  .meta({ id: 'MemorySearchResponseDto' });
+
 export class MemorySearchDto extends createZodDto(MemorySearchSchema) {}
 export class MemoryUpdateDto extends createZodDto(MemoryUpdateSchema) {}
 export class MemoryCreateDto extends createZodDto(MemoryCreateSchema) {}
 export class MemoryStatisticsResponseDto extends createZodDto(MemoryStatisticsResponseSchema) {}
 export class MemoryResponseDto extends createZodDto(MemoryResponseSchema) {}
+export class MemorySearchResponseDto extends createZodDto(MemorySearchResponseSchema) {}
 
 export const mapMemory = (entity: Memory, auth: AuthDto): MemoryResponseDto => {
   return {

@@ -20,15 +20,13 @@
   }
 
   let { data }: Props = $props();
-
-  let memories = $derived(data.memories);
   let onlyFavorites = $state(page.url.searchParams.get('favorites') === 'true');
+  let lastElement: HTMLElement | undefined = $state();
 
   const toggleFavorites = async () => {
     onlyFavorites = !onlyFavorites;
     memoryManager.filters = onlyFavorites ? { isSaved: true } : {};
     await memoryManager.ready();
-    memories = memoryManager.memories;
 
     if (onlyFavorites) {
       void setQueryValue('favorites', 'true');
@@ -36,12 +34,26 @@
       void clearQueryParam('favorites', page.url);
     }
   };
+
+  const intersectionObserver = new IntersectionObserver((entries) => {
+    const entry = entries.find((entry) => entry.target === lastElement);
+    if (entry?.isIntersecting && memoryManager.hasNextPage) {
+      void memoryManager.loadNextPage();
+    }
+  });
+
+  $effect(() => {
+    if (lastElement) {
+      intersectionObserver.disconnect();
+      intersectionObserver.observe(lastElement);
+    }
+  });
 </script>
 
 {#if page.url.searchParams.has(QueryParameter.ID)}
   <MemoryViewer />
 {:else}
-  <UserPageLayout title={data.meta.title} description={`(${memories.length.toLocaleString($locale)})`}>
+  <UserPageLayout title={data.meta.title} description={`(${memoryManager.total.toLocaleString($locale)})`}>
     {#snippet buttons()}
       <div class="flex place-items-center gap-2">
         <Button
@@ -53,10 +65,21 @@
         >
       </div>
     {/snippet}
-    {#if memories.length > 0}
+    {#if memoryManager.memories.length > 0}
       <div class="grid w-full grid-cols-2 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-7">
-        {#each memories as memory (memory.id)}
-          <a href={Route.memories({ id: memory.assets[0].id })} class="item-card relative inline-block aspect-video">
+        {#each memoryManager.memories as memory, index (memory.id)}
+          <a
+            href={Route.memories({ id: memory.assets[0].id })}
+            class="item-card relative inline-block aspect-video"
+            bind:this={
+              () => (index === memoryManager.memories.length - 1 ? lastElement : null),
+              (e) => {
+                if (index === memoryManager.memories.length - 1) {
+                  lastElement = e;
+                }
+              }
+            }
+          >
             {#if memory.isSaved}
               <div class="absolute inset-s-2 top-2 z-2">
                 <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />

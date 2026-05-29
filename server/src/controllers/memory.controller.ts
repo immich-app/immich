@@ -7,6 +7,7 @@ import {
   MemoryCreateDto,
   MemoryResponseDto,
   MemorySearchDto,
+  MemorySearchResponseDto,
   MemoryStatisticsResponseDto,
   MemoryUpdateDto,
 } from 'src/dtos/memory.dto';
@@ -28,7 +29,7 @@ export class MemoryController {
       'Retrieve a list of memories. Memories are sorted descending by creation date by default, although they can also be sorted in ascending order, or randomly.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  searchMemories(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryResponseDto[]> {
+  searchMemories(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemorySearchResponseDto> {
     return this.service.search(auth, dto);
   }
 

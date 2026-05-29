@@ -1316,6 +1316,13 @@ export type MemoryResponseDto = {
     /** Last update date */
     updatedAt: string;
 };
+export type MemorySearchResponseDto = {
+    /** Whether there are more pages */
+    hasNextPage: boolean;
+    items: MemoryResponseDto[];
+    /** Total number of matching memories */
+    total: number;
+};
 export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
@@ -4678,22 +4685,24 @@ export function reverseGeocode({ lat, lon }: {
 /**
  * Retrieve memories
  */
-export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }: {
+export function searchMemories({ $for, isSaved, isTrashed, order, page, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
     order?: MemorySearchOrder;
+    page?: number;
     size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: MemoryResponseDto[];
+        data: MemorySearchResponseDto;
     }>(`/memories${QS.query(QS.explode({
         "for": $for,
         isSaved,
         isTrashed,
         order,
+        page,
         size,
         "type": $type
     }))}`, {
@@ -4718,11 +4727,12 @@ export function createMemory({ memoryCreateDto }: {
 /**
  * Retrieve memories statistics
  */
-export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $type }: {
+export function memoriesStatistics({ $for, isSaved, isTrashed, order, page, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
     order?: MemorySearchOrder;
+    page?: number;
     size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4734,6 +4744,7 @@ export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $typ
         isSaved,
         isTrashed,
         order,
+        page,
         size,
         "type": $type
     }))}`, {

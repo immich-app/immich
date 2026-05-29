@@ -20,7 +20,6 @@ export const load = (async ({ url }) => {
 
   return {
     user,
-    memories: memoryManager.memories,
     meta: {
       title: $t('memories'),
     },

@@ -261,11 +261,14 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
+  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/statistics';
 
@@ -287,6 +290,9 @@ class MemoriesApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
     }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
@@ -326,12 +332,15 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
-    final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
+  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
+    final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -428,11 +437,14 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
+  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
 
@@ -454,6 +466,9 @@ class MemoriesApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
     }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
@@ -493,12 +508,15 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
-    final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
+  Future<MemorySearchResponseDto?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
+    final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -506,11 +524,8 @@ class MemoriesApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<MemoryResponseDto>') as List)
-        .cast<MemoryResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemorySearchResponseDto',) as MemorySearchResponseDto;
+    
     }
     return null;
   }
