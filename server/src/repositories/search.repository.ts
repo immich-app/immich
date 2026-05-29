@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { SearchFilter, SearchOrder } from 'src/dtos/search.dto';
+import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SearchOrderField, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilderLegacy, withExifInner } from 'src/utils/database';
+import { anyUuid, searchAssetBuilder, searchAssetBuilderLegacy, withExifInner } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import z from 'zod';
 
@@ -121,6 +122,22 @@ export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
   SearchRelationOptions & { visibility?: AssetVisibility | 'not-locked' };
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
+
+export interface AssetSearchBuilderV3Options {
+  filter?: SearchFilter;
+  /** Server-derived ownership scope. Never client-controlled. */
+  userIds?: string[];
+  withExif?: boolean;
+  withFaces?: boolean;
+  withPeople?: boolean;
+  withStacked?: boolean;
+  order?: SearchOrder;
+}
+
+export interface AssetSearchPaginationV3Options {
+  cursor?: string;
+  size: number;
+}
 
 export type SmartSearchOptions = SearchDateOptions &
   SearchEmbeddingOptions &
@@ -488,6 +505,173 @@ export class SearchRepository {
       .execute();
 
     return res.map((row) => row.lensModel!);
+  }
+
+  // ---------------------------------------------------------------------------
+  // v3 SQL coverage scaffolding — these methods exist solely to give the SQL
+  // generator structurally distinct snapshots of the new `searchAssetBuilder`.
+  // They have no consumer yet. PR 2 rewires the legacy methods above to use
+  // `searchAssetBuilder` and deletes these scaffolding methods.
+  // ---------------------------------------------------------------------------
+
+  @GenerateSql(
+    { name: 'baseline', params: [{ size: 100 }, { userIds: [DummyValue.UUID] }] },
+    {
+      name: 'string-eq-null',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { city: { eq: null } } }],
+    },
+    {
+      name: 'string-pattern-like',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { description: { like: DummyValue.STRING } } }],
+    },
+    {
+      name: 'string-pattern-notLike',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { description: { notLike: DummyValue.STRING } } }],
+    },
+    {
+      name: 'string-pattern-startsWith',
+      params: [
+        { size: 100 },
+        { userIds: [DummyValue.UUID], filter: { originalFileName: { startsWith: DummyValue.STRING } } },
+      ],
+    },
+    {
+      name: 'string-similarity-ocr',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { ocr: { matches: DummyValue.STRING } } }],
+    },
+    {
+      name: 'ids-any',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { albumIds: { any: [DummyValue.UUID] } } }],
+    },
+    {
+      name: 'ids-all',
+      params: [
+        { size: 100 },
+        { userIds: [DummyValue.UUID], filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
+      ],
+    },
+    {
+      name: 'ids-none',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { tagIds: { none: [DummyValue.UUID] } } }],
+    },
+    {
+      name: 'ids-tags-all',
+      params: [
+        { size: 100 },
+        { userIds: [DummyValue.UUID], filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
+      ],
+    },
+    {
+      name: 'has-albums-false',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { hasAlbums: { eq: false } } }],
+    },
+    {
+      name: 'is-encoded',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { isEncoded: { eq: true } } }],
+    },
+    {
+      name: 'number-range',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { fileSizeInBytes: { gte: 100, lte: 1000 } } }],
+    },
+    {
+      name: 'date-eq',
+      params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { takenAt: { eq: DummyValue.DATE } } }],
+    },
+    {
+      name: 'date-range',
+      params: [
+        { size: 100 },
+        {
+          userIds: [DummyValue.UUID],
+          filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
+        },
+      ],
+    },
+    {
+      name: 'order-fileSize-noExif',
+      params: [
+        { size: 100 },
+        {
+          userIds: [DummyValue.UUID],
+          order: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc },
+          withExif: false,
+        },
+      ],
+    },
+    {
+      name: 'order-rating-withExif',
+      params: [
+        { size: 100 },
+        {
+          userIds: [DummyValue.UUID],
+          order: { field: SearchOrderField.Rating, direction: AssetOrder.Asc },
+          withExif: true,
+        },
+      ],
+    },
+    {
+      name: 'or-branches',
+      params: [
+        { size: 100 },
+        {
+          userIds: [DummyValue.UUID],
+          filter: {
+            or: [{ isFavorite: { eq: true } }, { personIds: { any: [DummyValue.UUID] } }],
+          },
+        },
+      ],
+    },
+    {
+      name: 'or-with-top-level',
+      params: [
+        { size: 100 },
+        {
+          userIds: [DummyValue.UUID],
+          filter: {
+            takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
+            or: [{ isFavorite: { eq: true } }, { albumIds: { any: [DummyValue.UUID] } }],
+          },
+        },
+      ],
+    },
+  )
+  async searchMetadataV3(pagination: AssetSearchPaginationV3Options, options: AssetSearchBuilderV3Options) {
+    return await searchAssetBuilder(this.db, options)
+      .selectAll('asset')
+      .limit(pagination.size + 1)
+      .execute();
+  }
+
+  @GenerateSql(
+    { name: 'baseline', params: [{ userIds: [DummyValue.UUID] }] },
+    {
+      name: 'with-filter',
+      params: [
+        {
+          userIds: [DummyValue.UUID],
+          filter: {
+            takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
+            fileSizeInBytes: { gte: 100 },
+          },
+        },
+      ],
+    },
+    {
+      name: 'with-or',
+      params: [
+        {
+          userIds: [DummyValue.UUID],
+          filter: {
+            or: [{ isFavorite: { eq: true } }, { hasAlbums: { eq: false } }],
+          },
+        },
+      ],
+    },
+  )
+  searchStatisticsV3(options: AssetSearchBuilderV3Options) {
+    return searchAssetBuilder(this.db, options)
+      .select((qb) => qb.fn.countAll<number>().as('total'))
+      .executeTakeFirstOrThrow();
   }
 
   private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
