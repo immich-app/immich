@@ -1,10 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@playwright/test';
-import {
-  createDefaultTimelineConfig,
-  generateTimelineData,
-  TimelineData,
-} from 'src/ui/generators/timeline';
+import { createDefaultTimelineConfig, generateTimelineData, TimelineData } from 'src/ui/generators/timeline';
 import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
 import { setupMapMockApiRoutes } from 'src/ui/mock-network/map-network';
 import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';

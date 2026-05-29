@@ -30,4 +30,3 @@ export const setupMapMockApiRoutes = async (context: BrowserContext, timelineDat
     });
   });
 };
-

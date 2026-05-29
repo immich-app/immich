@@ -1,4 +1,4 @@
-import { Page, expect, Locator, ConsoleMessage } from '@playwright/test';
+import { ConsoleMessage, expect, Locator, Page } from '@playwright/test';
 
 /**
  * Map testing utilities for e2e tests
@@ -102,9 +102,7 @@ export const mapUtils = {
    * Wait for markers API to respond
    */
   async waitForMarkersAPI(page: Page) {
-    return page.waitForResponse(
-      (response) => response.url().includes('/api/map/markers') && response.status() === 200,
-    );
+    return page.waitForResponse((response) => response.url().includes('/api/map/markers') && response.status() === 200);
   },
 
   /**
