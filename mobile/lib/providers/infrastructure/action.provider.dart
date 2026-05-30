@@ -8,6 +8,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
+import 'package:immich_mobile/domain/utils/share_asset.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
@@ -461,9 +462,13 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  /// The assets that a share action would operate on for the given [source].
+  List<BaseAsset> getShareableAssets(ActionSource source) => _getAssets(source).toList(growable: false);
+
   Future<ActionResult> shareAssets(
     ActionSource source,
     BuildContext context, {
+    ShareAssetQuality quality = ShareAssetQuality.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) async {
@@ -473,6 +478,7 @@ class ActionNotifier extends Notifier<void> {
       await _service.shareAssets(
         ids,
         context,
+        quality: quality,
         cancelCompleter: cancelCompleter,
         onAssetDownloadProgress: onAssetDownloadProgress,
       );

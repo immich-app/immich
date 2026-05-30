@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/utils/share_asset.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -108,6 +109,7 @@ class AssetMediaRepository {
   Future<int> shareAssets(
     List<BaseAsset> assets,
     BuildContext context, {
+    ShareAssetQuality quality = ShareAssetQuality.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) async {
@@ -136,13 +138,16 @@ class AssetMediaRepository {
         return 0;
       }
 
-      final localId = (asset is LocalAsset)
-          ? asset.id
-          : asset is RemoteAsset
-          ? asset.localId
-          : null;
-      if (localId != null && !asset.isEdited) {
-        File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
+      final source = resolveShareSource(asset, quality);
+      if (source == null) {
+        _log.warning("Asset has no shareable source: $asset");
+        processedAssets++;
+        updateProgress();
+        continue;
+      }
+
+      if (source.isLocal) {
+        File? f = await AssetEntity(id: source.localId!, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
         processedAssets++;
         updateProgress();
@@ -150,19 +155,16 @@ class AssetMediaRepository {
           tempFiles.add(f);
         }
       } else {
-        final remoteId = (asset is RemoteAsset) ? asset.id : asset.remoteId;
-        if (remoteId == null) {
-          _log.warning("Asset has no remote ID for sharing: $asset");
-          processedAssets++;
-          updateProgress();
-          continue;
-        }
+        final remoteId = source.remoteId!;
 
         final taskId = 'share-$remoteId-${DateTime.now().microsecondsSinceEpoch}';
-        final sanitizedFilename = asset.name.replaceAll(RegExp(r'[\\/]'), '_');
+        final sanitizedFilename = shareFilename(asset, source);
+        final url = source.isPreview
+            ? getPreviewUrlForRemoteId(remoteId, edited: asset.isEdited)
+            : getOriginalUrlForRemoteId(remoteId, edited: asset.isEdited);
         final task = DownloadTask(
           taskId: taskId,
-          url: getOriginalUrlForRemoteId(remoteId, edited: asset.isEdited),
+          url: url,
           headers: ApiService.getRequestHeaders(),
           filename: sanitizedFilename,
           baseDirectory: BaseDirectory.temporary,

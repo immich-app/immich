@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/utils/share_asset.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/share_quality_picker.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -60,6 +62,19 @@ class ShareActionButton extends ConsumerWidget {
       return;
     }
 
+    // Let the user pick the quality, but only when at least one asset can
+    // actually be shared as a JPEG preview - otherwise the original is the only
+    // option and the picker would be a pointless extra tap.
+    var quality = ShareAssetQuality.original;
+    final assets = ref.read(actionProvider.notifier).getShareableAssets(source);
+    if (shouldOfferShareQualityChoice(assets)) {
+      final selected = await showShareQualityPicker(context);
+      if (selected == null || !context.mounted) {
+        return;
+      }
+      quality = selected;
+    }
+
     final cancelCompleter = Completer<void>();
     final progress = ValueNotifier<double?>(null);
     final preparingDialog = _SharePreparingDialog(progress: progress);
@@ -71,6 +86,7 @@ class ShareActionButton extends ConsumerWidget {
             .shareAssets(
               source,
               context,
+              quality: quality,
               cancelCompleter: cancelCompleter,
               onAssetDownloadProgress: (value) => progress.value = value,
             )

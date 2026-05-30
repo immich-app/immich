@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
+import 'package:immich_mobile/domain/utils/share_asset.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -272,12 +273,14 @@ class ActionService {
   Future<int> shareAssets(
     List<BaseAsset> assets,
     BuildContext context, {
+    ShareAssetQuality quality = ShareAssetQuality.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) {
     return _assetMediaRepository.shareAssets(
       assets,
       context,
+      quality: quality,
       cancelCompleter: cancelCompleter,
       onAssetDownloadProgress: onAssetDownloadProgress,
     );

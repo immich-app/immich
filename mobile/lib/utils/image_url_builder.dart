@@ -16,6 +16,10 @@ String getThumbnailUrlForRemoteId(
   return thumbhash != null ? '$url&c=${Uri.encodeComponent(thumbhash)}' : url;
 }
 
+String getPreviewUrlForRemoteId(final String id, {bool edited = true}) {
+  return getThumbnailUrlForRemoteId(id, type: AssetMediaSize.preview, edited: edited);
+}
+
 String getPlaybackUrlForRemoteId(final String id) {
   return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/video/playback?';
 }
