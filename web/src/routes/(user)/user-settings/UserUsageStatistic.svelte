@@ -17,7 +17,7 @@
     from: string;
     to: string;
     series: Array<{ date: string; count: number }>;
-    summary: { totalCount: number };
+    totalCount: number;
   };
 
   let timelineStats: AssetStatsResponseDto = $state({
@@ -55,7 +55,7 @@
     from: '',
     to: '',
     series: [],
-    summary: { totalCount: 0 },
+    totalCount: 0,
   });
 
   const today = DateTime.utc().startOf('day');
@@ -201,9 +201,7 @@
         <span class="size-3 rounded-sm bg-immich-primary/70"></span>
         <span class="size-3 rounded-sm bg-immich-primary"></span>
         <span>{$t('more')}</span>
-        <span class="ml-4"
-          >{$t('upload_activity_total_count', { values: { count: uploadStats.summary.totalCount } })}</span
-        >
+        <span class="ml-4">{$t('upload_activity_total_count', { values: { count: uploadStats.totalCount } })}</span>
       </div>
     </div>
   </div>

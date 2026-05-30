@@ -50,9 +50,7 @@ const UserUploadStatsResponseSchema = z
         count: z.int().describe('Number of uploads'),
       }),
     ),
-    summary: z.object({
-      totalCount: z.int().describe('Total number of uploads'),
-    }),
+    totalCount: z.int().describe('Total number of uploads'),
   })
   .meta({ id: 'UserUploadStatsResponseDto' });
 

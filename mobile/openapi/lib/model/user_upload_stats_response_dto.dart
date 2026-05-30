@@ -15,8 +15,8 @@ class UserUploadStatsResponseDto {
   UserUploadStatsResponseDto({
     required this.from,
     this.series = const [],
-    required this.summary,
     required this.to,
+    required this.totalCount,
     required this.userId,
   });
 
@@ -25,10 +25,14 @@ class UserUploadStatsResponseDto {
 
   List<UserUploadStatsResponseDtoSeriesInner> series;
 
-  UserUploadStatsResponseDtoSummary summary;
-
   /// End date in UTC
   String to;
+
+  /// Total number of uploads
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int totalCount;
 
   /// User ID
   String userId;
@@ -37,8 +41,8 @@ class UserUploadStatsResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is UserUploadStatsResponseDto &&
     other.from == from &&
     _deepEquality.equals(other.series, series) &&
-    other.summary == summary &&
     other.to == to &&
+    other.totalCount == totalCount &&
     other.userId == userId;
 
   @override
@@ -46,19 +50,19 @@ class UserUploadStatsResponseDto {
     // ignore: unnecessary_parenthesis
     (from.hashCode) +
     (series.hashCode) +
-    (summary.hashCode) +
     (to.hashCode) +
+    (totalCount.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'UserUploadStatsResponseDto[from=$from, series=$series, summary=$summary, to=$to, userId=$userId]';
+  String toString() => 'UserUploadStatsResponseDto[from=$from, series=$series, to=$to, totalCount=$totalCount, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'from'] = this.from;
       json[r'series'] = this.series;
-      json[r'summary'] = this.summary;
       json[r'to'] = this.to;
+      json[r'totalCount'] = this.totalCount;
       json[r'userId'] = this.userId;
     return json;
   }
@@ -74,8 +78,8 @@ class UserUploadStatsResponseDto {
       return UserUploadStatsResponseDto(
         from: mapValueOfType<String>(json, r'from')!,
         series: UserUploadStatsResponseDtoSeriesInner.listFromJson(json[r'series']),
-        summary: UserUploadStatsResponseDtoSummary.fromJson(json[r'summary'])!,
         to: mapValueOfType<String>(json, r'to')!,
+        totalCount: mapValueOfType<int>(json, r'totalCount')!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
@@ -126,8 +130,8 @@ class UserUploadStatsResponseDto {
   static const requiredKeys = <String>{
     'from',
     'series',
-    'summary',
     'to',
+    'totalCount',
     'userId',
   };
 }

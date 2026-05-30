@@ -854,8 +854,6 @@ class ApiClient {
           return UserUploadStatsResponseDto.fromJson(value);
         case 'UserUploadStatsResponseDtoSeriesInner':
           return UserUploadStatsResponseDtoSeriesInner.fromJson(value);
-        case 'UserUploadStatsResponseDtoSummary':
-          return UserUploadStatsResponseDtoSummary.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
         case 'ValidateLibraryDto':

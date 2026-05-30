@@ -659,7 +659,6 @@ Class | Method | HTTP request | Description
  - [UserUpdateMeDto](doc//UserUpdateMeDto.md)
  - [UserUploadStatsResponseDto](doc//UserUploadStatsResponseDto.md)
  - [UserUploadStatsResponseDtoSeriesInner](doc//UserUploadStatsResponseDtoSeriesInner.md)
- - [UserUploadStatsResponseDtoSummary](doc//UserUploadStatsResponseDtoSummary.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)

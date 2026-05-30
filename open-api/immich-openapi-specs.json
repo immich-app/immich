@@ -26050,24 +26050,16 @@
             },
             "type": "array"
           },
-          "summary": {
-            "properties": {
-              "totalCount": {
-                "description": "Total number of uploads",
-                "maximum": 9007199254740991,
-                "minimum": -9007199254740991,
-                "type": "integer"
-              }
-            },
-            "required": [
-              "totalCount"
-            ],
-            "type": "object"
-          },
           "to": {
             "description": "End date in UTC",
             "example": "2024-12-31",
             "type": "string"
+          },
+          "totalCount": {
+            "description": "Total number of uploads",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "userId": {
             "description": "User ID",
@@ -26079,8 +26071,8 @@
         "required": [
           "from",
           "series",
-          "summary",
           "to",
+          "totalCount",
           "userId"
         ],
         "type": "object"

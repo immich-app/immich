@@ -2664,12 +2664,10 @@ export type UserUploadStatsResponseDto = {
         /** Date in UTC */
         date: string;
     }[];
-    summary: {
-        /** Total number of uploads */
-        totalCount: number;
-    };
     /** End date in UTC */
     to: string;
+    /** Total number of uploads */
+    totalCount: number;
     /** User ID */
     userId: string;
 };
