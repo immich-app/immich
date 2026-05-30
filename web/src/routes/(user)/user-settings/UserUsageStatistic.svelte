@@ -4,21 +4,15 @@
     AssetVisibility,
     getAlbumStatistics,
     getAssetStatistics,
+    getMyUploadStatistics,
     type AlbumStatisticsResponseDto,
     type AssetStatsResponseDto,
+    type UserUploadStatsResponseDto,
   } from '@immich/sdk';
   import { Heading, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-
-  type UserUploadStatsResponseDto = {
-    userId: string;
-    from: string;
-    to: string;
-    series: Array<{ date: string; count: number }>;
-    totalCount: number;
-  };
 
   let timelineStats: AssetStatsResponseDto = $state({
     videos: 0,
@@ -62,11 +56,6 @@
   const uploadActivityTo = today.toISODate();
   const uploadActivityFrom = today.minus({ weeks: 52 }).plus({ days: 1 }).toISODate();
 
-  const getMyUploadStatistics = async (from: string, to: string) => {
-    const response = await fetch(`/api/users/me/stats/uploads?${new URLSearchParams({ from, to })}`);
-    return (await response.json()) as UserUploadStatsResponseDto;
-  };
-
   const getUsage = async () => {
     [timelineStats, favoriteStats, archiveStats, trashStats, albumStats, uploadStats] = await Promise.all([
       getAssetStatistics({ visibility: AssetVisibility.Timeline }),
@@ -74,7 +63,7 @@
       getAssetStatistics({ visibility: AssetVisibility.Archive }),
       getAssetStatistics({ isTrashed: true }),
       getAlbumStatistics(),
-      getMyUploadStatistics(uploadActivityFrom, uploadActivityTo),
+      getMyUploadStatistics({ $from: uploadActivityFrom, to: uploadActivityTo }),
     ]);
   };
 
