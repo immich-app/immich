@@ -6,10 +6,23 @@
 
   interface Props {
     asset: AssetResponseDto;
-    onViewAsset: (asset: AssetResponseDto) => void;
+    selected: boolean;
+    selectionCandidate: boolean;
+    onSelect: (asset: AssetResponseDto) => void;
+    onClick: (asset: AssetResponseDto) => void;
+    onPreview?: (asset: AssetResponseDto) => void;
+    onMouseEvent?: (asset: AssetResponseDto | null) => void;
   }
 
-  let { asset, onViewAsset }: Props = $props();
+  let {
+    asset,
+    selected,
+    selectionCandidate,
+    onSelect,
+    onClick,
+    onPreview = undefined,
+    onMouseEvent = undefined,
+  }: Props = $props();
 
   let assetData = $derived(JSON.stringify(asset, null, 2));
 
@@ -22,7 +35,16 @@
   title={assetData}
 >
   <div class="relative w-full h-full overflow-hidden rounded-lg">
-    <Thumbnail asset={toTimelineAsset(asset)} readonly onClick={() => onViewAsset(asset)} thumbnailSize={boxWidth} />
+    <Thumbnail
+      asset={toTimelineAsset(asset)}
+      thumbnailSize={boxWidth}
+      onClick={() => onClick(asset)}
+      onSelect={() => onSelect(asset)}
+      onPreview={onPreview ? () => onPreview?.(asset) : undefined}
+      onMouseEvent={({ isMouseOver }) => onMouseEvent?.(isMouseOver ? asset : null)}
+      {selected}
+      {selectionCandidate}
+    />
 
     {#if !!asset.libraryId}
       <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">External</div>
