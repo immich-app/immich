@@ -17,7 +17,15 @@ export const asDateString = <T extends Date | string | undefined | null>(x: T) =
  * @deprecated Remove this and all references when using `ZodSerializerDto` on the controllers. Then the codec in `isoDateToDate` in validation.ts will handle the conversion instead.
  */
 export const asBirthDateString = (x: Date | string | null): string | null => {
-  return x instanceof Date ? x.toISOString().split('T')[0] : x;
+  if (x instanceof Date) {
+    // Use local date components to avoid UTC timezone shifts that can
+    // cause dates to appear one day earlier on servers ahead of UTC.
+    const year = x.getFullYear();
+    const month = String(x.getMonth() + 1).padStart(2, '0');
+    const day = String(x.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  return x;
 };
 
 export const extractTimeZone = (dateTimeOriginal?: string | null) => {
