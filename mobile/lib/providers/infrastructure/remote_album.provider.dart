@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/album/pending_album_uploads.provider.dart';
+import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -207,6 +208,22 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return added;
   }
 
+  /// Links a freshly-uploaded local asset to an album using its new remote ID,
+  /// upserting a placeholder remote asset row so the local DB join survives
+  /// until the next sync catches up.
+  Future<int> linkUploadedAssetToAlbum(String albumId, LocalAsset source, String remoteId) async {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final added = await _remoteAlbumService.linkUploadedAssetToAlbum(albumId, remoteId, currentUser, source);
+    if (added > 0) {
+      await _refreshAlbumInState(albumId);
+    }
+    return added;
+  }
+
   /// Adds a heterogeneous asset selection to an album. Already-remote assets
   /// are linked immediately; local-only assets are queued in
   /// [pendingAlbumUploadsProvider] (so the album page can show them with
@@ -221,11 +238,18 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final pendingNotifier = ref.read(pendingAlbumUploadsProvider(albumId).notifier);
     pendingNotifier.enqueue(candidates.localAssetsToUpload);
 
+    Completer<void>? cancelToken;
+    if (candidates.localAssetsToUpload.isNotEmpty) {
+      cancelToken = Completer<void>();
+      ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+    }
+
     try {
       final added = await _remoteAlbumService.addAssetsToAlbum(
         albumId: albumId,
         uploader: currentUser,
         candidates: candidates,
+        cancelToken: cancelToken,
         uploadCallbacks: UploadCallbacks(
           onProgress: (localAssetId, _, bytes, totalBytes) {
             final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
@@ -245,6 +269,15 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       }
       _logger.severe('Failed to add assets to album $albumId', error, stack);
       rethrow;
+    } finally {
+      if (cancelToken != null) {
+        if (cancelToken.isCompleted) {
+          pendingNotifier.clear();
+        }
+        if (ref.read(manualUploadCancelTokenProvider) == cancelToken) {
+          ref.read(manualUploadCancelTokenProvider.notifier).state = null;
+        }
+      }
     }
   }
 
