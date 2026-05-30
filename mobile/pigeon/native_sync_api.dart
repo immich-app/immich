@@ -105,25 +105,26 @@ class CloudIdResult {
 
 @HostApi()
 abstract class NativeSyncApi {
+  @async
   bool shouldFullSync();
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   SyncDelta getMediaChanges();
 
   void checkpointSync();
 
   void clearSyncCheckpoint();
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   List<String> getAssetIdsForAlbum(String albumId);
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   List<PlatformAlbum> getAlbums();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int getAssetsCountSince(String albumId, int timestamp);
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   List<PlatformAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
 
   @async
@@ -131,6 +132,8 @@ abstract class NativeSyncApi {
   List<HashResult> hashAssets(List<String> assetIds, {bool allowNetworkAccess = false});
 
   void cancelHashing();
+
+  void cancelSync();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();

@@ -32,7 +32,7 @@ class HashService {
   }) : _batchSize = batchSize ?? kBatchHashFileLimit {
     // Stop the in-flight native hash call promptly on cancellation; the loops
     // below also observe [isCancelled] to bail between batches.
-    _cancellation?.future.then((_) => _nativeSyncApi.cancelHashing());
+    _cancellation?.future.then((_) => _nativeSyncApi.cancelHashing().onError(_log.warning));
   }
 
   bool get isCancelled => _cancellation?.isCompleted ?? false;

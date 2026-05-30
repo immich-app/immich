@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -16,6 +17,8 @@ import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
+
+const String _kSyncCancelledCode = "SYNC_CANCELLED";
 
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
@@ -36,7 +39,9 @@ class LocalSyncService {
     required this._assetMediaRepository,
     required this._permissionRepository,
     this._cancellation,
-  });
+  }) {
+    _cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning));
+  }
 
   bool get _isCancelled => _cancellation?.isCompleted ?? false;
 
@@ -114,6 +119,12 @@ class LocalSyncService {
         await _mapIosCloudIds(newAssets);
       }
       await _nativeSyncApi.checkpointSync();
+    } on PlatformException catch (e, s) {
+      if (e.code == _kSyncCancelledCode) {
+        _log.warning("Local sync cancelled");
+      } else {
+        _log.severe("Error performing device sync", e, s);
+      }
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
     } finally {
@@ -141,6 +152,12 @@ class LocalSyncService {
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
+    } on PlatformException catch (e, s) {
+      if (e.code == _kSyncCancelledCode) {
+        _log.warning("Full device sync cancelled");
+      } else {
+        _log.severe("Error performing full device sync", e, s);
+      }
     } catch (e, s) {
       _log.severe("Error performing full device sync", e, s);
     }
