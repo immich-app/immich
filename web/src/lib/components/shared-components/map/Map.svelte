@@ -74,6 +74,7 @@
     onToggleTimeline?: () => void;
     sheetHeight?: number;
     isDraggingSheet?: boolean;
+    showSimpleControls?: boolean;
   }
 
   let {
@@ -97,6 +98,7 @@
     onToggleTimeline,
     sheetHeight = 50,
     isDraggingSheet = false,
+    showSimpleControls = true,
   }: Props = $props();
 
   const initialBounds = (() => {
@@ -425,72 +427,72 @@
 >
   {#snippet children({ map }: { map: Map })}
     <div class="pointer-events-none absolute inset-0 z-10 p-4">
-      <div class="pointer-events-auto absolute top-4 right-4 flex flex-col gap-3">
-        {#if showSettings}
-          <button
-            type="button"
-            class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
-            title={$t('map_settings')}
-            aria-label={$t('map_settings')}
-            onclick={handleSettingsClick}
-          >
-            <Icon icon={mdiCog} size="24" />
-          </button>
-        {/if}
+      {#if showSimpleControls}
+        <div class="pointer-events-auto absolute top-4 right-4 flex flex-col gap-3">
+          {#if showSettings}
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
+              title={$t('map_settings')}
+              aria-label={$t('map_settings')}
+              onclick={handleSettingsClick}
+            >
+              <Icon icon={mdiCog} size="24" />
+            </button>
+          {/if}
 
-        {#if !simplified}
-          <button
-            type="button"
-            class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
-            title={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
-            aria-label={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
-            aria-pressed={isGlobeView}
-            onclick={toggleMapProjection}
-          >
-            <Icon icon={isGlobeView ? mdiMap : mdiEarth} size="24" />
-          </button>
+          {#if !simplified}
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
+              title={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
+              aria-label={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
+              aria-pressed={isGlobeView}
+              onclick={toggleMapProjection}
+            >
+              <Icon icon={isGlobeView ? mdiMap : mdiEarth} size="24" />
+            </button>
 
-          <button
-            type="button"
-            class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
-            title={isFullscreen ? $t('exit_fullscreen') : $t('fullscreen')}
-            aria-label={isFullscreen ? $t('exit_fullscreen') : $t('fullscreen')}
-            onclick={toggleFullscreen}
-          >
-            <Icon icon={isFullscreen ? mdiFullscreenExit : mdiFullscreen} size="24" />
-          </button>
-        {/if}
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
+              title={isFullscreen ? $t('exit_fullscreen') : $t('fullscreen')}
+              aria-label={isFullscreen ? $t('exit_fullscreen') : $t('fullscreen')}
+              onclick={toggleFullscreen}
+            >
+              <Icon icon={isFullscreen ? mdiFullscreenExit : mdiFullscreen} size="24" />
+            </button>
+          {/if}
 
-        {#if onOpenInMapView}
-          <button
-            type="button"
-            class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
-            title={$t('open_in_map_view')}
-            aria-label={$t('open_in_map_view')}
-            onclick={() => void onOpenInMapView()}
-          >
-            <Icon icon={mdiMap} size="24" />
-          </button>
-        {/if}
+          {#if onOpenInMapView}
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
+              title={$t('open_in_map_view')}
+              aria-label={$t('open_in_map_view')}
+              onclick={() => void onOpenInMapView()}
+            >
+              <Icon icon={mdiMap} size="24" />
+            </button>
+          {/if}
 
-        {#if onToggleTimeline}
-          <button
-            type="button"
-            class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
-            title={$t('timeline')}
-            aria-label={$t('timeline')}
-            onclick={() => onToggleTimeline?.()}
-          >
-            <Icon
-              icon={mdiImageMultiple}
-              size="24"
-              class={isTimelineOpen ? 'text-immich-primary dark:text-immich-primary' : ''}
-            />
-          </button>
-        {/if}
-      </div>
+          {#if onToggleTimeline}
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
+              title={$t('timeline')}
+              aria-label={$t('timeline')}
+              onclick={() => onToggleTimeline?.()}
+            >
+              <Icon
+                icon={mdiImageMultiple}
+                size="24"
+                class={isTimelineOpen ? 'text-immich-primary dark:text-immich-primary' : ''}
+              />
+            </button>
+          {/if}
+        </div>
 
-      {#if !simplified}
         <div
           class="absolute right-4 flex flex-col gap-3 transition-all duration-300 ease-out"
           class:opacity-0={hideMapControls}
@@ -499,15 +501,17 @@
           class:transition-none={isDraggingSheet}
           style:bottom={isTimelineOpen && isMobile ? `calc(${Math.min(sheetHeight, 40)}vh + 1rem)` : '2.5rem'}
         >
-          <button
-            type="button"
-            class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
-            title={$t('geolocate')}
-            aria-label={$t('geolocate')}
-            onclick={handleLocate}
-          >
-            <Icon icon={mdiCrosshairsGps} size="24" />
-          </button>
+          {#if !simplified}
+            <button
+              type="button"
+              class="flex size-11 items-center justify-center rounded-full border border-white/20 bg-white/70 text-black/80 shadow-lg backdrop-blur-md transition-all hover:bg-white/90 dark:border-white/10 dark:bg-immich-dark-gray/70 dark:text-white/80 dark:hover:bg-immich-dark-gray/90"
+              title={$t('geolocate')}
+              aria-label={$t('geolocate')}
+              onclick={handleLocate}
+            >
+              <Icon icon={mdiCrosshairsGps} size="24" />
+            </button>
+          {/if}
 
           <div
             class="flex flex-col overflow-hidden rounded-2xl border border-white/20 shadow-lg backdrop-blur-md dark:border-white/10"
@@ -533,19 +537,19 @@
             </button>
           </div>
         </div>
-      {/if}
 
-      <div
-        class="absolute left-4 rounded-sm bg-white/70 px-2 py-0.5 text-[11px] font-medium text-black/80 shadow-sm backdrop-blur-md ease-out {isDraggingSheet
-          ? 'transition-none'
-          : 'transition-all duration-300'} dark:bg-immich-dark-gray/70 dark:text-white/80"
-        class:opacity-0={hideMapControls}
-        class:pointer-events-none={hideMapControls}
-        class:pointer-events-auto={!hideMapControls}
-        style:bottom={isTimelineOpen && isMobile ? `calc(${Math.min(sheetHeight, 40)}vh + 0.5rem)` : '0.5rem'}
-      >
-        © OpenStreetMap
-      </div>
+        <div
+          class="absolute left-4 rounded-sm bg-white/70 px-2 py-0.5 text-[11px] font-medium text-black/80 shadow-sm backdrop-blur-md ease-out {isDraggingSheet
+            ? 'transition-none'
+            : 'transition-all duration-300'} dark:bg-immich-dark-gray/70 dark:text-white/80"
+          class:opacity-0={hideMapControls}
+          class:pointer-events-none={hideMapControls}
+          class:pointer-events-auto={!hideMapControls}
+          style:bottom={isTimelineOpen && isMobile ? `calc(${Math.min(sheetHeight, 40)}vh + 0.5rem)` : '0.5rem'}
+        >
+          © OpenStreetMap
+        </div>
+      {/if}
     </div>
 
     <GeoJSON
