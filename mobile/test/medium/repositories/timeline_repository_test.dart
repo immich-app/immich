@@ -48,6 +48,24 @@ void main() {
     });
   });
 
+  group('main assets', () {
+    test('supports GroupAssetsBy.none by slicing all assets into count-based buckets', () async {
+      final user = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: user.id);
+      await ctx.newRemoteAsset(ownerId: user.id);
+
+      final query = sut.main([user.id], .none);
+
+      final buckets = await query.bucketSource().first;
+      // none does not group by date; the total asset count is preserved across the segments
+      final total = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+      expect(total, 2);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets, hasLength(2));
+    });
+  });
+
   group('person assets', () {
     test('does not duplicate an asset that has multiple face records for the same person', () async {
       // Regression check for #26723: an INNER JOIN between remote_asset_entity and asset_face_entity

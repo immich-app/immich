@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 
@@ -21,6 +22,11 @@ class GroupSettings extends HookConsumerWidget {
     Future<void> updateAppSettings(GroupAssetsBy groupBy) async {
       await ref.read(metadataProvider).write(MetadataKey.timelineGroupAssetsBy, groupBy);
       ref.invalidate(appSettingsServiceProvider);
+      // Force the timeline service to recreate with the new grouping while we're
+      // still on the settings page — when the user returns to the timeline the
+      // new buckets are already loading and the live grid swaps in without a
+      // visible loading screen.
+      ref.invalidate(timelineServiceProvider);
     }
 
     void changeGroupValue(GroupAssetsBy? value) {
@@ -50,6 +56,10 @@ class GroupSettings extends HookConsumerWidget {
             SettingsRadioGroup(
               title: 'asset_list_layout_settings_group_automatically'.t(context: context),
               value: GroupAssetsBy.auto,
+            ),
+            SettingsRadioGroup(
+              title: 'group_no'.t(context: context),
+              value: GroupAssetsBy.none,
             ),
           ],
           groupBy: groupBy.value,

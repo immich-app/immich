@@ -48,6 +48,12 @@ abstract class Segment {
   int getMaxChildIndexForScrollOffset(double scrollOffset);
   double indexToLayoutOffset(int index);
 
+  /// Returns the in-segment row index (0-based, excluding the header) that contains
+  /// the given global [assetIndex]. The caller can compute the row's child index via
+  /// `firstIndex + 1 + rowIndexForAsset(...)` and its scroll offset via
+  /// `indexToLayoutOffset(rowChildIndex)`.
+  int rowIndexForAsset(int assetIndex);
+
   Widget builder(BuildContext context, int index);
 
   @override

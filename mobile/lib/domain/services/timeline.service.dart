@@ -167,6 +167,16 @@ class TimelineService {
     return getAssets(index, count);
   }
 
+  /// Read-only fetch straight from the asset source, bypassing the shared buffer
+  /// so it can't race with the active grid. Used to pre-warm thumbnails for the
+  /// adjacent zoom levels. Returns an empty list for out-of-range requests.
+  Future<List<BaseAsset>> peekAssets(int index, int count) {
+    if (index < 0 || count <= 0 || index >= _totalAssets) {
+      return Future.value(const []);
+    }
+    return _assetSource(index, math.min(count, _totalAssets - index));
+  }
+
   bool hasRange(int index, int count) =>
       index >= 0 &&
       index < _totalAssets &&

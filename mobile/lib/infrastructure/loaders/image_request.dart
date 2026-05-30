@@ -36,7 +36,12 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(int address, int length) async {
+  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(
+    int address,
+    int length, {
+    int? targetWidth,
+    int? targetHeight,
+  }) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
       malloc.free(pointer);
@@ -62,7 +67,7 @@ abstract class ImageRequest {
       return null;
     }
 
-    final codec = await descriptor.instantiateCodec();
+    final codec = await descriptor.instantiateCodec(targetWidth: targetWidth, targetHeight: targetHeight);
     if (_isCancelled) {
       descriptor.dispose();
       codec.dispose();
@@ -72,8 +77,18 @@ abstract class ImageRequest {
     return (codec, descriptor);
   }
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
-    final result = await _codecFromEncodedPlatformImage(address, length);
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(
+    int address,
+    int length, {
+    int? targetWidth,
+    int? targetHeight,
+  }) async {
+    final result = await _codecFromEncodedPlatformImage(
+      address,
+      length,
+      targetWidth: targetWidth,
+      targetHeight: targetHeight,
+    );
     if (result == null) {
       return null;
     }
@@ -96,7 +111,14 @@ abstract class ImageRequest {
     return frame;
   }
 
-  Future<ui.FrameInfo?> _fromDecodedPlatformImage(int address, int width, int height, int rowBytes) async {
+  Future<ui.FrameInfo?> _fromDecodedPlatformImage(
+    int address,
+    int width,
+    int height,
+    int rowBytes, {
+    int? targetWidth,
+    int? targetHeight,
+  }) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
       malloc.free(pointer);
@@ -125,7 +147,7 @@ abstract class ImageRequest {
     );
     buffer.dispose();
 
-    final codec = await descriptor.instantiateCodec();
+    final codec = await descriptor.instantiateCodec(targetWidth: targetWidth, targetHeight: targetHeight);
     if (_isCancelled) {
       descriptor.dispose();
       codec.dispose();

@@ -6,8 +6,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
@@ -87,6 +90,12 @@ class FixedSegment extends Segment {
       columnCount: columnCount,
     );
   }
+
+  @override
+  int rowIndexForAsset(int assetIndex) {
+    final assetIndexInSegment = assetIndex - firstAssetIndex;
+    return (assetIndexInSegment / columnCount).floor();
+  }
 }
 
 class _FixedSegmentRow extends ConsumerWidget {
@@ -143,6 +152,11 @@ class _FixedSegmentRow extends ConsumerWidget {
     TimelineService timelineService,
     bool isDynamicLayout,
   ) {
+    // Decode thumbnails at the displayed tile size, so dense (small-tile) zoom
+    // levels use proportionally small textures instead of the full default edge.
+    final thumbnailSize = Size.square(
+      thumbnailDecodeEdge(tileHeight, MediaQuery.devicePixelRatioOf(context)).toDouble(),
+    );
     final children = [
       for (int i = 0; i < assets.length; i++)
         TimelineAssetIndexWrapper(
@@ -152,6 +166,7 @@ class _FixedSegmentRow extends ConsumerWidget {
             key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
             asset: assets[i],
             assetIndex: assetIndex + i,
+            thumbnailSize: thumbnailSize,
           ),
         ),
     ];
@@ -200,15 +215,29 @@ class _FixedSegmentRow extends ConsumerWidget {
 class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
+  final Size thumbnailSize;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex, required this.thumbnailSize});
 
   Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
+    // Ignore stray taps fired by individual fingers during a pinch-zoom gesture.
+    if (ref.read(timelineStateProvider).isPinching) {
+      return;
+    }
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
+      // At the dense zoomed-out levels (wider than the grouped cap) tapping zooms in
+      // one stage instead of opening the asset — tiles are too small to act on
+      // directly. Use the live column count so this respects in-session pinch zoom,
+      // not just the persisted slider preference.
+      if (ref.read(timelineArgsProvider).columnCount > kTimelineGroupedMaxColumnCount) {
+        EventStream.shared.emit(TimelineZoomToAssetEvent(assetIndex));
+        return;
+      }
+
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       AssetViewer.setAsset(ref, asset);
@@ -226,6 +255,10 @@ class _AssetTileWidget extends ConsumerWidget {
   }
 
   void _handleOnLongPress(WidgetRef ref, BaseAsset asset) {
+    // Don't enter selection from a finger held during a pinch-zoom gesture.
+    if (ref.read(timelineStateProvider).isPinching) {
+      return;
+    }
     final multiSelectState = ref.read(multiSelectProvider);
     if (multiSelectState.isEnabled || multiSelectState.forceEnable) {
       return;
@@ -254,21 +287,40 @@ class _AssetTileWidget extends ConsumerWidget {
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final lockSelection = _getLockSelectionStatus(ref);
-    final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
+    // Also hide all overlay icons during a zoom transition: otherwise, committing to a
+    // level that shows them makes every tile's icons fade in at once mid-animation,
+    // which reads as a stutter. They reappear once the new level has settled.
+    final isZooming = ref.watch(timelineStateProvider.select((s) => s.isPinching));
+    // Hide the cloud/storage indicator at the widest zoom-out levels (16/32) where
+    // tiles are tiny and the icons are just clutter.
+    final showStorageIndicator =
+        !isZooming &&
+        ref.watch(
+          timelineArgsProvider.select(
+            (args) => args.showStorageIndicator && args.columnCount < kTimelineMonthLabelMaxColumns,
+          ),
+        );
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
-    final showStackIndicator = ref.read(timelineServiceProvider).origin != TimelineOrigin.trash;
+    final showStackIndicator = !isZooming && ref.read(timelineServiceProvider).origin != TimelineOrigin.trash;
+    // At the widest zoom-out levels (16/32) hide the type/video/favorite/stack overlays.
+    final showAssetIndicators =
+        !isZooming &&
+        ref.watch(timelineArgsProvider.select((args) => args.columnCount < kTimelineMonthLabelMaxColumns));
 
+    final Widget tile = ThumbnailTile(
+      asset,
+      size: thumbnailSize,
+      lockSelection: lockSelection,
+      showStorageIndicator: showStorageIndicator,
+      showStackIndicator: showStackIndicator,
+      showAssetIndicators: showAssetIndicators,
+      heroOffset: heroOffset,
+    );
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
         onLongPress: () => lockSelection || isReadonlyModeEnabled ? null : _handleOnLongPress(ref, asset),
-        child: ThumbnailTile(
-          asset,
-          lockSelection: lockSelection,
-          showStorageIndicator: showStorageIndicator,
-          showStackIndicator: showStackIndicator,
-          heroOffset: heroOffset,
-        ),
+        child: tile,
       ),
     );
   }

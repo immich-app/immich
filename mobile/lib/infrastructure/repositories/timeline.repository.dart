@@ -56,7 +56,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
-      throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
+      // No dedicated count query exists for merged assets, so reuse the day-grouped
+      // bucket query purely as a total-count source and slice it into fixed-size segments.
+      return _db.mergedAssetDrift
+          .mergedBucket(userIds: userIds, groupBy: GroupAssetsBy.day.index)
+          .watch()
+          .map((rows) => _generateBuckets(rows.fold<int>(0, (acc, row) => acc + row.assetCount)));
     }
 
     return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
