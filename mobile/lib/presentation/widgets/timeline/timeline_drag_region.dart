@@ -39,6 +39,10 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
   Timer? scrollTimer;
   late bool scrollNotified;
 
+  // Number of fingers currently down in this region. Drag-to-select must only start
+  // with a single finger, so a two-finger pinch-zoom doesn't also select assets.
+  int _activePointers = 0;
+
   @override
   void initState() {
     super.initState();
@@ -62,14 +66,19 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 
   @override
   Widget build(BuildContext context) {
-    return RawGestureDetector(
-      gestures: {
-        _CustomLongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<_CustomLongPressGestureRecognizer>(
-          () => _CustomLongPressGestureRecognizer(),
-          _registerCallbacks,
-        ),
-      },
-      child: widget.child,
+    return Listener(
+      onPointerDown: (_) => _activePointers++,
+      onPointerUp: (_) => _activePointers = _activePointers > 0 ? _activePointers - 1 : 0,
+      onPointerCancel: (_) => _activePointers = _activePointers > 0 ? _activePointers - 1 : 0,
+      child: RawGestureDetector(
+        gestures: {
+          _CustomLongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<_CustomLongPressGestureRecognizer>(
+            () => _CustomLongPressGestureRecognizer(),
+            _registerCallbacks,
+          ),
+        },
+        child: widget.child,
+      ),
     );
   }
 
@@ -97,6 +106,12 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
   }
 
   void _onLongPressStart(LongPressStartDetails event) {
+    // Only start drag-select with a single finger; ignore it during a pinch.
+    if (_activePointers > 1) {
+      anchorAsset = null;
+      return;
+    }
+
     /// Calculate widget height and scroll offset when long press starting instead of in [initState]
     /// or [didChangeDependencies] as the grid might still be rendering into view to get the actual size
     final height = context.size?.height;

@@ -52,21 +52,26 @@ class TimelineArgs {
 class TimelineState {
   final bool isScrubbing;
   final bool isScrolling;
+  final bool isPinching;
 
-  const TimelineState({this.isScrubbing = false, this.isScrolling = false});
+  const TimelineState({this.isScrubbing = false, this.isScrolling = false, this.isPinching = false});
 
   bool get isInteracting => isScrubbing || isScrolling;
 
   @override
   bool operator ==(covariant TimelineState other) {
-    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling;
+    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling && isPinching == other.isPinching;
   }
 
   @override
-  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
+  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode ^ isPinching.hashCode;
 
-  TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
-    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing, isScrolling: isScrolling ?? this.isScrolling);
+  TimelineState copyWith({bool? isScrubbing, bool? isScrolling, bool? isPinching}) {
+    return TimelineState(
+      isScrubbing: isScrubbing ?? this.isScrubbing,
+      isScrolling: isScrolling ?? this.isScrolling,
+      isPinching: isPinching ?? this.isPinching,
+    );
   }
 }
 
@@ -79,16 +84,37 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
     state = state.copyWith(isScrolling: isScrolling);
   }
 
+  void setPinching(bool isPinching) {
+    state = state.copyWith(isPinching: isPinching);
+  }
+
   @override
-  TimelineState build() => const TimelineState(isScrubbing: false, isScrolling: false);
+  TimelineState build() => const TimelineState(isScrubbing: false, isScrolling: false, isPinching: false);
 }
+
+/// Session-only column count override set by the pinch-zoom gesture. Persists for
+/// the current session but is not written to metadata, so the next app launch falls
+/// back to the user's slider preference instead of inheriting the last pinch state.
+final pinchZoomColumnsProvider = StateProvider<int?>((_) => null);
+
+/// True when the timeline uses the continuous header-less layout. Two opt-in
+/// triggers — both require an explicit user action, so existing day/month/auto
+/// users never see this layout unless they choose it:
+///   1. User picked "No grouping" in settings (groupBy == none), OR
+///   2. User pinched out past [kTimelineGroupedMaxColumnCount] (the manual
+///      slider is capped at this value, so reaching the wide range is a
+///      deliberate gesture rather than a silent preference change).
+bool isContinuousTimelineLayout(int columnCount, GroupAssetsBy groupBy) =>
+    groupBy == GroupAssetsBy.none || columnCount > kTimelineGroupedMaxColumnCount;
 
 // This provider watches the buckets from the timeline service & args and serves the segments.
 // It should be used only after the timeline service and timeline args provider is overridden
 final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) async* {
   final args = ref.watch(timelineArgsProvider);
   final columnCount = args.columnCount;
-  final spacing = args.spacing;
+  // Drop the inter-tile spacing at the widest zoom-out levels (15/32) for a
+  // seamless, borderless grid.
+  final spacing = columnCount >= kTimelineMonthLabelMaxColumns ? 0.0 : args.spacing;
   final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
   final tileExtent = math.max(0, availableTileWidth) / columnCount;
 

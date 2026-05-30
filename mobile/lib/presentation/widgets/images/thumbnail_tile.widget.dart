@@ -21,6 +21,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
     this.lockSelection = false,
     this.heroOffset,
     this.showStackIndicator = false,
+    this.showAssetIndicators = true,
     super.key,
   });
 
@@ -31,6 +32,10 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   final bool lockSelection;
   final int? heroOffset;
   final bool showStackIndicator;
+
+  /// When false, hides the type/video/live-photo, favorite and stack overlay
+  /// icons (used at the widest zoom-out levels where tiles are tiny).
+  final bool showAssetIndicators;
 
   @override
   ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
@@ -137,7 +142,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                   ),
                 ),
-                if (asset != null)
+                if (asset != null && widget.showAssetIndicators)
                   AnimatedOpacity(
                     opacity: _hideIndicators ? 0.0 : 1.0,
                     duration: Durations.short4,
@@ -182,7 +187,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                   ),
 
-                if (asset != null && asset.isFavorite)
+                if (asset != null && asset.isFavorite && widget.showAssetIndicators)
                   AnimatedOpacity(
                     duration: Durations.short4,
                     opacity: _hideIndicators ? 0.0 : 1.0,

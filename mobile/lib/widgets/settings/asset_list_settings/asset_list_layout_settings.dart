@@ -4,6 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
@@ -14,9 +16,18 @@ class LayoutSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tilesPerRow = useState(ref.read(appConfigProvider.select((s) => s.timeline.tilesPerRow)));
+    // The pinch gesture can set far wider counts (up to 32) than the manual slider
+    // range, so clamp the displayed value to keep the Slider within bounds.
+    final tilesPerRow = useState(
+      ref
+          .read(appConfigProvider.select((s) => s.timeline.tilesPerRow))
+          .clamp(kTimelineSliderMinColumnCount, kTimelineSliderMaxColumnCount),
+    );
     useValueChanged<int, void>(tilesPerRow.value, (_, __) {
       ref.read(metadataProvider).write(MetadataKey.timelineTilesPerRow, tilesPerRow.value);
+      // Slider sets the persisted preference — clear any in-session pinch override
+      // so the new slider value is what the timeline actually shows.
+      ref.read(pinchZoomColumnsProvider.notifier).state = null;
     });
 
     return Column(
@@ -30,9 +41,9 @@ class LayoutSettings extends HookConsumerWidget {
           valueNotifier: tilesPerRow,
           text: 'theme_setting_asset_list_tiles_per_row_title'.tr(namedArgs: {'count': "${tilesPerRow.value}"}),
           label: "${tilesPerRow.value}",
-          maxValue: 6,
-          minValue: 2,
-          noDivisons: 4,
+          maxValue: kTimelineSliderMaxColumnCount.toDouble(),
+          minValue: kTimelineSliderMinColumnCount.toDouble(),
+          noDivisons: kTimelineSliderMaxColumnCount - kTimelineSliderMinColumnCount,
           onChangeEnd: (value) {
             ref.invalidate(appSettingsServiceProvider);
           },

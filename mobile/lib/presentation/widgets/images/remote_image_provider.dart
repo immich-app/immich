@@ -6,6 +6,7 @@ import 'package:immich_mobile/infrastructure/repositories/metadata.repository.da
 import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -14,10 +15,28 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   final String url;
   final bool edited;
 
-  RemoteImageProvider({required this.url, this.edited = true});
+  /// Optional decode edge (px). When set, the thumbnail is downscaled on decode
+  /// and cached separately per edge, so dense grid tiles get small textures.
+  final int? decodeEdge;
 
-  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, this.edited = true})
-    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
+  RemoteImageProvider({required this.url, this.edited = true, this.decodeEdge});
+
+  RemoteImageProvider.thumbnail({
+    required String assetId,
+    required String thumbhash,
+    this.edited = true,
+    this.decodeEdge,
+  }) : url = getThumbnailUrlForRemoteId(
+         assetId,
+         thumbhash: thumbhash,
+         edited: edited,
+         // Dense zoom-out tiles fetch the server's tiny "micro" thumbnail instead
+         // of the ~250px one; the server falls back to the thumbnail if it hasn't
+         // generated a micro for that asset yet.
+         type: (decodeEdge != null && decodeEdge <= kTinyThumbnailMaxEdge)
+             ? AssetMediaSize.micro
+             : AssetMediaSize.thumbnail,
+       );
 
   @override
   Future<RemoteImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -37,7 +56,7 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   }
 
   Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
-    final request = this.request = RemoteImageRequest(uri: key.url);
+    final request = this.request = RemoteImageRequest(uri: key.url, decodeEdge: key.decodeEdge);
     return loadRequest(request, decode, isFinal: true);
   }
 
@@ -47,13 +66,13 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
       return true;
     }
     if (other is RemoteImageProvider) {
-      return url == other.url && edited == other.edited;
+      return url == other.url && edited == other.edited && decodeEdge == other.decodeEdge;
     }
     return false;
   }
 
   @override
-  int get hashCode => url.hashCode ^ edited.hashCode;
+  int get hashCode => url.hashCode ^ edited.hashCode ^ decodeEdge.hashCode;
 }
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>

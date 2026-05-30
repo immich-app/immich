@@ -2,19 +2,27 @@ import 'package:flutter/painting.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-/// [ImageCache] that uses two caches for small and large images
-/// so that a single large image does not evict all small images
+/// [ImageCache] that segments by image size so one class of image can't evict
+/// another: full images ([_large]), normal thumbnails ([_small]), the dense
+/// zoom-out tiles ([_tiny]) and thumbhashes ([_thumbhash]).
 final class CustomImageCache implements ImageCache {
   final _thumbhash = ImageCache()..maximumSize = 0;
   final _small = ImageCache();
   final _large = ImageCache()..maximumSize = 5; // Maximum 5 images
+  // Dense zoom-out grids show hundreds of tiny tiles per screen. They get their
+  // own high-count tier so they don't evict normal thumbnails; bytes stay bounded
+  // because each tile is only a few KB at these edges.
+  final _tiny = ImageCache()
+    ..maximumSize = 8000
+    ..maximumSizeBytes = 96 << 20; // 96 MiB
 
   @override
-  int get maximumSize => _small.maximumSize + _large.maximumSize;
+  int get maximumSize => _small.maximumSize + _large.maximumSize + _tiny.maximumSize;
 
   @override
-  int get maximumSizeBytes => _small.maximumSizeBytes + _large.maximumSizeBytes;
+  int get maximumSizeBytes => _small.maximumSizeBytes + _large.maximumSizeBytes + _tiny.maximumSizeBytes;
 
   @override
   set maximumSize(int value) => _small.maximumSize = value;
@@ -26,12 +34,14 @@ final class CustomImageCache implements ImageCache {
   void clear() {
     _small.clear();
     _large.clear();
+    _tiny.clear();
   }
 
   @override
   void clearLiveImages() {
     _small.clearLiveImages();
     _large.clearLiveImages();
+    _tiny.clearLiveImages();
   }
 
   /// Gets the cache for the given key
@@ -39,6 +49,8 @@ final class CustomImageCache implements ImageCache {
     return switch (key) {
       LocalFullImageProvider() || RemoteFullImageProvider() => _large,
       ThumbHashProvider() => _thumbhash,
+      RemoteImageProvider(:final decodeEdge?) when decodeEdge <= kTinyThumbnailMaxEdge => _tiny,
+      LocalThumbProvider(:final size) when size.shortestSide <= kTinyThumbnailMaxEdge => _tiny,
       _ => _small,
     };
   }
@@ -51,19 +63,19 @@ final class CustomImageCache implements ImageCache {
   }
 
   @override
-  int get currentSize => _small.currentSize + _large.currentSize;
+  int get currentSize => _small.currentSize + _large.currentSize + _tiny.currentSize;
 
   @override
-  int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes;
+  int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes + _tiny.currentSizeBytes;
 
   @override
   bool evict(Object key, {bool includeLive = true}) => _cacheForKey(key).evict(key, includeLive: includeLive);
 
   @override
-  int get liveImageCount => _small.liveImageCount + _large.liveImageCount;
+  int get liveImageCount => _small.liveImageCount + _large.liveImageCount + _tiny.liveImageCount;
 
   @override
-  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount;
+  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount + _tiny.pendingImageCount;
 
   @override
   ImageStreamCompleter? putIfAbsent(

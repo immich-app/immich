@@ -184,7 +184,13 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
-  return assetId != null ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited) : null;
+  // Only downscale (and cache per-edge) below the default full edge; at or above
+  // it, keep decodeEdge null so the request path is identical to before.
+  final edge = size.width.toInt();
+  final decodeEdge = edge < kThumbnailResolution.width ? edge : null;
+  return assetId != null
+      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, decodeEdge: decodeEdge)
+      : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>

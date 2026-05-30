@@ -39,7 +39,10 @@ class TimelineHeader extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (bucket is! TimeBucket || header == HeaderType.none) {
-      return const SizedBox.shrink();
+      // [HeaderType.none] still reserves [height] in the layout — used by the
+      // wide zoom levels of day/month/auto groupings to leave a blank row gap
+      // between months/years without rendering a visible header label.
+      return height > 0 ? SizedBox(height: height) : const SizedBox.shrink();
     }
 
     final date = (bucket as TimeBucket).date;
