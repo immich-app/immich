@@ -4,7 +4,7 @@ import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -189,5 +189,5 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
     asset.hasLocal &&
-    (!asset.hasRemote || !MetadataRepository.instance.appConfig.image.preferRemote) &&
+    (!asset.hasRemote || !SettingsRepository.instance.appConfig.image.preferRemote) &&
     !asset.isEdited;

@@ -9,8 +9,8 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -107,7 +107,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
-    final isAlbumLinkedSyncEnable = _ref.read(metadataProvider).appConfig.backup.syncAlbums;
+    final isAlbumLinkedSyncEnable = _ref.read(appConfigProvider).backup.syncAlbums;
 
     try {
       bool syncSuccess = false;
@@ -137,7 +137,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 
   Future<void> _resumeBackup() async {
-    final isEnableBackup = _ref.read(metadataProvider).appConfig.backup.enabled;
+    final isEnableBackup = _ref.read(appConfigProvider).backup.enabled;
 
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);

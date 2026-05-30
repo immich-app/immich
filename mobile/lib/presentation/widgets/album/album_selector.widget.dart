@@ -15,12 +15,11 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -58,7 +57,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final albumConfig = ref.read(metadataProvider).appConfig.album;
+      final albumConfig = ref.read(appConfigProvider).album;
 
       setState(() {
         sort = AlbumSort(mode: albumConfig.sortMode, isReverse: albumConfig.isReverse);
@@ -94,7 +93,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
-    ref.read(metadataProvider).write(MetadataKey.albumIsGrid, isGrid);
+    ref.read(settingsProvider).write(.albumIsGrid, isGrid);
   }
 
   void changeFilter(QuickFilterMode mode) {
@@ -110,9 +109,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       this.sort = sort;
     });
 
-    final metadata = ref.read(metadataProvider);
-    await metadata.write(MetadataKey.albumSortMode, sort.mode);
-    await metadata.write(MetadataKey.albumIsReverse, sort.isReverse);
+    final metadata = ref.read(settingsProvider);
+    await metadata.write(.albumSortMode, sort.mode);
+    await metadata.write(.albumIsReverse, sort.isReverse);
 
     await sortAlbums();
   }

@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -177,7 +177,7 @@ class ApiService {
     if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
       urls.add(serverEndpoint);
     }
-    final network = MetadataRepository.instance.appConfig.network;
+    final network = SettingsRepository.instance.appConfig.network;
     final localEndpoint = network.localEndpoint;
     if (localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
@@ -191,7 +191,7 @@ class ApiService {
   }
 
   static Map<String, String> getRequestHeaders() {
-    return MetadataRepository.instance.appConfig.network.customHeaders;
+    return SettingsRepository.instance.appConfig.network.customHeaders;
   }
 
   ApiClient get apiClient => _apiClient;

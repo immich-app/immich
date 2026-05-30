@@ -12,7 +12,7 @@ import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/config/timeline_config.dart';
 import 'package:immich_mobile/domain/models/config/viewer_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
@@ -95,7 +95,7 @@ class AppConfig {
   String toString() =>
       'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network)';
 
-  T read<T extends Object>(MetadataKey<T> key) =>
+  T read<T extends Object>(SettingsKey<T> key) =>
       (switch (key) {
             .logLevel => logLevel,
             .themePrimaryColor => theme.primaryColor,
@@ -143,10 +143,10 @@ class AppConfig {
           })
           as T;
 
-  factory AppConfig.fromEntries(Map<MetadataKey<Object>, Object> overrides) =>
+  factory AppConfig.fromEntries(Map<SettingsKey<Object>, Object> overrides) =>
       overrides.entries.fold(const AppConfig(), (config, entry) => config.write(entry.key, entry.value));
 
-  AppConfig write<T extends Object>(MetadataKey<T> key, T value) {
+  AppConfig write<T extends Object>(SettingsKey<T> key, T value) {
     return switch (key) {
       .logLevel => copyWith(logLevel: value as LogLevel),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),

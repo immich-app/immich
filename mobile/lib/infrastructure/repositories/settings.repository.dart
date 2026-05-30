@@ -1,21 +1,21 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
-import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-class MetadataRepository extends DriftDatabaseRepository {
+class SettingsRepository extends DriftDatabaseRepository {
   final Drift _db;
 
-  MetadataRepository._(this._db) : super(_db);
+  SettingsRepository._(this._db) : super(_db);
 
-  static MetadataRepository? _instance;
+  static SettingsRepository? _instance;
 
-  static MetadataRepository get instance {
+  static SettingsRepository get instance {
     final instance = _instance;
     if (instance == null) {
-      throw StateError('MetadataRepository not initialized. Call ensureInitialized() first');
+      throw StateError('SettingsRepository not initialized. Call ensureInitialized() first');
     }
     return instance;
   }
@@ -23,31 +23,31 @@ class MetadataRepository extends DriftDatabaseRepository {
   AppConfig _appConfig = const .new();
   AppConfig get appConfig => _appConfig;
 
-  static Future<MetadataRepository> ensureInitialized(Drift db) async {
+  static Future<SettingsRepository> ensureInitialized(Drift db) async {
     if (_instance == null) {
-      final instance = MetadataRepository._(db);
+      final instance = SettingsRepository._(db);
       await instance.refresh();
       _instance = instance;
     }
     return _instance!;
   }
 
-  Future<void> refresh() async => _applyOverrides(await _db.select(_db.metadataEntity).get());
+  Future<void> refresh() async => _applyOverrides(await _db.select(_db.settingsEntity).get());
 
-  Future<void> clear(Iterable<MetadataKey> keys) async {
+  Future<void> clear(Iterable<SettingsKey> keys) async {
     if (keys.isEmpty) {
       return;
     }
 
     final names = keys.map((key) => key.name).toList();
-    await (_db.delete(_db.metadataEntity)..where((row) => row.key.isIn(names))).go();
+    await (_db.delete(_db.settingsEntity)..where((row) => row.key.isIn(names))).go();
 
     for (final key in keys) {
       _appConfig = _appConfig.write(key, defaultConfig.read(key));
     }
   }
 
-  Future<void> write<T extends Object, U extends T>(MetadataKey<T> key, U value) async {
+  Future<void> write<T extends Object, U extends T>(SettingsKey<T> key, U value) async {
     if (value == _appConfig.read(key)) {
       return;
     }
@@ -57,22 +57,22 @@ class MetadataRepository extends DriftDatabaseRepository {
     }
 
     await _db
-        .into(_db.metadataEntity)
+        .into(_db.settingsEntity)
         .insertOnConflictUpdate(
-          MetadataEntityCompanion.insert(key: key.name, value: key.encode(value), updatedAt: Value(DateTime.now())),
+          SettingsEntityCompanion.insert(key: key.name, value: key.encode(value), updatedAt: Value(DateTime.now())),
         );
     _appConfig = _appConfig.write(key, value);
   }
 
-  Stream<AppConfig> watchConfig() => _db.select(_db.metadataEntity).watch().map((rows) {
+  Stream<AppConfig> watchConfig() => _db.select(_db.settingsEntity).watch().map((rows) {
     _applyOverrides(rows);
     return _appConfig;
   });
 
-  void _applyOverrides(List<MetadataEntityData> rows) {
+  void _applyOverrides(List<SettingsEntityData> rows) {
     _appConfig = AppConfig.fromEntries(
       rows.fold({}, (overrides, row) {
-        final metadataKey = MetadataKey.values.firstWhereOrNull((key) => key.name == row.key);
+        final metadataKey = SettingsKey.values.firstWhereOrNull((key) => key.name == row.key);
         if (metadataKey == null) {
           return overrides;
         }

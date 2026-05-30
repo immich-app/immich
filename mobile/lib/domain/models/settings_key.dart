@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-enum MetadataKey<T extends Object> {
+enum SettingsKey<T extends Object> {
   // Theme
   themePrimaryColor<ImmichColorPreset>(codec: _EnumCodec(ImmichColorPreset.values)),
   themeMode<ThemeMode>(codec: _EnumCodec(ThemeMode.values)),
@@ -73,24 +73,24 @@ enum MetadataKey<T extends Object> {
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
   slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values));
 
-  final _MetadataCodec<T>? _codecOverride;
+  final _SettingsCodec<T>? _codecOverride;
 
-  const MetadataKey({_MetadataCodec<T>? codec}) : _codecOverride = codec;
+  const SettingsKey({_SettingsCodec<T>? codec}) : _codecOverride = codec;
 
-  _MetadataCodec<T> get _codec => _codecOverride ?? _MetadataCodec.forType(T);
+  _SettingsCodec<T> get _codec => _codecOverride ?? _SettingsCodec.forType(T);
 
   String encode(T value) => _codec.encode(value);
 
   T decode(String raw) => _codec.decode(raw);
 }
 
-sealed class _MetadataCodec<T extends Object> {
-  const _MetadataCodec();
+sealed class _SettingsCodec<T extends Object> {
+  const _SettingsCodec();
 
   String encode(T value);
   T decode(String raw);
 
-  static const Map<Type, _MetadataCodec<Object>> _primitives = {
+  static const Map<Type, _SettingsCodec<Object>> _primitives = {
     int: _PrimitiveCodec.integer,
     double: _PrimitiveCodec.real,
     bool: _PrimitiveCodec.boolean,
@@ -98,16 +98,16 @@ sealed class _MetadataCodec<T extends Object> {
     DateTime: _DateTimeCodec(),
   };
 
-  static _MetadataCodec<T> forType<T extends Object>(Type runtimeType) {
+  static _SettingsCodec<T> forType<T extends Object>(Type runtimeType) {
     final codec = _primitives[runtimeType];
     if (codec == null) {
-      throw StateError('No primitive codec for $runtimeType. Provide an explicit codec when defining the MetadataKey.');
+      throw StateError('No primitive codec for $runtimeType. Provide an explicit codec when defining the SettingsKey.');
     }
-    return codec as _MetadataCodec<T>;
+    return codec as _SettingsCodec<T>;
   }
 }
 
-final class _EnumCodec<T extends Enum> extends _MetadataCodec<T> {
+final class _EnumCodec<T extends Enum> extends _SettingsCodec<T> {
   final List<T> values;
 
   const _EnumCodec(this.values);
@@ -119,7 +119,7 @@ final class _EnumCodec<T extends Enum> extends _MetadataCodec<T> {
   T decode(String raw) => values.firstWhere((v) => v.name == raw);
 }
 
-final class _DateTimeCodec extends _MetadataCodec<DateTime> {
+final class _DateTimeCodec extends _SettingsCodec<DateTime> {
   const _DateTimeCodec();
 
   @override
@@ -129,9 +129,9 @@ final class _DateTimeCodec extends _MetadataCodec<DateTime> {
   DateTime decode(String raw) => DateTime.parse(raw);
 }
 
-final class _MapCodec<K extends Object, V extends Object> extends _MetadataCodec<Map<K, V>> {
-  final _MetadataCodec<K> _keyCodec;
-  final _MetadataCodec<V> _valueCodec;
+final class _MapCodec<K extends Object, V extends Object> extends _SettingsCodec<Map<K, V>> {
+  final _SettingsCodec<K> _keyCodec;
+  final _SettingsCodec<V> _valueCodec;
 
   const _MapCodec(this._keyCodec, this._valueCodec);
 
@@ -167,8 +167,8 @@ final class _MapCodec<K extends Object, V extends Object> extends _MetadataCodec
   }
 }
 
-final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
-  final _MetadataCodec<T> _elementCodec;
+final class _ListCodec<T extends Object> extends _SettingsCodec<List<T>> {
+  final _SettingsCodec<T> _elementCodec;
 
   const _ListCodec(this._elementCodec);
 
@@ -197,7 +197,7 @@ final class _ListCodec<T extends Object> extends _MetadataCodec<List<T>> {
   }
 }
 
-final class _PrimitiveCodec<T extends Object> extends _MetadataCodec<T> {
+final class _PrimitiveCodec<T extends Object> extends _SettingsCodec<T> {
   final T Function(String) _parse;
 
   const _PrimitiveCodec._(this._parse);

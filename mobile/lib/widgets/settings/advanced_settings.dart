@@ -7,7 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
@@ -35,7 +35,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
     useValueChanged(
       preferRemote.value,
-      (_, __) => ref.read(metadataProvider).write(.imagePreferRemote, preferRemote.value),
+      (_, __) => ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value),
     );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
