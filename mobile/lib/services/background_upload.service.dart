@@ -422,7 +422,7 @@ class BackgroundUploadService {
       httpRequestMethod: 'POST',
       url: url,
       headers: headers,
-      filename: filename,
+      filename: originalFileName ?? filename,
       fields: fieldsMap,
       baseDirectory: baseDirectory,
       directory: directory,

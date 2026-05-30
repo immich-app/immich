@@ -82,6 +82,8 @@ void main() {
 
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals('OriginalPhoto.jpg'));
+      // multipart file part filename must match the clean originalFileName (foreground/background parity)
+      expect(task.filename, equals('OriginalPhoto.jpg'));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
@@ -118,6 +120,7 @@ void main() {
       expect(task, isNotNull);
       // For live photos, extension should be changed to match the video file
       expect(task!.fields['filename'], equals('OriginalLivePhoto.mov'));
+      expect(task.filename, equals('OriginalLivePhoto.mov'));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
   });
