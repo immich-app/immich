@@ -8,7 +8,13 @@ import type { PageLoad } from './$types';
 export const load = (async ({ parent, url }) => {
   await parent();
 
-  const continueUrl = url.searchParams.get('continue') || Route.photos();
+  let continueUrl = url.searchParams.get('continue');
+
+  // require same origin continue URL
+  if (!continueUrl || !continueUrl.startsWith('/') || continueUrl.startsWith('//')) {
+    continueUrl = Route.photos();
+  }
+
   if (authManager.authenticated) {
     redirect(307, continueUrl);
   }
