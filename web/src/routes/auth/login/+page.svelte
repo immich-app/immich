@@ -78,6 +78,15 @@
   });
 
   const handleLogin = async () => {
+    if (!email || !email.includes('@')) {
+      errorMessage = email ? $t('errors.incorrect_email_or_password') : $t('email_required');
+      return;
+    }
+    if (!password) {
+      errorMessage = $t('password_required');
+      return;
+    }
+
     try {
       errorMessage = '';
       loading = true;

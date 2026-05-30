@@ -1027,6 +1027,7 @@
   "editor_rotate_left": "Rotate 90° counterclockwise",
   "editor_rotate_right": "Rotate 90° clockwise",
   "email": "Email",
+  "email_required": "Email is required",
   "email_notifications": "Email notifications",
   "empty_folder": "This folder is empty",
   "empty_trash": "Empty trash",
