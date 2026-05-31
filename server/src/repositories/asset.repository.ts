@@ -759,7 +759,6 @@ export class AssetRepository {
                           .whereRef('album_asset.assetId', '=', 'asset.id')
                           .where((eb) =>
                             eb.or([
-                              eb('album.ownerId', '=', anyUuid(options.userIds!)),
                               eb.exists(
                                 eb
                                   .selectFrom('album_user')
@@ -878,7 +877,6 @@ export class AssetRepository {
                           .whereRef('album_asset.assetId', '=', 'asset.id')
                           .where((eb) =>
                             eb.or([
-                              eb('album.ownerId', '=', anyUuid(options.userIds!)),
                               eb.exists(
                                 eb
                                   .selectFrom('album_user')
