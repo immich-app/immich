@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Album Order State Reproduction — #28383</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
+    .scenario { background: white; border: 2px solid #333; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; max-width: 600px; }
+    .label { display: inline-block; background: #333; color: white; padding: 4px 8px; font-size: 12px; font-weight: bold; margin-bottom: 1rem; }
+    .album { padding: 1rem; border: 1px solid #ddd; border-radius: 6px; margin: 0.5rem 0; }
+    .order { font-weight: bold; color: #2563eb; }
+    .stale { color: #ef4444; text-decoration: line-through; }
+    button { margin: 0.25rem; padding: 6px 12px; cursor: pointer; }
+    .log { font-family: monospace; font-size: 12px; background: #f3f4f6; padding: 8px; border-radius: 4px; margin-top: 8px; }
+    .bad { border-left: 4px solid #ef4444; }
+    .good { border-left: 4px solid #22c55e; }
+  </style>
+</head>
+<body>
+  <h2>Reproduction: Album Order Reverts After Closing Asset Viewer (#28383)</h2>
+  <p>Simulates what happens when SvelteKit re-fetches page data after navigating away from and back to the album (e.g. closing the asset viewer).</p>
+
+  <div class="scenario bad">
+    <div class="label">BEFORE — $derived(data.album)</div>
+    <p>Any update to <code>data.album</code> overwrites the local <code>album</code> variable, discarding user changes like sort order.</p>
+    <div class="album">
+      Server data order: <span id="server-order-before">desc</span>
+    </div>
+    <div class="album">
+      Local album order: <span class="order" id="local-order-before">desc</span>
+    </div>
+    <button onclick="changeOrderBefore()">1. User changes order → asc</button>
+    <button onclick="simulateNavBefore()">2. Close asset viewer (data refresh)</button>
+    <div class="log" id="log-before"></div>
+  </div>
+
+  <div class="scenario good">
+    <div class="label">AFTER — $state with ID-guarded effect</div>
+    <p>Local <code>album</code> is preserved. Only when the album <b>ID changes</b> does it re-sync from server data.</p>
+    <div class="album">
+      Server data order: <span id="server-order-after">desc</span>
+    </div>
+    <div class="album">
+      Local album order: <span class="order" id="local-order-after">desc</span>
+    </div>
+    <button onclick="changeOrderAfter()">1. User changes order → asc</button>
+    <button onclick="simulateNavAfter()">2. Close asset viewer (data refresh)</button>
+    <div class="log" id="log-after"></div>
+  </div>
+
+  <script>
+    let serverBefore = { id: "album-1", order: "desc" };
+    let localBefore = { ...serverBefore };
+    let serverAfter = { id: "album-1", order: "desc" };
+    let localAfter = { ...serverAfter };
+
+    function updateUI() {
+      document.getElementById('server-order-before').textContent = serverBefore.order;
+      document.getElementById('local-order-before').textContent = localBefore.order;
+      if (serverBefore.order !== localBefore.order) {
+        document.getElementById('local-order-before').classList.add('stale');
+      } else {
+        document.getElementById('local-order-before').classList.remove('stale');
+      }
+      document.getElementById('server-order-after').textContent = serverAfter.order;
+      document.getElementById('local-order-after').textContent = localAfter.order;
+      if (serverAfter.order !== localAfter.order) {
+        document.getElementById('local-order-after').classList.remove('stale');
+        document.getElementById('local-order-after').style.color = '#22c55e';
+      } else {
+        document.getElementById('local-order-after').classList.remove('stale');
+        document.getElementById('local-order-after').style.color = '#2563eb';
+      }
+    }
+
+    function changeOrderBefore() {
+      localBefore.order = 'asc';
+      document.getElementById('log-before').textContent = 'User changed order to asc';
+      updateUI();
+    }
+
+    function simulateNavBefore() {
+      serverBefore = { ...serverBefore };
+      localBefore = { ...serverBefore };
+      document.getElementById('log-before').textContent = 'Data refreshed — order REVERTED to ' + localBefore.order + ' (local change lost!)';
+      updateUI();
+    }
+
+    function changeOrderAfter() {
+      localAfter.order = 'asc';
+      document.getElementById('log-after').textContent = 'User changed order to asc';
+      updateUI();
+    }
+
+    function simulateNavAfter() {
+      const newData = { ...serverAfter };
+      if (newData.id !== localAfter.id) {
+        localAfter = { ...newData };
+        document.getElementById('log-after').textContent = 'Album ID changed — synced to server data';
+      } else {
+        document.getElementById('log-after').textContent = 'Data refreshed — order PRESERVED as ' + localAfter.order;
+      }
+      updateUI();
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>

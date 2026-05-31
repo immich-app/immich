@@ -206,7 +206,14 @@
     }
   });
 
-  let album = $derived(data.album);
+  let album = $state(data.album);
+
+  $effect(() => {
+    const newAlbum = data.album;
+    if (newAlbum.id !== album.id) {
+      album = newAlbum;
+    }
+  });
   let albumId = $derived(album.id);
 
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
