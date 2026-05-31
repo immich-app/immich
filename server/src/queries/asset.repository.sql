@@ -400,8 +400,6 @@ with
       asset."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
       asset."createdAt" at time zone 'utc' as "createdAt",
       encode("asset"."thumbhash", 'base64') as "thumbhash",
-      "asset_exif"."city",
-      "asset_exif"."country",
       "asset_exif"."projectionType",
       coalesce(
         case
@@ -414,6 +412,8 @@ with
         end,
         1
       ) as "ratio",
+      "asset_exif"."city",
+      "asset_exif"."country",
       "stack"
     from
       "asset"
@@ -448,8 +448,6 @@ with
   ),
   "agg" as (
     select
-      coalesce(array_agg("city"), '{}') as "city",
-      coalesce(array_agg("country"), '{}') as "country",
       coalesce(array_agg("duration"), '{}') as "duration",
       coalesce(array_agg("id"), '{}') as "id",
       coalesce(array_agg("visibility"), '{}') as "visibility",
@@ -465,6 +463,8 @@ with
       coalesce(array_agg("ratio"), '{}') as "ratio",
       coalesce(array_agg("status"), '{}') as "status",
       coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
+      coalesce(array_agg("city"), '{}') as "city",
+      coalesce(array_agg("country"), '{}') as "country",
       coalesce(json_agg("stack"), '[]') as "stack"
     from
       "cte"

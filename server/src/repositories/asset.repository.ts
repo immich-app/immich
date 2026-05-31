@@ -803,8 +803,6 @@ export class AssetRepository {
             sql`asset."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             sql`asset."createdAt" at time zone 'utc'`.as('createdAt'),
             eb.fn('encode', ['asset.thumbhash', sql.lit('base64')]).as('thumbhash'),
-            'asset_exif.city',
-            'asset_exif.country',
             'asset_exif.projectionType',
             eb.fn
               .coalesce(
@@ -818,6 +816,9 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
+          .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
+            qb.select(['asset_exif.city', 'asset_exif.country']),
+          )
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
@@ -892,8 +893,6 @@ export class AssetRepository {
         qb
           .selectFrom('cte')
           .select((eb) => [
-            eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
-            eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
             eb.fn.coalesce(eb.fn('array_agg', ['duration']), sql.lit('{}')).as('duration'),
             eb.fn.coalesce(eb.fn('array_agg', ['id']), sql.lit('{}')).as('id'),
             eb.fn.coalesce(eb.fn('array_agg', ['visibility']), sql.lit('{}')).as('visibility'),
@@ -911,6 +910,12 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
+          .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
+            qb.select((eb) => [
+              eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
+              eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
+            ]),
+          )
           .$if(!!options.withCoordinates, (qb) =>
             qb.select((eb) => [
               eb.fn.coalesce(eb.fn('array_agg', ['latitude']), sql.lit('{}')).as('latitude'),

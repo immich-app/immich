@@ -37,7 +37,7 @@
 
 <!-- Image grid -->
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
-  {#each viewerAssets.slice(firstInOrNearViewport, lastInOrNearViewport + 1) as viewerAsset (viewerAsset.id)}
+  {#each viewerAssets as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
 

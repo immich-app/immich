@@ -9,7 +9,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobItem, JobSource } from 'src/types';
+import { JobItem, JobSource, UploadFile } from 'src/types';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
 
@@ -42,7 +42,7 @@ type EventMap = {
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
 
   // asset events
-  AssetCreate: [{ asset: Asset }];
+  AssetCreate: [{ asset: Asset; file: UploadFile }];
   AssetTag: [{ assetId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];

@@ -1628,6 +1628,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Album ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isOwned",
             "required": false,
             "in": "query",
@@ -1643,6 +1654,15 @@
             "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Album name (exact match)",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -8806,6 +8826,50 @@
           }
         ],
         "summary": "Retrieve plugin methods",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "plugin.read"
+      }
+    },
+    "/plugins/templates": {
+      "get": {
+        "description": "Retrieve workflow templates provided by installed plugins",
+        "operationId": "searchPluginTemplates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginTemplateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve workflow templates",
         "tags": [
           "Plugins"
         ],
@@ -18178,7 +18242,7 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowAssetCreate"
+          "WorkflowAssetTrigger"
         ],
         "type": "string"
       },
@@ -20202,6 +20266,72 @@
         ],
         "type": "object"
       },
+      "PluginTemplateResponseDto": {
+        "properties": {
+          "description": {
+            "description": "Template description",
+            "type": "string"
+          },
+          "key": {
+            "description": "Template key (unique across all templates)",
+            "type": "string"
+          },
+          "steps": {
+            "description": "Workflow steps",
+            "items": {
+              "$ref": "#/components/schemas/PluginTemplateStepResponseDto"
+            },
+            "type": "array"
+          },
+          "title": {
+            "description": "Template title",
+            "type": "string"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger"
+          },
+          "uiHints": {
+            "description": "Ui hints, for example \"smart-album\"",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "key",
+          "steps",
+          "title",
+          "trigger",
+          "uiHints"
+        ],
+        "type": "object"
+      },
+      "PluginTemplateStepResponseDto": {
+        "properties": {
+          "config": {
+            "additionalProperties": {},
+            "description": "Step configuration",
+            "nullable": true,
+            "type": "object"
+          },
+          "enabled": {
+            "description": "Whether the step is enabled",
+            "type": "boolean"
+          },
+          "method": {
+            "description": "Step plugin method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "method"
+        ],
+        "type": "object"
+      },
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
@@ -20864,7 +20994,14 @@
             "description": "Total number of matching assets",
             "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "integer"
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v3.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "required": [
@@ -25286,8 +25423,6 @@
           }
         },
         "required": [
-          "city",
-          "country",
           "createdAt",
           "duration",
           "fileCreatedAt",
@@ -26348,6 +26483,7 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
+          "AssetMetadataExtraction",
           "PersonRecognized"
         ],
         "type": "string"

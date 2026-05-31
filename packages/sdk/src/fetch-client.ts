@@ -1514,6 +1514,30 @@ export type PluginResponseDto = {
     /** Plugin version */
     version: string;
 };
+export type PluginTemplateStepResponseDto = {
+    /** Step configuration */
+    config: {
+        [key: string]: any;
+    } | null;
+    /** Whether the step is enabled */
+    enabled?: boolean;
+    /** Step plugin method */
+    method: string;
+};
+export type PluginTemplateResponseDto = {
+    /** Template description */
+    description: string;
+    /** Template key (unique across all templates) */
+    key: string;
+    /** Workflow steps */
+    steps: PluginTemplateStepResponseDto[];
+    /** Template title */
+    title: string;
+    /** Workflow trigger */
+    trigger: WorkflowTrigger;
+    /** Ui hints, for example "smart-album" */
+    uiHints: string[];
+};
 export type QueueResponseDto = {
     /** Whether the queue is paused */
     isPaused: boolean;
@@ -2590,9 +2614,9 @@ export type TagUpdateDto = {
 };
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
-    city: (string | null)[];
+    city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
-    country: (string | null)[];
+    country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
@@ -3591,18 +3615,22 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, isOwned, isShared }: {
+export function getAllAlbums({ assetId, id, isOwned, isShared, name }: {
     assetId?: string;
+    id?: string;
     isOwned?: boolean;
     isShared?: boolean;
+    name?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
+        id,
         isOwned,
-        isShared
+        isShared,
+        name
     }))}`, {
         ...opts
     }));
@@ -5255,6 +5283,17 @@ export function searchPluginMethods({ description, enabled, id, name, pluginName
         trigger,
         "type": $type
     }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Retrieve workflow templates
+ */
+export function searchPluginTemplates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTemplateResponseDto[];
+    }>("/plugins/templates", {
         ...opts
     }));
 }
@@ -7075,6 +7114,7 @@ export enum WorkflowType {
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
+    AssetMetadataExtraction = "AssetMetadataExtraction",
     PersonRecognized = "PersonRecognized"
 }
 export enum QueueJobStatus {
@@ -7140,7 +7180,7 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowAssetCreate = "WorkflowAssetCreate"
+    WorkflowAssetTrigger = "WorkflowAssetTrigger"
 }
 export enum SearchSuggestionType {
     Country = "country",
