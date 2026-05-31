@@ -68,8 +68,9 @@
   };
 
   const getUploadActivityWeeks = () => {
-    const days = uploadStats.series.map((item) => ({ ...item, dateValue: new Date(`${item.date}T00:00:00.000Z`) }));
-    return Array.from({ length: Math.ceil(days.length / 7) }, (_, index) => days.slice(index * 7, index * 7 + 7));
+    return Array.from({ length: Math.ceil(uploadStats.series.length / 7) }, (_, index) =>
+      uploadStats.series.slice(index * 7, index * 7 + 7),
+    );
   };
 
   const getUploadActivityLevel = (count: number) => {
@@ -95,10 +96,10 @@
   };
 
   const getUploadActivityMonths = () => {
-    const endDate = uploadStats.to ? new Date(`${uploadStats.to}T00:00:00.000Z`) : today.toJSDate();
+    const endDate = uploadStats.to ? DateTime.fromISO(uploadStats.to, { zone: 'utc' }) : today;
     return Array.from({ length: 12 }, (_, index) => {
-      const monthDate = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth() - 11 + index, 1));
-      return monthDate.toLocaleString($locale, { month: 'short', timeZone: 'UTC' });
+      const monthDate = endDate.minus({ months: 11 - index });
+      return monthDate.toLocaleString({ month: 'short' }, { locale: $locale });
     });
   };
 

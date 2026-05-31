@@ -19,7 +19,7 @@ class UserUploadStatsResponseDtoSeriesInner {
 
   /// Number of uploads
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int count;
 

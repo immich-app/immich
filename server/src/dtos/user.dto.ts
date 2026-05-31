@@ -47,10 +47,10 @@ const UserUploadStatsResponseSchema = z
     series: z.array(
       z.object({
         date: z.string().describe('Date in UTC').meta({ example: '2024-01-01' }),
-        count: z.int().describe('Number of uploads'),
+        count: z.int().nonnegative().describe('Number of uploads'),
       }),
     ),
-    totalCount: z.int().describe('Total number of uploads'),
+    totalCount: z.int().nonnegative().describe('Total number of uploads'),
   })
   .meta({ id: 'UserUploadStatsResponseDto' });
 

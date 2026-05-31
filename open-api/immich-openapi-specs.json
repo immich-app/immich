@@ -26168,7 +26168,7 @@
                 "count": {
                   "description": "Number of uploads",
                   "maximum": 9007199254740991,
-                  "minimum": -9007199254740991,
+                  "minimum": 0,
                   "type": "integer"
                 },
                 "date": {
@@ -26193,7 +26193,7 @@
           "totalCount": {
             "description": "Total number of uploads",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "userId": {
