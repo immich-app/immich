@@ -426,6 +426,7 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
     redirect: 'error',
     headers: headers as Record<string, string>,
     body: formData,
+    window: null,
   });
   if (response.status !== 200 && response.status !== 201) {
     throw new Error(await response.text());
