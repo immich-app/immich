@@ -1,25 +1,16 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class QueuesResponseLegacyDto {
-  /// Returns a new [QueuesResponseLegacyDto] instance.
-  QueuesResponseLegacyDto({
+final class QueuesResponseLegacyDto {
+  const QueuesResponseLegacyDto({
     required this.backgroundTask,
     required this.backupDatabase,
     required this.duplicateDetection,
     required this.editor,
     required this.faceDetection,
     required this.facialRecognition,
-    required this.library_,
+    required this.library$,
     required this.metadataExtraction,
     required this.migration,
     required this.notifications,
@@ -33,203 +24,182 @@ class QueuesResponseLegacyDto {
     required this.workflow,
   });
 
-  QueueResponseLegacyDto backgroundTask;
+  final QueueResponseLegacyDto backgroundTask;
 
-  QueueResponseLegacyDto backupDatabase;
+  final QueueResponseLegacyDto backupDatabase;
 
-  QueueResponseLegacyDto duplicateDetection;
+  final QueueResponseLegacyDto duplicateDetection;
 
-  QueueResponseLegacyDto editor;
+  final QueueResponseLegacyDto editor;
 
-  QueueResponseLegacyDto faceDetection;
+  final QueueResponseLegacyDto faceDetection;
 
-  QueueResponseLegacyDto facialRecognition;
+  final QueueResponseLegacyDto facialRecognition;
 
-  QueueResponseLegacyDto library_;
+  final QueueResponseLegacyDto library$;
 
-  QueueResponseLegacyDto metadataExtraction;
+  final QueueResponseLegacyDto metadataExtraction;
 
-  QueueResponseLegacyDto migration;
+  final QueueResponseLegacyDto migration;
 
-  QueueResponseLegacyDto notifications;
+  final QueueResponseLegacyDto notifications;
 
-  QueueResponseLegacyDto ocr;
+  final QueueResponseLegacyDto ocr;
 
-  QueueResponseLegacyDto search;
+  final QueueResponseLegacyDto search;
 
-  QueueResponseLegacyDto sidecar;
+  final QueueResponseLegacyDto sidecar;
 
-  QueueResponseLegacyDto smartSearch;
+  final QueueResponseLegacyDto smartSearch;
 
-  QueueResponseLegacyDto storageTemplateMigration;
+  final QueueResponseLegacyDto storageTemplateMigration;
 
-  QueueResponseLegacyDto thumbnailGeneration;
+  final QueueResponseLegacyDto thumbnailGeneration;
 
-  QueueResponseLegacyDto videoConversion;
+  final QueueResponseLegacyDto videoConversion;
 
-  QueueResponseLegacyDto workflow;
+  final QueueResponseLegacyDto workflow;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is QueuesResponseLegacyDto &&
-    other.backgroundTask == backgroundTask &&
-    other.backupDatabase == backupDatabase &&
-    other.duplicateDetection == duplicateDetection &&
-    other.editor == editor &&
-    other.faceDetection == faceDetection &&
-    other.facialRecognition == facialRecognition &&
-    other.library_ == library_ &&
-    other.metadataExtraction == metadataExtraction &&
-    other.migration == migration &&
-    other.notifications == notifications &&
-    other.ocr == ocr &&
-    other.search == search &&
-    other.sidecar == sidecar &&
-    other.smartSearch == smartSearch &&
-    other.storageTemplateMigration == storageTemplateMigration &&
-    other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion &&
-    other.workflow == workflow;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (backgroundTask.hashCode) +
-    (backupDatabase.hashCode) +
-    (duplicateDetection.hashCode) +
-    (editor.hashCode) +
-    (faceDetection.hashCode) +
-    (facialRecognition.hashCode) +
-    (library_.hashCode) +
-    (metadataExtraction.hashCode) +
-    (migration.hashCode) +
-    (notifications.hashCode) +
-    (ocr.hashCode) +
-    (search.hashCode) +
-    (sidecar.hashCode) +
-    (smartSearch.hashCode) +
-    (storageTemplateMigration.hashCode) +
-    (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode) +
-    (workflow.hashCode);
-
-  @override
-  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  static QueuesResponseLegacyDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<QueuesResponseLegacyDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      backgroundTask: (QueueResponseLegacyDto.fromJson(json[r'backgroundTask']))!,
+      backupDatabase: (QueueResponseLegacyDto.fromJson(json[r'backupDatabase']))!,
+      duplicateDetection: (QueueResponseLegacyDto.fromJson(json[r'duplicateDetection']))!,
+      editor: (QueueResponseLegacyDto.fromJson(json[r'editor']))!,
+      faceDetection: (QueueResponseLegacyDto.fromJson(json[r'faceDetection']))!,
+      facialRecognition: (QueueResponseLegacyDto.fromJson(json[r'facialRecognition']))!,
+      library$: (QueueResponseLegacyDto.fromJson(json[r'library']))!,
+      metadataExtraction: (QueueResponseLegacyDto.fromJson(json[r'metadataExtraction']))!,
+      migration: (QueueResponseLegacyDto.fromJson(json[r'migration']))!,
+      notifications: (QueueResponseLegacyDto.fromJson(json[r'notifications']))!,
+      ocr: (QueueResponseLegacyDto.fromJson(json[r'ocr']))!,
+      search: (QueueResponseLegacyDto.fromJson(json[r'search']))!,
+      sidecar: (QueueResponseLegacyDto.fromJson(json[r'sidecar']))!,
+      smartSearch: (QueueResponseLegacyDto.fromJson(json[r'smartSearch']))!,
+      storageTemplateMigration: (QueueResponseLegacyDto.fromJson(json[r'storageTemplateMigration']))!,
+      thumbnailGeneration: (QueueResponseLegacyDto.fromJson(json[r'thumbnailGeneration']))!,
+      videoConversion: (QueueResponseLegacyDto.fromJson(json[r'videoConversion']))!,
+      workflow: (QueueResponseLegacyDto.fromJson(json[r'workflow']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'backgroundTask'] = this.backgroundTask;
-      json[r'backupDatabase'] = this.backupDatabase;
-      json[r'duplicateDetection'] = this.duplicateDetection;
-      json[r'editor'] = this.editor;
-      json[r'faceDetection'] = this.faceDetection;
-      json[r'facialRecognition'] = this.facialRecognition;
-      json[r'library'] = this.library_;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'migration'] = this.migration;
-      json[r'notifications'] = this.notifications;
-      json[r'ocr'] = this.ocr;
-      json[r'search'] = this.search;
-      json[r'sidecar'] = this.sidecar;
-      json[r'smartSearch'] = this.smartSearch;
-      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'videoConversion'] = this.videoConversion;
-      json[r'workflow'] = this.workflow;
+    json[r'backgroundTask'] = backgroundTask.toJson();
+    json[r'backupDatabase'] = backupDatabase.toJson();
+    json[r'duplicateDetection'] = duplicateDetection.toJson();
+    json[r'editor'] = editor.toJson();
+    json[r'faceDetection'] = faceDetection.toJson();
+    json[r'facialRecognition'] = facialRecognition.toJson();
+    json[r'library'] = library$.toJson();
+    json[r'metadataExtraction'] = metadataExtraction.toJson();
+    json[r'migration'] = migration.toJson();
+    json[r'notifications'] = notifications.toJson();
+    json[r'ocr'] = ocr.toJson();
+    json[r'search'] = search.toJson();
+    json[r'sidecar'] = sidecar.toJson();
+    json[r'smartSearch'] = smartSearch.toJson();
+    json[r'storageTemplateMigration'] = storageTemplateMigration.toJson();
+    json[r'thumbnailGeneration'] = thumbnailGeneration.toJson();
+    json[r'videoConversion'] = videoConversion.toJson();
+    json[r'workflow'] = workflow.toJson();
     return json;
   }
 
-  /// Returns a new [QueuesResponseLegacyDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static QueuesResponseLegacyDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueuesResponseLegacyDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return QueuesResponseLegacyDto(
-        backgroundTask: QueueResponseLegacyDto.fromJson(json[r'backgroundTask'])!,
-        backupDatabase: QueueResponseLegacyDto.fromJson(json[r'backupDatabase'])!,
-        duplicateDetection: QueueResponseLegacyDto.fromJson(json[r'duplicateDetection'])!,
-        editor: QueueResponseLegacyDto.fromJson(json[r'editor'])!,
-        faceDetection: QueueResponseLegacyDto.fromJson(json[r'faceDetection'])!,
-        facialRecognition: QueueResponseLegacyDto.fromJson(json[r'facialRecognition'])!,
-        library_: QueueResponseLegacyDto.fromJson(json[r'library'])!,
-        metadataExtraction: QueueResponseLegacyDto.fromJson(json[r'metadataExtraction'])!,
-        migration: QueueResponseLegacyDto.fromJson(json[r'migration'])!,
-        notifications: QueueResponseLegacyDto.fromJson(json[r'notifications'])!,
-        ocr: QueueResponseLegacyDto.fromJson(json[r'ocr'])!,
-        search: QueueResponseLegacyDto.fromJson(json[r'search'])!,
-        sidecar: QueueResponseLegacyDto.fromJson(json[r'sidecar'])!,
-        smartSearch: QueueResponseLegacyDto.fromJson(json[r'smartSearch'])!,
-        storageTemplateMigration: QueueResponseLegacyDto.fromJson(json[r'storageTemplateMigration'])!,
-        thumbnailGeneration: QueueResponseLegacyDto.fromJson(json[r'thumbnailGeneration'])!,
-        videoConversion: QueueResponseLegacyDto.fromJson(json[r'videoConversion'])!,
-        workflow: QueueResponseLegacyDto.fromJson(json[r'workflow'])!,
-      );
-    }
-    return null;
+  QueuesResponseLegacyDto copyWith({
+    QueueResponseLegacyDto? backgroundTask,
+    QueueResponseLegacyDto? backupDatabase,
+    QueueResponseLegacyDto? duplicateDetection,
+    QueueResponseLegacyDto? editor,
+    QueueResponseLegacyDto? faceDetection,
+    QueueResponseLegacyDto? facialRecognition,
+    QueueResponseLegacyDto? library$,
+    QueueResponseLegacyDto? metadataExtraction,
+    QueueResponseLegacyDto? migration,
+    QueueResponseLegacyDto? notifications,
+    QueueResponseLegacyDto? ocr,
+    QueueResponseLegacyDto? search,
+    QueueResponseLegacyDto? sidecar,
+    QueueResponseLegacyDto? smartSearch,
+    QueueResponseLegacyDto? storageTemplateMigration,
+    QueueResponseLegacyDto? thumbnailGeneration,
+    QueueResponseLegacyDto? videoConversion,
+    QueueResponseLegacyDto? workflow,
+  }) {
+    return .new(
+      backgroundTask: backgroundTask ?? this.backgroundTask,
+      backupDatabase: backupDatabase ?? this.backupDatabase,
+      duplicateDetection: duplicateDetection ?? this.duplicateDetection,
+      editor: editor ?? this.editor,
+      faceDetection: faceDetection ?? this.faceDetection,
+      facialRecognition: facialRecognition ?? this.facialRecognition,
+      library$: library$ ?? this.library$,
+      metadataExtraction: metadataExtraction ?? this.metadataExtraction,
+      migration: migration ?? this.migration,
+      notifications: notifications ?? this.notifications,
+      ocr: ocr ?? this.ocr,
+      search: search ?? this.search,
+      sidecar: sidecar ?? this.sidecar,
+      smartSearch: smartSearch ?? this.smartSearch,
+      storageTemplateMigration: storageTemplateMigration ?? this.storageTemplateMigration,
+      thumbnailGeneration: thumbnailGeneration ?? this.thumbnailGeneration,
+      videoConversion: videoConversion ?? this.videoConversion,
+      workflow: workflow ?? this.workflow,
+    );
   }
 
-  static List<QueuesResponseLegacyDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <QueuesResponseLegacyDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = QueuesResponseLegacyDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is QueuesResponseLegacyDto &&
+            backgroundTask == other.backgroundTask &&
+            backupDatabase == other.backupDatabase &&
+            duplicateDetection == other.duplicateDetection &&
+            editor == other.editor &&
+            faceDetection == other.faceDetection &&
+            facialRecognition == other.facialRecognition &&
+            library$ == other.library$ &&
+            metadataExtraction == other.metadataExtraction &&
+            migration == other.migration &&
+            notifications == other.notifications &&
+            ocr == other.ocr &&
+            search == other.search &&
+            sidecar == other.sidecar &&
+            smartSearch == other.smartSearch &&
+            storageTemplateMigration == other.storageTemplateMigration &&
+            thumbnailGeneration == other.thumbnailGeneration &&
+            videoConversion == other.videoConversion &&
+            workflow == other.workflow);
   }
 
-  static Map<String, QueuesResponseLegacyDto> mapFromJson(dynamic json) {
-    final map = <String, QueuesResponseLegacyDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = QueuesResponseLegacyDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      backgroundTask,
+      backupDatabase,
+      duplicateDetection,
+      editor,
+      faceDetection,
+      facialRecognition,
+      library$,
+      metadataExtraction,
+      migration,
+      notifications,
+      ocr,
+      search,
+      sidecar,
+      smartSearch,
+      storageTemplateMigration,
+      thumbnailGeneration,
+      videoConversion,
+      workflow,
+    ]);
   }
 
-  // maps a json object with a list of QueuesResponseLegacyDto-objects as value to a dart map
-  static Map<String, List<QueuesResponseLegacyDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<QueuesResponseLegacyDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = QueuesResponseLegacyDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'backgroundTask',
-    'backupDatabase',
-    'duplicateDetection',
-    'editor',
-    'faceDetection',
-    'facialRecognition',
-    'library',
-    'metadataExtraction',
-    'migration',
-    'notifications',
-    'ocr',
-    'search',
-    'sidecar',
-    'smartSearch',
-    'storageTemplateMigration',
-    'thumbnailGeneration',
-    'videoConversion',
-    'workflow',
-  };
+  @override
+  String toString() =>
+      'QueuesResponseLegacyDto(backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library\$=${library$}, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow)';
 }
-

@@ -1,130 +1,54 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class MemoriesUpdate {
-  /// Returns a new [MemoriesUpdate] instance.
-  MemoriesUpdate({
-    this.duration,
-    this.enabled,
-  });
+final class MemoriesUpdate {
+  const MemoriesUpdate({this.duration, this.enabled});
 
   /// Memory duration in seconds
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  int? duration;
+  final int? duration;
 
   /// Whether memories are enabled
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? enabled;
+  final bool? enabled;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is MemoriesUpdate &&
-    other.duration == duration &&
-    other.enabled == enabled;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (duration == null ? 0 : duration!.hashCode) +
-    (enabled == null ? 0 : enabled!.hashCode);
-
-  @override
-  String toString() => 'MemoriesUpdate[duration=$duration, enabled=$enabled]';
+  static MemoriesUpdate? fromJson(dynamic value) {
+    ApiCompat.upgrade<MemoriesUpdate>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(duration: (json[r'duration'] as int?), enabled: (json[r'enabled'] as bool?));
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.duration != null) {
-      json[r'duration'] = this.duration;
-    } else {
-    //  json[r'duration'] = null;
+    if (duration != null) {
+      json[r'duration'] = duration!;
     }
-    if (this.enabled != null) {
-      json[r'enabled'] = this.enabled;
-    } else {
-    //  json[r'enabled'] = null;
+    if (enabled != null) {
+      json[r'enabled'] = enabled!;
     }
     return json;
   }
 
-  /// Returns a new [MemoriesUpdate] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static MemoriesUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "MemoriesUpdate");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return MemoriesUpdate(
-        duration: mapValueOfType<int>(json, r'duration'),
-        enabled: mapValueOfType<bool>(json, r'enabled'),
-      );
-    }
-    return null;
+  MemoriesUpdate copyWith({Object? duration = _undefined, Object? enabled = _undefined}) {
+    return .new(
+      duration: identical(duration, _undefined) ? this.duration : duration as int?,
+      enabled: identical(enabled, _undefined) ? this.enabled : enabled as bool?,
+    );
   }
 
-  static List<MemoriesUpdate> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MemoriesUpdate>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MemoriesUpdate.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MemoriesUpdate && duration == other.duration && enabled == other.enabled);
   }
 
-  static Map<String, MemoriesUpdate> mapFromJson(dynamic json) {
-    final map = <String, MemoriesUpdate>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = MemoriesUpdate.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([duration, enabled]);
   }
 
-  // maps a json object with a list of MemoriesUpdate-objects as value to a dart map
-  static Map<String, List<MemoriesUpdate>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<MemoriesUpdate>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = MemoriesUpdate.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() => 'MemoriesUpdate(duration=$duration, enabled=$enabled)';
 }
-

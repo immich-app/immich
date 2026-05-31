@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class PlacesResponseDto {
-  /// Returns a new [PlacesResponseDto] instance.
-  PlacesResponseDto({
+final class PlacesResponseDto {
+  const PlacesResponseDto({
     this.admin1name,
     this.admin2name,
     required this.latitude,
@@ -21,134 +12,82 @@ class PlacesResponseDto {
   });
 
   /// Administrative level 1 name (state/province)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? admin1name;
+  final String? admin1name;
 
   /// Administrative level 2 name (county/district)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? admin2name;
+  final String? admin2name;
 
   /// Latitude coordinate
-  num latitude;
+  final double latitude;
 
   /// Longitude coordinate
-  num longitude;
+  final double longitude;
 
   /// Place name
-  String name;
+  final String name;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is PlacesResponseDto &&
-    other.admin1name == admin1name &&
-    other.admin2name == admin2name &&
-    other.latitude == latitude &&
-    other.longitude == longitude &&
-    other.name == name;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (admin1name == null ? 0 : admin1name!.hashCode) +
-    (admin2name == null ? 0 : admin2name!.hashCode) +
-    (latitude.hashCode) +
-    (longitude.hashCode) +
-    (name.hashCode);
-
-  @override
-  String toString() => 'PlacesResponseDto[admin1name=$admin1name, admin2name=$admin2name, latitude=$latitude, longitude=$longitude, name=$name]';
+  static PlacesResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<PlacesResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      admin1name: (json[r'admin1name'] as String?),
+      admin2name: (json[r'admin2name'] as String?),
+      latitude: (json[r'latitude'] as num).toDouble(),
+      longitude: (json[r'longitude'] as num).toDouble(),
+      name: json[r'name'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.admin1name != null) {
-      json[r'admin1name'] = this.admin1name;
-    } else {
-    //  json[r'admin1name'] = null;
+    if (admin1name != null) {
+      json[r'admin1name'] = admin1name!;
     }
-    if (this.admin2name != null) {
-      json[r'admin2name'] = this.admin2name;
-    } else {
-    //  json[r'admin2name'] = null;
+    if (admin2name != null) {
+      json[r'admin2name'] = admin2name!;
     }
-      json[r'latitude'] = this.latitude;
-      json[r'longitude'] = this.longitude;
-      json[r'name'] = this.name;
+    json[r'latitude'] = latitude;
+    json[r'longitude'] = longitude;
+    json[r'name'] = name;
     return json;
   }
 
-  /// Returns a new [PlacesResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static PlacesResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PlacesResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return PlacesResponseDto(
-        admin1name: mapValueOfType<String>(json, r'admin1name'),
-        admin2name: mapValueOfType<String>(json, r'admin2name'),
-        latitude: num.parse('${json[r'latitude']}'),
-        longitude: num.parse('${json[r'longitude']}'),
-        name: mapValueOfType<String>(json, r'name')!,
-      );
-    }
-    return null;
+  PlacesResponseDto copyWith({
+    Object? admin1name = _undefined,
+    Object? admin2name = _undefined,
+    double? latitude,
+    double? longitude,
+    String? name,
+  }) {
+    return .new(
+      admin1name: identical(admin1name, _undefined) ? this.admin1name : admin1name as String?,
+      admin2name: identical(admin2name, _undefined) ? this.admin2name : admin2name as String?,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      name: name ?? this.name,
+    );
   }
 
-  static List<PlacesResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PlacesResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PlacesResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is PlacesResponseDto &&
+            admin1name == other.admin1name &&
+            admin2name == other.admin2name &&
+            latitude == other.latitude &&
+            longitude == other.longitude &&
+            name == other.name);
   }
 
-  static Map<String, PlacesResponseDto> mapFromJson(dynamic json) {
-    final map = <String, PlacesResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = PlacesResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([admin1name, admin2name, latitude, longitude, name]);
   }
 
-  // maps a json object with a list of PlacesResponseDto-objects as value to a dart map
-  static Map<String, List<PlacesResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<PlacesResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = PlacesResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'latitude',
-    'longitude',
-    'name',
-  };
+  @override
+  String toString() =>
+      'PlacesResponseDto(admin1name=$admin1name, admin2name=$admin2name, latitude=$latitude, longitude=$longitude, name=$name)';
 }
-

@@ -24,7 +24,7 @@ class AssetApiRepository extends ApiRepository {
   AssetApiRepository(this._api, this._stacksApi, this._trashApi);
 
   Future<void> delete(List<String> ids, bool force) async {
-    return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force));
+    return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force.toOptional()));
   }
 
   Future<void> restoreTrash(List<String> ids) async {
@@ -33,12 +33,12 @@ class AssetApiRepository extends ApiRepository {
 
   Future<int> emptyTrash() async {
     final response = await _trashApi.emptyTrash();
-    return response?.count ?? 0;
+    return response.count;
   }
 
   Future<int> restoreAllTrash() async {
     final response = await _trashApi.restoreTrash();
-    return response?.count ?? 0;
+    return response.count;
   }
 
   Future<void> updateVisibility(List<String> ids, AssetVisibilityEnum visibility) async {
@@ -46,15 +46,17 @@ class AssetApiRepository extends ApiRepository {
   }
 
   Future<void> updateFavorite(List<String> ids, bool isFavorite) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite));
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite.toOptional()));
   }
 
   Future<void> updateLocation(List<String> ids, LatLng location) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, latitude: location.latitude, longitude: location.longitude));
+    return _api.updateAssets(
+      AssetBulkUpdateDto(ids: ids, latitude: location.latitude.toOptional(), longitude: location.longitude.toOptional()),
+    );
   }
 
   Future<void> updateDateTime(List<String> ids, DateTime dateTime) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: dateTime.toIso8601String()));
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: dateTime.toIso8601String().toOptional()));
   }
 
   Future<StackResponse> stack(List<String> ids) async {
@@ -86,11 +88,11 @@ class AssetApiRepository extends ApiRepository {
   }
 
   Future<void> updateDescription(String assetId, String description) {
-    return _api.updateAsset(assetId, UpdateAssetDto(description: description));
+    return _api.updateAsset(assetId, UpdateAssetDto(description: description.toOptional()));
   }
 
   Future<void> updateRating(String assetId, int rating) {
-    return _api.updateAsset(assetId, UpdateAssetDto(rating: rating));
+    return _api.updateAsset(assetId, UpdateAssetDto(rating: rating.toOptional()));
   }
 
   Future<AssetEditsResponseDto?> editAsset(String assetId, List<AssetEdit> edits) {

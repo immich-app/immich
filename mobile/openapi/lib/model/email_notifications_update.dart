@@ -1,145 +1,72 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class EmailNotificationsUpdate {
-  /// Returns a new [EmailNotificationsUpdate] instance.
-  EmailNotificationsUpdate({
-    this.albumInvite,
-    this.albumUpdate,
-    this.enabled,
-  });
+final class EmailNotificationsUpdate {
+  const EmailNotificationsUpdate({this.albumInvite, this.albumUpdate, this.enabled});
 
   /// Whether to receive email notifications for album invites
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? albumInvite;
+  final bool? albumInvite;
 
   /// Whether to receive email notifications for album updates
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? albumUpdate;
+  final bool? albumUpdate;
 
   /// Whether email notifications are enabled
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? enabled;
+  final bool? enabled;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is EmailNotificationsUpdate &&
-    other.albumInvite == albumInvite &&
-    other.albumUpdate == albumUpdate &&
-    other.enabled == enabled;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumInvite == null ? 0 : albumInvite!.hashCode) +
-    (albumUpdate == null ? 0 : albumUpdate!.hashCode) +
-    (enabled == null ? 0 : enabled!.hashCode);
-
-  @override
-  String toString() => 'EmailNotificationsUpdate[albumInvite=$albumInvite, albumUpdate=$albumUpdate, enabled=$enabled]';
+  static EmailNotificationsUpdate? fromJson(dynamic value) {
+    ApiCompat.upgrade<EmailNotificationsUpdate>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumInvite: (json[r'albumInvite'] as bool?),
+      albumUpdate: (json[r'albumUpdate'] as bool?),
+      enabled: (json[r'enabled'] as bool?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albumInvite != null) {
-      json[r'albumInvite'] = this.albumInvite;
-    } else {
-    //  json[r'albumInvite'] = null;
+    if (albumInvite != null) {
+      json[r'albumInvite'] = albumInvite!;
     }
-    if (this.albumUpdate != null) {
-      json[r'albumUpdate'] = this.albumUpdate;
-    } else {
-    //  json[r'albumUpdate'] = null;
+    if (albumUpdate != null) {
+      json[r'albumUpdate'] = albumUpdate!;
     }
-    if (this.enabled != null) {
-      json[r'enabled'] = this.enabled;
-    } else {
-    //  json[r'enabled'] = null;
+    if (enabled != null) {
+      json[r'enabled'] = enabled!;
     }
     return json;
   }
 
-  /// Returns a new [EmailNotificationsUpdate] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static EmailNotificationsUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "EmailNotificationsUpdate");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return EmailNotificationsUpdate(
-        albumInvite: mapValueOfType<bool>(json, r'albumInvite'),
-        albumUpdate: mapValueOfType<bool>(json, r'albumUpdate'),
-        enabled: mapValueOfType<bool>(json, r'enabled'),
-      );
-    }
-    return null;
+  EmailNotificationsUpdate copyWith({
+    Object? albumInvite = _undefined,
+    Object? albumUpdate = _undefined,
+    Object? enabled = _undefined,
+  }) {
+    return .new(
+      albumInvite: identical(albumInvite, _undefined) ? this.albumInvite : albumInvite as bool?,
+      albumUpdate: identical(albumUpdate, _undefined) ? this.albumUpdate : albumUpdate as bool?,
+      enabled: identical(enabled, _undefined) ? this.enabled : enabled as bool?,
+    );
   }
 
-  static List<EmailNotificationsUpdate> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <EmailNotificationsUpdate>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = EmailNotificationsUpdate.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is EmailNotificationsUpdate &&
+            albumInvite == other.albumInvite &&
+            albumUpdate == other.albumUpdate &&
+            enabled == other.enabled);
   }
 
-  static Map<String, EmailNotificationsUpdate> mapFromJson(dynamic json) {
-    final map = <String, EmailNotificationsUpdate>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = EmailNotificationsUpdate.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([albumInvite, albumUpdate, enabled]);
   }
 
-  // maps a json object with a list of EmailNotificationsUpdate-objects as value to a dart map
-  static Map<String, List<EmailNotificationsUpdate>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<EmailNotificationsUpdate>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = EmailNotificationsUpdate.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() => 'EmailNotificationsUpdate(albumInvite=$albumInvite, albumUpdate=$albumUpdate, enabled=$enabled)';
 }
-

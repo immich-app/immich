@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigImageDto {
-  /// Returns a new [SystemConfigImageDto] instance.
-  SystemConfigImageDto({
+final class SystemConfigImageDto {
+  const SystemConfigImageDto({
     required this.colorspace,
     required this.extractEmbedded,
     required this.fullsize,
@@ -20,113 +11,73 @@ class SystemConfigImageDto {
     required this.thumbnail,
   });
 
-  Colorspace colorspace;
+  final Colorspace colorspace;
 
   /// Extract embedded
-  bool extractEmbedded;
+  final bool extractEmbedded;
 
-  SystemConfigGeneratedFullsizeImageDto fullsize;
+  final SystemConfigGeneratedFullsizeImageDto fullsize;
 
-  SystemConfigGeneratedImageDto preview;
+  final SystemConfigGeneratedImageDto preview;
 
-  SystemConfigGeneratedImageDto thumbnail;
+  final SystemConfigGeneratedImageDto thumbnail;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigImageDto &&
-    other.colorspace == colorspace &&
-    other.extractEmbedded == extractEmbedded &&
-    other.fullsize == fullsize &&
-    other.preview == preview &&
-    other.thumbnail == thumbnail;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (colorspace.hashCode) +
-    (extractEmbedded.hashCode) +
-    (fullsize.hashCode) +
-    (preview.hashCode) +
-    (thumbnail.hashCode);
-
-  @override
-  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, fullsize=$fullsize, preview=$preview, thumbnail=$thumbnail]';
+  static SystemConfigImageDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigImageDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      colorspace: (Colorspace.fromJson(json[r'colorspace']))!,
+      extractEmbedded: json[r'extractEmbedded'] as bool,
+      fullsize: (SystemConfigGeneratedFullsizeImageDto.fromJson(json[r'fullsize']))!,
+      preview: (SystemConfigGeneratedImageDto.fromJson(json[r'preview']))!,
+      thumbnail: (SystemConfigGeneratedImageDto.fromJson(json[r'thumbnail']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'colorspace'] = this.colorspace;
-      json[r'extractEmbedded'] = this.extractEmbedded;
-      json[r'fullsize'] = this.fullsize;
-      json[r'preview'] = this.preview;
-      json[r'thumbnail'] = this.thumbnail;
+    json[r'colorspace'] = colorspace.toJson();
+    json[r'extractEmbedded'] = extractEmbedded;
+    json[r'fullsize'] = fullsize.toJson();
+    json[r'preview'] = preview.toJson();
+    json[r'thumbnail'] = thumbnail.toJson();
     return json;
   }
 
-  /// Returns a new [SystemConfigImageDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigImageDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigImageDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigImageDto(
-        colorspace: Colorspace.fromJson(json[r'colorspace'])!,
-        extractEmbedded: mapValueOfType<bool>(json, r'extractEmbedded')!,
-        fullsize: SystemConfigGeneratedFullsizeImageDto.fromJson(json[r'fullsize'])!,
-        preview: SystemConfigGeneratedImageDto.fromJson(json[r'preview'])!,
-        thumbnail: SystemConfigGeneratedImageDto.fromJson(json[r'thumbnail'])!,
-      );
-    }
-    return null;
+  SystemConfigImageDto copyWith({
+    Colorspace? colorspace,
+    bool? extractEmbedded,
+    SystemConfigGeneratedFullsizeImageDto? fullsize,
+    SystemConfigGeneratedImageDto? preview,
+    SystemConfigGeneratedImageDto? thumbnail,
+  }) {
+    return .new(
+      colorspace: colorspace ?? this.colorspace,
+      extractEmbedded: extractEmbedded ?? this.extractEmbedded,
+      fullsize: fullsize ?? this.fullsize,
+      preview: preview ?? this.preview,
+      thumbnail: thumbnail ?? this.thumbnail,
+    );
   }
 
-  static List<SystemConfigImageDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigImageDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigImageDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigImageDto &&
+            colorspace == other.colorspace &&
+            extractEmbedded == other.extractEmbedded &&
+            fullsize == other.fullsize &&
+            preview == other.preview &&
+            thumbnail == other.thumbnail);
   }
 
-  static Map<String, SystemConfigImageDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigImageDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigImageDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([colorspace, extractEmbedded, fullsize, preview, thumbnail]);
   }
 
-  // maps a json object with a list of SystemConfigImageDto-objects as value to a dart map
-  static Map<String, List<SystemConfigImageDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigImageDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigImageDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'colorspace',
-    'extractEmbedded',
-    'fullsize',
-    'preview',
-    'thumbnail',
-  };
+  @override
+  String toString() =>
+      'SystemConfigImageDto(colorspace=$colorspace, extractEmbedded=$extractEmbedded, fullsize=$fullsize, preview=$preview, thumbnail=$thumbnail)';
 }
-

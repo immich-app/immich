@@ -1,112 +1,53 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class DownloadResponse {
-  /// Returns a new [DownloadResponse] instance.
-  DownloadResponse({
-    required this.archiveSize,
-    required this.includeEmbeddedVideos,
-  });
+final class DownloadResponse {
+  const DownloadResponse({required this.archiveSize, required this.includeEmbeddedVideos});
 
   /// Maximum archive size in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int archiveSize;
+  final int archiveSize;
 
   /// Whether to include embedded videos in downloads
-  bool includeEmbeddedVideos;
+  final bool includeEmbeddedVideos;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is DownloadResponse &&
-    other.archiveSize == archiveSize &&
-    other.includeEmbeddedVideos == includeEmbeddedVideos;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (archiveSize.hashCode) +
-    (includeEmbeddedVideos.hashCode);
-
-  @override
-  String toString() => 'DownloadResponse[archiveSize=$archiveSize, includeEmbeddedVideos=$includeEmbeddedVideos]';
+  static DownloadResponse? fromJson(dynamic value) {
+    ApiCompat.upgrade<DownloadResponse>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      archiveSize: json[r'archiveSize'] as int,
+      includeEmbeddedVideos: json[r'includeEmbeddedVideos'] as bool,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'archiveSize'] = this.archiveSize;
-      json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
+    json[r'archiveSize'] = archiveSize;
+    json[r'includeEmbeddedVideos'] = includeEmbeddedVideos;
     return json;
   }
 
-  /// Returns a new [DownloadResponse] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static DownloadResponse? fromJson(dynamic value) {
-    upgradeDto(value, "DownloadResponse");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return DownloadResponse(
-        archiveSize: mapValueOfType<int>(json, r'archiveSize')!,
-        includeEmbeddedVideos: mapValueOfType<bool>(json, r'includeEmbeddedVideos')!,
-      );
-    }
-    return null;
+  DownloadResponse copyWith({int? archiveSize, bool? includeEmbeddedVideos}) {
+    return .new(
+      archiveSize: archiveSize ?? this.archiveSize,
+      includeEmbeddedVideos: includeEmbeddedVideos ?? this.includeEmbeddedVideos,
+    );
   }
 
-  static List<DownloadResponse> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <DownloadResponse>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = DownloadResponse.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is DownloadResponse &&
+            archiveSize == other.archiveSize &&
+            includeEmbeddedVideos == other.includeEmbeddedVideos);
   }
 
-  static Map<String, DownloadResponse> mapFromJson(dynamic json) {
-    final map = <String, DownloadResponse>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = DownloadResponse.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([archiveSize, includeEmbeddedVideos]);
   }
 
-  // maps a json object with a list of DownloadResponse-objects as value to a dart map
-  static Map<String, List<DownloadResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<DownloadResponse>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = DownloadResponse.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'archiveSize',
-    'includeEmbeddedVideos',
-  };
+  @override
+  String toString() => 'DownloadResponse(archiveSize=$archiveSize, includeEmbeddedVideos=$includeEmbeddedVideos)';
 }
-

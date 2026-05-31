@@ -1,120 +1,60 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class UserLicense {
-  /// Returns a new [UserLicense] instance.
-  UserLicense({
-    required this.activatedAt,
-    required this.activationKey,
-    required this.licenseKey,
-  });
+final class UserLicense {
+  const UserLicense({required this.activatedAt, required this.activationKey, required this.licenseKey});
 
   /// Activation date
-  DateTime activatedAt;
+  final DateTime activatedAt;
 
   /// Activation key
-  String activationKey;
+  final String activationKey;
 
-  /// License key (format: /^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$/)
-  String licenseKey;
+  /// License key (format: /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/)
+  final String licenseKey;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is UserLicense &&
-    other.activatedAt == activatedAt &&
-    other.activationKey == activationKey &&
-    other.licenseKey == licenseKey;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (activatedAt.hashCode) +
-    (activationKey.hashCode) +
-    (licenseKey.hashCode);
-
-  @override
-  String toString() => 'UserLicense[activatedAt=$activatedAt, activationKey=$activationKey, licenseKey=$licenseKey]';
+  static UserLicense? fromJson(dynamic value) {
+    ApiCompat.upgrade<UserLicense>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      activatedAt: DateTime.parse(json[r'activatedAt'] as String),
+      activationKey: json[r'activationKey'] as String,
+      licenseKey: json[r'licenseKey'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'activatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.activatedAt.millisecondsSinceEpoch
-        : this.activatedAt.toUtc().toIso8601String();
-      json[r'activationKey'] = this.activationKey;
-      json[r'licenseKey'] = this.licenseKey;
+    json[r'activatedAt'] = activatedAt.toUtc().toIso8601String();
+    json[r'activationKey'] = activationKey;
+    json[r'licenseKey'] = licenseKey;
     return json;
   }
 
-  /// Returns a new [UserLicense] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static UserLicense? fromJson(dynamic value) {
-    upgradeDto(value, "UserLicense");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return UserLicense(
-        activatedAt: mapDateTime(json, r'activatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        activationKey: mapValueOfType<String>(json, r'activationKey')!,
-        licenseKey: mapValueOfType<String>(json, r'licenseKey')!,
-      );
-    }
-    return null;
+  UserLicense copyWith({DateTime? activatedAt, String? activationKey, String? licenseKey}) {
+    return .new(
+      activatedAt: activatedAt ?? this.activatedAt,
+      activationKey: activationKey ?? this.activationKey,
+      licenseKey: licenseKey ?? this.licenseKey,
+    );
   }
 
-  static List<UserLicense> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UserLicense>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UserLicense.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is UserLicense &&
+            activatedAt == other.activatedAt &&
+            activationKey == other.activationKey &&
+            licenseKey == other.licenseKey);
   }
 
-  static Map<String, UserLicense> mapFromJson(dynamic json) {
-    final map = <String, UserLicense>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = UserLicense.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([activatedAt, activationKey, licenseKey]);
   }
 
-  // maps a json object with a list of UserLicense-objects as value to a dart map
-  static Map<String, List<UserLicense>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<UserLicense>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = UserLicense.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'activatedAt',
-    'activationKey',
-    'licenseKey',
-  };
+  @override
+  String toString() => 'UserLicense(activatedAt=$activatedAt, activationKey=$activationKey, licenseKey=$licenseKey)';
 }
-

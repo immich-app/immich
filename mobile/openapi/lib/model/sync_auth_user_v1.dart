@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncAuthUserV1 {
-  /// Returns a new [SyncAuthUserV1] instance.
-  SyncAuthUserV1({
+final class SyncAuthUserV1 {
+  const SyncAuthUserV1({
     this.avatarColor,
     required this.deletedAt,
     required this.email,
@@ -28,209 +19,166 @@ class SyncAuthUserV1 {
     required this.storageLabel,
   });
 
-  UserAvatarColor? avatarColor;
+  final UserAvatarColor? avatarColor;
 
   /// User deleted at
-  DateTime? deletedAt;
+  final DateTime? deletedAt;
 
   /// User email
-  String email;
+  final String email;
 
   /// User has profile image
-  bool hasProfileImage;
+  final bool hasProfileImage;
 
   /// User ID
-  String id;
+  final String id;
 
   /// User is admin
-  bool isAdmin;
+  final bool isAdmin;
 
   /// User name
-  String name;
+  final String name;
 
   /// User OAuth ID
-  String oauthId;
+  final String oauthId;
 
   /// User pin code
-  String? pinCode;
+  final String? pinCode;
 
   /// User profile changed at
-  DateTime profileChangedAt;
+  final DateTime profileChangedAt;
 
   /// Quota size in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int? quotaSizeInBytes;
+  final int? quotaSizeInBytes;
 
   /// Quota usage in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int quotaUsageInBytes;
+  final int quotaUsageInBytes;
 
   /// User storage label
-  String? storageLabel;
+  final String? storageLabel;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAuthUserV1 &&
-    other.avatarColor == avatarColor &&
-    other.deletedAt == deletedAt &&
-    other.email == email &&
-    other.hasProfileImage == hasProfileImage &&
-    other.id == id &&
-    other.isAdmin == isAdmin &&
-    other.name == name &&
-    other.oauthId == oauthId &&
-    other.pinCode == pinCode &&
-    other.profileChangedAt == profileChangedAt &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.quotaUsageInBytes == quotaUsageInBytes &&
-    other.storageLabel == storageLabel;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (email.hashCode) +
-    (hasProfileImage.hashCode) +
-    (id.hashCode) +
-    (isAdmin.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
-    (pinCode == null ? 0 : pinCode!.hashCode) +
-    (profileChangedAt.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (quotaUsageInBytes.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode);
-
-  @override
-  String toString() => 'SyncAuthUserV1[avatarColor=$avatarColor, deletedAt=$deletedAt, email=$email, hasProfileImage=$hasProfileImage, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, pinCode=$pinCode, profileChangedAt=$profileChangedAt, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, storageLabel=$storageLabel]';
+  static SyncAuthUserV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncAuthUserV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+      deletedAt: (json[r'deletedAt'] == null ? null : DateTime.parse(json[r'deletedAt'] as String)),
+      email: json[r'email'] as String,
+      hasProfileImage: json[r'hasProfileImage'] as bool,
+      id: json[r'id'] as String,
+      isAdmin: json[r'isAdmin'] as bool,
+      name: json[r'name'] as String,
+      oauthId: json[r'oauthId'] as String,
+      pinCode: (json[r'pinCode'] as String?),
+      profileChangedAt: DateTime.parse(json[r'profileChangedAt'] as String),
+      quotaSizeInBytes: (json[r'quotaSizeInBytes'] as int?),
+      quotaUsageInBytes: json[r'quotaUsageInBytes'] as int,
+      storageLabel: (json[r'storageLabel'] as String?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
-      json[r'avatarColor'] = this.avatarColor;
-    } else {
-    //  json[r'avatarColor'] = null;
+    if (avatarColor != null) {
+      json[r'avatarColor'] = avatarColor!.toJson();
     }
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.deletedAt!.millisecondsSinceEpoch
-        : this.deletedAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'deletedAt'] = null;
+    if (deletedAt != null) {
+      json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
     }
-      json[r'email'] = this.email;
-      json[r'hasProfileImage'] = this.hasProfileImage;
-      json[r'id'] = this.id;
-      json[r'isAdmin'] = this.isAdmin;
-      json[r'name'] = this.name;
-      json[r'oauthId'] = this.oauthId;
-    if (this.pinCode != null) {
-      json[r'pinCode'] = this.pinCode;
-    } else {
-    //  json[r'pinCode'] = null;
+    json[r'email'] = email;
+    json[r'hasProfileImage'] = hasProfileImage;
+    json[r'id'] = id;
+    json[r'isAdmin'] = isAdmin;
+    json[r'name'] = name;
+    json[r'oauthId'] = oauthId;
+    if (pinCode != null) {
+      json[r'pinCode'] = pinCode!;
     }
-      json[r'profileChangedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.profileChangedAt.millisecondsSinceEpoch
-        : this.profileChangedAt.toUtc().toIso8601String();
-    if (this.quotaSizeInBytes != null) {
-      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
-    } else {
-    //  json[r'quotaSizeInBytes'] = null;
+    json[r'profileChangedAt'] = profileChangedAt.toUtc().toIso8601String();
+    if (quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = quotaSizeInBytes!;
     }
-      json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
-    if (this.storageLabel != null) {
-      json[r'storageLabel'] = this.storageLabel;
-    } else {
-    //  json[r'storageLabel'] = null;
+    json[r'quotaUsageInBytes'] = quotaUsageInBytes;
+    if (storageLabel != null) {
+      json[r'storageLabel'] = storageLabel!;
     }
     return json;
   }
 
-  /// Returns a new [SyncAuthUserV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncAuthUserV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAuthUserV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncAuthUserV1(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
-        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        email: mapValueOfType<String>(json, r'email')!,
-        hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
-        pinCode: mapValueOfType<String>(json, r'pinCode'),
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
-        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes')!,
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-      );
-    }
-    return null;
+  SyncAuthUserV1 copyWith({
+    Object? avatarColor = _undefined,
+    Object? deletedAt = _undefined,
+    String? email,
+    bool? hasProfileImage,
+    String? id,
+    bool? isAdmin,
+    String? name,
+    String? oauthId,
+    Object? pinCode = _undefined,
+    DateTime? profileChangedAt,
+    Object? quotaSizeInBytes = _undefined,
+    int? quotaUsageInBytes,
+    Object? storageLabel = _undefined,
+  }) {
+    return .new(
+      avatarColor: identical(avatarColor, _undefined) ? this.avatarColor : avatarColor as UserAvatarColor?,
+      deletedAt: identical(deletedAt, _undefined) ? this.deletedAt : deletedAt as DateTime?,
+      email: email ?? this.email,
+      hasProfileImage: hasProfileImage ?? this.hasProfileImage,
+      id: id ?? this.id,
+      isAdmin: isAdmin ?? this.isAdmin,
+      name: name ?? this.name,
+      oauthId: oauthId ?? this.oauthId,
+      pinCode: identical(pinCode, _undefined) ? this.pinCode : pinCode as String?,
+      profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+      quotaSizeInBytes: identical(quotaSizeInBytes, _undefined) ? this.quotaSizeInBytes : quotaSizeInBytes as int?,
+      quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+      storageLabel: identical(storageLabel, _undefined) ? this.storageLabel : storageLabel as String?,
+    );
   }
 
-  static List<SyncAuthUserV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAuthUserV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAuthUserV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncAuthUserV1 &&
+            avatarColor == other.avatarColor &&
+            deletedAt == other.deletedAt &&
+            email == other.email &&
+            hasProfileImage == other.hasProfileImage &&
+            id == other.id &&
+            isAdmin == other.isAdmin &&
+            name == other.name &&
+            oauthId == other.oauthId &&
+            pinCode == other.pinCode &&
+            profileChangedAt == other.profileChangedAt &&
+            quotaSizeInBytes == other.quotaSizeInBytes &&
+            quotaUsageInBytes == other.quotaUsageInBytes &&
+            storageLabel == other.storageLabel);
   }
 
-  static Map<String, SyncAuthUserV1> mapFromJson(dynamic json) {
-    final map = <String, SyncAuthUserV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncAuthUserV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      avatarColor,
+      deletedAt,
+      email,
+      hasProfileImage,
+      id,
+      isAdmin,
+      name,
+      oauthId,
+      pinCode,
+      profileChangedAt,
+      quotaSizeInBytes,
+      quotaUsageInBytes,
+      storageLabel,
+    ]);
   }
 
-  // maps a json object with a list of SyncAuthUserV1-objects as value to a dart map
-  static Map<String, List<SyncAuthUserV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncAuthUserV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncAuthUserV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'deletedAt',
-    'email',
-    'hasProfileImage',
-    'id',
-    'isAdmin',
-    'name',
-    'oauthId',
-    'pinCode',
-    'profileChangedAt',
-    'quotaSizeInBytes',
-    'quotaUsageInBytes',
-    'storageLabel',
-  };
+  @override
+  String toString() =>
+      'SyncAuthUserV1(avatarColor=$avatarColor, deletedAt=$deletedAt, email=$email, hasProfileImage=$hasProfileImage, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, pinCode=$pinCode, profileChangedAt=$profileChangedAt, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, storageLabel=$storageLabel)';
 }
-

@@ -1,0 +1,22 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    # Verbatim Dart templates copied into the generated package; they use
+    # `part of openapi.api;` and are not part of THIS package's library.
+    - runtime/**
+    # Throwaway emitter-output validation harnesses (split-library stubs that
+    # only type-check when concatenated). Not part of the generator.
+    - tool/_check/**
+    # Reference app-side code (imports package:openapi); compiles only inside
+    # the mobile app after the client swap, not in this package.
+    - app-migration/**
+
+formatter:
+  page_width: 100
+
+linter:
+  rules:
+    - prefer_final_locals
+    - prefer_single_quotes
+    - directives_ordering

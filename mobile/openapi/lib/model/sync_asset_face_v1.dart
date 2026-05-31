@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncAssetFaceV1 {
-  /// Returns a new [SyncAssetFaceV1] instance.
-  SyncAssetFaceV1({
+final class SyncAssetFaceV1 {
+  const SyncAssetFaceV1({
     required this.assetId,
     required this.boundingBoxX1,
     required this.boundingBoxX2,
@@ -26,178 +17,131 @@ class SyncAssetFaceV1 {
   });
 
   /// Asset ID
-  String assetId;
+  final String assetId;
 
   /// Bounding box X1
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int boundingBoxX1;
+  final int boundingBoxX1;
 
   /// Bounding box X2
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int boundingBoxX2;
+  final int boundingBoxX2;
 
   /// Bounding box Y1
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int boundingBoxY1;
+  final int boundingBoxY1;
 
   /// Bounding box Y2
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int boundingBoxY2;
+  final int boundingBoxY2;
 
   /// Asset face ID
-  String id;
+  final String id;
 
   /// Image height
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int imageHeight;
+  final int imageHeight;
 
   /// Image width
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int imageWidth;
+  final int imageWidth;
 
   /// Person ID
-  String? personId;
+  final String? personId;
 
   /// Source type
-  String sourceType;
+  final String sourceType;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAssetFaceV1 &&
-    other.assetId == assetId &&
-    other.boundingBoxX1 == boundingBoxX1 &&
-    other.boundingBoxX2 == boundingBoxX2 &&
-    other.boundingBoxY1 == boundingBoxY1 &&
-    other.boundingBoxY2 == boundingBoxY2 &&
-    other.id == id &&
-    other.imageHeight == imageHeight &&
-    other.imageWidth == imageWidth &&
-    other.personId == personId &&
-    other.sourceType == sourceType;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (boundingBoxX1.hashCode) +
-    (boundingBoxX2.hashCode) +
-    (boundingBoxY1.hashCode) +
-    (boundingBoxY2.hashCode) +
-    (id.hashCode) +
-    (imageHeight.hashCode) +
-    (imageWidth.hashCode) +
-    (personId == null ? 0 : personId!.hashCode) +
-    (sourceType.hashCode);
-
-  @override
-  String toString() => 'SyncAssetFaceV1[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, sourceType=$sourceType]';
+  static SyncAssetFaceV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncAssetFaceV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      assetId: json[r'assetId'] as String,
+      boundingBoxX1: json[r'boundingBoxX1'] as int,
+      boundingBoxX2: json[r'boundingBoxX2'] as int,
+      boundingBoxY1: json[r'boundingBoxY1'] as int,
+      boundingBoxY2: json[r'boundingBoxY2'] as int,
+      id: json[r'id'] as String,
+      imageHeight: json[r'imageHeight'] as int,
+      imageWidth: json[r'imageWidth'] as int,
+      personId: (json[r'personId'] as String?),
+      sourceType: json[r'sourceType'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
-      json[r'boundingBoxX1'] = this.boundingBoxX1;
-      json[r'boundingBoxX2'] = this.boundingBoxX2;
-      json[r'boundingBoxY1'] = this.boundingBoxY1;
-      json[r'boundingBoxY2'] = this.boundingBoxY2;
-      json[r'id'] = this.id;
-      json[r'imageHeight'] = this.imageHeight;
-      json[r'imageWidth'] = this.imageWidth;
-    if (this.personId != null) {
-      json[r'personId'] = this.personId;
-    } else {
-    //  json[r'personId'] = null;
+    json[r'assetId'] = assetId;
+    json[r'boundingBoxX1'] = boundingBoxX1;
+    json[r'boundingBoxX2'] = boundingBoxX2;
+    json[r'boundingBoxY1'] = boundingBoxY1;
+    json[r'boundingBoxY2'] = boundingBoxY2;
+    json[r'id'] = id;
+    json[r'imageHeight'] = imageHeight;
+    json[r'imageWidth'] = imageWidth;
+    if (personId != null) {
+      json[r'personId'] = personId!;
     }
-      json[r'sourceType'] = this.sourceType;
+    json[r'sourceType'] = sourceType;
     return json;
   }
 
-  /// Returns a new [SyncAssetFaceV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncAssetFaceV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetFaceV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncAssetFaceV1(
-        assetId: mapValueOfType<String>(json, r'assetId')!,
-        boundingBoxX1: mapValueOfType<int>(json, r'boundingBoxX1')!,
-        boundingBoxX2: mapValueOfType<int>(json, r'boundingBoxX2')!,
-        boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
-        boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
-        imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
-        personId: mapValueOfType<String>(json, r'personId'),
-        sourceType: mapValueOfType<String>(json, r'sourceType')!,
-      );
-    }
-    return null;
+  SyncAssetFaceV1 copyWith({
+    String? assetId,
+    int? boundingBoxX1,
+    int? boundingBoxX2,
+    int? boundingBoxY1,
+    int? boundingBoxY2,
+    String? id,
+    int? imageHeight,
+    int? imageWidth,
+    Object? personId = _undefined,
+    String? sourceType,
+  }) {
+    return .new(
+      assetId: assetId ?? this.assetId,
+      boundingBoxX1: boundingBoxX1 ?? this.boundingBoxX1,
+      boundingBoxX2: boundingBoxX2 ?? this.boundingBoxX2,
+      boundingBoxY1: boundingBoxY1 ?? this.boundingBoxY1,
+      boundingBoxY2: boundingBoxY2 ?? this.boundingBoxY2,
+      id: id ?? this.id,
+      imageHeight: imageHeight ?? this.imageHeight,
+      imageWidth: imageWidth ?? this.imageWidth,
+      personId: identical(personId, _undefined) ? this.personId : personId as String?,
+      sourceType: sourceType ?? this.sourceType,
+    );
   }
 
-  static List<SyncAssetFaceV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAssetFaceV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAssetFaceV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncAssetFaceV1 &&
+            assetId == other.assetId &&
+            boundingBoxX1 == other.boundingBoxX1 &&
+            boundingBoxX2 == other.boundingBoxX2 &&
+            boundingBoxY1 == other.boundingBoxY1 &&
+            boundingBoxY2 == other.boundingBoxY2 &&
+            id == other.id &&
+            imageHeight == other.imageHeight &&
+            imageWidth == other.imageWidth &&
+            personId == other.personId &&
+            sourceType == other.sourceType);
   }
 
-  static Map<String, SyncAssetFaceV1> mapFromJson(dynamic json) {
-    final map = <String, SyncAssetFaceV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncAssetFaceV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      assetId,
+      boundingBoxX1,
+      boundingBoxX2,
+      boundingBoxY1,
+      boundingBoxY2,
+      id,
+      imageHeight,
+      imageWidth,
+      personId,
+      sourceType,
+    ]);
   }
 
-  // maps a json object with a list of SyncAssetFaceV1-objects as value to a dart map
-  static Map<String, List<SyncAssetFaceV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncAssetFaceV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncAssetFaceV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'assetId',
-    'boundingBoxX1',
-    'boundingBoxX2',
-    'boundingBoxY1',
-    'boundingBoxY2',
-    'id',
-    'imageHeight',
-    'imageWidth',
-    'personId',
-    'sourceType',
-  };
+  @override
+  String toString() =>
+      'SyncAssetFaceV1(assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, sourceType=$sourceType)';
 }
-

@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerApkLinksDto {
-  /// Returns a new [ServerApkLinksDto] instance.
-  ServerApkLinksDto({
+final class ServerApkLinksDto {
+  const ServerApkLinksDto({
     required this.arm64v8a,
     required this.armeabiv7a,
     required this.universal,
@@ -20,108 +11,63 @@ class ServerApkLinksDto {
   });
 
   /// APK download link for ARM64 v8a architecture
-  String arm64v8a;
+  final String arm64v8a;
 
   /// APK download link for ARM EABI v7a architecture
-  String armeabiv7a;
+  final String armeabiv7a;
 
   /// APK download link for universal architecture
-  String universal;
+  final String universal;
 
   /// APK download link for x86_64 architecture
-  String x8664;
+  final String x8664;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerApkLinksDto &&
-    other.arm64v8a == arm64v8a &&
-    other.armeabiv7a == armeabiv7a &&
-    other.universal == universal &&
-    other.x8664 == x8664;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (arm64v8a.hashCode) +
-    (armeabiv7a.hashCode) +
-    (universal.hashCode) +
-    (x8664.hashCode);
-
-  @override
-  String toString() => 'ServerApkLinksDto[arm64v8a=$arm64v8a, armeabiv7a=$armeabiv7a, universal=$universal, x8664=$x8664]';
+  static ServerApkLinksDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerApkLinksDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      arm64v8a: json[r'arm64v8a'] as String,
+      armeabiv7a: json[r'armeabiv7a'] as String,
+      universal: json[r'universal'] as String,
+      x8664: json[r'x86_64'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'arm64v8a'] = this.arm64v8a;
-      json[r'armeabiv7a'] = this.armeabiv7a;
-      json[r'universal'] = this.universal;
-      json[r'x86_64'] = this.x8664;
+    json[r'arm64v8a'] = arm64v8a;
+    json[r'armeabiv7a'] = armeabiv7a;
+    json[r'universal'] = universal;
+    json[r'x86_64'] = x8664;
     return json;
   }
 
-  /// Returns a new [ServerApkLinksDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerApkLinksDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerApkLinksDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerApkLinksDto(
-        arm64v8a: mapValueOfType<String>(json, r'arm64v8a')!,
-        armeabiv7a: mapValueOfType<String>(json, r'armeabiv7a')!,
-        universal: mapValueOfType<String>(json, r'universal')!,
-        x8664: mapValueOfType<String>(json, r'x86_64')!,
-      );
-    }
-    return null;
+  ServerApkLinksDto copyWith({String? arm64v8a, String? armeabiv7a, String? universal, String? x8664}) {
+    return .new(
+      arm64v8a: arm64v8a ?? this.arm64v8a,
+      armeabiv7a: armeabiv7a ?? this.armeabiv7a,
+      universal: universal ?? this.universal,
+      x8664: x8664 ?? this.x8664,
+    );
   }
 
-  static List<ServerApkLinksDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerApkLinksDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerApkLinksDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerApkLinksDto &&
+            arm64v8a == other.arm64v8a &&
+            armeabiv7a == other.armeabiv7a &&
+            universal == other.universal &&
+            x8664 == other.x8664);
   }
 
-  static Map<String, ServerApkLinksDto> mapFromJson(dynamic json) {
-    final map = <String, ServerApkLinksDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerApkLinksDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([arm64v8a, armeabiv7a, universal, x8664]);
   }
 
-  // maps a json object with a list of ServerApkLinksDto-objects as value to a dart map
-  static Map<String, List<ServerApkLinksDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerApkLinksDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerApkLinksDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'arm64v8a',
-    'armeabiv7a',
-    'universal',
-    'x86_64',
-  };
+  @override
+  String toString() =>
+      'ServerApkLinksDto(arm64v8a=$arm64v8a, armeabiv7a=$armeabiv7a, universal=$universal, x8664=$x8664)';
 }
-

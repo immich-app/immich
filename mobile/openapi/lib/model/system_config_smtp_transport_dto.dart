@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigSmtpTransportDto {
-  /// Returns a new [SystemConfigSmtpTransportDto] instance.
-  SystemConfigSmtpTransportDto({
+final class SystemConfigSmtpTransportDto {
+  const SystemConfigSmtpTransportDto({
     required this.host,
     required this.ignoreCert,
     required this.password,
@@ -22,127 +13,84 @@ class SystemConfigSmtpTransportDto {
   });
 
   /// SMTP server hostname
-  String host;
+  final String host;
 
   /// Whether to ignore SSL certificate errors
-  bool ignoreCert;
+  final bool ignoreCert;
 
   /// SMTP password
-  String password;
+  final String password;
 
   /// SMTP server port
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 65535
-  int port;
+  final int port;
 
   /// Whether to use secure connection (TLS/SSL)
-  bool secure;
+  final bool secure;
 
   /// SMTP username
-  String username;
+  final String username;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigSmtpTransportDto &&
-    other.host == host &&
-    other.ignoreCert == ignoreCert &&
-    other.password == password &&
-    other.port == port &&
-    other.secure == secure &&
-    other.username == username;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (host.hashCode) +
-    (ignoreCert.hashCode) +
-    (password.hashCode) +
-    (port.hashCode) +
-    (secure.hashCode) +
-    (username.hashCode);
-
-  @override
-  String toString() => 'SystemConfigSmtpTransportDto[host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, secure=$secure, username=$username]';
+  static SystemConfigSmtpTransportDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigSmtpTransportDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      host: json[r'host'] as String,
+      ignoreCert: json[r'ignoreCert'] as bool,
+      password: json[r'password'] as String,
+      port: json[r'port'] as int,
+      secure: json[r'secure'] as bool,
+      username: json[r'username'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'host'] = this.host;
-      json[r'ignoreCert'] = this.ignoreCert;
-      json[r'password'] = this.password;
-      json[r'port'] = this.port;
-      json[r'secure'] = this.secure;
-      json[r'username'] = this.username;
+    json[r'host'] = host;
+    json[r'ignoreCert'] = ignoreCert;
+    json[r'password'] = password;
+    json[r'port'] = port;
+    json[r'secure'] = secure;
+    json[r'username'] = username;
     return json;
   }
 
-  /// Returns a new [SystemConfigSmtpTransportDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigSmtpTransportDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigSmtpTransportDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigSmtpTransportDto(
-        host: mapValueOfType<String>(json, r'host')!,
-        ignoreCert: mapValueOfType<bool>(json, r'ignoreCert')!,
-        password: mapValueOfType<String>(json, r'password')!,
-        port: mapValueOfType<int>(json, r'port')!,
-        secure: mapValueOfType<bool>(json, r'secure')!,
-        username: mapValueOfType<String>(json, r'username')!,
-      );
-    }
-    return null;
+  SystemConfigSmtpTransportDto copyWith({
+    String? host,
+    bool? ignoreCert,
+    String? password,
+    int? port,
+    bool? secure,
+    String? username,
+  }) {
+    return .new(
+      host: host ?? this.host,
+      ignoreCert: ignoreCert ?? this.ignoreCert,
+      password: password ?? this.password,
+      port: port ?? this.port,
+      secure: secure ?? this.secure,
+      username: username ?? this.username,
+    );
   }
 
-  static List<SystemConfigSmtpTransportDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigSmtpTransportDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigSmtpTransportDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigSmtpTransportDto &&
+            host == other.host &&
+            ignoreCert == other.ignoreCert &&
+            password == other.password &&
+            port == other.port &&
+            secure == other.secure &&
+            username == other.username);
   }
 
-  static Map<String, SystemConfigSmtpTransportDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigSmtpTransportDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigSmtpTransportDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([host, ignoreCert, password, port, secure, username]);
   }
 
-  // maps a json object with a list of SystemConfigSmtpTransportDto-objects as value to a dart map
-  static Map<String, List<SystemConfigSmtpTransportDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigSmtpTransportDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigSmtpTransportDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'host',
-    'ignoreCert',
-    'password',
-    'port',
-    'secure',
-    'username',
-  };
+  @override
+  String toString() =>
+      'SystemConfigSmtpTransportDto(host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, secure=$secure, username=$username)';
 }
-

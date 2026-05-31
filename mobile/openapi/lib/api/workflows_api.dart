@@ -1,318 +1,57 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class WorkflowsApi {
   WorkflowsApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Create a workflow
-  ///
-  /// Create a new workflow, the workflow can also be created with empty filters and actions.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [WorkflowCreateDto] workflowCreateDto (required):
-  Future<Response> createWorkflowWithHttpInfo(WorkflowCreateDto workflowCreateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/workflows';
+  static const ApiVersion searchWorkflowsAddedIn = .new(3, 0, 0);
 
-    // ignore: prefer_final_locals
-    Object? postBody = workflowCreateDto;
+  static const ApiState searchWorkflowsState = .added;
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiVersion createWorkflowAddedIn = .new(3, 0, 0);
 
-    const contentTypes = <String>['application/json'];
+  static const ApiState createWorkflowState = .added;
 
+  static const ApiVersion getWorkflowTriggersAddedIn = .new(3, 0, 0);
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiState getWorkflowTriggersState = .added;
 
-  /// Create a workflow
-  ///
-  /// Create a new workflow, the workflow can also be created with empty filters and actions.
-  ///
-  /// Parameters:
-  ///
-  /// * [WorkflowCreateDto] workflowCreateDto (required):
-  Future<WorkflowResponseDto?> createWorkflow(WorkflowCreateDto workflowCreateDto,) async {
-    final response = await createWorkflowWithHttpInfo(workflowCreateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'WorkflowResponseDto',) as WorkflowResponseDto;
-    
-    }
-    return null;
-  }
+  static const ApiVersion deleteWorkflowAddedIn = .new(3, 0, 0);
 
-  /// Delete a workflow
-  ///
-  /// Delete a workflow by its ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> deleteWorkflowWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}'
-      .replaceAll('{id}', id);
+  static const ApiState deleteWorkflowState = .added;
 
-    // ignore: prefer_final_locals
-    Object? postBody;
+  static const ApiVersion getWorkflowAddedIn = .new(3, 0, 0);
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiState getWorkflowState = .added;
 
-    const contentTypes = <String>[];
+  static const ApiVersion updateWorkflowAddedIn = .new(3, 0, 0);
 
+  static const ApiState updateWorkflowState = .added;
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiVersion getWorkflowForShareAddedIn = .new(3, 0, 0);
 
-  /// Delete a workflow
-  ///
-  /// Delete a workflow by its ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> deleteWorkflow(String id,) async {
-    final response = await deleteWorkflowWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Retrieve a workflow
-  ///
-  /// Retrieve information about a specific workflow by its ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getWorkflowWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve a workflow
-  ///
-  /// Retrieve information about a specific workflow by its ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<WorkflowResponseDto?> getWorkflow(String id,) async {
-    final response = await getWorkflowWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'WorkflowResponseDto',) as WorkflowResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Retrieve a workflow
-  ///
-  /// Retrieve a workflow details without ids, default values, etc.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getWorkflowForShareWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}/share'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve a workflow
-  ///
-  /// Retrieve a workflow details without ids, default values, etc.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<WorkflowShareResponseDto?> getWorkflowForShare(String id,) async {
-    final response = await getWorkflowForShareWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'WorkflowShareResponseDto',) as WorkflowShareResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// List all workflow triggers
-  ///
-  /// Retrieve a list of all available workflow triggers.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> getWorkflowTriggersWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/triggers';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// List all workflow triggers
-  ///
-  /// Retrieve a list of all available workflow triggers.
-  Future<List<WorkflowTriggerResponseDto>?> getWorkflowTriggers() async {
-    final response = await getWorkflowTriggersWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<WorkflowTriggerResponseDto>') as List)
-        .cast<WorkflowTriggerResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
-  }
+  static const ApiState getWorkflowForShareState = .added;
 
   /// List all workflows
   ///
   /// Retrieve a list of workflows available to the authenticated user.
   ///
+  /// Available since server v3.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] description:
-  ///   Workflow description
-  ///
-  /// * [bool] enabled:
-  ///   Workflow enabled
-  ///
-  /// * [String] id:
-  ///   Workflow ID
-  ///
-  /// * [String] name:
-  ///   Workflow name
-  ///
-  /// * [WorkflowTrigger] trigger:
-  ///   Workflow trigger type
-  Future<Response> searchWorkflowsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> searchWorkflowsWithHttpInfo({
+    String? description,
+    bool? enabled,
+    String? id,
+    String? name,
+    WorkflowTrigger? trigger,
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/workflows';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -337,15 +76,15 @@ class WorkflowsApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -353,74 +92,251 @@ class WorkflowsApi {
   ///
   /// Retrieve a list of workflows available to the authenticated user.
   ///
-  /// Parameters:
-  ///
-  /// * [String] description:
-  ///   Workflow description
-  ///
-  /// * [bool] enabled:
-  ///   Workflow enabled
-  ///
-  /// * [String] id:
-  ///   Workflow ID
-  ///
-  /// * [String] name:
-  ///   Workflow name
-  ///
-  /// * [WorkflowTrigger] trigger:
-  ///   Workflow trigger type
-  Future<List<WorkflowResponseDto>?> searchWorkflows({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, }) async {
-    final response = await searchWorkflowsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, trigger: trigger, );
+  /// Available since server v3.0.0.
+  Future<List<WorkflowResponseDto>> searchWorkflows({
+    String? description,
+    bool? enabled,
+    String? id,
+    String? name,
+    WorkflowTrigger? trigger,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await searchWorkflowsWithHttpInfo(
+      description: description,
+      enabled: enabled,
+      id: id,
+      name: name,
+      trigger: trigger,
+      abortTrigger: abortTrigger,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<WorkflowResponseDto>') as List)
-        .cast<WorkflowResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<WorkflowResponseDto>') as List)
+          .cast<WorkflowResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Create a workflow
+  ///
+  /// Create a new workflow, the workflow can also be created with empty filters and actions.
+  ///
+  /// Available since server v3.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> createWorkflowWithHttpInfo(WorkflowCreateDto workflowCreateDto, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/workflows';
+
+    Object? postBody = workflowCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Create a workflow
+  ///
+  /// Create a new workflow, the workflow can also be created with empty filters and actions.
+  ///
+  /// Available since server v3.0.0.
+  Future<WorkflowResponseDto> createWorkflow(WorkflowCreateDto workflowCreateDto, {Future<void>? abortTrigger}) async {
+    final response = await createWorkflowWithHttpInfo(workflowCreateDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'WorkflowResponseDto')
+          as WorkflowResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// List all workflow triggers
+  ///
+  /// Retrieve a list of all available workflow triggers.
+  ///
+  /// Available since server v3.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getWorkflowTriggersWithHttpInfo({Future<void>? abortTrigger}) async {
+    final apiPath = r'/workflows/triggers';
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// List all workflow triggers
+  ///
+  /// Retrieve a list of all available workflow triggers.
+  ///
+  /// Available since server v3.0.0.
+  Future<List<WorkflowTriggerResponseDto>> getWorkflowTriggers({Future<void>? abortTrigger}) async {
+    final response = await getWorkflowTriggersWithHttpInfo(abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<WorkflowTriggerResponseDto>') as List)
+          .cast<WorkflowTriggerResponseDto>()
+          .toList(growable: false);
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Delete a workflow
+  ///
+  /// Delete a workflow by its ID.
+  ///
+  /// Available since server v3.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> deleteWorkflowWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/workflows/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Delete a workflow
+  ///
+  /// Delete a workflow by its ID.
+  ///
+  /// Available since server v3.0.0.
+  Future<void> deleteWorkflow(String id, {Future<void>? abortTrigger}) async {
+    final response = await deleteWorkflowWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Retrieve a workflow
+  ///
+  /// Retrieve information about a specific workflow by its ID.
+  ///
+  /// Available since server v3.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getWorkflowWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/workflows/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve a workflow
+  ///
+  /// Retrieve information about a specific workflow by its ID.
+  ///
+  /// Available since server v3.0.0.
+  Future<WorkflowResponseDto> getWorkflow(String id, {Future<void>? abortTrigger}) async {
+    final response = await getWorkflowWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'WorkflowResponseDto')
+          as WorkflowResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Update a workflow
   ///
   /// Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.
   ///
+  /// Available since server v3.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [WorkflowUpdateDto] workflowUpdateDto (required):
-  Future<Response> updateWorkflowWithHttpInfo(String id, WorkflowUpdateDto workflowUpdateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> updateWorkflowWithHttpInfo(
+    String id,
+    WorkflowUpdateDto workflowUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/workflows/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody = workflowUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'PUT',
+      r'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -428,23 +344,67 @@ class WorkflowsApi {
   ///
   /// Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [WorkflowUpdateDto] workflowUpdateDto (required):
-  Future<WorkflowResponseDto?> updateWorkflow(String id, WorkflowUpdateDto workflowUpdateDto,) async {
-    final response = await updateWorkflowWithHttpInfo(id, workflowUpdateDto,);
+  /// Available since server v3.0.0.
+  Future<WorkflowResponseDto> updateWorkflow(
+    String id,
+    WorkflowUpdateDto workflowUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updateWorkflowWithHttpInfo(id, workflowUpdateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'WorkflowResponseDto',) as WorkflowResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'WorkflowResponseDto')
+          as WorkflowResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Retrieve a workflow
+  ///
+  /// Retrieve a workflow details without ids, default values, etc.
+  ///
+  /// Available since server v3.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getWorkflowForShareWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/workflows/{id}/share'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve a workflow
+  ///
+  /// Retrieve a workflow details without ids, default values, etc.
+  ///
+  /// Available since server v3.0.0.
+  Future<WorkflowShareResponseDto> getWorkflowForShare(String id, {Future<void>? abortTrigger}) async {
+    final response = await getWorkflowForShareWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'WorkflowShareResponseDto')
+          as WorkflowShareResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

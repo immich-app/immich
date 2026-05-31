@@ -1,139 +1,67 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class LibraryStatsResponseDto {
-  /// Returns a new [LibraryStatsResponseDto] instance.
-  LibraryStatsResponseDto({
-    required this.photos,
-    required this.total,
-    required this.usage,
-    required this.videos,
-  });
+final class LibraryStatsResponseDto {
+  const LibraryStatsResponseDto({required this.photos, required this.total, required this.usage, required this.videos});
 
   /// Number of photos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int photos;
+  final int photos;
 
   /// Total number of assets
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int total;
+  final int total;
 
   /// Storage usage in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usage;
+  final int usage;
 
   /// Number of videos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int videos;
+  final int videos;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is LibraryStatsResponseDto &&
-    other.photos == photos &&
-    other.total == total &&
-    other.usage == usage &&
-    other.videos == videos;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (photos.hashCode) +
-    (total.hashCode) +
-    (usage.hashCode) +
-    (videos.hashCode);
-
-  @override
-  String toString() => 'LibraryStatsResponseDto[photos=$photos, total=$total, usage=$usage, videos=$videos]';
+  static LibraryStatsResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<LibraryStatsResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      photos: json[r'photos'] as int,
+      total: json[r'total'] as int,
+      usage: json[r'usage'] as int,
+      videos: json[r'videos'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'photos'] = this.photos;
-      json[r'total'] = this.total;
-      json[r'usage'] = this.usage;
-      json[r'videos'] = this.videos;
+    json[r'photos'] = photos;
+    json[r'total'] = total;
+    json[r'usage'] = usage;
+    json[r'videos'] = videos;
     return json;
   }
 
-  /// Returns a new [LibraryStatsResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static LibraryStatsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "LibraryStatsResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return LibraryStatsResponseDto(
-        photos: mapValueOfType<int>(json, r'photos')!,
-        total: mapValueOfType<int>(json, r'total')!,
-        usage: mapValueOfType<int>(json, r'usage')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
-      );
-    }
-    return null;
+  LibraryStatsResponseDto copyWith({int? photos, int? total, int? usage, int? videos}) {
+    return .new(
+      photos: photos ?? this.photos,
+      total: total ?? this.total,
+      usage: usage ?? this.usage,
+      videos: videos ?? this.videos,
+    );
   }
 
-  static List<LibraryStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <LibraryStatsResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = LibraryStatsResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is LibraryStatsResponseDto &&
+            photos == other.photos &&
+            total == other.total &&
+            usage == other.usage &&
+            videos == other.videos);
   }
 
-  static Map<String, LibraryStatsResponseDto> mapFromJson(dynamic json) {
-    final map = <String, LibraryStatsResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = LibraryStatsResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([photos, total, usage, videos]);
   }
 
-  // maps a json object with a list of LibraryStatsResponseDto-objects as value to a dart map
-  static Map<String, List<LibraryStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<LibraryStatsResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = LibraryStatsResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'photos',
-    'total',
-    'usage',
-    'videos',
-  };
+  @override
+  String toString() => 'LibraryStatsResponseDto(photos=$photos, total=$total, usage=$usage, videos=$videos)';
 }
-

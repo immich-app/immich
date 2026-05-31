@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetFaceCreateDto {
-  /// Returns a new [AssetFaceCreateDto] instance.
-  AssetFaceCreateDto({
+final class AssetFaceCreateDto {
+  const AssetFaceCreateDto({
     required this.assetId,
     required this.height,
     required this.imageHeight,
@@ -24,158 +15,100 @@ class AssetFaceCreateDto {
   });
 
   /// Asset ID
-  String assetId;
+  final String assetId;
 
   /// Face bounding box height
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int height;
+  final int height;
 
   /// Image height in pixels
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int imageHeight;
+  final int imageHeight;
 
   /// Image width in pixels
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int imageWidth;
+  final int imageWidth;
 
   /// Person ID
-  String personId;
+  final String personId;
 
   /// Face bounding box width
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int width;
+  final int width;
 
   /// Face bounding box X coordinate
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int x;
+  final int x;
 
   /// Face bounding box Y coordinate
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int y;
+  final int y;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetFaceCreateDto &&
-    other.assetId == assetId &&
-    other.height == height &&
-    other.imageHeight == imageHeight &&
-    other.imageWidth == imageWidth &&
-    other.personId == personId &&
-    other.width == width &&
-    other.x == x &&
-    other.y == y;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (height.hashCode) +
-    (imageHeight.hashCode) +
-    (imageWidth.hashCode) +
-    (personId.hashCode) +
-    (width.hashCode) +
-    (x.hashCode) +
-    (y.hashCode);
-
-  @override
-  String toString() => 'AssetFaceCreateDto[assetId=$assetId, height=$height, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, width=$width, x=$x, y=$y]';
+  static AssetFaceCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetFaceCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      assetId: json[r'assetId'] as String,
+      height: json[r'height'] as int,
+      imageHeight: json[r'imageHeight'] as int,
+      imageWidth: json[r'imageWidth'] as int,
+      personId: json[r'personId'] as String,
+      width: json[r'width'] as int,
+      x: json[r'x'] as int,
+      y: json[r'y'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
-      json[r'height'] = this.height;
-      json[r'imageHeight'] = this.imageHeight;
-      json[r'imageWidth'] = this.imageWidth;
-      json[r'personId'] = this.personId;
-      json[r'width'] = this.width;
-      json[r'x'] = this.x;
-      json[r'y'] = this.y;
+    json[r'assetId'] = assetId;
+    json[r'height'] = height;
+    json[r'imageHeight'] = imageHeight;
+    json[r'imageWidth'] = imageWidth;
+    json[r'personId'] = personId;
+    json[r'width'] = width;
+    json[r'x'] = x;
+    json[r'y'] = y;
     return json;
   }
 
-  /// Returns a new [AssetFaceCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetFaceCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetFaceCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetFaceCreateDto(
-        assetId: mapValueOfType<String>(json, r'assetId')!,
-        height: mapValueOfType<int>(json, r'height')!,
-        imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
-        imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
-        personId: mapValueOfType<String>(json, r'personId')!,
-        width: mapValueOfType<int>(json, r'width')!,
-        x: mapValueOfType<int>(json, r'x')!,
-        y: mapValueOfType<int>(json, r'y')!,
-      );
-    }
-    return null;
+  AssetFaceCreateDto copyWith({
+    String? assetId,
+    int? height,
+    int? imageHeight,
+    int? imageWidth,
+    String? personId,
+    int? width,
+    int? x,
+    int? y,
+  }) {
+    return .new(
+      assetId: assetId ?? this.assetId,
+      height: height ?? this.height,
+      imageHeight: imageHeight ?? this.imageHeight,
+      imageWidth: imageWidth ?? this.imageWidth,
+      personId: personId ?? this.personId,
+      width: width ?? this.width,
+      x: x ?? this.x,
+      y: y ?? this.y,
+    );
   }
 
-  static List<AssetFaceCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetFaceCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetFaceCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetFaceCreateDto &&
+            assetId == other.assetId &&
+            height == other.height &&
+            imageHeight == other.imageHeight &&
+            imageWidth == other.imageWidth &&
+            personId == other.personId &&
+            width == other.width &&
+            x == other.x &&
+            y == other.y);
   }
 
-  static Map<String, AssetFaceCreateDto> mapFromJson(dynamic json) {
-    final map = <String, AssetFaceCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetFaceCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([assetId, height, imageHeight, imageWidth, personId, width, x, y]);
   }
 
-  // maps a json object with a list of AssetFaceCreateDto-objects as value to a dart map
-  static Map<String, List<AssetFaceCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetFaceCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetFaceCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'assetId',
-    'height',
-    'imageHeight',
-    'imageWidth',
-    'personId',
-    'width',
-    'x',
-    'y',
-  };
+  @override
+  String toString() =>
+      'AssetFaceCreateDto(assetId=$assetId, height=$height, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, width=$width, x=$x, y=$y)';
 }
-

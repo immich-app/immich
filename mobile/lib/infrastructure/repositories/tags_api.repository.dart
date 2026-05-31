@@ -17,7 +17,7 @@ class TagsApiRepository extends ApiRepository {
 
   Future<int> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
     final response = await _api.bulkTagAssets(TagBulkAssetsDto(assetIds: assetIds, tagIds: tagIds));
-    return response?.count ?? 0;
+    return response.count;
   }
 
   Future<List<TagResponseDto>?> upsertTags(List<String> tags) async {

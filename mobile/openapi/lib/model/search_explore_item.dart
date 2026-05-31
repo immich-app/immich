@@ -1,108 +1,43 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SearchExploreItem {
-  /// Returns a new [SearchExploreItem] instance.
-  SearchExploreItem({
-    required this.data,
-    required this.value,
-  });
+final class SearchExploreItem {
+  const SearchExploreItem({required this.data, required this.value});
 
-  AssetResponseDto data;
+  final AssetResponseDto data;
 
   /// Explore value
-  String value;
+  final String value;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchExploreItem &&
-    other.data == data &&
-    other.value == value;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (data.hashCode) +
-    (value.hashCode);
-
-  @override
-  String toString() => 'SearchExploreItem[data=$data, value=$value]';
+  static SearchExploreItem? fromJson(dynamic value) {
+    ApiCompat.upgrade<SearchExploreItem>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(data: (AssetResponseDto.fromJson(json[r'data']))!, value: json[r'value'] as String);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'data'] = this.data;
-      json[r'value'] = this.value;
+    json[r'data'] = data.toJson();
+    json[r'value'] = value;
     return json;
   }
 
-  /// Returns a new [SearchExploreItem] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SearchExploreItem? fromJson(dynamic value) {
-    upgradeDto(value, "SearchExploreItem");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SearchExploreItem(
-        data: AssetResponseDto.fromJson(json[r'data'])!,
-        value: mapValueOfType<String>(json, r'value')!,
-      );
-    }
-    return null;
+  SearchExploreItem copyWith({AssetResponseDto? data, String? value}) {
+    return .new(data: data ?? this.data, value: value ?? this.value);
   }
 
-  static List<SearchExploreItem> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SearchExploreItem>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SearchExploreItem.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is SearchExploreItem && data == other.data && value == other.value);
   }
 
-  static Map<String, SearchExploreItem> mapFromJson(dynamic json) {
-    final map = <String, SearchExploreItem>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SearchExploreItem.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([data, value]);
   }
 
-  // maps a json object with a list of SearchExploreItem-objects as value to a dart map
-  static Map<String, List<SearchExploreItem>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SearchExploreItem>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SearchExploreItem.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'data',
-    'value',
-  };
+  @override
+  String toString() => 'SearchExploreItem(data=$data, value=$value)';
 }
-

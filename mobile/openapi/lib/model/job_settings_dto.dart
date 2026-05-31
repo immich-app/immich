@@ -1,103 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class JobSettingsDto {
-  /// Returns a new [JobSettingsDto] instance.
-  JobSettingsDto({
-    required this.concurrency,
-  });
+final class JobSettingsDto {
+  const JobSettingsDto({required this.concurrency});
 
   /// Concurrency
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  int concurrency;
+  final int concurrency;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is JobSettingsDto &&
-    other.concurrency == concurrency;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (concurrency.hashCode);
-
-  @override
-  String toString() => 'JobSettingsDto[concurrency=$concurrency]';
+  static JobSettingsDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<JobSettingsDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(concurrency: json[r'concurrency'] as int);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'concurrency'] = this.concurrency;
+    json[r'concurrency'] = concurrency;
     return json;
   }
 
-  /// Returns a new [JobSettingsDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static JobSettingsDto? fromJson(dynamic value) {
-    upgradeDto(value, "JobSettingsDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return JobSettingsDto(
-        concurrency: mapValueOfType<int>(json, r'concurrency')!,
-      );
-    }
-    return null;
+  JobSettingsDto copyWith({int? concurrency}) {
+    return .new(concurrency: concurrency ?? this.concurrency);
   }
 
-  static List<JobSettingsDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <JobSettingsDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = JobSettingsDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is JobSettingsDto && concurrency == other.concurrency);
   }
 
-  static Map<String, JobSettingsDto> mapFromJson(dynamic json) {
-    final map = <String, JobSettingsDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = JobSettingsDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([concurrency]);
   }
 
-  // maps a json object with a list of JobSettingsDto-objects as value to a dart map
-  static Map<String, List<JobSettingsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<JobSettingsDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = JobSettingsDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'concurrency',
-  };
+  @override
+  String toString() => 'JobSettingsDto(concurrency=$concurrency)';
 }
-

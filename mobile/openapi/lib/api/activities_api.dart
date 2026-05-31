@@ -1,158 +1,52 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class ActivitiesApi {
   ActivitiesApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Create an activity
-  ///
-  /// Create a like or a comment for an album, or an asset in an album.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [ActivityCreateDto] activityCreateDto (required):
-  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/activities';
+  static const ApiVersion getActivitiesAddedIn = .new(1, 0, 0);
 
-    // ignore: prefer_final_locals
-    Object? postBody = activityCreateDto;
+  static const ApiState getActivitiesState = .stable;
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiVersion createActivityAddedIn = .new(1, 0, 0);
 
-    const contentTypes = <String>['application/json'];
+  static const ApiState createActivityState = .stable;
 
+  static const ApiVersion getActivityStatisticsAddedIn = .new(1, 0, 0);
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiState getActivityStatisticsState = .stable;
 
-  /// Create an activity
-  ///
-  /// Create a like or a comment for an album, or an asset in an album.
-  ///
-  /// Parameters:
-  ///
-  /// * [ActivityCreateDto] activityCreateDto (required):
-  Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto,) async {
-    final response = await createActivityWithHttpInfo(activityCreateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityResponseDto',) as ActivityResponseDto;
-    
-    }
-    return null;
-  }
+  static const ApiVersion deleteActivityAddedIn = .new(1, 0, 0);
 
-  /// Delete an activity
-  ///
-  /// Removes a like or comment from a given album or asset in an album.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> deleteActivityWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/activities/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Delete an activity
-  ///
-  /// Removes a like or comment from a given album or asset in an album.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> deleteActivity(String id,) async {
-    final response = await deleteActivityWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
+  static const ApiState deleteActivityState = .stable;
 
   /// List all activities
   ///
   /// Returns a list of activities for the selected asset or album. The activities are returned in sorted order, with the oldest activities appearing first.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] albumId (required):
-  ///   Album ID
-  ///
-  /// * [String] assetId:
-  ///   Asset ID (if activity is for an asset)
-  ///
-  /// * [ReactionLevel] level:
-  ///
-  /// * [ReactionType] type:
-  ///
-  /// * [String] userId:
-  ///   Filter by user ID
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> getActivitiesWithHttpInfo({
+    required String albumId,
+    String? assetId,
+    ReactionLevel? level,
+    ReactionType? type,
+    String? userId,
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/activities';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
+    queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
@@ -168,15 +62,15 @@ class ActivitiesApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -184,78 +78,118 @@ class ActivitiesApi {
   ///
   /// Returns a list of activities for the selected asset or album. The activities are returned in sorted order, with the oldest activities appearing first.
   ///
-  /// Parameters:
-  ///
-  /// * [String] albumId (required):
-  ///   Album ID
-  ///
-  /// * [String] assetId:
-  ///   Asset ID (if activity is for an asset)
-  ///
-  /// * [ReactionLevel] level:
-  ///
-  /// * [ReactionType] type:
-  ///
-  /// * [String] userId:
-  ///   Filter by user ID
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, level: level, type: type, userId: userId, );
+  /// Available since server v1.0.0.
+  Future<List<ActivityResponseDto>> getActivities({
+    required String albumId,
+    String? assetId,
+    ReactionLevel? level,
+    ReactionType? type,
+    String? userId,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await getActivitiesWithHttpInfo(
+      albumId: albumId,
+      assetId: assetId,
+      level: level,
+      type: type,
+      userId: userId,
+      abortTrigger: abortTrigger,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<ActivityResponseDto>') as List)
-        .cast<ActivityResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<ActivityResponseDto>') as List)
+          .cast<ActivityResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Create an activity
+  ///
+  /// Create a like or a comment for an album, or an asset in an album.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/activities';
+
+    Object? postBody = activityCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Create an activity
+  ///
+  /// Create a like or a comment for an album, or an asset in an album.
+  ///
+  /// Available since server v1.0.0.
+  Future<ActivityResponseDto> createActivity(ActivityCreateDto activityCreateDto, {Future<void>? abortTrigger}) async {
+    final response = await createActivityWithHttpInfo(activityCreateDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'ActivityResponseDto')
+          as ActivityResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve activity statistics
   ///
   /// Returns the number of likes and comments for a given album or asset in an album.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] albumId (required):
-  ///   Album ID
-  ///
-  /// * [String] assetId:
-  ///   Asset ID (if activity is for an asset)
-  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> getActivityStatisticsWithHttpInfo({
+    required String albumId,
+    String? assetId,
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/activities/statistics';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'albumId', albumId));
+    queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
     }
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -263,25 +197,66 @@ class ActivitiesApi {
   ///
   /// Returns the number of likes and comments for a given album or asset in an album.
   ///
-  /// Parameters:
-  ///
-  /// * [String] albumId (required):
-  ///   Album ID
-  ///
-  /// * [String] assetId:
-  ///   Asset ID (if activity is for an asset)
-  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, }) async {
-    final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, );
+  /// Available since server v1.0.0.
+  Future<ActivityStatisticsResponseDto> getActivityStatistics({
+    required String albumId,
+    String? assetId,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await getActivityStatisticsWithHttpInfo(
+      albumId: albumId,
+      assetId: assetId,
+      abortTrigger: abortTrigger,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ActivityStatisticsResponseDto',) as ActivityStatisticsResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'ActivityStatisticsResponseDto')
+          as ActivityStatisticsResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Delete an activity
+  ///
+  /// Removes a like or comment from a given album or asset in an album.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> deleteActivityWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/activities/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Delete an activity
+  ///
+  /// Removes a like or comment from a given album or asset in an album.
+  ///
+  /// Available since server v1.0.0.
+  Future<void> deleteActivity(String id, {Future<void>? abortTrigger}) async {
+    final response = await deleteActivityWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

@@ -1,124 +1,63 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class TagCreateDto {
-  /// Returns a new [TagCreateDto] instance.
-  TagCreateDto({
-    this.color,
+final class TagCreateDto {
+  const TagCreateDto({
+    this.color = const Optional.absent(),
     required this.name,
-    this.parentId,
+    this.parentId = const Optional.absent(),
   });
 
   /// Tag color (hex)
-  String? color;
+  final Optional<String?> color;
 
   /// Tag name
-  String name;
+  final String name;
 
   /// Parent tag ID
-  String? parentId;
+  final Optional<String?> parentId;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
-    other.color == color &&
-    other.name == name &&
-    other.parentId == parentId;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (color == null ? 0 : color!.hashCode) +
-    (name.hashCode) +
-    (parentId == null ? 0 : parentId!.hashCode);
-
-  @override
-  String toString() => 'TagCreateDto[color=$color, name=$name, parentId=$parentId]';
+  static TagCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<TagCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      color: json.containsKey(r'color') ? Optional.present((json[r'color'] as String?)) : const Optional.absent(),
+      name: json[r'name'] as String,
+      parentId: json.containsKey(r'parentId')
+          ? Optional.present((json[r'parentId'] as String?))
+          : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color != null) {
-      json[r'color'] = this.color;
-    } else {
-    //  json[r'color'] = null;
+    if (color case Present(:final value)) {
+      json[r'color'] = value;
     }
-      json[r'name'] = this.name;
-    if (this.parentId != null) {
-      json[r'parentId'] = this.parentId;
-    } else {
-    //  json[r'parentId'] = null;
+    json[r'name'] = name;
+    if (parentId case Present(:final value)) {
+      json[r'parentId'] = value;
     }
     return json;
   }
 
-  /// Returns a new [TagCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static TagCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "TagCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return TagCreateDto(
-        color: mapValueOfType<String>(json, r'color'),
-        name: mapValueOfType<String>(json, r'name')!,
-        parentId: mapValueOfType<String>(json, r'parentId'),
-      );
-    }
-    return null;
+  TagCreateDto copyWith({Optional<String?>? color, String? name, Optional<String?>? parentId}) {
+    return .new(color: color ?? this.color, name: name ?? this.name, parentId: parentId ?? this.parentId);
   }
 
-  static List<TagCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <TagCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = TagCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is TagCreateDto && color == other.color && name == other.name && parentId == other.parentId);
   }
 
-  static Map<String, TagCreateDto> mapFromJson(dynamic json) {
-    final map = <String, TagCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = TagCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([color, name, parentId]);
   }
 
-  // maps a json object with a list of TagCreateDto-objects as value to a dart map
-  static Map<String, List<TagCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<TagCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = TagCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'name',
-  };
+  @override
+  String toString() => 'TagCreateDto(color=$color, name=$name, parentId=$parentId)';
 }
-

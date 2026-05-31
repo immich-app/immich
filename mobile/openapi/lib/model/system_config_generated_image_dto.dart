@@ -1,141 +1,81 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigGeneratedImageDto {
-  /// Returns a new [SystemConfigGeneratedImageDto] instance.
-  SystemConfigGeneratedImageDto({
+final class SystemConfigGeneratedImageDto {
+  const SystemConfigGeneratedImageDto({
     required this.format,
     this.progressive,
     required this.quality,
     required this.size,
   });
 
-  ImageFormat format;
+  final ImageFormat format;
 
   /// Progressive
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? progressive;
+  final bool? progressive;
 
   /// Quality
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 100
-  int quality;
+  final int quality;
 
   /// Size
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  int size;
+  final int size;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigGeneratedImageDto &&
-    other.format == format &&
-    other.progressive == progressive &&
-    other.quality == quality &&
-    other.size == size;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (format.hashCode) +
-    (progressive == null ? 0 : progressive!.hashCode) +
-    (quality.hashCode) +
-    (size.hashCode);
-
-  @override
-  String toString() => 'SystemConfigGeneratedImageDto[format=$format, progressive=$progressive, quality=$quality, size=$size]';
+  static SystemConfigGeneratedImageDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigGeneratedImageDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      format: (ImageFormat.fromJson(json[r'format']))!,
+      progressive: (json[r'progressive'] as bool?),
+      quality: json[r'quality'] as int,
+      size: json[r'size'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'format'] = this.format;
-    if (this.progressive != null) {
-      json[r'progressive'] = this.progressive;
-    } else {
-    //  json[r'progressive'] = null;
+    json[r'format'] = format.toJson();
+    if (progressive != null) {
+      json[r'progressive'] = progressive!;
     }
-      json[r'quality'] = this.quality;
-      json[r'size'] = this.size;
+    json[r'quality'] = quality;
+    json[r'size'] = size;
     return json;
   }
 
-  /// Returns a new [SystemConfigGeneratedImageDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigGeneratedImageDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigGeneratedImageDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigGeneratedImageDto(
-        format: ImageFormat.fromJson(json[r'format'])!,
-        progressive: mapValueOfType<bool>(json, r'progressive'),
-        quality: mapValueOfType<int>(json, r'quality')!,
-        size: mapValueOfType<int>(json, r'size')!,
-      );
-    }
-    return null;
+  SystemConfigGeneratedImageDto copyWith({
+    ImageFormat? format,
+    Object? progressive = _undefined,
+    int? quality,
+    int? size,
+  }) {
+    return .new(
+      format: format ?? this.format,
+      progressive: identical(progressive, _undefined) ? this.progressive : progressive as bool?,
+      quality: quality ?? this.quality,
+      size: size ?? this.size,
+    );
   }
 
-  static List<SystemConfigGeneratedImageDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigGeneratedImageDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigGeneratedImageDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigGeneratedImageDto &&
+            format == other.format &&
+            progressive == other.progressive &&
+            quality == other.quality &&
+            size == other.size);
   }
 
-  static Map<String, SystemConfigGeneratedImageDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigGeneratedImageDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigGeneratedImageDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([format, progressive, quality, size]);
   }
 
-  // maps a json object with a list of SystemConfigGeneratedImageDto-objects as value to a dart map
-  static Map<String, List<SystemConfigGeneratedImageDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigGeneratedImageDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigGeneratedImageDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'format',
-    'quality',
-    'size',
-  };
+  @override
+  String toString() =>
+      'SystemConfigGeneratedImageDto(format=$format, progressive=$progressive, quality=$quality, size=$size)';
 }
-

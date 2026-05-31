@@ -1,138 +1,86 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncAssetEditV1 {
-  /// Returns a new [SyncAssetEditV1] instance.
-  SyncAssetEditV1({
+final class SyncAssetEditV1 {
+  const SyncAssetEditV1({
     required this.action,
     required this.assetId,
     required this.id,
-    this.parameters = const {},
+    required this.parameters,
     required this.sequence,
   });
 
-  AssetEditAction action;
+  final AssetEditAction action;
 
   /// Asset ID
-  String assetId;
+  final String assetId;
 
   /// Edit ID
-  String id;
+  final String id;
 
   /// Edit parameters
-  Map<String, Object> parameters;
+  final Map<String, dynamic> parameters;
 
   /// Edit sequence
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int sequence;
+  final int sequence;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAssetEditV1 &&
-    other.action == action &&
-    other.assetId == assetId &&
-    other.id == id &&
-    _deepEquality.equals(other.parameters, parameters) &&
-    other.sequence == sequence;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (action.hashCode) +
-    (assetId.hashCode) +
-    (id.hashCode) +
-    (parameters.hashCode) +
-    (sequence.hashCode);
-
-  @override
-  String toString() => 'SyncAssetEditV1[action=$action, assetId=$assetId, id=$id, parameters=$parameters, sequence=$sequence]';
+  static SyncAssetEditV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncAssetEditV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      action: (AssetEditAction.fromJson(json[r'action']))!,
+      assetId: json[r'assetId'] as String,
+      id: json[r'id'] as String,
+      parameters: ((json[r'parameters'] as Map?)?.cast<String, dynamic>())!,
+      sequence: json[r'sequence'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'action'] = this.action;
-      json[r'assetId'] = this.assetId;
-      json[r'id'] = this.id;
-      json[r'parameters'] = this.parameters;
-      json[r'sequence'] = this.sequence;
+    json[r'action'] = action.toJson();
+    json[r'assetId'] = assetId;
+    json[r'id'] = id;
+    json[r'parameters'] = parameters;
+    json[r'sequence'] = sequence;
     return json;
   }
 
-  /// Returns a new [SyncAssetEditV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncAssetEditV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetEditV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncAssetEditV1(
-        action: AssetEditAction.fromJson(json[r'action'])!,
-        assetId: mapValueOfType<String>(json, r'assetId')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        parameters: mapCastOfType<String, Object>(json, r'parameters')!,
-        sequence: mapValueOfType<int>(json, r'sequence')!,
-      );
-    }
-    return null;
+  SyncAssetEditV1 copyWith({
+    AssetEditAction? action,
+    String? assetId,
+    String? id,
+    Map<String, dynamic>? parameters,
+    int? sequence,
+  }) {
+    return .new(
+      action: action ?? this.action,
+      assetId: assetId ?? this.assetId,
+      id: id ?? this.id,
+      parameters: parameters ?? this.parameters,
+      sequence: sequence ?? this.sequence,
+    );
   }
 
-  static List<SyncAssetEditV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAssetEditV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAssetEditV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncAssetEditV1 &&
+            action == other.action &&
+            assetId == other.assetId &&
+            id == other.id &&
+            const DeepCollectionEquality().equals(parameters, other.parameters) &&
+            sequence == other.sequence);
   }
 
-  static Map<String, SyncAssetEditV1> mapFromJson(dynamic json) {
-    final map = <String, SyncAssetEditV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncAssetEditV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([action, assetId, id, const DeepCollectionEquality().hash(parameters), sequence]);
   }
 
-  // maps a json object with a list of SyncAssetEditV1-objects as value to a dart map
-  static Map<String, List<SyncAssetEditV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncAssetEditV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncAssetEditV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'action',
-    'assetId',
-    'id',
-    'parameters',
-    'sequence',
-  };
+  @override
+  String toString() =>
+      'SyncAssetEditV1(action=$action, assetId=$assetId, id=$id, parameters=$parameters, sequence=$sequence)';
 }
-

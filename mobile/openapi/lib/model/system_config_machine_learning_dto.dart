@@ -1,151 +1,108 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigMachineLearningDto {
-  /// Returns a new [SystemConfigMachineLearningDto] instance.
-  SystemConfigMachineLearningDto({
+final class SystemConfigMachineLearningDto {
+  const SystemConfigMachineLearningDto({
     required this.availabilityChecks,
     required this.clip,
     required this.duplicateDetection,
     required this.enabled,
     required this.facialRecognition,
     required this.ocr,
-    this.urls = const [],
+    required this.urls,
   });
 
-  MachineLearningAvailabilityChecksDto availabilityChecks;
+  final MachineLearningAvailabilityChecksDto availabilityChecks;
 
-  CLIPConfig clip;
+  final ClipConfig clip;
 
-  DuplicateDetectionConfig duplicateDetection;
+  final DuplicateDetectionConfig duplicateDetection;
 
   /// Enabled
-  bool enabled;
+  final bool enabled;
 
-  FacialRecognitionConfig facialRecognition;
+  final FacialRecognitionConfig facialRecognition;
 
-  OcrConfig ocr;
+  final OcrConfig ocr;
 
   /// ML service URLs
-  List<String> urls;
+  final List<String> urls;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
-    other.availabilityChecks == availabilityChecks &&
-    other.clip == clip &&
-    other.duplicateDetection == duplicateDetection &&
-    other.enabled == enabled &&
-    other.facialRecognition == facialRecognition &&
-    other.ocr == ocr &&
-    _deepEquality.equals(other.urls, urls);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (availabilityChecks.hashCode) +
-    (clip.hashCode) +
-    (duplicateDetection.hashCode) +
-    (enabled.hashCode) +
-    (facialRecognition.hashCode) +
-    (ocr.hashCode) +
-    (urls.hashCode);
-
-  @override
-  String toString() => 'SystemConfigMachineLearningDto[availabilityChecks=$availabilityChecks, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, urls=$urls]';
+  static SystemConfigMachineLearningDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigMachineLearningDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      availabilityChecks: (MachineLearningAvailabilityChecksDto.fromJson(json[r'availabilityChecks']))!,
+      clip: (ClipConfig.fromJson(json[r'clip']))!,
+      duplicateDetection: (DuplicateDetectionConfig.fromJson(json[r'duplicateDetection']))!,
+      enabled: json[r'enabled'] as bool,
+      facialRecognition: (FacialRecognitionConfig.fromJson(json[r'facialRecognition']))!,
+      ocr: (OcrConfig.fromJson(json[r'ocr']))!,
+      urls: ((json[r'urls'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'availabilityChecks'] = this.availabilityChecks;
-      json[r'clip'] = this.clip;
-      json[r'duplicateDetection'] = this.duplicateDetection;
-      json[r'enabled'] = this.enabled;
-      json[r'facialRecognition'] = this.facialRecognition;
-      json[r'ocr'] = this.ocr;
-      json[r'urls'] = this.urls;
+    json[r'availabilityChecks'] = availabilityChecks.toJson();
+    json[r'clip'] = clip.toJson();
+    json[r'duplicateDetection'] = duplicateDetection.toJson();
+    json[r'enabled'] = enabled;
+    json[r'facialRecognition'] = facialRecognition.toJson();
+    json[r'ocr'] = ocr.toJson();
+    json[r'urls'] = urls;
     return json;
   }
 
-  /// Returns a new [SystemConfigMachineLearningDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigMachineLearningDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigMachineLearningDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigMachineLearningDto(
-        availabilityChecks: MachineLearningAvailabilityChecksDto.fromJson(json[r'availabilityChecks'])!,
-        clip: CLIPConfig.fromJson(json[r'clip'])!,
-        duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
-        enabled: mapValueOfType<bool>(json, r'enabled')!,
-        facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
-        ocr: OcrConfig.fromJson(json[r'ocr'])!,
-        urls: json[r'urls'] is Iterable
-            ? (json[r'urls'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-      );
-    }
-    return null;
+  SystemConfigMachineLearningDto copyWith({
+    MachineLearningAvailabilityChecksDto? availabilityChecks,
+    ClipConfig? clip,
+    DuplicateDetectionConfig? duplicateDetection,
+    bool? enabled,
+    FacialRecognitionConfig? facialRecognition,
+    OcrConfig? ocr,
+    List<String>? urls,
+  }) {
+    return .new(
+      availabilityChecks: availabilityChecks ?? this.availabilityChecks,
+      clip: clip ?? this.clip,
+      duplicateDetection: duplicateDetection ?? this.duplicateDetection,
+      enabled: enabled ?? this.enabled,
+      facialRecognition: facialRecognition ?? this.facialRecognition,
+      ocr: ocr ?? this.ocr,
+      urls: urls ?? this.urls,
+    );
   }
 
-  static List<SystemConfigMachineLearningDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigMachineLearningDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigMachineLearningDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigMachineLearningDto &&
+            availabilityChecks == other.availabilityChecks &&
+            clip == other.clip &&
+            duplicateDetection == other.duplicateDetection &&
+            enabled == other.enabled &&
+            facialRecognition == other.facialRecognition &&
+            ocr == other.ocr &&
+            const DeepCollectionEquality().equals(urls, other.urls));
   }
 
-  static Map<String, SystemConfigMachineLearningDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigMachineLearningDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigMachineLearningDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      availabilityChecks,
+      clip,
+      duplicateDetection,
+      enabled,
+      facialRecognition,
+      ocr,
+      const DeepCollectionEquality().hash(urls),
+    ]);
   }
 
-  // maps a json object with a list of SystemConfigMachineLearningDto-objects as value to a dart map
-  static Map<String, List<SystemConfigMachineLearningDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigMachineLearningDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigMachineLearningDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'availabilityChecks',
-    'clip',
-    'duplicateDetection',
-    'enabled',
-    'facialRecognition',
-    'ocr',
-    'urls',
-  };
+  @override
+  String toString() =>
+      'SystemConfigMachineLearningDto(availabilityChecks=$availabilityChecks, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, urls=$urls)';
 }
-

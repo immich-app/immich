@@ -22,7 +22,9 @@ class DriftAlbumApiRepository extends ApiRepository {
     String? description,
   }) async {
     final responseDto = await checkNull(
-      _api.createAlbum(CreateAlbumDto(albumName: name, description: description, assetIds: assetIds.toList())),
+      _api.createAlbum(
+        CreateAlbumDto(albumName: name, description: description.toOptional(), assetIds: assetIds.toList().toOptional()),
+      ),
     );
 
     return responseDto.toRemoteAlbum(owner);
@@ -73,11 +75,11 @@ class DriftAlbumApiRepository extends ApiRepository {
       _api.updateAlbumInfo(
         albumId,
         UpdateAlbumDto(
-          albumName: name,
-          description: description,
-          albumThumbnailAssetId: thumbnailAssetId,
-          isActivityEnabled: isActivityEnabled,
-          order: apiOrder,
+          albumName: name.toOptional(),
+          description: description.toOptional(),
+          albumThumbnailAssetId: thumbnailAssetId.toOptional(),
+          isActivityEnabled: isActivityEnabled.toOptional(),
+          order: apiOrder.toOptional(),
         ),
       ),
     );
@@ -99,7 +101,9 @@ class DriftAlbumApiRepository extends ApiRepository {
   }
 
   Future<bool> setActivityStatus(String albumId, bool isEnabled) async {
-    final response = await checkNull(_api.updateAlbumInfo(albumId, UpdateAlbumDto(isActivityEnabled: isEnabled)));
+    final response = await checkNull(
+      _api.updateAlbumInfo(albumId, UpdateAlbumDto(isActivityEnabled: isEnabled.toOptional())),
+    );
     return response.isActivityEnabled;
   }
 }

@@ -1,117 +1,55 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncUserMetadataV1 {
-  /// Returns a new [SyncUserMetadataV1] instance.
-  SyncUserMetadataV1({
-    required this.key,
-    required this.userId,
-    this.value = const {},
-  });
+final class SyncUserMetadataV1 {
+  const SyncUserMetadataV1({required this.key, required this.userId, required this.value});
 
-  UserMetadataKey key;
+  final UserMetadataKey key;
 
   /// User ID
-  String userId;
+  final String userId;
 
   /// User metadata value
-  Map<String, Object> value;
+  final Map<String, dynamic> value;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncUserMetadataV1 &&
-    other.key == key &&
-    other.userId == userId &&
-    _deepEquality.equals(other.value, value);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (key.hashCode) +
-    (userId.hashCode) +
-    (value.hashCode);
-
-  @override
-  String toString() => 'SyncUserMetadataV1[key=$key, userId=$userId, value=$value]';
+  static SyncUserMetadataV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncUserMetadataV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      key: (UserMetadataKey.fromJson(json[r'key']))!,
+      userId: json[r'userId'] as String,
+      value: ((json[r'value'] as Map?)?.cast<String, dynamic>())!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'key'] = this.key;
-      json[r'userId'] = this.userId;
-      json[r'value'] = this.value;
+    json[r'key'] = key.toJson();
+    json[r'userId'] = userId;
+    json[r'value'] = value;
     return json;
   }
 
-  /// Returns a new [SyncUserMetadataV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncUserMetadataV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncUserMetadataV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncUserMetadataV1(
-        key: UserMetadataKey.fromJson(json[r'key'])!,
-        userId: mapValueOfType<String>(json, r'userId')!,
-        value: mapCastOfType<String, Object>(json, r'value')!,
-      );
-    }
-    return null;
+  SyncUserMetadataV1 copyWith({UserMetadataKey? key, String? userId, Map<String, dynamic>? value}) {
+    return .new(key: key ?? this.key, userId: userId ?? this.userId, value: value ?? this.value);
   }
 
-  static List<SyncUserMetadataV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncUserMetadataV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncUserMetadataV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncUserMetadataV1 &&
+            key == other.key &&
+            userId == other.userId &&
+            const DeepCollectionEquality().equals(value, other.value));
   }
 
-  static Map<String, SyncUserMetadataV1> mapFromJson(dynamic json) {
-    final map = <String, SyncUserMetadataV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncUserMetadataV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([key, userId, const DeepCollectionEquality().hash(value)]);
   }
 
-  // maps a json object with a list of SyncUserMetadataV1-objects as value to a dart map
-  static Map<String, List<SyncUserMetadataV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncUserMetadataV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncUserMetadataV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'key',
-    'userId',
-    'value',
-  };
+  @override
+  String toString() => 'SyncUserMetadataV1(key=$key, userId=$userId, value=$value)';
 }
-

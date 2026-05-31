@@ -1,0 +1,22 @@
+name: immich_dart_openapi_generator
+description: >-
+  Generates the Immich mobile `package:openapi` Dart client from
+  immich-openapi-specs.json. Standalone CLI (run with `dart run`); emits
+  idiomatic modern Dart via code_builder + dart_style.
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  code_builder: ^4.10.0
+  dart_style: ^3.0.0
+  args: ^2.5.0
+  path: ^1.9.0
+  collection: ^1.18.0
+  http: ^1.6.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^4.0.0

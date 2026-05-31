@@ -1,159 +1,58 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class SharedLinksApi {
   SharedLinksApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Add assets to a shared link
-  ///
-  /// Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links/{id}/assets'
-      .replaceAll('{id}', id);
+  static const ApiVersion getAllSharedLinksAddedIn = .new(1, 0, 0);
 
-    // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
+  static const ApiState getAllSharedLinksState = .stable;
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiVersion createSharedLinkAddedIn = .new(1, 0, 0);
 
-    const contentTypes = <String>['application/json'];
+  static const ApiState createSharedLinkState = .stable;
 
+  static const ApiVersion sharedLinkLoginAddedIn = .new(2, 6, 0);
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiState sharedLinkLoginState = .beta;
 
-  /// Add assets to a shared link
-  ///
-  /// Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
-        .cast<AssetIdsResponseDto>()
-        .toList(growable: false);
+  static const ApiVersion getMySharedLinkAddedIn = .new(1, 0, 0);
 
-    }
-    return null;
-  }
+  static const ApiState getMySharedLinkState = .stable;
 
-  /// Create a shared link
-  ///
-  /// Create a new shared link.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
-  Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links';
+  static const ApiVersion removeSharedLinkAddedIn = .new(1, 0, 0);
 
-    // ignore: prefer_final_locals
-    Object? postBody = sharedLinkCreateDto;
+  static const ApiState removeSharedLinkState = .stable;
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiVersion getSharedLinkByIdAddedIn = .new(1, 0, 0);
 
-    const contentTypes = <String>['application/json'];
+  static const ApiState getSharedLinkByIdState = .stable;
 
+  static const ApiVersion updateSharedLinkAddedIn = .new(1, 0, 0);
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiState updateSharedLinkState = .stable;
 
-  /// Create a shared link
-  ///
-  /// Create a new shared link.
-  ///
-  /// Parameters:
-  ///
-  /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
-  Future<SharedLinkResponseDto?> createSharedLink(SharedLinkCreateDto sharedLinkCreateDto,) async {
-    final response = await createSharedLinkWithHttpInfo(sharedLinkCreateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
-    }
-    return null;
-  }
+  static const ApiVersion removeSharedLinkAssetsAddedIn = .new(1, 0, 0);
+
+  static const ApiState removeSharedLinkAssetsState = .stable;
+
+  static const ApiVersion addSharedLinkAssetsAddedIn = .new(1, 0, 0);
+
+  static const ApiState addSharedLinkAssetsState = .stable;
 
   /// Retrieve all shared links
   ///
   /// Retrieve a list of all shared links.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] albumId:
-  ///   Filter by album ID
-  ///
-  /// * [String] id:
-  ///   Filter by shared link ID
-  Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> getAllSharedLinksWithHttpInfo({String? albumId, String? id, Future<void>? abortTrigger}) async {
     final apiPath = r'/shared-links';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -169,15 +68,15 @@ class SharedLinksApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -185,286 +84,93 @@ class SharedLinksApi {
   ///
   /// Retrieve a list of all shared links.
   ///
-  /// Parameters:
-  ///
-  /// * [String] albumId:
-  ///   Filter by album ID
-  ///
-  /// * [String] id:
-  ///   Filter by shared link ID
-  Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, }) async {
-    final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, id: id, );
+  /// Available since server v1.0.0.
+  Future<List<SharedLinkResponseDto>> getAllSharedLinks({
+    String? albumId,
+    String? id,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await getAllSharedLinksWithHttpInfo(albumId: albumId, id: id, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<SharedLinkResponseDto>') as List)
-        .cast<SharedLinkResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<SharedLinkResponseDto>') as List)
+          .cast<SharedLinkResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
-  /// Retrieve current shared link
+  /// Create a shared link
   ///
-  /// Retrieve the current shared link associated with authentication method.
+  /// Create a new shared link.
+  ///
+  /// Available since server v1.0.0.
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? slug, }) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links/me';
+  Future<Response> createSharedLinkWithHttpInfo(
+    SharedLinkCreateDto sharedLinkCreateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/shared-links';
 
-    // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = sharedLinkCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-    if (slug != null) {
-      queryParams.addAll(_queryParams('', 'slug', slug));
-    }
-
-    const contentTypes = <String>[];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  /// Retrieve current shared link
+  /// Create a shared link
   ///
-  /// Retrieve the current shared link associated with authentication method.
+  /// Create a new shared link.
   ///
-  /// Parameters:
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? slug, }) async {
-    final response = await getMySharedLinkWithHttpInfo( key: key, slug: slug, );
+  /// Available since server v1.0.0.
+  Future<SharedLinkResponseDto> createSharedLink(
+    SharedLinkCreateDto sharedLinkCreateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await createSharedLinkWithHttpInfo(sharedLinkCreateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'SharedLinkResponseDto')
+          as SharedLinkResponseDto;
     }
-    return null;
-  }
-
-  /// Retrieve a shared link
-  ///
-  /// Retrieve a specific shared link by its ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve a shared link
-  ///
-  /// Retrieve a specific shared link by its ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<SharedLinkResponseDto?> getSharedLinkById(String id,) async {
-    final response = await getSharedLinkByIdWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Delete a shared link
-  ///
-  /// Delete a specific shared link by its ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> removeSharedLinkWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Delete a shared link
-  ///
-  /// Delete a specific shared link by its ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> removeSharedLink(String id,) async {
-    final response = await removeSharedLinkWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Remove assets from a shared link
-  ///
-  /// Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links/{id}/assets'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody = assetIdsDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Remove assets from a shared link
-  ///
-  /// Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
-        .cast<AssetIdsResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Shared link login
   ///
   /// Login to a password protected shared link
   ///
+  /// Available since server v2.6.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [SharedLinkLoginDto] sharedLinkLoginDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<Response> sharedLinkLoginWithHttpInfo(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> sharedLinkLoginWithHttpInfo(
+    SharedLinkLoginDto sharedLinkLoginDto, {
+    String? key,
+    String? slug,
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/shared-links/login';
 
-    // ignore: prefer_final_locals
     Object? postBody = sharedLinkLoginDto;
 
     final queryParams = <QueryParam>[];
@@ -478,17 +184,17 @@ class SharedLinksApi {
       queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -496,62 +202,203 @@ class SharedLinksApi {
   ///
   /// Login to a password protected shared link
   ///
-  /// Parameters:
-  ///
-  /// * [SharedLinkLoginDto] sharedLinkLoginDto (required):
-  ///
-  /// * [String] key:
-  ///
-  /// * [String] slug:
-  Future<SharedLinkResponseDto?> sharedLinkLogin(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
-    final response = await sharedLinkLoginWithHttpInfo(sharedLinkLoginDto,  key: key, slug: slug, );
+  /// Available since server v2.6.0.
+  Future<SharedLinkResponseDto> sharedLinkLogin(
+    SharedLinkLoginDto sharedLinkLoginDto, {
+    String? key,
+    String? slug,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await sharedLinkLoginWithHttpInfo(
+      sharedLinkLoginDto,
+      key: key,
+      slug: slug,
+      abortTrigger: abortTrigger,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'SharedLinkResponseDto')
+          as SharedLinkResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Retrieve current shared link
+  ///
+  /// Retrieve the current shared link associated with authentication method.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getMySharedLinkWithHttpInfo({String? key, String? slug, Future<void>? abortTrigger}) async {
+    final apiPath = r'/shared-links/me';
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve current shared link
+  ///
+  /// Retrieve the current shared link associated with authentication method.
+  ///
+  /// Available since server v1.0.0.
+  Future<SharedLinkResponseDto> getMySharedLink({String? key, String? slug, Future<void>? abortTrigger}) async {
+    final response = await getMySharedLinkWithHttpInfo(key: key, slug: slug, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'SharedLinkResponseDto')
+          as SharedLinkResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Delete a shared link
+  ///
+  /// Delete a specific shared link by its ID.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> removeSharedLinkWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/shared-links/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Delete a shared link
+  ///
+  /// Delete a specific shared link by its ID.
+  ///
+  /// Available since server v1.0.0.
+  Future<void> removeSharedLink(String id, {Future<void>? abortTrigger}) async {
+    final response = await removeSharedLinkWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Retrieve a shared link
+  ///
+  /// Retrieve a specific shared link by its ID.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getSharedLinkByIdWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/shared-links/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve a shared link
+  ///
+  /// Retrieve a specific shared link by its ID.
+  ///
+  /// Available since server v1.0.0.
+  Future<SharedLinkResponseDto> getSharedLinkById(String id, {Future<void>? abortTrigger}) async {
+    final response = await getSharedLinkByIdWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'SharedLinkResponseDto')
+          as SharedLinkResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Update a shared link
   ///
   /// Update an existing shared link by its ID.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [SharedLinkEditDto] sharedLinkEditDto (required):
-  Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/shared-links/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> updateSharedLinkWithHttpInfo(
+    String id,
+    SharedLinkEditDto sharedLinkEditDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/shared-links/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody = sharedLinkEditDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'PATCH',
+      r'PATCH',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -559,23 +406,134 @@ class SharedLinksApi {
   ///
   /// Update an existing shared link by its ID.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [SharedLinkEditDto] sharedLinkEditDto (required):
-  Future<SharedLinkResponseDto?> updateSharedLink(String id, SharedLinkEditDto sharedLinkEditDto,) async {
-    final response = await updateSharedLinkWithHttpInfo(id, sharedLinkEditDto,);
+  /// Available since server v1.0.0.
+  Future<SharedLinkResponseDto> updateSharedLink(
+    String id,
+    SharedLinkEditDto sharedLinkEditDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updateSharedLinkWithHttpInfo(id, sharedLinkEditDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'SharedLinkResponseDto')
+          as SharedLinkResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Remove assets from a shared link
+  ///
+  /// Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> removeSharedLinkAssetsWithHttpInfo(
+    String id,
+    AssetIdsDto assetIdsDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/shared-links/{id}/assets'.replaceAll('{id}', id);
+
+    Object? postBody = assetIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Remove assets from a shared link
+  ///
+  /// Remove assets from a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
+  /// Available since server v1.0.0.
+  Future<List<AssetIdsResponseDto>> removeSharedLinkAssets(
+    String id,
+    AssetIdsDto assetIdsDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<AssetIdsResponseDto>') as List)
+          .cast<AssetIdsResponseDto>()
+          .toList(growable: false);
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Add assets to a shared link
+  ///
+  /// Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> addSharedLinkAssetsWithHttpInfo(
+    String id,
+    AssetIdsDto assetIdsDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/shared-links/{id}/assets'.replaceAll('{id}', id);
+
+    Object? postBody = assetIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Add assets to a shared link
+  ///
+  /// Add assets to a specific shared link by its ID. This endpoint is only relevant for shared link of type individual.
+  ///
+  /// Available since server v1.0.0.
+  Future<List<AssetIdsResponseDto>> addSharedLinkAssets(
+    String id,
+    AssetIdsDto assetIdsDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<AssetIdsResponseDto>') as List)
+          .cast<AssetIdsResponseDto>()
+          .toList(growable: false);
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

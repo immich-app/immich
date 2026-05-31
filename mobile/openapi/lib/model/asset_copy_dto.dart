@@ -1,149 +1,117 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetCopyDto {
-  /// Returns a new [AssetCopyDto] instance.
-  AssetCopyDto({
-    this.albums = true,
-    this.favorite = true,
-    this.sharedLinks = true,
-    this.sidecar = true,
+final class AssetCopyDto {
+  const AssetCopyDto({
+    this.albums = const Optional.absent(),
+    this.favorite = const Optional.absent(),
+    this.sharedLinks = const Optional.absent(),
+    this.sidecar = const Optional.absent(),
     required this.sourceId,
-    this.stack = true,
+    this.stack = const Optional.absent(),
     required this.targetId,
   });
 
   /// Copy album associations
-  bool albums;
+  final Optional<bool> albums;
 
   /// Copy favorite status
-  bool favorite;
+  final Optional<bool> favorite;
 
   /// Copy shared links
-  bool sharedLinks;
+  final Optional<bool> sharedLinks;
 
   /// Copy sidecar file
-  bool sidecar;
+  final Optional<bool> sidecar;
 
   /// Source asset ID
-  String sourceId;
+  final String sourceId;
 
   /// Copy stack association
-  bool stack;
+  final Optional<bool> stack;
 
   /// Target asset ID
-  String targetId;
+  final String targetId;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetCopyDto &&
-    other.albums == albums &&
-    other.favorite == favorite &&
-    other.sharedLinks == sharedLinks &&
-    other.sidecar == sidecar &&
-    other.sourceId == sourceId &&
-    other.stack == stack &&
-    other.targetId == targetId;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albums.hashCode) +
-    (favorite.hashCode) +
-    (sharedLinks.hashCode) +
-    (sidecar.hashCode) +
-    (sourceId.hashCode) +
-    (stack.hashCode) +
-    (targetId.hashCode);
-
-  @override
-  String toString() => 'AssetCopyDto[albums=$albums, favorite=$favorite, sharedLinks=$sharedLinks, sidecar=$sidecar, sourceId=$sourceId, stack=$stack, targetId=$targetId]';
+  static AssetCopyDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetCopyDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albums: json.containsKey(r'albums') ? Optional.present(json[r'albums'] as bool) : const Optional.absent(),
+      favorite: json.containsKey(r'favorite') ? Optional.present(json[r'favorite'] as bool) : const Optional.absent(),
+      sharedLinks: json.containsKey(r'sharedLinks')
+          ? Optional.present(json[r'sharedLinks'] as bool)
+          : const Optional.absent(),
+      sidecar: json.containsKey(r'sidecar') ? Optional.present(json[r'sidecar'] as bool) : const Optional.absent(),
+      sourceId: json[r'sourceId'] as String,
+      stack: json.containsKey(r'stack') ? Optional.present(json[r'stack'] as bool) : const Optional.absent(),
+      targetId: json[r'targetId'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albums'] = this.albums;
-      json[r'favorite'] = this.favorite;
-      json[r'sharedLinks'] = this.sharedLinks;
-      json[r'sidecar'] = this.sidecar;
-      json[r'sourceId'] = this.sourceId;
-      json[r'stack'] = this.stack;
-      json[r'targetId'] = this.targetId;
+    if (albums case Present(:final value)) {
+      json[r'albums'] = value;
+    }
+    if (favorite case Present(:final value)) {
+      json[r'favorite'] = value;
+    }
+    if (sharedLinks case Present(:final value)) {
+      json[r'sharedLinks'] = value;
+    }
+    if (sidecar case Present(:final value)) {
+      json[r'sidecar'] = value;
+    }
+    json[r'sourceId'] = sourceId;
+    if (stack case Present(:final value)) {
+      json[r'stack'] = value;
+    }
+    json[r'targetId'] = targetId;
     return json;
   }
 
-  /// Returns a new [AssetCopyDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetCopyDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetCopyDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetCopyDto(
-        albums: mapValueOfType<bool>(json, r'albums') ?? true,
-        favorite: mapValueOfType<bool>(json, r'favorite') ?? true,
-        sharedLinks: mapValueOfType<bool>(json, r'sharedLinks') ?? true,
-        sidecar: mapValueOfType<bool>(json, r'sidecar') ?? true,
-        sourceId: mapValueOfType<String>(json, r'sourceId')!,
-        stack: mapValueOfType<bool>(json, r'stack') ?? true,
-        targetId: mapValueOfType<String>(json, r'targetId')!,
-      );
-    }
-    return null;
+  AssetCopyDto copyWith({
+    Optional<bool>? albums,
+    Optional<bool>? favorite,
+    Optional<bool>? sharedLinks,
+    Optional<bool>? sidecar,
+    String? sourceId,
+    Optional<bool>? stack,
+    String? targetId,
+  }) {
+    return .new(
+      albums: albums ?? this.albums,
+      favorite: favorite ?? this.favorite,
+      sharedLinks: sharedLinks ?? this.sharedLinks,
+      sidecar: sidecar ?? this.sidecar,
+      sourceId: sourceId ?? this.sourceId,
+      stack: stack ?? this.stack,
+      targetId: targetId ?? this.targetId,
+    );
   }
 
-  static List<AssetCopyDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetCopyDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetCopyDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetCopyDto &&
+            albums == other.albums &&
+            favorite == other.favorite &&
+            sharedLinks == other.sharedLinks &&
+            sidecar == other.sidecar &&
+            sourceId == other.sourceId &&
+            stack == other.stack &&
+            targetId == other.targetId);
   }
 
-  static Map<String, AssetCopyDto> mapFromJson(dynamic json) {
-    final map = <String, AssetCopyDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetCopyDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([albums, favorite, sharedLinks, sidecar, sourceId, stack, targetId]);
   }
 
-  // maps a json object with a list of AssetCopyDto-objects as value to a dart map
-  static Map<String, List<AssetCopyDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetCopyDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetCopyDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'sourceId',
-    'targetId',
-  };
+  @override
+  String toString() =>
+      'AssetCopyDto(albums=$albums, favorite=$favorite, sharedLinks=$sharedLinks, sidecar=$sidecar, sourceId=$sourceId, stack=$stack, targetId=$targetId)';
 }
-

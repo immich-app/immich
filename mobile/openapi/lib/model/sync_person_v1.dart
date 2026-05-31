@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncPersonV1 {
-  /// Returns a new [SyncPersonV1] instance.
-  SyncPersonV1({
+final class SyncPersonV1 {
+  const SyncPersonV1({
     required this.birthDate,
     required this.color,
     required this.createdAt,
@@ -26,174 +17,135 @@ class SyncPersonV1 {
   });
 
   /// Birth date
-  DateTime? birthDate;
+  final DateTime? birthDate;
 
   /// Color
-  String? color;
+  final String? color;
 
   /// Created at
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Face asset ID
-  String? faceAssetId;
+  final String? faceAssetId;
 
   /// Person ID
-  String id;
+  final String id;
 
   /// Is favorite
-  bool isFavorite;
+  final bool isFavorite;
 
   /// Is hidden
-  bool isHidden;
+  final bool isHidden;
 
   /// Person name
-  String name;
+  final String name;
 
   /// Owner ID
-  String ownerId;
+  final String ownerId;
 
   /// Updated at
-  DateTime updatedAt;
+  final DateTime updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncPersonV1 &&
-    other.birthDate == birthDate &&
-    other.color == color &&
-    other.createdAt == createdAt &&
-    other.faceAssetId == faceAssetId &&
-    other.id == id &&
-    other.isFavorite == isFavorite &&
-    other.isHidden == isHidden &&
-    other.name == name &&
-    other.ownerId == ownerId &&
-    other.updatedAt == updatedAt;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
-    (color == null ? 0 : color!.hashCode) +
-    (createdAt.hashCode) +
-    (faceAssetId == null ? 0 : faceAssetId!.hashCode) +
-    (id.hashCode) +
-    (isFavorite.hashCode) +
-    (isHidden.hashCode) +
-    (name.hashCode) +
-    (ownerId.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'SyncPersonV1[birthDate=$birthDate, color=$color, createdAt=$createdAt, faceAssetId=$faceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, ownerId=$ownerId, updatedAt=$updatedAt]';
+  static SyncPersonV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncPersonV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      birthDate: (json[r'birthDate'] == null ? null : DateTime.parse(json[r'birthDate'] as String)),
+      color: (json[r'color'] as String?),
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      faceAssetId: (json[r'faceAssetId'] as String?),
+      id: json[r'id'] as String,
+      isFavorite: json[r'isFavorite'] as bool,
+      isHidden: json[r'isHidden'] as bool,
+      name: json[r'name'] as String,
+      ownerId: json[r'ownerId'] as String,
+      updatedAt: DateTime.parse(json[r'updatedAt'] as String),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.birthDate!.millisecondsSinceEpoch
-        : this.birthDate!.toUtc().toIso8601String();
-    } else {
-    //  json[r'birthDate'] = null;
+    if (birthDate != null) {
+      json[r'birthDate'] = birthDate!.toUtc().toIso8601String();
     }
-    if (this.color != null) {
-      json[r'color'] = this.color;
-    } else {
-    //  json[r'color'] = null;
+    if (color != null) {
+      json[r'color'] = color!;
     }
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-    if (this.faceAssetId != null) {
-      json[r'faceAssetId'] = this.faceAssetId;
-    } else {
-    //  json[r'faceAssetId'] = null;
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    if (faceAssetId != null) {
+      json[r'faceAssetId'] = faceAssetId!;
     }
-      json[r'id'] = this.id;
-      json[r'isFavorite'] = this.isFavorite;
-      json[r'isHidden'] = this.isHidden;
-      json[r'name'] = this.name;
-      json[r'ownerId'] = this.ownerId;
-      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedAt.millisecondsSinceEpoch
-        : this.updatedAt.toUtc().toIso8601String();
+    json[r'id'] = id;
+    json[r'isFavorite'] = isFavorite;
+    json[r'isHidden'] = isHidden;
+    json[r'name'] = name;
+    json[r'ownerId'] = ownerId;
+    json[r'updatedAt'] = updatedAt.toUtc().toIso8601String();
     return json;
   }
 
-  /// Returns a new [SyncPersonV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncPersonV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncPersonV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncPersonV1(
-        birthDate: mapDateTime(json, r'birthDate', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        color: mapValueOfType<String>(json, r'color'),
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        faceAssetId: mapValueOfType<String>(json, r'faceAssetId'),
-        id: mapValueOfType<String>(json, r'id')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        isHidden: mapValueOfType<bool>(json, r'isHidden')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-      );
-    }
-    return null;
+  SyncPersonV1 copyWith({
+    Object? birthDate = _undefined,
+    Object? color = _undefined,
+    DateTime? createdAt,
+    Object? faceAssetId = _undefined,
+    String? id,
+    bool? isFavorite,
+    bool? isHidden,
+    String? name,
+    String? ownerId,
+    DateTime? updatedAt,
+  }) {
+    return .new(
+      birthDate: identical(birthDate, _undefined) ? this.birthDate : birthDate as DateTime?,
+      color: identical(color, _undefined) ? this.color : color as String?,
+      createdAt: createdAt ?? this.createdAt,
+      faceAssetId: identical(faceAssetId, _undefined) ? this.faceAssetId : faceAssetId as String?,
+      id: id ?? this.id,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isHidden: isHidden ?? this.isHidden,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<SyncPersonV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncPersonV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncPersonV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncPersonV1 &&
+            birthDate == other.birthDate &&
+            color == other.color &&
+            createdAt == other.createdAt &&
+            faceAssetId == other.faceAssetId &&
+            id == other.id &&
+            isFavorite == other.isFavorite &&
+            isHidden == other.isHidden &&
+            name == other.name &&
+            ownerId == other.ownerId &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, SyncPersonV1> mapFromJson(dynamic json) {
-    final map = <String, SyncPersonV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncPersonV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      birthDate,
+      color,
+      createdAt,
+      faceAssetId,
+      id,
+      isFavorite,
+      isHidden,
+      name,
+      ownerId,
+      updatedAt,
+    ]);
   }
 
-  // maps a json object with a list of SyncPersonV1-objects as value to a dart map
-  static Map<String, List<SyncPersonV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncPersonV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncPersonV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'birthDate',
-    'color',
-    'createdAt',
-    'faceAssetId',
-    'id',
-    'isFavorite',
-    'isHidden',
-    'name',
-    'ownerId',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'SyncPersonV1(birthDate=$birthDate, color=$color, createdAt=$createdAt, faceAssetId=$faceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, ownerId=$ownerId, updatedAt=$updatedAt)';
 }
-

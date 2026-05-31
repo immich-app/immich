@@ -1,127 +1,52 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SessionUnlockDto {
-  /// Returns a new [SessionUnlockDto] instance.
-  SessionUnlockDto({
-    this.password,
-    this.pinCode,
-  });
+final class SessionUnlockDto {
+  const SessionUnlockDto({this.password = const Optional.absent(), this.pinCode = const Optional.absent()});
 
   /// User password (required if PIN code is not provided)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? password;
+  final Optional<String> password;
 
   /// New PIN code (4-6 digits)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? pinCode;
+  final Optional<String> pinCode;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SessionUnlockDto &&
-    other.password == password &&
-    other.pinCode == pinCode;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (password == null ? 0 : password!.hashCode) +
-    (pinCode == null ? 0 : pinCode!.hashCode);
-
-  @override
-  String toString() => 'SessionUnlockDto[password=$password, pinCode=$pinCode]';
+  static SessionUnlockDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SessionUnlockDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      password: json.containsKey(r'password') ? Optional.present(json[r'password'] as String) : const Optional.absent(),
+      pinCode: json.containsKey(r'pinCode') ? Optional.present(json[r'pinCode'] as String) : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (password case Present(:final value)) {
+      json[r'password'] = value;
     }
-    if (this.pinCode != null) {
-      json[r'pinCode'] = this.pinCode;
-    } else {
-    //  json[r'pinCode'] = null;
+    if (pinCode case Present(:final value)) {
+      json[r'pinCode'] = value;
     }
     return json;
   }
 
-  /// Returns a new [SessionUnlockDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SessionUnlockDto? fromJson(dynamic value) {
-    upgradeDto(value, "SessionUnlockDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SessionUnlockDto(
-        password: mapValueOfType<String>(json, r'password'),
-        pinCode: mapValueOfType<String>(json, r'pinCode'),
-      );
-    }
-    return null;
+  SessionUnlockDto copyWith({Optional<String>? password, Optional<String>? pinCode}) {
+    return .new(password: password ?? this.password, pinCode: pinCode ?? this.pinCode);
   }
 
-  static List<SessionUnlockDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SessionUnlockDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SessionUnlockDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SessionUnlockDto && password == other.password && pinCode == other.pinCode);
   }
 
-  static Map<String, SessionUnlockDto> mapFromJson(dynamic json) {
-    final map = <String, SessionUnlockDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SessionUnlockDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([password, pinCode]);
   }
 
-  // maps a json object with a list of SessionUnlockDto-objects as value to a dart map
-  static Map<String, List<SessionUnlockDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SessionUnlockDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SessionUnlockDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() => 'SessionUnlockDto(password=$password, pinCode=$pinCode)';
 }
-

@@ -1,134 +1,83 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class WorkflowShareResponseDto {
-  /// Returns a new [WorkflowShareResponseDto] instance.
-  WorkflowShareResponseDto({
+final class WorkflowShareResponseDto {
+  const WorkflowShareResponseDto({
     required this.description,
     required this.name,
-    this.steps = const [],
+    required this.steps,
     required this.trigger,
   });
 
   /// Workflow description
-  String? description;
+  final String? description;
 
   /// Workflow name
-  String? name;
+  final String? name;
 
   /// Workflow steps
-  List<WorkflowShareStepDto> steps;
+  final List<WorkflowShareStepDto> steps;
 
-  WorkflowTrigger trigger;
+  /// Workflow trigger type
+  final WorkflowTrigger trigger;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is WorkflowShareResponseDto &&
-    other.description == description &&
-    other.name == name &&
-    _deepEquality.equals(other.steps, steps) &&
-    other.trigger == trigger;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (description == null ? 0 : description!.hashCode) +
-    (name == null ? 0 : name!.hashCode) +
-    (steps.hashCode) +
-    (trigger.hashCode);
-
-  @override
-  String toString() => 'WorkflowShareResponseDto[description=$description, name=$name, steps=$steps, trigger=$trigger]';
+  static WorkflowShareResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<WorkflowShareResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      description: (json[r'description'] as String?),
+      name: (json[r'name'] as String?),
+      steps: ((json[r'steps'] as List?)?.map(($e) => (WorkflowShareStepDto.fromJson($e))!).toList(growable: false))!,
+      trigger: (WorkflowTrigger.fromJson(json[r'trigger']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (description != null) {
+      json[r'description'] = description!;
     }
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (name != null) {
+      json[r'name'] = name!;
     }
-      json[r'steps'] = this.steps;
-      json[r'trigger'] = this.trigger;
+    json[r'steps'] = steps.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'trigger'] = trigger.toJson();
     return json;
   }
 
-  /// Returns a new [WorkflowShareResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static WorkflowShareResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "WorkflowShareResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return WorkflowShareResponseDto(
-        description: mapValueOfType<String>(json, r'description'),
-        name: mapValueOfType<String>(json, r'name'),
-        steps: WorkflowShareStepDto.listFromJson(json[r'steps']),
-        trigger: WorkflowTrigger.fromJson(json[r'trigger'])!,
-      );
-    }
-    return null;
+  WorkflowShareResponseDto copyWith({
+    Object? description = _undefined,
+    Object? name = _undefined,
+    List<WorkflowShareStepDto>? steps,
+    WorkflowTrigger? trigger,
+  }) {
+    return .new(
+      description: identical(description, _undefined) ? this.description : description as String?,
+      name: identical(name, _undefined) ? this.name : name as String?,
+      steps: steps ?? this.steps,
+      trigger: trigger ?? this.trigger,
+    );
   }
 
-  static List<WorkflowShareResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <WorkflowShareResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = WorkflowShareResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is WorkflowShareResponseDto &&
+            description == other.description &&
+            name == other.name &&
+            const DeepCollectionEquality().equals(steps, other.steps) &&
+            trigger == other.trigger);
   }
 
-  static Map<String, WorkflowShareResponseDto> mapFromJson(dynamic json) {
-    final map = <String, WorkflowShareResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = WorkflowShareResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([description, name, const DeepCollectionEquality().hash(steps), trigger]);
   }
 
-  // maps a json object with a list of WorkflowShareResponseDto-objects as value to a dart map
-  static Map<String, List<WorkflowShareResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<WorkflowShareResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = WorkflowShareResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'description',
-    'name',
-    'steps',
-    'trigger',
-  };
+  @override
+  String toString() => 'WorkflowShareResponseDto(description=$description, name=$name, steps=$steps, trigger=$trigger)';
 }
-

@@ -9,7 +9,7 @@ class ServerVersion extends SemVer {
     return 'ServerVersion(major: $major, minor: $minor, patch: $patch)';
   }
 
-  ServerVersion.fromDto(ServerVersionResponseDto dto) : super(major: dto.major, minor: dto.minor, patch: dto.patch_);
+  ServerVersion.fromDto(ServerVersionResponseDto dto) : super(major: dto.major, minor: dto.minor, patch: dto.patch);
 
   bool isAtLeast({int major = 0, int minor = 0, int patch = 0}) {
     return this >= SemVer(major: major, minor: minor, patch: patch);

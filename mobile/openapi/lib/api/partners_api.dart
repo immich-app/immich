@@ -1,52 +1,115 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class PartnersApi {
   PartnersApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
+  static const ApiVersion getPartnersAddedIn = .new(1, 0, 0);
+
+  static const ApiState getPartnersState = .stable;
+
+  static const ApiVersion createPartnerAddedIn = .new(1, 0, 0);
+
+  static const ApiState createPartnerState = .stable;
+
+  static const ApiVersion removePartnerAddedIn = .new(1, 0, 0);
+
+  static const ApiState removePartnerState = .stable;
+
+  static const ApiVersion createPartnerDeprecatedAddedIn = .new(1, 0, 0);
+
+  static const ApiVersion createPartnerDeprecatedDeprecatedIn = .new(1, 0, 0);
+
+  static const ApiState createPartnerDeprecatedState = .deprecated;
+
+  static const ApiVersion updatePartnerAddedIn = .new(1, 0, 0);
+
+  static const ApiState updatePartnerState = .stable;
+
+  /// Retrieve partners
+  ///
+  /// Retrieve a list of partners with whom assets are shared.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getPartnersWithHttpInfo({required PartnerDirection direction, Future<void>? abortTrigger}) async {
+    final apiPath = r'/partners';
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    queryParams.addAll(_queryParams('', 'direction', direction));
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve partners
+  ///
+  /// Retrieve a list of partners with whom assets are shared.
+  ///
+  /// Available since server v1.0.0.
+  Future<List<PartnerResponseDto>> getPartners({
+    required PartnerDirection direction,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await getPartnersWithHttpInfo(direction: direction, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<PartnerResponseDto>') as List)
+          .cast<PartnerResponseDto>()
+          .toList(growable: false);
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
   /// Create a partner
   ///
   /// Create a new partner to share assets with.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [PartnerCreateDto] partnerCreateDto (required):
-  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto, {Future<void>? abortTrigger}) async {
     final apiPath = r'/partners';
 
-    // ignore: prefer_final_locals
     Object? postBody = partnerCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -54,157 +117,29 @@ class PartnersApi {
   ///
   /// Create a new partner to share assets with.
   ///
-  /// Parameters:
-  ///
-  /// * [PartnerCreateDto] partnerCreateDto (required):
-  Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto,) async {
-    final response = await createPartnerWithHttpInfo(partnerCreateDto,);
+  /// Available since server v1.0.0.
+  Future<PartnerResponseDto> createPartner(PartnerCreateDto partnerCreateDto, {Future<void>? abortTrigger}) async {
+    final response = await createPartnerWithHttpInfo(partnerCreateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'PartnerResponseDto')
+          as PartnerResponseDto;
     }
-    return null;
-  }
-
-  /// Create a partner
-  ///
-  /// Create a new partner to share assets with.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Create a partner
-  ///
-  /// Create a new partner to share assets with.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
-    final response = await createPartnerDeprecatedWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Retrieve partners
-  ///
-  /// Retrieve a list of partners with whom assets are shared.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [PartnerDirection] direction (required):
-  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/partners';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-      queryParams.addAll(_queryParams('', 'direction', direction));
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve partners
-  ///
-  /// Retrieve a list of partners with whom assets are shared.
-  ///
-  /// Parameters:
-  ///
-  /// * [PartnerDirection] direction (required):
-  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
-    final response = await getPartnersWithHttpInfo(direction,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PartnerResponseDto>') as List)
-        .cast<PartnerResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Remove a partner
   ///
   /// Stop sharing assets with a partner.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> removePartnerWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> removePartnerWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/partners/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -213,15 +148,15 @@ class PartnersApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'DELETE',
+      r'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -229,50 +164,94 @@ class PartnersApi {
   ///
   /// Stop sharing assets with a partner.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> removePartner(String id,) async {
-    final response = await removePartnerWithHttpInfo(id,);
+  /// Available since server v1.0.0.
+  Future<void> removePartner(String id, {Future<void>? abortTrigger}) async {
+    final response = await removePartnerWithHttpInfo(id, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+  }
+
+  /// Create a partner
+  ///
+  /// Create a new partner to share assets with.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  @Deprecated('Deprecated by the Immich server API since v1.0.0.')
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/partners/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Create a partner
+  ///
+  /// Create a new partner to share assets with.
+  ///
+  /// Available since server v1.0.0.
+  @Deprecated('Deprecated by the Immich server API since v1.0.0.')
+  Future<PartnerResponseDto> createPartnerDeprecated(String id, {Future<void>? abortTrigger}) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'PartnerResponseDto')
+          as PartnerResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Update a partner
   ///
   /// Specify whether a partner's assets should appear in the user's timeline.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [PartnerUpdateDto] partnerUpdateDto (required):
-  Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> updatePartnerWithHttpInfo(
+    String id,
+    PartnerUpdateDto partnerUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/partners/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody = partnerUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'PUT',
+      r'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -280,23 +259,20 @@ class PartnersApi {
   ///
   /// Specify whether a partner's assets should appear in the user's timeline.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [PartnerUpdateDto] partnerUpdateDto (required):
-  Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto,) async {
-    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto,);
+  /// Available since server v1.0.0.
+  Future<PartnerResponseDto> updatePartner(
+    String id,
+    PartnerUpdateDto partnerUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'PartnerResponseDto')
+          as PartnerResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

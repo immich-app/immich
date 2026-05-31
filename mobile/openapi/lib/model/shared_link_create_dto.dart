@@ -1,211 +1,174 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SharedLinkCreateDto {
-  /// Returns a new [SharedLinkCreateDto] instance.
-  SharedLinkCreateDto({
-    this.albumId,
-    this.allowDownload = true,
-    this.allowUpload,
-    this.assetIds = const [],
-    this.description,
-    this.expiresAt,
-    this.password,
-    this.showMetadata = true,
-    this.slug,
+final class SharedLinkCreateDto {
+  const SharedLinkCreateDto({
+    this.albumId = const Optional.absent(),
+    this.allowDownload = const Optional.absent(),
+    this.allowUpload = const Optional.absent(),
+    this.assetIds = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.expiresAt = const Optional.absent(),
+    this.password = const Optional.absent(),
+    this.showMetadata = const Optional.absent(),
+    this.slug = const Optional.absent(),
     required this.type,
   });
 
   /// Album ID (for album sharing)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? albumId;
+  final Optional<String> albumId;
 
   /// Allow downloads
-  bool allowDownload;
+  final Optional<bool> allowDownload;
 
   /// Allow uploads
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? allowUpload;
+  final Optional<bool> allowUpload;
 
   /// Asset IDs (for individual assets)
-  List<String> assetIds;
+  final Optional<List<String>> assetIds;
 
   /// Link description
-  String? description;
+  final Optional<String?> description;
 
   /// Expiration date
-  DateTime? expiresAt;
+  final Optional<DateTime?> expiresAt;
 
   /// Link password
-  String? password;
+  final Optional<String?> password;
 
   /// Show metadata
-  bool showMetadata;
+  final Optional<bool> showMetadata;
 
   /// Custom URL slug
-  String? slug;
+  final Optional<String?> slug;
 
-  SharedLinkType type;
+  final SharedLinkType type;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SharedLinkCreateDto &&
-    other.albumId == albumId &&
-    other.allowDownload == allowDownload &&
-    other.allowUpload == allowUpload &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.description == description &&
-    other.expiresAt == expiresAt &&
-    other.password == password &&
-    other.showMetadata == showMetadata &&
-    other.slug == slug &&
-    other.type == type;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumId == null ? 0 : albumId!.hashCode) +
-    (allowDownload.hashCode) +
-    (allowUpload == null ? 0 : allowUpload!.hashCode) +
-    (assetIds.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (password == null ? 0 : password!.hashCode) +
-    (showMetadata.hashCode) +
-    (slug == null ? 0 : slug!.hashCode) +
-    (type.hashCode);
-
-  @override
-  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type]';
+  static SharedLinkCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SharedLinkCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumId: json.containsKey(r'albumId') ? Optional.present(json[r'albumId'] as String) : const Optional.absent(),
+      allowDownload: json.containsKey(r'allowDownload')
+          ? Optional.present(json[r'allowDownload'] as bool)
+          : const Optional.absent(),
+      allowUpload: json.containsKey(r'allowUpload')
+          ? Optional.present(json[r'allowUpload'] as bool)
+          : const Optional.absent(),
+      assetIds: json.containsKey(r'assetIds')
+          ? Optional.present(((json[r'assetIds'] as List?)?.map(($e) => $e as String).toList(growable: false))!)
+          : const Optional.absent(),
+      description: json.containsKey(r'description')
+          ? Optional.present((json[r'description'] as String?))
+          : const Optional.absent(),
+      expiresAt: json.containsKey(r'expiresAt')
+          ? Optional.present((json[r'expiresAt'] == null ? null : DateTime.parse(json[r'expiresAt'] as String)))
+          : const Optional.absent(),
+      password: json.containsKey(r'password')
+          ? Optional.present((json[r'password'] as String?))
+          : const Optional.absent(),
+      showMetadata: json.containsKey(r'showMetadata')
+          ? Optional.present(json[r'showMetadata'] as bool)
+          : const Optional.absent(),
+      slug: json.containsKey(r'slug') ? Optional.present((json[r'slug'] as String?)) : const Optional.absent(),
+      type: (SharedLinkType.fromJson(json[r'type']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albumId != null) {
-      json[r'albumId'] = this.albumId;
-    } else {
-    //  json[r'albumId'] = null;
+    if (albumId case Present(:final value)) {
+      json[r'albumId'] = value;
     }
-      json[r'allowDownload'] = this.allowDownload;
-    if (this.allowUpload != null) {
-      json[r'allowUpload'] = this.allowUpload;
-    } else {
-    //  json[r'allowUpload'] = null;
+    if (allowDownload case Present(:final value)) {
+      json[r'allowDownload'] = value;
     }
-      json[r'assetIds'] = this.assetIds;
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (allowUpload case Present(:final value)) {
+      json[r'allowUpload'] = value;
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.expiresAt!.millisecondsSinceEpoch
-        : this.expiresAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (assetIds case Present(:final value)) {
+      json[r'assetIds'] = value;
     }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (description case Present(:final value)) {
+      json[r'description'] = value;
     }
-      json[r'showMetadata'] = this.showMetadata;
-    if (this.slug != null) {
-      json[r'slug'] = this.slug;
-    } else {
-    //  json[r'slug'] = null;
+    if (expiresAt case Present(:final value)) {
+      json[r'expiresAt'] = value?.toUtc().toIso8601String();
     }
-      json[r'type'] = this.type;
+    if (password case Present(:final value)) {
+      json[r'password'] = value;
+    }
+    if (showMetadata case Present(:final value)) {
+      json[r'showMetadata'] = value;
+    }
+    if (slug case Present(:final value)) {
+      json[r'slug'] = value;
+    }
+    json[r'type'] = type.toJson();
     return json;
   }
 
-  /// Returns a new [SharedLinkCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SharedLinkCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "SharedLinkCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SharedLinkCreateDto(
-        albumId: mapValueOfType<String>(json, r'albumId'),
-        allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
-        assetIds: json[r'assetIds'] is Iterable
-            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        password: mapValueOfType<String>(json, r'password'),
-        showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
-        slug: mapValueOfType<String>(json, r'slug'),
-        type: SharedLinkType.fromJson(json[r'type'])!,
-      );
-    }
-    return null;
+  SharedLinkCreateDto copyWith({
+    Optional<String>? albumId,
+    Optional<bool>? allowDownload,
+    Optional<bool>? allowUpload,
+    Optional<List<String>>? assetIds,
+    Optional<String?>? description,
+    Optional<DateTime?>? expiresAt,
+    Optional<String?>? password,
+    Optional<bool>? showMetadata,
+    Optional<String?>? slug,
+    SharedLinkType? type,
+  }) {
+    return .new(
+      albumId: albumId ?? this.albumId,
+      allowDownload: allowDownload ?? this.allowDownload,
+      allowUpload: allowUpload ?? this.allowUpload,
+      assetIds: assetIds ?? this.assetIds,
+      description: description ?? this.description,
+      expiresAt: expiresAt ?? this.expiresAt,
+      password: password ?? this.password,
+      showMetadata: showMetadata ?? this.showMetadata,
+      slug: slug ?? this.slug,
+      type: type ?? this.type,
+    );
   }
 
-  static List<SharedLinkCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SharedLinkCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SharedLinkCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SharedLinkCreateDto &&
+            albumId == other.albumId &&
+            allowDownload == other.allowDownload &&
+            allowUpload == other.allowUpload &&
+            assetIds == other.assetIds &&
+            description == other.description &&
+            expiresAt == other.expiresAt &&
+            password == other.password &&
+            showMetadata == other.showMetadata &&
+            slug == other.slug &&
+            type == other.type);
   }
 
-  static Map<String, SharedLinkCreateDto> mapFromJson(dynamic json) {
-    final map = <String, SharedLinkCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SharedLinkCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      albumId,
+      allowDownload,
+      allowUpload,
+      assetIds,
+      description,
+      expiresAt,
+      password,
+      showMetadata,
+      slug,
+      type,
+    ]);
   }
 
-  // maps a json object with a list of SharedLinkCreateDto-objects as value to a dart map
-  static Map<String, List<SharedLinkCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SharedLinkCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SharedLinkCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'type',
-  };
+  @override
+  String toString() =>
+      'SharedLinkCreateDto(albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type)';
 }
-

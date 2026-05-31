@@ -1,180 +1,106 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class UpdateAlbumDto {
-  /// Returns a new [UpdateAlbumDto] instance.
-  UpdateAlbumDto({
-    this.albumName,
-    this.albumThumbnailAssetId,
-    this.description,
-    this.isActivityEnabled,
-    this.order,
+final class UpdateAlbumDto {
+  const UpdateAlbumDto({
+    this.albumName = const Optional.absent(),
+    this.albumThumbnailAssetId = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.isActivityEnabled = const Optional.absent(),
+    this.order = const Optional.absent(),
   });
 
   /// Album name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? albumName;
+  final Optional<String> albumName;
 
   /// Album thumbnail asset ID
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? albumThumbnailAssetId;
+  final Optional<String> albumThumbnailAssetId;
 
   /// Album description
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? description;
+  final Optional<String> description;
 
   /// Enable activity feed
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isActivityEnabled;
+  final Optional<bool> isActivityEnabled;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetOrder? order;
+  final Optional<AssetOrder> order;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
-    other.albumName == albumName &&
-    other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    other.description == description &&
-    other.isActivityEnabled == isActivityEnabled &&
-    other.order == order;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumName == null ? 0 : albumName!.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
-    (order == null ? 0 : order!.hashCode);
-
-  @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
+  static UpdateAlbumDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<UpdateAlbumDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumName: json.containsKey(r'albumName')
+          ? Optional.present(json[r'albumName'] as String)
+          : const Optional.absent(),
+      albumThumbnailAssetId: json.containsKey(r'albumThumbnailAssetId')
+          ? Optional.present(json[r'albumThumbnailAssetId'] as String)
+          : const Optional.absent(),
+      description: json.containsKey(r'description')
+          ? Optional.present(json[r'description'] as String)
+          : const Optional.absent(),
+      isActivityEnabled: json.containsKey(r'isActivityEnabled')
+          ? Optional.present(json[r'isActivityEnabled'] as bool)
+          : const Optional.absent(),
+      order: json.containsKey(r'order')
+          ? Optional.present((AssetOrder.fromJson(json[r'order']))!)
+          : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albumName != null) {
-      json[r'albumName'] = this.albumName;
-    } else {
-    //  json[r'albumName'] = null;
+    if (albumName case Present(:final value)) {
+      json[r'albumName'] = value;
     }
-    if (this.albumThumbnailAssetId != null) {
-      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
-    } else {
-    //  json[r'albumThumbnailAssetId'] = null;
+    if (albumThumbnailAssetId case Present(:final value)) {
+      json[r'albumThumbnailAssetId'] = value;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (description case Present(:final value)) {
+      json[r'description'] = value;
     }
-    if (this.isActivityEnabled != null) {
-      json[r'isActivityEnabled'] = this.isActivityEnabled;
-    } else {
-    //  json[r'isActivityEnabled'] = null;
+    if (isActivityEnabled case Present(:final value)) {
+      json[r'isActivityEnabled'] = value;
     }
-    if (this.order != null) {
-      json[r'order'] = this.order;
-    } else {
-    //  json[r'order'] = null;
+    if (order case Present(:final value)) {
+      json[r'order'] = value.toJson();
     }
     return json;
   }
 
-  /// Returns a new [UpdateAlbumDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static UpdateAlbumDto? fromJson(dynamic value) {
-    upgradeDto(value, "UpdateAlbumDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return UpdateAlbumDto(
-        albumName: mapValueOfType<String>(json, r'albumName'),
-        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
-        description: mapValueOfType<String>(json, r'description'),
-        isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
-        order: AssetOrder.fromJson(json[r'order']),
-      );
-    }
-    return null;
+  UpdateAlbumDto copyWith({
+    Optional<String>? albumName,
+    Optional<String>? albumThumbnailAssetId,
+    Optional<String>? description,
+    Optional<bool>? isActivityEnabled,
+    Optional<AssetOrder>? order,
+  }) {
+    return .new(
+      albumName: albumName ?? this.albumName,
+      albumThumbnailAssetId: albumThumbnailAssetId ?? this.albumThumbnailAssetId,
+      description: description ?? this.description,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      order: order ?? this.order,
+    );
   }
 
-  static List<UpdateAlbumDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UpdateAlbumDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UpdateAlbumDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is UpdateAlbumDto &&
+            albumName == other.albumName &&
+            albumThumbnailAssetId == other.albumThumbnailAssetId &&
+            description == other.description &&
+            isActivityEnabled == other.isActivityEnabled &&
+            order == other.order);
   }
 
-  static Map<String, UpdateAlbumDto> mapFromJson(dynamic json) {
-    final map = <String, UpdateAlbumDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = UpdateAlbumDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([albumName, albumThumbnailAssetId, description, isActivityEnabled, order]);
   }
 
-  // maps a json object with a list of UpdateAlbumDto-objects as value to a dart map
-  static Map<String, List<UpdateAlbumDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<UpdateAlbumDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = UpdateAlbumDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() =>
+      'UpdateAlbumDto(albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order)';
 }
-

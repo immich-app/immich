@@ -1,160 +1,105 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerStatsResponseDto {
-  /// Returns a new [ServerStatsResponseDto] instance.
-  ServerStatsResponseDto({
+final class ServerStatsResponseDto {
+  const ServerStatsResponseDto({
     required this.photos,
     required this.usage,
-    this.usageByUser = const [],
+    required this.usageByUser,
     required this.usagePhotos,
     required this.usageVideos,
     required this.videos,
   });
 
   /// Total number of photos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int photos;
+  final int photos;
 
   /// Total storage usage in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usage;
+  final int usage;
 
   /// Array of usage for each user
-  List<UsageByUserDto> usageByUser;
+  final List<UsageByUserDto> usageByUser;
 
   /// Storage usage for photos in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usagePhotos;
+  final int usagePhotos;
 
   /// Storage usage for videos in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usageVideos;
+  final int usageVideos;
 
   /// Total number of videos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int videos;
+  final int videos;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerStatsResponseDto &&
-    other.photos == photos &&
-    other.usage == usage &&
-    _deepEquality.equals(other.usageByUser, usageByUser) &&
-    other.usagePhotos == usagePhotos &&
-    other.usageVideos == usageVideos &&
-    other.videos == videos;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (photos.hashCode) +
-    (usage.hashCode) +
-    (usageByUser.hashCode) +
-    (usagePhotos.hashCode) +
-    (usageVideos.hashCode) +
-    (videos.hashCode);
-
-  @override
-  String toString() => 'ServerStatsResponseDto[photos=$photos, usage=$usage, usageByUser=$usageByUser, usagePhotos=$usagePhotos, usageVideos=$usageVideos, videos=$videos]';
+  static ServerStatsResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerStatsResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      photos: json[r'photos'] as int,
+      usage: json[r'usage'] as int,
+      usageByUser: ((json[r'usageByUser'] as List?)
+          ?.map(($e) => (UsageByUserDto.fromJson($e))!)
+          .toList(growable: false))!,
+      usagePhotos: json[r'usagePhotos'] as int,
+      usageVideos: json[r'usageVideos'] as int,
+      videos: json[r'videos'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'photos'] = this.photos;
-      json[r'usage'] = this.usage;
-      json[r'usageByUser'] = this.usageByUser;
-      json[r'usagePhotos'] = this.usagePhotos;
-      json[r'usageVideos'] = this.usageVideos;
-      json[r'videos'] = this.videos;
+    json[r'photos'] = photos;
+    json[r'usage'] = usage;
+    json[r'usageByUser'] = usageByUser.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'usagePhotos'] = usagePhotos;
+    json[r'usageVideos'] = usageVideos;
+    json[r'videos'] = videos;
     return json;
   }
 
-  /// Returns a new [ServerStatsResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerStatsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerStatsResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerStatsResponseDto(
-        photos: mapValueOfType<int>(json, r'photos')!,
-        usage: mapValueOfType<int>(json, r'usage')!,
-        usageByUser: UsageByUserDto.listFromJson(json[r'usageByUser']),
-        usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
-        usageVideos: mapValueOfType<int>(json, r'usageVideos')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
-      );
-    }
-    return null;
+  ServerStatsResponseDto copyWith({
+    int? photos,
+    int? usage,
+    List<UsageByUserDto>? usageByUser,
+    int? usagePhotos,
+    int? usageVideos,
+    int? videos,
+  }) {
+    return .new(
+      photos: photos ?? this.photos,
+      usage: usage ?? this.usage,
+      usageByUser: usageByUser ?? this.usageByUser,
+      usagePhotos: usagePhotos ?? this.usagePhotos,
+      usageVideos: usageVideos ?? this.usageVideos,
+      videos: videos ?? this.videos,
+    );
   }
 
-  static List<ServerStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerStatsResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerStatsResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerStatsResponseDto &&
+            photos == other.photos &&
+            usage == other.usage &&
+            const DeepCollectionEquality().equals(usageByUser, other.usageByUser) &&
+            usagePhotos == other.usagePhotos &&
+            usageVideos == other.usageVideos &&
+            videos == other.videos);
   }
 
-  static Map<String, ServerStatsResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ServerStatsResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerStatsResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      photos,
+      usage,
+      const DeepCollectionEquality().hash(usageByUser),
+      usagePhotos,
+      usageVideos,
+      videos,
+    ]);
   }
 
-  // maps a json object with a list of ServerStatsResponseDto-objects as value to a dart map
-  static Map<String, List<ServerStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerStatsResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerStatsResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'photos',
-    'usage',
-    'usageByUser',
-    'usagePhotos',
-    'usageVideos',
-    'videos',
-  };
+  @override
+  String toString() =>
+      'ServerStatsResponseDto(photos=$photos, usage=$usage, usageByUser=$usageByUser, usagePhotos=$usagePhotos, usageVideos=$usageVideos, videos=$videos)';
 }
-

@@ -1,100 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class PartnerUpdateDto {
-  /// Returns a new [PartnerUpdateDto] instance.
-  PartnerUpdateDto({
-    required this.inTimeline,
-  });
+final class PartnerUpdateDto {
+  const PartnerUpdateDto({required this.inTimeline});
 
   /// Show partner assets in timeline
-  bool inTimeline;
+  final bool inTimeline;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is PartnerUpdateDto &&
-    other.inTimeline == inTimeline;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (inTimeline.hashCode);
-
-  @override
-  String toString() => 'PartnerUpdateDto[inTimeline=$inTimeline]';
+  static PartnerUpdateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<PartnerUpdateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(inTimeline: json[r'inTimeline'] as bool);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'inTimeline'] = this.inTimeline;
+    json[r'inTimeline'] = inTimeline;
     return json;
   }
 
-  /// Returns a new [PartnerUpdateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static PartnerUpdateDto? fromJson(dynamic value) {
-    upgradeDto(value, "PartnerUpdateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return PartnerUpdateDto(
-        inTimeline: mapValueOfType<bool>(json, r'inTimeline')!,
-      );
-    }
-    return null;
+  PartnerUpdateDto copyWith({bool? inTimeline}) {
+    return .new(inTimeline: inTimeline ?? this.inTimeline);
   }
 
-  static List<PartnerUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PartnerUpdateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PartnerUpdateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is PartnerUpdateDto && inTimeline == other.inTimeline);
   }
 
-  static Map<String, PartnerUpdateDto> mapFromJson(dynamic json) {
-    final map = <String, PartnerUpdateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = PartnerUpdateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([inTimeline]);
   }
 
-  // maps a json object with a list of PartnerUpdateDto-objects as value to a dart map
-  static Map<String, List<PartnerUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<PartnerUpdateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = PartnerUpdateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'inTimeline',
-  };
+  @override
+  String toString() => 'PartnerUpdateDto(inTimeline=$inTimeline)';
 }
-

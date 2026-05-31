@@ -20,7 +20,7 @@ class SyncApiRepository {
   }
 
   Future<void> deleteSyncAck(List<SyncEntityType> types) {
-    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: types));
+    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: types.toOptional()));
   }
 
   Future<void> streamChanges(

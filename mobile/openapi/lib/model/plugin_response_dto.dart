@@ -1,23 +1,14 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class PluginResponseDto {
-  /// Returns a new [PluginResponseDto] instance.
-  PluginResponseDto({
+final class PluginResponseDto {
+  const PluginResponseDto({
     required this.author,
     required this.createdAt,
     required this.description,
     required this.id,
-    this.methods = const [],
+    required this.methods,
     required this.name,
     required this.title,
     required this.updatedAt,
@@ -25,148 +16,120 @@ class PluginResponseDto {
   });
 
   /// Plugin author
-  String author;
+  final String author;
 
   /// Creation date
-  String createdAt;
+  final String createdAt;
 
   /// Plugin description
-  String description;
+  final String description;
 
   /// Plugin ID
-  String id;
+  final String id;
 
   /// Plugin methods
-  List<PluginMethodResponseDto> methods;
+  final List<PluginMethodResponseDto> methods;
 
   /// Plugin name
-  String name;
+  final String name;
 
   /// Plugin title
-  String title;
+  final String title;
 
   /// Last update date
-  String updatedAt;
+  final String updatedAt;
 
   /// Plugin version
-  String version;
+  final String version;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is PluginResponseDto &&
-    other.author == author &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.id == id &&
-    _deepEquality.equals(other.methods, methods) &&
-    other.name == name &&
-    other.title == title &&
-    other.updatedAt == updatedAt &&
-    other.version == version;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (author.hashCode) +
-    (createdAt.hashCode) +
-    (description.hashCode) +
-    (id.hashCode) +
-    (methods.hashCode) +
-    (name.hashCode) +
-    (title.hashCode) +
-    (updatedAt.hashCode) +
-    (version.hashCode);
-
-  @override
-  String toString() => 'PluginResponseDto[author=$author, createdAt=$createdAt, description=$description, id=$id, methods=$methods, name=$name, title=$title, updatedAt=$updatedAt, version=$version]';
+  static PluginResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<PluginResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      author: json[r'author'] as String,
+      createdAt: json[r'createdAt'] as String,
+      description: json[r'description'] as String,
+      id: json[r'id'] as String,
+      methods: ((json[r'methods'] as List?)
+          ?.map(($e) => (PluginMethodResponseDto.fromJson($e))!)
+          .toList(growable: false))!,
+      name: json[r'name'] as String,
+      title: json[r'title'] as String,
+      updatedAt: json[r'updatedAt'] as String,
+      version: json[r'version'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'author'] = this.author;
-      json[r'createdAt'] = this.createdAt;
-      json[r'description'] = this.description;
-      json[r'id'] = this.id;
-      json[r'methods'] = this.methods;
-      json[r'name'] = this.name;
-      json[r'title'] = this.title;
-      json[r'updatedAt'] = this.updatedAt;
-      json[r'version'] = this.version;
+    json[r'author'] = author;
+    json[r'createdAt'] = createdAt;
+    json[r'description'] = description;
+    json[r'id'] = id;
+    json[r'methods'] = methods.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'name'] = name;
+    json[r'title'] = title;
+    json[r'updatedAt'] = updatedAt;
+    json[r'version'] = version;
     return json;
   }
 
-  /// Returns a new [PluginResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static PluginResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PluginResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return PluginResponseDto(
-        author: mapValueOfType<String>(json, r'author')!,
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        description: mapValueOfType<String>(json, r'description')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        methods: PluginMethodResponseDto.listFromJson(json[r'methods']),
-        name: mapValueOfType<String>(json, r'name')!,
-        title: mapValueOfType<String>(json, r'title')!,
-        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
-        version: mapValueOfType<String>(json, r'version')!,
-      );
-    }
-    return null;
+  PluginResponseDto copyWith({
+    String? author,
+    String? createdAt,
+    String? description,
+    String? id,
+    List<PluginMethodResponseDto>? methods,
+    String? name,
+    String? title,
+    String? updatedAt,
+    String? version,
+  }) {
+    return .new(
+      author: author ?? this.author,
+      createdAt: createdAt ?? this.createdAt,
+      description: description ?? this.description,
+      id: id ?? this.id,
+      methods: methods ?? this.methods,
+      name: name ?? this.name,
+      title: title ?? this.title,
+      updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
+    );
   }
 
-  static List<PluginResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PluginResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PluginResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is PluginResponseDto &&
+            author == other.author &&
+            createdAt == other.createdAt &&
+            description == other.description &&
+            id == other.id &&
+            const DeepCollectionEquality().equals(methods, other.methods) &&
+            name == other.name &&
+            title == other.title &&
+            updatedAt == other.updatedAt &&
+            version == other.version);
   }
 
-  static Map<String, PluginResponseDto> mapFromJson(dynamic json) {
-    final map = <String, PluginResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = PluginResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      author,
+      createdAt,
+      description,
+      id,
+      const DeepCollectionEquality().hash(methods),
+      name,
+      title,
+      updatedAt,
+      version,
+    ]);
   }
 
-  // maps a json object with a list of PluginResponseDto-objects as value to a dart map
-  static Map<String, List<PluginResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<PluginResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = PluginResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'author',
-    'createdAt',
-    'description',
-    'id',
-    'methods',
-    'name',
-    'title',
-    'updatedAt',
-    'version',
-  };
+  @override
+  String toString() =>
+      'PluginResponseDto(author=$author, createdAt=$createdAt, description=$description, id=$id, methods=$methods, name=$name, title=$title, updatedAt=$updatedAt, version=$version)';
 }
-

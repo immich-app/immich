@@ -1,116 +1,58 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class QueueResponseDto {
-  /// Returns a new [QueueResponseDto] instance.
-  QueueResponseDto({
-    required this.isPaused,
-    required this.name,
-    required this.statistics,
-  });
+final class QueueResponseDto {
+  const QueueResponseDto({required this.isPaused, required this.name, required this.statistics});
 
   /// Whether the queue is paused
-  bool isPaused;
+  final bool isPaused;
 
-  QueueName name;
+  final QueueName name;
 
-  QueueStatisticsDto statistics;
+  final QueueStatisticsDto statistics;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is QueueResponseDto &&
-    other.isPaused == isPaused &&
-    other.name == name &&
-    other.statistics == statistics;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (isPaused.hashCode) +
-    (name.hashCode) +
-    (statistics.hashCode);
-
-  @override
-  String toString() => 'QueueResponseDto[isPaused=$isPaused, name=$name, statistics=$statistics]';
+  static QueueResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<QueueResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      isPaused: json[r'isPaused'] as bool,
+      name: (QueueName.fromJson(json[r'name']))!,
+      statistics: (QueueStatisticsDto.fromJson(json[r'statistics']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'isPaused'] = this.isPaused;
-      json[r'name'] = this.name;
-      json[r'statistics'] = this.statistics;
+    json[r'isPaused'] = isPaused;
+    json[r'name'] = name.toJson();
+    json[r'statistics'] = statistics.toJson();
     return json;
   }
 
-  /// Returns a new [QueueResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static QueueResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueueResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return QueueResponseDto(
-        isPaused: mapValueOfType<bool>(json, r'isPaused')!,
-        name: QueueName.fromJson(json[r'name'])!,
-        statistics: QueueStatisticsDto.fromJson(json[r'statistics'])!,
-      );
-    }
-    return null;
+  QueueResponseDto copyWith({bool? isPaused, QueueName? name, QueueStatisticsDto? statistics}) {
+    return .new(
+      isPaused: isPaused ?? this.isPaused,
+      name: name ?? this.name,
+      statistics: statistics ?? this.statistics,
+    );
   }
 
-  static List<QueueResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <QueueResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = QueueResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is QueueResponseDto &&
+            isPaused == other.isPaused &&
+            name == other.name &&
+            statistics == other.statistics);
   }
 
-  static Map<String, QueueResponseDto> mapFromJson(dynamic json) {
-    final map = <String, QueueResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = QueueResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([isPaused, name, statistics]);
   }
 
-  // maps a json object with a list of QueueResponseDto-objects as value to a dart map
-  static Map<String, List<QueueResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<QueueResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = QueueResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'isPaused',
-    'name',
-    'statistics',
-  };
+  @override
+  String toString() => 'QueueResponseDto(isPaused=$isPaused, name=$name, statistics=$statistics)';
 }
-

@@ -17,9 +17,7 @@ class ServerInfoService {
   Future<ServerDiskInfo?> getDiskInfo() async {
     try {
       final dto = await _apiService.serverInfoApi.getStorage();
-      if (dto != null) {
-        return ServerDiskInfo.fromDto(dto);
-      }
+      return ServerDiskInfo.fromDto(dto);
     } catch (e) {
       dPrint(() => "Error [getDiskInfo] ${e.toString()}");
     }
@@ -29,9 +27,7 @@ class ServerInfoService {
   Future<ServerVersion?> getServerVersion() async {
     try {
       final dto = await _apiService.serverInfoApi.getServerVersion();
-      if (dto != null) {
-        return ServerVersion.fromDto(dto);
-      }
+      return ServerVersion.fromDto(dto);
     } catch (e) {
       dPrint(() => "Error [getServerVersion] ${e.toString()}");
     }
@@ -41,9 +37,7 @@ class ServerInfoService {
   Future<ServerFeatures?> getServerFeatures() async {
     try {
       final dto = await _apiService.serverInfoApi.getServerFeatures();
-      if (dto != null) {
-        return ServerFeatures.fromDto(dto);
-      }
+      return ServerFeatures.fromDto(dto);
     } catch (e) {
       dPrint(() => "Error [getServerFeatures] ${e.toString()}");
     }
@@ -53,9 +47,7 @@ class ServerInfoService {
   Future<ServerConfig?> getServerConfig() async {
     try {
       final dto = await _apiService.serverInfoApi.getServerConfig();
-      if (dto != null) {
-        return ServerConfig.fromDto(dto);
-      }
+      return ServerConfig.fromDto(dto);
     } catch (e) {
       dPrint(() => "Error [getServerConfig] ${e.toString()}");
     }

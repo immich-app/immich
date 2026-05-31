@@ -1,114 +1,141 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class PluginsApi {
   PluginsApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Retrieve a plugin
+  static const ApiVersion searchPluginsAddedIn = .new(3, 0, 0);
+
+  static const ApiState searchPluginsState = .added;
+
+  static const ApiVersion searchPluginMethodsAddedIn = .new(3, 0, 0);
+
+  static const ApiState searchPluginMethodsState = .added;
+
+  static const ApiVersion searchPluginTemplatesAddedIn = .new(3, 0, 0);
+
+  static const ApiState searchPluginTemplatesState = .added;
+
+  static const ApiVersion getPluginAddedIn = .new(3, 0, 0);
+
+  static const ApiState getPluginState = .added;
+
+  /// List all plugins
   ///
-  /// Retrieve information about a specific plugin by its ID.
+  /// Retrieve a list of plugins available to the authenticated user.
+  ///
+  /// Available since server v3.0.0.
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getPluginWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/plugins/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> searchPluginsWithHttpInfo({
+    String? description,
+    bool? enabled,
+    String? id,
+    String? name,
+    String? title,
+    String? version,
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/plugins';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    if (description != null) {
+      queryParams.addAll(_queryParams('', 'description', description));
+    }
+    if (enabled != null) {
+      queryParams.addAll(_queryParams('', 'enabled', enabled));
+    }
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
+    }
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
+    }
+    if (title != null) {
+      queryParams.addAll(_queryParams('', 'title', title));
+    }
+    if (version != null) {
+      queryParams.addAll(_queryParams('', 'version', version));
+    }
 
+    const contentTypes = <String>[];
 
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  /// Retrieve a plugin
+  /// List all plugins
   ///
-  /// Retrieve information about a specific plugin by its ID.
+  /// Retrieve a list of plugins available to the authenticated user.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<PluginResponseDto?> getPlugin(String id,) async {
-    final response = await getPluginWithHttpInfo(id,);
+  /// Available since server v3.0.0.
+  Future<List<PluginResponseDto>> searchPlugins({
+    String? description,
+    bool? enabled,
+    String? id,
+    String? name,
+    String? title,
+    String? version,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await searchPluginsWithHttpInfo(
+      description: description,
+      enabled: enabled,
+      id: id,
+      name: name,
+      title: title,
+      version: version,
+      abortTrigger: abortTrigger,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PluginResponseDto',) as PluginResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<PluginResponseDto>') as List)
+          .cast<PluginResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve plugin methods
   ///
   /// Retrieve a list of plugin methods
   ///
+  /// Available since server v3.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] description:
-  ///
-  /// * [bool] enabled:
-  ///   Whether the plugin method is enabled
-  ///
-  /// * [String] id:
-  ///   Plugin method ID
-  ///
-  /// * [String] name:
-  ///
-  /// * [String] pluginName:
-  ///   Plugin name
-  ///
-  /// * [String] pluginVersion:
-  ///   Plugin version
-  ///
-  /// * [String] title:
-  ///
-  /// * [WorkflowTrigger] trigger:
-  ///   Workflow trigger
-  ///
-  /// * [WorkflowType] type:
-  ///   Workflow types
-  Future<Response> searchPluginMethodsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> searchPluginMethodsWithHttpInfo({
+    String? description,
+    bool? enabled,
+    String? id,
+    String? name,
+    String? pluginName,
+    String? pluginVersion,
+    String? title,
+    WorkflowTrigger? trigger,
+    WorkflowType? type,
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/plugins/methods';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -145,15 +172,15 @@ class PluginsApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -161,59 +188,53 @@ class PluginsApi {
   ///
   /// Retrieve a list of plugin methods
   ///
-  /// Parameters:
-  ///
-  /// * [String] description:
-  ///
-  /// * [bool] enabled:
-  ///   Whether the plugin method is enabled
-  ///
-  /// * [String] id:
-  ///   Plugin method ID
-  ///
-  /// * [String] name:
-  ///
-  /// * [String] pluginName:
-  ///   Plugin name
-  ///
-  /// * [String] pluginVersion:
-  ///   Plugin version
-  ///
-  /// * [String] title:
-  ///
-  /// * [WorkflowTrigger] trigger:
-  ///   Workflow trigger
-  ///
-  /// * [WorkflowType] type:
-  ///   Workflow types
-  Future<List<PluginMethodResponseDto>?> searchPluginMethods({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, }) async {
-    final response = await searchPluginMethodsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, pluginName: pluginName, pluginVersion: pluginVersion, title: title, trigger: trigger, type: type, );
+  /// Available since server v3.0.0.
+  Future<List<PluginMethodResponseDto>> searchPluginMethods({
+    String? description,
+    bool? enabled,
+    String? id,
+    String? name,
+    String? pluginName,
+    String? pluginVersion,
+    String? title,
+    WorkflowTrigger? trigger,
+    WorkflowType? type,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await searchPluginMethodsWithHttpInfo(
+      description: description,
+      enabled: enabled,
+      id: id,
+      name: name,
+      pluginName: pluginName,
+      pluginVersion: pluginVersion,
+      title: title,
+      trigger: trigger,
+      type: type,
+      abortTrigger: abortTrigger,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PluginMethodResponseDto>') as List)
-        .cast<PluginMethodResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<PluginMethodResponseDto>') as List)
+          .cast<PluginMethodResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve workflow templates
   ///
   /// Retrieve workflow templates provided by installed plugins
   ///
+  /// Available since server v3.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> searchPluginTemplatesWithHttpInfo() async {
-    // ignore: prefer_const_declarations
+  Future<Response> searchPluginTemplatesWithHttpInfo({Future<void>? abortTrigger}) async {
     final apiPath = r'/plugins/templates';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -222,138 +243,81 @@ class PluginsApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve workflow templates
   ///
   /// Retrieve workflow templates provided by installed plugins
-  Future<List<PluginTemplateResponseDto>?> searchPluginTemplates() async {
-    final response = await searchPluginTemplatesWithHttpInfo();
+  ///
+  /// Available since server v3.0.0.
+  Future<List<PluginTemplateResponseDto>> searchPluginTemplates({Future<void>? abortTrigger}) async {
+    final response = await searchPluginTemplatesWithHttpInfo(abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PluginTemplateResponseDto>') as List)
-        .cast<PluginTemplateResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<PluginTemplateResponseDto>') as List)
+          .cast<PluginTemplateResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
-  /// List all plugins
+  /// Retrieve a plugin
   ///
-  /// Retrieve a list of plugins available to the authenticated user.
+  /// Retrieve information about a specific plugin by its ID.
+  ///
+  /// Available since server v3.0.0.
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] description:
-  ///
-  /// * [bool] enabled:
-  ///   Whether the plugin is enabled
-  ///
-  /// * [String] id:
-  ///   Plugin ID
-  ///
-  /// * [String] name:
-  ///
-  /// * [String] title:
-  ///
-  /// * [String] version:
-  Future<Response> searchPluginsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? title, String? version, }) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/plugins';
+  Future<Response> getPluginWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/plugins/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (description != null) {
-      queryParams.addAll(_queryParams('', 'description', description));
-    }
-    if (enabled != null) {
-      queryParams.addAll(_queryParams('', 'enabled', enabled));
-    }
-    if (id != null) {
-      queryParams.addAll(_queryParams('', 'id', id));
-    }
-    if (name != null) {
-      queryParams.addAll(_queryParams('', 'name', name));
-    }
-    if (title != null) {
-      queryParams.addAll(_queryParams('', 'title', title));
-    }
-    if (version != null) {
-      queryParams.addAll(_queryParams('', 'version', version));
-    }
-
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  /// List all plugins
+  /// Retrieve a plugin
   ///
-  /// Retrieve a list of plugins available to the authenticated user.
+  /// Retrieve information about a specific plugin by its ID.
   ///
-  /// Parameters:
-  ///
-  /// * [String] description:
-  ///
-  /// * [bool] enabled:
-  ///   Whether the plugin is enabled
-  ///
-  /// * [String] id:
-  ///   Plugin ID
-  ///
-  /// * [String] name:
-  ///
-  /// * [String] title:
-  ///
-  /// * [String] version:
-  Future<List<PluginResponseDto>?> searchPlugins({ String? description, bool? enabled, String? id, String? name, String? title, String? version, }) async {
-    final response = await searchPluginsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, title: title, version: version, );
+  /// Available since server v3.0.0.
+  Future<PluginResponseDto> getPlugin(String id, {Future<void>? abortTrigger}) async {
+    final response = await getPluginWithHttpInfo(id, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PluginResponseDto>') as List)
-        .cast<PluginResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'PluginResponseDto')
+          as PluginResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

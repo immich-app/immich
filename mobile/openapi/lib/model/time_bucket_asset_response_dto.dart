@@ -1,295 +1,251 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class TimeBucketAssetResponseDto {
-  /// Returns a new [TimeBucketAssetResponseDto] instance.
-  TimeBucketAssetResponseDto({
-    this.city = const [],
-    this.country = const [],
-    this.createdAt = const [],
-    this.duration = const [],
-    this.fileCreatedAt = const [],
-    this.id = const [],
-    this.isFavorite = const [],
-    this.isImage = const [],
-    this.isTrashed = const [],
-    this.latitude = const [],
-    this.livePhotoVideoId = const [],
-    this.localOffsetHours = const [],
-    this.longitude = const [],
-    this.ownerId = const [],
-    this.projectionType = const [],
-    this.ratio = const [],
-    this.stack = const [],
-    this.thumbhash = const [],
-    this.visibility = const [],
+final class TimeBucketAssetResponseDto {
+  const TimeBucketAssetResponseDto({
+    this.city,
+    this.country,
+    required this.createdAt,
+    required this.duration,
+    required this.fileCreatedAt,
+    required this.id,
+    required this.isFavorite,
+    required this.isImage,
+    required this.isTrashed,
+    this.latitude,
+    required this.livePhotoVideoId,
+    required this.localOffsetHours,
+    this.longitude,
+    required this.ownerId,
+    required this.projectionType,
+    required this.ratio,
+    this.stack,
+    required this.thumbhash,
+    required this.visibility,
   });
 
   /// Array of city names extracted from EXIF GPS data
-  List<String?> city;
+  final List<String?>? city;
 
   /// Array of country names extracted from EXIF GPS data
-  List<String?> country;
+  final List<String?>? country;
 
   /// Array of UTC timestamps when each asset was originally uploaded to Immich
-  List<String> createdAt;
+  final List<String> createdAt;
 
   /// Array of video/gif durations in milliseconds (null for static images)
-  List<int?> duration;
+  final List<int?> duration;
 
   /// Array of file creation timestamps in UTC
-  List<String> fileCreatedAt;
+  final List<String> fileCreatedAt;
 
   /// Array of asset IDs in the time bucket
-  List<String> id;
+  final List<String> id;
 
   /// Array indicating whether each asset is favorited
-  List<bool> isFavorite;
+  final List<bool> isFavorite;
 
   /// Array indicating whether each asset is an image (false for videos)
-  List<bool> isImage;
+  final List<bool> isImage;
 
   /// Array indicating whether each asset is in the trash
-  List<bool> isTrashed;
+  final List<bool> isTrashed;
 
   /// Array of latitude coordinates extracted from EXIF GPS data
-  List<num?> latitude;
+  final List<double?>? latitude;
 
   /// Array of live photo video asset IDs (null for non-live photos)
-  List<String?> livePhotoVideoId;
+  final List<String?> livePhotoVideoId;
 
   /// Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.
-  List<num> localOffsetHours;
+  final List<double> localOffsetHours;
 
   /// Array of longitude coordinates extracted from EXIF GPS data
-  List<num?> longitude;
+  final List<double?>? longitude;
 
   /// Array of owner IDs for each asset
-  List<String> ownerId;
+  final List<String> ownerId;
 
-  /// Array of projection types for 360° content (e.g., \"EQUIRECTANGULAR\", \"CUBEFACE\", \"CYLINDRICAL\")
-  List<String?> projectionType;
+  /// Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL")
+  final List<String?> projectionType;
 
   /// Array of aspect ratios (width/height) for each asset
-  List<num> ratio;
+  final List<double> ratio;
 
   /// Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)
-  List<List<String>?> stack;
+  final List<List<String>?>? stack;
 
   /// Array of BlurHash strings for generating asset previews (base64 encoded)
-  List<String?> thumbhash;
+  final List<String?> thumbhash;
 
   /// Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)
-  List<AssetVisibility> visibility;
+  final List<AssetVisibility> visibility;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is TimeBucketAssetResponseDto &&
-    _deepEquality.equals(other.city, city) &&
-    _deepEquality.equals(other.country, country) &&
-    _deepEquality.equals(other.createdAt, createdAt) &&
-    _deepEquality.equals(other.duration, duration) &&
-    _deepEquality.equals(other.fileCreatedAt, fileCreatedAt) &&
-    _deepEquality.equals(other.id, id) &&
-    _deepEquality.equals(other.isFavorite, isFavorite) &&
-    _deepEquality.equals(other.isImage, isImage) &&
-    _deepEquality.equals(other.isTrashed, isTrashed) &&
-    _deepEquality.equals(other.latitude, latitude) &&
-    _deepEquality.equals(other.livePhotoVideoId, livePhotoVideoId) &&
-    _deepEquality.equals(other.localOffsetHours, localOffsetHours) &&
-    _deepEquality.equals(other.longitude, longitude) &&
-    _deepEquality.equals(other.ownerId, ownerId) &&
-    _deepEquality.equals(other.projectionType, projectionType) &&
-    _deepEquality.equals(other.ratio, ratio) &&
-    _deepEquality.equals(other.stack, stack) &&
-    _deepEquality.equals(other.thumbhash, thumbhash) &&
-    _deepEquality.equals(other.visibility, visibility);
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (city.hashCode) +
-    (country.hashCode) +
-    (createdAt.hashCode) +
-    (duration.hashCode) +
-    (fileCreatedAt.hashCode) +
-    (id.hashCode) +
-    (isFavorite.hashCode) +
-    (isImage.hashCode) +
-    (isTrashed.hashCode) +
-    (latitude.hashCode) +
-    (livePhotoVideoId.hashCode) +
-    (localOffsetHours.hashCode) +
-    (longitude.hashCode) +
-    (ownerId.hashCode) +
-    (projectionType.hashCode) +
-    (ratio.hashCode) +
-    (stack.hashCode) +
-    (thumbhash.hashCode) +
-    (visibility.hashCode);
-
-  @override
-  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, createdAt=$createdAt, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, localOffsetHours=$localOffsetHours, longitude=$longitude, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
+  static TimeBucketAssetResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<TimeBucketAssetResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      city: (json[r'city'] as List?)?.map(($e) => ($e as String?)).toList(growable: false),
+      country: (json[r'country'] as List?)?.map(($e) => ($e as String?)).toList(growable: false),
+      createdAt: ((json[r'createdAt'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      duration: ((json[r'duration'] as List?)?.map(($e) => ($e as int?)).toList(growable: false))!,
+      fileCreatedAt: ((json[r'fileCreatedAt'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      id: ((json[r'id'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      isFavorite: ((json[r'isFavorite'] as List?)?.map(($e) => $e as bool).toList(growable: false))!,
+      isImage: ((json[r'isImage'] as List?)?.map(($e) => $e as bool).toList(growable: false))!,
+      isTrashed: ((json[r'isTrashed'] as List?)?.map(($e) => $e as bool).toList(growable: false))!,
+      latitude: (json[r'latitude'] as List?)?.map(($e) => ($e as num?)?.toDouble()).toList(growable: false),
+      livePhotoVideoId: ((json[r'livePhotoVideoId'] as List?)?.map(($e) => ($e as String?)).toList(growable: false))!,
+      localOffsetHours: ((json[r'localOffsetHours'] as List?)
+          ?.map(($e) => ($e as num).toDouble())
+          .toList(growable: false))!,
+      longitude: (json[r'longitude'] as List?)?.map(($e) => ($e as num?)?.toDouble()).toList(growable: false),
+      ownerId: ((json[r'ownerId'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      projectionType: ((json[r'projectionType'] as List?)?.map(($e) => ($e as String?)).toList(growable: false))!,
+      ratio: ((json[r'ratio'] as List?)?.map(($e) => ($e as num).toDouble()).toList(growable: false))!,
+      stack: (json[r'stack'] as List?)
+          ?.map(($e) => ($e as List?)?.map(($e) => $e as String).toList(growable: false))
+          .toList(growable: false),
+      thumbhash: ((json[r'thumbhash'] as List?)?.map(($e) => ($e as String?)).toList(growable: false))!,
+      visibility: ((json[r'visibility'] as List?)
+          ?.map(($e) => (AssetVisibility.fromJson($e))!)
+          .toList(growable: false))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'city'] = this.city;
-      json[r'country'] = this.country;
-      json[r'createdAt'] = this.createdAt;
-      json[r'duration'] = this.duration;
-      json[r'fileCreatedAt'] = this.fileCreatedAt;
-      json[r'id'] = this.id;
-      json[r'isFavorite'] = this.isFavorite;
-      json[r'isImage'] = this.isImage;
-      json[r'isTrashed'] = this.isTrashed;
-      json[r'latitude'] = this.latitude;
-      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
-      json[r'localOffsetHours'] = this.localOffsetHours;
-      json[r'longitude'] = this.longitude;
-      json[r'ownerId'] = this.ownerId;
-      json[r'projectionType'] = this.projectionType;
-      json[r'ratio'] = this.ratio;
-      json[r'stack'] = this.stack;
-      json[r'thumbhash'] = this.thumbhash;
-      json[r'visibility'] = this.visibility;
+    if (city != null) {
+      json[r'city'] = city!;
+    }
+    if (country != null) {
+      json[r'country'] = country!;
+    }
+    json[r'createdAt'] = createdAt;
+    json[r'duration'] = duration;
+    json[r'fileCreatedAt'] = fileCreatedAt;
+    json[r'id'] = id;
+    json[r'isFavorite'] = isFavorite;
+    json[r'isImage'] = isImage;
+    json[r'isTrashed'] = isTrashed;
+    if (latitude != null) {
+      json[r'latitude'] = latitude!;
+    }
+    json[r'livePhotoVideoId'] = livePhotoVideoId;
+    json[r'localOffsetHours'] = localOffsetHours;
+    if (longitude != null) {
+      json[r'longitude'] = longitude!;
+    }
+    json[r'ownerId'] = ownerId;
+    json[r'projectionType'] = projectionType;
+    json[r'ratio'] = ratio;
+    if (stack != null) {
+      json[r'stack'] = stack!;
+    }
+    json[r'thumbhash'] = thumbhash;
+    json[r'visibility'] = visibility.map(($e) => $e.toJson()).toList(growable: false);
     return json;
   }
 
-  /// Returns a new [TimeBucketAssetResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static TimeBucketAssetResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "TimeBucketAssetResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return TimeBucketAssetResponseDto(
-        city: json[r'city'] is Iterable
-            ? (json[r'city'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        country: json[r'country'] is Iterable
-            ? (json[r'country'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        createdAt: json[r'createdAt'] is Iterable
-            ? (json[r'createdAt'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        duration: json[r'duration'] is Iterable
-            ? (json[r'duration'] as Iterable).cast<int>().toList(growable: false)
-            : const [],
-        fileCreatedAt: json[r'fileCreatedAt'] is Iterable
-            ? (json[r'fileCreatedAt'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        id: json[r'id'] is Iterable
-            ? (json[r'id'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        isFavorite: json[r'isFavorite'] is Iterable
-            ? (json[r'isFavorite'] as Iterable).cast<bool>().toList(growable: false)
-            : const [],
-        isImage: json[r'isImage'] is Iterable
-            ? (json[r'isImage'] as Iterable).cast<bool>().toList(growable: false)
-            : const [],
-        isTrashed: json[r'isTrashed'] is Iterable
-            ? (json[r'isTrashed'] as Iterable).cast<bool>().toList(growable: false)
-            : const [],
-        latitude: json[r'latitude'] is Iterable
-            ? (json[r'latitude'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
-        livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
-            ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        localOffsetHours: json[r'localOffsetHours'] is Iterable
-            ? (json[r'localOffsetHours'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
-        longitude: json[r'longitude'] is Iterable
-            ? (json[r'longitude'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
-        ownerId: json[r'ownerId'] is Iterable
-            ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        projectionType: json[r'projectionType'] is Iterable
-            ? (json[r'projectionType'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        ratio: json[r'ratio'] is Iterable
-            ? (json[r'ratio'] as Iterable).cast<num>().toList(growable: false)
-            : const [],
-        stack: json[r'stack'] is List
-          ? (json[r'stack'] as List).map((e) =>
-              e == null ? null : (e as List).cast<String>()
-            ).toList()
-          :  const [],
-        thumbhash: json[r'thumbhash'] is Iterable
-            ? (json[r'thumbhash'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        visibility: AssetVisibility.listFromJson(json[r'visibility']),
-      );
-    }
-    return null;
+  TimeBucketAssetResponseDto copyWith({
+    Object? city = _undefined,
+    Object? country = _undefined,
+    List<String>? createdAt,
+    List<int?>? duration,
+    List<String>? fileCreatedAt,
+    List<String>? id,
+    List<bool>? isFavorite,
+    List<bool>? isImage,
+    List<bool>? isTrashed,
+    Object? latitude = _undefined,
+    List<String?>? livePhotoVideoId,
+    List<double>? localOffsetHours,
+    Object? longitude = _undefined,
+    List<String>? ownerId,
+    List<String?>? projectionType,
+    List<double>? ratio,
+    Object? stack = _undefined,
+    List<String?>? thumbhash,
+    List<AssetVisibility>? visibility,
+  }) {
+    return .new(
+      city: identical(city, _undefined) ? this.city : city as List<String?>?,
+      country: identical(country, _undefined) ? this.country : country as List<String?>?,
+      createdAt: createdAt ?? this.createdAt,
+      duration: duration ?? this.duration,
+      fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
+      id: id ?? this.id,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isImage: isImage ?? this.isImage,
+      isTrashed: isTrashed ?? this.isTrashed,
+      latitude: identical(latitude, _undefined) ? this.latitude : latitude as List<double?>?,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+      localOffsetHours: localOffsetHours ?? this.localOffsetHours,
+      longitude: identical(longitude, _undefined) ? this.longitude : longitude as List<double?>?,
+      ownerId: ownerId ?? this.ownerId,
+      projectionType: projectionType ?? this.projectionType,
+      ratio: ratio ?? this.ratio,
+      stack: identical(stack, _undefined) ? this.stack : stack as List<List<String>?>?,
+      thumbhash: thumbhash ?? this.thumbhash,
+      visibility: visibility ?? this.visibility,
+    );
   }
 
-  static List<TimeBucketAssetResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <TimeBucketAssetResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = TimeBucketAssetResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is TimeBucketAssetResponseDto &&
+            const DeepCollectionEquality().equals(city, other.city) &&
+            const DeepCollectionEquality().equals(country, other.country) &&
+            const DeepCollectionEquality().equals(createdAt, other.createdAt) &&
+            const DeepCollectionEquality().equals(duration, other.duration) &&
+            const DeepCollectionEquality().equals(fileCreatedAt, other.fileCreatedAt) &&
+            const DeepCollectionEquality().equals(id, other.id) &&
+            const DeepCollectionEquality().equals(isFavorite, other.isFavorite) &&
+            const DeepCollectionEquality().equals(isImage, other.isImage) &&
+            const DeepCollectionEquality().equals(isTrashed, other.isTrashed) &&
+            const DeepCollectionEquality().equals(latitude, other.latitude) &&
+            const DeepCollectionEquality().equals(livePhotoVideoId, other.livePhotoVideoId) &&
+            const DeepCollectionEquality().equals(localOffsetHours, other.localOffsetHours) &&
+            const DeepCollectionEquality().equals(longitude, other.longitude) &&
+            const DeepCollectionEquality().equals(ownerId, other.ownerId) &&
+            const DeepCollectionEquality().equals(projectionType, other.projectionType) &&
+            const DeepCollectionEquality().equals(ratio, other.ratio) &&
+            const DeepCollectionEquality().equals(stack, other.stack) &&
+            const DeepCollectionEquality().equals(thumbhash, other.thumbhash) &&
+            const DeepCollectionEquality().equals(visibility, other.visibility));
   }
 
-  static Map<String, TimeBucketAssetResponseDto> mapFromJson(dynamic json) {
-    final map = <String, TimeBucketAssetResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = TimeBucketAssetResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      const DeepCollectionEquality().hash(city),
+      const DeepCollectionEquality().hash(country),
+      const DeepCollectionEquality().hash(createdAt),
+      const DeepCollectionEquality().hash(duration),
+      const DeepCollectionEquality().hash(fileCreatedAt),
+      const DeepCollectionEquality().hash(id),
+      const DeepCollectionEquality().hash(isFavorite),
+      const DeepCollectionEquality().hash(isImage),
+      const DeepCollectionEquality().hash(isTrashed),
+      const DeepCollectionEquality().hash(latitude),
+      const DeepCollectionEquality().hash(livePhotoVideoId),
+      const DeepCollectionEquality().hash(localOffsetHours),
+      const DeepCollectionEquality().hash(longitude),
+      const DeepCollectionEquality().hash(ownerId),
+      const DeepCollectionEquality().hash(projectionType),
+      const DeepCollectionEquality().hash(ratio),
+      const DeepCollectionEquality().hash(stack),
+      const DeepCollectionEquality().hash(thumbhash),
+      const DeepCollectionEquality().hash(visibility),
+    ]);
   }
 
-  // maps a json object with a list of TimeBucketAssetResponseDto-objects as value to a dart map
-  static Map<String, List<TimeBucketAssetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<TimeBucketAssetResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = TimeBucketAssetResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'createdAt',
-    'duration',
-    'fileCreatedAt',
-    'id',
-    'isFavorite',
-    'isImage',
-    'isTrashed',
-    'livePhotoVideoId',
-    'localOffsetHours',
-    'ownerId',
-    'projectionType',
-    'ratio',
-    'thumbhash',
-    'visibility',
-  };
+  @override
+  String toString() =>
+      'TimeBucketAssetResponseDto(city=$city, country=$country, createdAt=$createdAt, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, localOffsetHours=$localOffsetHours, longitude=$longitude, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility)';
 }
-

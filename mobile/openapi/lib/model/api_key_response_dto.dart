@@ -1,140 +1,87 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ApiKeyResponseDto {
-  /// Returns a new [ApiKeyResponseDto] instance.
-  ApiKeyResponseDto({
+final class ApiKeyResponseDto {
+  const ApiKeyResponseDto({
     required this.createdAt,
     required this.id,
     required this.name,
-    this.permissions = const [],
+    required this.permissions,
     required this.updatedAt,
   });
 
   /// Creation date
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// API key ID
-  String id;
+  final String id;
 
   /// API key name
-  String name;
+  final String name;
 
   /// List of permissions
-  List<Permission> permissions;
+  final List<Permission> permissions;
 
   /// Last update date
-  DateTime updatedAt;
+  final DateTime updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ApiKeyResponseDto &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.name == name &&
-    _deepEquality.equals(other.permissions, permissions) &&
-    other.updatedAt == updatedAt;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (name.hashCode) +
-    (permissions.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'ApiKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt]';
+  static ApiKeyResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ApiKeyResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      id: json[r'id'] as String,
+      name: json[r'name'] as String,
+      permissions: ((json[r'permissions'] as List?)?.map(($e) => (Permission.fromJson($e))!).toList(growable: false))!,
+      updatedAt: DateTime.parse(json[r'updatedAt'] as String),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'name'] = this.name;
-      json[r'permissions'] = this.permissions;
-      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedAt.millisecondsSinceEpoch
-        : this.updatedAt.toUtc().toIso8601String();
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    json[r'id'] = id;
+    json[r'name'] = name;
+    json[r'permissions'] = permissions.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'updatedAt'] = updatedAt.toUtc().toIso8601String();
     return json;
   }
 
-  /// Returns a new [ApiKeyResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ApiKeyResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ApiKeyResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ApiKeyResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        permissions: Permission.listFromJson(json[r'permissions']),
-        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-      );
-    }
-    return null;
+  ApiKeyResponseDto copyWith({
+    DateTime? createdAt,
+    String? id,
+    String? name,
+    List<Permission>? permissions,
+    DateTime? updatedAt,
+  }) {
+    return .new(
+      createdAt: createdAt ?? this.createdAt,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      permissions: permissions ?? this.permissions,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<ApiKeyResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ApiKeyResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ApiKeyResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ApiKeyResponseDto &&
+            createdAt == other.createdAt &&
+            id == other.id &&
+            name == other.name &&
+            const DeepCollectionEquality().equals(permissions, other.permissions) &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, ApiKeyResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ApiKeyResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ApiKeyResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([createdAt, id, name, const DeepCollectionEquality().hash(permissions), updatedAt]);
   }
 
-  // maps a json object with a list of ApiKeyResponseDto-objects as value to a dart map
-  static Map<String, List<ApiKeyResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ApiKeyResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ApiKeyResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'createdAt',
-    'id',
-    'name',
-    'permissions',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'ApiKeyResponseDto(createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt)';
 }
-

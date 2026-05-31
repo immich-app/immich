@@ -1,118 +1,65 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigServerDto {
-  /// Returns a new [SystemConfigServerDto] instance.
-  SystemConfigServerDto({
+final class SystemConfigServerDto {
+  const SystemConfigServerDto({
     required this.externalDomain,
     required this.loginPageMessage,
     required this.publicUsers,
   });
 
   /// External domain
-  String externalDomain;
+  final String externalDomain;
 
   /// Login page message
-  String loginPageMessage;
+  final String loginPageMessage;
 
   /// Public users
-  bool publicUsers;
+  final bool publicUsers;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigServerDto &&
-    other.externalDomain == externalDomain &&
-    other.loginPageMessage == loginPageMessage &&
-    other.publicUsers == publicUsers;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (externalDomain.hashCode) +
-    (loginPageMessage.hashCode) +
-    (publicUsers.hashCode);
-
-  @override
-  String toString() => 'SystemConfigServerDto[externalDomain=$externalDomain, loginPageMessage=$loginPageMessage, publicUsers=$publicUsers]';
+  static SystemConfigServerDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigServerDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      externalDomain: json[r'externalDomain'] as String,
+      loginPageMessage: json[r'loginPageMessage'] as String,
+      publicUsers: json[r'publicUsers'] as bool,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'externalDomain'] = this.externalDomain;
-      json[r'loginPageMessage'] = this.loginPageMessage;
-      json[r'publicUsers'] = this.publicUsers;
+    json[r'externalDomain'] = externalDomain;
+    json[r'loginPageMessage'] = loginPageMessage;
+    json[r'publicUsers'] = publicUsers;
     return json;
   }
 
-  /// Returns a new [SystemConfigServerDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigServerDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigServerDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigServerDto(
-        externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
-        loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
-        publicUsers: mapValueOfType<bool>(json, r'publicUsers')!,
-      );
-    }
-    return null;
+  SystemConfigServerDto copyWith({String? externalDomain, String? loginPageMessage, bool? publicUsers}) {
+    return .new(
+      externalDomain: externalDomain ?? this.externalDomain,
+      loginPageMessage: loginPageMessage ?? this.loginPageMessage,
+      publicUsers: publicUsers ?? this.publicUsers,
+    );
   }
 
-  static List<SystemConfigServerDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigServerDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigServerDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigServerDto &&
+            externalDomain == other.externalDomain &&
+            loginPageMessage == other.loginPageMessage &&
+            publicUsers == other.publicUsers);
   }
 
-  static Map<String, SystemConfigServerDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigServerDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigServerDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([externalDomain, loginPageMessage, publicUsers]);
   }
 
-  // maps a json object with a list of SystemConfigServerDto-objects as value to a dart map
-  static Map<String, List<SystemConfigServerDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigServerDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigServerDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'externalDomain',
-    'loginPageMessage',
-    'publicUsers',
-  };
+  @override
+  String toString() =>
+      'SystemConfigServerDto(externalDomain=$externalDomain, loginPageMessage=$loginPageMessage, publicUsers=$publicUsers)';
 }
-

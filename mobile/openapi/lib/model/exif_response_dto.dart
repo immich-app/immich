@@ -1,378 +1,312 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ExifResponseDto {
-  /// Returns a new [ExifResponseDto] instance.
-  ExifResponseDto({
-    this.city,
-    this.country,
-    this.dateTimeOriginal,
-    this.description,
-    this.exifImageHeight,
-    this.exifImageWidth,
-    this.exposureTime,
-    this.fNumber,
-    this.fileSizeInByte,
-    this.focalLength,
-    this.iso,
-    this.latitude,
-    this.lensModel,
-    this.longitude,
-    this.make,
-    this.model,
-    this.modifyDate,
-    this.orientation,
-    this.projectionType,
-    this.rating,
-    this.state,
-    this.timeZone,
+/// EXIF response
+final class ExifResponseDto {
+  const ExifResponseDto({
+    this.city = null,
+    this.country = null,
+    this.dateTimeOriginal = null,
+    this.description = null,
+    this.exifImageHeight = null,
+    this.exifImageWidth = null,
+    this.exposureTime = null,
+    this.fNumber = null,
+    this.fileSizeInByte = null,
+    this.focalLength = null,
+    this.iso = null,
+    this.latitude = null,
+    this.lensModel = null,
+    this.longitude = null,
+    this.make = null,
+    this.model = null,
+    this.modifyDate = null,
+    this.orientation = null,
+    this.projectionType = null,
+    this.rating = null,
+    this.state = null,
+    this.timeZone = null,
   });
 
   /// City name
-  String? city;
+  final String? city;
 
   /// Country name
-  String? country;
+  final String? country;
 
   /// Original date/time
-  DateTime? dateTimeOriginal;
+  final DateTime? dateTimeOriginal;
 
   /// Image description
-  String? description;
+  final String? description;
 
   /// Image height in pixels
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? exifImageHeight;
+  final int? exifImageHeight;
 
   /// Image width in pixels
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? exifImageWidth;
+  final int? exifImageWidth;
 
   /// Exposure time
-  String? exposureTime;
+  final String? exposureTime;
 
   /// F-number (aperture)
-  num? fNumber;
+  final double? fNumber;
 
   /// File size in bytes
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? fileSizeInByte;
+  final int? fileSizeInByte;
 
   /// Focal length in mm
-  num? focalLength;
+  final double? focalLength;
 
   /// ISO sensitivity
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int? iso;
+  final int? iso;
 
   /// GPS latitude
-  num? latitude;
+  final double? latitude;
 
   /// Lens model
-  String? lensModel;
+  final String? lensModel;
 
   /// GPS longitude
-  num? longitude;
+  final double? longitude;
 
   /// Camera make
-  String? make;
+  final String? make;
 
   /// Camera model
-  String? model;
+  final String? model;
 
   /// Modification date/time
-  DateTime? modifyDate;
+  final DateTime? modifyDate;
 
   /// Image orientation
-  String? orientation;
+  final String? orientation;
 
   /// Projection type
-  String? projectionType;
+  final String? projectionType;
 
   /// Rating
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int? rating;
+  final int? rating;
 
   /// State/province name
-  String? state;
+  final String? state;
 
   /// Time zone
-  String? timeZone;
+  final String? timeZone;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
-    other.city == city &&
-    other.country == country &&
-    other.dateTimeOriginal == dateTimeOriginal &&
-    other.description == description &&
-    other.exifImageHeight == exifImageHeight &&
-    other.exifImageWidth == exifImageWidth &&
-    other.exposureTime == exposureTime &&
-    other.fNumber == fNumber &&
-    other.fileSizeInByte == fileSizeInByte &&
-    other.focalLength == focalLength &&
-    other.iso == iso &&
-    other.latitude == latitude &&
-    other.lensModel == lensModel &&
-    other.longitude == longitude &&
-    other.make == make &&
-    other.model == model &&
-    other.modifyDate == modifyDate &&
-    other.orientation == orientation &&
-    other.projectionType == projectionType &&
-    other.rating == rating &&
-    other.state == state &&
-    other.timeZone == timeZone;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (city == null ? 0 : city!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
-    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
-    (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
-    (exposureTime == null ? 0 : exposureTime!.hashCode) +
-    (fNumber == null ? 0 : fNumber!.hashCode) +
-    (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
-    (focalLength == null ? 0 : focalLength!.hashCode) +
-    (iso == null ? 0 : iso!.hashCode) +
-    (latitude == null ? 0 : latitude!.hashCode) +
-    (lensModel == null ? 0 : lensModel!.hashCode) +
-    (longitude == null ? 0 : longitude!.hashCode) +
-    (make == null ? 0 : make!.hashCode) +
-    (model == null ? 0 : model!.hashCode) +
-    (modifyDate == null ? 0 : modifyDate!.hashCode) +
-    (orientation == null ? 0 : orientation!.hashCode) +
-    (projectionType == null ? 0 : projectionType!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode) +
-    (state == null ? 0 : state!.hashCode) +
-    (timeZone == null ? 0 : timeZone!.hashCode);
-
-  @override
-  String toString() => 'ExifResponseDto[city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, rating=$rating, state=$state, timeZone=$timeZone]';
+  static ExifResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ExifResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      city: (json[r'city'] as String?),
+      country: (json[r'country'] as String?),
+      dateTimeOriginal: (json[r'dateTimeOriginal'] == null
+          ? null
+          : DateTime.parse(json[r'dateTimeOriginal'] as String)),
+      description: (json[r'description'] as String?),
+      exifImageHeight: (json[r'exifImageHeight'] as int?),
+      exifImageWidth: (json[r'exifImageWidth'] as int?),
+      exposureTime: (json[r'exposureTime'] as String?),
+      fNumber: (json[r'fNumber'] as num?)?.toDouble(),
+      fileSizeInByte: (json[r'fileSizeInByte'] as int?),
+      focalLength: (json[r'focalLength'] as num?)?.toDouble(),
+      iso: (json[r'iso'] as int?),
+      latitude: (json[r'latitude'] as num?)?.toDouble(),
+      lensModel: (json[r'lensModel'] as String?),
+      longitude: (json[r'longitude'] as num?)?.toDouble(),
+      make: (json[r'make'] as String?),
+      model: (json[r'model'] as String?),
+      modifyDate: (json[r'modifyDate'] == null ? null : DateTime.parse(json[r'modifyDate'] as String)),
+      orientation: (json[r'orientation'] as String?),
+      projectionType: (json[r'projectionType'] as String?),
+      rating: (json[r'rating'] as int?),
+      state: (json[r'state'] as String?),
+      timeZone: (json[r'timeZone'] as String?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.city != null) {
-      json[r'city'] = this.city;
-    } else {
-    //  json[r'city'] = null;
+    if (city != null) {
+      json[r'city'] = city!;
     }
-    if (this.country != null) {
-      json[r'country'] = this.country;
-    } else {
-    //  json[r'country'] = null;
+    if (country != null) {
+      json[r'country'] = country!;
     }
-    if (this.dateTimeOriginal != null) {
-      json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
-    } else {
-    //  json[r'dateTimeOriginal'] = null;
+    if (dateTimeOriginal != null) {
+      json[r'dateTimeOriginal'] = dateTimeOriginal!.toUtc().toIso8601String();
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (description != null) {
+      json[r'description'] = description!;
     }
-    if (this.exifImageHeight != null) {
-      json[r'exifImageHeight'] = this.exifImageHeight;
-    } else {
-    //  json[r'exifImageHeight'] = null;
+    if (exifImageHeight != null) {
+      json[r'exifImageHeight'] = exifImageHeight!;
     }
-    if (this.exifImageWidth != null) {
-      json[r'exifImageWidth'] = this.exifImageWidth;
-    } else {
-    //  json[r'exifImageWidth'] = null;
+    if (exifImageWidth != null) {
+      json[r'exifImageWidth'] = exifImageWidth!;
     }
-    if (this.exposureTime != null) {
-      json[r'exposureTime'] = this.exposureTime;
-    } else {
-    //  json[r'exposureTime'] = null;
+    if (exposureTime != null) {
+      json[r'exposureTime'] = exposureTime!;
     }
-    if (this.fNumber != null) {
-      json[r'fNumber'] = this.fNumber;
-    } else {
-    //  json[r'fNumber'] = null;
+    if (fNumber != null) {
+      json[r'fNumber'] = fNumber!;
     }
-    if (this.fileSizeInByte != null) {
-      json[r'fileSizeInByte'] = this.fileSizeInByte;
-    } else {
-    //  json[r'fileSizeInByte'] = null;
+    if (fileSizeInByte != null) {
+      json[r'fileSizeInByte'] = fileSizeInByte!;
     }
-    if (this.focalLength != null) {
-      json[r'focalLength'] = this.focalLength;
-    } else {
-    //  json[r'focalLength'] = null;
+    if (focalLength != null) {
+      json[r'focalLength'] = focalLength!;
     }
-    if (this.iso != null) {
-      json[r'iso'] = this.iso;
-    } else {
-    //  json[r'iso'] = null;
+    if (iso != null) {
+      json[r'iso'] = iso!;
     }
-    if (this.latitude != null) {
-      json[r'latitude'] = this.latitude;
-    } else {
-    //  json[r'latitude'] = null;
+    if (latitude != null) {
+      json[r'latitude'] = latitude!;
     }
-    if (this.lensModel != null) {
-      json[r'lensModel'] = this.lensModel;
-    } else {
-    //  json[r'lensModel'] = null;
+    if (lensModel != null) {
+      json[r'lensModel'] = lensModel!;
     }
-    if (this.longitude != null) {
-      json[r'longitude'] = this.longitude;
-    } else {
-    //  json[r'longitude'] = null;
+    if (longitude != null) {
+      json[r'longitude'] = longitude!;
     }
-    if (this.make != null) {
-      json[r'make'] = this.make;
-    } else {
-    //  json[r'make'] = null;
+    if (make != null) {
+      json[r'make'] = make!;
     }
-    if (this.model != null) {
-      json[r'model'] = this.model;
-    } else {
-    //  json[r'model'] = null;
+    if (model != null) {
+      json[r'model'] = model!;
     }
-    if (this.modifyDate != null) {
-      json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
-    } else {
-    //  json[r'modifyDate'] = null;
+    if (modifyDate != null) {
+      json[r'modifyDate'] = modifyDate!.toUtc().toIso8601String();
     }
-    if (this.orientation != null) {
-      json[r'orientation'] = this.orientation;
-    } else {
-    //  json[r'orientation'] = null;
+    if (orientation != null) {
+      json[r'orientation'] = orientation!;
     }
-    if (this.projectionType != null) {
-      json[r'projectionType'] = this.projectionType;
-    } else {
-    //  json[r'projectionType'] = null;
+    if (projectionType != null) {
+      json[r'projectionType'] = projectionType!;
     }
-    if (this.rating != null) {
-      json[r'rating'] = this.rating;
-    } else {
-    //  json[r'rating'] = null;
+    if (rating != null) {
+      json[r'rating'] = rating!;
     }
-    if (this.state != null) {
-      json[r'state'] = this.state;
-    } else {
-    //  json[r'state'] = null;
+    if (state != null) {
+      json[r'state'] = state!;
     }
-    if (this.timeZone != null) {
-      json[r'timeZone'] = this.timeZone;
-    } else {
-    //  json[r'timeZone'] = null;
+    if (timeZone != null) {
+      json[r'timeZone'] = timeZone!;
     }
     return json;
   }
 
-  /// Returns a new [ExifResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ExifResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ExifResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ExifResponseDto(
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
-        description: mapValueOfType<String>(json, r'description'),
-        exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
-        exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
-        exposureTime: mapValueOfType<String>(json, r'exposureTime'),
-        fNumber: json[r'fNumber'] == null
-            ? null
-            : num.parse('${json[r'fNumber']}'),
-        fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
-        focalLength: json[r'focalLength'] == null
-            ? null
-            : num.parse('${json[r'focalLength']}'),
-        iso: mapValueOfType<int>(json, r'iso'),
-        latitude: json[r'latitude'] == null
-            ? null
-            : num.parse('${json[r'latitude']}'),
-        lensModel: mapValueOfType<String>(json, r'lensModel'),
-        longitude: json[r'longitude'] == null
-            ? null
-            : num.parse('${json[r'longitude']}'),
-        make: mapValueOfType<String>(json, r'make'),
-        model: mapValueOfType<String>(json, r'model'),
-        modifyDate: mapDateTime(json, r'modifyDate', r''),
-        orientation: mapValueOfType<String>(json, r'orientation'),
-        projectionType: mapValueOfType<String>(json, r'projectionType'),
-        rating: mapValueOfType<int>(json, r'rating'),
-        state: mapValueOfType<String>(json, r'state'),
-        timeZone: mapValueOfType<String>(json, r'timeZone'),
-      );
-    }
-    return null;
+  ExifResponseDto copyWith({
+    Object? city = _undefined,
+    Object? country = _undefined,
+    Object? dateTimeOriginal = _undefined,
+    Object? description = _undefined,
+    Object? exifImageHeight = _undefined,
+    Object? exifImageWidth = _undefined,
+    Object? exposureTime = _undefined,
+    Object? fNumber = _undefined,
+    Object? fileSizeInByte = _undefined,
+    Object? focalLength = _undefined,
+    Object? iso = _undefined,
+    Object? latitude = _undefined,
+    Object? lensModel = _undefined,
+    Object? longitude = _undefined,
+    Object? make = _undefined,
+    Object? model = _undefined,
+    Object? modifyDate = _undefined,
+    Object? orientation = _undefined,
+    Object? projectionType = _undefined,
+    Object? rating = _undefined,
+    Object? state = _undefined,
+    Object? timeZone = _undefined,
+  }) {
+    return .new(
+      city: identical(city, _undefined) ? this.city : city as String?,
+      country: identical(country, _undefined) ? this.country : country as String?,
+      dateTimeOriginal: identical(dateTimeOriginal, _undefined) ? this.dateTimeOriginal : dateTimeOriginal as DateTime?,
+      description: identical(description, _undefined) ? this.description : description as String?,
+      exifImageHeight: identical(exifImageHeight, _undefined) ? this.exifImageHeight : exifImageHeight as int?,
+      exifImageWidth: identical(exifImageWidth, _undefined) ? this.exifImageWidth : exifImageWidth as int?,
+      exposureTime: identical(exposureTime, _undefined) ? this.exposureTime : exposureTime as String?,
+      fNumber: identical(fNumber, _undefined) ? this.fNumber : fNumber as double?,
+      fileSizeInByte: identical(fileSizeInByte, _undefined) ? this.fileSizeInByte : fileSizeInByte as int?,
+      focalLength: identical(focalLength, _undefined) ? this.focalLength : focalLength as double?,
+      iso: identical(iso, _undefined) ? this.iso : iso as int?,
+      latitude: identical(latitude, _undefined) ? this.latitude : latitude as double?,
+      lensModel: identical(lensModel, _undefined) ? this.lensModel : lensModel as String?,
+      longitude: identical(longitude, _undefined) ? this.longitude : longitude as double?,
+      make: identical(make, _undefined) ? this.make : make as String?,
+      model: identical(model, _undefined) ? this.model : model as String?,
+      modifyDate: identical(modifyDate, _undefined) ? this.modifyDate : modifyDate as DateTime?,
+      orientation: identical(orientation, _undefined) ? this.orientation : orientation as String?,
+      projectionType: identical(projectionType, _undefined) ? this.projectionType : projectionType as String?,
+      rating: identical(rating, _undefined) ? this.rating : rating as int?,
+      state: identical(state, _undefined) ? this.state : state as String?,
+      timeZone: identical(timeZone, _undefined) ? this.timeZone : timeZone as String?,
+    );
   }
 
-  static List<ExifResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ExifResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ExifResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ExifResponseDto &&
+            city == other.city &&
+            country == other.country &&
+            dateTimeOriginal == other.dateTimeOriginal &&
+            description == other.description &&
+            exifImageHeight == other.exifImageHeight &&
+            exifImageWidth == other.exifImageWidth &&
+            exposureTime == other.exposureTime &&
+            fNumber == other.fNumber &&
+            fileSizeInByte == other.fileSizeInByte &&
+            focalLength == other.focalLength &&
+            iso == other.iso &&
+            latitude == other.latitude &&
+            lensModel == other.lensModel &&
+            longitude == other.longitude &&
+            make == other.make &&
+            model == other.model &&
+            modifyDate == other.modifyDate &&
+            orientation == other.orientation &&
+            projectionType == other.projectionType &&
+            rating == other.rating &&
+            state == other.state &&
+            timeZone == other.timeZone);
   }
 
-  static Map<String, ExifResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ExifResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ExifResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      city,
+      country,
+      dateTimeOriginal,
+      description,
+      exifImageHeight,
+      exifImageWidth,
+      exposureTime,
+      fNumber,
+      fileSizeInByte,
+      focalLength,
+      iso,
+      latitude,
+      lensModel,
+      longitude,
+      make,
+      model,
+      modifyDate,
+      orientation,
+      projectionType,
+      rating,
+      state,
+      timeZone,
+    ]);
   }
 
-  // maps a json object with a list of ExifResponseDto-objects as value to a dart map
-  static Map<String, List<ExifResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ExifResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ExifResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() =>
+      'ExifResponseDto(city=$city, country=$country, dateTimeOriginal=$dateTimeOriginal, description=$description, exifImageHeight=$exifImageHeight, exifImageWidth=$exifImageWidth, exposureTime=$exposureTime, fNumber=$fNumber, fileSizeInByte=$fileSizeInByte, focalLength=$focalLength, iso=$iso, latitude=$latitude, lensModel=$lensModel, longitude=$longitude, make=$make, model=$model, modifyDate=$modifyDate, orientation=$orientation, projectionType=$projectionType, rating=$rating, state=$state, timeZone=$timeZone)';
 }
-

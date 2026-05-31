@@ -1,52 +1,142 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class UsersAdminApi {
   UsersAdminApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
+  static const ApiVersion searchUsersAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState searchUsersAdminState = .stable;
+
+  static const ApiVersion createUserAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState createUserAdminState = .stable;
+
+  static const ApiVersion deleteUserAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState deleteUserAdminState = .stable;
+
+  static const ApiVersion getUserAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState getUserAdminState = .stable;
+
+  static const ApiVersion updateUserAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState updateUserAdminState = .stable;
+
+  static const ApiVersion getUserPreferencesAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState getUserPreferencesAdminState = .stable;
+
+  static const ApiVersion updateUserPreferencesAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState updateUserPreferencesAdminState = .stable;
+
+  static const ApiVersion restoreUserAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState restoreUserAdminState = .stable;
+
+  static const ApiVersion getUserSessionsAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState getUserSessionsAdminState = .stable;
+
+  static const ApiVersion getUserStatisticsAdminAddedIn = .new(1, 0, 0);
+
+  static const ApiState getUserStatisticsAdminState = .stable;
+
+  /// Search users
+  ///
+  /// Search for users.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> searchUsersAdminWithHttpInfo({String? id, bool? withDeleted, Future<void>? abortTrigger}) async {
+    final apiPath = r'/admin/users';
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
+    }
+    if (withDeleted != null) {
+      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
+    }
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Search users
+  ///
+  /// Search for users.
+  ///
+  /// Available since server v1.0.0.
+  Future<List<UserAdminResponseDto>> searchUsersAdmin({
+    String? id,
+    bool? withDeleted,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await searchUsersAdminWithHttpInfo(id: id, withDeleted: withDeleted, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<UserAdminResponseDto>') as List)
+          .cast<UserAdminResponseDto>()
+          .toList(growable: false);
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
   /// Create a user
   ///
   /// Create a new user.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [UserAdminCreateDto] userAdminCreateDto (required):
-  Future<Response> createUserAdminWithHttpInfo(UserAdminCreateDto userAdminCreateDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> createUserAdminWithHttpInfo(
+    UserAdminCreateDto userAdminCreateDto, {
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/admin/users';
 
-    // ignore: prefer_final_locals
     Object? postBody = userAdminCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -54,58 +144,53 @@ class UsersAdminApi {
   ///
   /// Create a new user.
   ///
-  /// Parameters:
-  ///
-  /// * [UserAdminCreateDto] userAdminCreateDto (required):
-  Future<UserAdminResponseDto?> createUserAdmin(UserAdminCreateDto userAdminCreateDto,) async {
-    final response = await createUserAdminWithHttpInfo(userAdminCreateDto,);
+  /// Available since server v1.0.0.
+  Future<UserAdminResponseDto> createUserAdmin(
+    UserAdminCreateDto userAdminCreateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await createUserAdminWithHttpInfo(userAdminCreateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserAdminResponseDto')
+          as UserAdminResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Delete a user
   ///
   /// Delete a user.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
-  Future<Response> deleteUserAdminWithHttpInfo(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> deleteUserAdminWithHttpInfo(
+    String id,
+    UserAdminDeleteDto userAdminDeleteDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/admin/users/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody = userAdminDeleteDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'DELETE',
+      r'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -113,41 +198,33 @@ class UsersAdminApi {
   ///
   /// Delete a user.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
-  Future<UserAdminResponseDto?> deleteUserAdmin(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
-    final response = await deleteUserAdminWithHttpInfo(id, userAdminDeleteDto,);
+  /// Available since server v1.0.0.
+  Future<UserAdminResponseDto> deleteUserAdmin(
+    String id,
+    UserAdminDeleteDto userAdminDeleteDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await deleteUserAdminWithHttpInfo(id, userAdminDeleteDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserAdminResponseDto')
+          as UserAdminResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve a user
   ///
   /// Retrieve  a specific user by their ID.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getUserAdminWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> getUserAdminWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/admin/users/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -156,15 +233,15 @@ class UsersAdminApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -172,39 +249,84 @@ class UsersAdminApi {
   ///
   /// Retrieve  a specific user by their ID.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<UserAdminResponseDto?> getUserAdmin(String id,) async {
-    final response = await getUserAdminWithHttpInfo(id,);
+  /// Available since server v1.0.0.
+  Future<UserAdminResponseDto> getUserAdmin(String id, {Future<void>? abortTrigger}) async {
+    final response = await getUserAdminWithHttpInfo(id, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserAdminResponseDto')
+          as UserAdminResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Update a user
+  ///
+  /// Update an existing user.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> updateUserAdminWithHttpInfo(
+    String id,
+    UserAdminUpdateDto userAdminUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/admin/users/{id}'.replaceAll('{id}', id);
+
+    Object? postBody = userAdminUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Update a user
+  ///
+  /// Update an existing user.
+  ///
+  /// Available since server v1.0.0.
+  Future<UserAdminResponseDto> updateUserAdmin(
+    String id,
+    UserAdminUpdateDto userAdminUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updateUserAdminWithHttpInfo(id, userAdminUpdateDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserAdminResponseDto')
+          as UserAdminResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve user preferences
   ///
   /// Retrieve the preferences of a specific user.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getUserPreferencesAdminWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/preferences'
-      .replaceAll('{id}', id);
+  Future<Response> getUserPreferencesAdminWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/admin/users/{id}/preferences'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -213,15 +335,15 @@ class UsersAdminApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -229,39 +351,88 @@ class UsersAdminApi {
   ///
   /// Retrieve the preferences of a specific user.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<UserPreferencesResponseDto?> getUserPreferencesAdmin(String id,) async {
-    final response = await getUserPreferencesAdminWithHttpInfo(id,);
+  /// Available since server v1.0.0.
+  Future<UserPreferencesResponseDto> getUserPreferencesAdmin(String id, {Future<void>? abortTrigger}) async {
+    final response = await getUserPreferencesAdminWithHttpInfo(id, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserPreferencesResponseDto',) as UserPreferencesResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserPreferencesResponseDto')
+          as UserPreferencesResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
-  /// Retrieve user sessions
+  /// Update user preferences
   ///
-  /// Retrieve all sessions for a specific user.
+  /// Update the preferences of a specific user.
+  ///
+  /// Available since server v1.0.0.
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getUserSessionsAdminWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/sessions'
-      .replaceAll('{id}', id);
+  Future<Response> updateUserPreferencesAdminWithHttpInfo(
+    String id,
+    UserPreferencesUpdateDto userPreferencesUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/admin/users/{id}/preferences'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
+    Object? postBody = userPreferencesUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Update user preferences
+  ///
+  /// Update the preferences of a specific user.
+  ///
+  /// Available since server v1.0.0.
+  Future<UserPreferencesResponseDto> updateUserPreferencesAdmin(
+    String id,
+    UserPreferencesUpdateDto userPreferencesUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updateUserPreferencesAdminWithHttpInfo(
+      id,
+      userPreferencesUpdateDto,
+      abortTrigger: abortTrigger,
+    );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserPreferencesResponseDto')
+          as UserPreferencesResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Restore a deleted user
+  ///
+  /// Restore a previously deleted user.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> restoreUserAdminWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/admin/users/{id}/restore'.replaceAll('{id}', id);
+
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -270,15 +441,62 @@ class UsersAdminApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Restore a deleted user
+  ///
+  /// Restore a previously deleted user.
+  ///
+  /// Available since server v1.0.0.
+  Future<UserAdminResponseDto> restoreUserAdmin(String id, {Future<void>? abortTrigger}) async {
+    final response = await restoreUserAdminWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'UserAdminResponseDto')
+          as UserAdminResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Retrieve user sessions
+  ///
+  /// Retrieve all sessions for a specific user.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getUserSessionsAdminWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/admin/users/{id}/sessions'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -286,50 +504,37 @@ class UsersAdminApi {
   ///
   /// Retrieve all sessions for a specific user.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<List<SessionResponseDto>?> getUserSessionsAdmin(String id,) async {
-    final response = await getUserSessionsAdminWithHttpInfo(id,);
+  /// Available since server v1.0.0.
+  Future<List<SessionResponseDto>> getUserSessionsAdmin(String id, {Future<void>? abortTrigger}) async {
+    final response = await getUserSessionsAdminWithHttpInfo(id, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<SessionResponseDto>') as List)
-        .cast<SessionResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<SessionResponseDto>') as List)
+          .cast<SessionResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve user statistics
   ///
   /// Retrieve asset statistics for a specific user.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [bool] isFavorite:
-  ///   Filter by favorite status
-  ///
-  /// * [bool] isTrashed:
-  ///   Filter by trash status
-  ///
-  /// * [AssetVisibility] visibility:
-  Future<Response> getUserStatisticsAdminWithHttpInfo(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/statistics'
-      .replaceAll('{id}', id);
+  Future<Response> getUserStatisticsAdminWithHttpInfo(
+    String id, {
+    bool? isFavorite,
+    bool? isTrashed,
+    AssetVisibility? visibility,
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/admin/users/{id}/statistics'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -348,15 +553,15 @@ class UsersAdminApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -364,282 +569,28 @@ class UsersAdminApi {
   ///
   /// Retrieve asset statistics for a specific user.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [bool] isFavorite:
-  ///   Filter by favorite status
-  ///
-  /// * [bool] isTrashed:
-  ///   Filter by trash status
-  ///
-  /// * [AssetVisibility] visibility:
-  Future<AssetStatsResponseDto?> getUserStatisticsAdmin(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
-    final response = await getUserStatisticsAdminWithHttpInfo(id,  isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetStatsResponseDto',) as AssetStatsResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Restore a deleted user
-  ///
-  /// Restore a previously deleted user.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> restoreUserAdminWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/restore'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
+  /// Available since server v1.0.0.
+  Future<AssetStatsResponseDto> getUserStatisticsAdmin(
+    String id, {
+    bool? isFavorite,
+    bool? isTrashed,
+    AssetVisibility? visibility,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await getUserStatisticsAdminWithHttpInfo(
+      id,
+      isFavorite: isFavorite,
+      isTrashed: isTrashed,
+      visibility: visibility,
+      abortTrigger: abortTrigger,
     );
-  }
-
-  /// Restore a deleted user
-  ///
-  /// Restore a previously deleted user.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<UserAdminResponseDto?> restoreUserAdmin(String id,) async {
-    final response = await restoreUserAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'AssetStatsResponseDto')
+          as AssetStatsResponseDto;
     }
-    return null;
-  }
-
-  /// Search users
-  ///
-  /// Search for users.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id:
-  ///   User ID filter
-  ///
-  /// * [bool] withDeleted:
-  ///   Include deleted users
-  Future<Response> searchUsersAdminWithHttpInfo({ String? id, bool? withDeleted, }) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (id != null) {
-      queryParams.addAll(_queryParams('', 'id', id));
-    }
-    if (withDeleted != null) {
-      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
-    }
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Search users
-  ///
-  /// Search for users.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id:
-  ///   User ID filter
-  ///
-  /// * [bool] withDeleted:
-  ///   Include deleted users
-  Future<List<UserAdminResponseDto>?> searchUsersAdmin({ String? id, bool? withDeleted, }) async {
-    final response = await searchUsersAdminWithHttpInfo( id: id, withDeleted: withDeleted, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<UserAdminResponseDto>') as List)
-        .cast<UserAdminResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
-  }
-
-  /// Update a user
-  ///
-  /// Update an existing user.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
-  Future<Response> updateUserAdminWithHttpInfo(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody = userAdminUpdateDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Update a user
-  ///
-  /// Update an existing user.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
-  Future<UserAdminResponseDto?> updateUserAdmin(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
-    final response = await updateUserAdminWithHttpInfo(id, userAdminUpdateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Update user preferences
-  ///
-  /// Update the preferences of a specific user.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  Future<Response> updateUserPreferencesAdminWithHttpInfo(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/preferences'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody = userPreferencesUpdateDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Update user preferences
-  ///
-  /// Update the preferences of a specific user.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  Future<UserPreferencesResponseDto?> updateUserPreferencesAdmin(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
-    final response = await updateUserPreferencesAdminWithHttpInfo(id, userPreferencesUpdateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserPreferencesResponseDto',) as UserPreferencesResponseDto;
-    
-    }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

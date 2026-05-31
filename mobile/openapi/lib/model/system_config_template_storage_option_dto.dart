@@ -1,179 +1,123 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigTemplateStorageOptionDto {
-  /// Returns a new [SystemConfigTemplateStorageOptionDto] instance.
-  SystemConfigTemplateStorageOptionDto({
-    this.dayOptions = const [],
-    this.hourOptions = const [],
-    this.minuteOptions = const [],
-    this.monthOptions = const [],
-    this.presetOptions = const [],
-    this.secondOptions = const [],
-    this.weekOptions = const [],
-    this.yearOptions = const [],
+final class SystemConfigTemplateStorageOptionDto {
+  const SystemConfigTemplateStorageOptionDto({
+    required this.dayOptions,
+    required this.hourOptions,
+    required this.minuteOptions,
+    required this.monthOptions,
+    required this.presetOptions,
+    required this.secondOptions,
+    required this.weekOptions,
+    required this.yearOptions,
   });
 
   /// Available day format options for storage template
-  List<String> dayOptions;
+  final List<String> dayOptions;
 
   /// Available hour format options for storage template
-  List<String> hourOptions;
+  final List<String> hourOptions;
 
   /// Available minute format options for storage template
-  List<String> minuteOptions;
+  final List<String> minuteOptions;
 
   /// Available month format options for storage template
-  List<String> monthOptions;
+  final List<String> monthOptions;
 
   /// Available preset template options
-  List<String> presetOptions;
+  final List<String> presetOptions;
 
   /// Available second format options for storage template
-  List<String> secondOptions;
+  final List<String> secondOptions;
 
   /// Available week format options for storage template
-  List<String> weekOptions;
+  final List<String> weekOptions;
 
   /// Available year format options for storage template
-  List<String> yearOptions;
+  final List<String> yearOptions;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateStorageOptionDto &&
-    _deepEquality.equals(other.dayOptions, dayOptions) &&
-    _deepEquality.equals(other.hourOptions, hourOptions) &&
-    _deepEquality.equals(other.minuteOptions, minuteOptions) &&
-    _deepEquality.equals(other.monthOptions, monthOptions) &&
-    _deepEquality.equals(other.presetOptions, presetOptions) &&
-    _deepEquality.equals(other.secondOptions, secondOptions) &&
-    _deepEquality.equals(other.weekOptions, weekOptions) &&
-    _deepEquality.equals(other.yearOptions, yearOptions);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (dayOptions.hashCode) +
-    (hourOptions.hashCode) +
-    (minuteOptions.hashCode) +
-    (monthOptions.hashCode) +
-    (presetOptions.hashCode) +
-    (secondOptions.hashCode) +
-    (weekOptions.hashCode) +
-    (yearOptions.hashCode);
-
-  @override
-  String toString() => 'SystemConfigTemplateStorageOptionDto[dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, monthOptions=$monthOptions, presetOptions=$presetOptions, secondOptions=$secondOptions, weekOptions=$weekOptions, yearOptions=$yearOptions]';
+  static SystemConfigTemplateStorageOptionDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigTemplateStorageOptionDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      dayOptions: ((json[r'dayOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      hourOptions: ((json[r'hourOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      minuteOptions: ((json[r'minuteOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      monthOptions: ((json[r'monthOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      presetOptions: ((json[r'presetOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      secondOptions: ((json[r'secondOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      weekOptions: ((json[r'weekOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+      yearOptions: ((json[r'yearOptions'] as List?)?.map(($e) => $e as String).toList(growable: false))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'dayOptions'] = this.dayOptions;
-      json[r'hourOptions'] = this.hourOptions;
-      json[r'minuteOptions'] = this.minuteOptions;
-      json[r'monthOptions'] = this.monthOptions;
-      json[r'presetOptions'] = this.presetOptions;
-      json[r'secondOptions'] = this.secondOptions;
-      json[r'weekOptions'] = this.weekOptions;
-      json[r'yearOptions'] = this.yearOptions;
+    json[r'dayOptions'] = dayOptions;
+    json[r'hourOptions'] = hourOptions;
+    json[r'minuteOptions'] = minuteOptions;
+    json[r'monthOptions'] = monthOptions;
+    json[r'presetOptions'] = presetOptions;
+    json[r'secondOptions'] = secondOptions;
+    json[r'weekOptions'] = weekOptions;
+    json[r'yearOptions'] = yearOptions;
     return json;
   }
 
-  /// Returns a new [SystemConfigTemplateStorageOptionDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigTemplateStorageOptionDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigTemplateStorageOptionDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigTemplateStorageOptionDto(
-        dayOptions: json[r'dayOptions'] is Iterable
-            ? (json[r'dayOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        hourOptions: json[r'hourOptions'] is Iterable
-            ? (json[r'hourOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        minuteOptions: json[r'minuteOptions'] is Iterable
-            ? (json[r'minuteOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        monthOptions: json[r'monthOptions'] is Iterable
-            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        presetOptions: json[r'presetOptions'] is Iterable
-            ? (json[r'presetOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        secondOptions: json[r'secondOptions'] is Iterable
-            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        weekOptions: json[r'weekOptions'] is Iterable
-            ? (json[r'weekOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        yearOptions: json[r'yearOptions'] is Iterable
-            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-      );
-    }
-    return null;
+  SystemConfigTemplateStorageOptionDto copyWith({
+    List<String>? dayOptions,
+    List<String>? hourOptions,
+    List<String>? minuteOptions,
+    List<String>? monthOptions,
+    List<String>? presetOptions,
+    List<String>? secondOptions,
+    List<String>? weekOptions,
+    List<String>? yearOptions,
+  }) {
+    return .new(
+      dayOptions: dayOptions ?? this.dayOptions,
+      hourOptions: hourOptions ?? this.hourOptions,
+      minuteOptions: minuteOptions ?? this.minuteOptions,
+      monthOptions: monthOptions ?? this.monthOptions,
+      presetOptions: presetOptions ?? this.presetOptions,
+      secondOptions: secondOptions ?? this.secondOptions,
+      weekOptions: weekOptions ?? this.weekOptions,
+      yearOptions: yearOptions ?? this.yearOptions,
+    );
   }
 
-  static List<SystemConfigTemplateStorageOptionDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigTemplateStorageOptionDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigTemplateStorageOptionDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigTemplateStorageOptionDto &&
+            const DeepCollectionEquality().equals(dayOptions, other.dayOptions) &&
+            const DeepCollectionEquality().equals(hourOptions, other.hourOptions) &&
+            const DeepCollectionEquality().equals(minuteOptions, other.minuteOptions) &&
+            const DeepCollectionEquality().equals(monthOptions, other.monthOptions) &&
+            const DeepCollectionEquality().equals(presetOptions, other.presetOptions) &&
+            const DeepCollectionEquality().equals(secondOptions, other.secondOptions) &&
+            const DeepCollectionEquality().equals(weekOptions, other.weekOptions) &&
+            const DeepCollectionEquality().equals(yearOptions, other.yearOptions));
   }
 
-  static Map<String, SystemConfigTemplateStorageOptionDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigTemplateStorageOptionDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigTemplateStorageOptionDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      const DeepCollectionEquality().hash(dayOptions),
+      const DeepCollectionEquality().hash(hourOptions),
+      const DeepCollectionEquality().hash(minuteOptions),
+      const DeepCollectionEquality().hash(monthOptions),
+      const DeepCollectionEquality().hash(presetOptions),
+      const DeepCollectionEquality().hash(secondOptions),
+      const DeepCollectionEquality().hash(weekOptions),
+      const DeepCollectionEquality().hash(yearOptions),
+    ]);
   }
 
-  // maps a json object with a list of SystemConfigTemplateStorageOptionDto-objects as value to a dart map
-  static Map<String, List<SystemConfigTemplateStorageOptionDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigTemplateStorageOptionDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigTemplateStorageOptionDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'dayOptions',
-    'hourOptions',
-    'minuteOptions',
-    'monthOptions',
-    'presetOptions',
-    'secondOptions',
-    'weekOptions',
-    'yearOptions',
-  };
+  @override
+  String toString() =>
+      'SystemConfigTemplateStorageOptionDto(dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, monthOptions=$monthOptions, presetOptions=$presetOptions, secondOptions=$secondOptions, weekOptions=$weekOptions, yearOptions=$yearOptions)';
 }
-

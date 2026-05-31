@@ -40,6 +40,7 @@ import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/utils/openapi_compat.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -49,6 +50,8 @@ import 'package:timezone/data/latest.dart';
 void main() async {
   try {
     ImmichWidgetsBinding();
+    // Register backward-compat back-fills before any API response is parsed.
+    configureOpenApiCompat();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
     await EasyLocalization.ensureInitialized();
     final (drift, _) = await Bootstrap.initDomain();

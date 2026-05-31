@@ -1,127 +1,65 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ValidateLibraryImportPathResponseDto {
-  /// Returns a new [ValidateLibraryImportPathResponseDto] instance.
-  ValidateLibraryImportPathResponseDto({
-    required this.importPath,
-    required this.isValid,
-    this.message,
-  });
+final class ValidateLibraryImportPathResponseDto {
+  const ValidateLibraryImportPathResponseDto({required this.importPath, required this.isValid, this.message});
 
   /// Import path
-  String importPath;
+  final String importPath;
 
   /// Is valid
-  bool isValid;
+  final bool isValid;
 
   /// Validation message
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? message;
+  final String? message;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryImportPathResponseDto &&
-    other.importPath == importPath &&
-    other.isValid == isValid &&
-    other.message == message;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (importPath.hashCode) +
-    (isValid.hashCode) +
-    (message == null ? 0 : message!.hashCode);
-
-  @override
-  String toString() => 'ValidateLibraryImportPathResponseDto[importPath=$importPath, isValid=$isValid, message=$message]';
+  static ValidateLibraryImportPathResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ValidateLibraryImportPathResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      importPath: json[r'importPath'] as String,
+      isValid: json[r'isValid'] as bool,
+      message: (json[r'message'] as String?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'importPath'] = this.importPath;
-      json[r'isValid'] = this.isValid;
-    if (this.message != null) {
-      json[r'message'] = this.message;
-    } else {
-    //  json[r'message'] = null;
+    json[r'importPath'] = importPath;
+    json[r'isValid'] = isValid;
+    if (message != null) {
+      json[r'message'] = message!;
     }
     return json;
   }
 
-  /// Returns a new [ValidateLibraryImportPathResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ValidateLibraryImportPathResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ValidateLibraryImportPathResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ValidateLibraryImportPathResponseDto(
-        importPath: mapValueOfType<String>(json, r'importPath')!,
-        isValid: mapValueOfType<bool>(json, r'isValid')!,
-        message: mapValueOfType<String>(json, r'message'),
-      );
-    }
-    return null;
+  ValidateLibraryImportPathResponseDto copyWith({String? importPath, bool? isValid, Object? message = _undefined}) {
+    return .new(
+      importPath: importPath ?? this.importPath,
+      isValid: isValid ?? this.isValid,
+      message: identical(message, _undefined) ? this.message : message as String?,
+    );
   }
 
-  static List<ValidateLibraryImportPathResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ValidateLibraryImportPathResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ValidateLibraryImportPathResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ValidateLibraryImportPathResponseDto &&
+            importPath == other.importPath &&
+            isValid == other.isValid &&
+            message == other.message);
   }
 
-  static Map<String, ValidateLibraryImportPathResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ValidateLibraryImportPathResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ValidateLibraryImportPathResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([importPath, isValid, message]);
   }
 
-  // maps a json object with a list of ValidateLibraryImportPathResponseDto-objects as value to a dart map
-  static Map<String, List<ValidateLibraryImportPathResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ValidateLibraryImportPathResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ValidateLibraryImportPathResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'importPath',
-    'isValid',
-  };
+  @override
+  String toString() =>
+      'ValidateLibraryImportPathResponseDto(importPath=$importPath, isValid=$isValid, message=$message)';
 }
-

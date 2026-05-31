@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncAssetV1 {
-  /// Returns a new [SyncAssetV1] instance.
-  SyncAssetV1({
+final class SyncAssetV1 {
+  const SyncAssetV1({
     required this.checksum,
     required this.createdAt,
     required this.deletedAt,
@@ -36,298 +27,241 @@ class SyncAssetV1 {
   });
 
   /// Checksum
-  String checksum;
+  final String checksum;
 
   /// Uploaded to Immich at
-  DateTime? createdAt;
+  final DateTime? createdAt;
 
   /// Deleted at
-  DateTime? deletedAt;
+  final DateTime? deletedAt;
 
   /// Duration
-  String? duration;
+  final String? duration;
 
   /// File created at
-  DateTime? fileCreatedAt;
+  final DateTime? fileCreatedAt;
 
   /// File modified at
-  DateTime? fileModifiedAt;
+  final DateTime? fileModifiedAt;
 
   /// Asset height
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int? height;
+  final int? height;
 
   /// Asset ID
-  String id;
+  final String id;
 
   /// Is edited
-  bool isEdited;
+  final bool isEdited;
 
   /// Is favorite
-  bool isFavorite;
+  final bool isFavorite;
 
   /// Library ID
-  String? libraryId;
+  final String? libraryId;
 
   /// Live photo video ID
-  String? livePhotoVideoId;
+  final String? livePhotoVideoId;
 
   /// Local date time
-  DateTime? localDateTime;
+  final DateTime? localDateTime;
 
   /// Original file name
-  String originalFileName;
+  final String originalFileName;
 
   /// Owner ID
-  String ownerId;
+  final String ownerId;
 
   /// Stack ID
-  String? stackId;
+  final String? stackId;
 
   /// Thumbhash
-  String? thumbhash;
+  final String? thumbhash;
 
-  AssetTypeEnum type;
+  final AssetTypeEnum type;
 
-  AssetVisibility visibility;
+  final AssetVisibility visibility;
 
   /// Asset width
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int? width;
+  final int? width;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAssetV1 &&
-    other.checksum == checksum &&
-    other.createdAt == createdAt &&
-    other.deletedAt == deletedAt &&
-    other.duration == duration &&
-    other.fileCreatedAt == fileCreatedAt &&
-    other.fileModifiedAt == fileModifiedAt &&
-    other.height == height &&
-    other.id == id &&
-    other.isEdited == isEdited &&
-    other.isFavorite == isFavorite &&
-    other.libraryId == libraryId &&
-    other.livePhotoVideoId == livePhotoVideoId &&
-    other.localDateTime == localDateTime &&
-    other.originalFileName == originalFileName &&
-    other.ownerId == ownerId &&
-    other.stackId == stackId &&
-    other.thumbhash == thumbhash &&
-    other.type == type &&
-    other.visibility == visibility &&
-    other.width == width;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (checksum.hashCode) +
-    (createdAt == null ? 0 : createdAt!.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (duration == null ? 0 : duration!.hashCode) +
-    (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
-    (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
-    (height == null ? 0 : height!.hashCode) +
-    (id.hashCode) +
-    (isEdited.hashCode) +
-    (isFavorite.hashCode) +
-    (libraryId == null ? 0 : libraryId!.hashCode) +
-    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (localDateTime == null ? 0 : localDateTime!.hashCode) +
-    (originalFileName.hashCode) +
-    (ownerId.hashCode) +
-    (stackId == null ? 0 : stackId!.hashCode) +
-    (thumbhash == null ? 0 : thumbhash!.hashCode) +
-    (type.hashCode) +
-    (visibility.hashCode) +
-    (width == null ? 0 : width!.hashCode);
-
-  @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, createdAt=$createdAt, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isEdited=$isEdited, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
+  static SyncAssetV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncAssetV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      checksum: json[r'checksum'] as String,
+      createdAt: (json[r'createdAt'] == null ? null : DateTime.parse(json[r'createdAt'] as String)),
+      deletedAt: (json[r'deletedAt'] == null ? null : DateTime.parse(json[r'deletedAt'] as String)),
+      duration: (json[r'duration'] as String?),
+      fileCreatedAt: (json[r'fileCreatedAt'] == null ? null : DateTime.parse(json[r'fileCreatedAt'] as String)),
+      fileModifiedAt: (json[r'fileModifiedAt'] == null ? null : DateTime.parse(json[r'fileModifiedAt'] as String)),
+      height: (json[r'height'] as int?),
+      id: json[r'id'] as String,
+      isEdited: json[r'isEdited'] as bool,
+      isFavorite: json[r'isFavorite'] as bool,
+      libraryId: (json[r'libraryId'] as String?),
+      livePhotoVideoId: (json[r'livePhotoVideoId'] as String?),
+      localDateTime: (json[r'localDateTime'] == null ? null : DateTime.parse(json[r'localDateTime'] as String)),
+      originalFileName: json[r'originalFileName'] as String,
+      ownerId: json[r'ownerId'] as String,
+      stackId: (json[r'stackId'] as String?),
+      thumbhash: (json[r'thumbhash'] as String?),
+      type: (AssetTypeEnum.fromJson(json[r'type']))!,
+      visibility: (AssetVisibility.fromJson(json[r'visibility']))!,
+      width: (json[r'width'] as int?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'checksum'] = this.checksum;
-    if (this.createdAt != null) {
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt!.millisecondsSinceEpoch
-        : this.createdAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'createdAt'] = null;
+    json[r'checksum'] = checksum;
+    if (createdAt != null) {
+      json[r'createdAt'] = createdAt!.toUtc().toIso8601String();
     }
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.deletedAt!.millisecondsSinceEpoch
-        : this.deletedAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'deletedAt'] = null;
+    if (deletedAt != null) {
+      json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
     }
-    if (this.duration != null) {
-      json[r'duration'] = this.duration;
-    } else {
-    //  json[r'duration'] = null;
+    if (duration != null) {
+      json[r'duration'] = duration!;
     }
-    if (this.fileCreatedAt != null) {
-      json[r'fileCreatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.fileCreatedAt!.millisecondsSinceEpoch
-        : this.fileCreatedAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'fileCreatedAt'] = null;
+    if (fileCreatedAt != null) {
+      json[r'fileCreatedAt'] = fileCreatedAt!.toUtc().toIso8601String();
     }
-    if (this.fileModifiedAt != null) {
-      json[r'fileModifiedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.fileModifiedAt!.millisecondsSinceEpoch
-        : this.fileModifiedAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'fileModifiedAt'] = null;
+    if (fileModifiedAt != null) {
+      json[r'fileModifiedAt'] = fileModifiedAt!.toUtc().toIso8601String();
     }
-    if (this.height != null) {
-      json[r'height'] = this.height;
-    } else {
-    //  json[r'height'] = null;
+    if (height != null) {
+      json[r'height'] = height!;
     }
-      json[r'id'] = this.id;
-      json[r'isEdited'] = this.isEdited;
-      json[r'isFavorite'] = this.isFavorite;
-    if (this.libraryId != null) {
-      json[r'libraryId'] = this.libraryId;
-    } else {
-    //  json[r'libraryId'] = null;
+    json[r'id'] = id;
+    json[r'isEdited'] = isEdited;
+    json[r'isFavorite'] = isFavorite;
+    if (libraryId != null) {
+      json[r'libraryId'] = libraryId!;
     }
-    if (this.livePhotoVideoId != null) {
-      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
-    } else {
-    //  json[r'livePhotoVideoId'] = null;
+    if (livePhotoVideoId != null) {
+      json[r'livePhotoVideoId'] = livePhotoVideoId!;
     }
-    if (this.localDateTime != null) {
-      json[r'localDateTime'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.localDateTime!.millisecondsSinceEpoch
-        : this.localDateTime!.toUtc().toIso8601String();
-    } else {
-    //  json[r'localDateTime'] = null;
+    if (localDateTime != null) {
+      json[r'localDateTime'] = localDateTime!.toUtc().toIso8601String();
     }
-      json[r'originalFileName'] = this.originalFileName;
-      json[r'ownerId'] = this.ownerId;
-    if (this.stackId != null) {
-      json[r'stackId'] = this.stackId;
-    } else {
-    //  json[r'stackId'] = null;
+    json[r'originalFileName'] = originalFileName;
+    json[r'ownerId'] = ownerId;
+    if (stackId != null) {
+      json[r'stackId'] = stackId!;
     }
-    if (this.thumbhash != null) {
-      json[r'thumbhash'] = this.thumbhash;
-    } else {
-    //  json[r'thumbhash'] = null;
+    if (thumbhash != null) {
+      json[r'thumbhash'] = thumbhash!;
     }
-      json[r'type'] = this.type;
-      json[r'visibility'] = this.visibility;
-    if (this.width != null) {
-      json[r'width'] = this.width;
-    } else {
-    //  json[r'width'] = null;
+    json[r'type'] = type.toJson();
+    json[r'visibility'] = visibility.toJson();
+    if (width != null) {
+      json[r'width'] = width!;
     }
     return json;
   }
 
-  /// Returns a new [SyncAssetV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncAssetV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncAssetV1(
-        checksum: mapValueOfType<String>(json, r'checksum')!,
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        duration: mapValueOfType<String>(json, r'duration'),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        height: mapValueOfType<int>(json, r'height'),
-        id: mapValueOfType<String>(json, r'id')!,
-        isEdited: mapValueOfType<bool>(json, r'isEdited')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        libraryId: mapValueOfType<String>(json, r'libraryId'),
-        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        localDateTime: mapDateTime(json, r'localDateTime', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        stackId: mapValueOfType<String>(json, r'stackId'),
-        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
-        type: AssetTypeEnum.fromJson(json[r'type'])!,
-        visibility: AssetVisibility.fromJson(json[r'visibility'])!,
-        width: mapValueOfType<int>(json, r'width'),
-      );
-    }
-    return null;
+  SyncAssetV1 copyWith({
+    String? checksum,
+    Object? createdAt = _undefined,
+    Object? deletedAt = _undefined,
+    Object? duration = _undefined,
+    Object? fileCreatedAt = _undefined,
+    Object? fileModifiedAt = _undefined,
+    Object? height = _undefined,
+    String? id,
+    bool? isEdited,
+    bool? isFavorite,
+    Object? libraryId = _undefined,
+    Object? livePhotoVideoId = _undefined,
+    Object? localDateTime = _undefined,
+    String? originalFileName,
+    String? ownerId,
+    Object? stackId = _undefined,
+    Object? thumbhash = _undefined,
+    AssetTypeEnum? type,
+    AssetVisibility? visibility,
+    Object? width = _undefined,
+  }) {
+    return .new(
+      checksum: checksum ?? this.checksum,
+      createdAt: identical(createdAt, _undefined) ? this.createdAt : createdAt as DateTime?,
+      deletedAt: identical(deletedAt, _undefined) ? this.deletedAt : deletedAt as DateTime?,
+      duration: identical(duration, _undefined) ? this.duration : duration as String?,
+      fileCreatedAt: identical(fileCreatedAt, _undefined) ? this.fileCreatedAt : fileCreatedAt as DateTime?,
+      fileModifiedAt: identical(fileModifiedAt, _undefined) ? this.fileModifiedAt : fileModifiedAt as DateTime?,
+      height: identical(height, _undefined) ? this.height : height as int?,
+      id: id ?? this.id,
+      isEdited: isEdited ?? this.isEdited,
+      isFavorite: isFavorite ?? this.isFavorite,
+      libraryId: identical(libraryId, _undefined) ? this.libraryId : libraryId as String?,
+      livePhotoVideoId: identical(livePhotoVideoId, _undefined) ? this.livePhotoVideoId : livePhotoVideoId as String?,
+      localDateTime: identical(localDateTime, _undefined) ? this.localDateTime : localDateTime as DateTime?,
+      originalFileName: originalFileName ?? this.originalFileName,
+      ownerId: ownerId ?? this.ownerId,
+      stackId: identical(stackId, _undefined) ? this.stackId : stackId as String?,
+      thumbhash: identical(thumbhash, _undefined) ? this.thumbhash : thumbhash as String?,
+      type: type ?? this.type,
+      visibility: visibility ?? this.visibility,
+      width: identical(width, _undefined) ? this.width : width as int?,
+    );
   }
 
-  static List<SyncAssetV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAssetV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAssetV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncAssetV1 &&
+            checksum == other.checksum &&
+            createdAt == other.createdAt &&
+            deletedAt == other.deletedAt &&
+            duration == other.duration &&
+            fileCreatedAt == other.fileCreatedAt &&
+            fileModifiedAt == other.fileModifiedAt &&
+            height == other.height &&
+            id == other.id &&
+            isEdited == other.isEdited &&
+            isFavorite == other.isFavorite &&
+            libraryId == other.libraryId &&
+            livePhotoVideoId == other.livePhotoVideoId &&
+            localDateTime == other.localDateTime &&
+            originalFileName == other.originalFileName &&
+            ownerId == other.ownerId &&
+            stackId == other.stackId &&
+            thumbhash == other.thumbhash &&
+            type == other.type &&
+            visibility == other.visibility &&
+            width == other.width);
   }
 
-  static Map<String, SyncAssetV1> mapFromJson(dynamic json) {
-    final map = <String, SyncAssetV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncAssetV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      checksum,
+      createdAt,
+      deletedAt,
+      duration,
+      fileCreatedAt,
+      fileModifiedAt,
+      height,
+      id,
+      isEdited,
+      isFavorite,
+      libraryId,
+      livePhotoVideoId,
+      localDateTime,
+      originalFileName,
+      ownerId,
+      stackId,
+      thumbhash,
+      type,
+      visibility,
+      width,
+    ]);
   }
 
-  // maps a json object with a list of SyncAssetV1-objects as value to a dart map
-  static Map<String, List<SyncAssetV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncAssetV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncAssetV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'checksum',
-    'createdAt',
-    'deletedAt',
-    'duration',
-    'fileCreatedAt',
-    'fileModifiedAt',
-    'height',
-    'id',
-    'isEdited',
-    'isFavorite',
-    'libraryId',
-    'livePhotoVideoId',
-    'localDateTime',
-    'originalFileName',
-    'ownerId',
-    'stackId',
-    'thumbhash',
-    'type',
-    'visibility',
-    'width',
-  };
+  @override
+  String toString() =>
+      'SyncAssetV1(checksum=$checksum, createdAt=$createdAt, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isEdited=$isEdited, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width)';
 }
-

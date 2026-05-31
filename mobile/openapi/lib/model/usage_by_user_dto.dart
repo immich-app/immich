@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class UsageByUserDto {
-  /// Returns a new [UsageByUserDto] instance.
-  UsageByUserDto({
+final class UsageByUserDto {
+  const UsageByUserDto({
     required this.photos,
     required this.quotaSizeInBytes,
     required this.usage,
@@ -24,162 +15,104 @@ class UsageByUserDto {
   });
 
   /// Number of photos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int photos;
+  final int photos;
 
   /// User quota size in bytes (null if unlimited)
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int? quotaSizeInBytes;
+  final int? quotaSizeInBytes;
 
   /// Total storage usage in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usage;
+  final int usage;
 
   /// Storage usage for photos in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usagePhotos;
+  final int usagePhotos;
 
   /// Storage usage for videos in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int usageVideos;
+  final int usageVideos;
 
   /// User ID
-  String userId;
+  final String userId;
 
   /// User name
-  String userName;
+  final String userName;
 
   /// Number of videos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int videos;
+  final int videos;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
-    other.photos == photos &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.usage == usage &&
-    other.usagePhotos == usagePhotos &&
-    other.usageVideos == usageVideos &&
-    other.userId == userId &&
-    other.userName == userName &&
-    other.videos == videos;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (photos.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (usage.hashCode) +
-    (usagePhotos.hashCode) +
-    (usageVideos.hashCode) +
-    (userId.hashCode) +
-    (userName.hashCode) +
-    (videos.hashCode);
-
-  @override
-  String toString() => 'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, usagePhotos=$usagePhotos, usageVideos=$usageVideos, userId=$userId, userName=$userName, videos=$videos]';
+  static UsageByUserDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<UsageByUserDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      photos: json[r'photos'] as int,
+      quotaSizeInBytes: (json[r'quotaSizeInBytes'] as int?),
+      usage: json[r'usage'] as int,
+      usagePhotos: json[r'usagePhotos'] as int,
+      usageVideos: json[r'usageVideos'] as int,
+      userId: json[r'userId'] as String,
+      userName: json[r'userName'] as String,
+      videos: json[r'videos'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'photos'] = this.photos;
-    if (this.quotaSizeInBytes != null) {
-      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
-    } else {
-    //  json[r'quotaSizeInBytes'] = null;
+    json[r'photos'] = photos;
+    if (quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = quotaSizeInBytes!;
     }
-      json[r'usage'] = this.usage;
-      json[r'usagePhotos'] = this.usagePhotos;
-      json[r'usageVideos'] = this.usageVideos;
-      json[r'userId'] = this.userId;
-      json[r'userName'] = this.userName;
-      json[r'videos'] = this.videos;
+    json[r'usage'] = usage;
+    json[r'usagePhotos'] = usagePhotos;
+    json[r'usageVideos'] = usageVideos;
+    json[r'userId'] = userId;
+    json[r'userName'] = userName;
+    json[r'videos'] = videos;
     return json;
   }
 
-  /// Returns a new [UsageByUserDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static UsageByUserDto? fromJson(dynamic value) {
-    upgradeDto(value, "UsageByUserDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return UsageByUserDto(
-        photos: mapValueOfType<int>(json, r'photos')!,
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
-        usage: mapValueOfType<int>(json, r'usage')!,
-        usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
-        usageVideos: mapValueOfType<int>(json, r'usageVideos')!,
-        userId: mapValueOfType<String>(json, r'userId')!,
-        userName: mapValueOfType<String>(json, r'userName')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
-      );
-    }
-    return null;
+  UsageByUserDto copyWith({
+    int? photos,
+    Object? quotaSizeInBytes = _undefined,
+    int? usage,
+    int? usagePhotos,
+    int? usageVideos,
+    String? userId,
+    String? userName,
+    int? videos,
+  }) {
+    return .new(
+      photos: photos ?? this.photos,
+      quotaSizeInBytes: identical(quotaSizeInBytes, _undefined) ? this.quotaSizeInBytes : quotaSizeInBytes as int?,
+      usage: usage ?? this.usage,
+      usagePhotos: usagePhotos ?? this.usagePhotos,
+      usageVideos: usageVideos ?? this.usageVideos,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      videos: videos ?? this.videos,
+    );
   }
 
-  static List<UsageByUserDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UsageByUserDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UsageByUserDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is UsageByUserDto &&
+            photos == other.photos &&
+            quotaSizeInBytes == other.quotaSizeInBytes &&
+            usage == other.usage &&
+            usagePhotos == other.usagePhotos &&
+            usageVideos == other.usageVideos &&
+            userId == other.userId &&
+            userName == other.userName &&
+            videos == other.videos);
   }
 
-  static Map<String, UsageByUserDto> mapFromJson(dynamic json) {
-    final map = <String, UsageByUserDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = UsageByUserDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([photos, quotaSizeInBytes, usage, usagePhotos, usageVideos, userId, userName, videos]);
   }
 
-  // maps a json object with a list of UsageByUserDto-objects as value to a dart map
-  static Map<String, List<UsageByUserDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<UsageByUserDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = UsageByUserDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'photos',
-    'quotaSizeInBytes',
-    'usage',
-    'usagePhotos',
-    'usageVideos',
-    'userId',
-    'userName',
-    'videos',
-  };
+  @override
+  String toString() =>
+      'UsageByUserDto(photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, usagePhotos=$usagePhotos, usageVideos=$usageVideos, userId=$userId, userName=$userName, videos=$videos)';
 }
-

@@ -1,206 +1,140 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class MemoryCreateDto {
-  /// Returns a new [MemoryCreateDto] instance.
-  MemoryCreateDto({
-    this.assetIds = const [],
+final class MemoryCreateDto {
+  const MemoryCreateDto({
+    this.assetIds = const Optional.absent(),
     required this.data,
-    this.hideAt,
-    this.isSaved,
+    this.hideAt = const Optional.absent(),
+    this.isSaved = const Optional.absent(),
     required this.memoryAt,
-    this.seenAt,
-    this.showAt,
+    this.seenAt = const Optional.absent(),
+    this.showAt = const Optional.absent(),
     required this.type,
   });
 
   /// Asset IDs to associate with memory
-  List<String> assetIds;
+  final Optional<List<String>> assetIds;
 
-  OnThisDayDto data;
+  final OnThisDayDto data;
 
   /// Date when memory should be hidden
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? hideAt;
+  /// Available since server v2.6.0.
+  final Optional<DateTime> hideAt;
 
   /// Is memory saved
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isSaved;
+  final Optional<bool> isSaved;
 
   /// Memory date
-  DateTime memoryAt;
+  final DateTime memoryAt;
 
   /// Date when memory was seen
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? seenAt;
+  final Optional<DateTime> seenAt;
 
   /// Date when memory should be shown
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? showAt;
+  /// Available since server v2.6.0.
+  final Optional<DateTime> showAt;
 
-  MemoryType type;
+  final MemoryType type;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is MemoryCreateDto &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.data == data &&
-    other.hideAt == hideAt &&
-    other.isSaved == isSaved &&
-    other.memoryAt == memoryAt &&
-    other.seenAt == seenAt &&
-    other.showAt == showAt &&
-    other.type == type;
+  static const ApiVersion hideAtAddedIn = .new(2, 6, 0);
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetIds.hashCode) +
-    (data.hashCode) +
-    (hideAt == null ? 0 : hideAt!.hashCode) +
-    (isSaved == null ? 0 : isSaved!.hashCode) +
-    (memoryAt.hashCode) +
-    (seenAt == null ? 0 : seenAt!.hashCode) +
-    (showAt == null ? 0 : showAt!.hashCode) +
-    (type.hashCode);
+  static const ApiState hideAtState = .stable;
 
-  @override
-  String toString() => 'MemoryCreateDto[assetIds=$assetIds, data=$data, hideAt=$hideAt, isSaved=$isSaved, memoryAt=$memoryAt, seenAt=$seenAt, showAt=$showAt, type=$type]';
+  static const ApiVersion showAtAddedIn = .new(2, 6, 0);
+
+  static const ApiState showAtState = .stable;
+
+  static MemoryCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<MemoryCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      assetIds: json.containsKey(r'assetIds')
+          ? Optional.present(((json[r'assetIds'] as List?)?.map(($e) => $e as String).toList(growable: false))!)
+          : const Optional.absent(),
+      data: (OnThisDayDto.fromJson(json[r'data']))!,
+      hideAt: json.containsKey(r'hideAt')
+          ? Optional.present(DateTime.parse(json[r'hideAt'] as String))
+          : const Optional.absent(),
+      isSaved: json.containsKey(r'isSaved') ? Optional.present(json[r'isSaved'] as bool) : const Optional.absent(),
+      memoryAt: DateTime.parse(json[r'memoryAt'] as String),
+      seenAt: json.containsKey(r'seenAt')
+          ? Optional.present(DateTime.parse(json[r'seenAt'] as String))
+          : const Optional.absent(),
+      showAt: json.containsKey(r'showAt')
+          ? Optional.present(DateTime.parse(json[r'showAt'] as String))
+          : const Optional.absent(),
+      type: (MemoryType.fromJson(json[r'type']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetIds'] = this.assetIds;
-      json[r'data'] = this.data;
-    if (this.hideAt != null) {
-      json[r'hideAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.hideAt!.millisecondsSinceEpoch
-        : this.hideAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'hideAt'] = null;
+    if (assetIds case Present(:final value)) {
+      json[r'assetIds'] = value;
     }
-    if (this.isSaved != null) {
-      json[r'isSaved'] = this.isSaved;
-    } else {
-    //  json[r'isSaved'] = null;
+    json[r'data'] = data.toJson();
+    if (hideAt case Present(:final value)) {
+      json[r'hideAt'] = value.toUtc().toIso8601String();
     }
-      json[r'memoryAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.memoryAt.millisecondsSinceEpoch
-        : this.memoryAt.toUtc().toIso8601String();
-    if (this.seenAt != null) {
-      json[r'seenAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.seenAt!.millisecondsSinceEpoch
-        : this.seenAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'seenAt'] = null;
+    if (isSaved case Present(:final value)) {
+      json[r'isSaved'] = value;
     }
-    if (this.showAt != null) {
-      json[r'showAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.showAt!.millisecondsSinceEpoch
-        : this.showAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'showAt'] = null;
+    json[r'memoryAt'] = memoryAt.toUtc().toIso8601String();
+    if (seenAt case Present(:final value)) {
+      json[r'seenAt'] = value.toUtc().toIso8601String();
     }
-      json[r'type'] = this.type;
+    if (showAt case Present(:final value)) {
+      json[r'showAt'] = value.toUtc().toIso8601String();
+    }
+    json[r'type'] = type.toJson();
     return json;
   }
 
-  /// Returns a new [MemoryCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static MemoryCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "MemoryCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return MemoryCreateDto(
-        assetIds: json[r'assetIds'] is Iterable
-            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        data: OnThisDayDto.fromJson(json[r'data'])!,
-        hideAt: mapDateTime(json, r'hideAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        seenAt: mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        showAt: mapDateTime(json, r'showAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        type: MemoryType.fromJson(json[r'type'])!,
-      );
-    }
-    return null;
+  MemoryCreateDto copyWith({
+    Optional<List<String>>? assetIds,
+    OnThisDayDto? data,
+    Optional<DateTime>? hideAt,
+    Optional<bool>? isSaved,
+    DateTime? memoryAt,
+    Optional<DateTime>? seenAt,
+    Optional<DateTime>? showAt,
+    MemoryType? type,
+  }) {
+    return .new(
+      assetIds: assetIds ?? this.assetIds,
+      data: data ?? this.data,
+      hideAt: hideAt ?? this.hideAt,
+      isSaved: isSaved ?? this.isSaved,
+      memoryAt: memoryAt ?? this.memoryAt,
+      seenAt: seenAt ?? this.seenAt,
+      showAt: showAt ?? this.showAt,
+      type: type ?? this.type,
+    );
   }
 
-  static List<MemoryCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MemoryCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MemoryCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MemoryCreateDto &&
+            assetIds == other.assetIds &&
+            data == other.data &&
+            hideAt == other.hideAt &&
+            isSaved == other.isSaved &&
+            memoryAt == other.memoryAt &&
+            seenAt == other.seenAt &&
+            showAt == other.showAt &&
+            type == other.type);
   }
 
-  static Map<String, MemoryCreateDto> mapFromJson(dynamic json) {
-    final map = <String, MemoryCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = MemoryCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([assetIds, data, hideAt, isSaved, memoryAt, seenAt, showAt, type]);
   }
 
-  // maps a json object with a list of MemoryCreateDto-objects as value to a dart map
-  static Map<String, List<MemoryCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<MemoryCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = MemoryCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'data',
-    'memoryAt',
-    'type',
-  };
+  @override
+  String toString() =>
+      'MemoryCreateDto(assetIds=$assetIds, data=$data, hideAt=$hideAt, isSaved=$isSaved, memoryAt=$memoryAt, seenAt=$seenAt, showAt=$showAt, type=$type)';
 }
-

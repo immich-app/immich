@@ -18,10 +18,10 @@ class OAuthService {
     log.info("Starting OAuth flow with redirect URI: $redirectUri");
 
     final dto = await _apiService.oAuthApi.startOAuth(
-      OAuthConfigDto(redirectUri: redirectUri, state: state, codeChallenge: codeChallenge),
+      OAuthConfigDto(redirectUri: redirectUri, state: state.toOptional(), codeChallenge: codeChallenge.toOptional()),
     );
 
-    final authUrl = dto?.url;
+    final authUrl = dto.url;
     log.info('Received Authorization URL: $authUrl');
 
     return authUrl;
@@ -37,7 +37,7 @@ class OAuthService {
     }
 
     return await _apiService.oAuthApi.finishOAuth(
-      OAuthCallbackDto(url: result, state: state, codeVerifier: codeVerifier),
+      OAuthCallbackDto(url: result, state: state.toOptional(), codeVerifier: codeVerifier.toOptional()),
     );
   }
 }

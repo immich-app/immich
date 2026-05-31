@@ -1,102 +1,41 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class StackCreateDto {
-  /// Returns a new [StackCreateDto] instance.
-  StackCreateDto({
-    this.assetIds = const [],
-  });
+final class StackCreateDto {
+  const StackCreateDto({required this.assetIds});
 
   /// Asset IDs (first becomes primary, min 2)
-  List<String> assetIds;
+  final List<String> assetIds;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is StackCreateDto &&
-    _deepEquality.equals(other.assetIds, assetIds);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetIds.hashCode);
-
-  @override
-  String toString() => 'StackCreateDto[assetIds=$assetIds]';
+  static StackCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<StackCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(assetIds: ((json[r'assetIds'] as List?)?.map(($e) => $e as String).toList(growable: false))!);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetIds'] = this.assetIds;
+    json[r'assetIds'] = assetIds;
     return json;
   }
 
-  /// Returns a new [StackCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static StackCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "StackCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return StackCreateDto(
-        assetIds: json[r'assetIds'] is Iterable
-            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-      );
-    }
-    return null;
+  StackCreateDto copyWith({List<String>? assetIds}) {
+    return .new(assetIds: assetIds ?? this.assetIds);
   }
 
-  static List<StackCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <StackCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = StackCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is StackCreateDto && const DeepCollectionEquality().equals(assetIds, other.assetIds));
   }
 
-  static Map<String, StackCreateDto> mapFromJson(dynamic json) {
-    final map = <String, StackCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = StackCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([const DeepCollectionEquality().hash(assetIds)]);
   }
 
-  // maps a json object with a list of StackCreateDto-objects as value to a dart map
-  static Map<String, List<StackCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<StackCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = StackCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'assetIds',
-  };
+  @override
+  String toString() => 'StackCreateDto(assetIds=$assetIds)';
 }
-

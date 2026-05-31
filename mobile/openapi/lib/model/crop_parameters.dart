@@ -1,139 +1,58 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class CropParameters {
-  /// Returns a new [CropParameters] instance.
-  CropParameters({
-    required this.height,
-    required this.width,
-    required this.x,
-    required this.y,
-  });
+final class CropParameters {
+  const CropParameters({required this.height, required this.width, required this.x, required this.y});
 
   /// Height of the crop
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  int height;
+  final int height;
 
   /// Width of the crop
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  int width;
+  final int width;
 
   /// Top-Left X coordinate of crop
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int x;
+  final int x;
 
   /// Top-Left Y coordinate of crop
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int y;
+  final int y;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is CropParameters &&
-    other.height == height &&
-    other.width == width &&
-    other.x == x &&
-    other.y == y;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (height.hashCode) +
-    (width.hashCode) +
-    (x.hashCode) +
-    (y.hashCode);
-
-  @override
-  String toString() => 'CropParameters[height=$height, width=$width, x=$x, y=$y]';
+  static CropParameters? fromJson(dynamic value) {
+    ApiCompat.upgrade<CropParameters>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      height: json[r'height'] as int,
+      width: json[r'width'] as int,
+      x: json[r'x'] as int,
+      y: json[r'y'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'height'] = this.height;
-      json[r'width'] = this.width;
-      json[r'x'] = this.x;
-      json[r'y'] = this.y;
+    json[r'height'] = height;
+    json[r'width'] = width;
+    json[r'x'] = x;
+    json[r'y'] = y;
     return json;
   }
 
-  /// Returns a new [CropParameters] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static CropParameters? fromJson(dynamic value) {
-    upgradeDto(value, "CropParameters");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return CropParameters(
-        height: mapValueOfType<int>(json, r'height')!,
-        width: mapValueOfType<int>(json, r'width')!,
-        x: mapValueOfType<int>(json, r'x')!,
-        y: mapValueOfType<int>(json, r'y')!,
-      );
-    }
-    return null;
+  CropParameters copyWith({int? height, int? width, int? x, int? y}) {
+    return .new(height: height ?? this.height, width: width ?? this.width, x: x ?? this.x, y: y ?? this.y);
   }
 
-  static List<CropParameters> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <CropParameters>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = CropParameters.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is CropParameters && height == other.height && width == other.width && x == other.x && y == other.y);
   }
 
-  static Map<String, CropParameters> mapFromJson(dynamic json) {
-    final map = <String, CropParameters>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = CropParameters.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([height, width, x, y]);
   }
 
-  // maps a json object with a list of CropParameters-objects as value to a dart map
-  static Map<String, List<CropParameters>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<CropParameters>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = CropParameters.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'height',
-    'width',
-    'x',
-    'y',
-  };
+  @override
+  String toString() => 'CropParameters(height=$height, width=$width, x=$x, y=$y)';
 }
-

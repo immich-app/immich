@@ -1,120 +1,56 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerVersionHistoryResponseDto {
-  /// Returns a new [ServerVersionHistoryResponseDto] instance.
-  ServerVersionHistoryResponseDto({
-    required this.createdAt,
-    required this.id,
-    required this.version,
-  });
+final class ServerVersionHistoryResponseDto {
+  const ServerVersionHistoryResponseDto({required this.createdAt, required this.id, required this.version});
 
   /// When this version was first seen
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Version history entry ID
-  String id;
+  final String id;
 
   /// Version string
-  String version;
+  final String version;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerVersionHistoryResponseDto &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.version == version;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (version.hashCode);
-
-  @override
-  String toString() => 'ServerVersionHistoryResponseDto[createdAt=$createdAt, id=$id, version=$version]';
+  static ServerVersionHistoryResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerVersionHistoryResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      id: json[r'id'] as String,
+      version: json[r'version'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'version'] = this.version;
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    json[r'id'] = id;
+    json[r'version'] = version;
     return json;
   }
 
-  /// Returns a new [ServerVersionHistoryResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerVersionHistoryResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerVersionHistoryResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerVersionHistoryResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        version: mapValueOfType<String>(json, r'version')!,
-      );
-    }
-    return null;
+  ServerVersionHistoryResponseDto copyWith({DateTime? createdAt, String? id, String? version}) {
+    return .new(createdAt: createdAt ?? this.createdAt, id: id ?? this.id, version: version ?? this.version);
   }
 
-  static List<ServerVersionHistoryResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerVersionHistoryResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerVersionHistoryResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerVersionHistoryResponseDto &&
+            createdAt == other.createdAt &&
+            id == other.id &&
+            version == other.version);
   }
 
-  static Map<String, ServerVersionHistoryResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ServerVersionHistoryResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerVersionHistoryResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([createdAt, id, version]);
   }
 
-  // maps a json object with a list of ServerVersionHistoryResponseDto-objects as value to a dart map
-  static Map<String, List<ServerVersionHistoryResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerVersionHistoryResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerVersionHistoryResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'createdAt',
-    'id',
-    'version',
-  };
+  @override
+  String toString() => 'ServerVersionHistoryResponseDto(createdAt=$createdAt, id=$id, version=$version)';
 }
-

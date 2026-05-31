@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerStorageResponseDto {
-  /// Returns a new [ServerStorageResponseDto] instance.
-  ServerStorageResponseDto({
+final class ServerStorageResponseDto {
+  const ServerStorageResponseDto({
     required this.diskAvailable,
     required this.diskAvailableRaw,
     required this.diskSize,
@@ -23,141 +14,100 @@ class ServerStorageResponseDto {
   });
 
   /// Available disk space (human-readable format)
-  String diskAvailable;
+  final String diskAvailable;
 
   /// Available disk space in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int diskAvailableRaw;
+  final int diskAvailableRaw;
 
   /// Total disk size (human-readable format)
-  String diskSize;
+  final String diskSize;
 
   /// Total disk size in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int diskSizeRaw;
+  final int diskSizeRaw;
 
   /// Disk usage percentage (0-100)
-  double diskUsagePercentage;
+  final double diskUsagePercentage;
 
   /// Used disk space (human-readable format)
-  String diskUse;
+  final String diskUse;
 
   /// Used disk space in bytes
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int diskUseRaw;
+  final int diskUseRaw;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerStorageResponseDto &&
-    other.diskAvailable == diskAvailable &&
-    other.diskAvailableRaw == diskAvailableRaw &&
-    other.diskSize == diskSize &&
-    other.diskSizeRaw == diskSizeRaw &&
-    other.diskUsagePercentage == diskUsagePercentage &&
-    other.diskUse == diskUse &&
-    other.diskUseRaw == diskUseRaw;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (diskAvailable.hashCode) +
-    (diskAvailableRaw.hashCode) +
-    (diskSize.hashCode) +
-    (diskSizeRaw.hashCode) +
-    (diskUsagePercentage.hashCode) +
-    (diskUse.hashCode) +
-    (diskUseRaw.hashCode);
-
-  @override
-  String toString() => 'ServerStorageResponseDto[diskAvailable=$diskAvailable, diskAvailableRaw=$diskAvailableRaw, diskSize=$diskSize, diskSizeRaw=$diskSizeRaw, diskUsagePercentage=$diskUsagePercentage, diskUse=$diskUse, diskUseRaw=$diskUseRaw]';
+  static ServerStorageResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerStorageResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      diskAvailable: json[r'diskAvailable'] as String,
+      diskAvailableRaw: json[r'diskAvailableRaw'] as int,
+      diskSize: json[r'diskSize'] as String,
+      diskSizeRaw: json[r'diskSizeRaw'] as int,
+      diskUsagePercentage: (json[r'diskUsagePercentage'] as num).toDouble(),
+      diskUse: json[r'diskUse'] as String,
+      diskUseRaw: json[r'diskUseRaw'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'diskAvailable'] = this.diskAvailable;
-      json[r'diskAvailableRaw'] = this.diskAvailableRaw;
-      json[r'diskSize'] = this.diskSize;
-      json[r'diskSizeRaw'] = this.diskSizeRaw;
-      json[r'diskUsagePercentage'] = this.diskUsagePercentage;
-      json[r'diskUse'] = this.diskUse;
-      json[r'diskUseRaw'] = this.diskUseRaw;
+    json[r'diskAvailable'] = diskAvailable;
+    json[r'diskAvailableRaw'] = diskAvailableRaw;
+    json[r'diskSize'] = diskSize;
+    json[r'diskSizeRaw'] = diskSizeRaw;
+    json[r'diskUsagePercentage'] = diskUsagePercentage;
+    json[r'diskUse'] = diskUse;
+    json[r'diskUseRaw'] = diskUseRaw;
     return json;
   }
 
-  /// Returns a new [ServerStorageResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerStorageResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerStorageResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerStorageResponseDto(
-        diskAvailable: mapValueOfType<String>(json, r'diskAvailable')!,
-        diskAvailableRaw: mapValueOfType<int>(json, r'diskAvailableRaw')!,
-        diskSize: mapValueOfType<String>(json, r'diskSize')!,
-        diskSizeRaw: mapValueOfType<int>(json, r'diskSizeRaw')!,
-        diskUsagePercentage: (mapValueOfType<num>(json, r'diskUsagePercentage')!).toDouble(),
-        diskUse: mapValueOfType<String>(json, r'diskUse')!,
-        diskUseRaw: mapValueOfType<int>(json, r'diskUseRaw')!,
-      );
-    }
-    return null;
+  ServerStorageResponseDto copyWith({
+    String? diskAvailable,
+    int? diskAvailableRaw,
+    String? diskSize,
+    int? diskSizeRaw,
+    double? diskUsagePercentage,
+    String? diskUse,
+    int? diskUseRaw,
+  }) {
+    return .new(
+      diskAvailable: diskAvailable ?? this.diskAvailable,
+      diskAvailableRaw: diskAvailableRaw ?? this.diskAvailableRaw,
+      diskSize: diskSize ?? this.diskSize,
+      diskSizeRaw: diskSizeRaw ?? this.diskSizeRaw,
+      diskUsagePercentage: diskUsagePercentage ?? this.diskUsagePercentage,
+      diskUse: diskUse ?? this.diskUse,
+      diskUseRaw: diskUseRaw ?? this.diskUseRaw,
+    );
   }
 
-  static List<ServerStorageResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerStorageResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerStorageResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerStorageResponseDto &&
+            diskAvailable == other.diskAvailable &&
+            diskAvailableRaw == other.diskAvailableRaw &&
+            diskSize == other.diskSize &&
+            diskSizeRaw == other.diskSizeRaw &&
+            diskUsagePercentage == other.diskUsagePercentage &&
+            diskUse == other.diskUse &&
+            diskUseRaw == other.diskUseRaw);
   }
 
-  static Map<String, ServerStorageResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ServerStorageResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerStorageResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      diskAvailable,
+      diskAvailableRaw,
+      diskSize,
+      diskSizeRaw,
+      diskUsagePercentage,
+      diskUse,
+      diskUseRaw,
+    ]);
   }
 
-  // maps a json object with a list of ServerStorageResponseDto-objects as value to a dart map
-  static Map<String, List<ServerStorageResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerStorageResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerStorageResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'diskAvailable',
-    'diskAvailableRaw',
-    'diskSize',
-    'diskSizeRaw',
-    'diskUsagePercentage',
-    'diskUse',
-    'diskUseRaw',
-  };
+  @override
+  String toString() =>
+      'ServerStorageResponseDto(diskAvailable=$diskAvailable, diskAvailableRaw=$diskAvailableRaw, diskSize=$diskSize, diskSizeRaw=$diskSizeRaw, diskUsagePercentage=$diskUsagePercentage, diskUse=$diskUse, diskUseRaw=$diskUseRaw)';
 }
-

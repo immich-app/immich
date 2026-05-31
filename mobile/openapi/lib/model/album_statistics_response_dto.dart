@@ -1,127 +1,52 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AlbumStatisticsResponseDto {
-  /// Returns a new [AlbumStatisticsResponseDto] instance.
-  AlbumStatisticsResponseDto({
-    required this.notShared,
-    required this.owned,
-    required this.shared,
-  });
+final class AlbumStatisticsResponseDto {
+  const AlbumStatisticsResponseDto({required this.notShared, required this.owned, required this.shared});
 
   /// Number of non-shared albums
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int notShared;
+  final int notShared;
 
   /// Number of owned albums
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int owned;
+  final int owned;
 
   /// Number of shared albums
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int shared;
+  final int shared;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumStatisticsResponseDto &&
-    other.notShared == notShared &&
-    other.owned == owned &&
-    other.shared == shared;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (notShared.hashCode) +
-    (owned.hashCode) +
-    (shared.hashCode);
-
-  @override
-  String toString() => 'AlbumStatisticsResponseDto[notShared=$notShared, owned=$owned, shared=$shared]';
+  static AlbumStatisticsResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AlbumStatisticsResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(notShared: json[r'notShared'] as int, owned: json[r'owned'] as int, shared: json[r'shared'] as int);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'notShared'] = this.notShared;
-      json[r'owned'] = this.owned;
-      json[r'shared'] = this.shared;
+    json[r'notShared'] = notShared;
+    json[r'owned'] = owned;
+    json[r'shared'] = shared;
     return json;
   }
 
-  /// Returns a new [AlbumStatisticsResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AlbumStatisticsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumStatisticsResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AlbumStatisticsResponseDto(
-        notShared: mapValueOfType<int>(json, r'notShared')!,
-        owned: mapValueOfType<int>(json, r'owned')!,
-        shared: mapValueOfType<int>(json, r'shared')!,
-      );
-    }
-    return null;
+  AlbumStatisticsResponseDto copyWith({int? notShared, int? owned, int? shared}) {
+    return .new(notShared: notShared ?? this.notShared, owned: owned ?? this.owned, shared: shared ?? this.shared);
   }
 
-  static List<AlbumStatisticsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AlbumStatisticsResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AlbumStatisticsResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AlbumStatisticsResponseDto &&
+            notShared == other.notShared &&
+            owned == other.owned &&
+            shared == other.shared);
   }
 
-  static Map<String, AlbumStatisticsResponseDto> mapFromJson(dynamic json) {
-    final map = <String, AlbumStatisticsResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AlbumStatisticsResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([notShared, owned, shared]);
   }
 
-  // maps a json object with a list of AlbumStatisticsResponseDto-objects as value to a dart map
-  static Map<String, List<AlbumStatisticsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AlbumStatisticsResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AlbumStatisticsResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'notShared',
-    'owned',
-    'shared',
-  };
+  @override
+  String toString() => 'AlbumStatisticsResponseDto(notShared=$notShared, owned=$owned, shared=$shared)';
 }
-

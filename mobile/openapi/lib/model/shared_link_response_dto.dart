@@ -1,22 +1,14 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SharedLinkResponseDto {
-  /// Returns a new [SharedLinkResponseDto] instance.
-  SharedLinkResponseDto({
+/// Shared link response
+final class SharedLinkResponseDto {
+  const SharedLinkResponseDto({
     this.album,
     required this.allowDownload,
     required this.allowUpload,
-    this.assets = const [],
+    required this.assets,
     required this.createdAt,
     required this.description,
     required this.expiresAt,
@@ -29,215 +21,173 @@ class SharedLinkResponseDto {
     required this.userId,
   });
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AlbumResponseDto? album;
+  final AlbumResponseDto? album;
 
   /// Allow downloads
-  bool allowDownload;
+  final bool allowDownload;
 
   /// Allow uploads
-  bool allowUpload;
+  final bool allowUpload;
 
-  List<AssetResponseDto> assets;
+  final List<AssetResponseDto> assets;
 
   /// Creation date
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Link description
-  String? description;
+  final String? description;
 
   /// Expiration date
-  DateTime? expiresAt;
+  final DateTime? expiresAt;
 
   /// Shared link ID
-  String id;
+  final String id;
 
   /// Encryption key (base64url)
-  String key;
+  final String key;
 
   /// Has password
-  String? password;
+  final String? password;
 
   /// Show metadata
-  bool showMetadata;
+  final bool showMetadata;
 
   /// Custom URL slug
-  String? slug;
+  final String? slug;
 
-  SharedLinkType type;
+  final SharedLinkType type;
 
   /// Owner user ID
-  String userId;
+  final String userId;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
-    other.album == album &&
-    other.allowDownload == allowDownload &&
-    other.allowUpload == allowUpload &&
-    _deepEquality.equals(other.assets, assets) &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.expiresAt == expiresAt &&
-    other.id == id &&
-    other.key == key &&
-    other.password == password &&
-    other.showMetadata == showMetadata &&
-    other.slug == slug &&
-    other.type == type &&
-    other.userId == userId;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (album == null ? 0 : album!.hashCode) +
-    (allowDownload.hashCode) +
-    (allowUpload.hashCode) +
-    (assets.hashCode) +
-    (createdAt.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (id.hashCode) +
-    (key.hashCode) +
-    (password == null ? 0 : password!.hashCode) +
-    (showMetadata.hashCode) +
-    (slug == null ? 0 : slug!.hashCode) +
-    (type.hashCode) +
-    (userId.hashCode);
-
-  @override
-  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type, userId=$userId]';
+  static SharedLinkResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SharedLinkResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      album: AlbumResponseDto.fromJson(json[r'album']),
+      allowDownload: json[r'allowDownload'] as bool,
+      allowUpload: json[r'allowUpload'] as bool,
+      assets: ((json[r'assets'] as List?)?.map(($e) => (AssetResponseDto.fromJson($e))!).toList(growable: false))!,
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      description: (json[r'description'] as String?),
+      expiresAt: (json[r'expiresAt'] == null ? null : DateTime.parse(json[r'expiresAt'] as String)),
+      id: json[r'id'] as String,
+      key: json[r'key'] as String,
+      password: (json[r'password'] as String?),
+      showMetadata: json[r'showMetadata'] as bool,
+      slug: (json[r'slug'] as String?),
+      type: (SharedLinkType.fromJson(json[r'type']))!,
+      userId: json[r'userId'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.album != null) {
-      json[r'album'] = this.album;
-    } else {
-    //  json[r'album'] = null;
+    if (album != null) {
+      json[r'album'] = album!.toJson();
     }
-      json[r'allowDownload'] = this.allowDownload;
-      json[r'allowUpload'] = this.allowUpload;
-      json[r'assets'] = this.assets;
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    json[r'allowDownload'] = allowDownload;
+    json[r'allowUpload'] = allowUpload;
+    json[r'assets'] = assets.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    if (description != null) {
+      json[r'description'] = description!;
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.expiresAt!.millisecondsSinceEpoch
-        : this.expiresAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (expiresAt != null) {
+      json[r'expiresAt'] = expiresAt!.toUtc().toIso8601String();
     }
-      json[r'id'] = this.id;
-      json[r'key'] = this.key;
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    json[r'id'] = id;
+    json[r'key'] = key;
+    if (password != null) {
+      json[r'password'] = password!;
     }
-      json[r'showMetadata'] = this.showMetadata;
-    if (this.slug != null) {
-      json[r'slug'] = this.slug;
-    } else {
-    //  json[r'slug'] = null;
+    json[r'showMetadata'] = showMetadata;
+    if (slug != null) {
+      json[r'slug'] = slug!;
     }
-      json[r'type'] = this.type;
-      json[r'userId'] = this.userId;
+    json[r'type'] = type.toJson();
+    json[r'userId'] = userId;
     return json;
   }
 
-  /// Returns a new [SharedLinkResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SharedLinkResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SharedLinkResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SharedLinkResponseDto(
-        album: AlbumResponseDto.fromJson(json[r'album']),
-        allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
-        assets: AssetResponseDto.listFromJson(json[r'assets']),
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        id: mapValueOfType<String>(json, r'id')!,
-        key: mapValueOfType<String>(json, r'key')!,
-        password: mapValueOfType<String>(json, r'password'),
-        showMetadata: mapValueOfType<bool>(json, r'showMetadata')!,
-        slug: mapValueOfType<String>(json, r'slug'),
-        type: SharedLinkType.fromJson(json[r'type'])!,
-        userId: mapValueOfType<String>(json, r'userId')!,
-      );
-    }
-    return null;
+  SharedLinkResponseDto copyWith({
+    Object? album = _undefined,
+    bool? allowDownload,
+    bool? allowUpload,
+    List<AssetResponseDto>? assets,
+    DateTime? createdAt,
+    Object? description = _undefined,
+    Object? expiresAt = _undefined,
+    String? id,
+    String? key,
+    Object? password = _undefined,
+    bool? showMetadata,
+    Object? slug = _undefined,
+    SharedLinkType? type,
+    String? userId,
+  }) {
+    return .new(
+      album: identical(album, _undefined) ? this.album : album as AlbumResponseDto?,
+      allowDownload: allowDownload ?? this.allowDownload,
+      allowUpload: allowUpload ?? this.allowUpload,
+      assets: assets ?? this.assets,
+      createdAt: createdAt ?? this.createdAt,
+      description: identical(description, _undefined) ? this.description : description as String?,
+      expiresAt: identical(expiresAt, _undefined) ? this.expiresAt : expiresAt as DateTime?,
+      id: id ?? this.id,
+      key: key ?? this.key,
+      password: identical(password, _undefined) ? this.password : password as String?,
+      showMetadata: showMetadata ?? this.showMetadata,
+      slug: identical(slug, _undefined) ? this.slug : slug as String?,
+      type: type ?? this.type,
+      userId: userId ?? this.userId,
+    );
   }
 
-  static List<SharedLinkResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SharedLinkResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SharedLinkResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SharedLinkResponseDto &&
+            album == other.album &&
+            allowDownload == other.allowDownload &&
+            allowUpload == other.allowUpload &&
+            const DeepCollectionEquality().equals(assets, other.assets) &&
+            createdAt == other.createdAt &&
+            description == other.description &&
+            expiresAt == other.expiresAt &&
+            id == other.id &&
+            key == other.key &&
+            password == other.password &&
+            showMetadata == other.showMetadata &&
+            slug == other.slug &&
+            type == other.type &&
+            userId == other.userId);
   }
 
-  static Map<String, SharedLinkResponseDto> mapFromJson(dynamic json) {
-    final map = <String, SharedLinkResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SharedLinkResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      album,
+      allowDownload,
+      allowUpload,
+      const DeepCollectionEquality().hash(assets),
+      createdAt,
+      description,
+      expiresAt,
+      id,
+      key,
+      password,
+      showMetadata,
+      slug,
+      type,
+      userId,
+    ]);
   }
 
-  // maps a json object with a list of SharedLinkResponseDto-objects as value to a dart map
-  static Map<String, List<SharedLinkResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SharedLinkResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SharedLinkResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'allowDownload',
-    'allowUpload',
-    'assets',
-    'createdAt',
-    'description',
-    'expiresAt',
-    'id',
-    'key',
-    'password',
-    'showMetadata',
-    'slug',
-    'type',
-    'userId',
-  };
+  @override
+  String toString() =>
+      'SharedLinkResponseDto(album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type, userId=$userId)';
 }
-

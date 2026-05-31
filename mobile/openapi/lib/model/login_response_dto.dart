@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class LoginResponseDto {
-  /// Returns a new [LoginResponseDto] instance.
-  LoginResponseDto({
+final class LoginResponseDto {
+  const LoginResponseDto({
     required this.accessToken,
     required this.isAdmin,
     required this.isOnboarded,
@@ -24,140 +15,109 @@ class LoginResponseDto {
   });
 
   /// Access token
-  String accessToken;
+  final String accessToken;
 
   /// Is admin user
-  bool isAdmin;
+  final bool isAdmin;
 
   /// Is onboarded
-  bool isOnboarded;
+  final bool isOnboarded;
 
   /// User name
-  String name;
+  final String name;
 
   /// Profile image path
-  String profileImagePath;
+  final String profileImagePath;
 
   /// Should change password
-  bool shouldChangePassword;
+  final bool shouldChangePassword;
 
   /// User email
-  String userEmail;
+  final String userEmail;
 
   /// User ID
-  String userId;
+  final String userId;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is LoginResponseDto &&
-    other.accessToken == accessToken &&
-    other.isAdmin == isAdmin &&
-    other.isOnboarded == isOnboarded &&
-    other.name == name &&
-    other.profileImagePath == profileImagePath &&
-    other.shouldChangePassword == shouldChangePassword &&
-    other.userEmail == userEmail &&
-    other.userId == userId;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (accessToken.hashCode) +
-    (isAdmin.hashCode) +
-    (isOnboarded.hashCode) +
-    (name.hashCode) +
-    (profileImagePath.hashCode) +
-    (shouldChangePassword.hashCode) +
-    (userEmail.hashCode) +
-    (userId.hashCode);
-
-  @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, isOnboarded=$isOnboarded, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
+  static LoginResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<LoginResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      accessToken: json[r'accessToken'] as String,
+      isAdmin: json[r'isAdmin'] as bool,
+      isOnboarded: json[r'isOnboarded'] as bool,
+      name: json[r'name'] as String,
+      profileImagePath: json[r'profileImagePath'] as String,
+      shouldChangePassword: json[r'shouldChangePassword'] as bool,
+      userEmail: json[r'userEmail'] as String,
+      userId: json[r'userId'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'accessToken'] = this.accessToken;
-      json[r'isAdmin'] = this.isAdmin;
-      json[r'isOnboarded'] = this.isOnboarded;
-      json[r'name'] = this.name;
-      json[r'profileImagePath'] = this.profileImagePath;
-      json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'userEmail'] = this.userEmail;
-      json[r'userId'] = this.userId;
+    json[r'accessToken'] = accessToken;
+    json[r'isAdmin'] = isAdmin;
+    json[r'isOnboarded'] = isOnboarded;
+    json[r'name'] = name;
+    json[r'profileImagePath'] = profileImagePath;
+    json[r'shouldChangePassword'] = shouldChangePassword;
+    json[r'userEmail'] = userEmail;
+    json[r'userId'] = userId;
     return json;
   }
 
-  /// Returns a new [LoginResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static LoginResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "LoginResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return LoginResponseDto(
-        accessToken: mapValueOfType<String>(json, r'accessToken')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        userEmail: mapValueOfType<String>(json, r'userEmail')!,
-        userId: mapValueOfType<String>(json, r'userId')!,
-      );
-    }
-    return null;
+  LoginResponseDto copyWith({
+    String? accessToken,
+    bool? isAdmin,
+    bool? isOnboarded,
+    String? name,
+    String? profileImagePath,
+    bool? shouldChangePassword,
+    String? userEmail,
+    String? userId,
+  }) {
+    return .new(
+      accessToken: accessToken ?? this.accessToken,
+      isAdmin: isAdmin ?? this.isAdmin,
+      isOnboarded: isOnboarded ?? this.isOnboarded,
+      name: name ?? this.name,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
+      shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
+      userEmail: userEmail ?? this.userEmail,
+      userId: userId ?? this.userId,
+    );
   }
 
-  static List<LoginResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <LoginResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = LoginResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is LoginResponseDto &&
+            accessToken == other.accessToken &&
+            isAdmin == other.isAdmin &&
+            isOnboarded == other.isOnboarded &&
+            name == other.name &&
+            profileImagePath == other.profileImagePath &&
+            shouldChangePassword == other.shouldChangePassword &&
+            userEmail == other.userEmail &&
+            userId == other.userId);
   }
 
-  static Map<String, LoginResponseDto> mapFromJson(dynamic json) {
-    final map = <String, LoginResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = LoginResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      accessToken,
+      isAdmin,
+      isOnboarded,
+      name,
+      profileImagePath,
+      shouldChangePassword,
+      userEmail,
+      userId,
+    ]);
   }
 
-  // maps a json object with a list of LoginResponseDto-objects as value to a dart map
-  static Map<String, List<LoginResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<LoginResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = LoginResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'accessToken',
-    'isAdmin',
-    'isOnboarded',
-    'name',
-    'profileImagePath',
-    'shouldChangePassword',
-    'userEmail',
-    'userId',
-  };
+  @override
+  String toString() =>
+      'LoginResponseDto(accessToken=$accessToken, isAdmin=$isAdmin, isOnboarded=$isOnboarded, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId)';
 }
-

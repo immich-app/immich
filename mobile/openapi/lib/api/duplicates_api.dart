@@ -1,101 +1,55 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class DuplicatesApi {
   DuplicatesApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Dismiss a duplicate group
-  ///
-  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> deleteDuplicateWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/duplicates/{id}'
-      .replaceAll('{id}', id);
+  static const ApiVersion deleteDuplicatesAddedIn = .new(1, 0, 0);
 
-    // ignore: prefer_final_locals
-    Object? postBody;
+  static const ApiState deleteDuplicatesState = .stable;
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiVersion getAssetDuplicatesAddedIn = .new(1, 0, 0);
 
-    const contentTypes = <String>[];
+  static const ApiState getAssetDuplicatesState = .stable;
 
+  static const ApiVersion resolveDuplicatesAddedIn = .new(3, 0, 0);
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiState resolveDuplicatesState = .alpha;
 
-  /// Dismiss a duplicate group
-  ///
-  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> deleteDuplicate(String id,) async {
-    final response = await deleteDuplicateWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
+  static const ApiVersion deleteDuplicateAddedIn = .new(1, 0, 0);
+
+  static const ApiState deleteDuplicateState = .stable;
 
   /// Delete duplicates
   ///
   /// Delete multiple duplicate assets specified by their IDs.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> deleteDuplicatesWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> deleteDuplicatesWithHttpInfo(BulkIdsDto bulkIdsDto, {Future<void>? abortTrigger}) async {
     final apiPath = r'/duplicates';
 
-    // ignore: prefer_final_locals
     Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'DELETE',
+      r'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -103,11 +57,9 @@ class DuplicatesApi {
   ///
   /// Delete multiple duplicate assets specified by their IDs.
   ///
-  /// Parameters:
-  ///
-  /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> deleteDuplicates(BulkIdsDto bulkIdsDto,) async {
-    final response = await deleteDuplicatesWithHttpInfo(bulkIdsDto,);
+  /// Available since server v1.0.0.
+  Future<void> deleteDuplicates(BulkIdsDto bulkIdsDto, {Future<void>? abortTrigger}) async {
+    final response = await deleteDuplicatesWithHttpInfo(bulkIdsDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -117,12 +69,12 @@ class DuplicatesApi {
   ///
   /// Retrieve a list of duplicate assets available to the authenticated user.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAssetDuplicatesWithHttpInfo() async {
-    // ignore: prefer_const_declarations
+  Future<Response> getAssetDuplicatesWithHttpInfo({Future<void>? abortTrigger}) async {
     final apiPath = r'/duplicates';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -131,70 +83,67 @@ class DuplicatesApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve duplicates
   ///
   /// Retrieve a list of duplicate assets available to the authenticated user.
-  Future<List<DuplicateResponseDto>?> getAssetDuplicates() async {
-    final response = await getAssetDuplicatesWithHttpInfo();
+  ///
+  /// Available since server v1.0.0.
+  Future<List<DuplicateResponseDto>> getAssetDuplicates({Future<void>? abortTrigger}) async {
+    final response = await getAssetDuplicatesWithHttpInfo(abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<DuplicateResponseDto>') as List)
-        .cast<DuplicateResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<DuplicateResponseDto>') as List)
+          .cast<DuplicateResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Resolve duplicate groups
   ///
   /// Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.
   ///
+  /// Available since server v3.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [DuplicateResolveDto] duplicateResolveDto (required):
-  Future<Response> resolveDuplicatesWithHttpInfo(DuplicateResolveDto duplicateResolveDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> resolveDuplicatesWithHttpInfo(
+    DuplicateResolveDto duplicateResolveDto, {
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/duplicates/resolve';
 
-    // ignore: prefer_final_locals
     Object? postBody = duplicateResolveDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -202,24 +151,63 @@ class DuplicatesApi {
   ///
   /// Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.
   ///
-  /// Parameters:
-  ///
-  /// * [DuplicateResolveDto] duplicateResolveDto (required):
-  Future<List<BulkIdResponseDto>?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto,) async {
-    final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto,);
+  /// Available since server v3.0.0.
+  Future<List<BulkIdResponseDto>> resolveDuplicates(
+    DuplicateResolveDto duplicateResolveDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
-        .cast<BulkIdResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<BulkIdResponseDto>') as List)
+          .cast<BulkIdResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Dismiss a duplicate group
+  ///
+  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> deleteDuplicateWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/duplicates/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Dismiss a duplicate group
+  ///
+  /// Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.
+  ///
+  /// Available since server v1.0.0.
+  Future<void> deleteDuplicate(String id, {Future<void>? abortTrigger}) async {
+    final response = await deleteDuplicateWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

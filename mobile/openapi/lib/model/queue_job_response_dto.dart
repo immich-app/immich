@@ -1,138 +1,70 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class QueueJobResponseDto {
-  /// Returns a new [QueueJobResponseDto] instance.
-  QueueJobResponseDto({
-    this.data = const {},
-    this.id,
-    required this.name,
-    required this.timestamp,
-  });
+final class QueueJobResponseDto {
+  const QueueJobResponseDto({required this.data, this.id, required this.name, required this.timestamp});
 
   /// Job data payload
-  Map<String, Object> data;
+  final Map<String, dynamic> data;
 
   /// Job ID
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? id;
+  final String? id;
 
-  JobName name;
+  final JobName name;
 
   /// Job creation timestamp
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int timestamp;
+  final int timestamp;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is QueueJobResponseDto &&
-    _deepEquality.equals(other.data, data) &&
-    other.id == id &&
-    other.name == name &&
-    other.timestamp == timestamp;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (data.hashCode) +
-    (id == null ? 0 : id!.hashCode) +
-    (name.hashCode) +
-    (timestamp.hashCode);
-
-  @override
-  String toString() => 'QueueJobResponseDto[data=$data, id=$id, name=$name, timestamp=$timestamp]';
+  static QueueJobResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<QueueJobResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      data: ((json[r'data'] as Map?)?.cast<String, dynamic>())!,
+      id: (json[r'id'] as String?),
+      name: (JobName.fromJson(json[r'name']))!,
+      timestamp: json[r'timestamp'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'data'] = this.data;
-    if (this.id != null) {
-      json[r'id'] = this.id;
-    } else {
-    //  json[r'id'] = null;
+    json[r'data'] = data;
+    if (id != null) {
+      json[r'id'] = id!;
     }
-      json[r'name'] = this.name;
-      json[r'timestamp'] = this.timestamp;
+    json[r'name'] = name.toJson();
+    json[r'timestamp'] = timestamp;
     return json;
   }
 
-  /// Returns a new [QueueJobResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static QueueJobResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueueJobResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return QueueJobResponseDto(
-        data: mapCastOfType<String, Object>(json, r'data')!,
-        id: mapValueOfType<String>(json, r'id'),
-        name: JobName.fromJson(json[r'name'])!,
-        timestamp: mapValueOfType<int>(json, r'timestamp')!,
-      );
-    }
-    return null;
+  QueueJobResponseDto copyWith({Map<String, dynamic>? data, Object? id = _undefined, JobName? name, int? timestamp}) {
+    return .new(
+      data: data ?? this.data,
+      id: identical(id, _undefined) ? this.id : id as String?,
+      name: name ?? this.name,
+      timestamp: timestamp ?? this.timestamp,
+    );
   }
 
-  static List<QueueJobResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <QueueJobResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = QueueJobResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is QueueJobResponseDto &&
+            const DeepCollectionEquality().equals(data, other.data) &&
+            id == other.id &&
+            name == other.name &&
+            timestamp == other.timestamp);
   }
 
-  static Map<String, QueueJobResponseDto> mapFromJson(dynamic json) {
-    final map = <String, QueueJobResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = QueueJobResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([const DeepCollectionEquality().hash(data), id, name, timestamp]);
   }
 
-  // maps a json object with a list of QueueJobResponseDto-objects as value to a dart map
-  static Map<String, List<QueueJobResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<QueueJobResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = QueueJobResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'data',
-    'name',
-    'timestamp',
-  };
+  @override
+  String toString() => 'QueueJobResponseDto(data=$data, id=$id, name=$name, timestamp=$timestamp)';
 }
-

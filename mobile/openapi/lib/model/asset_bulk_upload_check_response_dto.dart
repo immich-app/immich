@@ -1,100 +1,45 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetBulkUploadCheckResponseDto {
-  /// Returns a new [AssetBulkUploadCheckResponseDto] instance.
-  AssetBulkUploadCheckResponseDto({
-    this.results = const [],
-  });
+final class AssetBulkUploadCheckResponseDto {
+  const AssetBulkUploadCheckResponseDto({required this.results});
 
   /// Upload check results
-  List<AssetBulkUploadCheckResult> results;
+  final List<AssetBulkUploadCheckResult> results;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResponseDto &&
-    _deepEquality.equals(other.results, results);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (results.hashCode);
-
-  @override
-  String toString() => 'AssetBulkUploadCheckResponseDto[results=$results]';
+  static AssetBulkUploadCheckResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetBulkUploadCheckResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      results: ((json[r'results'] as List?)
+          ?.map(($e) => (AssetBulkUploadCheckResult.fromJson($e))!)
+          .toList(growable: false))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'results'] = this.results;
+    json[r'results'] = results.map(($e) => $e.toJson()).toList(growable: false);
     return json;
   }
 
-  /// Returns a new [AssetBulkUploadCheckResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetBulkUploadCheckResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetBulkUploadCheckResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetBulkUploadCheckResponseDto(
-        results: AssetBulkUploadCheckResult.listFromJson(json[r'results']),
-      );
-    }
-    return null;
+  AssetBulkUploadCheckResponseDto copyWith({List<AssetBulkUploadCheckResult>? results}) {
+    return .new(results: results ?? this.results);
   }
 
-  static List<AssetBulkUploadCheckResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetBulkUploadCheckResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetBulkUploadCheckResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetBulkUploadCheckResponseDto && const DeepCollectionEquality().equals(results, other.results));
   }
 
-  static Map<String, AssetBulkUploadCheckResponseDto> mapFromJson(dynamic json) {
-    final map = <String, AssetBulkUploadCheckResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetBulkUploadCheckResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([const DeepCollectionEquality().hash(results)]);
   }
 
-  // maps a json object with a list of AssetBulkUploadCheckResponseDto-objects as value to a dart map
-  static Map<String, List<AssetBulkUploadCheckResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetBulkUploadCheckResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetBulkUploadCheckResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'results',
-  };
+  @override
+  String toString() => 'AssetBulkUploadCheckResponseDto(results=$results)';
 }
-

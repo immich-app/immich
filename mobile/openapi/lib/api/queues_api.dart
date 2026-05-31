@@ -1,89 +1,42 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class QueuesApi {
   QueuesApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Empty a queue
+  static const ApiVersion getQueuesAddedIn = .new(2, 4, 0);
+
+  static const ApiState getQueuesState = .alpha;
+
+  static const ApiVersion getQueueAddedIn = .new(2, 4, 0);
+
+  static const ApiState getQueueState = .alpha;
+
+  static const ApiVersion updateQueueAddedIn = .new(2, 4, 0);
+
+  static const ApiState updateQueueState = .alpha;
+
+  static const ApiVersion emptyQueueAddedIn = .new(2, 4, 0);
+
+  static const ApiState emptyQueueState = .alpha;
+
+  static const ApiVersion getQueueJobsAddedIn = .new(2, 4, 0);
+
+  static const ApiState getQueueJobsState = .alpha;
+
+  /// List all queues
   ///
-  /// Removes all jobs from the specified queue.
+  /// Retrieves a list of queues.
+  ///
+  /// Available since server v2.4.0.
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  ///
-  /// * [QueueDeleteDto] queueDeleteDto (required):
-  Future<Response> emptyQueueWithHttpInfo(QueueName name, QueueDeleteDto queueDeleteDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}/jobs'
-      .replaceAll('{name}', name.toString());
+  Future<Response> getQueuesWithHttpInfo({Future<void>? abortTrigger}) async {
+    final apiPath = r'/queues';
 
-    // ignore: prefer_final_locals
-    Object? postBody = queueDeleteDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Empty a queue
-  ///
-  /// Removes all jobs from the specified queue.
-  ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  ///
-  /// * [QueueDeleteDto] queueDeleteDto (required):
-  Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto,) async {
-    final response = await emptyQueueWithHttpInfo(name, queueDeleteDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Retrieve a queue
-  ///
-  /// Retrieves a specific queue by its name.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  Future<Response> getQueueWithHttpInfo(QueueName name,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}'
-      .replaceAll('{name}', name.toString());
-
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -92,15 +45,64 @@ class QueuesApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// List all queues
+  ///
+  /// Retrieves a list of queues.
+  ///
+  /// Available since server v2.4.0.
+  Future<List<QueueResponseDto>> getQueues({Future<void>? abortTrigger}) async {
+    final response = await getQueuesWithHttpInfo(abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, r'List<QueueResponseDto>') as List)
+          .cast<QueueResponseDto>()
+          .toList(growable: false);
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Retrieve a queue
+  ///
+  /// Retrieves a specific queue by its name.
+  ///
+  /// Available since server v2.4.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getQueueWithHttpInfo(QueueName name, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/queues/{name}'.replaceAll('{name}', parameterToString(name));
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -108,42 +110,134 @@ class QueuesApi {
   ///
   /// Retrieves a specific queue by its name.
   ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  Future<QueueResponseDto?> getQueue(QueueName name,) async {
-    final response = await getQueueWithHttpInfo(name,);
+  /// Available since server v2.4.0.
+  Future<QueueResponseDto> getQueue(QueueName name, {Future<void>? abortTrigger}) async {
+    final response = await getQueueWithHttpInfo(name, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueueResponseDto',) as QueueResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'QueueResponseDto')
+          as QueueResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Update a queue
+  ///
+  /// Change the paused status of a specific queue.
+  ///
+  /// Available since server v2.4.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> updateQueueWithHttpInfo(
+    QueueName name,
+    QueueUpdateDto queueUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/queues/{name}'.replaceAll('{name}', parameterToString(name));
+
+    Object? postBody = queueUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Update a queue
+  ///
+  /// Change the paused status of a specific queue.
+  ///
+  /// Available since server v2.4.0.
+  Future<QueueResponseDto> updateQueue(
+    QueueName name,
+    QueueUpdateDto queueUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updateQueueWithHttpInfo(name, queueUpdateDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'QueueResponseDto')
+          as QueueResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Empty a queue
+  ///
+  /// Removes all jobs from the specified queue.
+  ///
+  /// Available since server v2.4.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> emptyQueueWithHttpInfo(
+    QueueName name,
+    QueueDeleteDto queueDeleteDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/queues/{name}/jobs'.replaceAll('{name}', parameterToString(name));
+
+    Object? postBody = queueDeleteDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Empty a queue
+  ///
+  /// Removes all jobs from the specified queue.
+  ///
+  /// Available since server v2.4.0.
+  Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto, {Future<void>? abortTrigger}) async {
+    final response = await emptyQueueWithHttpInfo(name, queueDeleteDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Retrieve queue jobs
   ///
   /// Retrieves a list of queue jobs from the specified queue.
   ///
+  /// Available since server v2.4.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  ///
-  /// * [List<QueueJobStatus>] status:
-  ///   Filter jobs by status
-  Future<Response> getQueueJobsWithHttpInfo(QueueName name, { List<QueueJobStatus>? status, }) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}/jobs'
-      .replaceAll('{name}', name.toString());
+  Future<Response> getQueueJobsWithHttpInfo(
+    QueueName name, {
+    List<QueueJobStatus>? status,
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/queues/{name}/jobs'.replaceAll('{name}', parameterToString(name));
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -156,15 +250,15 @@ class QueuesApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -172,139 +266,22 @@ class QueuesApi {
   ///
   /// Retrieves a list of queue jobs from the specified queue.
   ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  ///
-  /// * [List<QueueJobStatus>] status:
-  ///   Filter jobs by status
-  Future<List<QueueJobResponseDto>?> getQueueJobs(QueueName name, { List<QueueJobStatus>? status, }) async {
-    final response = await getQueueJobsWithHttpInfo(name,  status: status, );
+  /// Available since server v2.4.0.
+  Future<List<QueueJobResponseDto>> getQueueJobs(
+    QueueName name, {
+    List<QueueJobStatus>? status,
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await getQueueJobsWithHttpInfo(name, status: status, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<QueueJobResponseDto>') as List)
-        .cast<QueueJobResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<QueueJobResponseDto>') as List)
+          .cast<QueueJobResponseDto>()
+          .toList(growable: false);
     }
-    return null;
-  }
-
-  /// List all queues
-  ///
-  /// Retrieves a list of queues.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> getQueuesWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/queues';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// List all queues
-  ///
-  /// Retrieves a list of queues.
-  Future<List<QueueResponseDto>?> getQueues() async {
-    final response = await getQueuesWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<QueueResponseDto>') as List)
-        .cast<QueueResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
-  }
-
-  /// Update a queue
-  ///
-  /// Change the paused status of a specific queue.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  ///
-  /// * [QueueUpdateDto] queueUpdateDto (required):
-  Future<Response> updateQueueWithHttpInfo(QueueName name, QueueUpdateDto queueUpdateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}'
-      .replaceAll('{name}', name.toString());
-
-    // ignore: prefer_final_locals
-    Object? postBody = queueUpdateDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Update a queue
-  ///
-  /// Change the paused status of a specific queue.
-  ///
-  /// Parameters:
-  ///
-  /// * [QueueName] name (required):
-  ///
-  /// * [QueueUpdateDto] queueUpdateDto (required):
-  Future<QueueResponseDto?> updateQueue(QueueName name, QueueUpdateDto queueUpdateDto,) async {
-    final response = await updateQueueWithHttpInfo(name, queueUpdateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'QueueResponseDto',) as QueueResponseDto;
-    
-    }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

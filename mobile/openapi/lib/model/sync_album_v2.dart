@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncAlbumV2 {
-  /// Returns a new [SyncAlbumV2] instance.
-  SyncAlbumV2({
+final class SyncAlbumV2 {
+  const SyncAlbumV2({
     required this.createdAt,
     required this.description,
     required this.id,
@@ -24,147 +15,103 @@ class SyncAlbumV2 {
   });
 
   /// Created at
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Album description
-  String description;
+  final String description;
 
   /// Album ID
-  String id;
+  final String id;
 
   /// Is activity enabled
-  bool isActivityEnabled;
+  final bool isActivityEnabled;
 
   /// Album name
-  String name;
+  final String name;
 
-  AssetOrder order;
+  final AssetOrder order;
 
   /// Thumbnail asset ID
-  String? thumbnailAssetId;
+  final String? thumbnailAssetId;
 
   /// Updated at
-  DateTime updatedAt;
+  final DateTime updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAlbumV2 &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.id == id &&
-    other.isActivityEnabled == isActivityEnabled &&
-    other.name == name &&
-    other.order == order &&
-    other.thumbnailAssetId == thumbnailAssetId &&
-    other.updatedAt == updatedAt;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (description.hashCode) +
-    (id.hashCode) +
-    (isActivityEnabled.hashCode) +
-    (name.hashCode) +
-    (order.hashCode) +
-    (thumbnailAssetId == null ? 0 : thumbnailAssetId!.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'SyncAlbumV2[createdAt=$createdAt, description=$description, id=$id, isActivityEnabled=$isActivityEnabled, name=$name, order=$order, thumbnailAssetId=$thumbnailAssetId, updatedAt=$updatedAt]';
+  static SyncAlbumV2? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncAlbumV2>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      description: json[r'description'] as String,
+      id: json[r'id'] as String,
+      isActivityEnabled: json[r'isActivityEnabled'] as bool,
+      name: json[r'name'] as String,
+      order: (AssetOrder.fromJson(json[r'order']))!,
+      thumbnailAssetId: (json[r'thumbnailAssetId'] as String?),
+      updatedAt: DateTime.parse(json[r'updatedAt'] as String),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-      json[r'description'] = this.description;
-      json[r'id'] = this.id;
-      json[r'isActivityEnabled'] = this.isActivityEnabled;
-      json[r'name'] = this.name;
-      json[r'order'] = this.order;
-    if (this.thumbnailAssetId != null) {
-      json[r'thumbnailAssetId'] = this.thumbnailAssetId;
-    } else {
-    //  json[r'thumbnailAssetId'] = null;
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    json[r'description'] = description;
+    json[r'id'] = id;
+    json[r'isActivityEnabled'] = isActivityEnabled;
+    json[r'name'] = name;
+    json[r'order'] = order.toJson();
+    if (thumbnailAssetId != null) {
+      json[r'thumbnailAssetId'] = thumbnailAssetId!;
     }
-      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedAt.millisecondsSinceEpoch
-        : this.updatedAt.toUtc().toIso8601String();
+    json[r'updatedAt'] = updatedAt.toUtc().toIso8601String();
     return json;
   }
 
-  /// Returns a new [SyncAlbumV2] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncAlbumV2? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAlbumV2");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncAlbumV2(
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        description: mapValueOfType<String>(json, r'description')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        order: AssetOrder.fromJson(json[r'order'])!,
-        thumbnailAssetId: mapValueOfType<String>(json, r'thumbnailAssetId'),
-        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-      );
-    }
-    return null;
+  SyncAlbumV2 copyWith({
+    DateTime? createdAt,
+    String? description,
+    String? id,
+    bool? isActivityEnabled,
+    String? name,
+    AssetOrder? order,
+    Object? thumbnailAssetId = _undefined,
+    DateTime? updatedAt,
+  }) {
+    return .new(
+      createdAt: createdAt ?? this.createdAt,
+      description: description ?? this.description,
+      id: id ?? this.id,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      name: name ?? this.name,
+      order: order ?? this.order,
+      thumbnailAssetId: identical(thumbnailAssetId, _undefined) ? this.thumbnailAssetId : thumbnailAssetId as String?,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<SyncAlbumV2> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAlbumV2>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAlbumV2.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncAlbumV2 &&
+            createdAt == other.createdAt &&
+            description == other.description &&
+            id == other.id &&
+            isActivityEnabled == other.isActivityEnabled &&
+            name == other.name &&
+            order == other.order &&
+            thumbnailAssetId == other.thumbnailAssetId &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, SyncAlbumV2> mapFromJson(dynamic json) {
-    final map = <String, SyncAlbumV2>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncAlbumV2.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([createdAt, description, id, isActivityEnabled, name, order, thumbnailAssetId, updatedAt]);
   }
 
-  // maps a json object with a list of SyncAlbumV2-objects as value to a dart map
-  static Map<String, List<SyncAlbumV2>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncAlbumV2>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncAlbumV2.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'createdAt',
-    'description',
-    'id',
-    'isActivityEnabled',
-    'name',
-    'order',
-    'thumbnailAssetId',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'SyncAlbumV2(createdAt=$createdAt, description=$description, id=$id, isActivityEnabled=$isActivityEnabled, name=$name, order=$order, thumbnailAssetId=$thumbnailAssetId, updatedAt=$updatedAt)';
 }
-

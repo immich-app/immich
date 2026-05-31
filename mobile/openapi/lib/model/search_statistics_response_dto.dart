@@ -1,103 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SearchStatisticsResponseDto {
-  /// Returns a new [SearchStatisticsResponseDto] instance.
-  SearchStatisticsResponseDto({
-    required this.total,
-  });
+final class SearchStatisticsResponseDto {
+  const SearchStatisticsResponseDto({required this.total});
 
   /// Total number of matching assets
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int total;
+  final int total;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchStatisticsResponseDto &&
-    other.total == total;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (total.hashCode);
-
-  @override
-  String toString() => 'SearchStatisticsResponseDto[total=$total]';
+  static SearchStatisticsResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SearchStatisticsResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(total: json[r'total'] as int);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'total'] = this.total;
+    json[r'total'] = total;
     return json;
   }
 
-  /// Returns a new [SearchStatisticsResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SearchStatisticsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SearchStatisticsResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SearchStatisticsResponseDto(
-        total: mapValueOfType<int>(json, r'total')!,
-      );
-    }
-    return null;
+  SearchStatisticsResponseDto copyWith({int? total}) {
+    return .new(total: total ?? this.total);
   }
 
-  static List<SearchStatisticsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SearchStatisticsResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SearchStatisticsResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is SearchStatisticsResponseDto && total == other.total);
   }
 
-  static Map<String, SearchStatisticsResponseDto> mapFromJson(dynamic json) {
-    final map = <String, SearchStatisticsResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SearchStatisticsResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([total]);
   }
 
-  // maps a json object with a list of SearchStatisticsResponseDto-objects as value to a dart map
-  static Map<String, List<SearchStatisticsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SearchStatisticsResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SearchStatisticsResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'total',
-  };
+  @override
+  String toString() => 'SearchStatisticsResponseDto(total=$total)';
 }
-

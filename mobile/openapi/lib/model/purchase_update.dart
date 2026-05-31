@@ -1,127 +1,61 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class PurchaseUpdate {
-  /// Returns a new [PurchaseUpdate] instance.
-  PurchaseUpdate({
-    this.hideBuyButtonUntil,
-    this.showSupportBadge,
-  });
+final class PurchaseUpdate {
+  const PurchaseUpdate({this.hideBuyButtonUntil, this.showSupportBadge});
 
   /// Date until which to hide buy button
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? hideBuyButtonUntil;
+  final String? hideBuyButtonUntil;
 
   /// Whether to show support badge
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? showSupportBadge;
+  final bool? showSupportBadge;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is PurchaseUpdate &&
-    other.hideBuyButtonUntil == hideBuyButtonUntil &&
-    other.showSupportBadge == showSupportBadge;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (hideBuyButtonUntil == null ? 0 : hideBuyButtonUntil!.hashCode) +
-    (showSupportBadge == null ? 0 : showSupportBadge!.hashCode);
-
-  @override
-  String toString() => 'PurchaseUpdate[hideBuyButtonUntil=$hideBuyButtonUntil, showSupportBadge=$showSupportBadge]';
+  static PurchaseUpdate? fromJson(dynamic value) {
+    ApiCompat.upgrade<PurchaseUpdate>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      hideBuyButtonUntil: (json[r'hideBuyButtonUntil'] as String?),
+      showSupportBadge: (json[r'showSupportBadge'] as bool?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hideBuyButtonUntil != null) {
-      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
-    } else {
-    //  json[r'hideBuyButtonUntil'] = null;
+    if (hideBuyButtonUntil != null) {
+      json[r'hideBuyButtonUntil'] = hideBuyButtonUntil!;
     }
-    if (this.showSupportBadge != null) {
-      json[r'showSupportBadge'] = this.showSupportBadge;
-    } else {
-    //  json[r'showSupportBadge'] = null;
+    if (showSupportBadge != null) {
+      json[r'showSupportBadge'] = showSupportBadge!;
     }
     return json;
   }
 
-  /// Returns a new [PurchaseUpdate] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static PurchaseUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "PurchaseUpdate");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return PurchaseUpdate(
-        hideBuyButtonUntil: mapValueOfType<String>(json, r'hideBuyButtonUntil'),
-        showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge'),
-      );
-    }
-    return null;
+  PurchaseUpdate copyWith({Object? hideBuyButtonUntil = _undefined, Object? showSupportBadge = _undefined}) {
+    return .new(
+      hideBuyButtonUntil: identical(hideBuyButtonUntil, _undefined)
+          ? this.hideBuyButtonUntil
+          : hideBuyButtonUntil as String?,
+      showSupportBadge: identical(showSupportBadge, _undefined) ? this.showSupportBadge : showSupportBadge as bool?,
+    );
   }
 
-  static List<PurchaseUpdate> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PurchaseUpdate>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PurchaseUpdate.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is PurchaseUpdate &&
+            hideBuyButtonUntil == other.hideBuyButtonUntil &&
+            showSupportBadge == other.showSupportBadge);
   }
 
-  static Map<String, PurchaseUpdate> mapFromJson(dynamic json) {
-    final map = <String, PurchaseUpdate>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = PurchaseUpdate.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([hideBuyButtonUntil, showSupportBadge]);
   }
 
-  // maps a json object with a list of PurchaseUpdate-objects as value to a dart map
-  static Map<String, List<PurchaseUpdate>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<PurchaseUpdate>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = PurchaseUpdate.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() => 'PurchaseUpdate(hideBuyButtonUntil=$hideBuyButtonUntil, showSupportBadge=$showSupportBadge)';
 }
-

@@ -13,7 +13,7 @@ class AuthApiRepository extends ApiRepository {
   AuthApiRepository(this._apiService);
 
   Future<void> changePassword(String newPassword) async {
-    await _apiService.usersApi.updateMyUser(UserUpdateMeDto(password: newPassword));
+    await _apiService.usersApi.updateMyUser(UserUpdateMeDto(password: newPassword.toOptional()));
   }
 
   Future<LoginResponse> login(String email, String password) async {
@@ -46,7 +46,7 @@ class AuthApiRepository extends ApiRepository {
 
   Future<bool> unlockPinCode(String pinCode) async {
     try {
-      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: pinCode));
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: pinCode.toOptional()));
       return true;
     } catch (_) {
       return false;

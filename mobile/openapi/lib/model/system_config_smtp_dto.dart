@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigSmtpDto {
-  /// Returns a new [SystemConfigSmtpDto] instance.
-  SystemConfigSmtpDto({
+final class SystemConfigSmtpDto {
+  const SystemConfigSmtpDto({
     required this.enabled,
     required this.from,
     required this.replyTo,
@@ -20,107 +11,66 @@ class SystemConfigSmtpDto {
   });
 
   /// Whether SMTP email notifications are enabled
-  bool enabled;
+  final bool enabled;
 
   /// Email address to send from
-  String from;
+  final String from;
 
   /// Email address for replies
-  String replyTo;
+  final String replyTo;
 
-  SystemConfigSmtpTransportDto transport;
+  final SystemConfigSmtpTransportDto transport;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigSmtpDto &&
-    other.enabled == enabled &&
-    other.from == from &&
-    other.replyTo == replyTo &&
-    other.transport == transport;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (from.hashCode) +
-    (replyTo.hashCode) +
-    (transport.hashCode);
-
-  @override
-  String toString() => 'SystemConfigSmtpDto[enabled=$enabled, from=$from, replyTo=$replyTo, transport=$transport]';
+  static SystemConfigSmtpDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigSmtpDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      enabled: json[r'enabled'] as bool,
+      from: json[r'from'] as String,
+      replyTo: json[r'replyTo'] as String,
+      transport: (SystemConfigSmtpTransportDto.fromJson(json[r'transport']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'from'] = this.from;
-      json[r'replyTo'] = this.replyTo;
-      json[r'transport'] = this.transport;
+    json[r'enabled'] = enabled;
+    json[r'from'] = from;
+    json[r'replyTo'] = replyTo;
+    json[r'transport'] = transport.toJson();
     return json;
   }
 
-  /// Returns a new [SystemConfigSmtpDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigSmtpDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigSmtpDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigSmtpDto(
-        enabled: mapValueOfType<bool>(json, r'enabled')!,
-        from: mapValueOfType<String>(json, r'from')!,
-        replyTo: mapValueOfType<String>(json, r'replyTo')!,
-        transport: SystemConfigSmtpTransportDto.fromJson(json[r'transport'])!,
-      );
-    }
-    return null;
+  SystemConfigSmtpDto copyWith({
+    bool? enabled,
+    String? from,
+    String? replyTo,
+    SystemConfigSmtpTransportDto? transport,
+  }) {
+    return .new(
+      enabled: enabled ?? this.enabled,
+      from: from ?? this.from,
+      replyTo: replyTo ?? this.replyTo,
+      transport: transport ?? this.transport,
+    );
   }
 
-  static List<SystemConfigSmtpDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigSmtpDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigSmtpDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigSmtpDto &&
+            enabled == other.enabled &&
+            from == other.from &&
+            replyTo == other.replyTo &&
+            transport == other.transport);
   }
 
-  static Map<String, SystemConfigSmtpDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigSmtpDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigSmtpDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([enabled, from, replyTo, transport]);
   }
 
-  // maps a json object with a list of SystemConfigSmtpDto-objects as value to a dart map
-  static Map<String, List<SystemConfigSmtpDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigSmtpDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigSmtpDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'enabled',
-    'from',
-    'replyTo',
-    'transport',
-  };
+  @override
+  String toString() => 'SystemConfigSmtpDto(enabled=$enabled, from=$from, replyTo=$replyTo, transport=$transport)';
 }
-

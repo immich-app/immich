@@ -1,100 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ValidateAccessTokenResponseDto {
-  /// Returns a new [ValidateAccessTokenResponseDto] instance.
-  ValidateAccessTokenResponseDto({
-    required this.authStatus,
-  });
+final class ValidateAccessTokenResponseDto {
+  const ValidateAccessTokenResponseDto({required this.authStatus});
 
   /// Authentication status
-  bool authStatus;
+  final bool authStatus;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ValidateAccessTokenResponseDto &&
-    other.authStatus == authStatus;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (authStatus.hashCode);
-
-  @override
-  String toString() => 'ValidateAccessTokenResponseDto[authStatus=$authStatus]';
+  static ValidateAccessTokenResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ValidateAccessTokenResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(authStatus: json[r'authStatus'] as bool);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'authStatus'] = this.authStatus;
+    json[r'authStatus'] = authStatus;
     return json;
   }
 
-  /// Returns a new [ValidateAccessTokenResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ValidateAccessTokenResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ValidateAccessTokenResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ValidateAccessTokenResponseDto(
-        authStatus: mapValueOfType<bool>(json, r'authStatus')!,
-      );
-    }
-    return null;
+  ValidateAccessTokenResponseDto copyWith({bool? authStatus}) {
+    return .new(authStatus: authStatus ?? this.authStatus);
   }
 
-  static List<ValidateAccessTokenResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ValidateAccessTokenResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ValidateAccessTokenResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is ValidateAccessTokenResponseDto && authStatus == other.authStatus);
   }
 
-  static Map<String, ValidateAccessTokenResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ValidateAccessTokenResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ValidateAccessTokenResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([authStatus]);
   }
 
-  // maps a json object with a list of ValidateAccessTokenResponseDto-objects as value to a dart map
-  static Map<String, List<ValidateAccessTokenResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ValidateAccessTokenResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ValidateAccessTokenResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'authStatus',
-  };
+  @override
+  String toString() => 'ValidateAccessTokenResponseDto(authStatus=$authStatus)';
 }
-

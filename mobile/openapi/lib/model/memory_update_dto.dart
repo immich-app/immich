@@ -1,149 +1,67 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class MemoryUpdateDto {
-  /// Returns a new [MemoryUpdateDto] instance.
-  MemoryUpdateDto({
-    this.isSaved,
-    this.memoryAt,
-    this.seenAt,
+final class MemoryUpdateDto {
+  const MemoryUpdateDto({
+    this.isSaved = const Optional.absent(),
+    this.memoryAt = const Optional.absent(),
+    this.seenAt = const Optional.absent(),
   });
 
   /// Is memory saved
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isSaved;
+  final Optional<bool> isSaved;
 
   /// Memory date
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? memoryAt;
+  final Optional<DateTime> memoryAt;
 
   /// Date when memory was seen
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? seenAt;
+  final Optional<DateTime> seenAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is MemoryUpdateDto &&
-    other.isSaved == isSaved &&
-    other.memoryAt == memoryAt &&
-    other.seenAt == seenAt;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (isSaved == null ? 0 : isSaved!.hashCode) +
-    (memoryAt == null ? 0 : memoryAt!.hashCode) +
-    (seenAt == null ? 0 : seenAt!.hashCode);
-
-  @override
-  String toString() => 'MemoryUpdateDto[isSaved=$isSaved, memoryAt=$memoryAt, seenAt=$seenAt]';
+  static MemoryUpdateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<MemoryUpdateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      isSaved: json.containsKey(r'isSaved') ? Optional.present(json[r'isSaved'] as bool) : const Optional.absent(),
+      memoryAt: json.containsKey(r'memoryAt')
+          ? Optional.present(DateTime.parse(json[r'memoryAt'] as String))
+          : const Optional.absent(),
+      seenAt: json.containsKey(r'seenAt')
+          ? Optional.present(DateTime.parse(json[r'seenAt'] as String))
+          : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.isSaved != null) {
-      json[r'isSaved'] = this.isSaved;
-    } else {
-    //  json[r'isSaved'] = null;
+    if (isSaved case Present(:final value)) {
+      json[r'isSaved'] = value;
     }
-    if (this.memoryAt != null) {
-      json[r'memoryAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.memoryAt!.millisecondsSinceEpoch
-        : this.memoryAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'memoryAt'] = null;
+    if (memoryAt case Present(:final value)) {
+      json[r'memoryAt'] = value.toUtc().toIso8601String();
     }
-    if (this.seenAt != null) {
-      json[r'seenAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.seenAt!.millisecondsSinceEpoch
-        : this.seenAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'seenAt'] = null;
+    if (seenAt case Present(:final value)) {
+      json[r'seenAt'] = value.toUtc().toIso8601String();
     }
     return json;
   }
 
-  /// Returns a new [MemoryUpdateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static MemoryUpdateDto? fromJson(dynamic value) {
-    upgradeDto(value, "MemoryUpdateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return MemoryUpdateDto(
-        isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        seenAt: mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-      );
-    }
-    return null;
+  MemoryUpdateDto copyWith({Optional<bool>? isSaved, Optional<DateTime>? memoryAt, Optional<DateTime>? seenAt}) {
+    return .new(isSaved: isSaved ?? this.isSaved, memoryAt: memoryAt ?? this.memoryAt, seenAt: seenAt ?? this.seenAt);
   }
 
-  static List<MemoryUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MemoryUpdateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MemoryUpdateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MemoryUpdateDto && isSaved == other.isSaved && memoryAt == other.memoryAt && seenAt == other.seenAt);
   }
 
-  static Map<String, MemoryUpdateDto> mapFromJson(dynamic json) {
-    final map = <String, MemoryUpdateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = MemoryUpdateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([isSaved, memoryAt, seenAt]);
   }
 
-  // maps a json object with a list of MemoryUpdateDto-objects as value to a dart map
-  static Map<String, List<MemoryUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<MemoryUpdateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = MemoryUpdateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() => 'MemoryUpdateDto(isSaved=$isSaved, memoryAt=$memoryAt, seenAt=$seenAt)';
 }
-

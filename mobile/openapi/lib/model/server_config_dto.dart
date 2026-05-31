@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerConfigDto {
-  /// Returns a new [ServerConfigDto] instance.
-  ServerConfigDto({
+final class ServerConfigDto {
+  const ServerConfigDto({
     required this.externalDomain,
     required this.isInitialized,
     required this.isOnboarded,
@@ -27,170 +18,136 @@ class ServerConfigDto {
   });
 
   /// External domain URL
-  String externalDomain;
+  final String externalDomain;
 
   /// Whether the server has been initialized
-  bool isInitialized;
+  final bool isInitialized;
 
   /// Whether the admin has completed onboarding
-  bool isOnboarded;
+  final bool isOnboarded;
 
   /// Login page message
-  String loginPageMessage;
+  final String loginPageMessage;
 
   /// Whether maintenance mode is active
-  bool maintenanceMode;
+  final bool maintenanceMode;
 
   /// Map dark style URL
-  String mapDarkStyleUrl;
+  final String mapDarkStyleUrl;
 
   /// Map light style URL
-  String mapLightStyleUrl;
+  final String mapLightStyleUrl;
 
   /// OAuth button text
-  String oauthButtonText;
+  final String oauthButtonText;
 
   /// Whether public user registration is enabled
-  bool publicUsers;
+  final bool publicUsers;
 
   /// Number of days before trashed assets are permanently deleted
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int trashDays;
+  final int trashDays;
 
   /// Delay in days before deleted users are permanently removed
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int userDeleteDelay;
+  final int userDeleteDelay;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
-    other.externalDomain == externalDomain &&
-    other.isInitialized == isInitialized &&
-    other.isOnboarded == isOnboarded &&
-    other.loginPageMessage == loginPageMessage &&
-    other.maintenanceMode == maintenanceMode &&
-    other.mapDarkStyleUrl == mapDarkStyleUrl &&
-    other.mapLightStyleUrl == mapLightStyleUrl &&
-    other.oauthButtonText == oauthButtonText &&
-    other.publicUsers == publicUsers &&
-    other.trashDays == trashDays &&
-    other.userDeleteDelay == userDeleteDelay;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (externalDomain.hashCode) +
-    (isInitialized.hashCode) +
-    (isOnboarded.hashCode) +
-    (loginPageMessage.hashCode) +
-    (maintenanceMode.hashCode) +
-    (mapDarkStyleUrl.hashCode) +
-    (mapLightStyleUrl.hashCode) +
-    (oauthButtonText.hashCode) +
-    (publicUsers.hashCode) +
-    (trashDays.hashCode) +
-    (userDeleteDelay.hashCode);
-
-  @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, maintenanceMode=$maintenanceMode, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
+  static ServerConfigDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerConfigDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      externalDomain: json[r'externalDomain'] as String,
+      isInitialized: json[r'isInitialized'] as bool,
+      isOnboarded: json[r'isOnboarded'] as bool,
+      loginPageMessage: json[r'loginPageMessage'] as String,
+      maintenanceMode: json[r'maintenanceMode'] as bool,
+      mapDarkStyleUrl: json[r'mapDarkStyleUrl'] as String,
+      mapLightStyleUrl: json[r'mapLightStyleUrl'] as String,
+      oauthButtonText: json[r'oauthButtonText'] as String,
+      publicUsers: json[r'publicUsers'] as bool,
+      trashDays: json[r'trashDays'] as int,
+      userDeleteDelay: json[r'userDeleteDelay'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'externalDomain'] = this.externalDomain;
-      json[r'isInitialized'] = this.isInitialized;
-      json[r'isOnboarded'] = this.isOnboarded;
-      json[r'loginPageMessage'] = this.loginPageMessage;
-      json[r'maintenanceMode'] = this.maintenanceMode;
-      json[r'mapDarkStyleUrl'] = this.mapDarkStyleUrl;
-      json[r'mapLightStyleUrl'] = this.mapLightStyleUrl;
-      json[r'oauthButtonText'] = this.oauthButtonText;
-      json[r'publicUsers'] = this.publicUsers;
-      json[r'trashDays'] = this.trashDays;
-      json[r'userDeleteDelay'] = this.userDeleteDelay;
+    json[r'externalDomain'] = externalDomain;
+    json[r'isInitialized'] = isInitialized;
+    json[r'isOnboarded'] = isOnboarded;
+    json[r'loginPageMessage'] = loginPageMessage;
+    json[r'maintenanceMode'] = maintenanceMode;
+    json[r'mapDarkStyleUrl'] = mapDarkStyleUrl;
+    json[r'mapLightStyleUrl'] = mapLightStyleUrl;
+    json[r'oauthButtonText'] = oauthButtonText;
+    json[r'publicUsers'] = publicUsers;
+    json[r'trashDays'] = trashDays;
+    json[r'userDeleteDelay'] = userDeleteDelay;
     return json;
   }
 
-  /// Returns a new [ServerConfigDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerConfigDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerConfigDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerConfigDto(
-        externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
-        isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
-        isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
-        loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
-        maintenanceMode: mapValueOfType<bool>(json, r'maintenanceMode')!,
-        mapDarkStyleUrl: mapValueOfType<String>(json, r'mapDarkStyleUrl')!,
-        mapLightStyleUrl: mapValueOfType<String>(json, r'mapLightStyleUrl')!,
-        oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
-        publicUsers: mapValueOfType<bool>(json, r'publicUsers')!,
-        trashDays: mapValueOfType<int>(json, r'trashDays')!,
-        userDeleteDelay: mapValueOfType<int>(json, r'userDeleteDelay')!,
-      );
-    }
-    return null;
+  ServerConfigDto copyWith({
+    String? externalDomain,
+    bool? isInitialized,
+    bool? isOnboarded,
+    String? loginPageMessage,
+    bool? maintenanceMode,
+    String? mapDarkStyleUrl,
+    String? mapLightStyleUrl,
+    String? oauthButtonText,
+    bool? publicUsers,
+    int? trashDays,
+    int? userDeleteDelay,
+  }) {
+    return .new(
+      externalDomain: externalDomain ?? this.externalDomain,
+      isInitialized: isInitialized ?? this.isInitialized,
+      isOnboarded: isOnboarded ?? this.isOnboarded,
+      loginPageMessage: loginPageMessage ?? this.loginPageMessage,
+      maintenanceMode: maintenanceMode ?? this.maintenanceMode,
+      mapDarkStyleUrl: mapDarkStyleUrl ?? this.mapDarkStyleUrl,
+      mapLightStyleUrl: mapLightStyleUrl ?? this.mapLightStyleUrl,
+      oauthButtonText: oauthButtonText ?? this.oauthButtonText,
+      publicUsers: publicUsers ?? this.publicUsers,
+      trashDays: trashDays ?? this.trashDays,
+      userDeleteDelay: userDeleteDelay ?? this.userDeleteDelay,
+    );
   }
 
-  static List<ServerConfigDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerConfigDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerConfigDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerConfigDto &&
+            externalDomain == other.externalDomain &&
+            isInitialized == other.isInitialized &&
+            isOnboarded == other.isOnboarded &&
+            loginPageMessage == other.loginPageMessage &&
+            maintenanceMode == other.maintenanceMode &&
+            mapDarkStyleUrl == other.mapDarkStyleUrl &&
+            mapLightStyleUrl == other.mapLightStyleUrl &&
+            oauthButtonText == other.oauthButtonText &&
+            publicUsers == other.publicUsers &&
+            trashDays == other.trashDays &&
+            userDeleteDelay == other.userDeleteDelay);
   }
 
-  static Map<String, ServerConfigDto> mapFromJson(dynamic json) {
-    final map = <String, ServerConfigDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerConfigDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      externalDomain,
+      isInitialized,
+      isOnboarded,
+      loginPageMessage,
+      maintenanceMode,
+      mapDarkStyleUrl,
+      mapLightStyleUrl,
+      oauthButtonText,
+      publicUsers,
+      trashDays,
+      userDeleteDelay,
+    ]);
   }
 
-  // maps a json object with a list of ServerConfigDto-objects as value to a dart map
-  static Map<String, List<ServerConfigDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerConfigDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerConfigDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'externalDomain',
-    'isInitialized',
-    'isOnboarded',
-    'loginPageMessage',
-    'maintenanceMode',
-    'mapDarkStyleUrl',
-    'mapLightStyleUrl',
-    'oauthButtonText',
-    'publicUsers',
-    'trashDays',
-    'userDeleteDelay',
-  };
+  @override
+  String toString() =>
+      'ServerConfigDto(externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, maintenanceMode=$maintenanceMode, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay)';
 }
-

@@ -1,23 +1,14 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AlbumResponseDto {
-  /// Returns a new [AlbumResponseDto] instance.
-  AlbumResponseDto({
+final class AlbumResponseDto {
+  const AlbumResponseDto({
     required this.albumName,
     required this.albumThumbnailAssetId,
-    this.albumUsers = const [],
+    required this.albumUsers,
     required this.assetCount,
-    this.contributorCounts = const [],
+    this.contributorCounts,
     required this.createdAt,
     required this.description,
     this.endDate,
@@ -32,244 +23,205 @@ class AlbumResponseDto {
   });
 
   /// Album name
-  String albumName;
+  final String albumName;
 
   /// Thumbnail asset ID
-  String? albumThumbnailAssetId;
+  final String? albumThumbnailAssetId;
 
   /// First entry is always the album owner. Second entry is the auth user, if it differs from the owner. The rest are ordered alphabetically.
-  List<AlbumUserResponseDto> albumUsers;
+  final List<AlbumUserResponseDto> albumUsers;
 
   /// Number of assets
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int assetCount;
+  final int assetCount;
 
-  List<ContributorCountResponseDto> contributorCounts;
+  final List<ContributorCountResponseDto>? contributorCounts;
 
   /// Creation date
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Album description
-  String description;
+  final String description;
 
   /// End date (latest asset)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? endDate;
+  final DateTime? endDate;
 
   /// Has shared link
-  bool hasSharedLink;
+  final bool hasSharedLink;
 
   /// Album ID
-  String id;
+  final String id;
 
   /// Activity feed enabled
-  bool isActivityEnabled;
+  final bool isActivityEnabled;
 
   /// Last modified asset timestamp
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? lastModifiedAssetTimestamp;
+  final DateTime? lastModifiedAssetTimestamp;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetOrder? order;
+  final AssetOrder? order;
 
   /// Is shared album
-  bool shared;
+  final bool shared;
 
   /// Start date (earliest asset)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? startDate;
+  final DateTime? startDate;
 
   /// Last update date
-  DateTime updatedAt;
+  final DateTime updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
-    other.albumName == albumName &&
-    other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    _deepEquality.equals(other.albumUsers, albumUsers) &&
-    other.assetCount == assetCount &&
-    _deepEquality.equals(other.contributorCounts, contributorCounts) &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.endDate == endDate &&
-    other.hasSharedLink == hasSharedLink &&
-    other.id == id &&
-    other.isActivityEnabled == isActivityEnabled &&
-    other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
-    other.order == order &&
-    other.shared == shared &&
-    other.startDate == startDate &&
-    other.updatedAt == updatedAt;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumName.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
-    (albumUsers.hashCode) +
-    (assetCount.hashCode) +
-    (contributorCounts.hashCode) +
-    (createdAt.hashCode) +
-    (description.hashCode) +
-    (endDate == null ? 0 : endDate!.hashCode) +
-    (hasSharedLink.hashCode) +
-    (id.hashCode) +
-    (isActivityEnabled.hashCode) +
-    (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
-    (order == null ? 0 : order!.hashCode) +
-    (shared.hashCode) +
-    (startDate == null ? 0 : startDate!.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
+  static AlbumResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AlbumResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumName: json[r'albumName'] as String,
+      albumThumbnailAssetId: (json[r'albumThumbnailAssetId'] as String?),
+      albumUsers: ((json[r'albumUsers'] as List?)
+          ?.map(($e) => (AlbumUserResponseDto.fromJson($e))!)
+          .toList(growable: false))!,
+      assetCount: json[r'assetCount'] as int,
+      contributorCounts: (json[r'contributorCounts'] as List?)
+          ?.map(($e) => (ContributorCountResponseDto.fromJson($e))!)
+          .toList(growable: false),
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      description: json[r'description'] as String,
+      endDate: (json[r'endDate'] == null ? null : DateTime.parse(json[r'endDate'] as String)),
+      hasSharedLink: json[r'hasSharedLink'] as bool,
+      id: json[r'id'] as String,
+      isActivityEnabled: json[r'isActivityEnabled'] as bool,
+      lastModifiedAssetTimestamp: (json[r'lastModifiedAssetTimestamp'] == null
+          ? null
+          : DateTime.parse(json[r'lastModifiedAssetTimestamp'] as String)),
+      order: AssetOrder.fromJson(json[r'order']),
+      shared: json[r'shared'] as bool,
+      startDate: (json[r'startDate'] == null ? null : DateTime.parse(json[r'startDate'] as String)),
+      updatedAt: DateTime.parse(json[r'updatedAt'] as String),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumName'] = this.albumName;
-    if (this.albumThumbnailAssetId != null) {
-      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
-    } else {
-    //  json[r'albumThumbnailAssetId'] = null;
+    json[r'albumName'] = albumName;
+    if (albumThumbnailAssetId != null) {
+      json[r'albumThumbnailAssetId'] = albumThumbnailAssetId!;
     }
-      json[r'albumUsers'] = this.albumUsers;
-      json[r'assetCount'] = this.assetCount;
-      json[r'contributorCounts'] = this.contributorCounts;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'description'] = this.description;
-    if (this.endDate != null) {
-      json[r'endDate'] = this.endDate!.toUtc().toIso8601String();
-    } else {
-    //  json[r'endDate'] = null;
+    json[r'albumUsers'] = albumUsers.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'assetCount'] = assetCount;
+    if (contributorCounts != null) {
+      json[r'contributorCounts'] = contributorCounts!.map(($e) => $e.toJson()).toList(growable: false);
     }
-      json[r'hasSharedLink'] = this.hasSharedLink;
-      json[r'id'] = this.id;
-      json[r'isActivityEnabled'] = this.isActivityEnabled;
-    if (this.lastModifiedAssetTimestamp != null) {
-      json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
-    } else {
-    //  json[r'lastModifiedAssetTimestamp'] = null;
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    json[r'description'] = description;
+    if (endDate != null) {
+      json[r'endDate'] = endDate!.toUtc().toIso8601String();
     }
-    if (this.order != null) {
-      json[r'order'] = this.order;
-    } else {
-    //  json[r'order'] = null;
+    json[r'hasSharedLink'] = hasSharedLink;
+    json[r'id'] = id;
+    json[r'isActivityEnabled'] = isActivityEnabled;
+    if (lastModifiedAssetTimestamp != null) {
+      json[r'lastModifiedAssetTimestamp'] = lastModifiedAssetTimestamp!.toUtc().toIso8601String();
     }
-      json[r'shared'] = this.shared;
-    if (this.startDate != null) {
-      json[r'startDate'] = this.startDate!.toUtc().toIso8601String();
-    } else {
-    //  json[r'startDate'] = null;
+    if (order != null) {
+      json[r'order'] = order!.toJson();
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'shared'] = shared;
+    if (startDate != null) {
+      json[r'startDate'] = startDate!.toUtc().toIso8601String();
+    }
+    json[r'updatedAt'] = updatedAt.toUtc().toIso8601String();
     return json;
   }
 
-  /// Returns a new [AlbumResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AlbumResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AlbumResponseDto(
-        albumName: mapValueOfType<String>(json, r'albumName')!,
-        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
-        albumUsers: AlbumUserResponseDto.listFromJson(json[r'albumUsers']),
-        assetCount: mapValueOfType<int>(json, r'assetCount')!,
-        contributorCounts: ContributorCountResponseDto.listFromJson(json[r'contributorCounts']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
-        description: mapValueOfType<String>(json, r'description')!,
-        endDate: mapDateTime(json, r'endDate', r''),
-        hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
-        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
-        order: AssetOrder.fromJson(json[r'order']),
-        shared: mapValueOfType<bool>(json, r'shared')!,
-        startDate: mapDateTime(json, r'startDate', r''),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
-      );
-    }
-    return null;
+  AlbumResponseDto copyWith({
+    String? albumName,
+    Object? albumThumbnailAssetId = _undefined,
+    List<AlbumUserResponseDto>? albumUsers,
+    int? assetCount,
+    Object? contributorCounts = _undefined,
+    DateTime? createdAt,
+    String? description,
+    Object? endDate = _undefined,
+    bool? hasSharedLink,
+    String? id,
+    bool? isActivityEnabled,
+    Object? lastModifiedAssetTimestamp = _undefined,
+    Object? order = _undefined,
+    bool? shared,
+    Object? startDate = _undefined,
+    DateTime? updatedAt,
+  }) {
+    return .new(
+      albumName: albumName ?? this.albumName,
+      albumThumbnailAssetId: identical(albumThumbnailAssetId, _undefined)
+          ? this.albumThumbnailAssetId
+          : albumThumbnailAssetId as String?,
+      albumUsers: albumUsers ?? this.albumUsers,
+      assetCount: assetCount ?? this.assetCount,
+      contributorCounts: identical(contributorCounts, _undefined)
+          ? this.contributorCounts
+          : contributorCounts as List<ContributorCountResponseDto>?,
+      createdAt: createdAt ?? this.createdAt,
+      description: description ?? this.description,
+      endDate: identical(endDate, _undefined) ? this.endDate : endDate as DateTime?,
+      hasSharedLink: hasSharedLink ?? this.hasSharedLink,
+      id: id ?? this.id,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      lastModifiedAssetTimestamp: identical(lastModifiedAssetTimestamp, _undefined)
+          ? this.lastModifiedAssetTimestamp
+          : lastModifiedAssetTimestamp as DateTime?,
+      order: identical(order, _undefined) ? this.order : order as AssetOrder?,
+      shared: shared ?? this.shared,
+      startDate: identical(startDate, _undefined) ? this.startDate : startDate as DateTime?,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<AlbumResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AlbumResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AlbumResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AlbumResponseDto &&
+            albumName == other.albumName &&
+            albumThumbnailAssetId == other.albumThumbnailAssetId &&
+            const DeepCollectionEquality().equals(albumUsers, other.albumUsers) &&
+            assetCount == other.assetCount &&
+            const DeepCollectionEquality().equals(contributorCounts, other.contributorCounts) &&
+            createdAt == other.createdAt &&
+            description == other.description &&
+            endDate == other.endDate &&
+            hasSharedLink == other.hasSharedLink &&
+            id == other.id &&
+            isActivityEnabled == other.isActivityEnabled &&
+            lastModifiedAssetTimestamp == other.lastModifiedAssetTimestamp &&
+            order == other.order &&
+            shared == other.shared &&
+            startDate == other.startDate &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, AlbumResponseDto> mapFromJson(dynamic json) {
-    final map = <String, AlbumResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AlbumResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      albumName,
+      albumThumbnailAssetId,
+      const DeepCollectionEquality().hash(albumUsers),
+      assetCount,
+      const DeepCollectionEquality().hash(contributorCounts),
+      createdAt,
+      description,
+      endDate,
+      hasSharedLink,
+      id,
+      isActivityEnabled,
+      lastModifiedAssetTimestamp,
+      order,
+      shared,
+      startDate,
+      updatedAt,
+    ]);
   }
 
-  // maps a json object with a list of AlbumResponseDto-objects as value to a dart map
-  static Map<String, List<AlbumResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AlbumResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AlbumResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'albumName',
-    'albumThumbnailAssetId',
-    'albumUsers',
-    'assetCount',
-    'createdAt',
-    'description',
-    'hasSharedLink',
-    'id',
-    'isActivityEnabled',
-    'shared',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'AlbumResponseDto(albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, shared=$shared, startDate=$startDate, updatedAt=$updatedAt)';
 }
-

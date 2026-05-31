@@ -45,16 +45,16 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     }
 
     if (editorState.flipHorizontal) {
-      edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)));
+      edits.add(const MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)));
     }
 
     if (editorState.flipVertical) {
-      edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)));
+      edits.add(const MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)));
     }
 
     final normalizedRotation = (editorState.rotationAngle % 360 + 360) % 360;
     if (normalizedRotation != 0) {
-      edits.add(RotateEdit(RotateParameters(angle: normalizedRotation)));
+      edits.add(RotateEdit(RotateParameters(angle: normalizedRotation.toDouble())));
     }
 
     try {

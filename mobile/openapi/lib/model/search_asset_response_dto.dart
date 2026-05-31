@@ -1,144 +1,102 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SearchAssetResponseDto {
-  /// Returns a new [SearchAssetResponseDto] instance.
-  SearchAssetResponseDto({
+final class SearchAssetResponseDto {
+  const SearchAssetResponseDto({
     required this.count,
-    this.facets = const [],
-    this.items = const [],
+    required this.facets,
+    required this.items,
     required this.nextPage,
     required this.total,
   });
 
   /// Number of assets in this page
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int count;
+  final int count;
 
-  List<SearchFacetResponseDto> facets;
+  final List<SearchFacetResponseDto> facets;
 
-  List<AssetResponseDto> items;
+  final List<AssetResponseDto> items;
 
   /// Next page token
-  String? nextPage;
+  final String? nextPage;
 
   /// Total number of matching assets
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int total;
+  @Deprecated(r'Deprecated by the Immich server API since v3.0.0.')
+  final int total;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchAssetResponseDto &&
-    other.count == count &&
-    _deepEquality.equals(other.facets, facets) &&
-    _deepEquality.equals(other.items, items) &&
-    other.nextPage == nextPage &&
-    other.total == total;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (facets.hashCode) +
-    (items.hashCode) +
-    (nextPage == null ? 0 : nextPage!.hashCode) +
-    (total.hashCode);
+  static const ApiVersion totalDeprecatedIn = .new(3, 0, 0);
 
-  @override
-  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, nextPage=$nextPage, total=$total]';
+  static const ApiState totalState = .deprecated;
+
+  static SearchAssetResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SearchAssetResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      count: json[r'count'] as int,
+      facets: ((json[r'facets'] as List?)
+          ?.map(($e) => (SearchFacetResponseDto.fromJson($e))!)
+          .toList(growable: false))!,
+      items: ((json[r'items'] as List?)?.map(($e) => (AssetResponseDto.fromJson($e))!).toList(growable: false))!,
+      nextPage: (json[r'nextPage'] as String?),
+      total: json[r'total'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
-      json[r'facets'] = this.facets;
-      json[r'items'] = this.items;
-    if (this.nextPage != null) {
-      json[r'nextPage'] = this.nextPage;
-    } else {
-    //  json[r'nextPage'] = null;
+    json[r'count'] = count;
+    json[r'facets'] = facets.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'items'] = items.map(($e) => $e.toJson()).toList(growable: false);
+    if (nextPage != null) {
+      json[r'nextPage'] = nextPage!;
     }
-      json[r'total'] = this.total;
+    json[r'total'] = total;
     return json;
   }
 
-  /// Returns a new [SearchAssetResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SearchAssetResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SearchAssetResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SearchAssetResponseDto(
-        count: mapValueOfType<int>(json, r'count')!,
-        facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
-        items: AssetResponseDto.listFromJson(json[r'items']),
-        nextPage: mapValueOfType<String>(json, r'nextPage'),
-        total: mapValueOfType<int>(json, r'total')!,
-      );
-    }
-    return null;
+  SearchAssetResponseDto copyWith({
+    int? count,
+    List<SearchFacetResponseDto>? facets,
+    List<AssetResponseDto>? items,
+    Object? nextPage = _undefined,
+    int? total,
+  }) {
+    return .new(
+      count: count ?? this.count,
+      facets: facets ?? this.facets,
+      items: items ?? this.items,
+      nextPage: identical(nextPage, _undefined) ? this.nextPage : nextPage as String?,
+      total: total ?? this.total,
+    );
   }
 
-  static List<SearchAssetResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SearchAssetResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SearchAssetResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SearchAssetResponseDto &&
+            count == other.count &&
+            const DeepCollectionEquality().equals(facets, other.facets) &&
+            const DeepCollectionEquality().equals(items, other.items) &&
+            nextPage == other.nextPage &&
+            total == other.total);
   }
 
-  static Map<String, SearchAssetResponseDto> mapFromJson(dynamic json) {
-    final map = <String, SearchAssetResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SearchAssetResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      count,
+      const DeepCollectionEquality().hash(facets),
+      const DeepCollectionEquality().hash(items),
+      nextPage,
+      total,
+    ]);
   }
 
-  // maps a json object with a list of SearchAssetResponseDto-objects as value to a dart map
-  static Map<String, List<SearchAssetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SearchAssetResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SearchAssetResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'count',
-    'facets',
-    'items',
-    'nextPage',
-    'total',
-  };
+  @override
+  String toString() =>
+      'SearchAssetResponseDto(count=$count, facets=$facets, items=$items, nextPage=$nextPage, total=$total)';
 }
-

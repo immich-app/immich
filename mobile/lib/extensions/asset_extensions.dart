@@ -64,10 +64,10 @@ extension on api.AssetVisibility {
 
 extension on api.AssetTypeEnum {
   AssetType toAssetType() => switch (this) {
-    api.AssetTypeEnum.IMAGE => AssetType.image,
-    api.AssetTypeEnum.VIDEO => AssetType.video,
-    api.AssetTypeEnum.AUDIO => AssetType.audio,
-    api.AssetTypeEnum.OTHER => AssetType.other,
+    api.AssetTypeEnum.image => AssetType.image,
+    api.AssetTypeEnum.video => AssetType.video,
+    api.AssetTypeEnum.audio => AssetType.audio,
+    api.AssetTypeEnum.other => AssetType.other,
     _ => throw Exception('Unknown AssetType value: $this'),
   };
 }

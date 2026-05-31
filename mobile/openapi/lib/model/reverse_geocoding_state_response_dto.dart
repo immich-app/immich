@@ -1,117 +1,65 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ReverseGeocodingStateResponseDto {
-  /// Returns a new [ReverseGeocodingStateResponseDto] instance.
-  ReverseGeocodingStateResponseDto({
-    required this.lastImportFileName,
-    required this.lastUpdate,
-  });
+final class ReverseGeocodingStateResponseDto {
+  const ReverseGeocodingStateResponseDto({required this.lastImportFileName, required this.lastUpdate});
 
   /// Last import file name
-  String? lastImportFileName;
+  final String? lastImportFileName;
 
   /// Last update timestamp
-  String? lastUpdate;
+  final String? lastUpdate;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ReverseGeocodingStateResponseDto &&
-    other.lastImportFileName == lastImportFileName &&
-    other.lastUpdate == lastUpdate;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (lastImportFileName == null ? 0 : lastImportFileName!.hashCode) +
-    (lastUpdate == null ? 0 : lastUpdate!.hashCode);
-
-  @override
-  String toString() => 'ReverseGeocodingStateResponseDto[lastImportFileName=$lastImportFileName, lastUpdate=$lastUpdate]';
+  static ReverseGeocodingStateResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ReverseGeocodingStateResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      lastImportFileName: (json[r'lastImportFileName'] as String?),
+      lastUpdate: (json[r'lastUpdate'] as String?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.lastImportFileName != null) {
-      json[r'lastImportFileName'] = this.lastImportFileName;
-    } else {
-    //  json[r'lastImportFileName'] = null;
+    if (lastImportFileName != null) {
+      json[r'lastImportFileName'] = lastImportFileName!;
     }
-    if (this.lastUpdate != null) {
-      json[r'lastUpdate'] = this.lastUpdate;
-    } else {
-    //  json[r'lastUpdate'] = null;
+    if (lastUpdate != null) {
+      json[r'lastUpdate'] = lastUpdate!;
     }
     return json;
   }
 
-  /// Returns a new [ReverseGeocodingStateResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ReverseGeocodingStateResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ReverseGeocodingStateResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ReverseGeocodingStateResponseDto(
-        lastImportFileName: mapValueOfType<String>(json, r'lastImportFileName'),
-        lastUpdate: mapValueOfType<String>(json, r'lastUpdate'),
-      );
-    }
-    return null;
+  ReverseGeocodingStateResponseDto copyWith({
+    Object? lastImportFileName = _undefined,
+    Object? lastUpdate = _undefined,
+  }) {
+    return .new(
+      lastImportFileName: identical(lastImportFileName, _undefined)
+          ? this.lastImportFileName
+          : lastImportFileName as String?,
+      lastUpdate: identical(lastUpdate, _undefined) ? this.lastUpdate : lastUpdate as String?,
+    );
   }
 
-  static List<ReverseGeocodingStateResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ReverseGeocodingStateResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ReverseGeocodingStateResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ReverseGeocodingStateResponseDto &&
+            lastImportFileName == other.lastImportFileName &&
+            lastUpdate == other.lastUpdate);
   }
 
-  static Map<String, ReverseGeocodingStateResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ReverseGeocodingStateResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ReverseGeocodingStateResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([lastImportFileName, lastUpdate]);
   }
 
-  // maps a json object with a list of ReverseGeocodingStateResponseDto-objects as value to a dart map
-  static Map<String, List<ReverseGeocodingStateResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ReverseGeocodingStateResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ReverseGeocodingStateResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'lastImportFileName',
-    'lastUpdate',
-  };
+  @override
+  String toString() =>
+      'ReverseGeocodingStateResponseDto(lastImportFileName=$lastImportFileName, lastUpdate=$lastUpdate)';
 }
-

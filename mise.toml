@@ -66,8 +66,11 @@ run = [
 ]
 
 [tasks.open-api-dart]
-dir = "open-api"
-run = "bash ./bin/generate-dart-sdk.sh"
+dir = "open-api/dart-generator"
+run = [
+  "dart pub get",
+  "dart run bin/generate.dart --spec ../immich-openapi-specs.json --out ../../mobile/openapi",
+]
 
 [tasks.open-api]
 env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }

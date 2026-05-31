@@ -1,102 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class MergePersonDto {
-  /// Returns a new [MergePersonDto] instance.
-  MergePersonDto({
-    this.ids = const [],
-  });
+final class MergePersonDto {
+  const MergePersonDto({required this.ids});
 
   /// Person IDs to merge
-  List<String> ids;
+  final List<String> ids;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is MergePersonDto &&
-    _deepEquality.equals(other.ids, ids);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (ids.hashCode);
-
-  @override
-  String toString() => 'MergePersonDto[ids=$ids]';
+  static MergePersonDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<MergePersonDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(ids: ((json[r'ids'] as List?)?.map(($e) => $e as String).toList(growable: false))!);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'ids'] = this.ids;
+    json[r'ids'] = ids;
     return json;
   }
 
-  /// Returns a new [MergePersonDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static MergePersonDto? fromJson(dynamic value) {
-    upgradeDto(value, "MergePersonDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return MergePersonDto(
-        ids: json[r'ids'] is Iterable
-            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-      );
-    }
-    return null;
+  MergePersonDto copyWith({List<String>? ids}) {
+    return .new(ids: ids ?? this.ids);
   }
 
-  static List<MergePersonDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MergePersonDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MergePersonDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is MergePersonDto && const DeepCollectionEquality().equals(ids, other.ids));
   }
 
-  static Map<String, MergePersonDto> mapFromJson(dynamic json) {
-    final map = <String, MergePersonDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = MergePersonDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([const DeepCollectionEquality().hash(ids)]);
   }
 
-  // maps a json object with a list of MergePersonDto-objects as value to a dart map
-  static Map<String, List<MergePersonDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<MergePersonDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = MergePersonDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'ids',
-  };
+  @override
+  String toString() => 'MergePersonDto(ids=$ids)';
 }
-

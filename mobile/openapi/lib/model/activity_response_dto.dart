@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ActivityResponseDto {
-  /// Returns a new [ActivityResponseDto] instance.
-  ActivityResponseDto({
+final class ActivityResponseDto {
+  const ActivityResponseDto({
     required this.assetId,
     this.comment,
     required this.createdAt,
@@ -22,131 +13,88 @@ class ActivityResponseDto {
   });
 
   /// Asset ID (if activity is for an asset)
-  String? assetId;
+  final String? assetId;
 
   /// Comment text (for comment activities)
-  String? comment;
+  final String? comment;
 
   /// Creation date
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Activity ID
-  String id;
+  final String id;
 
-  ReactionType type;
+  final ReactionType type;
 
-  UserResponseDto user;
+  final UserResponseDto user;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ActivityResponseDto &&
-    other.assetId == assetId &&
-    other.comment == comment &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.type == type &&
-    other.user == user;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetId == null ? 0 : assetId!.hashCode) +
-    (comment == null ? 0 : comment!.hashCode) +
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (type.hashCode) +
-    (user.hashCode);
-
-  @override
-  String toString() => 'ActivityResponseDto[assetId=$assetId, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
+  static ActivityResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ActivityResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      assetId: (json[r'assetId'] as String?),
+      comment: (json[r'comment'] as String?),
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      id: json[r'id'] as String,
+      type: (ReactionType.fromJson(json[r'type']))!,
+      user: (UserResponseDto.fromJson(json[r'user']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.assetId != null) {
-      json[r'assetId'] = this.assetId;
-    } else {
-    //  json[r'assetId'] = null;
+    if (assetId != null) {
+      json[r'assetId'] = assetId!;
     }
-    if (this.comment != null) {
-      json[r'comment'] = this.comment;
-    } else {
-    //  json[r'comment'] = null;
+    if (comment != null) {
+      json[r'comment'] = comment!;
     }
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'type'] = this.type;
-      json[r'user'] = this.user;
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    json[r'id'] = id;
+    json[r'type'] = type.toJson();
+    json[r'user'] = user.toJson();
     return json;
   }
 
-  /// Returns a new [ActivityResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ActivityResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ActivityResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ActivityResponseDto(
-        assetId: mapValueOfType<String>(json, r'assetId'),
-        comment: mapValueOfType<String>(json, r'comment'),
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        type: ReactionType.fromJson(json[r'type'])!,
-        user: UserResponseDto.fromJson(json[r'user'])!,
-      );
-    }
-    return null;
+  ActivityResponseDto copyWith({
+    Object? assetId = _undefined,
+    Object? comment = _undefined,
+    DateTime? createdAt,
+    String? id,
+    ReactionType? type,
+    UserResponseDto? user,
+  }) {
+    return .new(
+      assetId: identical(assetId, _undefined) ? this.assetId : assetId as String?,
+      comment: identical(comment, _undefined) ? this.comment : comment as String?,
+      createdAt: createdAt ?? this.createdAt,
+      id: id ?? this.id,
+      type: type ?? this.type,
+      user: user ?? this.user,
+    );
   }
 
-  static List<ActivityResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ActivityResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ActivityResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ActivityResponseDto &&
+            assetId == other.assetId &&
+            comment == other.comment &&
+            createdAt == other.createdAt &&
+            id == other.id &&
+            type == other.type &&
+            user == other.user);
   }
 
-  static Map<String, ActivityResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ActivityResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ActivityResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([assetId, comment, createdAt, id, type, user]);
   }
 
-  // maps a json object with a list of ActivityResponseDto-objects as value to a dart map
-  static Map<String, List<ActivityResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ActivityResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ActivityResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'assetId',
-    'createdAt',
-    'id',
-    'type',
-    'user',
-  };
+  @override
+  String toString() =>
+      'ActivityResponseDto(assetId=$assetId, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user)';
 }
-

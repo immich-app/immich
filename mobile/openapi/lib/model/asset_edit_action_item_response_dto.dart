@@ -1,116 +1,63 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetEditActionItemResponseDto {
-  /// Returns a new [AssetEditActionItemResponseDto] instance.
-  AssetEditActionItemResponseDto({
-    required this.action,
-    required this.id,
-    required this.parameters,
-  });
+final class AssetEditActionItemResponseDto {
+  const AssetEditActionItemResponseDto({required this.action, required this.id, required this.parameters});
 
-  AssetEditAction action;
+  final AssetEditAction action;
 
   /// Asset edit ID
-  String id;
+  final String id;
 
-  AssetEditActionItemDtoParameters parameters;
+  /// List of edit actions to apply (crop, rotate, or mirror)
+  final Map<String, dynamic>? parameters;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemResponseDto &&
-    other.action == action &&
-    other.id == id &&
-    other.parameters == parameters;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (action.hashCode) +
-    (id.hashCode) +
-    (parameters.hashCode);
-
-  @override
-  String toString() => 'AssetEditActionItemResponseDto[action=$action, id=$id, parameters=$parameters]';
+  static AssetEditActionItemResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetEditActionItemResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      action: (AssetEditAction.fromJson(json[r'action']))!,
+      id: json[r'id'] as String,
+      parameters: (json[r'parameters'] as Map?)?.cast<String, dynamic>(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'action'] = this.action;
-      json[r'id'] = this.id;
-      json[r'parameters'] = this.parameters;
+    json[r'action'] = action.toJson();
+    json[r'id'] = id;
+    if (parameters != null) {
+      json[r'parameters'] = parameters;
+    }
     return json;
   }
 
-  /// Returns a new [AssetEditActionItemResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetEditActionItemResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionItemResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetEditActionItemResponseDto(
-        action: AssetEditAction.fromJson(json[r'action'])!,
-        id: mapValueOfType<String>(json, r'id')!,
-        parameters: AssetEditActionItemDtoParameters.fromJson(json[r'parameters'])!,
-      );
-    }
-    return null;
+  AssetEditActionItemResponseDto copyWith({AssetEditAction? action, String? id, Object? parameters = _undefined}) {
+    return .new(
+      action: action ?? this.action,
+      id: id ?? this.id,
+      parameters: identical(parameters, _undefined) ? this.parameters : parameters as Map<String, dynamic>?,
+    );
   }
 
-  static List<AssetEditActionItemResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetEditActionItemResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetEditActionItemResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetEditActionItemResponseDto &&
+            action == other.action &&
+            id == other.id &&
+            parameters == other.parameters);
   }
 
-  static Map<String, AssetEditActionItemResponseDto> mapFromJson(dynamic json) {
-    final map = <String, AssetEditActionItemResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetEditActionItemResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([action, id, parameters]);
   }
 
-  // maps a json object with a list of AssetEditActionItemResponseDto-objects as value to a dart map
-  static Map<String, List<AssetEditActionItemResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetEditActionItemResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetEditActionItemResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'action',
-    'id',
-    'parameters',
-  };
+  @override
+  String toString() => 'AssetEditActionItemResponseDto(action=$action, id=$id, parameters=$parameters)';
 }
-

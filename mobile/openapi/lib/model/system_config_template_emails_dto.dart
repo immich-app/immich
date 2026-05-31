@@ -1,118 +1,69 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigTemplateEmailsDto {
-  /// Returns a new [SystemConfigTemplateEmailsDto] instance.
-  SystemConfigTemplateEmailsDto({
+final class SystemConfigTemplateEmailsDto {
+  const SystemConfigTemplateEmailsDto({
     required this.albumInviteTemplate,
     required this.albumUpdateTemplate,
     required this.welcomeTemplate,
   });
 
   /// Album invite template
-  String albumInviteTemplate;
+  final String albumInviteTemplate;
 
   /// Album update template
-  String albumUpdateTemplate;
+  final String albumUpdateTemplate;
 
   /// Welcome template
-  String welcomeTemplate;
+  final String welcomeTemplate;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateEmailsDto &&
-    other.albumInviteTemplate == albumInviteTemplate &&
-    other.albumUpdateTemplate == albumUpdateTemplate &&
-    other.welcomeTemplate == welcomeTemplate;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumInviteTemplate.hashCode) +
-    (albumUpdateTemplate.hashCode) +
-    (welcomeTemplate.hashCode);
-
-  @override
-  String toString() => 'SystemConfigTemplateEmailsDto[albumInviteTemplate=$albumInviteTemplate, albumUpdateTemplate=$albumUpdateTemplate, welcomeTemplate=$welcomeTemplate]';
+  static SystemConfigTemplateEmailsDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigTemplateEmailsDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumInviteTemplate: json[r'albumInviteTemplate'] as String,
+      albumUpdateTemplate: json[r'albumUpdateTemplate'] as String,
+      welcomeTemplate: json[r'welcomeTemplate'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumInviteTemplate'] = this.albumInviteTemplate;
-      json[r'albumUpdateTemplate'] = this.albumUpdateTemplate;
-      json[r'welcomeTemplate'] = this.welcomeTemplate;
+    json[r'albumInviteTemplate'] = albumInviteTemplate;
+    json[r'albumUpdateTemplate'] = albumUpdateTemplate;
+    json[r'welcomeTemplate'] = welcomeTemplate;
     return json;
   }
 
-  /// Returns a new [SystemConfigTemplateEmailsDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigTemplateEmailsDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigTemplateEmailsDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigTemplateEmailsDto(
-        albumInviteTemplate: mapValueOfType<String>(json, r'albumInviteTemplate')!,
-        albumUpdateTemplate: mapValueOfType<String>(json, r'albumUpdateTemplate')!,
-        welcomeTemplate: mapValueOfType<String>(json, r'welcomeTemplate')!,
-      );
-    }
-    return null;
+  SystemConfigTemplateEmailsDto copyWith({
+    String? albumInviteTemplate,
+    String? albumUpdateTemplate,
+    String? welcomeTemplate,
+  }) {
+    return .new(
+      albumInviteTemplate: albumInviteTemplate ?? this.albumInviteTemplate,
+      albumUpdateTemplate: albumUpdateTemplate ?? this.albumUpdateTemplate,
+      welcomeTemplate: welcomeTemplate ?? this.welcomeTemplate,
+    );
   }
 
-  static List<SystemConfigTemplateEmailsDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigTemplateEmailsDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigTemplateEmailsDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigTemplateEmailsDto &&
+            albumInviteTemplate == other.albumInviteTemplate &&
+            albumUpdateTemplate == other.albumUpdateTemplate &&
+            welcomeTemplate == other.welcomeTemplate);
   }
 
-  static Map<String, SystemConfigTemplateEmailsDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigTemplateEmailsDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigTemplateEmailsDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([albumInviteTemplate, albumUpdateTemplate, welcomeTemplate]);
   }
 
-  // maps a json object with a list of SystemConfigTemplateEmailsDto-objects as value to a dart map
-  static Map<String, List<SystemConfigTemplateEmailsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigTemplateEmailsDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigTemplateEmailsDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'albumInviteTemplate',
-    'albumUpdateTemplate',
-    'welcomeTemplate',
-  };
+  @override
+  String toString() =>
+      'SystemConfigTemplateEmailsDto(albumInviteTemplate=$albumInviteTemplate, albumUpdateTemplate=$albumUpdateTemplate, welcomeTemplate=$welcomeTemplate)';
 }
-

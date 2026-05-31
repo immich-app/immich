@@ -16,7 +16,7 @@ class SharedLinkService {
   Future<AsyncValue<List<SharedLink>>> getAllSharedLinks() async {
     try {
       final list = await _apiService.sharedLinksApi.getAllSharedLinks();
-      return list != null ? AsyncData(list.map(SharedLink.fromDto).toList()) : const AsyncData([]);
+      return AsyncData(list.map(SharedLink.fromDto).toList());
     } catch (e, stack) {
       _log.severe("Failed to fetch shared links", e, stack);
       return AsyncError(e, stack);
@@ -43,39 +43,37 @@ class SharedLinkService {
     DateTime? expiresAt,
   }) async {
     try {
-      final type = albumId != null ? SharedLinkType.ALBUM : SharedLinkType.INDIVIDUAL;
+      final type = albumId != null ? SharedLinkType.album : SharedLinkType.individual;
       SharedLinkCreateDto? dto;
-      if (type == SharedLinkType.ALBUM) {
+      if (type == SharedLinkType.album) {
         dto = SharedLinkCreateDto(
           type: type,
-          albumId: albumId,
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-          password: password,
-          slug: slug,
+          albumId: albumId.toOptional(),
+          showMetadata: showMeta.toOptional(),
+          allowDownload: allowDownload.toOptional(),
+          allowUpload: allowUpload.toOptional(),
+          expiresAt: expiresAt.toOptional(),
+          description: description.toOptional(),
+          password: password.toOptional(),
+          slug: slug.toOptional(),
         );
       } else if (assetIds != null) {
         dto = SharedLinkCreateDto(
           type: type,
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-          password: password,
-          slug: slug,
-          assetIds: assetIds,
+          showMetadata: showMeta.toOptional(),
+          allowDownload: allowDownload.toOptional(),
+          allowUpload: allowUpload.toOptional(),
+          expiresAt: expiresAt.toOptional(),
+          description: description.toOptional(),
+          password: password.toOptional(),
+          slug: slug.toOptional(),
+          assetIds: assetIds.toOptional(),
         );
       }
 
       if (dto != null) {
         final responseDto = await _apiService.sharedLinksApi.createSharedLink(dto);
-        if (responseDto != null) {
-          return SharedLink.fromDto(responseDto);
-        }
+        return SharedLink.fromDto(responseDto);
       }
     } catch (e) {
       _log.severe("Failed to create shared link", e);
@@ -98,19 +96,17 @@ class SharedLinkService {
       final responseDto = await _apiService.sharedLinksApi.updateSharedLink(
         id,
         SharedLinkEditDto(
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-          password: password,
-          slug: slug,
-          changeExpiryTime: changeExpiry,
+          showMetadata: showMeta.toOptional(),
+          allowDownload: allowDownload.toOptional(),
+          allowUpload: allowUpload.toOptional(),
+          expiresAt: expiresAt.toOptional(),
+          description: description.toOptional(),
+          password: password.toOptional(),
+          slug: slug.toOptional(),
+          changeExpiryTime: changeExpiry.toOptional(),
         ),
       );
-      if (responseDto != null) {
-        return SharedLink.fromDto(responseDto);
-      }
+      return SharedLink.fromDto(responseDto);
     } catch (e) {
       _log.severe("Failed to update shared link id - $id", e);
     }

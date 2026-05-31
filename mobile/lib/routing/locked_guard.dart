@@ -24,11 +24,6 @@ class LockedGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final authStatus = await _apiService.authenticationApi.getAuthStatus();
 
-    if (authStatus == null) {
-      resolver.next(false);
-      return;
-    }
-
     /// Check if a pincode has been created but this user. Show the form to create if not exist
     if (!authStatus.pinCode) {
       unawaited(router.push(PinAuthRoute(createPinCode: true)));
@@ -55,7 +50,7 @@ class LockedGuard extends AutoRouteGuard {
         return;
       }
 
-      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: securePinCode));
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: securePinCode.toOptional()));
 
       resolver.next(true);
     } on PlatformException catch (error) {

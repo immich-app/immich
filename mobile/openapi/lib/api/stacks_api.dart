@@ -1,157 +1,67 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class StacksApi {
   StacksApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
-  /// Create a stack
-  ///
-  /// Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [StackCreateDto] stackCreateDto (required):
-  Future<Response> createStackWithHttpInfo(StackCreateDto stackCreateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/stacks';
+  static const ApiVersion deleteStacksAddedIn = .new(1, 0, 0);
 
-    // ignore: prefer_final_locals
-    Object? postBody = stackCreateDto;
+  static const ApiState deleteStacksState = .stable;
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiVersion searchStacksAddedIn = .new(1, 0, 0);
 
-    const contentTypes = <String>['application/json'];
+  static const ApiState searchStacksState = .stable;
 
+  static const ApiVersion createStackAddedIn = .new(1, 0, 0);
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiState createStackState = .stable;
 
-  /// Create a stack
-  ///
-  /// Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.
-  ///
-  /// Parameters:
-  ///
-  /// * [StackCreateDto] stackCreateDto (required):
-  Future<StackResponseDto?> createStack(StackCreateDto stackCreateDto,) async {
-    final response = await createStackWithHttpInfo(stackCreateDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
-    
-    }
-    return null;
-  }
+  static const ApiVersion deleteStackAddedIn = .new(1, 0, 0);
 
-  /// Delete a stack
-  ///
-  /// Delete a specific stack by its ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> deleteStackWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}'
-      .replaceAll('{id}', id);
+  static const ApiState deleteStackState = .stable;
 
-    // ignore: prefer_final_locals
-    Object? postBody;
+  static const ApiVersion getStackAddedIn = .new(1, 0, 0);
 
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
+  static const ApiState getStackState = .stable;
 
-    const contentTypes = <String>[];
+  static const ApiVersion updateStackAddedIn = .new(1, 0, 0);
 
+  static const ApiState updateStackState = .stable;
 
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
+  static const ApiVersion removeAssetFromStackAddedIn = .new(1, 0, 0);
 
-  /// Delete a stack
-  ///
-  /// Delete a specific stack by its ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<void> deleteStack(String id,) async {
-    final response = await deleteStackWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
+  static const ApiState removeAssetFromStackState = .stable;
 
   /// Delete stacks
   ///
   /// Delete multiple stacks by providing a list of stack IDs.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> deleteStacksWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> deleteStacksWithHttpInfo(BulkIdsDto bulkIdsDto, {Future<void>? abortTrigger}) async {
     final apiPath = r'/stacks';
 
-    // ignore: prefer_final_locals
     Object? postBody = bulkIdsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'DELETE',
+      r'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -159,122 +69,9 @@ class StacksApi {
   ///
   /// Delete multiple stacks by providing a list of stack IDs.
   ///
-  /// Parameters:
-  ///
-  /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> deleteStacks(BulkIdsDto bulkIdsDto,) async {
-    final response = await deleteStacksWithHttpInfo(bulkIdsDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
-  /// Retrieve a stack
-  ///
-  /// Retrieve a specific stack by its ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getStackWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve a stack
-  ///
-  /// Retrieve a specific stack by its ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<StackResponseDto?> getStack(String id,) async {
-    final response = await getStackWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Remove an asset from a stack
-  ///
-  /// Remove a specific asset from a stack by providing the stack ID and asset ID.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] assetId (required):
-  ///
-  /// * [String] id (required):
-  Future<Response> removeAssetFromStackWithHttpInfo(String assetId, String id,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}/assets/{assetId}'
-      .replaceAll('{assetId}', assetId)
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'DELETE',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Remove an asset from a stack
-  ///
-  /// Remove a specific asset from a stack by providing the stack ID and asset ID.
-  ///
-  /// Parameters:
-  ///
-  /// * [String] assetId (required):
-  ///
-  /// * [String] id (required):
-  Future<void> removeAssetFromStack(String assetId, String id,) async {
-    final response = await removeAssetFromStackWithHttpInfo(assetId, id,);
+  /// Available since server v1.0.0.
+  Future<void> deleteStacks(BulkIdsDto bulkIdsDto, {Future<void>? abortTrigger}) async {
+    final response = await deleteStacksWithHttpInfo(bulkIdsDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -284,17 +81,12 @@ class StacksApi {
   ///
   /// Retrieve a list of stacks.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] primaryAssetId:
-  ///   Filter by primary asset ID
-  Future<Response> searchStacksWithHttpInfo({ String? primaryAssetId, }) async {
-    // ignore: prefer_const_declarations
+  Future<Response> searchStacksWithHttpInfo({String? primaryAssetId, Future<void>? abortTrigger}) async {
     final apiPath = r'/stacks';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -307,15 +99,15 @@ class StacksApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -323,62 +115,188 @@ class StacksApi {
   ///
   /// Retrieve a list of stacks.
   ///
-  /// Parameters:
-  ///
-  /// * [String] primaryAssetId:
-  ///   Filter by primary asset ID
-  Future<List<StackResponseDto>?> searchStacks({ String? primaryAssetId, }) async {
-    final response = await searchStacksWithHttpInfo( primaryAssetId: primaryAssetId, );
+  /// Available since server v1.0.0.
+  Future<List<StackResponseDto>> searchStacks({String? primaryAssetId, Future<void>? abortTrigger}) async {
+    final response = await searchStacksWithHttpInfo(primaryAssetId: primaryAssetId, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<StackResponseDto>') as List)
-        .cast<StackResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<StackResponseDto>') as List)
+          .cast<StackResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Create a stack
+  ///
+  /// Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> createStackWithHttpInfo(StackCreateDto stackCreateDto, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/stacks';
+
+    Object? postBody = stackCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Create a stack
+  ///
+  /// Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.
+  ///
+  /// Available since server v1.0.0.
+  Future<StackResponseDto> createStack(StackCreateDto stackCreateDto, {Future<void>? abortTrigger}) async {
+    final response = await createStackWithHttpInfo(stackCreateDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'StackResponseDto')
+          as StackResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Delete a stack
+  ///
+  /// Delete a specific stack by its ID.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> deleteStackWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/stacks/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Delete a stack
+  ///
+  /// Delete a specific stack by its ID.
+  ///
+  /// Available since server v1.0.0.
+  Future<void> deleteStack(String id, {Future<void>? abortTrigger}) async {
+    final response = await deleteStackWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Retrieve a stack
+  ///
+  /// Retrieve a specific stack by its ID.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getStackWithHttpInfo(String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/stacks/{id}'.replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve a stack
+  ///
+  /// Retrieve a specific stack by its ID.
+  ///
+  /// Available since server v1.0.0.
+  Future<StackResponseDto> getStack(String id, {Future<void>? abortTrigger}) async {
+    final response = await getStackWithHttpInfo(id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'StackResponseDto')
+          as StackResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Update a stack
   ///
   /// Update an existing stack by its ID.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [StackUpdateDto] stackUpdateDto (required):
-  Future<Response> updateStackWithHttpInfo(String id, StackUpdateDto stackUpdateDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}'
-      .replaceAll('{id}', id);
+  Future<Response> updateStackWithHttpInfo(
+    String id,
+    StackUpdateDto stackUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final apiPath = r'/stacks/{id}'.replaceAll('{id}', id);
 
-    // ignore: prefer_final_locals
     Object? postBody = stackUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'PUT',
+      r'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -386,23 +304,58 @@ class StacksApi {
   ///
   /// Update an existing stack by its ID.
   ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [StackUpdateDto] stackUpdateDto (required):
-  Future<StackResponseDto?> updateStack(String id, StackUpdateDto stackUpdateDto,) async {
-    final response = await updateStackWithHttpInfo(id, stackUpdateDto,);
+  /// Available since server v1.0.0.
+  Future<StackResponseDto> updateStack(String id, StackUpdateDto stackUpdateDto, {Future<void>? abortTrigger}) async {
+    final response = await updateStackWithHttpInfo(id, stackUpdateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'StackResponseDto')
+          as StackResponseDto;
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Remove an asset from a stack
+  ///
+  /// Remove a specific asset from a stack by providing the stack ID and asset ID.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> removeAssetFromStackWithHttpInfo(String assetId, String id, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/stacks/{id}/assets/{assetId}'.replaceAll('{assetId}', assetId).replaceAll('{id}', id);
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Remove an asset from a stack
+  ///
+  /// Remove a specific asset from a stack by providing the stack ID and asset ID.
+  ///
+  /// Available since server v1.0.0.
+  Future<void> removeAssetFromStack(String assetId, String id, {Future<void>? abortTrigger}) async {
+    final response = await removeAssetFromStackWithHttpInfo(assetId, id, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

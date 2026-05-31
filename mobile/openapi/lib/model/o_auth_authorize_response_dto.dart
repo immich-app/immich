@@ -1,100 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class OAuthAuthorizeResponseDto {
-  /// Returns a new [OAuthAuthorizeResponseDto] instance.
-  OAuthAuthorizeResponseDto({
-    required this.url,
-  });
+final class OAuthAuthorizeResponseDto {
+  const OAuthAuthorizeResponseDto({required this.url});
 
   /// OAuth authorization URL
-  String url;
+  final String url;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is OAuthAuthorizeResponseDto &&
-    other.url == url;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (url.hashCode);
-
-  @override
-  String toString() => 'OAuthAuthorizeResponseDto[url=$url]';
+  static OAuthAuthorizeResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<OAuthAuthorizeResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(url: json[r'url'] as String);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'url'] = this.url;
+    json[r'url'] = url;
     return json;
   }
 
-  /// Returns a new [OAuthAuthorizeResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static OAuthAuthorizeResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "OAuthAuthorizeResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return OAuthAuthorizeResponseDto(
-        url: mapValueOfType<String>(json, r'url')!,
-      );
-    }
-    return null;
+  OAuthAuthorizeResponseDto copyWith({String? url}) {
+    return .new(url: url ?? this.url);
   }
 
-  static List<OAuthAuthorizeResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <OAuthAuthorizeResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = OAuthAuthorizeResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is OAuthAuthorizeResponseDto && url == other.url);
   }
 
-  static Map<String, OAuthAuthorizeResponseDto> mapFromJson(dynamic json) {
-    final map = <String, OAuthAuthorizeResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = OAuthAuthorizeResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([url]);
   }
 
-  // maps a json object with a list of OAuthAuthorizeResponseDto-objects as value to a dart map
-  static Map<String, List<OAuthAuthorizeResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<OAuthAuthorizeResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = OAuthAuthorizeResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'url',
-  };
+  @override
+  String toString() => 'OAuthAuthorizeResponseDto(url=$url)';
 }
-

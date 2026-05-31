@@ -1,100 +1,45 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AddUsersDto {
-  /// Returns a new [AddUsersDto] instance.
-  AddUsersDto({
-    this.albumUsers = const [],
-  });
+final class AddUsersDto {
+  const AddUsersDto({required this.albumUsers});
 
   /// Album users to add
-  List<AlbumUserAddDto> albumUsers;
+  final List<AlbumUserAddDto> albumUsers;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AddUsersDto &&
-    _deepEquality.equals(other.albumUsers, albumUsers);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumUsers.hashCode);
-
-  @override
-  String toString() => 'AddUsersDto[albumUsers=$albumUsers]';
+  static AddUsersDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AddUsersDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumUsers: ((json[r'albumUsers'] as List?)
+          ?.map(($e) => (AlbumUserAddDto.fromJson($e))!)
+          .toList(growable: false))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumUsers'] = this.albumUsers;
+    json[r'albumUsers'] = albumUsers.map(($e) => $e.toJson()).toList(growable: false);
     return json;
   }
 
-  /// Returns a new [AddUsersDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AddUsersDto? fromJson(dynamic value) {
-    upgradeDto(value, "AddUsersDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AddUsersDto(
-        albumUsers: AlbumUserAddDto.listFromJson(json[r'albumUsers']),
-      );
-    }
-    return null;
+  AddUsersDto copyWith({List<AlbumUserAddDto>? albumUsers}) {
+    return .new(albumUsers: albumUsers ?? this.albumUsers);
   }
 
-  static List<AddUsersDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AddUsersDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AddUsersDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AddUsersDto && const DeepCollectionEquality().equals(albumUsers, other.albumUsers));
   }
 
-  static Map<String, AddUsersDto> mapFromJson(dynamic json) {
-    final map = <String, AddUsersDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AddUsersDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([const DeepCollectionEquality().hash(albumUsers)]);
   }
 
-  // maps a json object with a list of AddUsersDto-objects as value to a dart map
-  static Map<String, List<AddUsersDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AddUsersDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AddUsersDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'albumUsers',
-  };
+  @override
+  String toString() => 'AddUsersDto(albumUsers=$albumUsers)';
 }
-

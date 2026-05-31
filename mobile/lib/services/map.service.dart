@@ -36,7 +36,7 @@ class MapService with ErrorLoggerMixin {
           fileCreatedBefore: fileCreatedBefore,
         );
 
-        return markers?.map(MapMarker.fromDto) ?? [];
+        return markers.map(MapMarker.fromDto);
       },
       defaultValue: [],
       errorMessage: "Failed to get map markers",

@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerAboutResponseDto {
-  /// Returns a new [ServerAboutResponseDto] instance.
-  ServerAboutResponseDto({
+final class ServerAboutResponseDto {
+  const ServerAboutResponseDto({
     this.build,
     this.buildImage,
     this.buildImageUrl,
@@ -37,406 +28,272 @@ class ServerAboutResponseDto {
   });
 
   /// Build identifier
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? build;
+  final String? build;
 
   /// Build image name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? buildImage;
+  final String? buildImage;
 
   /// Build image URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? buildImageUrl;
+  final String? buildImageUrl;
 
   /// Build URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? buildUrl;
+  final String? buildUrl;
 
   /// ExifTool version
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? exiftool;
+  final String? exiftool;
 
   /// FFmpeg version
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? ffmpeg;
+  final String? ffmpeg;
 
   /// ImageMagick version
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? imagemagick;
+  final String? imagemagick;
 
   /// libvips version
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? libvips;
+  final String? libvips;
 
   /// Whether the server is licensed
-  bool licensed;
+  final bool licensed;
 
   /// Node.js version
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? nodejs;
+  final String? nodejs;
 
   /// Repository name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? repository;
+  final String? repository;
 
   /// Repository URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? repositoryUrl;
+  final String? repositoryUrl;
 
   /// Source commit hash
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? sourceCommit;
+  final String? sourceCommit;
 
   /// Source reference (branch/tag)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? sourceRef;
+  final String? sourceRef;
 
   /// Source URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? sourceUrl;
+  final String? sourceUrl;
 
   /// Third-party bug/feature URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? thirdPartyBugFeatureUrl;
+  final String? thirdPartyBugFeatureUrl;
 
   /// Third-party documentation URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? thirdPartyDocumentationUrl;
+  final String? thirdPartyDocumentationUrl;
 
   /// Third-party source URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? thirdPartySourceUrl;
+  final String? thirdPartySourceUrl;
 
   /// Third-party support URL
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? thirdPartySupportUrl;
+  final String? thirdPartySupportUrl;
 
   /// Server version
-  String version;
+  final String version;
 
   /// URL to version information
-  String versionUrl;
+  final String versionUrl;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerAboutResponseDto &&
-    other.build == build &&
-    other.buildImage == buildImage &&
-    other.buildImageUrl == buildImageUrl &&
-    other.buildUrl == buildUrl &&
-    other.exiftool == exiftool &&
-    other.ffmpeg == ffmpeg &&
-    other.imagemagick == imagemagick &&
-    other.libvips == libvips &&
-    other.licensed == licensed &&
-    other.nodejs == nodejs &&
-    other.repository == repository &&
-    other.repositoryUrl == repositoryUrl &&
-    other.sourceCommit == sourceCommit &&
-    other.sourceRef == sourceRef &&
-    other.sourceUrl == sourceUrl &&
-    other.thirdPartyBugFeatureUrl == thirdPartyBugFeatureUrl &&
-    other.thirdPartyDocumentationUrl == thirdPartyDocumentationUrl &&
-    other.thirdPartySourceUrl == thirdPartySourceUrl &&
-    other.thirdPartySupportUrl == thirdPartySupportUrl &&
-    other.version == version &&
-    other.versionUrl == versionUrl;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (build == null ? 0 : build!.hashCode) +
-    (buildImage == null ? 0 : buildImage!.hashCode) +
-    (buildImageUrl == null ? 0 : buildImageUrl!.hashCode) +
-    (buildUrl == null ? 0 : buildUrl!.hashCode) +
-    (exiftool == null ? 0 : exiftool!.hashCode) +
-    (ffmpeg == null ? 0 : ffmpeg!.hashCode) +
-    (imagemagick == null ? 0 : imagemagick!.hashCode) +
-    (libvips == null ? 0 : libvips!.hashCode) +
-    (licensed.hashCode) +
-    (nodejs == null ? 0 : nodejs!.hashCode) +
-    (repository == null ? 0 : repository!.hashCode) +
-    (repositoryUrl == null ? 0 : repositoryUrl!.hashCode) +
-    (sourceCommit == null ? 0 : sourceCommit!.hashCode) +
-    (sourceRef == null ? 0 : sourceRef!.hashCode) +
-    (sourceUrl == null ? 0 : sourceUrl!.hashCode) +
-    (thirdPartyBugFeatureUrl == null ? 0 : thirdPartyBugFeatureUrl!.hashCode) +
-    (thirdPartyDocumentationUrl == null ? 0 : thirdPartyDocumentationUrl!.hashCode) +
-    (thirdPartySourceUrl == null ? 0 : thirdPartySourceUrl!.hashCode) +
-    (thirdPartySupportUrl == null ? 0 : thirdPartySupportUrl!.hashCode) +
-    (version.hashCode) +
-    (versionUrl.hashCode);
-
-  @override
-  String toString() => 'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, thirdPartyBugFeatureUrl=$thirdPartyBugFeatureUrl, thirdPartyDocumentationUrl=$thirdPartyDocumentationUrl, thirdPartySourceUrl=$thirdPartySourceUrl, thirdPartySupportUrl=$thirdPartySupportUrl, version=$version, versionUrl=$versionUrl]';
+  static ServerAboutResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerAboutResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      build: (json[r'build'] as String?),
+      buildImage: (json[r'buildImage'] as String?),
+      buildImageUrl: (json[r'buildImageUrl'] as String?),
+      buildUrl: (json[r'buildUrl'] as String?),
+      exiftool: (json[r'exiftool'] as String?),
+      ffmpeg: (json[r'ffmpeg'] as String?),
+      imagemagick: (json[r'imagemagick'] as String?),
+      libvips: (json[r'libvips'] as String?),
+      licensed: json[r'licensed'] as bool,
+      nodejs: (json[r'nodejs'] as String?),
+      repository: (json[r'repository'] as String?),
+      repositoryUrl: (json[r'repositoryUrl'] as String?),
+      sourceCommit: (json[r'sourceCommit'] as String?),
+      sourceRef: (json[r'sourceRef'] as String?),
+      sourceUrl: (json[r'sourceUrl'] as String?),
+      thirdPartyBugFeatureUrl: (json[r'thirdPartyBugFeatureUrl'] as String?),
+      thirdPartyDocumentationUrl: (json[r'thirdPartyDocumentationUrl'] as String?),
+      thirdPartySourceUrl: (json[r'thirdPartySourceUrl'] as String?),
+      thirdPartySupportUrl: (json[r'thirdPartySupportUrl'] as String?),
+      version: json[r'version'] as String,
+      versionUrl: json[r'versionUrl'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.build != null) {
-      json[r'build'] = this.build;
-    } else {
-    //  json[r'build'] = null;
+    if (build != null) {
+      json[r'build'] = build!;
     }
-    if (this.buildImage != null) {
-      json[r'buildImage'] = this.buildImage;
-    } else {
-    //  json[r'buildImage'] = null;
+    if (buildImage != null) {
+      json[r'buildImage'] = buildImage!;
     }
-    if (this.buildImageUrl != null) {
-      json[r'buildImageUrl'] = this.buildImageUrl;
-    } else {
-    //  json[r'buildImageUrl'] = null;
+    if (buildImageUrl != null) {
+      json[r'buildImageUrl'] = buildImageUrl!;
     }
-    if (this.buildUrl != null) {
-      json[r'buildUrl'] = this.buildUrl;
-    } else {
-    //  json[r'buildUrl'] = null;
+    if (buildUrl != null) {
+      json[r'buildUrl'] = buildUrl!;
     }
-    if (this.exiftool != null) {
-      json[r'exiftool'] = this.exiftool;
-    } else {
-    //  json[r'exiftool'] = null;
+    if (exiftool != null) {
+      json[r'exiftool'] = exiftool!;
     }
-    if (this.ffmpeg != null) {
-      json[r'ffmpeg'] = this.ffmpeg;
-    } else {
-    //  json[r'ffmpeg'] = null;
+    if (ffmpeg != null) {
+      json[r'ffmpeg'] = ffmpeg!;
     }
-    if (this.imagemagick != null) {
-      json[r'imagemagick'] = this.imagemagick;
-    } else {
-    //  json[r'imagemagick'] = null;
+    if (imagemagick != null) {
+      json[r'imagemagick'] = imagemagick!;
     }
-    if (this.libvips != null) {
-      json[r'libvips'] = this.libvips;
-    } else {
-    //  json[r'libvips'] = null;
+    if (libvips != null) {
+      json[r'libvips'] = libvips!;
     }
-      json[r'licensed'] = this.licensed;
-    if (this.nodejs != null) {
-      json[r'nodejs'] = this.nodejs;
-    } else {
-    //  json[r'nodejs'] = null;
+    json[r'licensed'] = licensed;
+    if (nodejs != null) {
+      json[r'nodejs'] = nodejs!;
     }
-    if (this.repository != null) {
-      json[r'repository'] = this.repository;
-    } else {
-    //  json[r'repository'] = null;
+    if (repository != null) {
+      json[r'repository'] = repository!;
     }
-    if (this.repositoryUrl != null) {
-      json[r'repositoryUrl'] = this.repositoryUrl;
-    } else {
-    //  json[r'repositoryUrl'] = null;
+    if (repositoryUrl != null) {
+      json[r'repositoryUrl'] = repositoryUrl!;
     }
-    if (this.sourceCommit != null) {
-      json[r'sourceCommit'] = this.sourceCommit;
-    } else {
-    //  json[r'sourceCommit'] = null;
+    if (sourceCommit != null) {
+      json[r'sourceCommit'] = sourceCommit!;
     }
-    if (this.sourceRef != null) {
-      json[r'sourceRef'] = this.sourceRef;
-    } else {
-    //  json[r'sourceRef'] = null;
+    if (sourceRef != null) {
+      json[r'sourceRef'] = sourceRef!;
     }
-    if (this.sourceUrl != null) {
-      json[r'sourceUrl'] = this.sourceUrl;
-    } else {
-    //  json[r'sourceUrl'] = null;
+    if (sourceUrl != null) {
+      json[r'sourceUrl'] = sourceUrl!;
     }
-    if (this.thirdPartyBugFeatureUrl != null) {
-      json[r'thirdPartyBugFeatureUrl'] = this.thirdPartyBugFeatureUrl;
-    } else {
-    //  json[r'thirdPartyBugFeatureUrl'] = null;
+    if (thirdPartyBugFeatureUrl != null) {
+      json[r'thirdPartyBugFeatureUrl'] = thirdPartyBugFeatureUrl!;
     }
-    if (this.thirdPartyDocumentationUrl != null) {
-      json[r'thirdPartyDocumentationUrl'] = this.thirdPartyDocumentationUrl;
-    } else {
-    //  json[r'thirdPartyDocumentationUrl'] = null;
+    if (thirdPartyDocumentationUrl != null) {
+      json[r'thirdPartyDocumentationUrl'] = thirdPartyDocumentationUrl!;
     }
-    if (this.thirdPartySourceUrl != null) {
-      json[r'thirdPartySourceUrl'] = this.thirdPartySourceUrl;
-    } else {
-    //  json[r'thirdPartySourceUrl'] = null;
+    if (thirdPartySourceUrl != null) {
+      json[r'thirdPartySourceUrl'] = thirdPartySourceUrl!;
     }
-    if (this.thirdPartySupportUrl != null) {
-      json[r'thirdPartySupportUrl'] = this.thirdPartySupportUrl;
-    } else {
-    //  json[r'thirdPartySupportUrl'] = null;
+    if (thirdPartySupportUrl != null) {
+      json[r'thirdPartySupportUrl'] = thirdPartySupportUrl!;
     }
-      json[r'version'] = this.version;
-      json[r'versionUrl'] = this.versionUrl;
+    json[r'version'] = version;
+    json[r'versionUrl'] = versionUrl;
     return json;
   }
 
-  /// Returns a new [ServerAboutResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerAboutResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerAboutResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerAboutResponseDto(
-        build: mapValueOfType<String>(json, r'build'),
-        buildImage: mapValueOfType<String>(json, r'buildImage'),
-        buildImageUrl: mapValueOfType<String>(json, r'buildImageUrl'),
-        buildUrl: mapValueOfType<String>(json, r'buildUrl'),
-        exiftool: mapValueOfType<String>(json, r'exiftool'),
-        ffmpeg: mapValueOfType<String>(json, r'ffmpeg'),
-        imagemagick: mapValueOfType<String>(json, r'imagemagick'),
-        libvips: mapValueOfType<String>(json, r'libvips'),
-        licensed: mapValueOfType<bool>(json, r'licensed')!,
-        nodejs: mapValueOfType<String>(json, r'nodejs'),
-        repository: mapValueOfType<String>(json, r'repository'),
-        repositoryUrl: mapValueOfType<String>(json, r'repositoryUrl'),
-        sourceCommit: mapValueOfType<String>(json, r'sourceCommit'),
-        sourceRef: mapValueOfType<String>(json, r'sourceRef'),
-        sourceUrl: mapValueOfType<String>(json, r'sourceUrl'),
-        thirdPartyBugFeatureUrl: mapValueOfType<String>(json, r'thirdPartyBugFeatureUrl'),
-        thirdPartyDocumentationUrl: mapValueOfType<String>(json, r'thirdPartyDocumentationUrl'),
-        thirdPartySourceUrl: mapValueOfType<String>(json, r'thirdPartySourceUrl'),
-        thirdPartySupportUrl: mapValueOfType<String>(json, r'thirdPartySupportUrl'),
-        version: mapValueOfType<String>(json, r'version')!,
-        versionUrl: mapValueOfType<String>(json, r'versionUrl')!,
-      );
-    }
-    return null;
+  ServerAboutResponseDto copyWith({
+    Object? build = _undefined,
+    Object? buildImage = _undefined,
+    Object? buildImageUrl = _undefined,
+    Object? buildUrl = _undefined,
+    Object? exiftool = _undefined,
+    Object? ffmpeg = _undefined,
+    Object? imagemagick = _undefined,
+    Object? libvips = _undefined,
+    bool? licensed,
+    Object? nodejs = _undefined,
+    Object? repository = _undefined,
+    Object? repositoryUrl = _undefined,
+    Object? sourceCommit = _undefined,
+    Object? sourceRef = _undefined,
+    Object? sourceUrl = _undefined,
+    Object? thirdPartyBugFeatureUrl = _undefined,
+    Object? thirdPartyDocumentationUrl = _undefined,
+    Object? thirdPartySourceUrl = _undefined,
+    Object? thirdPartySupportUrl = _undefined,
+    String? version,
+    String? versionUrl,
+  }) {
+    return .new(
+      build: identical(build, _undefined) ? this.build : build as String?,
+      buildImage: identical(buildImage, _undefined) ? this.buildImage : buildImage as String?,
+      buildImageUrl: identical(buildImageUrl, _undefined) ? this.buildImageUrl : buildImageUrl as String?,
+      buildUrl: identical(buildUrl, _undefined) ? this.buildUrl : buildUrl as String?,
+      exiftool: identical(exiftool, _undefined) ? this.exiftool : exiftool as String?,
+      ffmpeg: identical(ffmpeg, _undefined) ? this.ffmpeg : ffmpeg as String?,
+      imagemagick: identical(imagemagick, _undefined) ? this.imagemagick : imagemagick as String?,
+      libvips: identical(libvips, _undefined) ? this.libvips : libvips as String?,
+      licensed: licensed ?? this.licensed,
+      nodejs: identical(nodejs, _undefined) ? this.nodejs : nodejs as String?,
+      repository: identical(repository, _undefined) ? this.repository : repository as String?,
+      repositoryUrl: identical(repositoryUrl, _undefined) ? this.repositoryUrl : repositoryUrl as String?,
+      sourceCommit: identical(sourceCommit, _undefined) ? this.sourceCommit : sourceCommit as String?,
+      sourceRef: identical(sourceRef, _undefined) ? this.sourceRef : sourceRef as String?,
+      sourceUrl: identical(sourceUrl, _undefined) ? this.sourceUrl : sourceUrl as String?,
+      thirdPartyBugFeatureUrl: identical(thirdPartyBugFeatureUrl, _undefined)
+          ? this.thirdPartyBugFeatureUrl
+          : thirdPartyBugFeatureUrl as String?,
+      thirdPartyDocumentationUrl: identical(thirdPartyDocumentationUrl, _undefined)
+          ? this.thirdPartyDocumentationUrl
+          : thirdPartyDocumentationUrl as String?,
+      thirdPartySourceUrl: identical(thirdPartySourceUrl, _undefined)
+          ? this.thirdPartySourceUrl
+          : thirdPartySourceUrl as String?,
+      thirdPartySupportUrl: identical(thirdPartySupportUrl, _undefined)
+          ? this.thirdPartySupportUrl
+          : thirdPartySupportUrl as String?,
+      version: version ?? this.version,
+      versionUrl: versionUrl ?? this.versionUrl,
+    );
   }
 
-  static List<ServerAboutResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerAboutResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerAboutResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerAboutResponseDto &&
+            build == other.build &&
+            buildImage == other.buildImage &&
+            buildImageUrl == other.buildImageUrl &&
+            buildUrl == other.buildUrl &&
+            exiftool == other.exiftool &&
+            ffmpeg == other.ffmpeg &&
+            imagemagick == other.imagemagick &&
+            libvips == other.libvips &&
+            licensed == other.licensed &&
+            nodejs == other.nodejs &&
+            repository == other.repository &&
+            repositoryUrl == other.repositoryUrl &&
+            sourceCommit == other.sourceCommit &&
+            sourceRef == other.sourceRef &&
+            sourceUrl == other.sourceUrl &&
+            thirdPartyBugFeatureUrl == other.thirdPartyBugFeatureUrl &&
+            thirdPartyDocumentationUrl == other.thirdPartyDocumentationUrl &&
+            thirdPartySourceUrl == other.thirdPartySourceUrl &&
+            thirdPartySupportUrl == other.thirdPartySupportUrl &&
+            version == other.version &&
+            versionUrl == other.versionUrl);
   }
 
-  static Map<String, ServerAboutResponseDto> mapFromJson(dynamic json) {
-    final map = <String, ServerAboutResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerAboutResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      build,
+      buildImage,
+      buildImageUrl,
+      buildUrl,
+      exiftool,
+      ffmpeg,
+      imagemagick,
+      libvips,
+      licensed,
+      nodejs,
+      repository,
+      repositoryUrl,
+      sourceCommit,
+      sourceRef,
+      sourceUrl,
+      thirdPartyBugFeatureUrl,
+      thirdPartyDocumentationUrl,
+      thirdPartySourceUrl,
+      thirdPartySupportUrl,
+      version,
+      versionUrl,
+    ]);
   }
 
-  // maps a json object with a list of ServerAboutResponseDto-objects as value to a dart map
-  static Map<String, List<ServerAboutResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerAboutResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerAboutResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'licensed',
-    'version',
-    'versionUrl',
-  };
+  @override
+  String toString() =>
+      'ServerAboutResponseDto(build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, thirdPartyBugFeatureUrl=$thirdPartyBugFeatureUrl, thirdPartyDocumentationUrl=$thirdPartyDocumentationUrl, thirdPartySourceUrl=$thirdPartySourceUrl, thirdPartySupportUrl=$thirdPartySupportUrl, version=$version, versionUrl=$versionUrl)';
 }
-

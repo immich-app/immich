@@ -1,231 +1,157 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class UpdateAssetDto {
-  /// Returns a new [UpdateAssetDto] instance.
-  UpdateAssetDto({
-    this.dateTimeOriginal,
-    this.description,
-    this.isFavorite,
-    this.latitude,
-    this.livePhotoVideoId,
-    this.longitude,
-    this.rating,
-    this.visibility,
+final class UpdateAssetDto {
+  const UpdateAssetDto({
+    this.dateTimeOriginal = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.isFavorite = const Optional.absent(),
+    this.latitude = const Optional.absent(),
+    this.livePhotoVideoId = const Optional.absent(),
+    this.longitude = const Optional.absent(),
+    this.rating = const Optional.absent(),
+    this.visibility = const Optional.absent(),
   });
 
   /// Original date and time
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? dateTimeOriginal;
+  final Optional<String> dateTimeOriginal;
 
   /// Asset description
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? description;
+  final Optional<String> description;
 
   /// Mark as favorite
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isFavorite;
+  final Optional<bool> isFavorite;
 
   /// Latitude coordinate
-  ///
-  /// Minimum value: -90
-  /// Maximum value: 90
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  num? latitude;
+  final Optional<double> latitude;
 
   /// Live photo video ID
-  String? livePhotoVideoId;
+  final Optional<String?> livePhotoVideoId;
 
   /// Longitude coordinate
-  ///
-  /// Minimum value: -180
-  /// Maximum value: 180
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  num? longitude;
+  final Optional<double> longitude;
 
   /// Rating in range [1-5], or null for unrated
-  ///
-  /// Minimum value: -1
-  /// Maximum value: 5
-  int? rating;
+  /// Available since server v1.0.0.
+  final Optional<int?> rating;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetVisibility? visibility;
+  final Optional<AssetVisibility> visibility;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
-    other.dateTimeOriginal == dateTimeOriginal &&
-    other.description == description &&
-    other.isFavorite == isFavorite &&
-    other.latitude == latitude &&
-    other.livePhotoVideoId == livePhotoVideoId &&
-    other.longitude == longitude &&
-    other.rating == rating &&
-    other.visibility == visibility;
+  static const ApiVersion ratingAddedIn = .new(1, 0, 0);
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (latitude == null ? 0 : latitude!.hashCode) +
-    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (longitude == null ? 0 : longitude!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode) +
-    (visibility == null ? 0 : visibility!.hashCode);
+  static const ApiState ratingState = .stable;
 
-  @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating, visibility=$visibility]';
+  static UpdateAssetDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<UpdateAssetDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      dateTimeOriginal: json.containsKey(r'dateTimeOriginal')
+          ? Optional.present(json[r'dateTimeOriginal'] as String)
+          : const Optional.absent(),
+      description: json.containsKey(r'description')
+          ? Optional.present(json[r'description'] as String)
+          : const Optional.absent(),
+      isFavorite: json.containsKey(r'isFavorite')
+          ? Optional.present(json[r'isFavorite'] as bool)
+          : const Optional.absent(),
+      latitude: json.containsKey(r'latitude')
+          ? Optional.present((json[r'latitude'] as num).toDouble())
+          : const Optional.absent(),
+      livePhotoVideoId: json.containsKey(r'livePhotoVideoId')
+          ? Optional.present((json[r'livePhotoVideoId'] as String?))
+          : const Optional.absent(),
+      longitude: json.containsKey(r'longitude')
+          ? Optional.present((json[r'longitude'] as num).toDouble())
+          : const Optional.absent(),
+      rating: json.containsKey(r'rating') ? Optional.present((json[r'rating'] as int?)) : const Optional.absent(),
+      visibility: json.containsKey(r'visibility')
+          ? Optional.present((AssetVisibility.fromJson(json[r'visibility']))!)
+          : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.dateTimeOriginal != null) {
-      json[r'dateTimeOriginal'] = this.dateTimeOriginal;
-    } else {
-    //  json[r'dateTimeOriginal'] = null;
+    if (dateTimeOriginal case Present(:final value)) {
+      json[r'dateTimeOriginal'] = value;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (description case Present(:final value)) {
+      json[r'description'] = value;
     }
-    if (this.isFavorite != null) {
-      json[r'isFavorite'] = this.isFavorite;
-    } else {
-    //  json[r'isFavorite'] = null;
+    if (isFavorite case Present(:final value)) {
+      json[r'isFavorite'] = value;
     }
-    if (this.latitude != null) {
-      json[r'latitude'] = this.latitude;
-    } else {
-    //  json[r'latitude'] = null;
+    if (latitude case Present(:final value)) {
+      json[r'latitude'] = value;
     }
-    if (this.livePhotoVideoId != null) {
-      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
-    } else {
-    //  json[r'livePhotoVideoId'] = null;
+    if (livePhotoVideoId case Present(:final value)) {
+      json[r'livePhotoVideoId'] = value;
     }
-    if (this.longitude != null) {
-      json[r'longitude'] = this.longitude;
-    } else {
-    //  json[r'longitude'] = null;
+    if (longitude case Present(:final value)) {
+      json[r'longitude'] = value;
     }
-    if (this.rating != null) {
-      json[r'rating'] = this.rating;
-    } else {
-    //  json[r'rating'] = null;
+    if (rating case Present(:final value)) {
+      json[r'rating'] = value;
     }
-    if (this.visibility != null) {
-      json[r'visibility'] = this.visibility;
-    } else {
-    //  json[r'visibility'] = null;
+    if (visibility case Present(:final value)) {
+      json[r'visibility'] = value.toJson();
     }
     return json;
   }
 
-  /// Returns a new [UpdateAssetDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static UpdateAssetDto? fromJson(dynamic value) {
-    upgradeDto(value, "UpdateAssetDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return UpdateAssetDto(
-        dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        description: mapValueOfType<String>(json, r'description'),
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: num.parse('${json[r'latitude']}'),
-        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        longitude: num.parse('${json[r'longitude']}'),
-        rating: mapValueOfType<int>(json, r'rating'),
-        visibility: AssetVisibility.fromJson(json[r'visibility']),
-      );
-    }
-    return null;
+  UpdateAssetDto copyWith({
+    Optional<String>? dateTimeOriginal,
+    Optional<String>? description,
+    Optional<bool>? isFavorite,
+    Optional<double>? latitude,
+    Optional<String?>? livePhotoVideoId,
+    Optional<double>? longitude,
+    Optional<int?>? rating,
+    Optional<AssetVisibility>? visibility,
+  }) {
+    return .new(
+      dateTimeOriginal: dateTimeOriginal ?? this.dateTimeOriginal,
+      description: description ?? this.description,
+      isFavorite: isFavorite ?? this.isFavorite,
+      latitude: latitude ?? this.latitude,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+      longitude: longitude ?? this.longitude,
+      rating: rating ?? this.rating,
+      visibility: visibility ?? this.visibility,
+    );
   }
 
-  static List<UpdateAssetDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UpdateAssetDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UpdateAssetDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is UpdateAssetDto &&
+            dateTimeOriginal == other.dateTimeOriginal &&
+            description == other.description &&
+            isFavorite == other.isFavorite &&
+            latitude == other.latitude &&
+            livePhotoVideoId == other.livePhotoVideoId &&
+            longitude == other.longitude &&
+            rating == other.rating &&
+            visibility == other.visibility);
   }
 
-  static Map<String, UpdateAssetDto> mapFromJson(dynamic json) {
-    final map = <String, UpdateAssetDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = UpdateAssetDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      dateTimeOriginal,
+      description,
+      isFavorite,
+      latitude,
+      livePhotoVideoId,
+      longitude,
+      rating,
+      visibility,
+    ]);
   }
 
-  // maps a json object with a list of UpdateAssetDto-objects as value to a dart map
-  static Map<String, List<UpdateAssetDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<UpdateAssetDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = UpdateAssetDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() =>
+      'UpdateAssetDto(dateTimeOriginal=$dateTimeOriginal, description=$description, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating, visibility=$visibility)';
 }
-

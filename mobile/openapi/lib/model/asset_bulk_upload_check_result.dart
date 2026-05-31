@@ -1,161 +1,87 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetBulkUploadCheckResult {
-  /// Returns a new [AssetBulkUploadCheckResult] instance.
-  AssetBulkUploadCheckResult({
-    required this.action,
-    this.assetId,
-    required this.id,
-    this.isTrashed,
-    this.reason,
-  });
+final class AssetBulkUploadCheckResult {
+  const AssetBulkUploadCheckResult({required this.action, this.assetId, required this.id, this.isTrashed, this.reason});
 
-  AssetUploadAction action;
+  final AssetUploadAction action;
 
   /// Existing asset ID if duplicate
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? assetId;
+  final String? assetId;
 
   /// Asset ID
-  String id;
+  final String id;
 
   /// Whether existing asset is trashed
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isTrashed;
+  final bool? isTrashed;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetRejectReason? reason;
+  final AssetRejectReason? reason;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
-    other.action == action &&
-    other.assetId == assetId &&
-    other.id == id &&
-    other.isTrashed == isTrashed &&
-    other.reason == reason;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (action.hashCode) +
-    (assetId == null ? 0 : assetId!.hashCode) +
-    (id.hashCode) +
-    (isTrashed == null ? 0 : isTrashed!.hashCode) +
-    (reason == null ? 0 : reason!.hashCode);
-
-  @override
-  String toString() => 'AssetBulkUploadCheckResult[action=$action, assetId=$assetId, id=$id, isTrashed=$isTrashed, reason=$reason]';
+  static AssetBulkUploadCheckResult? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetBulkUploadCheckResult>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      action: (AssetUploadAction.fromJson(json[r'action']))!,
+      assetId: (json[r'assetId'] as String?),
+      id: json[r'id'] as String,
+      isTrashed: (json[r'isTrashed'] as bool?),
+      reason: AssetRejectReason.fromJson(json[r'reason']),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'action'] = this.action;
-    if (this.assetId != null) {
-      json[r'assetId'] = this.assetId;
-    } else {
-    //  json[r'assetId'] = null;
+    json[r'action'] = action.toJson();
+    if (assetId != null) {
+      json[r'assetId'] = assetId!;
     }
-      json[r'id'] = this.id;
-    if (this.isTrashed != null) {
-      json[r'isTrashed'] = this.isTrashed;
-    } else {
-    //  json[r'isTrashed'] = null;
+    json[r'id'] = id;
+    if (isTrashed != null) {
+      json[r'isTrashed'] = isTrashed!;
     }
-    if (this.reason != null) {
-      json[r'reason'] = this.reason;
-    } else {
-    //  json[r'reason'] = null;
+    if (reason != null) {
+      json[r'reason'] = reason!.toJson();
     }
     return json;
   }
 
-  /// Returns a new [AssetBulkUploadCheckResult] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetBulkUploadCheckResult? fromJson(dynamic value) {
-    upgradeDto(value, "AssetBulkUploadCheckResult");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetBulkUploadCheckResult(
-        action: AssetUploadAction.fromJson(json[r'action'])!,
-        assetId: mapValueOfType<String>(json, r'assetId'),
-        id: mapValueOfType<String>(json, r'id')!,
-        isTrashed: mapValueOfType<bool>(json, r'isTrashed'),
-        reason: AssetRejectReason.fromJson(json[r'reason']),
-      );
-    }
-    return null;
+  AssetBulkUploadCheckResult copyWith({
+    AssetUploadAction? action,
+    Object? assetId = _undefined,
+    String? id,
+    Object? isTrashed = _undefined,
+    Object? reason = _undefined,
+  }) {
+    return .new(
+      action: action ?? this.action,
+      assetId: identical(assetId, _undefined) ? this.assetId : assetId as String?,
+      id: id ?? this.id,
+      isTrashed: identical(isTrashed, _undefined) ? this.isTrashed : isTrashed as bool?,
+      reason: identical(reason, _undefined) ? this.reason : reason as AssetRejectReason?,
+    );
   }
 
-  static List<AssetBulkUploadCheckResult> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetBulkUploadCheckResult>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetBulkUploadCheckResult.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetBulkUploadCheckResult &&
+            action == other.action &&
+            assetId == other.assetId &&
+            id == other.id &&
+            isTrashed == other.isTrashed &&
+            reason == other.reason);
   }
 
-  static Map<String, AssetBulkUploadCheckResult> mapFromJson(dynamic json) {
-    final map = <String, AssetBulkUploadCheckResult>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetBulkUploadCheckResult.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([action, assetId, id, isTrashed, reason]);
   }
 
-  // maps a json object with a list of AssetBulkUploadCheckResult-objects as value to a dart map
-  static Map<String, List<AssetBulkUploadCheckResult>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetBulkUploadCheckResult>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetBulkUploadCheckResult.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'action',
-    'id',
-  };
+  @override
+  String toString() =>
+      'AssetBulkUploadCheckResult(action=$action, assetId=$assetId, id=$id, isTrashed=$isTrashed, reason=$reason)';
 }
-

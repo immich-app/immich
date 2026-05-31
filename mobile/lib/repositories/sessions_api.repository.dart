@@ -15,7 +15,13 @@ class SessionsAPIRepository extends ApiRepository {
 
   Future<SessionCreateResponse> createSession(String deviceType, String deviceOS, {int? duration}) async {
     final dto = await checkNull(
-      _api.createSession(SessionCreateDto(deviceType: deviceType, deviceOS: deviceOS, duration: duration)),
+      _api.createSession(
+        SessionCreateDto(
+          deviceType: deviceType.toOptional(),
+          deviceOs: deviceOS.toOptional(),
+          duration: duration.toOptional(),
+        ),
+      ),
     );
 
     return SessionCreateResponse(

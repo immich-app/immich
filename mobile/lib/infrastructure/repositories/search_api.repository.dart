@@ -11,59 +11,60 @@ class SearchApiRepository extends ApiRepository {
   Future<SearchResponseDto?> search(SearchFilter filter, int page) {
     AssetTypeEnum? type;
     if (filter.mediaType.index == AssetType.image.index) {
-      type = AssetTypeEnum.IMAGE;
+      type = AssetTypeEnum.image;
     } else if (filter.mediaType.index == AssetType.video.index) {
-      type = AssetTypeEnum.VIDEO;
+      type = AssetTypeEnum.video;
     }
 
     if ((filter.context != null && filter.context!.isNotEmpty) ||
         (filter.assetId != null && filter.assetId!.isNotEmpty)) {
       return _api.searchSmart(
         SmartSearchDto(
-          query: filter.context,
-          queryAssetId: filter.assetId,
-          language: filter.language,
-          country: filter.location.country,
-          state: filter.location.state,
-          city: filter.location.city,
-          make: filter.camera.make,
-          model: filter.camera.model,
-          takenAfter: filter.date.takenAfter,
-          takenBefore: filter.date.takenBefore,
-          visibility: filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline,
-          rating: filter.rating.rating,
-          isFavorite: filter.display.isFavorite ? true : null,
-          isNotInAlbum: filter.display.isNotInAlbum ? true : null,
-          personIds: filter.people.map((e) => e.id).toList(),
-          tagIds: filter.tagIds,
-          type: type,
-          page: page,
-          size: 100,
+          query: filter.context.toOptional(),
+          queryAssetId: filter.assetId.toOptional(),
+          language: filter.language.toOptional(),
+          country: filter.location.country.toOptional(),
+          state: filter.location.state.toOptional(),
+          city: filter.location.city.toOptional(),
+          make: filter.camera.make.toOptional(),
+          model: filter.camera.model.toOptional(),
+          takenAfter: filter.date.takenAfter.toOptional(),
+          takenBefore: filter.date.takenBefore.toOptional(),
+          visibility: (filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline).toOptional(),
+          rating: filter.rating.rating.toOptional(),
+          isFavorite: (filter.display.isFavorite ? true : null).toOptional(),
+          isNotInAlbum: (filter.display.isNotInAlbum ? true : null).toOptional(),
+          personIds: filter.people.map((e) => e.id).toList().toOptional(),
+          tagIds: filter.tagIds.toOptional(),
+          type: type.toOptional(),
+          page: page.toOptional(),
+          size: 100.toOptional(),
         ),
       );
     }
 
     return _api.searchAssets(
       MetadataSearchDto(
-        originalFileName: filter.filename != null && filter.filename!.isNotEmpty ? filter.filename : null,
-        country: filter.location.country,
-        description: filter.description != null && filter.description!.isNotEmpty ? filter.description : null,
-        ocr: filter.ocr != null && filter.ocr!.isNotEmpty ? filter.ocr : null,
-        state: filter.location.state,
-        city: filter.location.city,
-        make: filter.camera.make,
-        model: filter.camera.model,
-        takenAfter: filter.date.takenAfter,
-        takenBefore: filter.date.takenBefore,
-        visibility: filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline,
-        rating: filter.rating.rating,
-        isFavorite: filter.display.isFavorite ? true : null,
-        isNotInAlbum: filter.display.isNotInAlbum ? true : null,
-        personIds: filter.people.map((e) => e.id).toList(),
-        tagIds: filter.tagIds,
-        type: type,
-        page: page,
-        size: 1000,
+        originalFileName: (filter.filename != null && filter.filename!.isNotEmpty ? filter.filename : null).toOptional(),
+        country: filter.location.country.toOptional(),
+        description: (filter.description != null && filter.description!.isNotEmpty ? filter.description : null)
+            .toOptional(),
+        ocr: (filter.ocr != null && filter.ocr!.isNotEmpty ? filter.ocr : null).toOptional(),
+        state: filter.location.state.toOptional(),
+        city: filter.location.city.toOptional(),
+        make: filter.camera.make.toOptional(),
+        model: filter.camera.model.toOptional(),
+        takenAfter: filter.date.takenAfter.toOptional(),
+        takenBefore: filter.date.takenBefore.toOptional(),
+        visibility: (filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline).toOptional(),
+        rating: filter.rating.rating.toOptional(),
+        isFavorite: (filter.display.isFavorite ? true : null).toOptional(),
+        isNotInAlbum: (filter.display.isNotInAlbum ? true : null).toOptional(),
+        personIds: filter.people.map((e) => e.id).toList().toOptional(),
+        tagIds: filter.tagIds.toOptional(),
+        type: type.toOptional(),
+        page: page.toOptional(),
+        size: 1000.toOptional(),
       ),
     );
   }
@@ -74,5 +75,5 @@ class SearchApiRepository extends ApiRepository {
     String? state,
     String? make,
     String? model,
-  }) => _api.getSearchSuggestions(type, country: country, state: state, make: make, model: model);
+  }) => _api.getSearchSuggestions(type: type, country: country, state: state, make: make, model: model);
 }

@@ -47,7 +47,7 @@ class AuthGuard extends AutoRouteGuard {
     _validateInFlight = true;
     try {
       final res = await _apiService.authenticationApi.validateAccessToken();
-      if (res == null || res.authStatus != true) {
+      if (res.authStatus != true) {
         // Token may have changed during validation (user logged out + logged in
         // again); only act if it still applies to the current session.
         if (Store.tryGet(StoreKey.accessToken) != token) {

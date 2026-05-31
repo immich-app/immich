@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigOAuthDto {
-  /// Returns a new [SystemConfigOAuthDto] instance.
-  SystemConfigOAuthDto({
+final class SystemConfigOAuthDto {
+  const SystemConfigOAuthDto({
     required this.allowInsecureRequests,
     required this.autoLaunch,
     required this.autoRegister,
@@ -37,253 +28,231 @@ class SystemConfigOAuthDto {
   });
 
   /// Allow insecure requests
-  bool allowInsecureRequests;
+  final bool allowInsecureRequests;
 
   /// Auto launch
-  bool autoLaunch;
+  final bool autoLaunch;
 
   /// Auto register
-  bool autoRegister;
+  final bool autoRegister;
 
   /// Button text
-  String buttonText;
+  final String buttonText;
 
   /// Client ID
-  String clientId;
+  final String clientId;
 
   /// Client secret
-  String clientSecret;
+  final String clientSecret;
 
   /// Default storage quota
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? defaultStorageQuota;
+  final int? defaultStorageQuota;
 
   /// Enabled
-  bool enabled;
+  final bool enabled;
 
   /// End session endpoint
-  String endSessionEndpoint;
+  final String endSessionEndpoint;
 
   /// Issuer URL
-  String issuerUrl;
+  final String issuerUrl;
 
   /// Mobile override enabled
-  bool mobileOverrideEnabled;
+  final bool mobileOverrideEnabled;
 
   /// Mobile redirect URI (set to empty string to disable)
-  String mobileRedirectUri;
+  final String mobileRedirectUri;
 
   /// Profile signing algorithm
-  String profileSigningAlgorithm;
+  final String profileSigningAlgorithm;
 
   /// OAuth prompt parameter (e.g. select_account, login, consent)
-  String prompt;
+  final String prompt;
 
   /// Role claim
-  String roleClaim;
+  final String roleClaim;
 
   /// Scope
-  String scope;
+  final String scope;
 
   /// Signing algorithm
-  String signingAlgorithm;
+  final String signingAlgorithm;
 
   /// Storage label claim
-  String storageLabelClaim;
+  final String storageLabelClaim;
 
   /// Storage quota claim
-  String storageQuotaClaim;
+  final String storageQuotaClaim;
 
   /// Timeout
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  int timeout;
+  final int timeout;
 
-  OAuthTokenEndpointAuthMethod tokenEndpointAuthMethod;
+  final OAuthTokenEndpointAuthMethod tokenEndpointAuthMethod;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigOAuthDto &&
-    other.allowInsecureRequests == allowInsecureRequests &&
-    other.autoLaunch == autoLaunch &&
-    other.autoRegister == autoRegister &&
-    other.buttonText == buttonText &&
-    other.clientId == clientId &&
-    other.clientSecret == clientSecret &&
-    other.defaultStorageQuota == defaultStorageQuota &&
-    other.enabled == enabled &&
-    other.endSessionEndpoint == endSessionEndpoint &&
-    other.issuerUrl == issuerUrl &&
-    other.mobileOverrideEnabled == mobileOverrideEnabled &&
-    other.mobileRedirectUri == mobileRedirectUri &&
-    other.profileSigningAlgorithm == profileSigningAlgorithm &&
-    other.prompt == prompt &&
-    other.roleClaim == roleClaim &&
-    other.scope == scope &&
-    other.signingAlgorithm == signingAlgorithm &&
-    other.storageLabelClaim == storageLabelClaim &&
-    other.storageQuotaClaim == storageQuotaClaim &&
-    other.timeout == timeout &&
-    other.tokenEndpointAuthMethod == tokenEndpointAuthMethod;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (allowInsecureRequests.hashCode) +
-    (autoLaunch.hashCode) +
-    (autoRegister.hashCode) +
-    (buttonText.hashCode) +
-    (clientId.hashCode) +
-    (clientSecret.hashCode) +
-    (defaultStorageQuota == null ? 0 : defaultStorageQuota!.hashCode) +
-    (enabled.hashCode) +
-    (endSessionEndpoint.hashCode) +
-    (issuerUrl.hashCode) +
-    (mobileOverrideEnabled.hashCode) +
-    (mobileRedirectUri.hashCode) +
-    (profileSigningAlgorithm.hashCode) +
-    (prompt.hashCode) +
-    (roleClaim.hashCode) +
-    (scope.hashCode) +
-    (signingAlgorithm.hashCode) +
-    (storageLabelClaim.hashCode) +
-    (storageQuotaClaim.hashCode) +
-    (timeout.hashCode) +
-    (tokenEndpointAuthMethod.hashCode);
-
-  @override
-  String toString() => 'SystemConfigOAuthDto[allowInsecureRequests=$allowInsecureRequests, autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, endSessionEndpoint=$endSessionEndpoint, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, prompt=$prompt, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod]';
+  static SystemConfigOAuthDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigOAuthDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      allowInsecureRequests: json[r'allowInsecureRequests'] as bool,
+      autoLaunch: json[r'autoLaunch'] as bool,
+      autoRegister: json[r'autoRegister'] as bool,
+      buttonText: json[r'buttonText'] as String,
+      clientId: json[r'clientId'] as String,
+      clientSecret: json[r'clientSecret'] as String,
+      defaultStorageQuota: (json[r'defaultStorageQuota'] as int?),
+      enabled: json[r'enabled'] as bool,
+      endSessionEndpoint: json[r'endSessionEndpoint'] as String,
+      issuerUrl: json[r'issuerUrl'] as String,
+      mobileOverrideEnabled: json[r'mobileOverrideEnabled'] as bool,
+      mobileRedirectUri: json[r'mobileRedirectUri'] as String,
+      profileSigningAlgorithm: json[r'profileSigningAlgorithm'] as String,
+      prompt: json[r'prompt'] as String,
+      roleClaim: json[r'roleClaim'] as String,
+      scope: json[r'scope'] as String,
+      signingAlgorithm: json[r'signingAlgorithm'] as String,
+      storageLabelClaim: json[r'storageLabelClaim'] as String,
+      storageQuotaClaim: json[r'storageQuotaClaim'] as String,
+      timeout: json[r'timeout'] as int,
+      tokenEndpointAuthMethod: (OAuthTokenEndpointAuthMethod.fromJson(json[r'tokenEndpointAuthMethod']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'allowInsecureRequests'] = this.allowInsecureRequests;
-      json[r'autoLaunch'] = this.autoLaunch;
-      json[r'autoRegister'] = this.autoRegister;
-      json[r'buttonText'] = this.buttonText;
-      json[r'clientId'] = this.clientId;
-      json[r'clientSecret'] = this.clientSecret;
-    if (this.defaultStorageQuota != null) {
-      json[r'defaultStorageQuota'] = this.defaultStorageQuota;
-    } else {
-    //  json[r'defaultStorageQuota'] = null;
+    json[r'allowInsecureRequests'] = allowInsecureRequests;
+    json[r'autoLaunch'] = autoLaunch;
+    json[r'autoRegister'] = autoRegister;
+    json[r'buttonText'] = buttonText;
+    json[r'clientId'] = clientId;
+    json[r'clientSecret'] = clientSecret;
+    if (defaultStorageQuota != null) {
+      json[r'defaultStorageQuota'] = defaultStorageQuota!;
     }
-      json[r'enabled'] = this.enabled;
-      json[r'endSessionEndpoint'] = this.endSessionEndpoint;
-      json[r'issuerUrl'] = this.issuerUrl;
-      json[r'mobileOverrideEnabled'] = this.mobileOverrideEnabled;
-      json[r'mobileRedirectUri'] = this.mobileRedirectUri;
-      json[r'profileSigningAlgorithm'] = this.profileSigningAlgorithm;
-      json[r'prompt'] = this.prompt;
-      json[r'roleClaim'] = this.roleClaim;
-      json[r'scope'] = this.scope;
-      json[r'signingAlgorithm'] = this.signingAlgorithm;
-      json[r'storageLabelClaim'] = this.storageLabelClaim;
-      json[r'storageQuotaClaim'] = this.storageQuotaClaim;
-      json[r'timeout'] = this.timeout;
-      json[r'tokenEndpointAuthMethod'] = this.tokenEndpointAuthMethod;
+    json[r'enabled'] = enabled;
+    json[r'endSessionEndpoint'] = endSessionEndpoint;
+    json[r'issuerUrl'] = issuerUrl;
+    json[r'mobileOverrideEnabled'] = mobileOverrideEnabled;
+    json[r'mobileRedirectUri'] = mobileRedirectUri;
+    json[r'profileSigningAlgorithm'] = profileSigningAlgorithm;
+    json[r'prompt'] = prompt;
+    json[r'roleClaim'] = roleClaim;
+    json[r'scope'] = scope;
+    json[r'signingAlgorithm'] = signingAlgorithm;
+    json[r'storageLabelClaim'] = storageLabelClaim;
+    json[r'storageQuotaClaim'] = storageQuotaClaim;
+    json[r'timeout'] = timeout;
+    json[r'tokenEndpointAuthMethod'] = tokenEndpointAuthMethod.toJson();
     return json;
   }
 
-  /// Returns a new [SystemConfigOAuthDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigOAuthDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigOAuthDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigOAuthDto(
-        allowInsecureRequests: mapValueOfType<bool>(json, r'allowInsecureRequests')!,
-        autoLaunch: mapValueOfType<bool>(json, r'autoLaunch')!,
-        autoRegister: mapValueOfType<bool>(json, r'autoRegister')!,
-        buttonText: mapValueOfType<String>(json, r'buttonText')!,
-        clientId: mapValueOfType<String>(json, r'clientId')!,
-        clientSecret: mapValueOfType<String>(json, r'clientSecret')!,
-        defaultStorageQuota: mapValueOfType<int>(json, r'defaultStorageQuota'),
-        enabled: mapValueOfType<bool>(json, r'enabled')!,
-        endSessionEndpoint: mapValueOfType<String>(json, r'endSessionEndpoint')!,
-        issuerUrl: mapValueOfType<String>(json, r'issuerUrl')!,
-        mobileOverrideEnabled: mapValueOfType<bool>(json, r'mobileOverrideEnabled')!,
-        mobileRedirectUri: mapValueOfType<String>(json, r'mobileRedirectUri')!,
-        profileSigningAlgorithm: mapValueOfType<String>(json, r'profileSigningAlgorithm')!,
-        prompt: mapValueOfType<String>(json, r'prompt')!,
-        roleClaim: mapValueOfType<String>(json, r'roleClaim')!,
-        scope: mapValueOfType<String>(json, r'scope')!,
-        signingAlgorithm: mapValueOfType<String>(json, r'signingAlgorithm')!,
-        storageLabelClaim: mapValueOfType<String>(json, r'storageLabelClaim')!,
-        storageQuotaClaim: mapValueOfType<String>(json, r'storageQuotaClaim')!,
-        timeout: mapValueOfType<int>(json, r'timeout')!,
-        tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.fromJson(json[r'tokenEndpointAuthMethod'])!,
-      );
-    }
-    return null;
+  SystemConfigOAuthDto copyWith({
+    bool? allowInsecureRequests,
+    bool? autoLaunch,
+    bool? autoRegister,
+    String? buttonText,
+    String? clientId,
+    String? clientSecret,
+    Object? defaultStorageQuota = _undefined,
+    bool? enabled,
+    String? endSessionEndpoint,
+    String? issuerUrl,
+    bool? mobileOverrideEnabled,
+    String? mobileRedirectUri,
+    String? profileSigningAlgorithm,
+    String? prompt,
+    String? roleClaim,
+    String? scope,
+    String? signingAlgorithm,
+    String? storageLabelClaim,
+    String? storageQuotaClaim,
+    int? timeout,
+    OAuthTokenEndpointAuthMethod? tokenEndpointAuthMethod,
+  }) {
+    return .new(
+      allowInsecureRequests: allowInsecureRequests ?? this.allowInsecureRequests,
+      autoLaunch: autoLaunch ?? this.autoLaunch,
+      autoRegister: autoRegister ?? this.autoRegister,
+      buttonText: buttonText ?? this.buttonText,
+      clientId: clientId ?? this.clientId,
+      clientSecret: clientSecret ?? this.clientSecret,
+      defaultStorageQuota: identical(defaultStorageQuota, _undefined)
+          ? this.defaultStorageQuota
+          : defaultStorageQuota as int?,
+      enabled: enabled ?? this.enabled,
+      endSessionEndpoint: endSessionEndpoint ?? this.endSessionEndpoint,
+      issuerUrl: issuerUrl ?? this.issuerUrl,
+      mobileOverrideEnabled: mobileOverrideEnabled ?? this.mobileOverrideEnabled,
+      mobileRedirectUri: mobileRedirectUri ?? this.mobileRedirectUri,
+      profileSigningAlgorithm: profileSigningAlgorithm ?? this.profileSigningAlgorithm,
+      prompt: prompt ?? this.prompt,
+      roleClaim: roleClaim ?? this.roleClaim,
+      scope: scope ?? this.scope,
+      signingAlgorithm: signingAlgorithm ?? this.signingAlgorithm,
+      storageLabelClaim: storageLabelClaim ?? this.storageLabelClaim,
+      storageQuotaClaim: storageQuotaClaim ?? this.storageQuotaClaim,
+      timeout: timeout ?? this.timeout,
+      tokenEndpointAuthMethod: tokenEndpointAuthMethod ?? this.tokenEndpointAuthMethod,
+    );
   }
 
-  static List<SystemConfigOAuthDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigOAuthDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigOAuthDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigOAuthDto &&
+            allowInsecureRequests == other.allowInsecureRequests &&
+            autoLaunch == other.autoLaunch &&
+            autoRegister == other.autoRegister &&
+            buttonText == other.buttonText &&
+            clientId == other.clientId &&
+            clientSecret == other.clientSecret &&
+            defaultStorageQuota == other.defaultStorageQuota &&
+            enabled == other.enabled &&
+            endSessionEndpoint == other.endSessionEndpoint &&
+            issuerUrl == other.issuerUrl &&
+            mobileOverrideEnabled == other.mobileOverrideEnabled &&
+            mobileRedirectUri == other.mobileRedirectUri &&
+            profileSigningAlgorithm == other.profileSigningAlgorithm &&
+            prompt == other.prompt &&
+            roleClaim == other.roleClaim &&
+            scope == other.scope &&
+            signingAlgorithm == other.signingAlgorithm &&
+            storageLabelClaim == other.storageLabelClaim &&
+            storageQuotaClaim == other.storageQuotaClaim &&
+            timeout == other.timeout &&
+            tokenEndpointAuthMethod == other.tokenEndpointAuthMethod);
   }
 
-  static Map<String, SystemConfigOAuthDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigOAuthDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigOAuthDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      allowInsecureRequests,
+      autoLaunch,
+      autoRegister,
+      buttonText,
+      clientId,
+      clientSecret,
+      defaultStorageQuota,
+      enabled,
+      endSessionEndpoint,
+      issuerUrl,
+      mobileOverrideEnabled,
+      mobileRedirectUri,
+      profileSigningAlgorithm,
+      prompt,
+      roleClaim,
+      scope,
+      signingAlgorithm,
+      storageLabelClaim,
+      storageQuotaClaim,
+      timeout,
+      tokenEndpointAuthMethod,
+    ]);
   }
 
-  // maps a json object with a list of SystemConfigOAuthDto-objects as value to a dart map
-  static Map<String, List<SystemConfigOAuthDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigOAuthDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigOAuthDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'allowInsecureRequests',
-    'autoLaunch',
-    'autoRegister',
-    'buttonText',
-    'clientId',
-    'clientSecret',
-    'defaultStorageQuota',
-    'enabled',
-    'endSessionEndpoint',
-    'issuerUrl',
-    'mobileOverrideEnabled',
-    'mobileRedirectUri',
-    'profileSigningAlgorithm',
-    'prompt',
-    'roleClaim',
-    'scope',
-    'signingAlgorithm',
-    'storageLabelClaim',
-    'storageQuotaClaim',
-    'timeout',
-    'tokenEndpointAuthMethod',
-  };
+  @override
+  String toString() =>
+      'SystemConfigOAuthDto(allowInsecureRequests=$allowInsecureRequests, autoLaunch=$autoLaunch, autoRegister=$autoRegister, buttonText=$buttonText, clientId=$clientId, clientSecret=$clientSecret, defaultStorageQuota=$defaultStorageQuota, enabled=$enabled, endSessionEndpoint=$endSessionEndpoint, issuerUrl=$issuerUrl, mobileOverrideEnabled=$mobileOverrideEnabled, mobileRedirectUri=$mobileRedirectUri, profileSigningAlgorithm=$profileSigningAlgorithm, prompt=$prompt, roleClaim=$roleClaim, scope=$scope, signingAlgorithm=$signingAlgorithm, storageLabelClaim=$storageLabelClaim, storageQuotaClaim=$storageQuotaClaim, timeout=$timeout, tokenEndpointAuthMethod=$tokenEndpointAuthMethod)';
 }
-

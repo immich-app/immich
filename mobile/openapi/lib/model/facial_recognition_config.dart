@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class FacialRecognitionConfig {
-  /// Returns a new [FacialRecognitionConfig] instance.
-  FacialRecognitionConfig({
+final class FacialRecognitionConfig {
+  const FacialRecognitionConfig({
     required this.enabled,
     required this.maxDistance,
     required this.minFaces,
@@ -21,125 +12,76 @@ class FacialRecognitionConfig {
   });
 
   /// Whether the task is enabled
-  bool enabled;
+  final bool enabled;
 
   /// Maximum distance threshold for face recognition
-  ///
-  /// Minimum value: 0.1
-  /// Maximum value: 2
-  double maxDistance;
+  final double maxDistance;
 
   /// Minimum number of faces required for recognition
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 9007199254740991
-  int minFaces;
+  final int minFaces;
 
   /// Minimum confidence score for face detection
-  ///
-  /// Minimum value: 0.1
-  /// Maximum value: 1
-  double minScore;
+  final double minScore;
 
   /// Name of the model to use
-  String modelName;
+  final String modelName;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is FacialRecognitionConfig &&
-    other.enabled == enabled &&
-    other.maxDistance == maxDistance &&
-    other.minFaces == minFaces &&
-    other.minScore == minScore &&
-    other.modelName == modelName;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (maxDistance.hashCode) +
-    (minFaces.hashCode) +
-    (minScore.hashCode) +
-    (modelName.hashCode);
-
-  @override
-  String toString() => 'FacialRecognitionConfig[enabled=$enabled, maxDistance=$maxDistance, minFaces=$minFaces, minScore=$minScore, modelName=$modelName]';
+  static FacialRecognitionConfig? fromJson(dynamic value) {
+    ApiCompat.upgrade<FacialRecognitionConfig>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      enabled: json[r'enabled'] as bool,
+      maxDistance: (json[r'maxDistance'] as num).toDouble(),
+      minFaces: json[r'minFaces'] as int,
+      minScore: (json[r'minScore'] as num).toDouble(),
+      modelName: json[r'modelName'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'maxDistance'] = this.maxDistance;
-      json[r'minFaces'] = this.minFaces;
-      json[r'minScore'] = this.minScore;
-      json[r'modelName'] = this.modelName;
+    json[r'enabled'] = enabled;
+    json[r'maxDistance'] = maxDistance;
+    json[r'minFaces'] = minFaces;
+    json[r'minScore'] = minScore;
+    json[r'modelName'] = modelName;
     return json;
   }
 
-  /// Returns a new [FacialRecognitionConfig] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static FacialRecognitionConfig? fromJson(dynamic value) {
-    upgradeDto(value, "FacialRecognitionConfig");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return FacialRecognitionConfig(
-        enabled: mapValueOfType<bool>(json, r'enabled')!,
-        maxDistance: (mapValueOfType<num>(json, r'maxDistance')!).toDouble(),
-        minFaces: mapValueOfType<int>(json, r'minFaces')!,
-        minScore: (mapValueOfType<num>(json, r'minScore')!).toDouble(),
-        modelName: mapValueOfType<String>(json, r'modelName')!,
-      );
-    }
-    return null;
+  FacialRecognitionConfig copyWith({
+    bool? enabled,
+    double? maxDistance,
+    int? minFaces,
+    double? minScore,
+    String? modelName,
+  }) {
+    return .new(
+      enabled: enabled ?? this.enabled,
+      maxDistance: maxDistance ?? this.maxDistance,
+      minFaces: minFaces ?? this.minFaces,
+      minScore: minScore ?? this.minScore,
+      modelName: modelName ?? this.modelName,
+    );
   }
 
-  static List<FacialRecognitionConfig> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <FacialRecognitionConfig>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = FacialRecognitionConfig.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is FacialRecognitionConfig &&
+            enabled == other.enabled &&
+            maxDistance == other.maxDistance &&
+            minFaces == other.minFaces &&
+            minScore == other.minScore &&
+            modelName == other.modelName);
   }
 
-  static Map<String, FacialRecognitionConfig> mapFromJson(dynamic json) {
-    final map = <String, FacialRecognitionConfig>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = FacialRecognitionConfig.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([enabled, maxDistance, minFaces, minScore, modelName]);
   }
 
-  // maps a json object with a list of FacialRecognitionConfig-objects as value to a dart map
-  static Map<String, List<FacialRecognitionConfig>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<FacialRecognitionConfig>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = FacialRecognitionConfig.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'enabled',
-    'maxDistance',
-    'minFaces',
-    'minScore',
-    'modelName',
-  };
+  @override
+  String toString() =>
+      'FacialRecognitionConfig(enabled=$enabled, maxDistance=$maxDistance, minFaces=$minFaces, minScore=$minScore, modelName=$modelName)';
 }
-

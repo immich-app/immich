@@ -1,619 +1,474 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class RandomSearchDto {
-  /// Returns a new [RandomSearchDto] instance.
-  RandomSearchDto({
-    this.albumIds = const [],
-    this.city,
-    this.country,
-    this.createdAfter,
-    this.createdBefore,
-    this.isEncoded,
-    this.isFavorite,
-    this.isMotion,
-    this.isNotInAlbum,
-    this.isOffline,
-    this.lensModel,
-    this.libraryId,
-    this.make,
-    this.model,
-    this.ocr,
-    this.personIds = const [],
-    this.rating,
-    this.size,
-    this.state,
-    this.tagIds = const [],
-    this.takenAfter,
-    this.takenBefore,
-    this.trashedAfter,
-    this.trashedBefore,
-    this.type,
-    this.updatedAfter,
-    this.updatedBefore,
-    this.visibility,
-    this.withDeleted,
-    this.withExif,
-    this.withPeople,
-    this.withStacked,
+final class RandomSearchDto {
+  const RandomSearchDto({
+    this.albumIds = const Optional.absent(),
+    this.city = const Optional.absent(),
+    this.country = const Optional.absent(),
+    this.createdAfter = const Optional.absent(),
+    this.createdBefore = const Optional.absent(),
+    this.isEncoded = const Optional.absent(),
+    this.isFavorite = const Optional.absent(),
+    this.isMotion = const Optional.absent(),
+    this.isNotInAlbum = const Optional.absent(),
+    this.isOffline = const Optional.absent(),
+    this.lensModel = const Optional.absent(),
+    this.libraryId = const Optional.absent(),
+    this.make = const Optional.absent(),
+    this.model = const Optional.absent(),
+    this.ocr = const Optional.absent(),
+    this.personIds = const Optional.absent(),
+    this.rating = const Optional.absent(),
+    this.size = const Optional.absent(),
+    this.state = const Optional.absent(),
+    this.tagIds = const Optional.absent(),
+    this.takenAfter = const Optional.absent(),
+    this.takenBefore = const Optional.absent(),
+    this.trashedAfter = const Optional.absent(),
+    this.trashedBefore = const Optional.absent(),
+    this.type = const Optional.absent(),
+    this.updatedAfter = const Optional.absent(),
+    this.updatedBefore = const Optional.absent(),
+    this.visibility = const Optional.absent(),
+    this.withDeleted = const Optional.absent(),
+    this.withExif = const Optional.absent(),
+    this.withPeople = const Optional.absent(),
+    this.withStacked = const Optional.absent(),
   });
 
   /// Filter by album IDs
-  List<String> albumIds;
+  final Optional<List<String>> albumIds;
 
   /// Filter by city name
-  String? city;
+  final Optional<String?> city;
 
   /// Filter by country name
-  String? country;
+  final Optional<String?> country;
 
   /// Filter by creation date (after)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? createdAfter;
+  final Optional<DateTime> createdAfter;
 
   /// Filter by creation date (before)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? createdBefore;
+  final Optional<DateTime> createdBefore;
 
   /// Filter by encoded status
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isEncoded;
+  final Optional<bool> isEncoded;
 
   /// Filter by favorite status
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isFavorite;
+  final Optional<bool> isFavorite;
 
   /// Filter by motion photo status
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isMotion;
+  final Optional<bool> isMotion;
 
   /// Filter assets not in any album
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isNotInAlbum;
+  final Optional<bool> isNotInAlbum;
 
   /// Filter by offline status
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isOffline;
+  final Optional<bool> isOffline;
 
   /// Filter by lens model
-  String? lensModel;
+  final Optional<String?> lensModel;
 
   /// Library ID to filter by
-  String? libraryId;
+  final Optional<String?> libraryId;
 
   /// Filter by camera make
-  String? make;
+  final Optional<String?> make;
 
   /// Filter by camera model
-  String? model;
+  final Optional<String?> model;
 
   /// Filter by OCR text content
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? ocr;
+  final Optional<String> ocr;
 
   /// Filter by person IDs
-  List<String> personIds;
+  final Optional<List<String>> personIds;
 
   /// Filter by rating [1-5], or null for unrated
-  ///
-  /// Minimum value: -1
-  /// Maximum value: 5
-  int? rating;
+  /// Available since server v1.0.0.
+  final Optional<int?> rating;
 
   /// Number of results to return
-  ///
-  /// Minimum value: 1
-  /// Maximum value: 1000
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  int? size;
+  final Optional<int> size;
 
   /// Filter by state/province name
-  String? state;
+  final Optional<String?> state;
 
   /// Filter by tag IDs
-  List<String>? tagIds;
+  final Optional<List<String>?> tagIds;
 
   /// Filter by taken date (after)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? takenAfter;
+  final Optional<DateTime> takenAfter;
 
   /// Filter by taken date (before)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? takenBefore;
+  final Optional<DateTime> takenBefore;
 
   /// Filter by trash date (after)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? trashedAfter;
+  final Optional<DateTime> trashedAfter;
 
   /// Filter by trash date (before)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? trashedBefore;
+  final Optional<DateTime> trashedBefore;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetTypeEnum? type;
+  final Optional<AssetTypeEnum> type;
 
   /// Filter by update date (after)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? updatedAfter;
+  final Optional<DateTime> updatedAfter;
 
   /// Filter by update date (before)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  DateTime? updatedBefore;
+  final Optional<DateTime> updatedBefore;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetVisibility? visibility;
+  final Optional<AssetVisibility> visibility;
 
   /// Include deleted assets
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? withDeleted;
+  final Optional<bool> withDeleted;
 
   /// Include EXIF data in response
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? withExif;
+  final Optional<bool> withExif;
 
   /// Include people data in response
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? withPeople;
+  final Optional<bool> withPeople;
 
   /// Include stacked assets
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? withStacked;
+  final Optional<bool> withStacked;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is RandomSearchDto &&
-    _deepEquality.equals(other.albumIds, albumIds) &&
-    other.city == city &&
-    other.country == country &&
-    other.createdAfter == createdAfter &&
-    other.createdBefore == createdBefore &&
-    other.isEncoded == isEncoded &&
-    other.isFavorite == isFavorite &&
-    other.isMotion == isMotion &&
-    other.isNotInAlbum == isNotInAlbum &&
-    other.isOffline == isOffline &&
-    other.lensModel == lensModel &&
-    other.libraryId == libraryId &&
-    other.make == make &&
-    other.model == model &&
-    other.ocr == ocr &&
-    _deepEquality.equals(other.personIds, personIds) &&
-    other.rating == rating &&
-    other.size == size &&
-    other.state == state &&
-    _deepEquality.equals(other.tagIds, tagIds) &&
-    other.takenAfter == takenAfter &&
-    other.takenBefore == takenBefore &&
-    other.trashedAfter == trashedAfter &&
-    other.trashedBefore == trashedBefore &&
-    other.type == type &&
-    other.updatedAfter == updatedAfter &&
-    other.updatedBefore == updatedBefore &&
-    other.visibility == visibility &&
-    other.withDeleted == withDeleted &&
-    other.withExif == withExif &&
-    other.withPeople == withPeople &&
-    other.withStacked == withStacked;
+  static const ApiVersion ratingAddedIn = .new(1, 0, 0);
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumIds.hashCode) +
-    (city == null ? 0 : city!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
-    (createdAfter == null ? 0 : createdAfter!.hashCode) +
-    (createdBefore == null ? 0 : createdBefore!.hashCode) +
-    (isEncoded == null ? 0 : isEncoded!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isMotion == null ? 0 : isMotion!.hashCode) +
-    (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
-    (isOffline == null ? 0 : isOffline!.hashCode) +
-    (lensModel == null ? 0 : lensModel!.hashCode) +
-    (libraryId == null ? 0 : libraryId!.hashCode) +
-    (make == null ? 0 : make!.hashCode) +
-    (model == null ? 0 : model!.hashCode) +
-    (ocr == null ? 0 : ocr!.hashCode) +
-    (personIds.hashCode) +
-    (rating == null ? 0 : rating!.hashCode) +
-    (size == null ? 0 : size!.hashCode) +
-    (state == null ? 0 : state!.hashCode) +
-    (tagIds == null ? 0 : tagIds!.hashCode) +
-    (takenAfter == null ? 0 : takenAfter!.hashCode) +
-    (takenBefore == null ? 0 : takenBefore!.hashCode) +
-    (trashedAfter == null ? 0 : trashedAfter!.hashCode) +
-    (trashedBefore == null ? 0 : trashedBefore!.hashCode) +
-    (type == null ? 0 : type!.hashCode) +
-    (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
-    (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (visibility == null ? 0 : visibility!.hashCode) +
-    (withDeleted == null ? 0 : withDeleted!.hashCode) +
-    (withExif == null ? 0 : withExif!.hashCode) +
-    (withPeople == null ? 0 : withPeople!.hashCode) +
-    (withStacked == null ? 0 : withStacked!.hashCode);
+  static const ApiState ratingState = .stable;
 
-  @override
-  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  static RandomSearchDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<RandomSearchDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      albumIds: json.containsKey(r'albumIds')
+          ? Optional.present(((json[r'albumIds'] as List?)?.map(($e) => $e as String).toList(growable: false))!)
+          : const Optional.absent(),
+      city: json.containsKey(r'city') ? Optional.present((json[r'city'] as String?)) : const Optional.absent(),
+      country: json.containsKey(r'country') ? Optional.present((json[r'country'] as String?)) : const Optional.absent(),
+      createdAfter: json.containsKey(r'createdAfter')
+          ? Optional.present(DateTime.parse(json[r'createdAfter'] as String))
+          : const Optional.absent(),
+      createdBefore: json.containsKey(r'createdBefore')
+          ? Optional.present(DateTime.parse(json[r'createdBefore'] as String))
+          : const Optional.absent(),
+      isEncoded: json.containsKey(r'isEncoded')
+          ? Optional.present(json[r'isEncoded'] as bool)
+          : const Optional.absent(),
+      isFavorite: json.containsKey(r'isFavorite')
+          ? Optional.present(json[r'isFavorite'] as bool)
+          : const Optional.absent(),
+      isMotion: json.containsKey(r'isMotion') ? Optional.present(json[r'isMotion'] as bool) : const Optional.absent(),
+      isNotInAlbum: json.containsKey(r'isNotInAlbum')
+          ? Optional.present(json[r'isNotInAlbum'] as bool)
+          : const Optional.absent(),
+      isOffline: json.containsKey(r'isOffline')
+          ? Optional.present(json[r'isOffline'] as bool)
+          : const Optional.absent(),
+      lensModel: json.containsKey(r'lensModel')
+          ? Optional.present((json[r'lensModel'] as String?))
+          : const Optional.absent(),
+      libraryId: json.containsKey(r'libraryId')
+          ? Optional.present((json[r'libraryId'] as String?))
+          : const Optional.absent(),
+      make: json.containsKey(r'make') ? Optional.present((json[r'make'] as String?)) : const Optional.absent(),
+      model: json.containsKey(r'model') ? Optional.present((json[r'model'] as String?)) : const Optional.absent(),
+      ocr: json.containsKey(r'ocr') ? Optional.present(json[r'ocr'] as String) : const Optional.absent(),
+      personIds: json.containsKey(r'personIds')
+          ? Optional.present(((json[r'personIds'] as List?)?.map(($e) => $e as String).toList(growable: false))!)
+          : const Optional.absent(),
+      rating: json.containsKey(r'rating') ? Optional.present((json[r'rating'] as int?)) : const Optional.absent(),
+      size: json.containsKey(r'size') ? Optional.present(json[r'size'] as int) : const Optional.absent(),
+      state: json.containsKey(r'state') ? Optional.present((json[r'state'] as String?)) : const Optional.absent(),
+      tagIds: json.containsKey(r'tagIds')
+          ? Optional.present((json[r'tagIds'] as List?)?.map(($e) => $e as String).toList(growable: false))
+          : const Optional.absent(),
+      takenAfter: json.containsKey(r'takenAfter')
+          ? Optional.present(DateTime.parse(json[r'takenAfter'] as String))
+          : const Optional.absent(),
+      takenBefore: json.containsKey(r'takenBefore')
+          ? Optional.present(DateTime.parse(json[r'takenBefore'] as String))
+          : const Optional.absent(),
+      trashedAfter: json.containsKey(r'trashedAfter')
+          ? Optional.present(DateTime.parse(json[r'trashedAfter'] as String))
+          : const Optional.absent(),
+      trashedBefore: json.containsKey(r'trashedBefore')
+          ? Optional.present(DateTime.parse(json[r'trashedBefore'] as String))
+          : const Optional.absent(),
+      type: json.containsKey(r'type')
+          ? Optional.present((AssetTypeEnum.fromJson(json[r'type']))!)
+          : const Optional.absent(),
+      updatedAfter: json.containsKey(r'updatedAfter')
+          ? Optional.present(DateTime.parse(json[r'updatedAfter'] as String))
+          : const Optional.absent(),
+      updatedBefore: json.containsKey(r'updatedBefore')
+          ? Optional.present(DateTime.parse(json[r'updatedBefore'] as String))
+          : const Optional.absent(),
+      visibility: json.containsKey(r'visibility')
+          ? Optional.present((AssetVisibility.fromJson(json[r'visibility']))!)
+          : const Optional.absent(),
+      withDeleted: json.containsKey(r'withDeleted')
+          ? Optional.present(json[r'withDeleted'] as bool)
+          : const Optional.absent(),
+      withExif: json.containsKey(r'withExif') ? Optional.present(json[r'withExif'] as bool) : const Optional.absent(),
+      withPeople: json.containsKey(r'withPeople')
+          ? Optional.present(json[r'withPeople'] as bool)
+          : const Optional.absent(),
+      withStacked: json.containsKey(r'withStacked')
+          ? Optional.present(json[r'withStacked'] as bool)
+          : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumIds'] = this.albumIds;
-    if (this.city != null) {
-      json[r'city'] = this.city;
-    } else {
-    //  json[r'city'] = null;
+    if (albumIds case Present(:final value)) {
+      json[r'albumIds'] = value;
     }
-    if (this.country != null) {
-      json[r'country'] = this.country;
-    } else {
-    //  json[r'country'] = null;
+    if (city case Present(:final value)) {
+      json[r'city'] = value;
     }
-    if (this.createdAfter != null) {
-      json[r'createdAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAfter!.millisecondsSinceEpoch
-        : this.createdAfter!.toUtc().toIso8601String();
-    } else {
-    //  json[r'createdAfter'] = null;
+    if (country case Present(:final value)) {
+      json[r'country'] = value;
     }
-    if (this.createdBefore != null) {
-      json[r'createdBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdBefore!.millisecondsSinceEpoch
-        : this.createdBefore!.toUtc().toIso8601String();
-    } else {
-    //  json[r'createdBefore'] = null;
+    if (createdAfter case Present(:final value)) {
+      json[r'createdAfter'] = value.toUtc().toIso8601String();
     }
-    if (this.isEncoded != null) {
-      json[r'isEncoded'] = this.isEncoded;
-    } else {
-    //  json[r'isEncoded'] = null;
+    if (createdBefore case Present(:final value)) {
+      json[r'createdBefore'] = value.toUtc().toIso8601String();
     }
-    if (this.isFavorite != null) {
-      json[r'isFavorite'] = this.isFavorite;
-    } else {
-    //  json[r'isFavorite'] = null;
+    if (isEncoded case Present(:final value)) {
+      json[r'isEncoded'] = value;
     }
-    if (this.isMotion != null) {
-      json[r'isMotion'] = this.isMotion;
-    } else {
-    //  json[r'isMotion'] = null;
+    if (isFavorite case Present(:final value)) {
+      json[r'isFavorite'] = value;
     }
-    if (this.isNotInAlbum != null) {
-      json[r'isNotInAlbum'] = this.isNotInAlbum;
-    } else {
-    //  json[r'isNotInAlbum'] = null;
+    if (isMotion case Present(:final value)) {
+      json[r'isMotion'] = value;
     }
-    if (this.isOffline != null) {
-      json[r'isOffline'] = this.isOffline;
-    } else {
-    //  json[r'isOffline'] = null;
+    if (isNotInAlbum case Present(:final value)) {
+      json[r'isNotInAlbum'] = value;
     }
-    if (this.lensModel != null) {
-      json[r'lensModel'] = this.lensModel;
-    } else {
-    //  json[r'lensModel'] = null;
+    if (isOffline case Present(:final value)) {
+      json[r'isOffline'] = value;
     }
-    if (this.libraryId != null) {
-      json[r'libraryId'] = this.libraryId;
-    } else {
-    //  json[r'libraryId'] = null;
+    if (lensModel case Present(:final value)) {
+      json[r'lensModel'] = value;
     }
-    if (this.make != null) {
-      json[r'make'] = this.make;
-    } else {
-    //  json[r'make'] = null;
+    if (libraryId case Present(:final value)) {
+      json[r'libraryId'] = value;
     }
-    if (this.model != null) {
-      json[r'model'] = this.model;
-    } else {
-    //  json[r'model'] = null;
+    if (make case Present(:final value)) {
+      json[r'make'] = value;
     }
-    if (this.ocr != null) {
-      json[r'ocr'] = this.ocr;
-    } else {
-    //  json[r'ocr'] = null;
+    if (model case Present(:final value)) {
+      json[r'model'] = value;
     }
-      json[r'personIds'] = this.personIds;
-    if (this.rating != null) {
-      json[r'rating'] = this.rating;
-    } else {
-    //  json[r'rating'] = null;
+    if (ocr case Present(:final value)) {
+      json[r'ocr'] = value;
     }
-    if (this.size != null) {
-      json[r'size'] = this.size;
-    } else {
-    //  json[r'size'] = null;
+    if (personIds case Present(:final value)) {
+      json[r'personIds'] = value;
     }
-    if (this.state != null) {
-      json[r'state'] = this.state;
-    } else {
-    //  json[r'state'] = null;
+    if (rating case Present(:final value)) {
+      json[r'rating'] = value;
     }
-    if (this.tagIds != null) {
-      json[r'tagIds'] = this.tagIds;
-    } else {
-    //  json[r'tagIds'] = null;
+    if (size case Present(:final value)) {
+      json[r'size'] = value;
     }
-    if (this.takenAfter != null) {
-      json[r'takenAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.takenAfter!.millisecondsSinceEpoch
-        : this.takenAfter!.toUtc().toIso8601String();
-    } else {
-    //  json[r'takenAfter'] = null;
+    if (state case Present(:final value)) {
+      json[r'state'] = value;
     }
-    if (this.takenBefore != null) {
-      json[r'takenBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.takenBefore!.millisecondsSinceEpoch
-        : this.takenBefore!.toUtc().toIso8601String();
-    } else {
-    //  json[r'takenBefore'] = null;
+    if (tagIds case Present(:final value)) {
+      json[r'tagIds'] = value;
     }
-    if (this.trashedAfter != null) {
-      json[r'trashedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.trashedAfter!.millisecondsSinceEpoch
-        : this.trashedAfter!.toUtc().toIso8601String();
-    } else {
-    //  json[r'trashedAfter'] = null;
+    if (takenAfter case Present(:final value)) {
+      json[r'takenAfter'] = value.toUtc().toIso8601String();
     }
-    if (this.trashedBefore != null) {
-      json[r'trashedBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.trashedBefore!.millisecondsSinceEpoch
-        : this.trashedBefore!.toUtc().toIso8601String();
-    } else {
-    //  json[r'trashedBefore'] = null;
+    if (takenBefore case Present(:final value)) {
+      json[r'takenBefore'] = value.toUtc().toIso8601String();
     }
-    if (this.type != null) {
-      json[r'type'] = this.type;
-    } else {
-    //  json[r'type'] = null;
+    if (trashedAfter case Present(:final value)) {
+      json[r'trashedAfter'] = value.toUtc().toIso8601String();
     }
-    if (this.updatedAfter != null) {
-      json[r'updatedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedAfter!.millisecondsSinceEpoch
-        : this.updatedAfter!.toUtc().toIso8601String();
-    } else {
-    //  json[r'updatedAfter'] = null;
+    if (trashedBefore case Present(:final value)) {
+      json[r'trashedBefore'] = value.toUtc().toIso8601String();
     }
-    if (this.updatedBefore != null) {
-      json[r'updatedBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedBefore!.millisecondsSinceEpoch
-        : this.updatedBefore!.toUtc().toIso8601String();
-    } else {
-    //  json[r'updatedBefore'] = null;
+    if (type case Present(:final value)) {
+      json[r'type'] = value.toJson();
     }
-    if (this.visibility != null) {
-      json[r'visibility'] = this.visibility;
-    } else {
-    //  json[r'visibility'] = null;
+    if (updatedAfter case Present(:final value)) {
+      json[r'updatedAfter'] = value.toUtc().toIso8601String();
     }
-    if (this.withDeleted != null) {
-      json[r'withDeleted'] = this.withDeleted;
-    } else {
-    //  json[r'withDeleted'] = null;
+    if (updatedBefore case Present(:final value)) {
+      json[r'updatedBefore'] = value.toUtc().toIso8601String();
     }
-    if (this.withExif != null) {
-      json[r'withExif'] = this.withExif;
-    } else {
-    //  json[r'withExif'] = null;
+    if (visibility case Present(:final value)) {
+      json[r'visibility'] = value.toJson();
     }
-    if (this.withPeople != null) {
-      json[r'withPeople'] = this.withPeople;
-    } else {
-    //  json[r'withPeople'] = null;
+    if (withDeleted case Present(:final value)) {
+      json[r'withDeleted'] = value;
     }
-    if (this.withStacked != null) {
-      json[r'withStacked'] = this.withStacked;
-    } else {
-    //  json[r'withStacked'] = null;
+    if (withExif case Present(:final value)) {
+      json[r'withExif'] = value;
+    }
+    if (withPeople case Present(:final value)) {
+      json[r'withPeople'] = value;
+    }
+    if (withStacked case Present(:final value)) {
+      json[r'withStacked'] = value;
     }
     return json;
   }
 
-  /// Returns a new [RandomSearchDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static RandomSearchDto? fromJson(dynamic value) {
-    upgradeDto(value, "RandomSearchDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return RandomSearchDto(
-        albumIds: json[r'albumIds'] is Iterable
-            ? (json[r'albumIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        city: mapValueOfType<String>(json, r'city'),
-        country: mapValueOfType<String>(json, r'country'),
-        createdAfter: mapDateTime(json, r'createdAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        createdBefore: mapDateTime(json, r'createdBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        isMotion: mapValueOfType<bool>(json, r'isMotion'),
-        isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
-        isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        lensModel: mapValueOfType<String>(json, r'lensModel'),
-        libraryId: mapValueOfType<String>(json, r'libraryId'),
-        make: mapValueOfType<String>(json, r'make'),
-        model: mapValueOfType<String>(json, r'model'),
-        ocr: mapValueOfType<String>(json, r'ocr'),
-        personIds: json[r'personIds'] is Iterable
-            ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        rating: mapValueOfType<int>(json, r'rating'),
-        size: mapValueOfType<int>(json, r'size'),
-        state: mapValueOfType<String>(json, r'state'),
-        tagIds: json[r'tagIds'] is Iterable
-            ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        takenAfter: mapDateTime(json, r'takenAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        takenBefore: mapDateTime(json, r'takenBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        trashedAfter: mapDateTime(json, r'trashedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        trashedBefore: mapDateTime(json, r'trashedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        type: AssetTypeEnum.fromJson(json[r'type']),
-        updatedAfter: mapDateTime(json, r'updatedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        updatedBefore: mapDateTime(json, r'updatedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        visibility: AssetVisibility.fromJson(json[r'visibility']),
-        withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
-        withExif: mapValueOfType<bool>(json, r'withExif'),
-        withPeople: mapValueOfType<bool>(json, r'withPeople'),
-        withStacked: mapValueOfType<bool>(json, r'withStacked'),
-      );
-    }
-    return null;
+  RandomSearchDto copyWith({
+    Optional<List<String>>? albumIds,
+    Optional<String?>? city,
+    Optional<String?>? country,
+    Optional<DateTime>? createdAfter,
+    Optional<DateTime>? createdBefore,
+    Optional<bool>? isEncoded,
+    Optional<bool>? isFavorite,
+    Optional<bool>? isMotion,
+    Optional<bool>? isNotInAlbum,
+    Optional<bool>? isOffline,
+    Optional<String?>? lensModel,
+    Optional<String?>? libraryId,
+    Optional<String?>? make,
+    Optional<String?>? model,
+    Optional<String>? ocr,
+    Optional<List<String>>? personIds,
+    Optional<int?>? rating,
+    Optional<int>? size,
+    Optional<String?>? state,
+    Optional<List<String>?>? tagIds,
+    Optional<DateTime>? takenAfter,
+    Optional<DateTime>? takenBefore,
+    Optional<DateTime>? trashedAfter,
+    Optional<DateTime>? trashedBefore,
+    Optional<AssetTypeEnum>? type,
+    Optional<DateTime>? updatedAfter,
+    Optional<DateTime>? updatedBefore,
+    Optional<AssetVisibility>? visibility,
+    Optional<bool>? withDeleted,
+    Optional<bool>? withExif,
+    Optional<bool>? withPeople,
+    Optional<bool>? withStacked,
+  }) {
+    return .new(
+      albumIds: albumIds ?? this.albumIds,
+      city: city ?? this.city,
+      country: country ?? this.country,
+      createdAfter: createdAfter ?? this.createdAfter,
+      createdBefore: createdBefore ?? this.createdBefore,
+      isEncoded: isEncoded ?? this.isEncoded,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isMotion: isMotion ?? this.isMotion,
+      isNotInAlbum: isNotInAlbum ?? this.isNotInAlbum,
+      isOffline: isOffline ?? this.isOffline,
+      lensModel: lensModel ?? this.lensModel,
+      libraryId: libraryId ?? this.libraryId,
+      make: make ?? this.make,
+      model: model ?? this.model,
+      ocr: ocr ?? this.ocr,
+      personIds: personIds ?? this.personIds,
+      rating: rating ?? this.rating,
+      size: size ?? this.size,
+      state: state ?? this.state,
+      tagIds: tagIds ?? this.tagIds,
+      takenAfter: takenAfter ?? this.takenAfter,
+      takenBefore: takenBefore ?? this.takenBefore,
+      trashedAfter: trashedAfter ?? this.trashedAfter,
+      trashedBefore: trashedBefore ?? this.trashedBefore,
+      type: type ?? this.type,
+      updatedAfter: updatedAfter ?? this.updatedAfter,
+      updatedBefore: updatedBefore ?? this.updatedBefore,
+      visibility: visibility ?? this.visibility,
+      withDeleted: withDeleted ?? this.withDeleted,
+      withExif: withExif ?? this.withExif,
+      withPeople: withPeople ?? this.withPeople,
+      withStacked: withStacked ?? this.withStacked,
+    );
   }
 
-  static List<RandomSearchDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <RandomSearchDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = RandomSearchDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RandomSearchDto &&
+            albumIds == other.albumIds &&
+            city == other.city &&
+            country == other.country &&
+            createdAfter == other.createdAfter &&
+            createdBefore == other.createdBefore &&
+            isEncoded == other.isEncoded &&
+            isFavorite == other.isFavorite &&
+            isMotion == other.isMotion &&
+            isNotInAlbum == other.isNotInAlbum &&
+            isOffline == other.isOffline &&
+            lensModel == other.lensModel &&
+            libraryId == other.libraryId &&
+            make == other.make &&
+            model == other.model &&
+            ocr == other.ocr &&
+            personIds == other.personIds &&
+            rating == other.rating &&
+            size == other.size &&
+            state == other.state &&
+            tagIds == other.tagIds &&
+            takenAfter == other.takenAfter &&
+            takenBefore == other.takenBefore &&
+            trashedAfter == other.trashedAfter &&
+            trashedBefore == other.trashedBefore &&
+            type == other.type &&
+            updatedAfter == other.updatedAfter &&
+            updatedBefore == other.updatedBefore &&
+            visibility == other.visibility &&
+            withDeleted == other.withDeleted &&
+            withExif == other.withExif &&
+            withPeople == other.withPeople &&
+            withStacked == other.withStacked);
   }
 
-  static Map<String, RandomSearchDto> mapFromJson(dynamic json) {
-    final map = <String, RandomSearchDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = RandomSearchDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      albumIds,
+      city,
+      country,
+      createdAfter,
+      createdBefore,
+      isEncoded,
+      isFavorite,
+      isMotion,
+      isNotInAlbum,
+      isOffline,
+      lensModel,
+      libraryId,
+      make,
+      model,
+      ocr,
+      personIds,
+      rating,
+      size,
+      state,
+      tagIds,
+      takenAfter,
+      takenBefore,
+      trashedAfter,
+      trashedBefore,
+      type,
+      updatedAfter,
+      updatedBefore,
+      visibility,
+      withDeleted,
+      withExif,
+      withPeople,
+      withStacked,
+    ]);
   }
 
-  // maps a json object with a list of RandomSearchDto-objects as value to a dart map
-  static Map<String, List<RandomSearchDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<RandomSearchDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = RandomSearchDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() =>
+      'RandomSearchDto(albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked)';
 }
-

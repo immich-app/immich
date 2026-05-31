@@ -1,31 +1,38 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class SystemMetadataApi {
   SystemMetadataApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
+  static const ApiVersion getAdminOnboardingAddedIn = .new(1, 0, 0);
+
+  static const ApiState getAdminOnboardingState = .stable;
+
+  static const ApiVersion updateAdminOnboardingAddedIn = .new(1, 0, 0);
+
+  static const ApiState updateAdminOnboardingState = .stable;
+
+  static const ApiVersion getReverseGeocodingStateAddedIn = .new(1, 0, 0);
+
+  static const ApiState getReverseGeocodingStateState = .stable;
+
+  static const ApiVersion getVersionCheckStateAddedIn = .new(1, 0, 0);
+
+  static const ApiState getVersionCheckStateState = .stable;
+
   /// Retrieve admin onboarding
   ///
   /// Retrieve the current admin onboarding status.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAdminOnboardingWithHttpInfo() async {
-    // ignore: prefer_const_declarations
+  Future<Response> getAdminOnboardingWithHttpInfo({Future<void>? abortTrigger}) async {
     final apiPath = r'/system-metadata/admin-onboarding';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -34,163 +41,65 @@ class SystemMetadataApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve admin onboarding
   ///
   /// Retrieve the current admin onboarding status.
-  Future<AdminOnboardingUpdateDto?> getAdminOnboarding() async {
-    final response = await getAdminOnboardingWithHttpInfo();
+  ///
+  /// Available since server v1.0.0.
+  Future<AdminOnboardingUpdateDto> getAdminOnboarding({Future<void>? abortTrigger}) async {
+    final response = await getAdminOnboardingWithHttpInfo(abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AdminOnboardingUpdateDto',) as AdminOnboardingUpdateDto;
-    
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'AdminOnboardingUpdateDto')
+          as AdminOnboardingUpdateDto;
     }
-    return null;
-  }
-
-  /// Retrieve reverse geocoding state
-  ///
-  /// Retrieve the current state of the reverse geocoding import.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> getReverseGeocodingStateWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/system-metadata/reverse-geocoding-state';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve reverse geocoding state
-  ///
-  /// Retrieve the current state of the reverse geocoding import.
-  Future<ReverseGeocodingStateResponseDto?> getReverseGeocodingState() async {
-    final response = await getReverseGeocodingStateWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ReverseGeocodingStateResponseDto',) as ReverseGeocodingStateResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Retrieve version check state
-  ///
-  /// Retrieve the current state of the version check process.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  Future<Response> getVersionCheckStateWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/system-metadata/version-check-state';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Retrieve version check state
-  ///
-  /// Retrieve the current state of the version check process.
-  Future<VersionCheckStateResponseDto?> getVersionCheckState() async {
-    final response = await getVersionCheckStateWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'VersionCheckStateResponseDto',) as VersionCheckStateResponseDto;
-    
-    }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Update admin onboarding
   ///
   /// Update the admin onboarding status.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
-  Future<Response> updateAdminOnboardingWithHttpInfo(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> updateAdminOnboardingWithHttpInfo(
+    AdminOnboardingUpdateDto adminOnboardingUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
     final apiPath = r'/system-metadata/admin-onboarding';
 
-    // ignore: prefer_final_locals
     Object? postBody = adminOnboardingUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -198,13 +107,108 @@ class SystemMetadataApi {
   ///
   /// Update the admin onboarding status.
   ///
-  /// Parameters:
-  ///
-  /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
-  Future<void> updateAdminOnboarding(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
-    final response = await updateAdminOnboardingWithHttpInfo(adminOnboardingUpdateDto,);
+  /// Available since server v1.0.0.
+  Future<void> updateAdminOnboarding(
+    AdminOnboardingUpdateDto adminOnboardingUpdateDto, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await updateAdminOnboardingWithHttpInfo(adminOnboardingUpdateDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+  }
+
+  /// Retrieve reverse geocoding state
+  ///
+  /// Retrieve the current state of the reverse geocoding import.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getReverseGeocodingStateWithHttpInfo({Future<void>? abortTrigger}) async {
+    final apiPath = r'/system-metadata/reverse-geocoding-state';
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve reverse geocoding state
+  ///
+  /// Retrieve the current state of the reverse geocoding import.
+  ///
+  /// Available since server v1.0.0.
+  Future<ReverseGeocodingStateResponseDto> getReverseGeocodingState({Future<void>? abortTrigger}) async {
+    final response = await getReverseGeocodingStateWithHttpInfo(abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'ReverseGeocodingStateResponseDto')
+          as ReverseGeocodingStateResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
+  }
+
+  /// Retrieve version check state
+  ///
+  /// Retrieve the current state of the version check process.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getVersionCheckStateWithHttpInfo({Future<void>? abortTrigger}) async {
+    final apiPath = r'/system-metadata/version-check-state';
+
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve version check state
+  ///
+  /// Retrieve the current state of the version check process.
+  ///
+  /// Available since server v1.0.0.
+  Future<VersionCheckStateResponseDto> getVersionCheckState({Future<void>? abortTrigger}) async {
+    final response = await getVersionCheckStateWithHttpInfo(abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), r'VersionCheckStateResponseDto')
+          as VersionCheckStateResponseDto;
+    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

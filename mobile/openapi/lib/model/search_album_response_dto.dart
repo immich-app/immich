@@ -1,131 +1,77 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SearchAlbumResponseDto {
-  /// Returns a new [SearchAlbumResponseDto] instance.
-  SearchAlbumResponseDto({
-    required this.count,
-    this.facets = const [],
-    this.items = const [],
-    required this.total,
-  });
+final class SearchAlbumResponseDto {
+  const SearchAlbumResponseDto({required this.count, required this.facets, required this.items, required this.total});
 
   /// Number of albums in this page
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int count;
+  final int count;
 
-  List<SearchFacetResponseDto> facets;
+  final List<SearchFacetResponseDto> facets;
 
-  List<AlbumResponseDto> items;
+  final List<AlbumResponseDto> items;
 
   /// Total number of matching albums
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int total;
+  final int total;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchAlbumResponseDto &&
-    other.count == count &&
-    _deepEquality.equals(other.facets, facets) &&
-    _deepEquality.equals(other.items, items) &&
-    other.total == total;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (facets.hashCode) +
-    (items.hashCode) +
-    (total.hashCode);
-
-  @override
-  String toString() => 'SearchAlbumResponseDto[count=$count, facets=$facets, items=$items, total=$total]';
+  static SearchAlbumResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SearchAlbumResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      count: json[r'count'] as int,
+      facets: ((json[r'facets'] as List?)
+          ?.map(($e) => (SearchFacetResponseDto.fromJson($e))!)
+          .toList(growable: false))!,
+      items: ((json[r'items'] as List?)?.map(($e) => (AlbumResponseDto.fromJson($e))!).toList(growable: false))!,
+      total: json[r'total'] as int,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
-      json[r'facets'] = this.facets;
-      json[r'items'] = this.items;
-      json[r'total'] = this.total;
+    json[r'count'] = count;
+    json[r'facets'] = facets.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'items'] = items.map(($e) => $e.toJson()).toList(growable: false);
+    json[r'total'] = total;
     return json;
   }
 
-  /// Returns a new [SearchAlbumResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SearchAlbumResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SearchAlbumResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SearchAlbumResponseDto(
-        count: mapValueOfType<int>(json, r'count')!,
-        facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
-        items: AlbumResponseDto.listFromJson(json[r'items']),
-        total: mapValueOfType<int>(json, r'total')!,
-      );
-    }
-    return null;
+  SearchAlbumResponseDto copyWith({
+    int? count,
+    List<SearchFacetResponseDto>? facets,
+    List<AlbumResponseDto>? items,
+    int? total,
+  }) {
+    return .new(
+      count: count ?? this.count,
+      facets: facets ?? this.facets,
+      items: items ?? this.items,
+      total: total ?? this.total,
+    );
   }
 
-  static List<SearchAlbumResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SearchAlbumResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SearchAlbumResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SearchAlbumResponseDto &&
+            count == other.count &&
+            const DeepCollectionEquality().equals(facets, other.facets) &&
+            const DeepCollectionEquality().equals(items, other.items) &&
+            total == other.total);
   }
 
-  static Map<String, SearchAlbumResponseDto> mapFromJson(dynamic json) {
-    final map = <String, SearchAlbumResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SearchAlbumResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      count,
+      const DeepCollectionEquality().hash(facets),
+      const DeepCollectionEquality().hash(items),
+      total,
+    ]);
   }
 
-  // maps a json object with a list of SearchAlbumResponseDto-objects as value to a dart map
-  static Map<String, List<SearchAlbumResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SearchAlbumResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SearchAlbumResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'count',
-    'facets',
-    'items',
-    'total',
-  };
+  @override
+  String toString() => 'SearchAlbumResponseDto(count=$count, facets=$facets, items=$items, total=$total)';
 }
-

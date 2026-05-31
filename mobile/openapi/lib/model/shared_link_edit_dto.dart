@@ -1,213 +1,153 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SharedLinkEditDto {
-  /// Returns a new [SharedLinkEditDto] instance.
-  SharedLinkEditDto({
-    this.allowDownload,
-    this.allowUpload,
-    this.changeExpiryTime,
-    this.description,
-    this.expiresAt,
-    this.password,
-    this.showMetadata,
-    this.slug,
+final class SharedLinkEditDto {
+  const SharedLinkEditDto({
+    this.allowDownload = const Optional.absent(),
+    this.allowUpload = const Optional.absent(),
+    this.changeExpiryTime = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.expiresAt = const Optional.absent(),
+    this.password = const Optional.absent(),
+    this.showMetadata = const Optional.absent(),
+    this.slug = const Optional.absent(),
   });
 
   /// Allow downloads
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? allowDownload;
+  final Optional<bool> allowDownload;
 
   /// Allow uploads
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? allowUpload;
+  final Optional<bool> allowUpload;
 
   /// Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? changeExpiryTime;
+  final Optional<bool> changeExpiryTime;
 
   /// Link description
-  String? description;
+  final Optional<String?> description;
 
   /// Expiration date
-  DateTime? expiresAt;
+  final Optional<DateTime?> expiresAt;
 
   /// Link password
-  String? password;
+  final Optional<String?> password;
 
   /// Show metadata
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? showMetadata;
+  final Optional<bool> showMetadata;
 
   /// Custom URL slug
-  String? slug;
+  final Optional<String?> slug;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
-    other.allowDownload == allowDownload &&
-    other.allowUpload == allowUpload &&
-    other.changeExpiryTime == changeExpiryTime &&
-    other.description == description &&
-    other.expiresAt == expiresAt &&
-    other.password == password &&
-    other.showMetadata == showMetadata &&
-    other.slug == slug;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (allowDownload == null ? 0 : allowDownload!.hashCode) +
-    (allowUpload == null ? 0 : allowUpload!.hashCode) +
-    (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (password == null ? 0 : password!.hashCode) +
-    (showMetadata == null ? 0 : showMetadata!.hashCode) +
-    (slug == null ? 0 : slug!.hashCode);
-
-  @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
+  static SharedLinkEditDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SharedLinkEditDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      allowDownload: json.containsKey(r'allowDownload')
+          ? Optional.present(json[r'allowDownload'] as bool)
+          : const Optional.absent(),
+      allowUpload: json.containsKey(r'allowUpload')
+          ? Optional.present(json[r'allowUpload'] as bool)
+          : const Optional.absent(),
+      changeExpiryTime: json.containsKey(r'changeExpiryTime')
+          ? Optional.present(json[r'changeExpiryTime'] as bool)
+          : const Optional.absent(),
+      description: json.containsKey(r'description')
+          ? Optional.present((json[r'description'] as String?))
+          : const Optional.absent(),
+      expiresAt: json.containsKey(r'expiresAt')
+          ? Optional.present((json[r'expiresAt'] == null ? null : DateTime.parse(json[r'expiresAt'] as String)))
+          : const Optional.absent(),
+      password: json.containsKey(r'password')
+          ? Optional.present((json[r'password'] as String?))
+          : const Optional.absent(),
+      showMetadata: json.containsKey(r'showMetadata')
+          ? Optional.present(json[r'showMetadata'] as bool)
+          : const Optional.absent(),
+      slug: json.containsKey(r'slug') ? Optional.present((json[r'slug'] as String?)) : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.allowDownload != null) {
-      json[r'allowDownload'] = this.allowDownload;
-    } else {
-    //  json[r'allowDownload'] = null;
+    if (allowDownload case Present(:final value)) {
+      json[r'allowDownload'] = value;
     }
-    if (this.allowUpload != null) {
-      json[r'allowUpload'] = this.allowUpload;
-    } else {
-    //  json[r'allowUpload'] = null;
+    if (allowUpload case Present(:final value)) {
+      json[r'allowUpload'] = value;
     }
-    if (this.changeExpiryTime != null) {
-      json[r'changeExpiryTime'] = this.changeExpiryTime;
-    } else {
-    //  json[r'changeExpiryTime'] = null;
+    if (changeExpiryTime case Present(:final value)) {
+      json[r'changeExpiryTime'] = value;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (description case Present(:final value)) {
+      json[r'description'] = value;
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.expiresAt!.millisecondsSinceEpoch
-        : this.expiresAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (expiresAt case Present(:final value)) {
+      json[r'expiresAt'] = value?.toUtc().toIso8601String();
     }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (password case Present(:final value)) {
+      json[r'password'] = value;
     }
-    if (this.showMetadata != null) {
-      json[r'showMetadata'] = this.showMetadata;
-    } else {
-    //  json[r'showMetadata'] = null;
+    if (showMetadata case Present(:final value)) {
+      json[r'showMetadata'] = value;
     }
-    if (this.slug != null) {
-      json[r'slug'] = this.slug;
-    } else {
-    //  json[r'slug'] = null;
+    if (slug case Present(:final value)) {
+      json[r'slug'] = value;
     }
     return json;
   }
 
-  /// Returns a new [SharedLinkEditDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SharedLinkEditDto? fromJson(dynamic value) {
-    upgradeDto(value, "SharedLinkEditDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SharedLinkEditDto(
-        allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
-        changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
-        description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        password: mapValueOfType<String>(json, r'password'),
-        showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
-        slug: mapValueOfType<String>(json, r'slug'),
-      );
-    }
-    return null;
+  SharedLinkEditDto copyWith({
+    Optional<bool>? allowDownload,
+    Optional<bool>? allowUpload,
+    Optional<bool>? changeExpiryTime,
+    Optional<String?>? description,
+    Optional<DateTime?>? expiresAt,
+    Optional<String?>? password,
+    Optional<bool>? showMetadata,
+    Optional<String?>? slug,
+  }) {
+    return .new(
+      allowDownload: allowDownload ?? this.allowDownload,
+      allowUpload: allowUpload ?? this.allowUpload,
+      changeExpiryTime: changeExpiryTime ?? this.changeExpiryTime,
+      description: description ?? this.description,
+      expiresAt: expiresAt ?? this.expiresAt,
+      password: password ?? this.password,
+      showMetadata: showMetadata ?? this.showMetadata,
+      slug: slug ?? this.slug,
+    );
   }
 
-  static List<SharedLinkEditDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SharedLinkEditDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SharedLinkEditDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SharedLinkEditDto &&
+            allowDownload == other.allowDownload &&
+            allowUpload == other.allowUpload &&
+            changeExpiryTime == other.changeExpiryTime &&
+            description == other.description &&
+            expiresAt == other.expiresAt &&
+            password == other.password &&
+            showMetadata == other.showMetadata &&
+            slug == other.slug);
   }
 
-  static Map<String, SharedLinkEditDto> mapFromJson(dynamic json) {
-    final map = <String, SharedLinkEditDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SharedLinkEditDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      allowDownload,
+      allowUpload,
+      changeExpiryTime,
+      description,
+      expiresAt,
+      password,
+      showMetadata,
+      slug,
+    ]);
   }
 
-  // maps a json object with a list of SharedLinkEditDto-objects as value to a dart map
-  static Map<String, List<SharedLinkEditDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SharedLinkEditDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SharedLinkEditDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  @override
+  String toString() =>
+      'SharedLinkEditDto(allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug)';
 }
-

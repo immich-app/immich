@@ -1,22 +1,13 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigJobDto {
-  /// Returns a new [SystemConfigJobDto] instance.
-  SystemConfigJobDto({
+final class SystemConfigJobDto {
+  const SystemConfigJobDto({
     required this.backgroundTask,
     required this.editor,
     required this.faceDetection,
-    required this.library_,
+    required this.library$,
     required this.metadataExtraction,
     required this.migration,
     required this.notifications,
@@ -29,175 +20,150 @@ class SystemConfigJobDto {
     required this.workflow,
   });
 
-  JobSettingsDto backgroundTask;
+  final JobSettingsDto backgroundTask;
 
-  JobSettingsDto editor;
+  final JobSettingsDto editor;
 
-  JobSettingsDto faceDetection;
+  final JobSettingsDto faceDetection;
 
-  JobSettingsDto library_;
+  final JobSettingsDto library$;
 
-  JobSettingsDto metadataExtraction;
+  final JobSettingsDto metadataExtraction;
 
-  JobSettingsDto migration;
+  final JobSettingsDto migration;
 
-  JobSettingsDto notifications;
+  final JobSettingsDto notifications;
 
-  JobSettingsDto ocr;
+  final JobSettingsDto ocr;
 
-  JobSettingsDto search;
+  final JobSettingsDto search;
 
-  JobSettingsDto sidecar;
+  final JobSettingsDto sidecar;
 
-  JobSettingsDto smartSearch;
+  final JobSettingsDto smartSearch;
 
-  JobSettingsDto thumbnailGeneration;
+  final JobSettingsDto thumbnailGeneration;
 
-  JobSettingsDto videoConversion;
+  final JobSettingsDto videoConversion;
 
-  JobSettingsDto workflow;
+  final JobSettingsDto workflow;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
-    other.backgroundTask == backgroundTask &&
-    other.editor == editor &&
-    other.faceDetection == faceDetection &&
-    other.library_ == library_ &&
-    other.metadataExtraction == metadataExtraction &&
-    other.migration == migration &&
-    other.notifications == notifications &&
-    other.ocr == ocr &&
-    other.search == search &&
-    other.sidecar == sidecar &&
-    other.smartSearch == smartSearch &&
-    other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion &&
-    other.workflow == workflow;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (backgroundTask.hashCode) +
-    (editor.hashCode) +
-    (faceDetection.hashCode) +
-    (library_.hashCode) +
-    (metadataExtraction.hashCode) +
-    (migration.hashCode) +
-    (notifications.hashCode) +
-    (ocr.hashCode) +
-    (search.hashCode) +
-    (sidecar.hashCode) +
-    (smartSearch.hashCode) +
-    (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode) +
-    (workflow.hashCode);
-
-  @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, editor=$editor, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  static SystemConfigJobDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigJobDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      backgroundTask: (JobSettingsDto.fromJson(json[r'backgroundTask']))!,
+      editor: (JobSettingsDto.fromJson(json[r'editor']))!,
+      faceDetection: (JobSettingsDto.fromJson(json[r'faceDetection']))!,
+      library$: (JobSettingsDto.fromJson(json[r'library']))!,
+      metadataExtraction: (JobSettingsDto.fromJson(json[r'metadataExtraction']))!,
+      migration: (JobSettingsDto.fromJson(json[r'migration']))!,
+      notifications: (JobSettingsDto.fromJson(json[r'notifications']))!,
+      ocr: (JobSettingsDto.fromJson(json[r'ocr']))!,
+      search: (JobSettingsDto.fromJson(json[r'search']))!,
+      sidecar: (JobSettingsDto.fromJson(json[r'sidecar']))!,
+      smartSearch: (JobSettingsDto.fromJson(json[r'smartSearch']))!,
+      thumbnailGeneration: (JobSettingsDto.fromJson(json[r'thumbnailGeneration']))!,
+      videoConversion: (JobSettingsDto.fromJson(json[r'videoConversion']))!,
+      workflow: (JobSettingsDto.fromJson(json[r'workflow']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'backgroundTask'] = this.backgroundTask;
-      json[r'editor'] = this.editor;
-      json[r'faceDetection'] = this.faceDetection;
-      json[r'library'] = this.library_;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'migration'] = this.migration;
-      json[r'notifications'] = this.notifications;
-      json[r'ocr'] = this.ocr;
-      json[r'search'] = this.search;
-      json[r'sidecar'] = this.sidecar;
-      json[r'smartSearch'] = this.smartSearch;
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'videoConversion'] = this.videoConversion;
-      json[r'workflow'] = this.workflow;
+    json[r'backgroundTask'] = backgroundTask.toJson();
+    json[r'editor'] = editor.toJson();
+    json[r'faceDetection'] = faceDetection.toJson();
+    json[r'library'] = library$.toJson();
+    json[r'metadataExtraction'] = metadataExtraction.toJson();
+    json[r'migration'] = migration.toJson();
+    json[r'notifications'] = notifications.toJson();
+    json[r'ocr'] = ocr.toJson();
+    json[r'search'] = search.toJson();
+    json[r'sidecar'] = sidecar.toJson();
+    json[r'smartSearch'] = smartSearch.toJson();
+    json[r'thumbnailGeneration'] = thumbnailGeneration.toJson();
+    json[r'videoConversion'] = videoConversion.toJson();
+    json[r'workflow'] = workflow.toJson();
     return json;
   }
 
-  /// Returns a new [SystemConfigJobDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigJobDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigJobDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigJobDto(
-        backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
-        editor: JobSettingsDto.fromJson(json[r'editor'])!,
-        faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
-        library_: JobSettingsDto.fromJson(json[r'library'])!,
-        metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
-        migration: JobSettingsDto.fromJson(json[r'migration'])!,
-        notifications: JobSettingsDto.fromJson(json[r'notifications'])!,
-        ocr: JobSettingsDto.fromJson(json[r'ocr'])!,
-        search: JobSettingsDto.fromJson(json[r'search'])!,
-        sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
-        smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
-        thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
-        videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
-        workflow: JobSettingsDto.fromJson(json[r'workflow'])!,
-      );
-    }
-    return null;
+  SystemConfigJobDto copyWith({
+    JobSettingsDto? backgroundTask,
+    JobSettingsDto? editor,
+    JobSettingsDto? faceDetection,
+    JobSettingsDto? library$,
+    JobSettingsDto? metadataExtraction,
+    JobSettingsDto? migration,
+    JobSettingsDto? notifications,
+    JobSettingsDto? ocr,
+    JobSettingsDto? search,
+    JobSettingsDto? sidecar,
+    JobSettingsDto? smartSearch,
+    JobSettingsDto? thumbnailGeneration,
+    JobSettingsDto? videoConversion,
+    JobSettingsDto? workflow,
+  }) {
+    return .new(
+      backgroundTask: backgroundTask ?? this.backgroundTask,
+      editor: editor ?? this.editor,
+      faceDetection: faceDetection ?? this.faceDetection,
+      library$: library$ ?? this.library$,
+      metadataExtraction: metadataExtraction ?? this.metadataExtraction,
+      migration: migration ?? this.migration,
+      notifications: notifications ?? this.notifications,
+      ocr: ocr ?? this.ocr,
+      search: search ?? this.search,
+      sidecar: sidecar ?? this.sidecar,
+      smartSearch: smartSearch ?? this.smartSearch,
+      thumbnailGeneration: thumbnailGeneration ?? this.thumbnailGeneration,
+      videoConversion: videoConversion ?? this.videoConversion,
+      workflow: workflow ?? this.workflow,
+    );
   }
 
-  static List<SystemConfigJobDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigJobDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigJobDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigJobDto &&
+            backgroundTask == other.backgroundTask &&
+            editor == other.editor &&
+            faceDetection == other.faceDetection &&
+            library$ == other.library$ &&
+            metadataExtraction == other.metadataExtraction &&
+            migration == other.migration &&
+            notifications == other.notifications &&
+            ocr == other.ocr &&
+            search == other.search &&
+            sidecar == other.sidecar &&
+            smartSearch == other.smartSearch &&
+            thumbnailGeneration == other.thumbnailGeneration &&
+            videoConversion == other.videoConversion &&
+            workflow == other.workflow);
   }
 
-  static Map<String, SystemConfigJobDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigJobDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigJobDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      backgroundTask,
+      editor,
+      faceDetection,
+      library$,
+      metadataExtraction,
+      migration,
+      notifications,
+      ocr,
+      search,
+      sidecar,
+      smartSearch,
+      thumbnailGeneration,
+      videoConversion,
+      workflow,
+    ]);
   }
 
-  // maps a json object with a list of SystemConfigJobDto-objects as value to a dart map
-  static Map<String, List<SystemConfigJobDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigJobDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigJobDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'backgroundTask',
-    'editor',
-    'faceDetection',
-    'library',
-    'metadataExtraction',
-    'migration',
-    'notifications',
-    'ocr',
-    'search',
-    'sidecar',
-    'smartSearch',
-    'thumbnailGeneration',
-    'videoConversion',
-    'workflow',
-  };
+  @override
+  String toString() =>
+      'SystemConfigJobDto(backgroundTask=$backgroundTask, editor=$editor, faceDetection=$faceDetection, library\$=${library$}, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow)';
 }
-

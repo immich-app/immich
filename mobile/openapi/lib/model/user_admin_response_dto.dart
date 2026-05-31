@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class UserAdminResponseDto {
-  /// Returns a new [UserAdminResponseDto] instance.
-  UserAdminResponseDto({
+final class UserAdminResponseDto {
+  const UserAdminResponseDto({
     required this.avatarColor,
     required this.createdAt,
     required this.deletedAt,
@@ -32,242 +23,200 @@ class UserAdminResponseDto {
     required this.updatedAt,
   });
 
-  UserAvatarColor avatarColor;
+  final UserAvatarColor avatarColor;
 
   /// Creation date
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Deletion date
-  DateTime? deletedAt;
+  final DateTime? deletedAt;
 
   /// User email
-  String email;
+  final String email;
 
   /// User ID
-  String id;
+  final String id;
 
   /// Is admin user
-  bool isAdmin;
+  final bool isAdmin;
 
-  UserLicense? license;
+  final UserLicense? license;
 
   /// User name
-  String name;
+  final String name;
 
   /// OAuth ID
-  String oauthId;
+  final String oauthId;
 
   /// Profile change date
-  DateTime profileChangedAt;
+  final DateTime profileChangedAt;
 
   /// Profile image path
-  String profileImagePath;
+  final String profileImagePath;
 
   /// Storage quota in bytes
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? quotaSizeInBytes;
+  final int? quotaSizeInBytes;
 
   /// Storage usage in bytes
-  ///
-  /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? quotaUsageInBytes;
+  final int? quotaUsageInBytes;
 
   /// Require password change on next login
-  bool shouldChangePassword;
+  final bool shouldChangePassword;
 
-  UserStatus status;
+  final UserStatus status;
 
   /// Storage label
-  String? storageLabel;
+  final String? storageLabel;
 
   /// Last update date
-  DateTime updatedAt;
+  final DateTime updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is UserAdminResponseDto &&
-    other.avatarColor == avatarColor &&
-    other.createdAt == createdAt &&
-    other.deletedAt == deletedAt &&
-    other.email == email &&
-    other.id == id &&
-    other.isAdmin == isAdmin &&
-    other.license == license &&
-    other.name == name &&
-    other.oauthId == oauthId &&
-    other.profileChangedAt == profileChangedAt &&
-    other.profileImagePath == profileImagePath &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.quotaUsageInBytes == quotaUsageInBytes &&
-    other.shouldChangePassword == shouldChangePassword &&
-    other.status == status &&
-    other.storageLabel == storageLabel &&
-    other.updatedAt == updatedAt;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
-    (createdAt.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (email.hashCode) +
-    (id.hashCode) +
-    (isAdmin.hashCode) +
-    (license == null ? 0 : license!.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
-    (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
-    (shouldChangePassword.hashCode) +
-    (status.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  static UserAdminResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<UserAdminResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      avatarColor: (UserAvatarColor.fromJson(json[r'avatarColor']))!,
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      deletedAt: (json[r'deletedAt'] == null ? null : DateTime.parse(json[r'deletedAt'] as String)),
+      email: json[r'email'] as String,
+      id: json[r'id'] as String,
+      isAdmin: json[r'isAdmin'] as bool,
+      license: UserLicense.fromJson(json[r'license']),
+      name: json[r'name'] as String,
+      oauthId: json[r'oauthId'] as String,
+      profileChangedAt: DateTime.parse(json[r'profileChangedAt'] as String),
+      profileImagePath: json[r'profileImagePath'] as String,
+      quotaSizeInBytes: (json[r'quotaSizeInBytes'] as int?),
+      quotaUsageInBytes: (json[r'quotaUsageInBytes'] as int?),
+      shouldChangePassword: json[r'shouldChangePassword'] as bool,
+      status: (UserStatus.fromJson(json[r'status']))!,
+      storageLabel: (json[r'storageLabel'] as String?),
+      updatedAt: DateTime.parse(json[r'updatedAt'] as String),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'avatarColor'] = this.avatarColor;
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.deletedAt!.millisecondsSinceEpoch
-        : this.deletedAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'deletedAt'] = null;
+    json[r'avatarColor'] = avatarColor.toJson();
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    if (deletedAt != null) {
+      json[r'deletedAt'] = deletedAt!.toUtc().toIso8601String();
     }
-      json[r'email'] = this.email;
-      json[r'id'] = this.id;
-      json[r'isAdmin'] = this.isAdmin;
-    if (this.license != null) {
-      json[r'license'] = this.license;
-    } else {
-    //  json[r'license'] = null;
+    json[r'email'] = email;
+    json[r'id'] = id;
+    json[r'isAdmin'] = isAdmin;
+    if (license != null) {
+      json[r'license'] = license!.toJson();
     }
-      json[r'name'] = this.name;
-      json[r'oauthId'] = this.oauthId;
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
-      json[r'profileImagePath'] = this.profileImagePath;
-    if (this.quotaSizeInBytes != null) {
-      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
-    } else {
-    //  json[r'quotaSizeInBytes'] = null;
+    json[r'name'] = name;
+    json[r'oauthId'] = oauthId;
+    json[r'profileChangedAt'] = profileChangedAt.toUtc().toIso8601String();
+    json[r'profileImagePath'] = profileImagePath;
+    if (quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = quotaSizeInBytes!;
     }
-    if (this.quotaUsageInBytes != null) {
-      json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
-    } else {
-    //  json[r'quotaUsageInBytes'] = null;
+    if (quotaUsageInBytes != null) {
+      json[r'quotaUsageInBytes'] = quotaUsageInBytes!;
     }
-      json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'status'] = this.status;
-    if (this.storageLabel != null) {
-      json[r'storageLabel'] = this.storageLabel;
-    } else {
-    //  json[r'storageLabel'] = null;
+    json[r'shouldChangePassword'] = shouldChangePassword;
+    json[r'status'] = status.toJson();
+    if (storageLabel != null) {
+      json[r'storageLabel'] = storageLabel!;
     }
-      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedAt.millisecondsSinceEpoch
-        : this.updatedAt.toUtc().toIso8601String();
+    json[r'updatedAt'] = updatedAt.toUtc().toIso8601String();
     return json;
   }
 
-  /// Returns a new [UserAdminResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static UserAdminResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "UserAdminResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return UserAdminResponseDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        email: mapValueOfType<String>(json, r'email')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        license: UserLicense.fromJson(json[r'license']),
-        name: mapValueOfType<String>(json, r'name')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
-        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        status: UserStatus.fromJson(json[r'status'])!,
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-      );
-    }
-    return null;
+  UserAdminResponseDto copyWith({
+    UserAvatarColor? avatarColor,
+    DateTime? createdAt,
+    Object? deletedAt = _undefined,
+    String? email,
+    String? id,
+    bool? isAdmin,
+    Object? license = _undefined,
+    String? name,
+    String? oauthId,
+    DateTime? profileChangedAt,
+    String? profileImagePath,
+    Object? quotaSizeInBytes = _undefined,
+    Object? quotaUsageInBytes = _undefined,
+    bool? shouldChangePassword,
+    UserStatus? status,
+    Object? storageLabel = _undefined,
+    DateTime? updatedAt,
+  }) {
+    return .new(
+      avatarColor: avatarColor ?? this.avatarColor,
+      createdAt: createdAt ?? this.createdAt,
+      deletedAt: identical(deletedAt, _undefined) ? this.deletedAt : deletedAt as DateTime?,
+      email: email ?? this.email,
+      id: id ?? this.id,
+      isAdmin: isAdmin ?? this.isAdmin,
+      license: identical(license, _undefined) ? this.license : license as UserLicense?,
+      name: name ?? this.name,
+      oauthId: oauthId ?? this.oauthId,
+      profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
+      quotaSizeInBytes: identical(quotaSizeInBytes, _undefined) ? this.quotaSizeInBytes : quotaSizeInBytes as int?,
+      quotaUsageInBytes: identical(quotaUsageInBytes, _undefined) ? this.quotaUsageInBytes : quotaUsageInBytes as int?,
+      shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
+      status: status ?? this.status,
+      storageLabel: identical(storageLabel, _undefined) ? this.storageLabel : storageLabel as String?,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<UserAdminResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <UserAdminResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = UserAdminResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is UserAdminResponseDto &&
+            avatarColor == other.avatarColor &&
+            createdAt == other.createdAt &&
+            deletedAt == other.deletedAt &&
+            email == other.email &&
+            id == other.id &&
+            isAdmin == other.isAdmin &&
+            license == other.license &&
+            name == other.name &&
+            oauthId == other.oauthId &&
+            profileChangedAt == other.profileChangedAt &&
+            profileImagePath == other.profileImagePath &&
+            quotaSizeInBytes == other.quotaSizeInBytes &&
+            quotaUsageInBytes == other.quotaUsageInBytes &&
+            shouldChangePassword == other.shouldChangePassword &&
+            status == other.status &&
+            storageLabel == other.storageLabel &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, UserAdminResponseDto> mapFromJson(dynamic json) {
-    final map = <String, UserAdminResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = UserAdminResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      avatarColor,
+      createdAt,
+      deletedAt,
+      email,
+      id,
+      isAdmin,
+      license,
+      name,
+      oauthId,
+      profileChangedAt,
+      profileImagePath,
+      quotaSizeInBytes,
+      quotaUsageInBytes,
+      shouldChangePassword,
+      status,
+      storageLabel,
+      updatedAt,
+    ]);
   }
 
-  // maps a json object with a list of UserAdminResponseDto-objects as value to a dart map
-  static Map<String, List<UserAdminResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<UserAdminResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = UserAdminResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'avatarColor',
-    'createdAt',
-    'deletedAt',
-    'email',
-    'id',
-    'isAdmin',
-    'license',
-    'name',
-    'oauthId',
-    'profileChangedAt',
-    'profileImagePath',
-    'quotaSizeInBytes',
-    'quotaUsageInBytes',
-    'shouldChangePassword',
-    'status',
-    'storageLabel',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'UserAdminResponseDto(avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt)';
 }
-

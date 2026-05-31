@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class ServerFeaturesDto {
-  /// Returns a new [ServerFeaturesDto] instance.
-  ServerFeaturesDto({
+final class ServerFeaturesDto {
+  const ServerFeaturesDto({
     required this.configFile,
     required this.duplicateDetection,
     required this.email,
@@ -31,196 +22,172 @@ class ServerFeaturesDto {
   });
 
   /// Whether config file is available
-  bool configFile;
+  final bool configFile;
 
   /// Whether duplicate detection is enabled
-  bool duplicateDetection;
+  final bool duplicateDetection;
 
   /// Whether email notifications are enabled
-  bool email;
+  final bool email;
 
   /// Whether facial recognition is enabled
-  bool facialRecognition;
+  final bool facialRecognition;
 
   /// Whether face import is enabled
-  bool importFaces;
+  final bool importFaces;
 
   /// Whether map feature is enabled
-  bool map;
+  final bool map;
 
   /// Whether OAuth is enabled
-  bool oauth;
+  final bool oauth;
 
   /// Whether OAuth auto-launch is enabled
-  bool oauthAutoLaunch;
+  final bool oauthAutoLaunch;
 
   /// Whether OCR is enabled
-  bool ocr;
+  final bool ocr;
 
   /// Whether password login is enabled
-  bool passwordLogin;
+  final bool passwordLogin;
 
   /// Whether reverse geocoding is enabled
-  bool reverseGeocoding;
+  final bool reverseGeocoding;
 
   /// Whether search is enabled
-  bool search;
+  final bool search;
 
   /// Whether sidecar files are supported
-  bool sidecar;
+  final bool sidecar;
 
   /// Whether smart search is enabled
-  bool smartSearch;
+  final bool smartSearch;
 
   /// Whether trash feature is enabled
-  bool trash;
+  final bool trash;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
-    other.configFile == configFile &&
-    other.duplicateDetection == duplicateDetection &&
-    other.email == email &&
-    other.facialRecognition == facialRecognition &&
-    other.importFaces == importFaces &&
-    other.map == map &&
-    other.oauth == oauth &&
-    other.oauthAutoLaunch == oauthAutoLaunch &&
-    other.ocr == ocr &&
-    other.passwordLogin == passwordLogin &&
-    other.reverseGeocoding == reverseGeocoding &&
-    other.search == search &&
-    other.sidecar == sidecar &&
-    other.smartSearch == smartSearch &&
-    other.trash == trash;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (configFile.hashCode) +
-    (duplicateDetection.hashCode) +
-    (email.hashCode) +
-    (facialRecognition.hashCode) +
-    (importFaces.hashCode) +
-    (map.hashCode) +
-    (oauth.hashCode) +
-    (oauthAutoLaunch.hashCode) +
-    (ocr.hashCode) +
-    (passwordLogin.hashCode) +
-    (reverseGeocoding.hashCode) +
-    (search.hashCode) +
-    (sidecar.hashCode) +
-    (smartSearch.hashCode) +
-    (trash.hashCode);
-
-  @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, ocr=$ocr, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  static ServerFeaturesDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<ServerFeaturesDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      configFile: json[r'configFile'] as bool,
+      duplicateDetection: json[r'duplicateDetection'] as bool,
+      email: json[r'email'] as bool,
+      facialRecognition: json[r'facialRecognition'] as bool,
+      importFaces: json[r'importFaces'] as bool,
+      map: json[r'map'] as bool,
+      oauth: json[r'oauth'] as bool,
+      oauthAutoLaunch: json[r'oauthAutoLaunch'] as bool,
+      ocr: json[r'ocr'] as bool,
+      passwordLogin: json[r'passwordLogin'] as bool,
+      reverseGeocoding: json[r'reverseGeocoding'] as bool,
+      search: json[r'search'] as bool,
+      sidecar: json[r'sidecar'] as bool,
+      smartSearch: json[r'smartSearch'] as bool,
+      trash: json[r'trash'] as bool,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'configFile'] = this.configFile;
-      json[r'duplicateDetection'] = this.duplicateDetection;
-      json[r'email'] = this.email;
-      json[r'facialRecognition'] = this.facialRecognition;
-      json[r'importFaces'] = this.importFaces;
-      json[r'map'] = this.map;
-      json[r'oauth'] = this.oauth;
-      json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
-      json[r'ocr'] = this.ocr;
-      json[r'passwordLogin'] = this.passwordLogin;
-      json[r'reverseGeocoding'] = this.reverseGeocoding;
-      json[r'search'] = this.search;
-      json[r'sidecar'] = this.sidecar;
-      json[r'smartSearch'] = this.smartSearch;
-      json[r'trash'] = this.trash;
+    json[r'configFile'] = configFile;
+    json[r'duplicateDetection'] = duplicateDetection;
+    json[r'email'] = email;
+    json[r'facialRecognition'] = facialRecognition;
+    json[r'importFaces'] = importFaces;
+    json[r'map'] = map;
+    json[r'oauth'] = oauth;
+    json[r'oauthAutoLaunch'] = oauthAutoLaunch;
+    json[r'ocr'] = ocr;
+    json[r'passwordLogin'] = passwordLogin;
+    json[r'reverseGeocoding'] = reverseGeocoding;
+    json[r'search'] = search;
+    json[r'sidecar'] = sidecar;
+    json[r'smartSearch'] = smartSearch;
+    json[r'trash'] = trash;
     return json;
   }
 
-  /// Returns a new [ServerFeaturesDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static ServerFeaturesDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerFeaturesDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return ServerFeaturesDto(
-        configFile: mapValueOfType<bool>(json, r'configFile')!,
-        duplicateDetection: mapValueOfType<bool>(json, r'duplicateDetection')!,
-        email: mapValueOfType<bool>(json, r'email')!,
-        facialRecognition: mapValueOfType<bool>(json, r'facialRecognition')!,
-        importFaces: mapValueOfType<bool>(json, r'importFaces')!,
-        map: mapValueOfType<bool>(json, r'map')!,
-        oauth: mapValueOfType<bool>(json, r'oauth')!,
-        oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
-        ocr: mapValueOfType<bool>(json, r'ocr')!,
-        passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
-        reverseGeocoding: mapValueOfType<bool>(json, r'reverseGeocoding')!,
-        search: mapValueOfType<bool>(json, r'search')!,
-        sidecar: mapValueOfType<bool>(json, r'sidecar')!,
-        smartSearch: mapValueOfType<bool>(json, r'smartSearch')!,
-        trash: mapValueOfType<bool>(json, r'trash')!,
-      );
-    }
-    return null;
+  ServerFeaturesDto copyWith({
+    bool? configFile,
+    bool? duplicateDetection,
+    bool? email,
+    bool? facialRecognition,
+    bool? importFaces,
+    bool? map,
+    bool? oauth,
+    bool? oauthAutoLaunch,
+    bool? ocr,
+    bool? passwordLogin,
+    bool? reverseGeocoding,
+    bool? search,
+    bool? sidecar,
+    bool? smartSearch,
+    bool? trash,
+  }) {
+    return .new(
+      configFile: configFile ?? this.configFile,
+      duplicateDetection: duplicateDetection ?? this.duplicateDetection,
+      email: email ?? this.email,
+      facialRecognition: facialRecognition ?? this.facialRecognition,
+      importFaces: importFaces ?? this.importFaces,
+      map: map ?? this.map,
+      oauth: oauth ?? this.oauth,
+      oauthAutoLaunch: oauthAutoLaunch ?? this.oauthAutoLaunch,
+      ocr: ocr ?? this.ocr,
+      passwordLogin: passwordLogin ?? this.passwordLogin,
+      reverseGeocoding: reverseGeocoding ?? this.reverseGeocoding,
+      search: search ?? this.search,
+      sidecar: sidecar ?? this.sidecar,
+      smartSearch: smartSearch ?? this.smartSearch,
+      trash: trash ?? this.trash,
+    );
   }
 
-  static List<ServerFeaturesDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <ServerFeaturesDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = ServerFeaturesDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ServerFeaturesDto &&
+            configFile == other.configFile &&
+            duplicateDetection == other.duplicateDetection &&
+            email == other.email &&
+            facialRecognition == other.facialRecognition &&
+            importFaces == other.importFaces &&
+            map == other.map &&
+            oauth == other.oauth &&
+            oauthAutoLaunch == other.oauthAutoLaunch &&
+            ocr == other.ocr &&
+            passwordLogin == other.passwordLogin &&
+            reverseGeocoding == other.reverseGeocoding &&
+            search == other.search &&
+            sidecar == other.sidecar &&
+            smartSearch == other.smartSearch &&
+            trash == other.trash);
   }
 
-  static Map<String, ServerFeaturesDto> mapFromJson(dynamic json) {
-    final map = <String, ServerFeaturesDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = ServerFeaturesDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      configFile,
+      duplicateDetection,
+      email,
+      facialRecognition,
+      importFaces,
+      map,
+      oauth,
+      oauthAutoLaunch,
+      ocr,
+      passwordLogin,
+      reverseGeocoding,
+      search,
+      sidecar,
+      smartSearch,
+      trash,
+    ]);
   }
 
-  // maps a json object with a list of ServerFeaturesDto-objects as value to a dart map
-  static Map<String, List<ServerFeaturesDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<ServerFeaturesDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = ServerFeaturesDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'configFile',
-    'duplicateDetection',
-    'email',
-    'facialRecognition',
-    'importFaces',
-    'map',
-    'oauth',
-    'oauthAutoLaunch',
-    'ocr',
-    'passwordLogin',
-    'reverseGeocoding',
-    'search',
-    'sidecar',
-    'smartSearch',
-    'trash',
-  };
+  @override
+  String toString() =>
+      'ServerFeaturesDto(configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, ocr=$ocr, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash)';
 }
-

@@ -1,102 +1,41 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncAckSetDto {
-  /// Returns a new [SyncAckSetDto] instance.
-  SyncAckSetDto({
-    this.acks = const [],
-  });
+final class SyncAckSetDto {
+  const SyncAckSetDto({required this.acks});
 
   /// Acknowledgment IDs (max 1000)
-  List<String> acks;
+  final List<String> acks;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAckSetDto &&
-    _deepEquality.equals(other.acks, acks);
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (acks.hashCode);
-
-  @override
-  String toString() => 'SyncAckSetDto[acks=$acks]';
+  static SyncAckSetDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncAckSetDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(acks: ((json[r'acks'] as List?)?.map(($e) => $e as String).toList(growable: false))!);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'acks'] = this.acks;
+    json[r'acks'] = acks;
     return json;
   }
 
-  /// Returns a new [SyncAckSetDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncAckSetDto? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAckSetDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncAckSetDto(
-        acks: json[r'acks'] is Iterable
-            ? (json[r'acks'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-      );
-    }
-    return null;
+  SyncAckSetDto copyWith({List<String>? acks}) {
+    return .new(acks: acks ?? this.acks);
   }
 
-  static List<SyncAckSetDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncAckSetDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncAckSetDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncAckSetDto && const DeepCollectionEquality().equals(acks, other.acks));
   }
 
-  static Map<String, SyncAckSetDto> mapFromJson(dynamic json) {
-    final map = <String, SyncAckSetDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncAckSetDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([const DeepCollectionEquality().hash(acks)]);
   }
 
-  // maps a json object with a list of SyncAckSetDto-objects as value to a dart map
-  static Map<String, List<SyncAckSetDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncAckSetDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncAckSetDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'acks',
-  };
+  @override
+  String toString() => 'SyncAckSetDto(acks=$acks)';
 }
-

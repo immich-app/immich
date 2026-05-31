@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class PeopleUpdateItem {
-  /// Returns a new [PeopleUpdateItem] instance.
-  PeopleUpdateItem({
+final class PeopleUpdateItem {
+  const PeopleUpdateItem({
     this.birthDate,
     this.color,
     this.featureFaceAssetId,
@@ -23,174 +14,108 @@ class PeopleUpdateItem {
   });
 
   /// Person date of birth
-  DateTime? birthDate;
+  final DateTime? birthDate;
 
   /// Person color (hex)
-  String? color;
+  final String? color;
 
   /// Asset ID used for feature face thumbnail
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? featureFaceAssetId;
+  final String? featureFaceAssetId;
 
   /// Person ID
-  String id;
+  final String id;
 
   /// Mark as favorite
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isFavorite;
+  final bool? isFavorite;
 
   /// Person visibility (hidden)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isHidden;
+  final bool? isHidden;
 
   /// Person name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? name;
+  final String? name;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateItem &&
-    other.birthDate == birthDate &&
-    other.color == color &&
-    other.featureFaceAssetId == featureFaceAssetId &&
-    other.id == id &&
-    other.isFavorite == isFavorite &&
-    other.isHidden == isHidden &&
-    other.name == name;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
-    (color == null ? 0 : color!.hashCode) +
-    (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
-    (id.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isHidden == null ? 0 : isHidden!.hashCode) +
-    (name == null ? 0 : name!.hashCode);
-
-  @override
-  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
+  static PeopleUpdateItem? fromJson(dynamic value) {
+    ApiCompat.upgrade<PeopleUpdateItem>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      birthDate: (json[r'birthDate'] == null ? null : DateTime.parse(json[r'birthDate'] as String)),
+      color: (json[r'color'] as String?),
+      featureFaceAssetId: (json[r'featureFaceAssetId'] as String?),
+      id: json[r'id'] as String,
+      isFavorite: (json[r'isFavorite'] as bool?),
+      isHidden: (json[r'isHidden'] as bool?),
+      name: (json[r'name'] as String?),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
-    } else {
-    //  json[r'birthDate'] = null;
+    if (birthDate != null) {
+      json[r'birthDate'] = birthDate!.toUtc().toIso8601String();
     }
-    if (this.color != null) {
-      json[r'color'] = this.color;
-    } else {
-    //  json[r'color'] = null;
+    if (color != null) {
+      json[r'color'] = color!;
     }
-    if (this.featureFaceAssetId != null) {
-      json[r'featureFaceAssetId'] = this.featureFaceAssetId;
-    } else {
-    //  json[r'featureFaceAssetId'] = null;
+    if (featureFaceAssetId != null) {
+      json[r'featureFaceAssetId'] = featureFaceAssetId!;
     }
-      json[r'id'] = this.id;
-    if (this.isFavorite != null) {
-      json[r'isFavorite'] = this.isFavorite;
-    } else {
-    //  json[r'isFavorite'] = null;
+    json[r'id'] = id;
+    if (isFavorite != null) {
+      json[r'isFavorite'] = isFavorite!;
     }
-    if (this.isHidden != null) {
-      json[r'isHidden'] = this.isHidden;
-    } else {
-    //  json[r'isHidden'] = null;
+    if (isHidden != null) {
+      json[r'isHidden'] = isHidden!;
     }
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (name != null) {
+      json[r'name'] = name!;
     }
     return json;
   }
 
-  /// Returns a new [PeopleUpdateItem] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static PeopleUpdateItem? fromJson(dynamic value) {
-    upgradeDto(value, "PeopleUpdateItem");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return PeopleUpdateItem(
-        birthDate: mapDateTime(json, r'birthDate', r''),
-        color: mapValueOfType<String>(json, r'color'),
-        featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
-        id: mapValueOfType<String>(json, r'id')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        isHidden: mapValueOfType<bool>(json, r'isHidden'),
-        name: mapValueOfType<String>(json, r'name'),
-      );
-    }
-    return null;
+  PeopleUpdateItem copyWith({
+    Object? birthDate = _undefined,
+    Object? color = _undefined,
+    Object? featureFaceAssetId = _undefined,
+    String? id,
+    Object? isFavorite = _undefined,
+    Object? isHidden = _undefined,
+    Object? name = _undefined,
+  }) {
+    return .new(
+      birthDate: identical(birthDate, _undefined) ? this.birthDate : birthDate as DateTime?,
+      color: identical(color, _undefined) ? this.color : color as String?,
+      featureFaceAssetId: identical(featureFaceAssetId, _undefined)
+          ? this.featureFaceAssetId
+          : featureFaceAssetId as String?,
+      id: id ?? this.id,
+      isFavorite: identical(isFavorite, _undefined) ? this.isFavorite : isFavorite as bool?,
+      isHidden: identical(isHidden, _undefined) ? this.isHidden : isHidden as bool?,
+      name: identical(name, _undefined) ? this.name : name as String?,
+    );
   }
 
-  static List<PeopleUpdateItem> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PeopleUpdateItem>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PeopleUpdateItem.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is PeopleUpdateItem &&
+            birthDate == other.birthDate &&
+            color == other.color &&
+            featureFaceAssetId == other.featureFaceAssetId &&
+            id == other.id &&
+            isFavorite == other.isFavorite &&
+            isHidden == other.isHidden &&
+            name == other.name);
   }
 
-  static Map<String, PeopleUpdateItem> mapFromJson(dynamic json) {
-    final map = <String, PeopleUpdateItem>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = PeopleUpdateItem.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([birthDate, color, featureFaceAssetId, id, isFavorite, isHidden, name]);
   }
 
-  // maps a json object with a list of PeopleUpdateItem-objects as value to a dart map
-  static Map<String, List<PeopleUpdateItem>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<PeopleUpdateItem>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = PeopleUpdateItem.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'id',
-  };
+  @override
+  String toString() =>
+      'PeopleUpdateItem(birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name)';
 }
-

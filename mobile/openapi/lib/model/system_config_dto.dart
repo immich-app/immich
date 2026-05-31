@@ -1,23 +1,15 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SystemConfigDto {
-  /// Returns a new [SystemConfigDto] instance.
-  SystemConfigDto({
+/// System configuration
+final class SystemConfigDto {
+  const SystemConfigDto({
     required this.backup,
     required this.ffmpeg,
     required this.image,
     required this.job,
-    required this.library_,
+    required this.library$,
     required this.logging,
     required this.machineLearning,
     required this.map,
@@ -36,224 +28,206 @@ class SystemConfigDto {
     required this.user,
   });
 
-  SystemConfigBackupsDto backup;
+  final SystemConfigBackupsDto backup;
 
-  SystemConfigFFmpegDto ffmpeg;
+  final SystemConfigFFmpegDto ffmpeg;
 
-  SystemConfigImageDto image;
+  final SystemConfigImageDto image;
 
-  SystemConfigJobDto job;
+  final SystemConfigJobDto job;
 
-  SystemConfigLibraryDto library_;
+  final SystemConfigLibraryDto library$;
 
-  SystemConfigLoggingDto logging;
+  final SystemConfigLoggingDto logging;
 
-  SystemConfigMachineLearningDto machineLearning;
+  final SystemConfigMachineLearningDto machineLearning;
 
-  SystemConfigMapDto map;
+  final SystemConfigMapDto map;
 
-  SystemConfigMetadataDto metadata;
+  final SystemConfigMetadataDto metadata;
 
-  SystemConfigNewVersionCheckDto newVersionCheck;
+  final SystemConfigNewVersionCheckDto newVersionCheck;
 
-  SystemConfigNightlyTasksDto nightlyTasks;
+  final SystemConfigNightlyTasksDto nightlyTasks;
 
-  SystemConfigNotificationsDto notifications;
+  final SystemConfigNotificationsDto notifications;
 
-  SystemConfigOAuthDto oauth;
+  final SystemConfigOAuthDto oauth;
 
-  SystemConfigPasswordLoginDto passwordLogin;
+  final SystemConfigPasswordLoginDto passwordLogin;
 
-  SystemConfigReverseGeocodingDto reverseGeocoding;
+  final SystemConfigReverseGeocodingDto reverseGeocoding;
 
-  SystemConfigServerDto server;
+  final SystemConfigServerDto server;
 
-  SystemConfigStorageTemplateDto storageTemplate;
+  final SystemConfigStorageTemplateDto storageTemplate;
 
-  SystemConfigTemplatesDto templates;
+  final SystemConfigTemplatesDto templates;
 
-  SystemConfigThemeDto theme;
+  final SystemConfigThemeDto theme;
 
-  SystemConfigTrashDto trash;
+  final SystemConfigTrashDto trash;
 
-  SystemConfigUserDto user;
+  final SystemConfigUserDto user;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
-    other.backup == backup &&
-    other.ffmpeg == ffmpeg &&
-    other.image == image &&
-    other.job == job &&
-    other.library_ == library_ &&
-    other.logging == logging &&
-    other.machineLearning == machineLearning &&
-    other.map == map &&
-    other.metadata == metadata &&
-    other.newVersionCheck == newVersionCheck &&
-    other.nightlyTasks == nightlyTasks &&
-    other.notifications == notifications &&
-    other.oauth == oauth &&
-    other.passwordLogin == passwordLogin &&
-    other.reverseGeocoding == reverseGeocoding &&
-    other.server == server &&
-    other.storageTemplate == storageTemplate &&
-    other.templates == templates &&
-    other.theme == theme &&
-    other.trash == trash &&
-    other.user == user;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (backup.hashCode) +
-    (ffmpeg.hashCode) +
-    (image.hashCode) +
-    (job.hashCode) +
-    (library_.hashCode) +
-    (logging.hashCode) +
-    (machineLearning.hashCode) +
-    (map.hashCode) +
-    (metadata.hashCode) +
-    (newVersionCheck.hashCode) +
-    (nightlyTasks.hashCode) +
-    (notifications.hashCode) +
-    (oauth.hashCode) +
-    (passwordLogin.hashCode) +
-    (reverseGeocoding.hashCode) +
-    (server.hashCode) +
-    (storageTemplate.hashCode) +
-    (templates.hashCode) +
-    (theme.hashCode) +
-    (trash.hashCode) +
-    (user.hashCode);
-
-  @override
-  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
+  static SystemConfigDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SystemConfigDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      backup: (SystemConfigBackupsDto.fromJson(json[r'backup']))!,
+      ffmpeg: (SystemConfigFFmpegDto.fromJson(json[r'ffmpeg']))!,
+      image: (SystemConfigImageDto.fromJson(json[r'image']))!,
+      job: (SystemConfigJobDto.fromJson(json[r'job']))!,
+      library$: (SystemConfigLibraryDto.fromJson(json[r'library']))!,
+      logging: (SystemConfigLoggingDto.fromJson(json[r'logging']))!,
+      machineLearning: (SystemConfigMachineLearningDto.fromJson(json[r'machineLearning']))!,
+      map: (SystemConfigMapDto.fromJson(json[r'map']))!,
+      metadata: (SystemConfigMetadataDto.fromJson(json[r'metadata']))!,
+      newVersionCheck: (SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck']))!,
+      nightlyTasks: (SystemConfigNightlyTasksDto.fromJson(json[r'nightlyTasks']))!,
+      notifications: (SystemConfigNotificationsDto.fromJson(json[r'notifications']))!,
+      oauth: (SystemConfigOAuthDto.fromJson(json[r'oauth']))!,
+      passwordLogin: (SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin']))!,
+      reverseGeocoding: (SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding']))!,
+      server: (SystemConfigServerDto.fromJson(json[r'server']))!,
+      storageTemplate: (SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate']))!,
+      templates: (SystemConfigTemplatesDto.fromJson(json[r'templates']))!,
+      theme: (SystemConfigThemeDto.fromJson(json[r'theme']))!,
+      trash: (SystemConfigTrashDto.fromJson(json[r'trash']))!,
+      user: (SystemConfigUserDto.fromJson(json[r'user']))!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'backup'] = this.backup;
-      json[r'ffmpeg'] = this.ffmpeg;
-      json[r'image'] = this.image;
-      json[r'job'] = this.job;
-      json[r'library'] = this.library_;
-      json[r'logging'] = this.logging;
-      json[r'machineLearning'] = this.machineLearning;
-      json[r'map'] = this.map;
-      json[r'metadata'] = this.metadata;
-      json[r'newVersionCheck'] = this.newVersionCheck;
-      json[r'nightlyTasks'] = this.nightlyTasks;
-      json[r'notifications'] = this.notifications;
-      json[r'oauth'] = this.oauth;
-      json[r'passwordLogin'] = this.passwordLogin;
-      json[r'reverseGeocoding'] = this.reverseGeocoding;
-      json[r'server'] = this.server;
-      json[r'storageTemplate'] = this.storageTemplate;
-      json[r'templates'] = this.templates;
-      json[r'theme'] = this.theme;
-      json[r'trash'] = this.trash;
-      json[r'user'] = this.user;
+    json[r'backup'] = backup.toJson();
+    json[r'ffmpeg'] = ffmpeg.toJson();
+    json[r'image'] = image.toJson();
+    json[r'job'] = job.toJson();
+    json[r'library'] = library$.toJson();
+    json[r'logging'] = logging.toJson();
+    json[r'machineLearning'] = machineLearning.toJson();
+    json[r'map'] = map.toJson();
+    json[r'metadata'] = metadata.toJson();
+    json[r'newVersionCheck'] = newVersionCheck.toJson();
+    json[r'nightlyTasks'] = nightlyTasks.toJson();
+    json[r'notifications'] = notifications.toJson();
+    json[r'oauth'] = oauth.toJson();
+    json[r'passwordLogin'] = passwordLogin.toJson();
+    json[r'reverseGeocoding'] = reverseGeocoding.toJson();
+    json[r'server'] = server.toJson();
+    json[r'storageTemplate'] = storageTemplate.toJson();
+    json[r'templates'] = templates.toJson();
+    json[r'theme'] = theme.toJson();
+    json[r'trash'] = trash.toJson();
+    json[r'user'] = user.toJson();
     return json;
   }
 
-  /// Returns a new [SystemConfigDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SystemConfigDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SystemConfigDto(
-        backup: SystemConfigBackupsDto.fromJson(json[r'backup'])!,
-        ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
-        image: SystemConfigImageDto.fromJson(json[r'image'])!,
-        job: SystemConfigJobDto.fromJson(json[r'job'])!,
-        library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
-        logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,
-        machineLearning: SystemConfigMachineLearningDto.fromJson(json[r'machineLearning'])!,
-        map: SystemConfigMapDto.fromJson(json[r'map'])!,
-        metadata: SystemConfigMetadataDto.fromJson(json[r'metadata'])!,
-        newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
-        nightlyTasks: SystemConfigNightlyTasksDto.fromJson(json[r'nightlyTasks'])!,
-        notifications: SystemConfigNotificationsDto.fromJson(json[r'notifications'])!,
-        oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
-        passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
-        reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
-        server: SystemConfigServerDto.fromJson(json[r'server'])!,
-        storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
-        templates: SystemConfigTemplatesDto.fromJson(json[r'templates'])!,
-        theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
-        trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
-        user: SystemConfigUserDto.fromJson(json[r'user'])!,
-      );
-    }
-    return null;
+  SystemConfigDto copyWith({
+    SystemConfigBackupsDto? backup,
+    SystemConfigFFmpegDto? ffmpeg,
+    SystemConfigImageDto? image,
+    SystemConfigJobDto? job,
+    SystemConfigLibraryDto? library$,
+    SystemConfigLoggingDto? logging,
+    SystemConfigMachineLearningDto? machineLearning,
+    SystemConfigMapDto? map,
+    SystemConfigMetadataDto? metadata,
+    SystemConfigNewVersionCheckDto? newVersionCheck,
+    SystemConfigNightlyTasksDto? nightlyTasks,
+    SystemConfigNotificationsDto? notifications,
+    SystemConfigOAuthDto? oauth,
+    SystemConfigPasswordLoginDto? passwordLogin,
+    SystemConfigReverseGeocodingDto? reverseGeocoding,
+    SystemConfigServerDto? server,
+    SystemConfigStorageTemplateDto? storageTemplate,
+    SystemConfigTemplatesDto? templates,
+    SystemConfigThemeDto? theme,
+    SystemConfigTrashDto? trash,
+    SystemConfigUserDto? user,
+  }) {
+    return .new(
+      backup: backup ?? this.backup,
+      ffmpeg: ffmpeg ?? this.ffmpeg,
+      image: image ?? this.image,
+      job: job ?? this.job,
+      library$: library$ ?? this.library$,
+      logging: logging ?? this.logging,
+      machineLearning: machineLearning ?? this.machineLearning,
+      map: map ?? this.map,
+      metadata: metadata ?? this.metadata,
+      newVersionCheck: newVersionCheck ?? this.newVersionCheck,
+      nightlyTasks: nightlyTasks ?? this.nightlyTasks,
+      notifications: notifications ?? this.notifications,
+      oauth: oauth ?? this.oauth,
+      passwordLogin: passwordLogin ?? this.passwordLogin,
+      reverseGeocoding: reverseGeocoding ?? this.reverseGeocoding,
+      server: server ?? this.server,
+      storageTemplate: storageTemplate ?? this.storageTemplate,
+      templates: templates ?? this.templates,
+      theme: theme ?? this.theme,
+      trash: trash ?? this.trash,
+      user: user ?? this.user,
+    );
   }
 
-  static List<SystemConfigDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SystemConfigDto &&
+            backup == other.backup &&
+            ffmpeg == other.ffmpeg &&
+            image == other.image &&
+            job == other.job &&
+            library$ == other.library$ &&
+            logging == other.logging &&
+            machineLearning == other.machineLearning &&
+            map == other.map &&
+            metadata == other.metadata &&
+            newVersionCheck == other.newVersionCheck &&
+            nightlyTasks == other.nightlyTasks &&
+            notifications == other.notifications &&
+            oauth == other.oauth &&
+            passwordLogin == other.passwordLogin &&
+            reverseGeocoding == other.reverseGeocoding &&
+            server == other.server &&
+            storageTemplate == other.storageTemplate &&
+            templates == other.templates &&
+            theme == other.theme &&
+            trash == other.trash &&
+            user == other.user);
   }
 
-  static Map<String, SystemConfigDto> mapFromJson(dynamic json) {
-    final map = <String, SystemConfigDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SystemConfigDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      backup,
+      ffmpeg,
+      image,
+      job,
+      library$,
+      logging,
+      machineLearning,
+      map,
+      metadata,
+      newVersionCheck,
+      nightlyTasks,
+      notifications,
+      oauth,
+      passwordLogin,
+      reverseGeocoding,
+      server,
+      storageTemplate,
+      templates,
+      theme,
+      trash,
+      user,
+    ]);
   }
 
-  // maps a json object with a list of SystemConfigDto-objects as value to a dart map
-  static Map<String, List<SystemConfigDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SystemConfigDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SystemConfigDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'backup',
-    'ffmpeg',
-    'image',
-    'job',
-    'library',
-    'logging',
-    'machineLearning',
-    'map',
-    'metadata',
-    'newVersionCheck',
-    'nightlyTasks',
-    'notifications',
-    'oauth',
-    'passwordLogin',
-    'reverseGeocoding',
-    'server',
-    'storageTemplate',
-    'templates',
-    'theme',
-    'trash',
-    'user',
-  };
+  @override
+  String toString() =>
+      'SystemConfigDto(backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library\$=${library$}, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user)';
 }
-

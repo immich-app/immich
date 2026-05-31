@@ -1,136 +1,70 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class OAuthConfigDto {
-  /// Returns a new [OAuthConfigDto] instance.
-  OAuthConfigDto({
-    this.codeChallenge,
+final class OAuthConfigDto {
+  const OAuthConfigDto({
+    this.codeChallenge = const Optional.absent(),
     required this.redirectUri,
-    this.state,
+    this.state = const Optional.absent(),
   });
 
   /// OAuth code challenge (PKCE)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? codeChallenge;
+  final Optional<String> codeChallenge;
 
   /// OAuth redirect URI
-  String redirectUri;
+  final String redirectUri;
 
   /// OAuth state parameter
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? state;
+  final Optional<String> state;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is OAuthConfigDto &&
-    other.codeChallenge == codeChallenge &&
-    other.redirectUri == redirectUri &&
-    other.state == state;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (codeChallenge == null ? 0 : codeChallenge!.hashCode) +
-    (redirectUri.hashCode) +
-    (state == null ? 0 : state!.hashCode);
-
-  @override
-  String toString() => 'OAuthConfigDto[codeChallenge=$codeChallenge, redirectUri=$redirectUri, state=$state]';
+  static OAuthConfigDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<OAuthConfigDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      codeChallenge: json.containsKey(r'codeChallenge')
+          ? Optional.present(json[r'codeChallenge'] as String)
+          : const Optional.absent(),
+      redirectUri: json[r'redirectUri'] as String,
+      state: json.containsKey(r'state') ? Optional.present(json[r'state'] as String) : const Optional.absent(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.codeChallenge != null) {
-      json[r'codeChallenge'] = this.codeChallenge;
-    } else {
-    //  json[r'codeChallenge'] = null;
+    if (codeChallenge case Present(:final value)) {
+      json[r'codeChallenge'] = value;
     }
-      json[r'redirectUri'] = this.redirectUri;
-    if (this.state != null) {
-      json[r'state'] = this.state;
-    } else {
-    //  json[r'state'] = null;
+    json[r'redirectUri'] = redirectUri;
+    if (state case Present(:final value)) {
+      json[r'state'] = value;
     }
     return json;
   }
 
-  /// Returns a new [OAuthConfigDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static OAuthConfigDto? fromJson(dynamic value) {
-    upgradeDto(value, "OAuthConfigDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return OAuthConfigDto(
-        codeChallenge: mapValueOfType<String>(json, r'codeChallenge'),
-        redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
-        state: mapValueOfType<String>(json, r'state'),
-      );
-    }
-    return null;
+  OAuthConfigDto copyWith({Optional<String>? codeChallenge, String? redirectUri, Optional<String>? state}) {
+    return .new(
+      codeChallenge: codeChallenge ?? this.codeChallenge,
+      redirectUri: redirectUri ?? this.redirectUri,
+      state: state ?? this.state,
+    );
   }
 
-  static List<OAuthConfigDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <OAuthConfigDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = OAuthConfigDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is OAuthConfigDto &&
+            codeChallenge == other.codeChallenge &&
+            redirectUri == other.redirectUri &&
+            state == other.state);
   }
 
-  static Map<String, OAuthConfigDto> mapFromJson(dynamic json) {
-    final map = <String, OAuthConfigDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = OAuthConfigDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([codeChallenge, redirectUri, state]);
   }
 
-  // maps a json object with a list of OAuthConfigDto-objects as value to a dart map
-  static Map<String, List<OAuthConfigDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<OAuthConfigDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = OAuthConfigDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'redirectUri',
-  };
+  @override
+  String toString() => 'OAuthConfigDto(codeChallenge=$codeChallenge, redirectUri=$redirectUri, state=$state)';
 }
-

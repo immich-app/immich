@@ -1,127 +1,49 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetStatsResponseDto {
-  /// Returns a new [AssetStatsResponseDto] instance.
-  AssetStatsResponseDto({
-    required this.images,
-    required this.total,
-    required this.videos,
-  });
+final class AssetStatsResponseDto {
+  const AssetStatsResponseDto({required this.images, required this.total, required this.videos});
 
   /// Number of images
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int images;
+  final int images;
 
   /// Total number of assets
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int total;
+  final int total;
 
   /// Number of videos
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int videos;
+  final int videos;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetStatsResponseDto &&
-    other.images == images &&
-    other.total == total &&
-    other.videos == videos;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (images.hashCode) +
-    (total.hashCode) +
-    (videos.hashCode);
-
-  @override
-  String toString() => 'AssetStatsResponseDto[images=$images, total=$total, videos=$videos]';
+  static AssetStatsResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetStatsResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(images: json[r'images'] as int, total: json[r'total'] as int, videos: json[r'videos'] as int);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'images'] = this.images;
-      json[r'total'] = this.total;
-      json[r'videos'] = this.videos;
+    json[r'images'] = images;
+    json[r'total'] = total;
+    json[r'videos'] = videos;
     return json;
   }
 
-  /// Returns a new [AssetStatsResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetStatsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetStatsResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetStatsResponseDto(
-        images: mapValueOfType<int>(json, r'images')!,
-        total: mapValueOfType<int>(json, r'total')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
-      );
-    }
-    return null;
+  AssetStatsResponseDto copyWith({int? images, int? total, int? videos}) {
+    return .new(images: images ?? this.images, total: total ?? this.total, videos: videos ?? this.videos);
   }
 
-  static List<AssetStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetStatsResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetStatsResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetStatsResponseDto && images == other.images && total == other.total && videos == other.videos);
   }
 
-  static Map<String, AssetStatsResponseDto> mapFromJson(dynamic json) {
-    final map = <String, AssetStatsResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetStatsResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([images, total, videos]);
   }
 
-  // maps a json object with a list of AssetStatsResponseDto-objects as value to a dart map
-  static Map<String, List<AssetStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetStatsResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetStatsResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'images',
-    'total',
-    'videos',
-  };
+  @override
+  String toString() => 'AssetStatsResponseDto(images=$images, total=$total, videos=$videos)';
 }
-

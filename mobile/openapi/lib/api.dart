@@ -1,8 +1,5 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
 // ignore_for_file: constant_identifier_names
@@ -13,61 +10,23 @@ library openapi.api;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/utils/openapi_patching.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 
 part 'api_client.dart';
-part 'api_helper.dart';
+part 'api_compat.dart';
 part 'api_exception.dart';
-part 'auth/authentication.dart';
+part 'api_helper.dart';
+part 'api_state.dart';
+part 'api_version.dart';
+part 'optional.dart';
 part 'auth/api_key_auth.dart';
-part 'auth/oauth.dart';
-part 'auth/http_basic_auth.dart';
+part 'auth/authentication.dart';
 part 'auth/http_bearer_auth.dart';
-
-part 'api/api_keys_api.dart';
-part 'api/activities_api.dart';
-part 'api/albums_api.dart';
-part 'api/assets_api.dart';
-part 'api/authentication_api.dart';
-part 'api/authentication_admin_api.dart';
-part 'api/database_backups_admin_api.dart';
-part 'api/deprecated_api.dart';
-part 'api/download_api.dart';
-part 'api/duplicates_api.dart';
-part 'api/faces_api.dart';
-part 'api/jobs_api.dart';
-part 'api/libraries_api.dart';
-part 'api/maintenance_admin_api.dart';
-part 'api/map_api.dart';
-part 'api/memories_api.dart';
-part 'api/notifications_api.dart';
-part 'api/notifications_admin_api.dart';
-part 'api/partners_api.dart';
-part 'api/people_api.dart';
-part 'api/plugins_api.dart';
-part 'api/queues_api.dart';
-part 'api/search_api.dart';
-part 'api/server_api.dart';
-part 'api/sessions_api.dart';
-part 'api/shared_links_api.dart';
-part 'api/stacks_api.dart';
-part 'api/sync_api.dart';
-part 'api/system_config_api.dart';
-part 'api/system_metadata_api.dart';
-part 'api/tags_api.dart';
-part 'api/timeline_api.dart';
-part 'api/trash_api.dart';
-part 'api/users_api.dart';
-part 'api/users_admin_api.dart';
-part 'api/views_api.dart';
-part 'api/workflows_api.dart';
-
+part 'auth/oauth.dart';
 part 'model/activity_create_dto.dart';
 part 'model/activity_response_dto.dart';
 part 'model/activity_statistics_response_dto.dart';
@@ -96,7 +55,6 @@ part 'model/asset_bulk_upload_check_result.dart';
 part 'model/asset_copy_dto.dart';
 part 'model/asset_edit_action.dart';
 part 'model/asset_edit_action_item_dto.dart';
-part 'model/asset_edit_action_item_dto_parameters.dart';
 part 'model/asset_edit_action_item_response_dto.dart';
 part 'model/asset_edits_create_dto.dart';
 part 'model/asset_edits_response_dto.dart';
@@ -110,6 +68,7 @@ part 'model/asset_ids_dto.dart';
 part 'model/asset_ids_response_dto.dart';
 part 'model/asset_job_name.dart';
 part 'model/asset_jobs_dto.dart';
+part 'model/asset_media_create_dto.dart';
 part 'model/asset_media_response_dto.dart';
 part 'model/asset_media_size.dart';
 part 'model/asset_media_status.dart';
@@ -137,21 +96,23 @@ part 'model/avatar_update.dart';
 part 'model/bulk_id_error_reason.dart';
 part 'model/bulk_id_response_dto.dart';
 part 'model/bulk_ids_dto.dart';
-part 'model/clip_config.dart';
-part 'model/cq_mode.dart';
 part 'model/cast_response.dart';
 part 'model/cast_update.dart';
 part 'model/change_password_dto.dart';
+part 'model/clip_config.dart';
 part 'model/colorspace.dart';
 part 'model/contributor_count_response_dto.dart';
+part 'model/cq_mode.dart';
 part 'model/create_album_dto.dart';
 part 'model/create_library_dto.dart';
+part 'model/create_profile_image_dto.dart';
 part 'model/create_profile_image_response_dto.dart';
 part 'model/crop_parameters.dart';
 part 'model/database_backup_config.dart';
 part 'model/database_backup_delete_dto.dart';
 part 'model/database_backup_dto.dart';
 part 'model/database_backup_list_response_dto.dart';
+part 'model/database_backup_upload_dto.dart';
 part 'model/download_archive_dto.dart';
 part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';
@@ -176,6 +137,7 @@ part 'model/job_settings_dto.dart';
 part 'model/library_response_dto.dart';
 part 'model/library_stats_response_dto.dart';
 part 'model/license_key_dto.dart';
+part 'model/license_response_dto.dart';
 part 'model/log_level.dart';
 part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
@@ -210,6 +172,7 @@ part 'model/notification_type.dart';
 part 'model/notification_update_all_dto.dart';
 part 'model/notification_update_dto.dart';
 part 'model/o_auth_authorize_response_dto.dart';
+part 'model/o_auth_backchannel_logout_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_token_endpoint_auth_method.dart';
@@ -303,6 +266,7 @@ part 'model/storage_folder.dart';
 part 'model/sync_ack_delete_dto.dart';
 part 'model/sync_ack_dto.dart';
 part 'model/sync_ack_set_dto.dart';
+part 'model/sync_ack_v1.dart';
 part 'model/sync_album_delete_v1.dart';
 part 'model/sync_album_to_asset_delete_v1.dart';
 part 'model/sync_album_to_asset_v1.dart';
@@ -322,6 +286,7 @@ part 'model/sync_asset_metadata_v1.dart';
 part 'model/sync_asset_v1.dart';
 part 'model/sync_asset_v2.dart';
 part 'model/sync_auth_user_v1.dart';
+part 'model/sync_complete_v1.dart';
 part 'model/sync_entity_type.dart';
 part 'model/sync_memory_asset_delete_v1.dart';
 part 'model/sync_memory_asset_v1.dart';
@@ -332,6 +297,7 @@ part 'model/sync_partner_v1.dart';
 part 'model/sync_person_delete_v1.dart';
 part 'model/sync_person_v1.dart';
 part 'model/sync_request_type.dart';
+part 'model/sync_reset_v1.dart';
 part 'model/sync_stack_delete_v1.dart';
 part 'model/sync_stack_v1.dart';
 part 'model/sync_stream_dto.dart';
@@ -420,18 +386,43 @@ part 'model/workflow_trigger.dart';
 part 'model/workflow_trigger_response_dto.dart';
 part 'model/workflow_type.dart';
 part 'model/workflow_update_dto.dart';
+part 'api/activities_api.dart';
+part 'api/albums_api.dart';
+part 'api/api_keys_api.dart';
+part 'api/assets_api.dart';
+part 'api/authentication_admin_api.dart';
+part 'api/authentication_api.dart';
+part 'api/database_backups_admin_api.dart';
+part 'api/download_api.dart';
+part 'api/duplicates_api.dart';
+part 'api/faces_api.dart';
+part 'api/jobs_api.dart';
+part 'api/libraries_api.dart';
+part 'api/maintenance_admin_api.dart';
+part 'api/map_api.dart';
+part 'api/memories_api.dart';
+part 'api/notifications_admin_api.dart';
+part 'api/notifications_api.dart';
+part 'api/partners_api.dart';
+part 'api/people_api.dart';
+part 'api/plugins_api.dart';
+part 'api/queues_api.dart';
+part 'api/search_api.dart';
+part 'api/server_api.dart';
+part 'api/sessions_api.dart';
+part 'api/shared_links_api.dart';
+part 'api/stacks_api.dart';
+part 'api/sync_api.dart';
+part 'api/system_config_api.dart';
+part 'api/system_metadata_api.dart';
+part 'api/tags_api.dart';
+part 'api/timeline_api.dart';
+part 'api/trash_api.dart';
+part 'api/users_admin_api.dart';
+part 'api/users_api.dart';
+part 'api/views_api.dart';
+part 'api/workflows_api.dart';
 
-
-/// An [ApiClient] instance that uses the default values obtained from
-/// the OpenAPI specification file.
-var defaultApiClient = ApiClient();
-
-const _delimiters = {'csv': ',', 'ssv': ' ', 'tsv': '\t', 'pipes': '|'};
-const _dateEpochMarker = 'epoch';
-const _deepEquality = DeepCollectionEquality();
-final _dateFormatter = DateFormat('yyyy-MM-dd');
-final _regList = RegExp(r'^List<(.*)>$');
-final _regSet = RegExp(r'^Set<(.*)>$');
-final _regMap = RegExp(r'^Map<String,(.*)>$');
-
-bool _isEpochMarker(String? pattern) => pattern == _dateEpochMarker || pattern == '/$_dateEpochMarker/';
+/// The process-wide default [ApiClient]; every `XxxApi()` uses it when
+/// constructed without an explicit client.
+final defaultApiClient = ApiClient();

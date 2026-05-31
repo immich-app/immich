@@ -1,107 +1,54 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class AssetEditActionItemDto {
-  /// Returns a new [AssetEditActionItemDto] instance.
-  AssetEditActionItemDto({
-    required this.action,
-    required this.parameters,
-  });
+final class AssetEditActionItemDto {
+  const AssetEditActionItemDto({required this.action, required this.parameters});
 
-  AssetEditAction action;
+  final AssetEditAction action;
 
-  Map<String, dynamic> parameters;
+  /// List of edit actions to apply (crop, rotate, or mirror)
+  final Map<String, dynamic>? parameters;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemDto &&
-    other.action == action &&
-    other.parameters == parameters;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (action.hashCode) +
-    (parameters.hashCode);
-
-  @override
-  String toString() => 'AssetEditActionItemDto[action=$action, parameters=$parameters]';
+  static AssetEditActionItemDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<AssetEditActionItemDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      action: (AssetEditAction.fromJson(json[r'action']))!,
+      parameters: (json[r'parameters'] as Map?)?.cast<String, dynamic>(),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'action'] = this.action;
-      json[r'parameters'] = this.parameters;
+    json[r'action'] = action.toJson();
+    if (parameters != null) {
+      json[r'parameters'] = parameters;
+    }
     return json;
   }
 
-  /// Returns a new [AssetEditActionItemDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static AssetEditActionItemDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionItemDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return AssetEditActionItemDto(
-        action: AssetEditAction.fromJson(json[r'action'])!,
-        parameters: json[r'parameters'],
-      );
-    }
-    return null;
+  AssetEditActionItemDto copyWith({AssetEditAction? action, Object? parameters = _undefined}) {
+    return .new(
+      action: action ?? this.action,
+      parameters: identical(parameters, _undefined) ? this.parameters : parameters as Map<String, dynamic>?,
+    );
   }
 
-  static List<AssetEditActionItemDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetEditActionItemDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetEditActionItemDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AssetEditActionItemDto && action == other.action && parameters == other.parameters);
   }
 
-  static Map<String, AssetEditActionItemDto> mapFromJson(dynamic json) {
-    final map = <String, AssetEditActionItemDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = AssetEditActionItemDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([action, parameters]);
   }
 
-  // maps a json object with a list of AssetEditActionItemDto-objects as value to a dart map
-  static Map<String, List<AssetEditActionItemDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetEditActionItemDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = AssetEditActionItemDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'action',
-    'parameters',
-  };
+  @override
+  String toString() => 'AssetEditActionItemDto(action=$action, parameters=$parameters)';
 }
-

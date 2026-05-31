@@ -1,100 +1,40 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class PartnerCreateDto {
-  /// Returns a new [PartnerCreateDto] instance.
-  PartnerCreateDto({
-    required this.sharedWithId,
-  });
+final class PartnerCreateDto {
+  const PartnerCreateDto({required this.sharedWithId});
 
   /// User ID to share with
-  String sharedWithId;
+  final String sharedWithId;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is PartnerCreateDto &&
-    other.sharedWithId == sharedWithId;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (sharedWithId.hashCode);
-
-  @override
-  String toString() => 'PartnerCreateDto[sharedWithId=$sharedWithId]';
+  static PartnerCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<PartnerCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(sharedWithId: json[r'sharedWithId'] as String);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'sharedWithId'] = this.sharedWithId;
+    json[r'sharedWithId'] = sharedWithId;
     return json;
   }
 
-  /// Returns a new [PartnerCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static PartnerCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "PartnerCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return PartnerCreateDto(
-        sharedWithId: mapValueOfType<String>(json, r'sharedWithId')!,
-      );
-    }
-    return null;
+  PartnerCreateDto copyWith({String? sharedWithId}) {
+    return .new(sharedWithId: sharedWithId ?? this.sharedWithId);
   }
 
-  static List<PartnerCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <PartnerCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = PartnerCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is PartnerCreateDto && sharedWithId == other.sharedWithId);
   }
 
-  static Map<String, PartnerCreateDto> mapFromJson(dynamic json) {
-    final map = <String, PartnerCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = PartnerCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([sharedWithId]);
   }
 
-  // maps a json object with a list of PartnerCreateDto-objects as value to a dart map
-  static Map<String, List<PartnerCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<PartnerCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = PartnerCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'sharedWithId',
-  };
+  @override
+  String toString() => 'PartnerCreateDto(sharedWithId=$sharedWithId)';
 }
-

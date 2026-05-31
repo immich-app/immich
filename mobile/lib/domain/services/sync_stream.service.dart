@@ -57,12 +57,8 @@ class SyncStreamService {
   Future<bool> sync() async {
     _logger.info("Remote sync request for user");
     final serverVersion = await _api.serverInfoApi.getServerVersion();
-    if (serverVersion == null) {
-      _logger.severe("Cannot perform sync: unable to determine server version");
-      return false;
-    }
 
-    final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
+    final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch);
 
     final value = Store.get(StoreKey.syncMigrationStatus, "[]");
     final migrations = (jsonDecode(value) as List).cast<String>();

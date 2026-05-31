@@ -1,54 +1,49 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class ViewsApi {
   ViewsApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
+  static const ApiVersion getAssetsByOriginalPathAddedIn = .new(1, 0, 0);
+
+  static const ApiState getAssetsByOriginalPathState = .stable;
+
+  static const ApiVersion getUniqueOriginalPathsAddedIn = .new(1, 0, 0);
+
+  static const ApiState getUniqueOriginalPathsState = .stable;
+
   /// Retrieve assets by original path
   ///
   /// Retrieve assets that are children of a specific folder.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] path (required):
-  Future<Response> getAssetsByOriginalPathWithHttpInfo(String path,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> getAssetsByOriginalPathWithHttpInfo({required String path, Future<void>? abortTrigger}) async {
     final apiPath = r'/view/folder';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'path', path));
+    queryParams.addAll(_queryParams('', 'path', path));
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -56,37 +51,31 @@ class ViewsApi {
   ///
   /// Retrieve assets that are children of a specific folder.
   ///
-  /// Parameters:
-  ///
-  /// * [String] path (required):
-  Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path,) async {
-    final response = await getAssetsByOriginalPathWithHttpInfo(path,);
+  /// Available since server v1.0.0.
+  Future<List<AssetResponseDto>> getAssetsByOriginalPath({required String path, Future<void>? abortTrigger}) async {
+    final response = await getAssetsByOriginalPathWithHttpInfo(path: path, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<AssetResponseDto>') as List)
+          .cast<AssetResponseDto>()
+          .toList(growable: false);
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Retrieve unique paths
   ///
   /// Retrieve a list of unique folder paths from asset original paths.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getUniqueOriginalPathsWithHttpInfo() async {
-    // ignore: prefer_const_declarations
+  Future<Response> getUniqueOriginalPathsWithHttpInfo({Future<void>? abortTrigger}) async {
     final apiPath = r'/view/folder/unique-paths';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -95,36 +84,34 @@ class ViewsApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve unique paths
   ///
   /// Retrieve a list of unique folder paths from asset original paths.
-  Future<List<String>?> getUniqueOriginalPaths() async {
-    final response = await getUniqueOriginalPathsWithHttpInfo();
+  ///
+  /// Available since server v1.0.0.
+  Future<List<String>> getUniqueOriginalPaths({Future<void>? abortTrigger}) async {
+    final response = await getUniqueOriginalPathsWithHttpInfo(abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<String>') as List)
-        .cast<String>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<String>') as List).cast<String>().toList(
+        growable: false,
+      );
     }
-    return null;
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 }

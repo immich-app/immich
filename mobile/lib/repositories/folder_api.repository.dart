@@ -17,7 +17,7 @@ class FolderApiRepository extends ApiRepository {
   Future<List<String>> getAllUniquePaths() async {
     try {
       final list = await _api.getUniqueOriginalPaths();
-      return list ?? [];
+      return list;
     } catch (e, stack) {
       _log.severe("Failed to fetch unique original links", e, stack);
       return [];
@@ -26,8 +26,8 @@ class FolderApiRepository extends ApiRepository {
 
   Future<List<RemoteAssetExif>> getAssetsForPath(String? path) async {
     try {
-      final list = await _api.getAssetsByOriginalPath(path ?? '/');
-      return list != null ? list.map((e) => e.toDtoWithExif()).toList() : [];
+      final list = await _api.getAssetsByOriginalPath(path: path ?? '/');
+      return list.map((e) => e.toDtoWithExif()).toList();
     } catch (e, stack) {
       _log.severe("Failed to fetch Assets by original path", e, stack);
       return [];

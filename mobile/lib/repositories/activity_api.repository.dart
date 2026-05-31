@@ -15,7 +15,7 @@ class ActivityApiRepository extends ApiRepository {
   ActivityApiRepository(this._api);
 
   Future<List<Activity>> getAll(String albumId, {String? assetId}) async {
-    final response = await checkNull(_api.getActivities(albumId, assetId: assetId));
+    final response = await checkNull(_api.getActivities(albumId: albumId, assetId: assetId));
     return response.map(_toActivity).toList();
   }
 
@@ -23,8 +23,8 @@ class ActivityApiRepository extends ApiRepository {
     final dto = ActivityCreateDto(
       albumId: albumId,
       type: type == ActivityType.comment ? ReactionType.comment : ReactionType.like,
-      assetId: assetId,
-      comment: comment,
+      assetId: assetId.toOptional(),
+      comment: comment.toOptional(),
     );
     final response = await checkNull(_api.createActivity(dto));
     return _toActivity(response);
@@ -35,7 +35,7 @@ class ActivityApiRepository extends ApiRepository {
   }
 
   Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
-    final response = await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
+    final response = await checkNull(_api.getActivityStatistics(albumId: albumId, assetId: assetId));
     return ActivityStats(comments: response.comments);
   }
 

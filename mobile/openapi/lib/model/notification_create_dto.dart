@@ -1,177 +1,123 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class NotificationCreateDto {
-  /// Returns a new [NotificationCreateDto] instance.
-  NotificationCreateDto({
-    this.data = const {},
-    this.description,
-    this.level,
-    this.readAt,
+final class NotificationCreateDto {
+  const NotificationCreateDto({
+    this.data = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.level = const Optional.absent(),
+    this.readAt = const Optional.absent(),
     required this.title,
-    this.type,
+    this.type = const Optional.absent(),
     required this.userId,
   });
 
   /// Additional notification data
-  Map<String, Object> data;
+  final Optional<Map<String, dynamic>> data;
 
   /// Notification description
-  String? description;
+  final Optional<String?> description;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  NotificationLevel? level;
+  final Optional<NotificationLevel> level;
 
   /// Date when notification was read
-  DateTime? readAt;
+  final Optional<DateTime?> readAt;
 
   /// Notification title
-  String title;
+  final String title;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  NotificationType? type;
+  final Optional<NotificationType> type;
 
   /// User ID to send notification to
-  String userId;
+  final String userId;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is NotificationCreateDto &&
-    _deepEquality.equals(other.data, data) &&
-    other.description == description &&
-    other.level == level &&
-    other.readAt == readAt &&
-    other.title == title &&
-    other.type == type &&
-    other.userId == userId;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (data.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (level == null ? 0 : level!.hashCode) +
-    (readAt == null ? 0 : readAt!.hashCode) +
-    (title.hashCode) +
-    (type == null ? 0 : type!.hashCode) +
-    (userId.hashCode);
-
-  @override
-  String toString() => 'NotificationCreateDto[data=$data, description=$description, level=$level, readAt=$readAt, title=$title, type=$type, userId=$userId]';
+  static NotificationCreateDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<NotificationCreateDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      data: json.containsKey(r'data')
+          ? Optional.present(((json[r'data'] as Map?)?.cast<String, dynamic>())!)
+          : const Optional.absent(),
+      description: json.containsKey(r'description')
+          ? Optional.present((json[r'description'] as String?))
+          : const Optional.absent(),
+      level: json.containsKey(r'level')
+          ? Optional.present((NotificationLevel.fromJson(json[r'level']))!)
+          : const Optional.absent(),
+      readAt: json.containsKey(r'readAt')
+          ? Optional.present((json[r'readAt'] == null ? null : DateTime.parse(json[r'readAt'] as String)))
+          : const Optional.absent(),
+      title: json[r'title'] as String,
+      type: json.containsKey(r'type')
+          ? Optional.present((NotificationType.fromJson(json[r'type']))!)
+          : const Optional.absent(),
+      userId: json[r'userId'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'data'] = this.data;
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (data case Present(:final value)) {
+      json[r'data'] = value;
     }
-    if (this.level != null) {
-      json[r'level'] = this.level;
-    } else {
-    //  json[r'level'] = null;
+    if (description case Present(:final value)) {
+      json[r'description'] = value;
     }
-    if (this.readAt != null) {
-      json[r'readAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.readAt!.millisecondsSinceEpoch
-        : this.readAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'readAt'] = null;
+    if (level case Present(:final value)) {
+      json[r'level'] = value.toJson();
     }
-      json[r'title'] = this.title;
-    if (this.type != null) {
-      json[r'type'] = this.type;
-    } else {
-    //  json[r'type'] = null;
+    if (readAt case Present(:final value)) {
+      json[r'readAt'] = value?.toUtc().toIso8601String();
     }
-      json[r'userId'] = this.userId;
+    json[r'title'] = title;
+    if (type case Present(:final value)) {
+      json[r'type'] = value.toJson();
+    }
+    json[r'userId'] = userId;
     return json;
   }
 
-  /// Returns a new [NotificationCreateDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static NotificationCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "NotificationCreateDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return NotificationCreateDto(
-        data: mapCastOfType<String, Object>(json, r'data') ?? const {},
-        description: mapValueOfType<String>(json, r'description'),
-        level: NotificationLevel.fromJson(json[r'level']),
-        readAt: mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
-        title: mapValueOfType<String>(json, r'title')!,
-        type: NotificationType.fromJson(json[r'type']),
-        userId: mapValueOfType<String>(json, r'userId')!,
-      );
-    }
-    return null;
+  NotificationCreateDto copyWith({
+    Optional<Map<String, dynamic>>? data,
+    Optional<String?>? description,
+    Optional<NotificationLevel>? level,
+    Optional<DateTime?>? readAt,
+    String? title,
+    Optional<NotificationType>? type,
+    String? userId,
+  }) {
+    return .new(
+      data: data ?? this.data,
+      description: description ?? this.description,
+      level: level ?? this.level,
+      readAt: readAt ?? this.readAt,
+      title: title ?? this.title,
+      type: type ?? this.type,
+      userId: userId ?? this.userId,
+    );
   }
 
-  static List<NotificationCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <NotificationCreateDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = NotificationCreateDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is NotificationCreateDto &&
+            data == other.data &&
+            description == other.description &&
+            level == other.level &&
+            readAt == other.readAt &&
+            title == other.title &&
+            type == other.type &&
+            userId == other.userId);
   }
 
-  static Map<String, NotificationCreateDto> mapFromJson(dynamic json) {
-    final map = <String, NotificationCreateDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = NotificationCreateDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([data, description, level, readAt, title, type, userId]);
   }
 
-  // maps a json object with a list of NotificationCreateDto-objects as value to a dart map
-  static Map<String, List<NotificationCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<NotificationCreateDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = NotificationCreateDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'title',
-    'userId',
-  };
+  @override
+  String toString() =>
+      'NotificationCreateDto(data=$data, description=$description, level=$level, readAt=$readAt, title=$title, type=$type, userId=$userId)';
 }
-

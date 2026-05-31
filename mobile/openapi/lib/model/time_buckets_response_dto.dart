@@ -1,112 +1,45 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class TimeBucketsResponseDto {
-  /// Returns a new [TimeBucketsResponseDto] instance.
-  TimeBucketsResponseDto({
-    required this.count,
-    required this.timeBucket,
-  });
+final class TimeBucketsResponseDto {
+  const TimeBucketsResponseDto({required this.count, required this.timeBucket});
 
   /// Number of assets in this time bucket
-  ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
-  int count;
+  final int count;
 
   /// Time bucket identifier in YYYY-MM-DD format representing the start of the time period
-  String timeBucket;
+  final String timeBucket;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is TimeBucketsResponseDto &&
-    other.count == count &&
-    other.timeBucket == timeBucket;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (timeBucket.hashCode);
-
-  @override
-  String toString() => 'TimeBucketsResponseDto[count=$count, timeBucket=$timeBucket]';
+  static TimeBucketsResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<TimeBucketsResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(count: json[r'count'] as int, timeBucket: json[r'timeBucket'] as String);
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
-      json[r'timeBucket'] = this.timeBucket;
+    json[r'count'] = count;
+    json[r'timeBucket'] = timeBucket;
     return json;
   }
 
-  /// Returns a new [TimeBucketsResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static TimeBucketsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "TimeBucketsResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return TimeBucketsResponseDto(
-        count: mapValueOfType<int>(json, r'count')!,
-        timeBucket: mapValueOfType<String>(json, r'timeBucket')!,
-      );
-    }
-    return null;
+  TimeBucketsResponseDto copyWith({int? count, String? timeBucket}) {
+    return .new(count: count ?? this.count, timeBucket: timeBucket ?? this.timeBucket);
   }
 
-  static List<TimeBucketsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <TimeBucketsResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = TimeBucketsResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is TimeBucketsResponseDto && count == other.count && timeBucket == other.timeBucket);
   }
 
-  static Map<String, TimeBucketsResponseDto> mapFromJson(dynamic json) {
-    final map = <String, TimeBucketsResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = TimeBucketsResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([count, timeBucket]);
   }
 
-  // maps a json object with a list of TimeBucketsResponseDto-objects as value to a dart map
-  static Map<String, List<TimeBucketsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<TimeBucketsResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = TimeBucketsResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'count',
-    'timeBucket',
-  };
+  @override
+  String toString() => 'TimeBucketsResponseDto(count=$count, timeBucket=$timeBucket)';
 }
-

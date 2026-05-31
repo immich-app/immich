@@ -1,52 +1,55 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
-
 
 class SyncApi {
   SyncApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
   final ApiClient apiClient;
 
+  static const ApiVersion deleteSyncAckAddedIn = .new(1, 0, 0);
+
+  static const ApiState deleteSyncAckState = .stable;
+
+  static const ApiVersion getSyncAckAddedIn = .new(1, 0, 0);
+
+  static const ApiState getSyncAckState = .stable;
+
+  static const ApiVersion sendSyncAckAddedIn = .new(1, 0, 0);
+
+  static const ApiState sendSyncAckState = .stable;
+
+  static const ApiVersion getSyncStreamAddedIn = .new(1, 0, 0);
+
+  static const ApiState getSyncStreamState = .stable;
+
   /// Delete acknowledgements
   ///
   /// Delete specific synchronization acknowledgments.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto, {Future<void>? abortTrigger}) async {
     final apiPath = r'/sync/ack';
 
-    // ignore: prefer_final_locals
     Object? postBody = syncAckDeleteDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'DELETE',
+      r'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -54,11 +57,9 @@ class SyncApi {
   ///
   /// Delete specific synchronization acknowledgments.
   ///
-  /// Parameters:
-  ///
-  /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto,) async {
-    final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto,);
+  /// Available since server v1.0.0.
+  Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto, {Future<void>? abortTrigger}) async {
+    final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -68,12 +69,12 @@ class SyncApi {
   ///
   /// Retrieve the synchronization acknowledgments for the current session.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getSyncAckWithHttpInfo() async {
-    // ignore: prefer_const_declarations
+  Future<Response> getSyncAckWithHttpInfo({Future<void>? abortTrigger}) async {
     final apiPath = r'/sync/ack';
 
-    // ignore: prefer_final_locals
     Object? postBody;
 
     final queryParams = <QueryParam>[];
@@ -82,118 +83,64 @@ class SyncApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
-      'GET',
+      r'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve acknowledgements
   ///
   /// Retrieve the synchronization acknowledgments for the current session.
-  Future<List<SyncAckDto>?> getSyncAck() async {
-    final response = await getSyncAckWithHttpInfo();
+  ///
+  /// Available since server v1.0.0.
+  Future<List<SyncAckDto>> getSyncAck({Future<void>? abortTrigger}) async {
+    final response = await getSyncAckWithHttpInfo(abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<SyncAckDto>') as List)
-        .cast<SyncAckDto>()
-        .toList(growable: false);
-
+      return (await apiClient.deserializeAsync(responseBody, r'List<SyncAckDto>') as List).cast<SyncAckDto>().toList(
+        growable: false,
+      );
     }
-    return null;
-  }
-
-  /// Stream sync changes
-  ///
-  /// Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [SyncStreamDto] syncStreamDto (required):
-  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/sync/stream';
-
-    // ignore: prefer_final_locals
-    Object? postBody = syncStreamDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Stream sync changes
-  ///
-  /// Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.
-  ///
-  /// Parameters:
-  ///
-  /// * [SyncStreamDto] syncStreamDto (required):
-  Future<void> getSyncStream(SyncStreamDto syncStreamDto,) async {
-    final response = await getSyncStreamWithHttpInfo(syncStreamDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
+    throw ApiException(response.statusCode, r'Unexpected empty response body');
   }
 
   /// Acknowledge changes
   ///
   /// Send a list of synchronization acknowledgements to confirm that the latest changes have been received.
   ///
+  /// Available since server v1.0.0.
+  ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [SyncAckSetDto] syncAckSetDto (required):
-  Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto,) async {
-    // ignore: prefer_const_declarations
+  Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto, {Future<void>? abortTrigger}) async {
     final apiPath = r'/sync/ack';
 
-    // ignore: prefer_final_locals
     Object? postBody = syncAckSetDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
-
+    const contentTypes = <String>[r'application/json'];
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      r'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -201,11 +148,51 @@ class SyncApi {
   ///
   /// Send a list of synchronization acknowledgements to confirm that the latest changes have been received.
   ///
-  /// Parameters:
+  /// Available since server v1.0.0.
+  Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto, {Future<void>? abortTrigger}) async {
+    final response = await sendSyncAckWithHttpInfo(syncAckSetDto, abortTrigger: abortTrigger);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Stream sync changes
   ///
-  /// * [SyncAckSetDto] syncAckSetDto (required):
-  Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto,) async {
-    final response = await sendSyncAckWithHttpInfo(syncAckSetDto,);
+  /// Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.
+  ///
+  /// Available since server v1.0.0.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto, {Future<void>? abortTrigger}) async {
+    final apiPath = r'/sync/stream';
+
+    Object? postBody = syncStreamDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[r'application/json'];
+
+    return apiClient.invokeAPI(
+      apiPath,
+      r'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Stream sync changes
+  ///
+  /// Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.
+  ///
+  /// Available since server v1.0.0.
+  Future<void> getSyncStream(SyncStreamDto syncStreamDto, {Future<void>? abortTrigger}) async {
+    final response = await getSyncStreamWithHttpInfo(syncStreamDto, abortTrigger: abortTrigger);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

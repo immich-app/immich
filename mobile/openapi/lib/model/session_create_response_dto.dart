@@ -1,22 +1,13 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SessionCreateResponseDto {
-  /// Returns a new [SessionCreateResponseDto] instance.
-  SessionCreateResponseDto({
+final class SessionCreateResponseDto {
+  const SessionCreateResponseDto({
     required this.appVersion,
     required this.createdAt,
     required this.current,
-    required this.deviceOS,
+    required this.deviceOs,
     required this.deviceType,
     this.expiresAt,
     required this.id,
@@ -26,169 +17,133 @@ class SessionCreateResponseDto {
   });
 
   /// App version
-  String? appVersion;
+  final String? appVersion;
 
   /// Creation date
-  String createdAt;
+  final String createdAt;
 
   /// Is current session
-  bool current;
+  final bool current;
 
   /// Device OS
-  String deviceOS;
+  final String deviceOs;
 
   /// Device type
-  String deviceType;
+  final String deviceType;
 
   /// Expiration date
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? expiresAt;
+  final String? expiresAt;
 
   /// Session ID
-  String id;
+  final String id;
 
   /// Is pending sync reset
-  bool isPendingSyncReset;
+  final bool isPendingSyncReset;
 
   /// Session token
-  String token;
+  final String token;
 
   /// Last update date
-  String updatedAt;
+  final String updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SessionCreateResponseDto &&
-    other.appVersion == appVersion &&
-    other.createdAt == createdAt &&
-    other.current == current &&
-    other.deviceOS == deviceOS &&
-    other.deviceType == deviceType &&
-    other.expiresAt == expiresAt &&
-    other.id == id &&
-    other.isPendingSyncReset == isPendingSyncReset &&
-    other.token == token &&
-    other.updatedAt == updatedAt;
+  static const _undefined = Object();
 
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (appVersion == null ? 0 : appVersion!.hashCode) +
-    (createdAt.hashCode) +
-    (current.hashCode) +
-    (deviceOS.hashCode) +
-    (deviceType.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (id.hashCode) +
-    (isPendingSyncReset.hashCode) +
-    (token.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'SessionCreateResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt]';
+  static SessionCreateResponseDto? fromJson(dynamic value) {
+    ApiCompat.upgrade<SessionCreateResponseDto>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      appVersion: (json[r'appVersion'] as String?),
+      createdAt: json[r'createdAt'] as String,
+      current: json[r'current'] as bool,
+      deviceOs: json[r'deviceOS'] as String,
+      deviceType: json[r'deviceType'] as String,
+      expiresAt: (json[r'expiresAt'] as String?),
+      id: json[r'id'] as String,
+      isPendingSyncReset: json[r'isPendingSyncReset'] as bool,
+      token: json[r'token'] as String,
+      updatedAt: json[r'updatedAt'] as String,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.appVersion != null) {
-      json[r'appVersion'] = this.appVersion;
-    } else {
-    //  json[r'appVersion'] = null;
+    if (appVersion != null) {
+      json[r'appVersion'] = appVersion!;
     }
-      json[r'createdAt'] = this.createdAt;
-      json[r'current'] = this.current;
-      json[r'deviceOS'] = this.deviceOS;
-      json[r'deviceType'] = this.deviceType;
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt;
-    } else {
-    //  json[r'expiresAt'] = null;
+    json[r'createdAt'] = createdAt;
+    json[r'current'] = current;
+    json[r'deviceOS'] = deviceOs;
+    json[r'deviceType'] = deviceType;
+    if (expiresAt != null) {
+      json[r'expiresAt'] = expiresAt!;
     }
-      json[r'id'] = this.id;
-      json[r'isPendingSyncReset'] = this.isPendingSyncReset;
-      json[r'token'] = this.token;
-      json[r'updatedAt'] = this.updatedAt;
+    json[r'id'] = id;
+    json[r'isPendingSyncReset'] = isPendingSyncReset;
+    json[r'token'] = token;
+    json[r'updatedAt'] = updatedAt;
     return json;
   }
 
-  /// Returns a new [SessionCreateResponseDto] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SessionCreateResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SessionCreateResponseDto");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SessionCreateResponseDto(
-        appVersion: mapValueOfType<String>(json, r'appVersion'),
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        current: mapValueOfType<bool>(json, r'current')!,
-        deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
-        deviceType: mapValueOfType<String>(json, r'deviceType')!,
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
-        id: mapValueOfType<String>(json, r'id')!,
-        isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
-        token: mapValueOfType<String>(json, r'token')!,
-        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
-      );
-    }
-    return null;
+  SessionCreateResponseDto copyWith({
+    Object? appVersion = _undefined,
+    String? createdAt,
+    bool? current,
+    String? deviceOs,
+    String? deviceType,
+    Object? expiresAt = _undefined,
+    String? id,
+    bool? isPendingSyncReset,
+    String? token,
+    String? updatedAt,
+  }) {
+    return .new(
+      appVersion: identical(appVersion, _undefined) ? this.appVersion : appVersion as String?,
+      createdAt: createdAt ?? this.createdAt,
+      current: current ?? this.current,
+      deviceOs: deviceOs ?? this.deviceOs,
+      deviceType: deviceType ?? this.deviceType,
+      expiresAt: identical(expiresAt, _undefined) ? this.expiresAt : expiresAt as String?,
+      id: id ?? this.id,
+      isPendingSyncReset: isPendingSyncReset ?? this.isPendingSyncReset,
+      token: token ?? this.token,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<SessionCreateResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SessionCreateResponseDto>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SessionCreateResponseDto.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SessionCreateResponseDto &&
+            appVersion == other.appVersion &&
+            createdAt == other.createdAt &&
+            current == other.current &&
+            deviceOs == other.deviceOs &&
+            deviceType == other.deviceType &&
+            expiresAt == other.expiresAt &&
+            id == other.id &&
+            isPendingSyncReset == other.isPendingSyncReset &&
+            token == other.token &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, SessionCreateResponseDto> mapFromJson(dynamic json) {
-    final map = <String, SessionCreateResponseDto>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SessionCreateResponseDto.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([
+      appVersion,
+      createdAt,
+      current,
+      deviceOs,
+      deviceType,
+      expiresAt,
+      id,
+      isPendingSyncReset,
+      token,
+      updatedAt,
+    ]);
   }
 
-  // maps a json object with a list of SessionCreateResponseDto-objects as value to a dart map
-  static Map<String, List<SessionCreateResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SessionCreateResponseDto>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SessionCreateResponseDto.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'appVersion',
-    'createdAt',
-    'current',
-    'deviceOS',
-    'deviceType',
-    'id',
-    'isPendingSyncReset',
-    'token',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'SessionCreateResponseDto(appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOs=$deviceOs, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt)';
 }
-

@@ -1,18 +1,9 @@
-//
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.18
-
-// ignore_for_file: unused_element, unused_import
-// ignore_for_file: always_put_required_named_parameters_first
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: lines_longer_than_80_chars
-
 part of openapi.api;
 
-class SyncStackV1 {
-  /// Returns a new [SyncStackV1] instance.
-  SyncStackV1({
+final class SyncStackV1 {
+  const SyncStackV1({
     required this.createdAt,
     required this.id,
     required this.ownerId,
@@ -21,120 +12,76 @@ class SyncStackV1 {
   });
 
   /// Created at
-  DateTime createdAt;
+  final DateTime createdAt;
 
   /// Stack ID
-  String id;
+  final String id;
 
   /// Owner ID
-  String ownerId;
+  final String ownerId;
 
   /// Primary asset ID
-  String primaryAssetId;
+  final String primaryAssetId;
 
   /// Updated at
-  DateTime updatedAt;
+  final DateTime updatedAt;
 
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncStackV1 &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.ownerId == ownerId &&
-    other.primaryAssetId == primaryAssetId &&
-    other.updatedAt == updatedAt;
-
-  @override
-  int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (ownerId.hashCode) +
-    (primaryAssetId.hashCode) +
-    (updatedAt.hashCode);
-
-  @override
-  String toString() => 'SyncStackV1[createdAt=$createdAt, id=$id, ownerId=$ownerId, primaryAssetId=$primaryAssetId, updatedAt=$updatedAt]';
+  static SyncStackV1? fromJson(dynamic value) {
+    ApiCompat.upgrade<SyncStackV1>(value);
+    if (value is! Map) return null;
+    final json = value.cast<String, dynamic>();
+    return .new(
+      createdAt: DateTime.parse(json[r'createdAt'] as String),
+      id: json[r'id'] as String,
+      ownerId: json[r'ownerId'] as String,
+      primaryAssetId: json[r'primaryAssetId'] as String,
+      updatedAt: DateTime.parse(json[r'updatedAt'] as String),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.createdAt.millisecondsSinceEpoch
-        : this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'ownerId'] = this.ownerId;
-      json[r'primaryAssetId'] = this.primaryAssetId;
-      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.updatedAt.millisecondsSinceEpoch
-        : this.updatedAt.toUtc().toIso8601String();
+    json[r'createdAt'] = createdAt.toUtc().toIso8601String();
+    json[r'id'] = id;
+    json[r'ownerId'] = ownerId;
+    json[r'primaryAssetId'] = primaryAssetId;
+    json[r'updatedAt'] = updatedAt.toUtc().toIso8601String();
     return json;
   }
 
-  /// Returns a new [SyncStackV1] instance and imports its values from
-  /// [value] if it's a [Map], null otherwise.
-  // ignore: prefer_constructors_over_static_methods
-  static SyncStackV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncStackV1");
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-
-      return SyncStackV1(
-        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        id: mapValueOfType<String>(json, r'id')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        primaryAssetId: mapValueOfType<String>(json, r'primaryAssetId')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-      );
-    }
-    return null;
+  SyncStackV1 copyWith({
+    DateTime? createdAt,
+    String? id,
+    String? ownerId,
+    String? primaryAssetId,
+    DateTime? updatedAt,
+  }) {
+    return .new(
+      createdAt: createdAt ?? this.createdAt,
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      primaryAssetId: primaryAssetId ?? this.primaryAssetId,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 
-  static List<SyncStackV1> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SyncStackV1>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SyncStackV1.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SyncStackV1 &&
+            createdAt == other.createdAt &&
+            id == other.id &&
+            ownerId == other.ownerId &&
+            primaryAssetId == other.primaryAssetId &&
+            updatedAt == other.updatedAt);
   }
 
-  static Map<String, SyncStackV1> mapFromJson(dynamic json) {
-    final map = <String, SyncStackV1>{};
-    if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
-      for (final entry in json.entries) {
-        final value = SyncStackV1.fromJson(entry.value);
-        if (value != null) {
-          map[entry.key] = value;
-        }
-      }
-    }
-    return map;
+  @override
+  int get hashCode {
+    return Object.hashAll([createdAt, id, ownerId, primaryAssetId, updatedAt]);
   }
 
-  // maps a json object with a list of SyncStackV1-objects as value to a dart map
-  static Map<String, List<SyncStackV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<SyncStackV1>>{};
-    if (json is Map && json.isNotEmpty) {
-      // ignore: parameter_assignments
-      json = json.cast<String, dynamic>();
-      for (final entry in json.entries) {
-        map[entry.key] = SyncStackV1.listFromJson(entry.value, growable: growable,);
-      }
-    }
-    return map;
-  }
-
-  /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-    'createdAt',
-    'id',
-    'ownerId',
-    'primaryAssetId',
-    'updatedAt',
-  };
+  @override
+  String toString() =>
+      'SyncStackV1(createdAt=$createdAt, id=$id, ownerId=$ownerId, primaryAssetId=$primaryAssetId, updatedAt=$updatedAt)';
 }
-
