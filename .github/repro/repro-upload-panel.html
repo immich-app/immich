@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Panel Z-Index Reproduction — #27794</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
+    .scenario { position: relative; width: 400px; height: 300px; border: 2px solid #333; margin-bottom: 2rem; background: white; overflow: hidden; }
+    .label { position: absolute; top: 8px; left: 8px; background: #333; color: white; padding: 4px 8px; font-size: 12px; font-weight: bold; z-index: 100; }
+    .album-bar { position: fixed; bottom: 24px; right: 48px; width: 180px; height: 60px; background: rgba(59,130,246,0.9); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; z-index: 2; }
+    .upload-panel-before { position: fixed; bottom: 24px; right: 48px; width: 220px; height: 120px; background: rgba(255,255,255,0.95); border: 1px solid #ccc; border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .upload-panel-before button { background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+    .upload-panel-after { position: fixed; bottom: 24px; right: 48px; width: 220px; height: 120px; background: rgba(255,255,255,0.95); border: 1px solid #ccc; border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10; }
+    .upload-panel-after button { background: #22c55e; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+    .click-log { margin-top: 8px; font-size: 11px; color: #666; }
+    .instructions { max-width: 400px; font-size: 14px; line-height: 1.5; color: #444; }
+  </style>
+</head>
+<body>
+  <h2>Reproduction: Upload Panel Overlaps Album Action Bar (#27794)</h2>
+  <p class="instructions">Both scenarios place an <b>album action bar</b> (blue, z-2) and an <b>upload panel</b> at the same screen position. Try clicking the buttons in each panel.</p>
+  <div class="scenario">
+    <div class="label">BEFORE — Upload panel has NO z-index</div>
+    <div class="album-bar">Album Bar (z-2)</div>
+    <div class="upload-panel-before">
+      <p>Upload Panel (no z-index)</p>
+      <button onclick="document.getElementById('log-before').textContent='Upload button clicked!'">View Duplicate</button>
+      <div class="click-log" id="log-before">Click the button above…</div>
+    </div>
+  </div>
+  <div class="scenario">
+    <div class="label">AFTER — Upload panel has z-10</div>
+    <div class="album-bar">Album Bar (z-2)</div>
+    <div class="upload-panel-after">
+      <p>Upload Panel (z-10)</p>
+      <button onclick="document.getElementById('log-after').textContent='Upload button clicked!'">View Duplicate</button>
+      <div class="click-log" id="log-after">Click the button above…</div>
+    </div>
+  </div>
+</body>
+</html>
