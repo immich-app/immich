@@ -30,9 +30,6 @@
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-
-  const firstInOrNearViewport = $derived(viewerAssets.findIndex((a) => a.isInOrNearViewport));
-  const lastInOrNearViewport = $derived(viewerAssets.findLastIndex((a) => a.isInOrNearViewport));
 </script>
 
 <!-- Image grid -->
