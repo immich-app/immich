@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Validation Reproduction — #28562</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; }
+    .scenario { background: white; border: 2px solid #333; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; max-width: 500px; }
+    .label { display: inline-block; background: #333; color: white; padding: 4px 8px; font-size: 12px; font-weight: bold; margin-bottom: 1rem; }
+    input { display: block; width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button { padding: 10px 16px; cursor: pointer; margin-top: 8px; }
+    .toast { padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 13px; display: none; }
+    .toast.show { display: block; }
+    .toast.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .toast.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .bad { border-left: 4px solid #ef4444; }
+    .good { border-left: 4px solid #22c55e; }
+  </style>
+</head>
+<body>
+  <h2>Reproduction: Login Form Silent Failure (#28562)</h2>
+  <p>Simulates the login form behavior on Firefox (non-HTTPS) where HTML5 validation is suppressed.</p>
+
+  <div class="scenario bad">
+    <div class="label">BEFORE — No client-side validation</div>
+    <p>HTML5 validation is suppressed. The form does nothing and the user gets zero feedback.</p>
+    <input type="email" id="email-before" placeholder="Email" value="notanemail">
+    <input type="password" id="password-before" placeholder="Password" value="secret">
+    <button onclick="loginBefore()">Login</button>
+    <div class="toast error" id="toast-before"></div>
+  </div>
+
+  <div class="scenario good">
+    <div class="label">AFTER — Explicit client-side validation</div>
+    <p>Each invalid state shows a clear toast message before the API call is attempted.</p>
+    <input type="email" id="email-after" placeholder="Email" value="notanemail">
+    <input type="password" id="password-after" placeholder="Password" value="secret">
+    <button onclick="loginAfter()">Login</button>
+    <div class="toast error" id="toast-after"></div>
+  </div>
+
+  <script>
+    function showToast(id, msg, type) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.className = 'toast show ' + (type || 'error');
+    }
+    function hideToast(id) {
+      document.getElementById(id).className = 'toast';
+    }
+
+    function loginBefore() {
+      const email = document.getElementById('email-before').value;
+      const password = document.getElementById('password-before').value;
+      hideToast('toast-before');
+
+      // BEFORE: no validation — just silently does nothing on invalid input
+      if (!email.includes('@')) {
+        // In the real app, this path just returns and the user sees nothing
+        // because Firefox hides the HTML5 validation tooltip on non-HTTPS
+        showToast('toast-before', 'No feedback — form silently does nothing (imagine no toast at all)', 'error');
+        return;
+      }
+      showToast('toast-before', 'Would submit…', 'success');
+    }
+
+    function loginAfter() {
+      const email = document.getElementById('email-after').value;
+      const password = document.getElementById('password-after').value;
+      hideToast('toast-after');
+
+      // AFTER: explicit validation with clear error messages
+      if (!email || email.trim() === '') {
+        showToast('toast-after', 'Email is required');
+        return;
+      }
+      if (!email.includes('@')) {
+        showToast('toast-after', 'Incorrect email or password');
+        return;
+      }
+      if (!password || password.trim() === '') {
+        showToast('toast-after', 'Password Required');
+        return;
+      }
+      showToast('toast-after', 'Would submit…', 'success');
+    }
+  </script>
+</body>
+</html>
