@@ -68,7 +68,7 @@ class TimelineApi {
   ///   Include assets shared by partners
   ///
   /// * [bool] withSharedAlbums:
-  ///   Include assets from shared albums
+  ///   Include assets from shared albums (do not use!)
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
@@ -198,7 +198,7 @@ class TimelineApi {
   ///   Include assets shared by partners
   ///
   /// * [bool] withSharedAlbums:
-  ///   Include assets from shared albums
+  ///   Include assets from shared albums (do not use!)
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
@@ -266,7 +266,7 @@ class TimelineApi {
   ///   Include assets shared by partners
   ///
   /// * [bool] withSharedAlbums:
-  ///   Include assets from shared albums
+  ///   Include assets from shared albums (do not use!)
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
@@ -392,7 +392,7 @@ class TimelineApi {
   ///   Include assets shared by partners
   ///
   /// * [bool] withSharedAlbums:
-  ///   Include assets from shared albums
+  ///   Include assets from shared albums (do not use!)
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.

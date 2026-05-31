@@ -13575,7 +13575,7 @@
             "name": "withSharedAlbums",
             "required": false,
             "in": "query",
-            "description": "Include assets from shared albums",
+            "description": "Include assets from shared albums (do not use!)",
             "schema": {
               "type": "boolean"
             }
@@ -13773,7 +13773,7 @@
             "name": "withSharedAlbums",
             "required": false,
             "in": "query",
-            "description": "Include assets from shared albums",
+            "description": "Include assets from shared albums (do not use!)",
             "schema": {
               "type": "boolean"
             }
