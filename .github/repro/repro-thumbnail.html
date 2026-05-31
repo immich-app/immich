@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Immich Thumbnail Hover Reproduction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #1a1a1a;
+      display: flex;
+      gap: 40px;
+      padding: 40px;
+      font-family: 'GoogleSans', sans-serif;
+      color: white;
+      align-items: flex-start;
+    }
+    .thumbnail-wrapper {
+      position: relative;
+      width: 389px;
+      height: 260px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .thumbnail-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .gradient-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent 25%);
+      opacity: 1;
+      transition: opacity 150ms ease;
+      pointer-events: none;
+    }
+    /* FIXED version — forces GPU compositing layer */
+    .gradient-overlay-fixed {
+      transform: translateZ(0);
+    }
+    .label {
+      margin-top: 12px;
+      font-size: 14px;
+      text-align: center;
+      opacity: 0.8;
+    }
+    .subtitle {
+      margin-top: 4px;
+      font-size: 11px;
+      text-align: center;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="thumbnail-wrapper" id="broken">
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" alt="Landscape">
+      <div class="gradient-overlay"></div>
+    </div>
+    <p class="label">❌ BROKEN</p>
+    <p class="subtitle">Horizontal streaks visible on the gradient overlay in Firefox on hover</p>
+  </div>
+
+  <div>
+    <div class="thumbnail-wrapper" id="fixed">
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" alt="Landscape">
+      <div class="gradient-overlay gradient-overlay-fixed"></div>
+    </div>
+    <p class="label">✅ FIXED</p>
+    <p class="subtitle">\`transform: translateZ(0)\` forces GPU compositing — streaks eliminated</p>
+  </div>
+</body>
+</html>
