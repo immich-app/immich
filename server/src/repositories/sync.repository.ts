@@ -595,7 +595,8 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
   getBackfill(options: SyncBackfillOptions, partnerId: string) {
     return this.backfillQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(columns.syncPartnerAsset)
+      .select(sql.val(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
       .stream();
@@ -614,7 +615,8 @@ class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
-      .select(columns.syncAsset)
+      .select(columns.syncPartnerAsset)
+      .select(sql.val(false).as('isFavorite'))
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),

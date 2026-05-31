@@ -21,7 +21,9 @@ class FolderService {
     Map<String, List<RecursiveFolder>> folderMap = {};
 
     for (String fullPath in paths) {
-      if (fullPath == '/') continue;
+      if (fullPath == '/') {
+        continue;
+      }
 
       // Ensure the path starts with a slash
       if (!fullPath.startsWith('/')) {

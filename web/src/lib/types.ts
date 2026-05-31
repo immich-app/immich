@@ -80,7 +80,7 @@ export type SearchLocationFilter = {
 export type SearchFilter = {
   query: string;
   ocr?: string;
-  queryType: 'smart' | 'metadata' | 'description' | 'ocr';
+  queryType: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
   personIds: SvelteSet<string>;
   tagIds: SvelteSet<string> | null;
   location: SearchLocationFilter;
@@ -91,3 +91,21 @@ export type SearchFilter = {
   mediaType: MediaType;
   rating?: number | null;
 };
+
+export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
+
+export type JSONSchemaProperty = {
+  type: JSONSchemaType;
+  title?: string;
+  description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default?: any;
+  enum?: string[];
+  array?: boolean;
+  properties?: Record<string, JSONSchemaProperty>;
+  required?: string[];
+  uiHint?: 'AlbumId' | 'AssetId' | 'PersonId';
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SchemaConfig = any;

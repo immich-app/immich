@@ -8,7 +8,7 @@ class ImmichPasswordInput extends StatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
-  final void Function(BuildContext, String)? onSubmit;
+  final void Function(String value)? onSubmit;
   final TextInputAction? keyboardAction;
 
   const ImmichPasswordInput({

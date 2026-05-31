@@ -8,7 +8,6 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   mapAlbum,
-  MapAlbumDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
@@ -26,9 +25,9 @@ import { getPreferences } from 'src/utils/preferences';
 export class AlbumService extends BaseService {
   async getStatistics(auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
     const [owned, shared, notShared] = await Promise.all([
-      this.albumRepository.getOwned(auth.user.id),
-      this.albumRepository.getShared(auth.user.id),
-      this.albumRepository.getNotShared(auth.user.id),
+      this.albumRepository.getAll(auth.user.id, { isOwned: true }),
+      this.albumRepository.getAll(auth.user.id, { isShared: true }),
+      this.albumRepository.getAll(auth.user.id, { isOwned: true, isShared: false }),
     ]);
 
     return {
@@ -38,18 +37,15 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, ...rest }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
-    let albums: MapAlbumDto[];
-    if (assetId) {
-      albums = await this.albumRepository.getByAssetId(ownerId, assetId);
-    } else if (shared === true) {
-      albums = await this.albumRepository.getShared(ownerId);
-    } else if (shared === false) {
-      albums = await this.albumRepository.getNotShared(ownerId);
-    } else {
-      albums = await this.albumRepository.getOwned(ownerId);
+    const albums = assetId
+      ? await this.albumRepository.getByAssetId(ownerId, assetId)
+      : await this.albumRepository.getAll(ownerId, rest);
+
+    if (albums.length === 0) {
+      return [];
     }
 
     // Get asset count for each album. Then map the result to an object:
@@ -107,7 +103,8 @@ export class AlbumService extends BaseService {
     for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
       if (!exists) {
-        throw new BadRequestException('User not found');
+        this.logger.debug('Album creation failed: user not found');
+        throw new BadRequestException('Invalid user');
       }
 
       if (userId == auth.user.id) {
@@ -302,7 +299,8 @@ export class AlbumService extends BaseService {
 
       const user = await this.userRepository.get(userId, {});
       if (!user) {
-        throw new BadRequestException('User not found');
+        this.logger.debug('Adding user to album failed: user not found');
+        throw new BadRequestException('Invalid user');
       }
 
       await this.albumUserRepository.create({ userId, albumId: id, role });

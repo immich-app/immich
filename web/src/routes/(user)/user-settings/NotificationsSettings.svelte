@@ -39,7 +39,7 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="sm:ms-8 flex flex-col gap-6">
+      <div class="flex flex-col gap-6 sm:ms-8">
         <Field label={$t('enable')} description={$t('notification_toggle_setting_description')}>
           <Switch bind:checked={emailNotificationsEnabled} />
         </Field>
@@ -53,7 +53,7 @@
         </Field>
       </div>
 
-      <div class="flex justify-end mt-4">
+      <div class="mt-4 flex justify-end">
         <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
       </div>
     </form>

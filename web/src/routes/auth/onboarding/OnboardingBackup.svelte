@@ -13,9 +13,9 @@
 
 <div class="flex flex-col">
   <Stack gap={2}>
-    <div class="flex items-start gap-4 p-6 my-10 bg-gray-100 dark:bg-gray-800/40 rounded-xl border border-gray-700/50">
-      <Icon icon={mdiAlertCircleOutline} size="36" class="text-warning shrink-0 mt-0.5" />
-      <div class="text-gray-800 dark:text-gray-300 leading-relaxed">
+    <div class="my-10 flex items-start gap-4 rounded-xl border border-gray-700/50 bg-gray-100 p-6 dark:bg-gray-800/40">
+      <Icon icon={mdiAlertCircleOutline} size="36" class="mt-0.5 shrink-0 text-warning" />
+      <div class="leading-relaxed text-gray-800 dark:text-gray-300">
         <FormatMessage key="admin.backup_onboarding_description">
           {#snippet children({ message })}
             <Link href="https://www.backblaze.com/blog/the-3-2-1-backup-strategy/">
@@ -32,10 +32,10 @@
       <div class="space-y-6">
         {#each messageKeys as keyString, index (index)}
           <div class="flex items-start gap-6">
-            <div class="shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
-              <span class="text-light text-xl font-semibold">{3 - index}</span>
+            <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/90">
+              <span class="text-xl font-semibold text-light">{3 - index}</span>
             </div>
-            <div class="leading-relaxed pt-2">
+            <div class="pt-2 leading-relaxed">
               <FormatMessage key={keyString as Translations} />
             </div>
           </div>
@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mt-4">
+    <div class="mt-4 text-sm/relaxed text-gray-600 dark:text-gray-400">
       <p>
         <FormatMessage key="admin.backup_onboarding_footer">
           {#snippet children({ message })}

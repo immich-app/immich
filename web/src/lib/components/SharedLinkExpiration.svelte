@@ -58,7 +58,7 @@
     <DatePicker bind:value={getSelectedDate, setSelectedDate} />
   </Field>
 
-  <div class="flex flex-wrap gap-2 mt-2">
+  <div class="mt-2 flex flex-wrap gap-2">
     {#each expiredDateOptions as option (option.value)}
       <Button
         size="tiny"

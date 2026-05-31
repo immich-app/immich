@@ -33,6 +33,7 @@ import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
+import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
 import { AssetEditAuditTable } from 'src/schema/tables/asset-edit-audit.table';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -59,7 +60,8 @@ import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
+import { PluginMethodTable } from 'src/schema/tables/plugin-method.table';
+import { PluginTable } from 'src/schema/tables/plugin.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
@@ -76,7 +78,13 @@ import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.ta
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
-import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
+import {
+  VideoStreamSegmentTable,
+  VideoStreamSessionTable,
+  VideoStreamVariantTable,
+} from 'src/schema/tables/video-stream.table';
+import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
+import { WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @Database({ name: 'immich' })
@@ -133,12 +141,13 @@ export class ImmichDatabase {
     UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
+    VideoStreamSessionTable,
+    VideoStreamVariantTable,
+    VideoStreamSegmentTable,
     PluginTable,
-    PluginFilterTable,
-    PluginActionTable,
+    PluginMethodTable,
     WorkflowTable,
-    WorkflowFilterTable,
-    WorkflowActionTable,
+    WorkflowStepTable,
   ];
 
   functions = [
@@ -196,6 +205,9 @@ export interface DB {
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
   asset_ocr: AssetOcrTable;
+  asset_audio: AssetAudioTable;
+  asset_video: AssetVideoTable;
+  asset_keyframe: AssetKeyframeTable;
   ocr_search: OcrSearchTable;
 
   face_search: FaceSearchTable;
@@ -247,11 +259,13 @@ export interface DB {
 
   version_history: VersionHistoryTable;
 
+  video_stream_session: VideoStreamSessionTable;
+  video_stream_variant: VideoStreamVariantTable;
+  video_stream_segment: VideoStreamSegmentTable;
+
   plugin: PluginTable;
-  plugin_filter: PluginFilterTable;
-  plugin_action: PluginActionTable;
+  plugin_method: PluginMethodTable;
 
   workflow: WorkflowTable;
-  workflow_filter: WorkflowFilterTable;
-  workflow_action: WorkflowActionTable;
+  workflow_step: WorkflowStepTable;
 }

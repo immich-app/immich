@@ -2,69 +2,44 @@ import { expect } from 'vitest';
 
 export const errorDto = {
   unauthorized: {
-    error: 'Unauthorized',
-    statusCode: 401,
     message: 'Authentication required',
   },
   unauthorizedWithMessage: (message: string) => ({
-    error: 'Unauthorized',
-    statusCode: 401,
     message,
   }),
   forbidden: {
-    error: 'Forbidden',
-    statusCode: 403,
     message: expect.any(String),
   },
   missingPermission: (permission: string) => ({
-    error: 'Forbidden',
-    statusCode: 403,
     message: `Missing required permission: ${permission}`,
   }),
   wrongPassword: {
-    error: 'Bad Request',
-    statusCode: 400,
     message: 'Wrong password',
   },
   invalidToken: {
-    error: 'Unauthorized',
-    statusCode: 401,
     message: 'Invalid user token',
   },
   invalidShareKey: {
-    error: 'Unauthorized',
-    statusCode: 401,
     message: 'Invalid share key',
   },
   passwordRequired: {
-    error: 'Unauthorized',
-    statusCode: 401,
     message: 'Password required',
   },
   badRequest: (message: any = null) => ({
-    error: 'Bad Request',
-    statusCode: 400,
     message: message ?? expect.anything(),
   }),
+  validationError: (errors?: ReadonlyArray<{ path: ReadonlyArray<string | number>; message: string }>) => ({
+    message: 'Validation failed',
+    errors: errors ? expect.arrayContaining(errors.map((e) => expect.objectContaining(e))) : expect.any(Array),
+  }),
   noPermission: {
-    error: 'Bad Request',
-    statusCode: 400,
     message: expect.stringContaining('Not found or no'),
   },
   incorrectLogin: {
-    error: 'Unauthorized',
-    statusCode: 401,
     message: 'Incorrect email or password',
   },
   alreadyHasAdmin: {
-    error: 'Bad Request',
-    statusCode: 400,
     message: 'The server already has an admin',
-  },
-  invalidEmail: {
-    error: 'Bad Request',
-    statusCode: 400,
-    message: ['email must be an email'],
   },
 };
 

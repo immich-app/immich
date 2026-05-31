@@ -382,9 +382,8 @@ with
       "asset"."ownerId",
       "asset"."status",
       asset."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
+      asset."createdAt" at time zone 'utc' as "createdAt",
       encode("asset"."thumbhash", 'base64') as "thumbhash",
-      "asset_exif"."city",
-      "asset_exif"."country",
       "asset_exif"."projectionType",
       coalesce(
         case
@@ -397,6 +396,8 @@ with
         end,
         1
       ) as "ratio",
+      "asset_exif"."city",
+      "asset_exif"."country",
       "stack"
     from
       "asset"
@@ -431,8 +432,6 @@ with
   ),
   "agg" as (
     select
-      coalesce(array_agg("city"), '{}') as "city",
-      coalesce(array_agg("country"), '{}') as "country",
       coalesce(array_agg("duration"), '{}') as "duration",
       coalesce(array_agg("id"), '{}') as "id",
       coalesce(array_agg("visibility"), '{}') as "visibility",
@@ -442,11 +441,14 @@ with
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
       coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
       coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
+      coalesce(array_agg("createdAt"), '{}') as "createdAt",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
       coalesce(array_agg("status"), '{}') as "status",
       coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
+      coalesce(array_agg("city"), '{}') as "city",
+      coalesce(array_agg("country"), '{}') as "country",
       coalesce(json_agg("stack"), '[]') as "stack"
     from
       "cte"
@@ -484,6 +486,22 @@ where
   and "deletedAt" is null
 limit
   $5
+
+-- AssetRepository.getRecentlyCreatedAssetIds
+select
+  "id" as "data",
+  "createdAt" as "value"
+from
+  "asset"
+where
+  "ownerId" = $1::uuid
+  and "asset"."visibility" = $2
+  and "type" = $3
+  and "deletedAt" is null
+order by
+  "value" desc
+limit
+  $4
 
 -- AssetRepository.detectOfflineExternalAssets
 update "asset"

@@ -23,6 +23,8 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
+private const val MAX_PREALLOC_BYTES = 128 * 1024 * 1024
+
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
@@ -228,7 +230,6 @@ private class CronetImageFetcher : ImageFetcher {
     private val onComplete: () -> Unit,
   ) : UrlRequest.Callback() {
     private var buffer: NativeByteBuffer? = null
-    private var wrapped: ByteBuffer? = null
     private var error: Exception? = null
 
     override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newUrl: String) {
@@ -242,15 +243,16 @@ private class CronetImageFetcher : ImageFetcher {
       }
 
       try {
+        // Content-Length is a size hint only. With Content-Encoding (gzip/br/...),
+        // Cronet auto-decompresses and writes decompressed bytes to our buffer, which
+        // may exceed the wire/compressed Content-Length. Always use the growable
+        // buffer path so we can't overflow.
         val contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
-        if (contentLength > 0) {
-          buffer = NativeByteBuffer(contentLength + 1)
-          wrapped = NativeBuffer.wrap(buffer!!.pointer, contentLength + 1)
-          request.read(wrapped)
-        } else {
-          buffer = NativeByteBuffer(INITIAL_BUFFER_SIZE)
-          request.read(buffer!!.wrapRemaining())
-        }
+        // Cap the up-front alloc: Content-Length is untrusted and can be huge or near
+        // Int.MAX_VALUE (overflowing `+1`). For larger responses the grow path takes over.
+        val initialSize = if (contentLength in 1..MAX_PREALLOC_BYTES) contentLength + 1 else INITIAL_BUFFER_SIZE
+        buffer = NativeByteBuffer(initialSize)
+        request.read(buffer!!.wrapRemaining())
       } catch (e: Exception) {
         error = e
         return request.cancel()
@@ -263,14 +265,14 @@ private class CronetImageFetcher : ImageFetcher {
       byteBuffer: ByteBuffer
     ) {
       try {
-        val buf = if (wrapped == null) {
-          buffer!!.run {
-            advance(byteBuffer.position())
-            ensureHeadroom()
-            wrapRemaining()
-          }
-        } else {
-          wrapped
+        // Always pass a fresh wrap so byteBuffer.position() represents only the
+        // bytes Cronet wrote in this iteration. Reusing the caller-supplied
+        // ByteBuffer breaks advance(): Cronet's position keeps accumulating
+        // across reads, which would double-count previous iterations' bytes.
+        val buf = buffer!!.run {
+          advance(byteBuffer.position())
+          ensureHeadroom()
+          wrapRemaining()
         }
         request.read(buf)
       } catch (e: Exception) {
@@ -280,7 +282,6 @@ private class CronetImageFetcher : ImageFetcher {
     }
 
     override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
-      wrapped?.let { buffer!!.advance(it.position()) }
       onSuccess(buffer!!)
       onComplete()
     }

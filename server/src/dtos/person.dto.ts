@@ -56,7 +56,7 @@ const PersonSearchSchema = z
   })
   .meta({ id: 'PersonSearchDto' });
 
-const PersonResponseSchema = z
+export const PersonResponseSchema = z
   .object({
     id: z.string().describe('Person ID'),
     name: z.string().describe('Person name'),
@@ -91,7 +91,7 @@ export class MergePersonDto extends createZodDto(MergePersonSchema) {}
 export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
 export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
 
-export const AssetFaceWithoutPersonResponseSchema = z
+export const AssetFaceResponseSchema = z
   .object({
     id: z.uuidv4().describe('Face ID'),
     imageHeight: z.int().min(0).describe('Image height in pixels'),
@@ -101,21 +101,10 @@ export const AssetFaceWithoutPersonResponseSchema = z
     boundingBoxY1: z.int().describe('Bounding box Y1 coordinate'),
     boundingBoxY2: z.int().describe('Bounding box Y2 coordinate'),
     sourceType: SourceTypeSchema.optional(),
+    person: PersonResponseSchema.nullable(),
   })
-  .describe('Asset face without person')
-  .meta({ id: 'AssetFaceWithoutPersonResponseDto' });
-
-class AssetFaceWithoutPersonResponseDto extends createZodDto(AssetFaceWithoutPersonResponseSchema) {}
-
-export const PersonWithFacesResponseSchema = PersonResponseSchema.extend({
-  faces: z.array(AssetFaceWithoutPersonResponseSchema),
-}).meta({ id: 'PersonWithFacesResponseDto' });
-
-export class PersonWithFacesResponseDto extends createZodDto(PersonWithFacesResponseSchema) {}
-
-const AssetFaceResponseSchema = AssetFaceWithoutPersonResponseSchema.extend({
-  person: PersonResponseSchema.nullable(),
-}).meta({ id: 'AssetFaceResponseDto' });
+  .describe('Asset face with person')
+  .meta({ id: 'AssetFaceResponseDto' });
 
 export class AssetFaceResponseDto extends createZodDto(AssetFaceResponseSchema) {}
 
@@ -193,11 +182,11 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   };
 }
 
-export function mapFacesWithoutPerson(
+function mapFacesWithoutPerson(
   face: MaybeDehydrated<Selectable<AssetFaceTable>>,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
-): AssetFaceWithoutPersonResponseDto {
+) {
   return {
     id: face.id,
     ...transformFaceBoundingBox(

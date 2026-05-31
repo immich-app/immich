@@ -44,6 +44,9 @@ class TimelineApi {
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
+  /// * [AssetOrderBy] orderBy:
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
+  ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
@@ -69,7 +72,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, }) async {
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, AssetOrderBy? orderBy, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -97,6 +100,9 @@ class TimelineApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (orderBy != null) {
+      queryParams.addAll(_queryParams('', 'orderBy', orderBy));
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
@@ -138,6 +144,7 @@ class TimelineApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -167,6 +174,9 @@ class TimelineApi {
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
+  /// * [AssetOrderBy] orderBy:
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
+  ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
@@ -192,8 +202,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedAlbums: withSharedAlbums, withStacked: withStacked, );
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, AssetOrderBy? orderBy, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, Future<void>? abortTrigger, }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket, albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, orderBy: orderBy, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedAlbums: withSharedAlbums, withStacked: withStacked, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -232,6 +242,9 @@ class TimelineApi {
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
+  /// * [AssetOrderBy] orderBy:
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
+  ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
@@ -257,7 +270,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, AssetOrderBy? orderBy, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/buckets';
 
@@ -285,6 +298,9 @@ class TimelineApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (orderBy != null) {
+      queryParams.addAll(_queryParams('', 'orderBy', orderBy));
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
@@ -325,6 +341,7 @@ class TimelineApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -351,6 +368,9 @@ class TimelineApi {
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
+  /// * [AssetOrderBy] orderBy:
+  ///   Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)
+  ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
@@ -376,8 +396,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, }) async {
-    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedAlbums: withSharedAlbums, withStacked: withStacked, );
+  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, AssetOrderBy? orderBy, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withSharedAlbums, bool? withStacked, Future<void>? abortTrigger, }) async {
+    final response = await getTimeBucketsWithHttpInfo(albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, orderBy: orderBy, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withSharedAlbums: withSharedAlbums, withStacked: withStacked, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

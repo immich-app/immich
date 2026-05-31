@@ -31,7 +31,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex h-6.5 place-items-center gap-1">
-    <label class="font-medium text-primary text-sm" for="{name}-select">
+    <label class="text-sm font-medium text-primary" for="{name}-select">
       {label}
     </label>
 
@@ -46,13 +46,13 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-sm" id="{name}-desc">
+    <p class="pb-2 text-sm immich-form-label" id="{name}-desc">
       {desc}
     </p>
   {/if}
   <div class="flex flex-col gap-2">
     {#each options as option (option.value)}
-      <div class="flex gap-2 items-center">
+      <div class="flex items-center gap-2">
         <Checkbox
           size="tiny"
           id="{option.value}-checkbox"
