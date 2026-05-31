@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Focus Outline Reproduction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #fff;
+      padding: 40px;
+      font-family: sans-serif;
+    }
+    .dark body {
+      background: #0a0a0a;
+      color: white;
+    }
+    /* BEFORE: global input:focus-visible override (removed) */
+    .before-mode input:focus-visible {
+      outline-offset: 0px !important;
+      outline: none !important;
+    }
+    .input-field {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      font-size: 14px;
+      width: 200px;
+    }
+    .dark .input-field {
+      background: #333;
+      border-color: #555;
+      color: white;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #4250af;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn:focus-visible {
+      outline: 2px solid #4250af;
+      outline-offset: 2px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .label {
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .subtitle {
+      font-size: 11px;
+      opacity: 0.6;
+      margin-top: 4px;
+    }
+    .kbd {
+      background: #e5e5e5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .dark .kbd {
+      background: #333;
+    }
+  </style>
+</head>
+<body class="dark">
+  <div style="display:flex; gap:60px;">
+    <div class="section before-mode">
+      <p class="label">❌ BEFORE — Global \`input:focus-visible { outline: none }\`</p>
+      <p style="font-size:12px; opacity:0.7; margin-bottom:12px;">
+        Tabbing through: the button shows a focus ring, but the input does not.
+        Inconsistent and inaccessible keyboard navigation.
+      </p>
+      <input class="input-field" value="Admin Email" ><br><br>
+      <button class="btn">Save</button>
+      <p class="subtitle">Input: no visible focus. Button: visible focus ring. → Inconsistent.</p>
+    </div>
+
+    <div class="section">
+      <p class="label">✅ AFTER — Focus outline override removed</p>
+      <p style="font-size:12px; opacity:0.7; margin-bottom:12px;">
+        Tabbing through: both the input and the button show a visible focus indicator.
+        Consistent and accessible keyboard navigation.
+      </p>
+      <input class="input-field" value="Admin Email" ><br><br>
+      <button class="btn">Save</button>
+      <p class="subtitle">Input: browser default focus ring. Button: component focus ring. → Consistent.</p>
+    </div>
+  </div>
+</body>
+</html>
