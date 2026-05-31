@@ -313,6 +313,7 @@
               'absolute size-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
               { 'rounded-xl group-focus-visible:rounded-lg': selected },
             ]}
+            style="transform: translateZ(0);"
           ></div>
         {/if}
 
