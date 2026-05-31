@@ -14479,7 +14479,7 @@
     },
     "/users/me/stats/uploads": {
       "get": {
-        "description": "Retrieve daily upload counts for the current user.",
+        "description": "Retrieve daily upload counts and totals for the current user.",
         "operationId": "getMyUploadStatistics",
         "parameters": [
           {

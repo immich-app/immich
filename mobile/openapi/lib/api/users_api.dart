@@ -254,7 +254,7 @@ class UsersApi {
 
   /// Get current user upload statistics
   ///
-  /// Retrieve daily upload counts for the current user.
+  /// Retrieve daily upload counts and totals for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -299,7 +299,7 @@ class UsersApi {
 
   /// Get current user upload statistics
   ///
-  /// Retrieve daily upload counts for the current user.
+  /// Retrieve daily upload counts and totals for the current user.
   ///
   /// Parameters:
   ///

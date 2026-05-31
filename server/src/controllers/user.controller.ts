@@ -71,7 +71,7 @@ export class UserController {
   @Authenticated({ permission: Permission.UserRead })
   @Endpoint({
     summary: 'Get current user upload statistics',
-    description: 'Retrieve daily upload counts for the current user.',
+    description: 'Retrieve daily upload counts and totals for the current user.',
     history: new HistoryBuilder().added('v3').stable('v3'),
   })
   getMyUploadStatistics(@Auth() auth: AuthDto, @Query() dto: UserUploadStatsDto): Promise<UserUploadStatsResponseDto> {
