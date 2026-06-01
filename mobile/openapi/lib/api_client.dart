@@ -737,6 +737,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigFFmpegRealtimeDto':
+          return SystemConfigFFmpegRealtimeDto.fromJson(value);
         case 'SystemConfigFacesDto':
           return SystemConfigFacesDto.fromJson(value);
         case 'SystemConfigGeneratedFullsizeImageDto':

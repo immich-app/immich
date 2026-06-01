@@ -16,7 +16,16 @@ import { AppRestartEvent, ArgsOf, EventRepository } from 'src/repositories/event
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { handlePromiseError } from 'src/utils/misc';
 
-export const serverEvents = ['ConfigUpdate', 'AppRestart'] as const;
+export const serverEvents = [
+  'ConfigUpdate',
+  'AppRestart',
+  'HlsSegmentRequest',
+  'HlsSegmentResult',
+  'HlsHeartbeat',
+  'HlsSessionRequest',
+  'HlsSessionResult',
+  'HlsSessionEnd',
+] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export interface ClientEventMap {

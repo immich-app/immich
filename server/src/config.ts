@@ -46,6 +46,9 @@ export type SystemConfig = {
     accel: TranscodeHardwareAcceleration;
     accelDecode: boolean;
     tonemap: ToneMapping;
+    realtime: {
+      enabled: boolean;
+    };
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
@@ -226,6 +229,9 @@ export const defaults = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.Hable,
     accel: TranscodeHardwareAcceleration.Disabled,
     accelDecode: true,
+    realtime: {
+      enabled: false,
+    },
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },

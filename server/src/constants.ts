@@ -1,7 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
-import { ApiTag, AudioCodec, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+import {
+  ApiTag,
+  AudioCodec,
+  DatabaseExtension,
+  ExifOrientation,
+  TranscodeHardwareAcceleration,
+  VectorIndex,
+  VideoCodec,
+} from 'src/enum';
 
 export const IMMICH_SERVER_START = 'Immich Server is listening';
 
@@ -202,3 +210,32 @@ export const AUDIO_ENCODER: Record<AudioCodec, string> = {
   [AudioCodec.Opus]: 'libopus',
   [AudioCodec.PcmS16le]: 'pcm_s16le',
 };
+
+export const SUPPORTED_HWA_CODECS: Record<TranscodeHardwareAcceleration, VideoCodec[]> = {
+  [TranscodeHardwareAcceleration.Nvenc]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Av1],
+  [TranscodeHardwareAcceleration.Qsv]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1],
+  [TranscodeHardwareAcceleration.Vaapi]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1],
+  [TranscodeHardwareAcceleration.Rkmpp]: [VideoCodec.H264, VideoCodec.Hevc],
+  [TranscodeHardwareAcceleration.Disabled]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1],
+};
+
+export const HLS_BACKPRESSURE_PAUSE_SEGMENTS = 30;
+export const HLS_BACKPRESSURE_RESUME_SEGMENTS = 15;
+export const HLS_CLEANUP_INTERVAL_MS = 60 * 1000;
+export const HLS_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
+export const HLS_LEASE_DURATION_MS = 30 * 60 * 1000;
+export const HLS_PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
+export const HLS_SEGMENT_DURATION = 2;
+export const HLS_SEGMENT_FILENAME_REGEX = /^seg_(\d+)\.m4s$/;
+export const HLS_VARIANTS = [
+  { resolution: 480, codec: VideoCodec.Av1, bitrate: 1_000_000, codecString: 'av01.0.04M.08' },
+  { resolution: 480, codec: VideoCodec.Hevc, bitrate: 1_200_000, codecString: 'hvc1.1.6.L90.B0' },
+  { resolution: 480, codec: VideoCodec.H264, bitrate: 2_500_000, codecString: 'avc1.64001e' },
+  { resolution: 720, codec: VideoCodec.Av1, bitrate: 2_000_000, codecString: 'av01.0.08M.08' },
+  { resolution: 720, codec: VideoCodec.Hevc, bitrate: 2_500_000, codecString: 'hvc1.1.6.L93.B0' },
+  { resolution: 720, codec: VideoCodec.H264, bitrate: 5_000_000, codecString: 'avc1.64001f' },
+  { resolution: 1080, codec: VideoCodec.Av1, bitrate: 4_000_000, codecString: 'av01.0.09M.08' },
+  { resolution: 1080, codec: VideoCodec.Hevc, bitrate: 4_500_000, codecString: 'hvc1.1.6.L120.B0' },
+  { resolution: 1080, codec: VideoCodec.H264, bitrate: 8_000_000, codecString: 'avc1.640028' },
+];
+export const HLS_VERSION = 7;

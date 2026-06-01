@@ -79,6 +79,11 @@ const SystemConfigFFmpegSchema = z
     accel: TranscodeHardwareAccelerationSchema,
     accelDecode: configBool.describe('Accelerated decode'),
     tonemap: ToneMappingSchema,
+    realtime: z
+      .object({
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+      })
+      .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 

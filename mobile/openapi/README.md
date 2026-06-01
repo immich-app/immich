@@ -103,12 +103,16 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**deleteBulkAssetMetadata**](doc//AssetsApi.md#deletebulkassetmetadata) | **DELETE** /assets/metadata | Delete asset metadata
 *AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | Download original asset
 *AssetsApi* | [**editAsset**](doc//AssetsApi.md#editasset) | **PUT** /assets/{id}/edits | Apply edits to an existing asset
+*AssetsApi* | [**endSession**](doc//AssetsApi.md#endsession) | **DELETE** /assets/{id}/video/stream/{sessionId} | End HLS streaming session
 *AssetsApi* | [**getAssetEdits**](doc//AssetsApi.md#getassetedits) | **GET** /assets/{id}/edits | Retrieve edits for an existing asset
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | Retrieve an asset
 *AssetsApi* | [**getAssetMetadata**](doc//AssetsApi.md#getassetmetadata) | **GET** /assets/{id}/metadata | Get asset metadata
 *AssetsApi* | [**getAssetMetadataByKey**](doc//AssetsApi.md#getassetmetadatabykey) | **GET** /assets/{id}/metadata/{key} | Retrieve asset metadata by key
 *AssetsApi* | [**getAssetOcr**](doc//AssetsApi.md#getassetocr) | **GET** /assets/{id}/ocr | Retrieve asset OCR data
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | Get asset statistics
+*AssetsApi* | [**getMainPlaylist**](doc//AssetsApi.md#getmainplaylist) | **GET** /assets/{id}/video/stream/main.m3u8 | Get HLS main playlist
+*AssetsApi* | [**getMediaPlaylist**](doc//AssetsApi.md#getmediaplaylist) | **GET** /assets/{id}/video/stream/{sessionId}/{variantIndex}/playlist.m3u8 | Get HLS media playlist
+*AssetsApi* | [**getSegment**](doc//AssetsApi.md#getsegment) | **GET** /assets/{id}/video/stream/{sessionId}/{variantIndex}/{filename} | Get HLS segment or init file
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | Play asset video
 *AssetsApi* | [**removeAssetEdits**](doc//AssetsApi.md#removeassetedits) | **DELETE** /assets/{id}/edits | Remove edits from an existing asset
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | Run an asset job
@@ -600,6 +604,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigBackupsDto](doc//SystemConfigBackupsDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
+ - [SystemConfigFFmpegRealtimeDto](doc//SystemConfigFFmpegRealtimeDto.md)
  - [SystemConfigFacesDto](doc//SystemConfigFacesDto.md)
  - [SystemConfigGeneratedFullsizeImageDto](doc//SystemConfigGeneratedFullsizeImageDto.md)
  - [SystemConfigGeneratedImageDto](doc//SystemConfigGeneratedImageDto.md)

@@ -345,6 +345,7 @@ part 'model/sync_user_v1.dart';
 part 'model/system_config_backups_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
+part 'model/system_config_f_fmpeg_realtime_dto.dart';
 part 'model/system_config_faces_dto.dart';
 part 'model/system_config_generated_fullsize_image_dto.dart';
 part 'model/system_config_generated_image_dto.dart';

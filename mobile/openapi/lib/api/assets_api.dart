@@ -423,6 +423,76 @@ class AssetsApi {
     return null;
   }
 
+  /// End HLS streaming session
+  ///
+  /// Releases server resources for the streaming session.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] sessionId (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> endSessionWithHttpInfo(String id, String sessionId, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/video/stream/{sessionId}'
+      .replaceAll('{id}', id)
+      .replaceAll('{sessionId}', sessionId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// End HLS streaming session
+  ///
+  /// Releases server resources for the streaming session.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] sessionId (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<void> endSession(String id, String sessionId, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await endSessionWithHttpInfo(id, sessionId, key: key, slug: slug, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Retrieve edits for an existing asset
   ///
   /// Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.
@@ -817,6 +887,250 @@ class AssetsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetStatsResponseDto',) as AssetStatsResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Get HLS main playlist
+  ///
+  /// Returns an HLS main playlist with all available variants for the asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> getMainPlaylistWithHttpInfo(String id, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/video/stream/main.m3u8'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get HLS main playlist
+  ///
+  /// Returns an HLS main playlist with all available variants for the asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<String?> getMainPlaylist(String id, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await getMainPlaylistWithHttpInfo(id, key: key, slug: slug, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'String',) as String;
+    
+    }
+    return null;
+  }
+
+  /// Get HLS media playlist
+  ///
+  /// Returns an HLS media playlist for one variant of the streaming session.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] sessionId (required):
+  ///
+  /// * [int] variantIndex (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> getMediaPlaylistWithHttpInfo(String id, String sessionId, int variantIndex, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/video/stream/{sessionId}/{variantIndex}/playlist.m3u8'
+      .replaceAll('{id}', id)
+      .replaceAll('{sessionId}', sessionId)
+      .replaceAll('{variantIndex}', variantIndex.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get HLS media playlist
+  ///
+  /// Returns an HLS media playlist for one variant of the streaming session.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] sessionId (required):
+  ///
+  /// * [int] variantIndex (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<String?> getMediaPlaylist(String id, String sessionId, int variantIndex, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await getMediaPlaylistWithHttpInfo(id, sessionId, variantIndex, key: key, slug: slug, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'String',) as String;
+    
+    }
+    return null;
+  }
+
+  /// Get HLS segment or init file
+  ///
+  /// Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s).
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] filename (required):
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] sessionId (required):
+  ///
+  /// * [int] variantIndex (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> getSegmentWithHttpInfo(String filename, String id, String sessionId, int variantIndex, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/video/stream/{sessionId}/{variantIndex}/{filename}'
+      .replaceAll('{filename}', filename)
+      .replaceAll('{id}', id)
+      .replaceAll('{sessionId}', sessionId)
+      .replaceAll('{variantIndex}', variantIndex.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get HLS segment or init file
+  ///
+  /// Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s).
+  ///
+  /// Parameters:
+  ///
+  /// * [String] filename (required):
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [String] sessionId (required):
+  ///
+  /// * [int] variantIndex (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<MultipartFile?> getSegment(String filename, String id, String sessionId, int variantIndex, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await getSegmentWithHttpInfo(filename, id, sessionId, variantIndex, key: key, slug: slug, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
