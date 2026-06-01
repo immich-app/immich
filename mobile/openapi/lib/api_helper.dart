@@ -157,6 +157,12 @@ String parameterToString(dynamic value) {
   if (value is ReactionType) {
     return ReactionTypeTypeTransformer().encode(value).toString();
   }
+  if (value is ReleaseChannel) {
+    return ReleaseChannelTypeTransformer().encode(value).toString();
+  }
+  if (value is ReleaseType) {
+    return ReleaseTypeTypeTransformer().encode(value).toString();
+  }
   if (value is SearchSuggestionType) {
     return SearchSuggestionTypeTypeTransformer().encode(value).toString();
   }

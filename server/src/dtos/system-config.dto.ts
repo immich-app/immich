@@ -79,6 +79,11 @@ const SystemConfigFFmpegSchema = z
     accel: TranscodeHardwareAccelerationSchema,
     accelDecode: configBool.describe('Accelerated decode'),
     tonemap: ToneMappingSchema,
+    realtime: z
+      .object({
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+      })
+      .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 
@@ -151,8 +156,15 @@ const SystemConfigMapSchema = z
   })
   .meta({ id: 'SystemConfigMapDto' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 const SystemConfigNewVersionCheckSchema = z
-  .object({ enabled: configBool.describe('Enabled') })
+  .object({ enabled: configBool.describe('Enabled'), channel: ReleaseChannelSchema })
   .meta({ id: 'SystemConfigNewVersionCheckDto' });
 
 const SystemConfigNightlyTasksSchema = z
