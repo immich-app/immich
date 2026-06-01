@@ -47,6 +47,16 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
         addDefault(value, 'hasProfileImage', false);
       }
+    case 'AssetEditActionItemDtoParameters':
+      if (value is Map) {
+        addDefault(value, 'angle', 0);
+        addDefault(value, 'x', 0);
+        addDefault(value, 'y', 0);
+        addDefault(value, 'width', 0);
+        addDefault(value, 'height', 0);
+        addDefault(value, 'axis', 'horizontal');
+      }
+      break;
     case 'SyncAssetV1':
       if (value is Map) {
         addDefault(value, 'isEdited', false);
