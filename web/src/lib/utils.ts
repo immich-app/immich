@@ -244,6 +244,14 @@ export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
+export const getAssetHlsUrl = (id: string) => {
+  return createUrl(`/assets/${id}/video/stream/main.m3u8`, authManager.params);
+};
+
+export const getAssetHlsSessionUrl = (id: string, sessionId: string) => {
+  return createUrl(`/assets/${id}/video/stream/${sessionId}`, authManager.params);
+};
+
 export const getProfileImageUrl = (user: UserResponseDto) =>
   createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
 

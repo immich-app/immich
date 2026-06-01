@@ -1993,6 +1993,8 @@ export type ServerFeaturesDto = {
     ocr: boolean;
     /** Whether password login is enabled */
     passwordLogin: boolean;
+    /** Whether real-time transcoding is enabled */
+    realtimeTranscoding: boolean;
     /** Whether reverse geocoding is enabled */
     reverseGeocoding: boolean;
     /** Whether search is enabled */

@@ -21682,6 +21682,10 @@
             "description": "Whether password login is enabled",
             "type": "boolean"
           },
+          "realtimeTranscoding": {
+            "description": "Whether real-time transcoding is enabled",
+            "type": "boolean"
+          },
           "reverseGeocoding": {
             "description": "Whether reverse geocoding is enabled",
             "type": "boolean"
@@ -21714,6 +21718,7 @@
           "oauthAutoLaunch",
           "ocr",
           "passwordLogin",
+          "realtimeTranscoding",
           "reverseGeocoding",
           "search",
           "sidecar",

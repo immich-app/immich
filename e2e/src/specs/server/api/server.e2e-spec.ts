@@ -116,6 +116,7 @@ describe('/server', () => {
         oauthAutoLaunch: false,
         ocr: false,
         passwordLogin: true,
+        realtimeTranscoding: false,
         search: true,
         sidecar: true,
         trash: true,
