@@ -7337,8 +7337,7 @@ export enum ReleaseType {
     Preminor = "preminor",
     Patch = "patch",
     Prepatch = "prepatch",
-    Prerelease = "prerelease",
-    Release = "release"
+    Prerelease = "prerelease"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

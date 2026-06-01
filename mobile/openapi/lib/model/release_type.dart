@@ -30,7 +30,6 @@ class ReleaseType {
   static const patch_ = ReleaseType._(r'patch');
   static const prepatch = ReleaseType._(r'prepatch');
   static const prerelease = ReleaseType._(r'prerelease');
-  static const release = ReleaseType._(r'release');
 
   /// List of all possible values in this [enum][ReleaseType].
   static const values = <ReleaseType>[
@@ -41,7 +40,6 @@ class ReleaseType {
     patch_,
     prepatch,
     prerelease,
-    release,
   ];
 
   static ReleaseType? fromJson(dynamic value) => ReleaseTypeTypeTransformer().decode(value);
@@ -87,7 +85,6 @@ class ReleaseTypeTypeTransformer {
         case r'patch': return ReleaseType.patch_;
         case r'prepatch': return ReleaseType.prepatch;
         case r'prerelease': return ReleaseType.prerelease;
-        case r'release': return ReleaseType.release;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

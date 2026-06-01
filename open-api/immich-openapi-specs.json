@@ -20847,8 +20847,7 @@
           "preminor",
           "patch",
           "prepatch",
-          "prerelease",
-          "release"
+          "prerelease"
         ],
         "type": "string"
       },

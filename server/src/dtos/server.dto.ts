@@ -155,7 +155,6 @@ export enum ReleaseType {
   Patch = 'patch',
   Prepatch = 'prepatch',
   Prerelease = 'prerelease',
-  Release = 'release',
 }
 
 const ReleaseTypeSchema = z.enum(ReleaseType).meta({ id: 'ReleaseType' }).describe('Release type');
