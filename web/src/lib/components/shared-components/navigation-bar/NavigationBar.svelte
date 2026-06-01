@@ -113,7 +113,7 @@
           />
         {/if}
 
-        <!-- TODO[YUCCA]: remove this -->
+        <!-- TODO[YUCCA]: remove test buttons (reset backups / switch to maintenance mode) -->
         {#if authManager.user.isAdmin}
           <Button
             leadingIcon={mdiProgressWrench}
