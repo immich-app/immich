@@ -49,7 +49,7 @@ def get_version_from_pubspec
   pubspec = YAML.load_file(pubspec_path)
   
   version_string = pubspec['version']
-  version_string ? version_string.split('+').first : nil
+  version_string ? version_string.split('+').first.split('-').first : nil
 end
   
   # Helper method to configure code signing for all targets
