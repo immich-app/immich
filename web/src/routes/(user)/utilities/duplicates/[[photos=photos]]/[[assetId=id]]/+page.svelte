@@ -10,6 +10,7 @@
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
+  import { getStackableDuplicateGroups, stackDuplicateGroups } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
@@ -18,6 +19,7 @@
     mdiCheckOutline,
     mdiChevronLeft,
     mdiChevronRight,
+    mdiImageMultipleOutline,
     mdiKeyboard,
     mdiPageFirst,
     mdiPageLast,
@@ -54,6 +56,14 @@
   };
 
   let duplicates = $state(data.duplicates);
+  let stackableDuplicateGroups = $derived(getStackableDuplicateGroups(duplicates));
+  let stackAllProgress = $state({ completedCount: 0, failedCount: 0, succeededCount: 0, totalCount: 0 });
+  let isStackingAll = $state(false);
+  let stackAllProgressPercent = $derived(
+    stackAllProgress.totalCount === 0
+      ? 0
+      : Math.floor((stackAllProgress.completedCount / stackAllProgress.totalCount) * 100),
+  );
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -68,6 +78,7 @@
   );
 
   let hasDuplicates = $derived(duplicates.length > 0);
+  let hasStackableDuplicateGroups = $derived(stackableDuplicateGroups.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
       const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
@@ -129,6 +140,57 @@
     await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await navigateToIndex(duplicatesIndex);
+  };
+
+  const handleStackAll = async () => {
+    const groupsToStack = stackableDuplicateGroups;
+    if (groupsToStack.length === 0 || isStackingAll) {
+      return;
+    }
+
+    return withConfirmation(
+      async () => {
+        isStackingAll = true;
+        stackAllProgress = { completedCount: 0, failedCount: 0, succeededCount: 0, totalCount: groupsToStack.length };
+
+        try {
+          const { succeededDuplicateIds, failedDuplicateIds } = await stackDuplicateGroups(groupsToStack, {
+            createStack: (assetIds) => createStack({ stackCreateDto: { assetIds } }),
+            updateAssets: (assetIds) => updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } }),
+            onError: (_duplicateId, error) =>
+              handleError(error, $t('errors.failed_to_stack_assets'), { notify: false }),
+            onProgress: (progress) => (stackAllProgress = progress),
+          });
+
+          const succeededCount = succeededDuplicateIds.length;
+          const failedCount = failedDuplicateIds.length;
+
+          if (succeededCount > 0) {
+            const succeededDuplicateIdSet = new Set(succeededDuplicateIds);
+            duplicates = duplicates.filter((duplicate) => !succeededDuplicateIdSet.has(duplicate.duplicateId));
+          }
+
+          if (failedCount > 0) {
+            if (succeededCount > 0) {
+              toastManager.warning($t('stacked_duplicate_groups_partial', { values: { succeededCount, failedCount } }));
+              await navigateToIndex(duplicatesIndex);
+              return;
+            }
+
+            toastManager.danger($t('failed_to_stack_duplicate_groups_count', { values: { count: failedCount } }));
+            return;
+          }
+
+          toastManager.primary($t('stacked_duplicate_groups_count', { values: { count: succeededCount } }));
+          page.url.searchParams.delete('index');
+          await goto(Route.duplicatesUtility());
+        } finally {
+          isStackingAll = false;
+        }
+      },
+      $t('bulk_stack_duplicates_confirmation', { values: { count: groupsToStack.length } }),
+      $t('confirm'),
+    );
   };
 
   const handleDeduplicateAll = async () => {
@@ -222,7 +284,7 @@
       <Button
         leadingIcon={mdiTrashCanOutline}
         onclick={() => handleDeduplicateAll()}
-        disabled={!hasDuplicates}
+        disabled={!hasDuplicates || isStackingAll}
         size="small"
         variant="ghost"
         color="secondary"
@@ -230,9 +292,20 @@
         <Text class="hidden md:block">{$t('deduplicate_all')}</Text>
       </Button>
       <Button
+        leadingIcon={mdiImageMultipleOutline}
+        onclick={() => handleStackAll()}
+        loading={isStackingAll}
+        disabled={!hasStackableDuplicateGroups || isStackingAll}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('stack_all_duplicates')}</Text>
+      </Button>
+      <Button
         leadingIcon={mdiCheckOutline}
         onclick={() => handleKeepAll()}
-        disabled={!hasDuplicates}
+        disabled={!hasDuplicates || isStackingAll}
         size="small"
         variant="ghost"
         color="secondary"
@@ -256,6 +329,35 @@
       <Text size="small" color="muted" class="mb-4">
         <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
       </Text>
+
+      {#if isStackingAll}
+        <div class="mx-auto mb-4 max-w-5xl px-4 sm:px-6" aria-live="polite">
+          <div class="rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-immich-dark-gray">
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <Text size="small" fontWeight="medium">{$t('stacking_duplicate_groups')}</Text>
+              <Text size="small" color="muted">
+                {$t('stack_duplicate_groups_progress', {
+                  values: {
+                    completedCount: stackAllProgress.completedCount,
+                    failedCount: stackAllProgress.failedCount,
+                    succeededCount: stackAllProgress.succeededCount,
+                    totalCount: stackAllProgress.totalCount,
+                  },
+                })}
+              </Text>
+            </div>
+            <div
+              class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax={stackAllProgress.totalCount}
+              aria-valuenow={stackAllProgress.completedCount}
+            >
+              <div class="h-full rounded-full bg-primary transition-all" style:width={`${stackAllProgressPercent}%`}></div>
+            </div>
+          </div>
+        </div>
+      {/if}
 
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
