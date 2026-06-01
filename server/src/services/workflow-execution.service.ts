@@ -1,25 +1,31 @@
 import { CurrentPlugin } from '@extism/extism';
-import { WorkflowChanges, WorkflowEventData, WorkflowEventPayload, WorkflowResponse } from '@immich/plugin-sdk';
+import {
+  WorkflowChanges,
+  WorkflowEventData,
+  WorkflowEventPayload,
+  WorkflowResponse,
+  WorkflowTrigger,
+} from '@immich/plugin-sdk';
 import { HttpException, UnauthorizedException } from '@nestjs/common';
-import _ from 'lodash';
 import { join } from 'node:path';
-import { OnEvent, OnJob } from 'src/decorators';
-import { AlbumsAddAssetsDto } from 'src/dtos/album.dto';
+import { DummyValue, OnEvent, OnJob } from 'src/decorators';
+import { AlbumsAddAssetsDto, CreateAlbumDto, GetAlbumsDto } from 'src/dtos/album.dto';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import {
   BootstrapEventPriority,
   DatabaseLock,
+  ImmichEnvironment,
   ImmichWorker,
   JobName,
   JobStatus,
   QueueName,
-  WorkflowTrigger,
   WorkflowType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AlbumService } from 'src/services/album.service';
+import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 
@@ -31,8 +37,10 @@ const dummy = () => {
 
 type ExecuteOptions<T extends WorkflowType> = {
   read: (type: T) => Promise<{ authUserId: string; data: WorkflowEventData<T> }>;
-  write: (changes: WorkflowChanges<T>) => Promise<void>;
+  write: (auth: AuthDto, changes: WorkflowChanges<T>) => Promise<void>;
 };
+
+type AssetTrigger = { userId: string; assetId: string; trigger: WorkflowTrigger };
 
 export class WorkflowExecutionService extends BaseService {
   private jwtSecret!: string;
@@ -43,8 +51,8 @@ export class WorkflowExecutionService extends BaseService {
       // TODO avoid importing plugins in each worker
       // Can this use system metadata similar to geocoding?
 
-      const { resourcePaths, plugins } = this.configRepository.getEnv();
-      await this.importFolder(resourcePaths.corePlugin, { force: true });
+      const { environment, resourcePaths, plugins } = this.configRepository.getEnv();
+      await this.importFolder(resourcePaths.corePlugin, { force: environment === ImmichEnvironment.Development });
 
       if (plugins.external.allow && plugins.external.installFolder) {
         await this.importFolders(plugins.external.installFolder);
@@ -58,21 +66,26 @@ export class WorkflowExecutionService extends BaseService {
 
     const albumService = BaseService.create(AlbumService, this);
 
-    const albumAddAssets = this.wrap<[id: string, dto: BulkIdsDto]>((authDto, args) =>
+    const searchAlbums = this.wrap<[dto: GetAlbumsDto]>((authDto, args) => albumService.getAll(authDto, ...args));
+    const createAlbum = this.wrap<[dto: CreateAlbumDto]>((authDto, args) => albumService.create(authDto, ...args));
+    const addAssetsToAlbum = this.wrap<[id: string, dto: BulkIdsDto]>((authDto, args) =>
       albumService.addAssets(authDto, ...args),
     );
-
     const addAssetsToAlbums = this.wrap<[dto: AlbumsAddAssetsDto]>((authDto, args) =>
       albumService.addAssetsToAlbums(authDto, ...args),
     );
 
     const functions = {
-      albumAddAssets,
+      searchAlbums,
+      createAlbum,
+      addAssetsToAlbum,
       addAssetsToAlbums,
     };
 
-    const stubs = {
-      albumAddAssets: dummy,
+    const stubs: typeof functions = {
+      searchAlbums: dummy,
+      createAlbum: dummy,
+      addAssetsToAlbum: dummy,
       addAssetsToAlbums: dummy,
     };
 
@@ -166,7 +179,19 @@ export class WorkflowExecutionService extends BaseService {
   private async importFolder(folder: string, options?: { force?: boolean }) {
     try {
       const manifestPath = join(folder, 'manifest.json');
-      const dto = await this.storageRepository.readJsonFile(manifestPath);
+      const bytes = await this.storageRepository.readFile(manifestPath);
+      const contents = bytes.toString('utf8');
+      const sha256hash = this.cryptoRepository.hashSha256(contents) as Buffer;
+
+      if (!options?.force) {
+        const match = await this.pluginRepository.getByHash(sha256hash);
+        if (match) {
+          this.logger.log(`Plugin up to date (name=${match.name}@${match.version}, hash=${sha256hash.toString('hex')}`);
+          return;
+        }
+      }
+
+      const dto = JSON.parse(contents);
       const result = PluginManifestDto.schema.safeParse(dto);
       if (!result.success) {
         const issues = result.error.issues.map((issue) => `  - [${issue.path.join('.')}] ${issue.message}`).join('\n');
@@ -176,22 +201,21 @@ export class WorkflowExecutionService extends BaseService {
       const manifest = result.data;
 
       const existing = await this.pluginRepository.getByName(manifest.name);
-      if (existing && existing.version === manifest.version && options?.force !== true) {
-        return;
-      }
-
       const wasmPath = `${folder}/${manifest.wasmPath}`;
       const wasmBytes = await this.storageRepository.readFile(wasmPath);
 
       const plugin = await this.pluginRepository.upsert(
         {
+          // NOTE: new properties here need to be added to the on conflict clause in the repository
           enabled: true,
           name: manifest.name,
           title: manifest.title,
           description: manifest.description,
           author: manifest.author,
           version: manifest.version,
+          templates: manifest.templates,
           wasmBytes,
+          sha256hash,
         },
         manifest.methods,
       );
@@ -235,20 +259,36 @@ export class WorkflowExecutionService extends BaseService {
   }
 
   @OnEvent({ name: 'AssetCreate' })
-  async onAssetCreate({ asset }: ArgOf<'AssetCreate'>) {
-    const dto = { ownerId: asset.ownerId, trigger: WorkflowTrigger.AssetCreate };
-    const items = await this.workflowRepository.search(dto);
+  onAssetCreate({ asset: { ownerId: userId, id: assetId } }: ArgOf<'AssetCreate'>) {
+    return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetCreate });
+  }
+
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  onAssetMetadataExtracted({ userId, assetId, source }: ArgOf<'AssetMetadataExtracted'>) {
+    // prevent loops
+    // TODO loop detection in job service directly
+    if (source === 'sidecar-write') {
+      return;
+    }
+
+    return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetMetadataExtraction });
+  }
+
+  private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
+    const items = await this.workflowRepository.search({ userId, trigger });
     await this.jobRepository.queueAll(
       items.map((workflow) => ({
-        name: JobName.WorkflowAssetCreate,
-        data: { workflowId: workflow.id, assetId: asset.id },
+        name: JobName.WorkflowAssetTrigger,
+        data: { workflowId: workflow.id, assetId, trigger },
       })),
     );
   }
 
-  @OnJob({ name: JobName.WorkflowAssetCreate, queue: QueueName.Workflow })
-  handleAssetCreate({ workflowId, assetId }: JobOf<JobName.WorkflowAssetCreate>) {
+  @OnJob({ name: JobName.WorkflowAssetTrigger, queue: QueueName.Workflow })
+  handleAssetTrigger({ workflowId, assetId }: JobOf<JobName.WorkflowAssetTrigger>) {
     return this.execute(workflowId, (type) => {
+      const assetService = BaseService.create(AssetService, this);
+
       switch (type) {
         case WorkflowType.AssetV1: {
           return {
@@ -259,19 +299,35 @@ export class WorkflowExecutionService extends BaseService {
                 authUserId: asset.ownerId,
               };
             },
-            write: async (changes) => {
-              if (changes.asset) {
-                await this.assetRepository.update({
-                  id: assetId,
-                  ..._.omitBy(
-                    {
-                      isFavorite: changes.asset?.isFavorite,
-                      visibility: changes.asset?.visibility,
-                    },
-                    _.isUndefined,
-                  ),
-                });
+            write: async (auth, changes) => {
+              const asset = changes.asset;
+              if (!asset) {
+                return;
               }
+
+              await assetService.update(auth, assetId, {
+                isFavorite: asset.isFavorite,
+                visibility: asset.visibility,
+                dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
+                // TODO allow setting to null
+                longitude: asset.exifInfo?.longitude ?? undefined,
+                // TODO allow setting to null
+                latitude: asset.exifInfo?.latitude ?? undefined,
+                // TODO allow setting to null
+                description: asset.exifInfo?.description ?? undefined,
+                rating: asset.exifInfo?.rating,
+
+                // TODO add to update dto
+                // make: asset.exifInfo?.make,
+                // model: asset.exifInfo?.model,
+                // city: asset.exifInfo?.city,
+                // state: asset.exifInfo?.state,
+                // country: asset.exifInfo?.country,
+                // lensModel: asset.exifInfo?.lensModel,
+                // fNumber: asset.exifInfo?.fNumber,
+                // fps: asset.exifInfo?.fps,
+                // iso: asset.exifInfo?.iso,
+              });
             },
           } satisfies ExecuteOptions<typeof type>;
         }
@@ -289,7 +345,19 @@ export class WorkflowExecutionService extends BaseService {
     }
 
     // TODO infer from steps
-    const type = 'AssetV1' as T;
+    let type: T | undefined;
+    for (const targetType of Object.values(WorkflowType)) {
+      const missing = workflow.steps.some((step) => !step.types.includes(targetType));
+      if (!missing) {
+        type = targetType as unknown as T;
+        break;
+      }
+    }
+
+    if (!type) {
+      throw new Error('Unable to infer workflow event type from steps');
+    }
+
     const handler = getHandler(type);
     if (!handler) {
       this.logger.error(`Misconfigured workflow ${workflowId}: no handler for type ${type}`);
@@ -325,8 +393,23 @@ export class WorkflowExecutionService extends BaseService {
           payload,
         );
         if (result?.changes) {
-          await write(result.changes);
+          await write(
+            {
+              user: {
+                id: readResult.authUserId,
+              },
+              session: {
+                id: DummyValue.UUID,
+                hasElevatedPermission: true,
+              },
+            } as AuthDto,
+            result.changes,
+          );
           ({ data } = await read(type));
+        }
+
+        if (result?.config) {
+          await this.workflowRepository.updateStep(step.id, { config: result.config });
         }
 
         const shouldContinue = result?.workflow?.continue ?? true;

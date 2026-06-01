@@ -204,5 +204,16 @@ describe(TimelineService.name, () => {
         }),
       ).rejects.toThrow(BadRequestException);
     });
+
+    it('should throw an error if withPartners is true and visibility is locked', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.adminWithElevatedPermission, {
+          timeBucket: 'bucket',
+          visibility: AssetVisibility.Locked,
+          withPartners: true,
+          userId: authStub.adminWithElevatedPermission.user.id,
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 });

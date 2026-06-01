@@ -186,7 +186,11 @@ const SearchAlbumResponseSchema = z
 
 const SearchAssetResponseSchema = z
   .object({
-    total: z.int().min(0).describe('Total number of matching assets'),
+    total: z
+      .int()
+      .min(0)
+      .describe('Total number of matching assets')
+      .meta(new HistoryBuilder().deprecated('v3.0.0').getExtensions()),
     count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),

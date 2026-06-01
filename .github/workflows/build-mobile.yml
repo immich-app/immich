@@ -230,8 +230,12 @@ jobs:
       - name: Generate platform APIs
         run: mise //mobile:codegen:pigeon
 
+      - name: Resolve iOS Swift Packages
+        working-directory: ./mobile
+        run: flutter build ios --config-only --no-codesign
+
       - name: Setup Ruby
-        uses: ruby/setup-ruby@6aaa311d81eba98ae12eaffbcb63296ace0efcde # v1.307.0
+        uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1.310.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
@@ -288,7 +292,6 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
-          BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
           GITHUB_REF: ${{ github.ref }}
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
           FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 6

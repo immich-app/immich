@@ -24,11 +24,13 @@ class WorkflowTrigger {
   String toJson() => value;
 
   static const assetCreate = WorkflowTrigger._(r'AssetCreate');
+  static const assetMetadataExtraction = WorkflowTrigger._(r'AssetMetadataExtraction');
   static const personRecognized = WorkflowTrigger._(r'PersonRecognized');
 
   /// List of all possible values in this [enum][WorkflowTrigger].
   static const values = <WorkflowTrigger>[
     assetCreate,
+    assetMetadataExtraction,
     personRecognized,
   ];
 
@@ -69,6 +71,7 @@ class WorkflowTriggerTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'AssetCreate': return WorkflowTrigger.assetCreate;
+        case r'AssetMetadataExtraction': return WorkflowTrigger.assetMetadataExtraction;
         case r'PersonRecognized': return WorkflowTrigger.personRecognized;
         default:
           if (!allowNull) {

@@ -15,14 +15,14 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -187,13 +187,13 @@ class LoginForm extends HookConsumerWidget {
       await backgroundManager.syncRemote();
       await backgroundManager.hashAssets();
 
-      if (MetadataRepository.instance.appConfig.backup.syncAlbums) {
+      if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
         await backgroundManager.syncLinkedAlbum();
       }
     }
 
     getManageMediaPermission() async {
-      final hasPermission = await ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission();
+      final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
       if (!hasPermission) {
         await showDialog(
           context: context,
@@ -224,7 +224,7 @@ class LoginForm extends HookConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+                    unawaited(ref.read(permissionRepositoryProvider).requestManageMediaPermission());
                     Navigator.of(context).pop();
                   },
                   child: Text(

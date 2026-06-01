@@ -8,9 +8,6 @@ packages:
   - web
   - .github
   - packages/*
-
-dedupePeerDependents: false
-
 ignoredBuiltDependencies:
   - '@nestjs/core'
   - '@parcel/watcher'
@@ -27,51 +24,47 @@ ignoredBuiltDependencies:
   - protobufjs
   - ssh2
   - utimes
-
-injectWorkspacePackages: true
-
 onlyBuiltDependencies:
+  - sharp
   - '@tailwindcss/oxide'
   - bcrypt
-  - better-sqlite3
-  - sharp
-
 overrides:
   canvas: 3.2.3
   sharp: ^0.34.5
   # pending docusaurus 3.10.1
   webpackbar: ^7.0.0
-
 packageExtensions:
-  '@immich/ui':
-    dependencies:
-      tailwindcss: '>=4.1'
-  '@photo-sphere-viewer/equirectangular-video-adapter':
-    dependencies:
-      three: '*'
-  '@photo-sphere-viewer/video-plugin':
-    dependencies:
-      three: '*'
-  bcrypt:
-    dependencies:
-      node-addon-api: '*'
-      node-gyp: '*'
   nestjs-kysely:
     dependencies:
       tslib: '*'
   nestjs-otel:
     dependencies:
       tslib: '*'
+  '@photo-sphere-viewer/equirectangular-video-adapter':
+    dependencies:
+      three: '*'
+  '@photo-sphere-viewer/video-plugin':
+    dependencies:
+      three: '*'
   sharp:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: '>=4.1'
   tailwind-variants:
     dependencies:
       tailwindcss: '>=4.1'
-
+  bcrypt:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  '@nestjs/swagger':
+    peerDependencies:
+      typescript: '*'
+dedupePeerDependents: false
 preferWorkspacePackages: true
-
+injectWorkspacePackages: true
 shamefullyHoist: false
-
 verifyDepsBeforeRun: install
