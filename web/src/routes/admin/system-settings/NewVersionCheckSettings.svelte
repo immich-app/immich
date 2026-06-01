@@ -16,7 +16,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
-      <div class="ms-4 mt-4">
+      <div class="ms-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.version_check_enabled_description')}
           subtitle={$t('admin.version_check_implications', { values: { server: 'version.immich.cloud' } })}
