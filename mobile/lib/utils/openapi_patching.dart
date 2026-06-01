@@ -50,6 +50,12 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'SyncAssetV1':
       if (value is Map) {
         addDefault(value, 'isEdited', false);
+        addDefault(value, 'createdAt', null);
+      }
+    case 'SyncAssetV2':
+      if (value is Map) {
+        addDefault(value, 'createdAt', null);
+      }
     case 'ServerVersionResponseDto':
       if (value is Map) {
         addDefault(value, 'prerelease', null);
