@@ -5,7 +5,7 @@ import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset
 import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
-import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetStatus, AssetVisibility, DatabaseLock, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
@@ -326,60 +326,62 @@ export class DuplicateService extends BaseService {
 
   @OnJob({ name: JobName.AssetDetectDuplicates, queue: QueueName.DuplicateDetection })
   async handleSearchDuplicates({ id }: JobOf<JobName.AssetDetectDuplicates>): Promise<JobStatus> {
-    const { machineLearning } = await this.getConfig({ withCache: true });
-    if (!isDuplicateDetectionEnabled(machineLearning)) {
-      return JobStatus.Skipped;
-    }
+    return this.databaseRepository.withLock(DatabaseLock.DuplicateDetection, async () => {
+      const { machineLearning } = await this.getConfig({ withCache: true });
+      if (!isDuplicateDetectionEnabled(machineLearning)) {
+        return JobStatus.Skipped;
+      }
 
-    const asset = await this.assetJobRepository.getForSearchDuplicatesJob(id);
-    if (!asset) {
-      this.logger.error(`Asset ${id} not found`);
-      return JobStatus.Failed;
-    }
+      const asset = await this.assetJobRepository.getForSearchDuplicatesJob(id);
+      if (!asset) {
+        this.logger.error(`Asset ${id} not found`);
+        return JobStatus.Failed;
+      }
 
-    if (asset.stackId) {
-      this.logger.debug(`Asset ${id} is part of a stack, skipping`);
-      return JobStatus.Skipped;
-    }
+      if (asset.stackId) {
+        this.logger.debug(`Asset ${id} is part of a stack, skipping`);
+        return JobStatus.Skipped;
+      }
 
-    if (asset.visibility === AssetVisibility.Hidden) {
-      this.logger.debug(`Asset ${id} is not visible, skipping`);
-      return JobStatus.Skipped;
-    }
+      if (asset.visibility === AssetVisibility.Hidden) {
+        this.logger.debug(`Asset ${id} is not visible, skipping`);
+        return JobStatus.Skipped;
+      }
 
-    if (asset.visibility === AssetVisibility.Locked) {
-      this.logger.debug(`Asset ${id} is locked, skipping`);
-      return JobStatus.Skipped;
-    }
+      if (asset.visibility === AssetVisibility.Locked) {
+        this.logger.debug(`Asset ${id} is locked, skipping`);
+        return JobStatus.Skipped;
+      }
 
-    if (!asset.embedding) {
-      this.logger.debug(`Asset ${id} is missing embedding`);
-      return JobStatus.Failed;
-    }
+      if (!asset.embedding) {
+        this.logger.debug(`Asset ${id} is missing embedding`);
+        return JobStatus.Failed;
+      }
 
-    const duplicateAssets = await this.duplicateRepository.search({
-      assetId: asset.id,
-      embedding: asset.embedding,
-      maxDistance: machineLearning.duplicateDetection.maxDistance,
-      type: asset.type,
-      userIds: [asset.ownerId],
+      const duplicateAssets = await this.duplicateRepository.search({
+        assetId: asset.id,
+        embedding: asset.embedding,
+        maxDistance: machineLearning.duplicateDetection.maxDistance,
+        type: asset.type,
+        userIds: [asset.ownerId],
+      });
+
+      let assetIds = [asset.id];
+      if (duplicateAssets.length > 0) {
+        this.logger.debug(
+          `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
+        );
+        assetIds = await this.updateDuplicates(asset, duplicateAssets);
+      } else if (asset.duplicateId) {
+        this.logger.debug(`No duplicates found for asset ${asset.id}, removing duplicateId`);
+        await this.assetRepository.update({ id: asset.id, duplicateId: null });
+      }
+
+      const duplicatesDetectedAt = new Date();
+      await this.assetRepository.upsertJobStatus(...assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
+
+      return JobStatus.Success;
     });
-
-    let assetIds = [asset.id];
-    if (duplicateAssets.length > 0) {
-      this.logger.debug(
-        `Found ${duplicateAssets.length} duplicate${duplicateAssets.length === 1 ? '' : 's'} for asset ${asset.id}`,
-      );
-      assetIds = await this.updateDuplicates(asset, duplicateAssets);
-    } else if (asset.duplicateId) {
-      this.logger.debug(`No duplicates found for asset ${asset.id}, removing duplicateId`);
-      await this.assetRepository.update({ id: asset.id, duplicateId: null });
-    }
-
-    const duplicatesDetectedAt = new Date();
-    await this.assetRepository.upsertJobStatus(...assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
-
-    return JobStatus.Success;
   }
 
   private async updateDuplicates(
