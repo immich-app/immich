@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
@@ -25,7 +23,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -63,37 +61,23 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
     );
 
-    Future<void> addAssetsToAlbum(RemoteAlbum album) async {
-      final selectedAssets = multiselect.selectedAssets;
-      if (selectedAssets.isEmpty) {
+    Future<void> addToAlbum(RemoteAlbum album) async {
+      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+
+      if (!context.mounted) {
         return;
       }
 
-      final remoteAssets = selectedAssets.whereType<RemoteAsset>();
-      final addedCount = await ref
-          .read(remoteAlbumProvider.notifier)
-          .addAssets(album.id, remoteAssets.map((e) => e.id).toList());
-
-      if (selectedAssets.length != remoteAssets.length) {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_some_local_assets'.t(context: context),
-        );
+      if (!result.success) {
+        ImmichToast.show(context: context, msg: 'scaffold_body_error_occurred'.tr(), toastType: ToastType.error);
+        return;
       }
-
-      if (addedCount != remoteAssets.length) {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {"album": album.name}),
-        );
-      } else {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
-        );
-      }
-
-      ref.read(multiSelectProvider.notifier).reset();
+      ImmichToast.show(
+        context: context,
+        msg: result.count == 0
+            ? 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name})
+            : 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+      );
     }
 
     Future<void> onKeyboardExpand() {
@@ -131,12 +115,10 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           const DeleteLocalActionButton(source: ActionSource.timeline),
         if (multiselect.onlyLocal) const UploadActionButton(source: ActionSource.timeline),
       ],
-      slivers: multiselect.hasRemote
-          ? [
-              const AddToAlbumHeader(),
-              AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
-            ]
-          : [],
+      slivers: [
+        const AddToAlbumHeader(),
+        AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand),
+      ],
     );
   }
 }

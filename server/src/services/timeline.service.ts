@@ -71,13 +71,14 @@ export class TimelineService extends BaseService {
     }
 
     if (dto.withPartners) {
+      const requestedLocked = dto.visibility === AssetVisibility.Locked;
       const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
       const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
       const requestedTrash = dto.isTrashed === true;
 
-      if (requestedArchived || requestedFavorite || requestedTrash) {
+      if (requestedLocked || requestedArchived || requestedFavorite || requestedTrash) {
         throw new BadRequestException(
-          'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+          'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
         );
       }
     }

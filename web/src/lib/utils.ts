@@ -244,6 +244,14 @@ export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
+export const getAssetHlsUrl = (id: string) => {
+  return createUrl(`/assets/${id}/video/stream/main.m3u8`, authManager.params);
+};
+
+export const getAssetHlsSessionUrl = (id: string, sessionId: string) => {
+  return createUrl(`/assets/${id}/video/stream/${sessionId}`, authManager.params);
+};
+
 export const getProfileImageUrl = (user: UserResponseDto) =>
   createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
 
@@ -411,26 +419,8 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
   };
 }
 
-export const getReleaseType = (
-  current: ServerVersionResponseDto,
-  newVersion: ServerVersionResponseDto,
-): 'major' | 'minor' | 'patch' | 'none' => {
-  if (current.major !== newVersion.major) {
-    return 'major';
-  }
-
-  if (current.minor !== newVersion.minor) {
-    return 'minor';
-  }
-
-  if (current.patch !== newVersion.patch) {
-    return 'patch';
-  }
-
-  return 'none';
-};
-
-export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+export const semverToName = ({ major, minor, patch, prerelease }: ServerVersionResponseDto) =>
+  `v${major}.${minor}.${patch}${prerelease === null ? '' : `-rc.${prerelease}`}`;
 
 export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));

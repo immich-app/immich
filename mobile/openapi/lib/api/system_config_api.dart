@@ -21,7 +21,7 @@ class SystemConfigApi {
   /// Retrieve the current system configuration.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getConfigWithHttpInfo() async {
+  Future<Response> getConfigWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-config';
 
@@ -43,14 +43,15 @@ class SystemConfigApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Get system configuration
   ///
   /// Retrieve the current system configuration.
-  Future<SystemConfigDto?> getConfig() async {
-    final response = await getConfigWithHttpInfo();
+  Future<SystemConfigDto?> getConfig({ Future<void>? abortTrigger, }) async {
+    final response = await getConfigWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -69,7 +70,7 @@ class SystemConfigApi {
   /// Retrieve the default values for the system configuration.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getConfigDefaultsWithHttpInfo() async {
+  Future<Response> getConfigDefaultsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-config/defaults';
 
@@ -91,14 +92,15 @@ class SystemConfigApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Get system configuration defaults
   ///
   /// Retrieve the default values for the system configuration.
-  Future<SystemConfigDto?> getConfigDefaults() async {
-    final response = await getConfigDefaultsWithHttpInfo();
+  Future<SystemConfigDto?> getConfigDefaults({ Future<void>? abortTrigger, }) async {
+    final response = await getConfigDefaultsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -117,7 +119,7 @@ class SystemConfigApi {
   /// Retrieve exemplary storage template options.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getStorageTemplateOptionsWithHttpInfo() async {
+  Future<Response> getStorageTemplateOptionsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-config/storage-template-options';
 
@@ -139,14 +141,15 @@ class SystemConfigApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Get storage template options
   ///
   /// Retrieve exemplary storage template options.
-  Future<SystemConfigTemplateStorageOptionDto?> getStorageTemplateOptions() async {
-    final response = await getStorageTemplateOptionsWithHttpInfo();
+  Future<SystemConfigTemplateStorageOptionDto?> getStorageTemplateOptions({ Future<void>? abortTrigger, }) async {
+    final response = await getStorageTemplateOptionsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -169,7 +172,7 @@ class SystemConfigApi {
   /// Parameters:
   ///
   /// * [SystemConfigDto] systemConfigDto (required):
-  Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto,) async {
+  Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-config';
 
@@ -191,6 +194,7 @@ class SystemConfigApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -201,8 +205,8 @@ class SystemConfigApi {
   /// Parameters:
   ///
   /// * [SystemConfigDto] systemConfigDto (required):
-  Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto,) async {
-    final response = await updateConfigWithHttpInfo(systemConfigDto,);
+  Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateConfigWithHttpInfo(systemConfigDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

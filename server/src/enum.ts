@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import z from 'zod';
 
 export enum AuthType {
@@ -452,11 +453,7 @@ export enum VideoCodec {
 
 export const VideoCodecSchema = z.enum(VideoCodec).describe('Target video codec').meta({ id: 'VideoCodec' });
 
-export enum VideoSegmentCodec {
-  Av1 = 'av1',
-  Hevc = 'hevc',
-  H264 = 'h264',
-}
+export type VideoSegmentCodec = VideoCodec.Av1 | VideoCodec.Hevc | VideoCodec.H264;
 
 export enum AudioCodec {
   Mp3 = 'mp3',
@@ -826,6 +823,8 @@ export enum JobName {
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',
 
+  HlsSessionCleanup = 'HlsSessionCleanup',
+
   MemoryCleanup = 'MemoryCleanup',
   MemoryGenerate = 'MemoryGenerate',
 
@@ -866,7 +865,7 @@ export enum JobName {
   Ocr = 'Ocr',
 
   // Workflow
-  WorkflowAssetCreate = 'WorkflowAssetCreate',
+  WorkflowAssetTrigger = 'WorkflowAssetTrigger',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -919,6 +918,7 @@ export enum DatabaseLock {
   MaintenanceOperation = 621,
   MemoryCreation = 777,
   VersionCheck = 800,
+  HlsSessionCleanup = 850,
 }
 
 export enum MaintenanceAction {
@@ -1163,11 +1163,6 @@ export enum PluginContext {
 }
 
 export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
-
-export enum WorkflowTrigger {
-  AssetCreate = 'AssetCreate',
-  PersonRecognized = 'PersonRecognized',
-}
 
 export const WorkflowTriggerSchema = z
   .enum(WorkflowTrigger)

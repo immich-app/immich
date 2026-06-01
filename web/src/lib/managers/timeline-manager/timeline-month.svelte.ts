@@ -254,7 +254,7 @@ export class TimelineMonth {
       addContext.newTimelineDays.add(timelineDay);
     }
 
-    const viewerAsset = new ViewerAsset(timelineDay, timelineAsset);
+    const viewerAsset = new ViewerAsset(timelineAsset);
     timelineDay.viewerAssets.push(viewerAsset);
     addContext.changedTimelineDays.add(timelineDay);
   }

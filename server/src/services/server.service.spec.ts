@@ -148,6 +148,7 @@ describe(ServerService.name, () => {
         configFile: false,
         trash: true,
         email: false,
+        realtimeTranscoding: false,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });

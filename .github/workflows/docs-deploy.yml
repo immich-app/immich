@@ -98,9 +98,16 @@ jobs:
                 shouldDeploy: true
               };
             } else if (eventType == "release") {
+              const tag = context.payload.workflow_run.head_branch;
+              const { data: release } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag,
+              });
               parameters = {
                 event: "release",
-                name: context.payload.workflow_run.head_branch,
+                name: tag,
+                prerelease: release.prerelease,
                 shouldDeploy: !isFork
               };
             }
@@ -146,6 +153,7 @@ jobs:
             const parameters = JSON.parse(process.env.PARAM_JSON);
             core.setOutput("event", parameters.event);
             core.setOutput("name", parameters.name);
+            core.setOutput("prerelease", parameters.prerelease);
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
 
       - name: Download artifact
@@ -203,7 +211,7 @@ jobs:
         run: mise run //docs:deploy
 
       - name: Deploy Docs Release Domain
-        if: ${{ steps.parameters.outputs.event == 'release' }}
+        if: ${{ steps.parameters.outputs.event == 'release' && steps.parameters.outputs.prerelease != 'true' }}
         env:
           TF_VAR_prefix_name: ${{ steps.parameters.outputs.name}}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

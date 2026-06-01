@@ -26,7 +26,7 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import WorkflowDuplicateModal from '$lib/modals/WorkflowDuplicateModal.svelte';
-import WorkflowTemplatePicker from '$lib/modals/WorkflowTemplatePicker.svelte';
+import WorkflowTemplatePickerModal from '$lib/modals/WorkflowTemplatePickerModal.svelte';
 import { Route } from '$lib/route';
 import { copyToClipboard, downloadJson } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
@@ -50,7 +50,7 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
   const UseTemplate: ActionItem = {
     title: $t('browse_templates'),
     icon: mdiFileDocumentMultipleOutline,
-    onAction: () => modalManager.show(WorkflowTemplatePicker, {}),
+    onAction: () => modalManager.show(WorkflowTemplatePickerModal, {}),
   };
 
   return { Create, UseTemplate };

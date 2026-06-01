@@ -39,4 +39,6 @@ jobs:
         run: pnpm --filter @immich/sdk build
 
       - name: Publish
-        run: pnpm --filter @immich/sdk publish --provenance --no-git-checks
+        env:
+          NPM_TAG: ${{ github.event.release.prerelease && 'rc' || 'latest' }}
+        run: pnpm --filter @immich/sdk publish --provenance --no-git-checks --tag "$NPM_TAG"
