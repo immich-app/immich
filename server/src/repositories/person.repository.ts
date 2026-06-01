@@ -369,11 +369,6 @@ export class PersonRepository {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
-      .leftJoin('user_metadata', (join) =>
-        join
-          .onRef('user_metadata.userId', '=', 'person.ownerId')
-          .on('user_metadata.key', '=', sql.lit(UserMetadataKey.Preferences)),
-      )
       .where((eb) =>
         eb.exists((eb) =>
           eb
@@ -389,12 +384,6 @@ export class PersonRepository {
                   .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
                   .where('asset.deletedAt', 'is', null),
               ),
-            )
-            .groupBy('asset_face.personId')
-            .having(
-              (innerEb) => innerEb.fn.count('asset_face.assetId'),
-              '>=',
-              sql`COALESCE(user_metadata.value -> 'people' ->> 'minimumFaces', '3')::int `,
             ),
         ),
       )
