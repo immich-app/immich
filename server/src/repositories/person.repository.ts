@@ -153,11 +153,6 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .innerJoin('asset_face', 'asset_face.personId', 'person.id')
-      .leftJoin('user_metadata', (join) =>
-        join
-          .onRef('user_metadata.userId', '=', 'person.ownerId')
-          .on('user_metadata.key', '=', sql.lit(UserMetadataKey.Preferences)),
-      )
       .innerJoin('asset', (join) =>
         join
           .onRef('asset_face.assetId', '=', 'asset.id')
@@ -175,12 +170,17 @@ export class PersonRepository {
           eb(
             (innerEb) => innerEb.fn.count('asset_face.assetId'),
             '>=',
-            sql`COALESCE(user_metadata.value -> 'people' ->> 'minimumFaces', '3')::int `,
+            sql<number>`COALESCE(
+              (SELECT value -> 'people' ->> 'minimumFaces'
+              FROM user_metadata
+              WHERE "userId" = ${userId}
+                AND key = ${sql.lit(UserMetadataKey.Preferences)}),
+              '3'
+            )::int `,
           ),
         ]),
       )
       .groupBy('person.id')
-      .groupBy('user_metadata.value')
       .$if(!!options?.closestFaceAssetId, (qb) =>
         qb.orderBy((eb) =>
           eb(
