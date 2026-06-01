@@ -412,7 +412,7 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
 }
 
 export const semverToName = ({ major, minor, patch, prerelease }: ServerVersionResponseDto) =>
-  `v${major}.${minor}.${patch}${prerelease ? `-rc.${prerelease}` : ''}`;
+  `v${major}.${minor}.${patch}${prerelease === null ? '' : `-rc.${prerelease}`}`;
 
 export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));

@@ -1,5 +1,5 @@
 import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl } from '$lib/utils';
+import { getAssetUrl, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -159,6 +159,15 @@ describe('utils', () => {
       expect(url).toContain('/thumbnail');
       expect(url).not.toContain('/original');
       expect(url).toContain(asset.id);
+    });
+  });
+  describe('semverToName', () => {
+    it('should not append release candidate tag if prelease is not set', () => {
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null })).toEqual('v3.0.0');
+    });
+
+    it('should append release candidate if set', () => {
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
     });
   });
 });
