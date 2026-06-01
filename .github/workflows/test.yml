@@ -120,6 +120,7 @@ jobs:
 
       - name: Run ci-unit
         run: mise run ci-unit
+
   cli-unit-tests-win:
     name: Unit Test CLI (Windows)
     needs: pre-job
@@ -232,6 +233,7 @@ jobs:
 
       - name: Run ci-unit
         run: mise run ci-unit
+
   i18n-tests:
     name: Test i18n
     needs: pre-job
