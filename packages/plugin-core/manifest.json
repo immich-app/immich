@@ -232,7 +232,6 @@
           "albumName": {
             "type": "string",
             "title": "Album name",
-            "array": true,
             "description": "Use an album with this name if one exists, otherwise create a new one"
           }
         },
