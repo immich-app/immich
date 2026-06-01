@@ -113,7 +113,7 @@
           />
         {/if}
 
-        <!-- TODO-DEV -->
+        <!-- TODO[YUCCA]: remove this -->
         {#if authManager.user.isAdmin}
           <Button
             leadingIcon={mdiProgressWrench}

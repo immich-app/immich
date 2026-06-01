@@ -1,3 +1,4 @@
+import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api/dist';
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -5,7 +6,6 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api/dist';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
@@ -61,7 +61,8 @@ const apiMiddleware = [
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, otel } = configRepository.getEnv();
-// TODO-DEV
+
+// TODO[YUCCA]: use IMMICH_ENV
 const isYuccaDevelopmentMode = true;
 
 const commonImports = [
@@ -116,11 +117,8 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
     ...commonImports,
     ScheduleModule.forRoot(),
     OrchestrationApiModule.forRoot({
-      // TODO: db init must happen elsewhere...
-
-      yuccaProductionApi: 'https://staging.fubar.computer',
-      // yuccaProductionApi: 'http://100.64.0.6:5173', // TODO
-      statePath: '/data/yucca', // TODO
+      yuccaProductionApi: 'https://staging.fubar.computer', // TODO[YUCCA]: load from futo.cloud -> .well-known file
+      statePath: '/data/yucca', // TODO[YUCCA]: point to {immich_data_location}/yucca
       requireWsAuth: true,
       requireLock: true,
       developmentMode: isYuccaDevelopmentMode,
@@ -135,9 +133,8 @@ export class ApiModule extends BaseModule {}
   imports: [
     ...commonImports,
     OrchestrationApiModule.forRoot({
-      yuccaProductionApi: 'https://staging.fubar.computer',
-      // yuccaProductionApi: 'http://100.64.0.6:5173', // TODO
-      statePath: '/data/yucca', // TODO
+      yuccaProductionApi: 'https://staging.fubar.computer', // TODO[YUCCA]: load from futo.cloud -> .well-known file
+      statePath: '/data/yucca', // TODO[YUCCA]: point to {immich_data_location}/yucca
       externalBaseUrl: 'https://my.immich.app',
       requireWsAuth: true,
       requireLock: true,
