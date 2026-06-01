@@ -19,6 +19,7 @@
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import MoveToAlbum from '$lib/components/timeline/actions/MoveToAlbumAction.svelte';
   import RemoveFromAlbum from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
@@ -490,6 +491,7 @@
           {/if}
 
           {#if isOwned || assetMultiSelectManager.isAllUserOwned}
+            <MoveToAlbum menuItem bind:album onMove={handleRemoveAssets} />
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if assetMultiSelectManager.isAllUserOwned}

@@ -422,6 +422,66 @@ class ActionNotifier extends Notifier<void> {
     );
   }
 
+  Future<ActionResult> moveToAlbum(ActionSource source, String sourceAlbumId, RemoteAlbum targetAlbum) async {
+    final selected = _getAssets(source).toList(growable: false);
+    if (selected.isEmpty) {
+      return const ActionResult(count: 0, success: true);
+    }
+
+    if (sourceAlbumId == targetAlbum.id) {
+      return const ActionResult(count: 0, success: false, error: 'Cannot move assets to the same album');
+    }
+
+    final candidates = RemoteAlbumService.categorizeCandidates(selected);
+    final remoteIds = candidates.remoteAssetIds;
+    final localAssets = candidates.localAssetsToUpload;
+    final albumNotifier = ref.read(remoteAlbumProvider.notifier);
+
+    int addedRemote = 0;
+    if (remoteIds.isNotEmpty) {
+      try {
+        addedRemote = await albumNotifier.addAssets(targetAlbum.id, remoteIds);
+      } catch (error, stack) {
+        _logger.severe('Failed to add assets to album ${targetAlbum.id}', error, stack);
+        return ActionResult(count: 0, success: false, error: error.toString());
+      }
+    }
+
+    final remoteIdsToRemove = selected.whereType<RemoteAsset>().toIds().toList(growable: false);
+
+    if (source == ActionSource.timeline) {
+      ref.read(multiSelectProvider.notifier).reset();
+    }
+
+    int uploadedAndLinked = 0;
+    if (localAssets.isNotEmpty) {
+      final uploadResult = await upload(
+        source,
+        assets: localAssets,
+        onAssetUploaded: (asset, remoteId) async {
+          await albumNotifier.linkUploadedAssetToAlbum(targetAlbum.id, asset, remoteId);
+        },
+      );
+      uploadedAndLinked = uploadResult.count;
+    }
+
+    int removedCount = 0;
+    if (remoteIdsToRemove.isNotEmpty) {
+      try {
+        removedCount = await _service.removeFromAlbum(remoteIdsToRemove, sourceAlbumId);
+      } catch (error, stack) {
+        _logger.severe('Failed to remove assets from source album during move', error, stack);
+        return ActionResult(
+          count: addedRemote + uploadedAndLinked,
+          success: false,
+          error: error.toString(),
+        );
+      }
+    }
+
+    return ActionResult(count: removedCount, success: true);
+  }
+
   Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {

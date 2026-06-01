@@ -23,9 +23,10 @@
 
   type Props = {
     onClose: (albums?: AlbumResponseDto[]) => void;
+    title?: string;
   };
 
-  let { onClose }: Props = $props();
+  let { onClose, title }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({});
@@ -147,7 +148,7 @@
   };
 </script>
 
-<Modal title={$t('add_to_album')} {onClose} size="small">
+<Modal title={title ?? $t('add_to_album')} {onClose} size="small">
   <ModalBody>
     <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}
