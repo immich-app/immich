@@ -80,9 +80,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
-
       - name: Run ci-unit
         run: mise run //server:ci-unit
 
@@ -114,9 +111,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
-
       - name: Run ci-unit
         run: mise run ci-unit
   cli-unit-tests-win:
@@ -146,9 +140,6 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
         with:
           github_token: ${{ steps.token.outputs.token }}
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Run setup @immich/sdk
         run: mise run //:sdk:install && mise run //:sdk:build
@@ -194,9 +185,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
-
       - name: Run setup @immich/sdk
         run: mise run //:sdk:install && mise run //:sdk:build
 
@@ -235,9 +223,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
-
       - name: Run ci-unit
         run: mise run ci-unit
   i18n-tests:
@@ -264,9 +249,6 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
         with:
           github_token: ${{ steps.token.outputs.token }}
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Install dependencies
         run: pnpm -w install --frozen-lockfile
@@ -318,9 +300,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
-
       - name: Run ci-unit
         run: mise run ci-unit
         if: ${{ !cancelled() }}
@@ -353,9 +332,6 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
         with:
           github_token: ${{ steps.token.outputs.token }}
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Run ci-medium
         run: mise run ci-medium
@@ -397,9 +373,6 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Setup packages
         run: pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && pnpm --filter @immich/sdk --filter @immich/cli build
@@ -477,9 +450,6 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Run setup @immich/sdk
         run: pnpm --filter @immich/sdk install --frozen-lockfile && pnpm --filter @immich/sdk build
@@ -650,9 +620,6 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
 
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
-
       - name: Run pnpm install
         run: pnpm install --frozen-lockfile
 
@@ -703,9 +670,6 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
         with:
           github_token: ${{ steps.token.outputs.token }}
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
@@ -764,9 +728,6 @@ jobs:
         uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
         with:
           github_token: ${{ steps.token.outputs.token }}
-
-      - name: Configure npm registry
-        run: pnpm set registry https://npm.raccoon.sh/
 
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
