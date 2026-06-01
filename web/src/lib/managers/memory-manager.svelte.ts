@@ -190,7 +190,7 @@ class MemoryManager {
 
   private async load(page: number) {
     if (this.#filters !== undefined) {
-      const { items, hasNextPage, total } = await searchMemories({ ...this.#filters, page, size: PAGE_SIZE });
+      const { items, hasNextPage, total } = await searchMemories({ size: PAGE_SIZE, ...this.#filters, page });
       this.memories.push(...items);
       this.#hasNextPage = hasNextPage;
       this.#total = total;
@@ -209,13 +209,13 @@ class MemoryManager {
 
     setTimeout(() => {
       this.clearCache();
-      this.#loading = this.load(0);
+      this.loadNextPage();
 
       // Schedule subsequent events hourly
       setInterval(
         () => {
           this.clearCache();
-          this.#loading = this.load(0);
+          this.loadNextPage();
         },
         60 * 60 * 1000,
       );

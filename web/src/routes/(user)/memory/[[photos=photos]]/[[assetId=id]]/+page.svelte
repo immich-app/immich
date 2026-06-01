@@ -66,11 +66,11 @@
       </div>
     {/snippet}
     {#if memoryManager.memories.length > 0}
-      <div class="grid w-full grid-cols-2 gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-7">
+      <div class="grid w-full grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-7">
         {#each memoryManager.memories as memory, index (memory.id)}
           <a
             href={Route.memories({ id: memory.assets[0].id })}
-            class="item-card relative inline-block aspect-video"
+            class="item-card relative inline-block aspect-video rounded-xl shadow-md"
             bind:this={
               () => (index === memoryManager.memories.length - 1 ? lastElement : null),
               (e) => {
@@ -88,17 +88,17 @@
             <img
               src={getAssetMediaUrl({ id: memory.assets[0].id })}
               alt={$getAltText(toTimelineAsset(memory.assets[0]))}
-              class="size-full object-cover brightness-75"
+              class="size-full rounded-xl object-cover brightness-75"
               loading="lazy"
             />
             <span
-              class="absolute bottom-2 w-full px-1 text-center text-sm font-medium text-ellipsis text-white capitalize backdrop-blur-[1px] hover:cursor-pointer"
+              class="absolute bottom-2 w-full px-1 text-center text-sm font-medium text-ellipsis text-white capitalize hover:cursor-pointer"
             >
               {$memoryLaneTitle(memory)}
             </span>
           </a>
         {/each}
       </div>
-    {:else}{/if}
+    {/if}
   </UserPageLayout>
 {/if}
