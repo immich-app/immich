@@ -1,4 +1,5 @@
 import { CronExpression } from '@nestjs/schedule';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
@@ -135,6 +136,7 @@ export type SystemConfig = {
   };
   newVersionCheck: {
     enabled: boolean;
+    channel: ReleaseChannel;
   };
   nightlyTasks: {
     startTime: string;
@@ -344,6 +346,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+    channel: ReleaseChannel.Stable,
   },
   nightlyTasks: {
     startTime: '00:00',

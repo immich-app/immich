@@ -106,7 +106,7 @@
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
-    "semver": "^7.6.2",
+    "semver": "^7.8.1",
     "sharp": "^0.34.5",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",

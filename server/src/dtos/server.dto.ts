@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import type { SemVer } from 'semver';
+import { ExtraModel, HistoryBuilder } from 'src/decorators';
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
@@ -58,9 +59,15 @@ const ServerStorageResponseSchema = z
 
 const ServerVersionResponseSchema = z
   .object({
-    major: z.int().describe('Major version number'),
-    minor: z.int().describe('Minor version number'),
-    patch: z.int().describe('Patch version number'),
+    major: z.int().min(0).describe('Major version number'),
+    minor: z.int().min(0).describe('Minor version number'),
+    patch: z.int().min(0).describe('Patch version number'),
+    prerelease: z
+      .int()
+      .min(0)
+      .nullable()
+      .meta(HistoryBuilder.v3().getExtensions())
+      .describe('Pre-release version number'),
   })
   .meta({ id: 'ServerVersionResponseDto' });
 
@@ -140,6 +147,26 @@ const ServerFeaturesSchema = z
   })
   .meta({ id: 'ServerFeaturesDto' });
 
+export enum ReleaseType {
+  Major = 'major',
+  Premajor = 'premajor',
+  Minor = 'minor',
+  Preminor = 'preminor',
+  Patch = 'patch',
+  Prepatch = 'prepatch',
+  Prerelease = 'prerelease',
+}
+
+const ReleaseTypeSchema = z.enum(ReleaseType).meta({ id: 'ReleaseType' }).describe('Release type');
+
+const ReleaseEventV1Schema = z.object({
+  isAvailable: z.boolean().describe('Whether a new version is available'),
+  checkedAt: z.string().describe('When the server last checked for a latest version. As an ISO timestamp'),
+  serverVersion: ServerVersionResponseSchema,
+  releaseVersion: ServerVersionResponseSchema,
+  type: ReleaseTypeSchema.nullable(),
+});
+
 export class ServerPingResponse extends createZodDto(ServerPingResponseSchema) {}
 export class ServerAboutResponseDto extends createZodDto(ServerAboutResponseSchema) {}
 export class ServerApkLinksDto extends createZodDto(ServerApkLinksSchema) {}
@@ -147,7 +174,12 @@ export class ServerStorageResponseDto extends createZodDto(ServerStorageResponse
 
 export class ServerVersionResponseDto extends createZodDto(ServerVersionResponseSchema) {
   static fromSemVer(value: SemVer): z.infer<typeof ServerVersionResponseSchema> {
-    return { major: value.major, minor: value.minor, patch: value.patch };
+    return {
+      major: value.major,
+      minor: value.minor,
+      patch: value.patch,
+      prerelease: (value.prerelease[1] as number) ?? null,
+    };
   }
 }
 
@@ -158,10 +190,5 @@ export class ServerMediaTypesResponseDto extends createZodDto(ServerMediaTypesRe
 export class ServerConfigDto extends createZodDto(ServerConfigSchema) {}
 export class ServerFeaturesDto extends createZodDto(ServerFeaturesSchema) {}
 
-export interface ReleaseNotification {
-  isAvailable: boolean;
-  /** ISO8601 */
-  checkedAt: string;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
-}
+@ExtraModel()
+export class ReleaseEventV1 extends createZodDto(ReleaseEventV1Schema) {}

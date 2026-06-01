@@ -88,5 +88,71 @@ void main() {
       expect(version2.minor, 2);
       expect(version2.patch, 3);
     });
+
+    test('Orders later prerelease above earlier prerelease', () {
+      const rc1 = SemVer(major: 1, minor: 151, patch: 0, prerelease: 1);
+      const rc2 = SemVer(major: 1, minor: 151, patch: 0, prerelease: 2);
+      expect(rc2 > rc1, isTrue);
+      expect(rc1 < rc2, isTrue);
+      expect(rc1 == rc2, isFalse);
+    });
+
+    test('Final release outranks its prerelease of the same version', () {
+      const rc = SemVer(major: 1, minor: 151, patch: 0, prerelease: 1);
+      const release = SemVer(major: 1, minor: 151, patch: 0);
+      expect(release > rc, isTrue);
+      expect(rc < release, isTrue);
+    });
+
+    test('Higher major outranks a prerelease regardless of ordinal', () {
+      const rc = SemVer(major: 1, minor: 151, patch: 0, prerelease: 9);
+      const next = SemVer(major: 2, minor: 0, patch: 0);
+      expect(next > rc, isTrue);
+    });
+
+    test('Equal prerelease versions compare as equal', () {
+      const a = SemVer(major: 1, minor: 151, patch: 0, prerelease: 3);
+      const b = SemVer(major: 1, minor: 151, patch: 0, prerelease: 3);
+      expect(a == b, isTrue);
+      expect(a > b, isFalse);
+      expect(a < b, isFalse);
+    });
+
+    test('Reports prerelease difference type', () {
+      const rc1 = SemVer(major: 1, minor: 151, patch: 0, prerelease: 1);
+      const rc2 = SemVer(major: 1, minor: 151, patch: 0, prerelease: 2);
+      expect(rc1.differenceType(rc2), SemVerType.prerelease);
+    });
+
+    test('toString includes prerelease suffix when present', () {
+      const rc = SemVer(major: 1, minor: 151, patch: 0, prerelease: 2);
+      expect(rc.toString(), '1.151.0-rc.2');
+    });
+
+    test('Parses prerelease ordinal from -rc strings', () {
+      final dotted = SemVer.fromString('1.151.0-rc.2');
+      expect(dotted.major, 1);
+      expect(dotted.minor, 151);
+      expect(dotted.patch, 0);
+      expect(dotted.prerelease, 2);
+
+      expect(SemVer.fromString('v1.151.0-rc.3').prerelease, 3);
+      expect(SemVer.fromString('1.2.3-rc.2+build.5').prerelease, 2);
+    });
+
+    test('Plain version string has null prerelease', () {
+      expect(SemVer.fromString('3.0.0').prerelease, isNull);
+    });
+
+    test('Invalid rc suffixes parse without error and have null prerelease', () {
+      final debug = SemVer.fromString('1.2.3-debug');
+      expect(debug.major, 1);
+      expect(debug.minor, 2);
+      expect(debug.patch, 3);
+      expect(debug.prerelease, isNull);
+
+      expect(SemVer.fromString('1.2.3+build.5').prerelease, isNull);
+      expect(SemVer.fromString('1.151.0-rc4').prerelease, isNull);
+    });
   });
 }

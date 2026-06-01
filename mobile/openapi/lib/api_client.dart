@@ -563,6 +563,12 @@ class ApiClient {
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
+        case 'ReleaseChannel':
+          return ReleaseChannelTypeTransformer().decode(value);
+        case 'ReleaseEventV1':
+          return ReleaseEventV1.fromJson(value);
+        case 'ReleaseType':
+          return ReleaseTypeTypeTransformer().decode(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'RotateParameters':
