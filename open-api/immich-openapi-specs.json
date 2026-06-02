@@ -19907,6 +19907,12 @@
             "description": "Whether people are enabled",
             "type": "boolean"
           },
+          "minimumFaces": {
+            "description": "People face threshold",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
@@ -19967,6 +19973,12 @@
           "enabled": {
             "description": "Whether people are enabled",
             "type": "boolean"
+          },
+          "minimumFaces": {
+            "description": "People face threshold",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
           },
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
@@ -21604,6 +21616,12 @@
             "description": "Map light style URL",
             "type": "string"
           },
+          "minFaces": {
+            "description": "People min faces server default",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
           "oauthButtonText": {
             "description": "OAuth button text",
             "type": "string"
@@ -21633,6 +21651,7 @@
           "maintenanceMode",
           "mapDarkStyleUrl",
           "mapLightStyleUrl",
+          "minFaces",
           "oauthButtonText",
           "publicUsers",
           "trashDays",

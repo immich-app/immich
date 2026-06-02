@@ -63,9 +63,7 @@ export class PersonService extends BaseService {
       }
       closestFaceAssetId = person.faceAssetId;
     }
-    const { machineLearning } = await this.getConfig({ withCache: false });
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
-      minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
       closestFaceAssetId,
     });

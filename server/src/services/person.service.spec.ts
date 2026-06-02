@@ -57,7 +57,6 @@ describe(PersonService.name, () => {
         ],
       });
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
-        minimumFaceCount: 3,
         withHidden: true,
       });
     });
@@ -84,7 +83,6 @@ describe(PersonService.name, () => {
         ],
       });
       expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, auth.user.id, {
-        minimumFaceCount: 3,
         withHidden: false,
       });
     });
