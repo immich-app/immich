@@ -16,6 +16,7 @@ import {
   mdiLink,
   mdiLockOutline,
   mdiMagnify,
+  mdiMapMarkerOutline,
   mdiMapOutline,
   mdiServer,
   mdiStateMachine,
@@ -92,6 +93,11 @@ export const getPagesProvider = ($t: MessageFormatter) => {
       icon: mdiAccountOutline,
       onAction: () => goto(Route.people()),
       $if: () => authManager.authenticated && authManager.preferences.people.enabled,
+    },
+    {
+      title: $t('places'),
+      icon: mdiMapMarkerOutline,
+      onAction: () => goto(Route.places()),
     },
     {
       title: $t('shared_links'),
