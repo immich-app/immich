@@ -5,7 +5,7 @@
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import { t } from 'svelte-i18n';
   import { mdiHeartOutline, mdiHeart } from '@mdi/js';
-  import { Button, Icon } from '@immich/ui';
+  import { Button, Icon, LoadingSpinner } from '@immich/ui';
   import { locale } from '$lib/stores/preferences.store';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -66,11 +66,12 @@
       </div>
     {/snippet}
     {#if memoryManager.memories.length > 0}
-      <div class="grid w-full grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-7">
+      <div class="grid w-full grid-cols-3 gap-7 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
         {#each memoryManager.memories as memory, index (memory.id)}
           <a
             href={Route.memories({ id: memory.assets[0].id })}
-            class="item-card relative inline-block aspect-video rounded-xl shadow-md"
+            class="relative rounded-md bg-gray-50 p-2 pb-0 shadow-md sm:p-5 sm:pb-0"
+            style:transform={`rotate(${Math.random() * 5 - 2.5}deg)`}
             bind:this={
               () => (index === memoryManager.memories.length - 1 ? lastElement : null),
               (e) => {
@@ -82,22 +83,26 @@
           >
             {#if memory.isSaved}
               <div class="absolute inset-s-2 top-2 z-2">
-                <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
+                <Icon data-icon-favorite icon={mdiHeart} size="32" class="text-red-400" />
               </div>
             {/if}
             <img
               src={getAssetMediaUrl({ id: memory.assets[0].id })}
               alt={$getAltText(toTimelineAsset(memory.assets[0]))}
-              class="size-full rounded-xl object-cover brightness-75"
+              class="aspect-square object-cover brightness-75"
               loading="lazy"
             />
-            <span
-              class="absolute bottom-2 w-full px-1 text-center text-sm font-medium text-ellipsis text-white capitalize hover:cursor-pointer"
+            <p
+              class="my-2 text-center text-sm font-medium text-ellipsis text-black capitalize hover:cursor-pointer sm:my-5"
             >
               {$memoryLaneTitle(memory)}
-            </span>
+            </p>
           </a>
         {/each}
+      </div>
+    {:else if memoryManager.total > 0}
+      <div class="flex items-center justify-center py-16">
+        <LoadingSpinner size="giant" />
       </div>
     {/if}
   </UserPageLayout>
