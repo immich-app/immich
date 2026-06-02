@@ -55,6 +55,22 @@
         }
       ],
       "uiHints": ["SmartAlbum"]
+    },
+    {
+      "name": "asset-webhook",
+      "title": "Send a webhook",
+      "description": "Send the information of newly uploaded assets to an external endpoint",
+      "trigger": "AssetCreate",
+      "steps": [
+        {
+          "method": "immich-plugin-core#webhook",
+          "config": {
+            "url": "",
+            "method": "POST"
+          }
+        }
+      ],
+      "uiHints": ["Webhook"]
     }
   ],
   "methods": [
@@ -237,6 +253,36 @@
         },
         "required": ["albumIds"]
       }
+    },
+    {
+      "name": "webhook",
+      "title": "Send a webhook",
+      "description": "Send the asset information to an external endpoint",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Webhook URL",
+            "description": "The endpoint that will receive the asset information"
+          },
+          "method": {
+            "type": "string",
+            "title": "HTTP method",
+            "enum": ["POST", "PUT", "PATCH"],
+            "default": "POST",
+            "description": "HTTP method used to send the request"
+          },
+          "secret": {
+            "type": "string",
+            "title": "Secret",
+            "description": "Optional value sent as the X-Immich-Webhook-Secret header so the receiver can verify the request"
+          }
+        },
+        "required": ["url"]
+      },
+      "uiHints": ["Webhook"]
     },
     {
       "name": "noop1",

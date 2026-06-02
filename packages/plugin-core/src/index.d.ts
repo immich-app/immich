@@ -22,4 +22,7 @@ declare module 'main' {
   export function assetTimeline(): I32;
   export function assetTrash(): I32;
   export function assetAddToAlbums(): I32;
+
+  // integrations
+  export function webhook(): I32;
 }

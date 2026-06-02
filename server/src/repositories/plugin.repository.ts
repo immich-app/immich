@@ -213,6 +213,8 @@ export class PluginRepository {
             {
               useWasi: true,
               runInWorker,
+              // allow plugins (e.g. the webhook workflow step) to make outbound HTTP requests
+              allowedHosts: ['*'],
               functions: {
                 'extism:host/user': functions ?? {},
               },

@@ -102,6 +102,44 @@ export const assetTrash = () => {
   return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(() => ({}));
 };
 
+type WebhookConfig = {
+  url: string;
+  method?: 'PATCH' | 'POST' | 'PUT';
+  secret?: string;
+};
+export const webhook = () => {
+  return wrapper<WorkflowType.AssetV1, WebhookConfig>(({ config, data, trigger, workflow }) => {
+    const { url, method = 'POST', secret } = config;
+    if (!url) {
+      console.warn('Webhook step skipped: no URL configured');
+      return {};
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Immich',
+    };
+    if (secret) {
+      headers['X-Immich-Webhook-Secret'] = secret;
+    }
+
+    const body = JSON.stringify({
+      trigger,
+      workflowId: workflow.id,
+      asset: data.asset,
+    });
+
+    const response = Http.request({ url, method, headers }, body);
+    if (response.status >= 400) {
+      console.error(`Webhook request to ${url} failed with status ${response.status}`);
+    } else {
+      console.debug(`Webhook request to ${url} returned status ${response.status}`);
+    }
+
+    return {};
+  });
+};
+
 export const assetAddToAlbums = () => {
   return wrapper<WorkflowType.AssetV1, { albumIds: string[]; albumName?: string }>(({ config, data, functions }) => {
     const assetId = data.asset.id;

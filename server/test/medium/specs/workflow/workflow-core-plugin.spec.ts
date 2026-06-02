@@ -1,6 +1,8 @@
 import { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { Kysely } from 'kysely';
 import { readFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { AddressInfo } from 'node:net';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
 import { AssetVisibility, LogLevel } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -330,6 +332,49 @@ describe('core plugin', () => {
       await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeTruthy();
 
       await expect(ctx.get(AlbumRepository).getAssetIds(album.id, [asset.id])).resolves.not.toContain(asset.id);
+    });
+  });
+
+  describe('webhook', () => {
+    it('should send the asset information to the configured endpoint', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const received = new Promise<{ headers: NodeJS.Dict<string | string[]>; body: any }>((resolve, reject) => {
+        const server = createServer((req, res) => {
+          const chunks: Buffer[] = [];
+          req.on('data', (chunk) => chunks.push(chunk));
+          req.on('end', () => {
+            res.writeHead(200);
+            res.end();
+            server.close();
+            resolve({ headers: req.headers, body: JSON.parse(Buffer.concat(chunks).toString()) });
+          });
+        });
+        server.on('error', reject);
+        server.listen(0, '127.0.0.1', () => {
+          const { port } = server.address() as AddressInfo;
+          createWorkflow({
+            ownerId: user.id,
+            trigger: WorkflowTrigger.AssetCreate,
+            steps: [
+              {
+                method: 'immich-plugin-core#webhook',
+                config: { url: `http://127.0.0.1:${port}/hook`, secret: 'super-secret' },
+              },
+            ],
+          })
+            .then((workflow) => ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id }))
+            .catch(reject);
+        });
+      });
+
+      const { headers, body } = await received;
+      expect(headers['x-immich-webhook-secret']).toBe('super-secret');
+      expect(body).toMatchObject({
+        trigger: WorkflowTrigger.AssetCreate,
+        asset: { id: asset.id, ownerId: user.id },
+      });
     });
   });
 });
