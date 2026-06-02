@@ -48,6 +48,33 @@ class _SharePreparingDialog extends StatelessWidget {
   }
 }
 
+class _ShareFileTypeDialog extends StatelessWidget {
+  const _ShareFileTypeDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('share'.t(context: context)),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.high_quality_rounded),
+            title: Text('share_original'.t(context: context)),
+            onTap: () => context.pop(ShareAssetFileType.original),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_size_select_large_rounded),
+            title: Text('share_preview'.t(context: context)),
+            onTap: () => context.pop(ShareAssetFileType.preview),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ShareActionButton extends ConsumerWidget {
   final ActionSource source;
   final bool iconOnly;
@@ -57,6 +84,15 @@ class ShareActionButton extends ConsumerWidget {
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
+      return;
+    }
+
+    final fileType = await showDialog<ShareAssetFileType>(
+      context: context,
+      builder: (_) => const _ShareFileTypeDialog(),
+      useRootNavigator: false,
+    );
+    if (fileType == null || !context.mounted) {
       return;
     }
 
@@ -71,6 +107,7 @@ class ShareActionButton extends ConsumerWidget {
             .shareAssets(
               source,
               context,
+              fileType: fileType,
               cancelCompleter: cancelCompleter,
               onAssetDownloadProgress: (value) => progress.value = value,
             )
