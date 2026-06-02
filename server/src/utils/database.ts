@@ -36,6 +36,7 @@ import {
   AssetFileType,
   AssetOrder,
   AssetOrderBy,
+  AssetType,
   AssetVisibility,
   DatabaseExtension,
   ExifOrientation,
@@ -725,12 +726,17 @@ function idPredicates(
   return predicates;
 }
 
-function enumPredicates<T extends string>(
+type EnumColumn = {
+  'asset.type': AssetType;
+  'asset.visibility': AssetVisibility;
+};
+
+function enumPredicates<C extends keyof EnumColumn>(
   eb: AssetExpressionBuilder,
-  column: 'asset.type' | 'asset.visibility',
-  filter: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } = {},
+  column: C,
+  filter: { eq?: EnumColumn[C]; ne?: EnumColumn[C]; in?: EnumColumn[C][]; notIn?: EnumColumn[C][] } = {},
 ) {
-  // `as never`: kysely's column-union type can't narrow to T; SearchFilter enum schemas validate at the boundary.
+  // casts: kysely's `eb` doesn't distribute its column-value narrowing through the generic
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
     predicates.push(eb(column, '=', filter.eq as never));
