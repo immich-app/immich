@@ -604,88 +604,88 @@ function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): b
  * by `exifJoinRequired`). `searchAssetBuilder` casts its `eb` into this type
  * because TS can't see through the conditional `.$if(needsExifJoin, …)`.
  */
-type AssetEB = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
+type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
 
-function existsAlbumLink(eb: AssetEB, want: boolean): Expression<SqlBool> {
-  const e = eb.exists((eb2) => eb2.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
-  return want ? e : eb.not(e);
+function existsAlbumLink(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) => eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
+  return present ? expression : eb.not(expression);
 }
 
-function existsPersonLink(eb: AssetEB, want: boolean): Expression<SqlBool> {
-  const e = eb.exists((eb2) =>
-    eb2
+function existsPersonLink(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) =>
+    eb
       .selectFrom('asset_face')
       .whereRef('asset_face.assetId', '=', 'asset.id')
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', '=', true),
   );
-  return want ? e : eb.not(e);
+  return present ? expression : eb.not(expression);
 }
 
-function existsTagLink(eb: AssetEB, want: boolean): Expression<SqlBool> {
-  const e = eb.exists((eb2) => eb2.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id'));
-  return want ? e : eb.not(e);
+function existsTagLink(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id'));
+  return present ? expression : eb.not(expression);
 }
 
-function existsEncodedVideo(eb: AssetEB, want: boolean): Expression<SqlBool> {
-  const e = eb.exists((eb2) =>
-    eb2
+function existsEncodedVideo(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) =>
+    eb
       .selectFrom('asset_file')
       .whereRef('asset_file.assetId', '=', 'asset.id')
       .where('asset_file.type', '=', AssetFileType.EncodedVideo),
   );
-  return want ? e : eb.not(e);
+  return present ? expression : eb.not(expression);
 }
 
-function existsOcrMatch(eb: AssetEB, matches: string): Expression<SqlBool> {
+function existsOcrMatch(eb: AssetExpressionBuilder, matches: string) {
   const tokens = tokenizeForSearch(matches).join(' ');
-  return eb.exists((eb2) =>
-    eb2
+  return eb.exists((eb) =>
+    eb
       .selectFrom('ocr_search')
       .whereRef('ocr_search.assetId', '=', 'asset.id')
       .where(sql<SqlBool>`f_unaccent(ocr_search.text) %>> f_unaccent(${tokens})`),
   );
 }
 
-const encodedVideoFileBase = (eb2: ExpressionBuilder<DB, 'asset' | 'asset_exif'>) =>
-  eb2
+const encodedVideoFileBase = (eb: ExpressionBuilder<DB, 'asset' | 'asset_exif'>) =>
+  eb
     .selectFrom('asset_file')
     .whereRef('asset_file.assetId', '=', 'asset.id')
     .where('asset_file.type', '=', AssetFileType.EncodedVideo)
     .where('asset_file.isEdited', '=', false);
 
-function existsEncodedVideoPath(eb: AssetEB, f: StringFilter): Expression<SqlBool>[] {
-  const out: Expression<SqlBool>[] = [];
+function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
+  const out = [];
   if (f.eq !== undefined) {
-    out.push(eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', '=', f.eq!)));
+    out.push(eb.exists((eb) => encodedVideoFileBase(eb).where('asset_file.path', '=', f.eq!)));
   }
   if (f.ne !== undefined) {
-    out.push(eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', '<>', f.ne!)));
+    out.push(eb.exists((eb) => encodedVideoFileBase(eb).where('asset_file.path', '<>', f.ne!)));
   }
   if (f.in !== undefined) {
-    out.push(eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', 'in', f.in!)));
+    out.push(eb.exists((eb) => encodedVideoFileBase(eb).where('asset_file.path', 'in', f.in!)));
   }
   if (f.notIn !== undefined) {
-    out.push(eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', 'not in', f.notIn!)));
+    out.push(eb.exists((eb) => encodedVideoFileBase(eb).where('asset_file.path', 'not in', f.notIn!)));
   }
   return out;
 }
 
 type IdsKind = 'album' | 'person' | 'tag';
 
-function idsAnyExists(eb: AssetEB, kind: IdsKind, ids: string[]): Expression<SqlBool> {
+function idsAnyExists(eb: AssetExpressionBuilder, kind: IdsKind, ids: string[]) {
   switch (kind) {
     case 'album': {
-      return eb.exists((eb2) =>
-        eb2
+      return eb.exists((eb) =>
+        eb
           .selectFrom('album_asset')
           .whereRef('album_asset.assetId', '=', 'asset.id')
           .where('album_asset.albumId', '=', anyUuid(ids)),
       );
     }
     case 'person': {
-      return eb.exists((eb2) =>
-        eb2
+      return eb.exists((eb) =>
+        eb
           .selectFrom('asset_face')
           .whereRef('asset_face.assetId', '=', 'asset.id')
           .where('asset_face.personId', '=', anyUuid(ids))
@@ -694,8 +694,8 @@ function idsAnyExists(eb: AssetEB, kind: IdsKind, ids: string[]): Expression<Sql
       );
     }
     case 'tag': {
-      return eb.exists((eb2) =>
-        eb2
+      return eb.exists((eb) =>
+        eb
           .selectFrom('tag_asset')
           .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
           .whereRef('tag_asset.assetId', '=', 'asset.id')
@@ -705,22 +705,22 @@ function idsAnyExists(eb: AssetEB, kind: IdsKind, ids: string[]): Expression<Sql
   }
 }
 
-function idsAllExists(eb: AssetEB, kind: IdsKind, ids: string[]): Expression<SqlBool> {
+function idsAllExists(eb: AssetExpressionBuilder, kind: IdsKind, ids: string[]) {
   switch (kind) {
     case 'album': {
-      return eb.exists((eb2) =>
-        eb2
+      return eb.exists((eb) =>
+        eb
           .selectFrom('album_asset')
           .select('album_asset.assetId')
           .whereRef('album_asset.assetId', '=', 'asset.id')
           .where('album_asset.albumId', '=', anyUuid(ids))
           .groupBy('album_asset.assetId')
-          .having((e3) => e3.fn.count('album_asset.albumId').distinct(), '=', ids.length),
+          .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
       );
     }
     case 'person': {
-      return eb.exists((eb2) =>
-        eb2
+      return eb.exists((eb) =>
+        eb
           .selectFrom('asset_face')
           .select('asset_face.assetId')
           .whereRef('asset_face.assetId', '=', 'asset.id')
@@ -728,25 +728,25 @@ function idsAllExists(eb: AssetEB, kind: IdsKind, ids: string[]): Expression<Sql
           .where('asset_face.deletedAt', 'is', null)
           .where('asset_face.isVisible', '=', true)
           .groupBy('asset_face.assetId')
-          .having((e3) => e3.fn.count('asset_face.personId').distinct(), '=', ids.length),
+          .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
       );
     }
     case 'tag': {
-      return eb.exists((eb2) =>
-        eb2
+      return eb.exists((eb) =>
+        eb
           .selectFrom('tag_asset')
           .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
           .select('tag_asset.assetId')
           .whereRef('tag_asset.assetId', '=', 'asset.id')
           .where('tag_closure.id_ancestor', '=', anyUuid(ids))
           .groupBy('tag_asset.assetId')
-          .having((e3) => e3.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
+          .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
       );
     }
   }
 }
 
-function pushIdsFilter(preds: Expression<SqlBool>[], eb: AssetEB, kind: IdsKind, f: IdsFilter) {
+function pushIdsFilter(preds: Expression<SqlBool>[], eb: AssetExpressionBuilder, kind: IdsKind, f: IdsFilter) {
   if (f.any) {
     preds.push(idsAnyExists(eb, kind, f.any));
   }
@@ -760,7 +760,7 @@ function pushIdsFilter(preds: Expression<SqlBool>[], eb: AssetEB, kind: IdsKind,
 
 function pushIdEqNe(
   preds: Expression<SqlBool>[],
-  eb: AssetEB,
+  eb: AssetExpressionBuilder,
   column: 'asset.id' | 'asset.libraryId',
   f: IdFilter | IdFilterNullable | undefined,
 ) {
@@ -781,7 +781,7 @@ function pushIdEqNe(
 
 function pushEnum<T extends string>(
   preds: Expression<SqlBool>[],
-  eb: AssetEB,
+  eb: AssetExpressionBuilder,
   column: 'asset.type' | 'asset.visibility',
   f: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } | undefined,
 ) {
@@ -818,7 +818,7 @@ type StringColumn =
 
 function pushStringEqNeInNotIn(
   preds: Expression<SqlBool>[],
-  eb: AssetEB,
+  eb: AssetExpressionBuilder,
   column: StringColumn,
   f: StringFilterNullable | StringPatternFilter | undefined,
 ) {
@@ -845,7 +845,7 @@ function pushStringEqNeInNotIn(
 
 function pushStringPattern(
   preds: Expression<SqlBool>[],
-  eb: AssetEB,
+  eb: AssetExpressionBuilder,
   column: StringColumn,
   f: StringPatternFilter | undefined,
 ) {
@@ -872,7 +872,7 @@ type NumberColumn = 'asset_exif.rating' | 'asset_exif.fileSizeInByte';
 
 function pushNumber(
   preds: Expression<SqlBool>[],
-  eb: AssetEB,
+  eb: AssetExpressionBuilder,
   column: NumberColumn,
   f: NumberFilter | NumberFilterNullable | undefined,
 ) {
@@ -913,7 +913,7 @@ type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' 
 
 function pushDate(
   preds: Expression<SqlBool>[],
-  eb: AssetEB,
+  eb: AssetExpressionBuilder,
   column: DateColumn,
   f: DateFilter | DateFilterNullable | undefined,
 ) {
@@ -944,7 +944,7 @@ function pushDate(
   }
 }
 
-function pushChecksum(preds: Expression<SqlBool>[], eb: AssetEB, f: StringFilter | undefined) {
+function pushChecksum(preds: Expression<SqlBool>[], eb: AssetExpressionBuilder, f: StringFilter | undefined) {
   if (!f) {
     return;
   }
@@ -974,7 +974,7 @@ function pushChecksum(preds: Expression<SqlBool>[], eb: AssetEB, f: StringFilter
   }
 }
 
-function buildBranchPredicates(eb: AssetEB, b: SearchFilterBranch): Expression<SqlBool>[] {
+function buildBranchPredicates(eb: AssetExpressionBuilder, b: SearchFilterBranch) {
   const p: Expression<SqlBool>[] = [];
 
   pushIdEqNe(p, eb, 'asset.id', b.id);
