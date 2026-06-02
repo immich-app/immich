@@ -103,7 +103,7 @@
     "happy-dom": "^20.0.0",
     "prettier": "^3.7.4",
     "prettier-plugin-sort-json": "^4.1.1",
-    "prettier-plugin-svelte": "^3.3.3",
+    "prettier-plugin-svelte": "^4.0.0",
     "rollup-plugin-visualizer": "^7.0.0",
     "svelte": "5.55.8",
     "svelte-check": "^4.4.6",
