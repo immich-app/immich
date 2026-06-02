@@ -38,6 +38,8 @@
     withCoordinates: true,
   };
 
+  const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
+
   const handleUpdate = async () => {
     if (!point) {
       return;
@@ -54,7 +56,7 @@
 
     await updateAssets({
       assetBulkUpdateDto: {
-        ids: assetMultiSelectManager.assets.filter((asset) => asset.ownerId === authManager.user.id).map((asset) => asset.id),
+        ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
         latitude: point.lat,
         longitude: point.lng,
       },
@@ -105,8 +107,6 @@
 
   const hasGps = (asset: TimelineAsset | AssetPoint): asset is AssetPoint =>
     isDefined(asset.latitude) && isDefined(asset.longitude);
-
-  const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
 
   const handleThumbnailClick = (
     asset: TimelineAsset,
@@ -202,7 +202,7 @@
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if !isOwnAsset(asset)}
-        <div class="absolute inset-0 bg-black/40 pointer-events-none rounded" />
+        <div class="pointer-events-none absolute inset-0 rounded-sm bg-black/40"></div>
       {/if}
       {#if hasGps(asset)}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
