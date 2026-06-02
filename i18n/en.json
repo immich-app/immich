@@ -2364,6 +2364,8 @@
   "trash_page_title": "Trash ({count})",
   "trashed_items_will_be_permanently_deleted_after": "Trashed items will be permanently deleted after {days, plural, one {# day} other {# days}}.",
   "trigger": "Trigger",
+  "trigger_album_asset_added": "Asset Added to Album",
+  "trigger_album_asset_added_description": "Triggered when an asset is added to an album",
   "trigger_asset_uploaded": "Asset Upload",
   "trigger_asset_uploaded_description": "Triggered when a new asset is uploaded",
   "trigger_description": "An event that kicks off the workflow",

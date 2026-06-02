@@ -28,6 +28,21 @@ const tests: Array<{ trigger: WorkflowTrigger; types: WorkflowType[]; expected: 
     types: [WorkflowType.AssetV1, WorkflowType.AssetPersonV1],
     expected: true,
   },
+  {
+    trigger: WorkflowTrigger.AlbumAssetAdded,
+    types: [WorkflowType.AssetAlbumV1],
+    expected: true,
+  },
+  {
+    trigger: WorkflowTrigger.AlbumAssetAdded,
+    types: [WorkflowType.AssetV1],
+    expected: false,
+  },
+  {
+    trigger: WorkflowTrigger.AssetCreate,
+    types: [WorkflowType.AssetAlbumV1],
+    expected: true,
+  },
 ];
 
 describe(isMethodCompatible.name, () => {

@@ -1172,6 +1172,7 @@ export const WorkflowTriggerSchema = z
 export enum WorkflowType {
   AssetV1 = 'AssetV1',
   AssetPersonV1 = 'AssetPersonV1',
+  AssetAlbumV1 = 'AssetAlbumV1',
 }
 
 export const WorkflowTypeSchema = z.enum(WorkflowType).describe('Workflow type').meta({ id: 'WorkflowType' });

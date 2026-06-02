@@ -742,6 +742,9 @@ describe(AlbumService.name, () => {
         owner.id,
       );
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
+      for (const assetId of [asset1.id, asset2.id, asset3.id]) {
+        expect(mocks.event.emit).toHaveBeenCalledWith('AlbumAssetAdd', { albumId: album.id, assetId, userId: owner.id });
+      }
     });
 
     it('should not set the thumbnail if the album has one already', async () => {
@@ -1055,6 +1058,16 @@ describe(AlbumService.name, () => {
         id: album2.id,
         recipientId: owner2.id,
       });
+      for (const { albumId, assetId } of [
+        { albumId: album1.id, assetId: asset1.id },
+        { albumId: album1.id, assetId: asset2.id },
+        { albumId: album1.id, assetId: asset3.id },
+        { albumId: album2.id, assetId: asset1.id },
+        { albumId: album2.id, assetId: asset2.id },
+        { albumId: album2.id, assetId: asset3.id },
+      ]) {
+        expect(mocks.event.emit).toHaveBeenCalledWith('AlbumAssetAdd', { albumId, assetId, userId: user.id });
+      }
     });
 
     it('should not allow a shared user with viewer access to add assets', async () => {

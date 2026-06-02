@@ -26811,7 +26811,8 @@
         "enum": [
           "AssetCreate",
           "AssetMetadataExtraction",
-          "PersonRecognized"
+          "PersonRecognized",
+          "AlbumAssetAdded"
         ],
         "type": "string"
       },
@@ -26839,7 +26840,8 @@
         "description": "Workflow type",
         "enum": [
           "AssetV1",
-          "AssetPersonV1"
+          "AssetPersonV1",
+          "AssetAlbumV1"
         ],
         "type": "string"
       },

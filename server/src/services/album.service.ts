@@ -201,6 +201,12 @@ export class AlbumService extends BaseService {
       }
     }
 
+    for (const { id: assetId, success } of results) {
+      if (success) {
+        await this.eventRepository.emit('AlbumAssetAdd', { albumId: id, assetId, userId: auth.user.id });
+      }
+    }
+
     return results;
   }
 
@@ -259,6 +265,10 @@ export class AlbumService extends BaseService {
       for (const recipientId of event.recipients) {
         await this.eventRepository.emit('AlbumUpdate', { id: event.id, recipientId });
       }
+    }
+
+    for (const { albumId, assetId } of albumAssetValues) {
+      await this.eventRepository.emit('AlbumAssetAdd', { albumId, assetId, userId: auth.user.id });
     }
 
     return results;

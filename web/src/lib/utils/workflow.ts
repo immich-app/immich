@@ -9,6 +9,9 @@ export const getTriggerName = ($t: MessageFormatter, type: WorkflowTrigger) => {
     case WorkflowTrigger.PersonRecognized: {
       return $t('trigger_person_recognized');
     }
+    case WorkflowTrigger.AlbumAssetAdded: {
+      return $t('trigger_album_asset_added');
+    }
     default: {
       return type;
     }
@@ -22,6 +25,9 @@ export const getTriggerDescription = ($t: MessageFormatter, type: WorkflowTrigge
     }
     case WorkflowTrigger.PersonRecognized: {
       return $t('trigger_person_recognized_description');
+    }
+    case WorkflowTrigger.AlbumAssetAdded: {
+      return $t('trigger_album_asset_added_description');
     }
     default: {
       return type;

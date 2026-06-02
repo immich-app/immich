@@ -6,6 +6,7 @@ export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
   [WorkflowTrigger.AssetCreate]: [WorkflowType.AssetV1],
   [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
   [WorkflowTrigger.AssetMetadataExtraction]: [WorkflowType.AssetV1],
+  [WorkflowTrigger.AlbumAssetAdded]: [WorkflowType.AssetAlbumV1],
 };
 
 export const getWorkflowTriggers = () =>
@@ -15,6 +16,7 @@ export const getWorkflowTriggers = () =>
 const inferredMap: Record<WorkflowType, WorkflowType[]> = {
   [WorkflowType.AssetV1]: [],
   [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
+  [WorkflowType.AssetAlbumV1]: [WorkflowType.AssetV1],
 };
 
 const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
