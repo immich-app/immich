@@ -615,10 +615,10 @@ function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
   return out;
 }
 
-type IdsKind = 'album' | 'person' | 'tag';
+type Membership = 'album' | 'person' | 'tag';
 
-function idsAnyExists(eb: AssetExpressionBuilder, kind: IdsKind, ids: string[]) {
-  switch (kind) {
+function idsAnyExists(eb: AssetExpressionBuilder, membership: Membership, ids: string[]) {
+  switch (membership) {
     case 'album': {
       return eb.exists((eb) =>
         eb
@@ -649,8 +649,8 @@ function idsAnyExists(eb: AssetExpressionBuilder, kind: IdsKind, ids: string[]) 
   }
 }
 
-function idsAllExists(eb: AssetExpressionBuilder, kind: IdsKind, ids: string[]) {
-  switch (kind) {
+function idsAllExists(eb: AssetExpressionBuilder, membership: Membership, ids: string[]) {
+  switch (membership) {
     case 'album': {
       return eb.exists((eb) =>
         eb
@@ -690,15 +690,22 @@ function idsAllExists(eb: AssetExpressionBuilder, kind: IdsKind, ids: string[]) 
   }
 }
 
-function pushIdsFilter(preds: Expression<SqlBool>[], eb: AssetExpressionBuilder, kind: IdsKind, f: IdsFilter) {
-  if (f.any) {
-    preds.push(idsAnyExists(eb, kind, f.any));
+function pushIdsFilter(
+  preds: Expression<SqlBool>[],
+  eb: AssetExpressionBuilder,
+  membership: Membership,
+  filter: IdsFilter,
+) {
+  if (filter.any) {
+    preds.push(idsAnyExists(eb, membership, filter.any));
   }
-  if (f.all) {
-    preds.push(f.all.length === 1 ? idsAnyExists(eb, kind, f.all) : idsAllExists(eb, kind, f.all));
+  if (filter.all) {
+    preds.push(
+      filter.all.length === 1 ? idsAnyExists(eb, membership, filter.all) : idsAllExists(eb, membership, filter.all),
+    );
   }
-  if (f.none) {
-    preds.push(eb.not(idsAnyExists(eb, kind, f.none)));
+  if (filter.none) {
+    preds.push(eb.not(idsAnyExists(eb, membership, filter.none)));
   }
 }
 
