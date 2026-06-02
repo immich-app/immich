@@ -731,24 +731,25 @@ type EnumColumn = {
   'asset.visibility': AssetVisibility;
 };
 
-function enumPredicates<C extends keyof EnumColumn>(
+type EnumValue = EnumColumn[keyof EnumColumn];
+
+function enumPredicates(
   eb: AssetExpressionBuilder,
-  column: C,
-  filter: { eq?: EnumColumn[C]; ne?: EnumColumn[C]; in?: EnumColumn[C][]; notIn?: EnumColumn[C][] } = {},
+  column: keyof EnumColumn,
+  filter: { eq?: EnumValue; ne?: EnumValue; in?: EnumValue[]; notIn?: EnumValue[] } = {},
 ) {
-  // casts: kysely's `eb` doesn't distribute its column-value narrowing through the generic
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
-    predicates.push(eb(column, '=', filter.eq as never));
+    predicates.push(eb(column, '=', filter.eq));
   }
   if (filter.ne !== undefined) {
-    predicates.push(eb(column, '<>', filter.ne as never));
+    predicates.push(eb(column, '<>', filter.ne));
   }
   if (filter.in !== undefined) {
-    predicates.push(eb(column, 'in', filter.in as never));
+    predicates.push(eb(column, 'in', filter.in));
   }
   if (filter.notIn !== undefined) {
-    predicates.push(eb(column, 'not in', filter.notIn as never));
+    predicates.push(eb(column, 'not in', filter.notIn));
   }
   return predicates;
 }
@@ -884,10 +885,22 @@ function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {
     predicates.push(eb('asset.checksum', '<>', fromChecksum(filter.ne)));
   }
   if (filter.in !== undefined) {
-    predicates.push(eb('asset.checksum', 'in', filter.in.map(fromChecksum)));
+    predicates.push(
+      eb(
+        'asset.checksum',
+        'in',
+        filter.in.map((v) => fromChecksum(v)),
+      ),
+    );
   }
   if (filter.notIn !== undefined) {
-    predicates.push(eb('asset.checksum', 'not in', filter.notIn.map(fromChecksum)));
+    predicates.push(
+      eb(
+        'asset.checksum',
+        'not in',
+        filter.notIn.map((v) => fromChecksum(v)),
+      ),
+    );
   }
   return predicates;
 }
