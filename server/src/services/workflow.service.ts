@@ -1,4 +1,4 @@
-import { WorkflowStepConfig } from '@immich/plugin-sdk';
+import { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -11,7 +11,7 @@ import {
   WorkflowTriggerResponseDto,
   WorkflowUpdateDto,
 } from 'src/dtos/workflow.dto';
-import { Permission, WorkflowTrigger } from 'src/enum';
+import { Permission } from 'src/enum';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 import { BaseService } from 'src/services/base.service';
 import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow';
@@ -23,7 +23,7 @@ export class WorkflowService extends BaseService {
   }
 
   async search(auth: AuthDto, dto: WorkflowSearchDto): Promise<WorkflowResponseDto[]> {
-    const workflows = await this.workflowRepository.search({ ...dto, ownerId: auth.user.id });
+    const workflows = await this.workflowRepository.search({ ...dto, userId: auth.user.id });
     return workflows.map((workflow) => mapWorkflow(workflow));
   }
 

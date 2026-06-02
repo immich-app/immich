@@ -64,7 +64,7 @@
       <Self schema={childSchema} key={childKey} bind:config={getValue, setValue} />
     {/each}
   </div>
-{:else if schema.uiHint === 'albumId'}
+{:else if schema.uiHint === 'AlbumId'}
   <SchemaAlbumPicker {label} {description} array={schema.array} bind:albumIds={getUiHintValue, setUiHintValue} />
 {:else if schema.enum && schema.array}
   <Field {label} {description}>

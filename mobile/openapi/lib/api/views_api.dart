@@ -25,7 +25,7 @@ class ViewsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
-  Future<Response> getAssetsByOriginalPathWithHttpInfo(String path,) async {
+  Future<Response> getAssetsByOriginalPathWithHttpInfo(String path, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/view/folder';
 
@@ -49,6 +49,7 @@ class ViewsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -59,8 +60,8 @@ class ViewsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
-  Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path,) async {
-    final response = await getAssetsByOriginalPathWithHttpInfo(path,);
+  Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path, { Future<void>? abortTrigger, }) async {
+    final response = await getAssetsByOriginalPathWithHttpInfo(path, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -82,7 +83,7 @@ class ViewsApi {
   /// Retrieve a list of unique folder paths from asset original paths.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getUniqueOriginalPathsWithHttpInfo() async {
+  Future<Response> getUniqueOriginalPathsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/view/folder/unique-paths';
 
@@ -104,14 +105,15 @@ class ViewsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve unique paths
   ///
   /// Retrieve a list of unique folder paths from asset original paths.
-  Future<List<String>?> getUniqueOriginalPaths() async {
-    final response = await getUniqueOriginalPathsWithHttpInfo();
+  Future<List<String>?> getUniqueOriginalPaths({ Future<void>? abortTrigger, }) async {
+    final response = await getUniqueOriginalPathsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -1,5 +1,5 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { WorkflowController } from 'src/controllers/workflow.controller';
-import { WorkflowTrigger } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { WorkflowService } from 'src/services/workflow.service';
 import request from 'supertest';

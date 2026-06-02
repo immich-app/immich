@@ -4,26 +4,23 @@
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
-  import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import { Route } from '$lib/route';
   import { getWorkflowActions, getWorkflowsActions, getWorkflowShowSchemaAction } from '$lib/services/workflow.service';
   import { getWorkflowForShare, type WorkflowResponseDto } from '@immich/sdk';
   import {
+    Badge,
     Button,
     Card,
-    CardBody,
     CardDescription,
     CardHeader,
     CardTitle,
     CodeBlock,
     Container,
-    IconButton,
+    ContextMenuButton,
+    Icon,
     MenuItemType,
-    menuManager,
-    Text,
-    VStack,
   } from '@immich/ui';
-  import { mdiClose, mdiDotsVertical } from '@mdi/js';
+  import { mdiClose, mdiFlashOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -38,7 +35,7 @@
 
   const expandedIds = new SvelteSet<string>();
 
-  const toggleExpanded = (id: string) => {
+  const onToggleExpand = (id: string) => {
     if (expandedIds.has(id)) {
       expandedIds.delete(id);
     } else {
@@ -46,36 +43,7 @@
     }
   };
 
-  const getTriggerLabel = (triggerType: string) => {
-    const labels: Record<string, string> = {
-      AssetCreate: $t('asset_created'),
-      PersonRecognized: $t('person_recognized'),
-    };
-    return labels[triggerType] || triggerType;
-  };
-
-  const formatTimestamp = (createdAt: string) =>
-    new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(createdAt));
-
-  const showWorkflowMenu = (event: MouseEvent, workflow: WorkflowResponseDto) => {
-    const { ToggleEnabled, Edit, Delete } = getWorkflowActions($t, workflow);
-    void menuManager.show({
-      target: event.currentTarget as HTMLElement,
-      position: 'top-left',
-      items: [
-        ToggleEnabled,
-        Edit,
-        getWorkflowShowSchemaAction($t, expandedIds.has(workflow.id), () => toggleExpanded(workflow.id)),
-        MenuItemType.Divider,
-        Delete,
-      ],
-    });
-  };
-
-  const { Create } = $derived(getWorkflowsActions($t));
+  const { Create, UseTemplate } = $derived(getWorkflowsActions($t));
 
   const onWorkflowCreate = async (response: WorkflowResponseDto) => {
     await goto(Route.viewWorkflow(response));
@@ -92,13 +60,7 @@
 
 <OnEvents {onWorkflowCreate} {onWorkflowUpdate} {onWorkflowDelete} />
 
-{#snippet chipItem(title: string)}
-  <span class="rounded-xl border border-gray-200/80 bg-light px-3 py-1.5 text-sm dark:border-gray-600">
-    <span class="font-medium text-dark">{title}</span>
-  </span>
-{/snippet}
-
-<UserPageLayout title={data.meta.title} actions={[Create]} scrollbar={false}>
+<UserPageLayout title={data.meta.title} actions={[UseTemplate, Create]} scrollbar={false}>
   <section class="flex place-content-center sm:mx-4">
     <Container center size="large" class="pb-28">
       {#if workflows.length === 0}
@@ -111,92 +73,78 @@
           class="mx-auto mt-10"
         />
       {:else}
-        <div class="my-6 grid gap-6">
+        <div class="my-6 flex flex-col gap-3">
           {#each workflows as workflow (workflow.id)}
-            <Card class="border border-light-200">
-              <CardHeader
-                class={`flex flex-row gap-4 px-8 py-6 sm:items-center sm:gap-6 ${
-                  workflow.enabled
-                    ? 'bg-linear-to-r from-green-50 to-white dark:from-green-800/50 dark:to-green-950/45'
-                    : 'bg-neutral-50 dark:bg-neutral-900'
-                }`}
-              >
-                <div class="flex-1">
-                  <div class="flex items-center gap-3">
-                    <span class="rounded-full {workflow.enabled ? 'size-3 bg-success' : 'size-3 rounded-full bg-muted'}"
-                    ></span>
-                    <CardTitle>{workflow.name || $t('workflow')}</CardTitle>
-                  </div>
-                  {#if workflow.description}
-                    <CardDescription class="mt-1 text-sm">{workflow.description}</CardDescription>
-                  {/if}
-                </div>
+            {@const { ToggleEnabled, Duplicate, Edit, Delete } = getWorkflowActions($t, workflow)}
 
-                <div class="flex items-center gap-4">
-                  <div class="hidden text-right sm:block">
-                    <Text size="tiny">{$t('created_at')}</Text>
-                    <Text size="small" fontWeight="medium">
-                      {formatTimestamp(workflow.createdAt)}
-                    </Text>
-                  </div>
-                  <IconButton
-                    shape="round"
-                    variant="ghost"
-                    color="secondary"
-                    icon={mdiDotsVertical}
-                    aria-label={$t('menu')}
-                    onclick={(event: MouseEvent) => showWorkflowMenu(event, workflow)}
-                  />
-                </div>
-              </CardHeader>
-
-              <CardBody class="space-y-6">
-                <div class="grid gap-4 md:grid-cols-3">
-                  <!-- Trigger Section -->
-                  <div class="rounded-2xl border border-light-200 bg-light-50 p-4">
-                    <div class="mb-3">
-                      <Text size="tiny" color="muted" fontWeight="medium">{$t('trigger')}</Text>
-                    </div>
-                    {@render chipItem(getTriggerLabel(workflow.trigger))}
+            <Card class="group shadow-none transition-colors hover:border-primary">
+              <CardHeader>
+                <a
+                  href={Route.viewWorkflow({ id: workflow.id })}
+                  class="flex items-center gap-4"
+                  class:opacity-55={!workflow.enabled}
+                >
+                  <div
+                    class={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
+                      workflow.enabled
+                        ? 'bg-immich-primary/10 text-immich-primary dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary'
+                        : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500'
+                    }`}
+                  >
+                    <Icon icon={mdiFlashOutline} size="20" />
                   </div>
 
-                  <!-- Actions Section -->
-                  <div class="rounded-2xl border border-light-200 bg-light-50 p-4">
-                    <div class="mb-3">
-                      <Text size="tiny" color="muted" fontWeight="medium">{$t('steps')}</Text>
-                    </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <CardTitle class="truncate font-semibold text-dark group-hover:text-primary">
+                        {workflow.name || $t('workflow')}
+                      </CardTitle>
 
-                    <div>
-                      {#if workflow.steps.length === 0}
-                        <span class="text-sm text-light-600">
-                          {$t('no_steps')}
-                        </span>
-                      {:else}
-                        <div class="flex flex-wrap gap-2">
-                          {#each workflow.steps as step, i (i)}
-                            {@render chipItem(pluginManager.getMethodLabel(step.method))}
-                          {/each}
-                        </div>
+                      {#if !workflow.enabled}
+                        <Badge size="small" color="secondary">
+                          {$t('disabled')}
+                        </Badge>
                       {/if}
                     </div>
+
+                    {#if workflow.description}
+                      <CardDescription class="mt-0.5 truncate">
+                        {workflow.description}
+                      </CardDescription>
+                    {/if}
                   </div>
-                </div>
+
+                  <ContextMenuButton
+                    position="top-left"
+                    items={[
+                      ToggleEnabled,
+                      Edit,
+                      Duplicate,
+                      getWorkflowShowSchemaAction($t, expandedIds.has(workflow.id), () => onToggleExpand(workflow.id)),
+                      MenuItemType.Divider,
+                      Delete,
+                    ]}
+                  />
+                </a>
 
                 {#if expandedIds.has(workflow.id)}
                   {#await getWorkflowForShare({ id: workflow.id }) then result}
-                    <VStack gap={2} class="w-full rounded-2xl border border-light-200 bg-light-50 p-4">
+                    <div class="border-t border-gray-200 p-4 dark:border-gray-800">
                       <CodeBlock code={JSON.stringify(result, null, 2)} lineNumbers />
                       <Button
+                        class="mt-2"
                         leadingIcon={mdiClose}
                         fullWidth
                         variant="ghost"
                         color="secondary"
-                        onclick={() => toggleExpanded(workflow.id)}>{$t('close')}</Button
+                        onclick={() => onToggleExpand(workflow.id)}
                       >
-                    </VStack>
+                        {$t('close')}
+                      </Button>
+                    </div>
                   {/await}
                 {/if}
-              </CardBody>
+              </CardHeader>
             </Card>
           {/each}
         </div>

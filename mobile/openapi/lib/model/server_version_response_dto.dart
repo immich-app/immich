@@ -16,47 +16,61 @@ class ServerVersionResponseDto {
     required this.major,
     required this.minor,
     required this.patch_,
+    required this.prerelease,
   });
 
   /// Major version number
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int major;
 
   /// Minor version number
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int minor;
 
   /// Patch version number
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int patch_;
+
+  /// Pre-release version number
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int? prerelease;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerVersionResponseDto &&
     other.major == major &&
     other.minor == minor &&
-    other.patch_ == patch_;
+    other.patch_ == patch_ &&
+    other.prerelease == prerelease;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (major.hashCode) +
     (minor.hashCode) +
-    (patch_.hashCode);
+    (patch_.hashCode) +
+    (prerelease == null ? 0 : prerelease!.hashCode);
 
   @override
-  String toString() => 'ServerVersionResponseDto[major=$major, minor=$minor, patch_=$patch_]';
+  String toString() => 'ServerVersionResponseDto[major=$major, minor=$minor, patch_=$patch_, prerelease=$prerelease]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'major'] = this.major;
       json[r'minor'] = this.minor;
       json[r'patch'] = this.patch_;
+    if (this.prerelease != null) {
+      json[r'prerelease'] = this.prerelease;
+    } else {
+    //  json[r'prerelease'] = null;
+    }
     return json;
   }
 
@@ -72,6 +86,7 @@ class ServerVersionResponseDto {
         major: mapValueOfType<int>(json, r'major')!,
         minor: mapValueOfType<int>(json, r'minor')!,
         patch_: mapValueOfType<int>(json, r'patch')!,
+        prerelease: mapValueOfType<int>(json, r'prerelease'),
       );
     }
     return null;
@@ -122,6 +137,7 @@ class ServerVersionResponseDto {
     'major',
     'minor',
     'patch',
+    'prerelease',
   };
 }
 
