@@ -517,67 +517,35 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
-type Backing = 'asset' | 'asset_exif' | 'asset_file' | 'ocr_search' | 'membership';
+const EXIF_FILTER_FIELDS = new Set<keyof SearchFilterBranch>([
+  'city',
+  'state',
+  'country',
+  'make',
+  'model',
+  'lensModel',
+  'description',
+  'rating',
+  'fileSizeInBytes',
+]);
 
-const FIELD_BACKING: Record<keyof Omit<SearchFilterBranch, 'or'>, Backing> = {
-  id: 'asset',
-  libraryId: 'asset',
-  type: 'asset',
-  visibility: 'asset',
-  isFavorite: 'asset',
-  isMotion: 'asset',
-  isOffline: 'asset',
-  isEncoded: 'asset_file',
-  hasAlbums: 'membership',
-  hasPeople: 'membership',
-  hasTags: 'membership',
-  city: 'asset_exif',
-  state: 'asset_exif',
-  country: 'asset_exif',
-  make: 'asset_exif',
-  model: 'asset_exif',
-  lensModel: 'asset_exif',
-  description: 'asset_exif',
-  originalFileName: 'asset',
-  originalPath: 'asset',
-  ocr: 'ocr_search',
-  rating: 'asset_exif',
-  fileSizeInBytes: 'asset_exif',
-  takenAt: 'asset',
-  createdAt: 'asset',
-  updatedAt: 'asset',
-  trashedAt: 'asset',
-  personIds: 'membership',
-  tagIds: 'membership',
-  albumIds: 'membership',
-  checksum: 'asset',
-  encodedVideoPath: 'asset_file',
-};
+const EXIF_ORDER_FIELDS = new Set<SearchOrderField>([SearchOrderField.FileSizeInBytes, SearchOrderField.Rating]);
 
 function branchNeedsExifJoin(branch: SearchFilterBranch): boolean {
-  for (const key of Object.keys(branch) as (keyof typeof FIELD_BACKING)[]) {
-    if (FIELD_BACKING[key] === 'asset_exif') {
+  for (const key of Object.keys(branch) as (keyof SearchFilterBranch)[]) {
+    if (EXIF_FILTER_FIELDS.has(key)) {
       return true;
     }
   }
   return false;
 }
 
-const ORDER_BACKING = {
-  [SearchOrderField.FileCreatedAt]: 'asset',
-  [SearchOrderField.LocalDateTime]: 'asset',
-  [SearchOrderField.FileSizeInBytes]: 'asset_exif',
-  [SearchOrderField.Rating]: 'asset_exif',
-} satisfies Record<SearchOrderField, Backing>;
-
 function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): boolean {
-  if (ORDER_BACKING[orderField] === 'asset_exif') {
-    return true;
-  }
-  if (branchNeedsExifJoin(filter)) {
-    return true;
-  }
-  return filter.or?.some((branch) => branchNeedsExifJoin(branch)) ?? false;
+  return (
+    EXIF_ORDER_FIELDS.has(orderField) ||
+    branchNeedsExifJoin(filter) ||
+    (filter.or?.some((branch) => branchNeedsExifJoin(branch)) ?? false)
+  );
 }
 
 type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
