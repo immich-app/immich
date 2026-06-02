@@ -208,14 +208,18 @@ class MemoryManager {
     const initialDelay = nextEvent.diff(now).as('milliseconds');
 
     setTimeout(() => {
-      this.clearCache();
-      this.loadNextPage();
+      if (this.#page <= 2) {
+        this.clearCache();
+        this.loadNextPage();
+      }
 
       // Schedule subsequent events hourly
       setInterval(
         () => {
-          this.clearCache();
-          this.loadNextPage();
+          if (this.#page <= 2) {
+            this.clearCache();
+            this.loadNextPage();
+          }
         },
         60 * 60 * 1000,
       );
