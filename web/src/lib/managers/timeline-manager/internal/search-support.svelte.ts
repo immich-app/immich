@@ -131,6 +131,24 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
     [startTimelineMonth, endTimelineMonth] = [endTimelineMonth, startTimelineMonth];
   }
 
+  // Fast path: both assets in the same loaded month — collect synchronously
+  if (startTimelineMonth === endTimelineMonth && startTimelineMonth.isLoaded) {
+    const range: TimelineAsset[] = [];
+    let collecting = false;
+    for (const asset of startTimelineMonth.assetsIterator()) {
+      if (!collecting && asset.id === startAsset.id) {
+        collecting = true;
+      }
+      if (collecting) {
+        range.push(asset);
+      }
+      if (asset.id === endAsset.id) {
+        break;
+      }
+    }
+    return range;
+  }
+
   const range: TimelineAsset[] = [];
   const startTimelineDay = startTimelineMonth.findTimelineDayForAsset(startAsset);
   for await (const targetAsset of timelineManager.assetsIterator({
