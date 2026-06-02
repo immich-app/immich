@@ -29,11 +29,7 @@ class ViewIntentAssetResolver {
   final TimelineFactory _timelineFactory;
   static final Logger _logger = Logger('ViewIntentAssetResolver');
 
-  const ViewIntentAssetResolver({
-    required DriftLocalAssetRepository localAssetRepository,
-    required TimelineFactory timelineFactory,
-  }) : _localAssetRepository = localAssetRepository,
-       _timelineFactory = timelineFactory;
+  const ViewIntentAssetResolver({required this._localAssetRepository, required this._timelineFactory});
 
   Future<ViewIntentResolvedAsset> resolve(ViewIntentPayload attachment) async {
     final localAssetId = attachment.localAssetId;
