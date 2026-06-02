@@ -149,8 +149,6 @@ const SearchSuggestionRequestSchema = z
   })
   .meta({ id: 'SearchSuggestionRequestDto' });
 
-// v3 SearchFilter DTOs — new shape introduced alongside the legacy flat DTOs above.
-
 const atLeastOneKey = <T extends z.ZodObject>(schema: T) => {
   const keys = Object.keys(schema.shape);
   return schema.refine((value) => Object.values(value).some((v) => v !== undefined), {

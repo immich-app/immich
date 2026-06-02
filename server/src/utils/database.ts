@@ -517,19 +517,8 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
-/**
- * Join strategy each `SearchFilterBranch` field needs against the database.
- * - `asset`: column on the `asset` table; simple WHERE; no join.
- * - `asset_exif`: column on `asset_exif`; inner join
- * - `asset_file`: column on `asset_file`; SQL is field-dependent
- * - `ocr_search`: specialised trigram-indexed search column
- * - `membership`: not a column; junction-table membership; SQL is operator-dependent
- */
 type Backing = 'asset' | 'asset_exif' | 'asset_file' | 'ocr_search' | 'membership';
 
-/**
- * Exhaustive `SearchFilterBranch` backing map
- */
 const FIELD_BACKING: Record<keyof Omit<SearchFilterBranch, 'or'>, Backing> = {
   id: 'asset',
   libraryId: 'asset',
@@ -574,9 +563,6 @@ function branchNeedsExifJoin(branch: SearchFilterBranch): boolean {
   return false;
 }
 
-/**
- * Exhaustive `SearchOrderField` backing map
- */
 const ORDER_BACKING = {
   [SearchOrderField.FileCreatedAt]: 'asset',
   [SearchOrderField.LocalDateTime]: 'asset',
@@ -584,9 +570,6 @@ const ORDER_BACKING = {
   [SearchOrderField.Rating]: 'asset_exif',
 } satisfies Record<SearchOrderField, Backing>;
 
-/**
- * `asset_exif` join is needed when either any filter or order field needs `asset_exif`
- */
 function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): boolean {
   if (ORDER_BACKING[orderField] === 'asset_exif') {
     return true;
@@ -597,13 +580,6 @@ function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): b
   return filter.or?.some((branch) => branchNeedsExifJoin(branch)) ?? false;
 }
 
-/**
- * EB type used by `buildBranchPredicates`. The runtime invariant is that
- * whenever a predicate references an `asset_exif` column, the `asset_exif`
- * join has already been planted at the top of the builder chain (guaranteed
- * by `exifJoinRequired`). `searchAssetBuilder` casts its `eb` into this type
- * because TS can't see through the conditional `.$if(needsExifJoin, …)`.
- */
 type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
 
 function existsAlbumLink(eb: AssetExpressionBuilder, present: boolean) {
@@ -788,9 +764,7 @@ function pushEnum<T extends string>(
   if (!f) {
     return;
   }
-  // Values cast: column type unions across asset.type / asset.visibility resolve
-  // to `AssetType | AssetVisibility` and TS can't narrow to the caller's T.
-  // The caller side (the SearchFilter enum schemas) is what guarantees validity.
+  // `as never`: kysely's column-union type can't narrow to T; SearchFilter enum schemas validate at the boundary.
   if (f.eq !== undefined) {
     preds.push(eb(column, '=', f.eq as never));
   }
@@ -1094,6 +1068,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       return top.length > 0 ? eb.and(top) : eb.val(true);
     })
     .$call((qb) =>
+      // cast: `.$if(needsExifJoin, ...)` doesn't carry the join into the type; `exifJoinRequired` guarantees it at runtime.
       applySearchOrder(qb as SelectQueryBuilder<DB, 'asset' | 'asset_exif', unknown>, orderField, orderDirection),
     );
 }
