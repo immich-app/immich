@@ -1,4 +1,5 @@
-import { AssetStatus, AssetVisibility, WorkflowType, wrapper } from '@immich/plugin-sdk';
+import { wrapper } from '@immich/plugin-sdk';
+import { AssetVisibility, WorkflowType } from '@immich/sdk';
 
 type AssetFileFilterConfig = {
   pattern: string;
@@ -38,6 +39,14 @@ export const assetFileFilter = () => {
         return {};
       }
     }
+  });
+};
+
+export const assetMissingTimeZoneFilter = () => {
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+    const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
+    const needsTimeZone = config.inverse ? true : false;
+    return { workflow: { continue: hasTimeZone === needsTimeZone } };
   });
 };
 
@@ -89,23 +98,35 @@ export const assetLock = () => {
 };
 
 export const assetTrash = () => {
-  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => ({
-    changes: {
-      asset: config.inverse
-        ? { deletedAt: null, status: AssetStatus.Active }
-        : { deletedAt: new Date(), status: AssetStatus.Trashed },
-    },
-  }));
+  // TODO use trash/untrash host functions
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(() => ({}));
 };
 
 export const assetAddToAlbums = () => {
-  return wrapper<WorkflowType.AssetV1, { albumIds: string[] }>(({ config, data, functions }) => {
+  return wrapper<WorkflowType.AssetV1, { albumIds: string[]; albumName?: string }>(({ config, data, functions }) => {
+    const assetId = data.asset.id;
+
+    if (config.albumIds.length === 0) {
+      if (!config.albumName) {
+        return {};
+      }
+
+      const [existing] = functions.searchAlbums({ name: config.albumName });
+      if (!existing) {
+        const created = functions.createAlbum({ albumName: config.albumName, assetIds: [assetId] });
+        config.albumIds.push(created.id);
+        return {};
+      }
+
+      config.albumIds.push(existing.id);
+    }
+
     if (config.albumIds.length === 1) {
-      functions.albumAddAssets(config.albumIds[0], [data.asset.id]);
+      functions.addAssetsToAlbum(config.albumIds[0], [assetId]);
       return {};
     }
 
-    functions.addAssetsToAlbums({ albumIds: config.albumIds, assetIds: [data.asset.id] });
+    functions.addAssetsToAlbums({ albumIds: config.albumIds, assetIds: [assetId] });
     return {};
   });
 };

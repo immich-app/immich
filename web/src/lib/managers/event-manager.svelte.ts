@@ -7,13 +7,13 @@ import type {
   LoginResponseDto,
   PersonResponseDto,
   QueueResponseDto,
+  ReleaseEventV1,
   SharedLinkResponseDto,
   SystemConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
   WorkflowResponseDto,
 } from '@immich/sdk';
-import type { ReleaseEvent } from '$lib/types';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import type { TreeNode } from '$lib/utils/tree-utils';
 
@@ -86,7 +86,7 @@ export type Events = {
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 
-  ReleaseEvent: [ReleaseEvent];
+  ReleaseEvent: [ReleaseEventV1];
 
   WebsocketConnect: [];
 };

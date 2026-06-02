@@ -16,7 +16,7 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-"aqua:flutter/flutter" = "3.41.9"
+"aqua:flutter/flutter" = "3.44.0"
 pnpm = "10.33.4"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
@@ -54,8 +54,8 @@ lockfile = true
 
 [tasks.plugins]
 run = [
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build",
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core build",
 ]
 
 [tasks.open-api-typescript]
@@ -84,6 +84,72 @@ run = [
 dir = "server"
 run = "node ./dist/bin/sync-sql.js"
 
+# TODO dev, prod, and e2e should be de-duplicated by using env but for some reason I ran into issues
+[tasks.dev]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:dev-down"
+
+[tasks.dev-update]
+run = { task = "//:dev", args = ["--build", "-V"] }
+
+[tasks.dev-scale]
+run = { task = "//:dev", args = ["--build", "-V", "--scale immich-server=3"] }
+
+[tasks.dev-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
+
+[tasks.prod]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.prod.yml up --build --remove-orphans"
+depends_post = "//:prod-down"
+
+[tasks.prod-scale]
+run = { task = "//:prod", args = [
+  "--build",
+  "-V",
+  "--scale immich-server=3",
+  "--scale immich-microservices",
+] }
+
+[tasks.prod-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.prod.yml down --remove-orphans"
+
+[tasks.e2e]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.yml up --remove-orphans"
+depends_post = "//:e2e-down"
+
+[tasks.e2e-dev]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:e2e-dev-down"
+
+[tasks.e2e-update]
+run = { task = "//:e2e", args = ["--build", '-V'] }
+
+[tasks.e2e-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.yml down --remove-orphans"
+
+[tasks.e2e-dev-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
+
 # SDK tasks
 [tasks."sdk:install"]
 dir = "packages/sdk"
@@ -99,3 +165,14 @@ run = "pnpm format"
 
 [tasks."i18n:format-fix"]
 run = "pnpm format:fix"
+
+[tasks.clean]
+run = [
+  "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'build' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.svelte-kit' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'coverage' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.pnpm-store' -type d -prune -exec rm -rf '{}' +",
+  { task = "//:*-down" },
+]

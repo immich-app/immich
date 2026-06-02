@@ -2,15 +2,15 @@ import 'package:flutter/foundation.dart';
 
 class NetworkConfig {
   final bool autoEndpointSwitching;
-  final String? preferredWifiName;
-  final String? localEndpoint;
+  final String preferredWifiName;
+  final String localEndpoint;
   final List<String> externalEndpointList;
   final Map<String, String> customHeaders;
 
   const NetworkConfig({
     this.autoEndpointSwitching = false,
-    this.preferredWifiName,
-    this.localEndpoint,
+    this.preferredWifiName = '',
+    this.localEndpoint = '',
     this.externalEndpointList = const [],
     this.customHeaders = const {},
   });

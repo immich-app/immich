@@ -269,8 +269,18 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) {
-    return _assetMediaRepository.shareAssets(assets, context, cancelCompleter: cancelCompleter);
+  Future<int> shareAssets(
+    List<BaseAsset> assets,
+    BuildContext context, {
+    Completer<void>? cancelCompleter,
+    void Function(double progress)? onAssetDownloadProgress,
+  }) {
+    return _assetMediaRepository.shareAssets(
+      assets,
+      context,
+      cancelCompleter: cancelCompleter,
+      onAssetDownloadProgress: onAssetDownloadProgress,
+    );
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

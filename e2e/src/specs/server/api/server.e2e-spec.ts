@@ -95,6 +95,7 @@ describe('/server', () => {
         major: expect.any(Number),
         minor: expect.any(Number),
         patch: expect.any(Number),
+        prerelease: null,
       });
     });
   });
@@ -115,6 +116,7 @@ describe('/server', () => {
         oauthAutoLaunch: false,
         ocr: false,
         passwordLogin: true,
+        realtimeTranscoding: false,
         search: true,
         sidecar: true,
         trash: true,

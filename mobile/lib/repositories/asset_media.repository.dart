@@ -1,31 +1,29 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
-final assetMediaRepositoryProvider = Provider(
-  (ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider), ref.watch(nativeSyncApiProvider)),
-);
+final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(nativeSyncApiProvider)));
 
 class AssetMediaRepository {
-  final AssetApiRepository _assetApiRepository;
   final NativeSyncApi _nativeSyncApi;
   static final Logger _log = Logger("AssetMediaRepository");
 
-  const AssetMediaRepository(this._assetApiRepository, this._nativeSyncApi);
+  const AssetMediaRepository(this._nativeSyncApi);
 
   Future<bool> _androidSupportsTrash() async {
     if (Platform.isAndroid) {
@@ -107,10 +105,29 @@ class AssetMediaRepository {
     );
   }
 
-  // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) async {
+  Future<int> shareAssets(
+    List<BaseAsset> assets,
+    BuildContext context, {
+    Completer<void>? cancelCompleter,
+    void Function(double progress)? onAssetDownloadProgress,
+  }) async {
     final downloadedXFiles = <XFile>[];
     final tempFiles = <File>[];
+    final totalAssets = assets.length;
+    var processedAssets = 0;
+
+    void updateProgress([double currentAssetProgress = 0.0]) {
+      if (totalAssets <= 0) {
+        onAssetDownloadProgress?.call(1.0);
+        return;
+      }
+
+      final normalizedAssetProgress = currentAssetProgress.clamp(0.0, 1.0);
+      final overallProgress = ((processedAssets + normalizedAssetProgress) / totalAssets).clamp(0.0, 1.0);
+      onAssetDownloadProgress?.call(overallProgress);
+    }
+
+    updateProgress();
 
     for (var asset in assets) {
       if (cancelCompleter != null && cancelCompleter.isCompleted) {
@@ -127,6 +144,8 @@ class AssetMediaRepository {
       if (localId != null && !asset.isEdited) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
+        processedAssets++;
+        updateProgress();
         if (CurrentPlatform.isIOS) {
           tempFiles.add(f);
         }
@@ -134,22 +153,50 @@ class AssetMediaRepository {
         final remoteId = (asset is RemoteAsset) ? asset.id : asset.remoteId;
         if (remoteId == null) {
           _log.warning("Asset has no remote ID for sharing: $asset");
+          processedAssets++;
+          updateProgress();
           continue;
         }
 
-        final tempDir = await getTemporaryDirectory();
-        final name = asset.name;
-        final tempFile = await File('${tempDir.path}/$name').create();
-        final res = await _assetApiRepository.downloadAsset(remoteId, edited: true);
+        final taskId = 'share-$remoteId-${DateTime.now().microsecondsSinceEpoch}';
+        final sanitizedFilename = asset.name.replaceAll(RegExp(r'[\\/]'), '_');
+        final task = DownloadTask(
+          taskId: taskId,
+          url: getOriginalUrlForRemoteId(remoteId, edited: asset.isEdited),
+          headers: ApiService.getRequestHeaders(),
+          filename: sanitizedFilename,
+          baseDirectory: BaseDirectory.temporary,
+          group: kShareDownloadGroup,
+          updates: Updates.statusAndProgress,
+        );
+        final statusUpdate = await FileDownloader().download(
+          task,
+          onProgress: (value) {
+            if (cancelCompleter != null && cancelCompleter.isCompleted) {
+              unawaited(FileDownloader().cancelTaskWithId(taskId));
+              return;
+            }
+            updateProgress(value);
+          },
+        );
 
-        if (res.statusCode != 200) {
-          _log.severe("Download for $name failed", res.toLoggerString());
-          continue;
+        if (cancelCompleter != null && cancelCompleter.isCompleted) {
+          await _cleanupTempFiles(tempFiles);
+          return 0;
         }
 
-        await tempFile.writeAsBytes(res.bodyBytes);
-        downloadedXFiles.add(XFile(tempFile.path));
-        tempFiles.add(tempFile);
+        if (statusUpdate.status == TaskStatus.complete) {
+          final filePath = await task.filePath();
+          final file = File(filePath);
+          tempFiles.add(file);
+          downloadedXFiles.add(XFile(filePath));
+          processedAssets++;
+          updateProgress();
+          continue;
+        }
+        _log.severe("Download for ${asset.name} failed with status ${statusUpdate.status}", statusUpdate.exception);
+        processedAssets++;
+        updateProgress();
       }
     }
 
