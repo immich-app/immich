@@ -685,10 +685,7 @@ function idsAllExists(eb: AssetExpressionBuilder, membership: Membership, ids: s
   }
 }
 
-function idsPredicates(eb: AssetExpressionBuilder, membership: Membership, filter: IdsFilter | undefined) {
-  if (!filter) {
-    return [];
-  }
+function idsPredicates(eb: AssetExpressionBuilder, membership: Membership, filter: IdsFilter = {}) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.any) {
     predicates.push(idsAnyExists(eb, membership, filter.any));
@@ -707,11 +704,8 @@ function idsPredicates(eb: AssetExpressionBuilder, membership: Membership, filte
 function idPredicates(
   eb: AssetExpressionBuilder,
   column: 'asset.id' | 'asset.libraryId',
-  filter: IdFilter | IdFilterNullable | undefined,
+  filter: IdFilter | IdFilterNullable = {},
 ) {
-  if (!filter) {
-    return [];
-  }
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq === null) {
     predicates.push(eb(column, 'is', null));
@@ -729,11 +723,8 @@ function idPredicates(
 function enumPredicates<T extends string>(
   eb: AssetExpressionBuilder,
   column: 'asset.type' | 'asset.visibility',
-  filter: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } | undefined,
+  filter: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } = {},
 ) {
-  if (!filter) {
-    return [];
-  }
   // `as never`: kysely's column-union type can't narrow to T; SearchFilter enum schemas validate at the boundary.
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
@@ -765,11 +756,8 @@ type StringColumn =
 function stringEqNeInPredicates(
   eb: AssetExpressionBuilder,
   column: StringColumn,
-  filter: StringFilterNullable | StringPatternFilter | undefined,
+  filter: StringFilterNullable | StringPatternFilter = {},
 ) {
-  if (!filter) {
-    return [];
-  }
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq === null) {
     predicates.push(eb(column, 'is', null));
@@ -790,14 +778,7 @@ function stringEqNeInPredicates(
   return predicates;
 }
 
-function stringPatternPredicates(
-  eb: AssetExpressionBuilder,
-  column: StringColumn,
-  filter: StringPatternFilter | undefined,
-) {
-  if (!filter) {
-    return [];
-  }
+function stringPatternPredicates(eb: AssetExpressionBuilder, column: StringColumn, filter: StringPatternFilter = {}) {
   const predicates: Expression<SqlBool>[] = stringEqNeInPredicates(eb, column, filter);
   const ref = sql.ref(column);
   if (filter.like !== undefined) {
@@ -820,11 +801,8 @@ type NumberColumn = 'asset_exif.rating' | 'asset_exif.fileSizeInByte';
 function numberPredicates(
   eb: AssetExpressionBuilder,
   column: NumberColumn,
-  filter: NumberFilter | NumberFilterNullable | undefined,
+  filter: NumberFilter | NumberFilterNullable = {},
 ) {
-  if (!filter) {
-    return [];
-  }
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq === null) {
     predicates.push(eb(column, 'is', null));
@@ -859,14 +837,7 @@ function numberPredicates(
 
 type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' | 'asset.deletedAt';
 
-function datePredicates(
-  eb: AssetExpressionBuilder,
-  column: DateColumn,
-  filter: DateFilter | DateFilterNullable | undefined,
-) {
-  if (!filter) {
-    return [];
-  }
+function datePredicates(eb: AssetExpressionBuilder, column: DateColumn, filter: DateFilter | DateFilterNullable = {}) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq === null) {
     predicates.push(eb(column, 'is', null));
@@ -893,10 +864,7 @@ function datePredicates(
   return predicates;
 }
 
-function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter | undefined) {
-  if (!filter) {
-    return [];
-  }
+function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {}) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
     predicates.push(eb('asset.checksum', '=', fromChecksum(filter.eq)));
