@@ -14,7 +14,7 @@ class DriftMemoryLane extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memoryLaneProvider = ref.watch(driftMemoryFutureProvider);
+    final memoryLaneProvider = ref.watch(driftMemoryLaneProvider);
     final memories = memoryLaneProvider.value ?? const [];
     if (memories.isEmpty) {
       return const SizedBox.shrink();

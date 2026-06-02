@@ -755,6 +755,22 @@ class DriftMapRouteArgs {
 }
 
 /// generated route for
+/// [DriftMemoryListPage]
+class DriftMemoryListRoute extends PageRouteInfo<void> {
+  const DriftMemoryListRoute({List<PageRouteInfo>? children})
+    : super(DriftMemoryListRoute.name, initialChildren: children);
+
+  static const String name = 'DriftMemoryListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftMemoryListPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({

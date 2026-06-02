@@ -11,7 +11,7 @@ class MainTimelinePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasMemories = ref.watch(driftMemoryFutureProvider.select((state) => state.value?.isNotEmpty ?? false));
+    final hasMemories = ref.watch(driftMemoryLaneProvider.select((state) => state.value?.isNotEmpty ?? false));
     return Timeline(
       topSliverWidget: const SliverToBoxAdapter(child: DriftMemoryLane()),
       topSliverWidgetHeight: hasMemories ? 200 : 0,
