@@ -690,68 +690,70 @@ function idsAllExists(eb: AssetExpressionBuilder, membership: Membership, ids: s
   }
 }
 
-function pushIdsFilter(
-  preds: Expression<SqlBool>[],
-  eb: AssetExpressionBuilder,
-  membership: Membership,
-  filter: IdsFilter,
-) {
+function idsPredicates(eb: AssetExpressionBuilder, membership: Membership, filter: IdsFilter | undefined) {
+  if (!filter) {
+    return [];
+  }
+  const predicates: Expression<SqlBool>[] = [];
   if (filter.any) {
-    preds.push(idsAnyExists(eb, membership, filter.any));
+    predicates.push(idsAnyExists(eb, membership, filter.any));
   }
   if (filter.all) {
-    preds.push(
+    predicates.push(
       filter.all.length === 1 ? idsAnyExists(eb, membership, filter.all) : idsAllExists(eb, membership, filter.all),
     );
   }
   if (filter.none) {
-    preds.push(eb.not(idsAnyExists(eb, membership, filter.none)));
+    predicates.push(eb.not(idsAnyExists(eb, membership, filter.none)));
   }
+  return predicates;
 }
 
-function pushIdEqNe(
-  preds: Expression<SqlBool>[],
+function idPredicates(
   eb: AssetExpressionBuilder,
   column: 'asset.id' | 'asset.libraryId',
-  f: IdFilter | IdFilterNullable | undefined,
+  filter: IdFilter | IdFilterNullable | undefined,
 ) {
-  if (!f) {
-    return;
+  if (!filter) {
+    return [];
   }
-  if (f.eq === null) {
-    preds.push(eb(column, 'is', null));
-  } else if (f.eq !== undefined) {
-    preds.push(eb(column, '=', asUuid(f.eq)));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq === null) {
+    predicates.push(eb(column, 'is', null));
+  } else if (filter.eq !== undefined) {
+    predicates.push(eb(column, '=', asUuid(filter.eq)));
   }
-  if (f.ne === null) {
-    preds.push(eb(column, 'is not', null));
-  } else if (f.ne !== undefined) {
-    preds.push(eb(column, '<>', asUuid(f.ne)));
+  if (filter.ne === null) {
+    predicates.push(eb(column, 'is not', null));
+  } else if (filter.ne !== undefined) {
+    predicates.push(eb(column, '<>', asUuid(filter.ne)));
   }
+  return predicates;
 }
 
-function pushEnum<T extends string>(
-  preds: Expression<SqlBool>[],
+function enumPredicates<T extends string>(
   eb: AssetExpressionBuilder,
   column: 'asset.type' | 'asset.visibility',
-  f: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } | undefined,
+  filter: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } | undefined,
 ) {
-  if (!f) {
-    return;
+  if (!filter) {
+    return [];
   }
   // `as never`: kysely's column-union type can't narrow to T; SearchFilter enum schemas validate at the boundary.
-  if (f.eq !== undefined) {
-    preds.push(eb(column, '=', f.eq as never));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(eb(column, '=', filter.eq as never));
   }
-  if (f.ne !== undefined) {
-    preds.push(eb(column, '<>', f.ne as never));
+  if (filter.ne !== undefined) {
+    predicates.push(eb(column, '<>', filter.ne as never));
   }
-  if (f.in !== undefined) {
-    preds.push(eb(column, 'in', f.in as never));
+  if (filter.in !== undefined) {
+    predicates.push(eb(column, 'in', filter.in as never));
   }
-  if (f.notIn !== undefined) {
-    preds.push(eb(column, 'not in', f.notIn as never));
+  if (filter.notIn !== undefined) {
+    predicates.push(eb(column, 'not in', filter.notIn as never));
   }
+  return predicates;
 }
 
 type StringColumn =
@@ -765,236 +767,192 @@ type StringColumn =
   | 'asset.originalFileName'
   | 'asset.originalPath';
 
-function pushStringEqNeInNotIn(
-  preds: Expression<SqlBool>[],
+function stringEqNeInPredicates(
   eb: AssetExpressionBuilder,
   column: StringColumn,
-  f: StringFilterNullable | StringPatternFilter | undefined,
+  filter: StringFilterNullable | StringPatternFilter | undefined,
 ) {
-  if (!f) {
-    return;
+  if (!filter) {
+    return [];
   }
-  if (f.eq === null) {
-    preds.push(eb(column, 'is', null));
-  } else if (f.eq !== undefined) {
-    preds.push(eb(column, '=', f.eq));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq === null) {
+    predicates.push(eb(column, 'is', null));
+  } else if (filter.eq !== undefined) {
+    predicates.push(eb(column, '=', filter.eq));
   }
-  if (f.ne === null) {
-    preds.push(eb(column, 'is not', null));
-  } else if (f.ne !== undefined) {
-    preds.push(eb(column, '<>', f.ne));
+  if (filter.ne === null) {
+    predicates.push(eb(column, 'is not', null));
+  } else if (filter.ne !== undefined) {
+    predicates.push(eb(column, '<>', filter.ne));
   }
-  if (f.in !== undefined) {
-    preds.push(eb(column, 'in', f.in));
+  if (filter.in !== undefined) {
+    predicates.push(eb(column, 'in', filter.in));
   }
-  if (f.notIn !== undefined) {
-    preds.push(eb(column, 'not in', f.notIn));
+  if (filter.notIn !== undefined) {
+    predicates.push(eb(column, 'not in', filter.notIn));
   }
+  return predicates;
 }
 
-function pushStringPattern(
-  preds: Expression<SqlBool>[],
+function stringPatternPredicates(
   eb: AssetExpressionBuilder,
   column: StringColumn,
-  f: StringPatternFilter | undefined,
+  filter: StringPatternFilter | undefined,
 ) {
-  if (!f) {
-    return;
+  if (!filter) {
+    return [];
   }
-  pushStringEqNeInNotIn(preds, eb, column, f);
+  const predicates: Expression<SqlBool>[] = stringEqNeInPredicates(eb, column, filter);
   const ref = sql.ref(column);
-  if (f.like !== undefined) {
-    preds.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${f.like}) || '%')`);
+  if (filter.like !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.like}) || '%')`);
   }
-  if (f.notLike !== undefined) {
-    preds.push(sql<SqlBool>`f_unaccent(${ref}) not ilike ('%' || f_unaccent(${f.notLike}) || '%')`);
+  if (filter.notLike !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) not ilike ('%' || f_unaccent(${filter.notLike}) || '%')`);
   }
-  if (f.startsWith !== undefined) {
-    preds.push(sql<SqlBool>`f_unaccent(${ref}) ilike (f_unaccent(${f.startsWith}) || '%')`);
+  if (filter.startsWith !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike (f_unaccent(${filter.startsWith}) || '%')`);
   }
-  if (f.endsWith !== undefined) {
-    preds.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${f.endsWith}))`);
+  if (filter.endsWith !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.endsWith}))`);
   }
+  return predicates;
 }
 
 type NumberColumn = 'asset_exif.rating' | 'asset_exif.fileSizeInByte';
 
-function pushNumber(
-  preds: Expression<SqlBool>[],
+function numberPredicates(
   eb: AssetExpressionBuilder,
   column: NumberColumn,
-  f: NumberFilter | NumberFilterNullable | undefined,
+  filter: NumberFilter | NumberFilterNullable | undefined,
 ) {
-  if (!f) {
-    return;
+  if (!filter) {
+    return [];
   }
-  if (f.eq === null) {
-    preds.push(eb(column, 'is', null));
-  } else if (f.eq !== undefined) {
-    preds.push(eb(column, '=', f.eq));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq === null) {
+    predicates.push(eb(column, 'is', null));
+  } else if (filter.eq !== undefined) {
+    predicates.push(eb(column, '=', filter.eq));
   }
-  if (f.ne === null) {
-    preds.push(eb(column, 'is not', null));
-  } else if (f.ne !== undefined) {
-    preds.push(eb(column, '<>', f.ne));
+  if (filter.ne === null) {
+    predicates.push(eb(column, 'is not', null));
+  } else if (filter.ne !== undefined) {
+    predicates.push(eb(column, '<>', filter.ne));
   }
-  if (f.lt !== undefined) {
-    preds.push(eb(column, '<', f.lt));
+  if (filter.lt !== undefined) {
+    predicates.push(eb(column, '<', filter.lt));
   }
-  if (f.lte !== undefined) {
-    preds.push(eb(column, '<=', f.lte));
+  if (filter.lte !== undefined) {
+    predicates.push(eb(column, '<=', filter.lte));
   }
-  if (f.gt !== undefined) {
-    preds.push(eb(column, '>', f.gt));
+  if (filter.gt !== undefined) {
+    predicates.push(eb(column, '>', filter.gt));
   }
-  if (f.gte !== undefined) {
-    preds.push(eb(column, '>=', f.gte));
+  if (filter.gte !== undefined) {
+    predicates.push(eb(column, '>=', filter.gte));
   }
-  if (f.in !== undefined) {
-    preds.push(eb(column, 'in', f.in));
+  if (filter.in !== undefined) {
+    predicates.push(eb(column, 'in', filter.in));
   }
-  if (f.notIn !== undefined) {
-    preds.push(eb(column, 'not in', f.notIn));
+  if (filter.notIn !== undefined) {
+    predicates.push(eb(column, 'not in', filter.notIn));
   }
+  return predicates;
 }
 
 type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' | 'asset.deletedAt';
 
-function pushDate(
-  preds: Expression<SqlBool>[],
+function datePredicates(
   eb: AssetExpressionBuilder,
   column: DateColumn,
-  f: DateFilter | DateFilterNullable | undefined,
+  filter: DateFilter | DateFilterNullable | undefined,
 ) {
-  if (!f) {
-    return;
+  if (!filter) {
+    return [];
   }
-  if (f.eq === null) {
-    preds.push(eb(column, 'is', null));
-  } else if (f.eq !== undefined) {
-    preds.push(eb(column, '=', f.eq));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq === null) {
+    predicates.push(eb(column, 'is', null));
+  } else if (filter.eq !== undefined) {
+    predicates.push(eb(column, '=', filter.eq));
   }
-  if (f.ne === null) {
-    preds.push(eb(column, 'is not', null));
-  } else if (f.ne !== undefined) {
-    preds.push(eb(column, '<>', f.ne));
+  if (filter.ne === null) {
+    predicates.push(eb(column, 'is not', null));
+  } else if (filter.ne !== undefined) {
+    predicates.push(eb(column, '<>', filter.ne));
   }
-  if (f.gt !== undefined) {
-    preds.push(eb(column, '>', f.gt));
+  if (filter.gt !== undefined) {
+    predicates.push(eb(column, '>', filter.gt));
   }
-  if (f.gte !== undefined) {
-    preds.push(eb(column, '>=', f.gte));
+  if (filter.gte !== undefined) {
+    predicates.push(eb(column, '>=', filter.gte));
   }
-  if (f.lt !== undefined) {
-    preds.push(eb(column, '<', f.lt));
+  if (filter.lt !== undefined) {
+    predicates.push(eb(column, '<', filter.lt));
   }
-  if (f.lte !== undefined) {
-    preds.push(eb(column, '<=', f.lte));
+  if (filter.lte !== undefined) {
+    predicates.push(eb(column, '<=', filter.lte));
   }
+  return predicates;
 }
 
-function pushChecksum(preds: Expression<SqlBool>[], eb: AssetExpressionBuilder, f: StringFilter | undefined) {
-  if (!f) {
-    return;
+function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter | undefined) {
+  if (!filter) {
+    return [];
   }
-  if (f.eq !== undefined) {
-    preds.push(eb('asset.checksum', '=', fromChecksum(f.eq)));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(eb('asset.checksum', '=', fromChecksum(filter.eq)));
   }
-  if (f.ne !== undefined) {
-    preds.push(eb('asset.checksum', '<>', fromChecksum(f.ne)));
+  if (filter.ne !== undefined) {
+    predicates.push(eb('asset.checksum', '<>', fromChecksum(filter.ne)));
   }
-  if (f.in !== undefined) {
-    preds.push(
-      eb(
-        'asset.checksum',
-        'in',
-        f.in.map((c: string) => fromChecksum(c)),
-      ),
-    );
+  if (filter.in !== undefined) {
+    predicates.push(eb('asset.checksum', 'in', filter.in.map(fromChecksum)));
   }
-  if (f.notIn !== undefined) {
-    preds.push(
-      eb(
-        'asset.checksum',
-        'not in',
-        f.notIn.map((c: string) => fromChecksum(c)),
-      ),
-    );
+  if (filter.notIn !== undefined) {
+    predicates.push(eb('asset.checksum', 'not in', filter.notIn.map(fromChecksum)));
   }
+  return predicates;
 }
 
-function buildBranchPredicates(eb: AssetExpressionBuilder, b: SearchFilterBranch) {
-  const p: Expression<SqlBool>[] = [];
-
-  pushIdEqNe(p, eb, 'asset.id', b.id);
-  pushIdEqNe(p, eb, 'asset.libraryId', b.libraryId);
-
-  pushEnum(p, eb, 'asset.type', b.type);
-  pushEnum(p, eb, 'asset.visibility', b.visibility);
-
-  if (b.isFavorite) {
-    p.push(eb('asset.isFavorite', '=', b.isFavorite.eq));
-  }
-  if (b.isOffline) {
-    p.push(eb('asset.isOffline', '=', b.isOffline.eq));
-  }
-  if (b.isMotion) {
-    p.push(eb('asset.livePhotoVideoId', b.isMotion.eq ? 'is not' : 'is', null));
-  }
-  if (b.isEncoded) {
-    p.push(existsEncodedVideo(eb, b.isEncoded.eq));
-  }
-
-  if (b.hasAlbums) {
-    p.push(existsAlbumLink(eb, b.hasAlbums.eq));
-  }
-  if (b.hasPeople) {
-    p.push(existsPersonLink(eb, b.hasPeople.eq));
-  }
-  if (b.hasTags) {
-    p.push(existsTagLink(eb, b.hasTags.eq));
-  }
-
-  pushStringEqNeInNotIn(p, eb, 'asset_exif.city', b.city);
-  pushStringEqNeInNotIn(p, eb, 'asset_exif.state', b.state);
-  pushStringEqNeInNotIn(p, eb, 'asset_exif.country', b.country);
-  pushStringEqNeInNotIn(p, eb, 'asset_exif.make', b.make);
-  pushStringEqNeInNotIn(p, eb, 'asset_exif.model', b.model);
-  pushStringEqNeInNotIn(p, eb, 'asset_exif.lensModel', b.lensModel);
-
-  pushStringPattern(p, eb, 'asset_exif.description', b.description);
-  pushStringPattern(p, eb, 'asset.originalFileName', b.originalFileName);
-  pushStringPattern(p, eb, 'asset.originalPath', b.originalPath);
-
-  if (b.ocr) {
-    p.push(existsOcrMatch(eb, b.ocr.matches));
-  }
-
-  pushNumber(p, eb, 'asset_exif.rating', b.rating);
-  pushNumber(p, eb, 'asset_exif.fileSizeInByte', b.fileSizeInBytes);
-
-  pushDate(p, eb, 'asset.fileCreatedAt', b.takenAt);
-  pushDate(p, eb, 'asset.createdAt', b.createdAt);
-  pushDate(p, eb, 'asset.updatedAt', b.updatedAt);
-  pushDate(p, eb, 'asset.deletedAt', b.trashedAt);
-
-  if (b.albumIds) {
-    pushIdsFilter(p, eb, 'album', b.albumIds);
-  }
-  if (b.personIds) {
-    pushIdsFilter(p, eb, 'person', b.personIds);
-  }
-  if (b.tagIds) {
-    pushIdsFilter(p, eb, 'tag', b.tagIds);
-  }
-
-  pushChecksum(p, eb, b.checksum);
-
-  if (b.encodedVideoPath) {
-    p.push(...existsEncodedVideoPath(eb, b.encodedVideoPath));
-  }
-
-  return p;
+function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
+  return [
+    ...idPredicates(eb, 'asset.id', branch.id),
+    ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
+    ...enumPredicates(eb, 'asset.type', branch.type),
+    ...enumPredicates(eb, 'asset.visibility', branch.visibility),
+    ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
+    ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
+    ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
+    ...(branch.isEncoded ? [existsEncodedVideo(eb, branch.isEncoded.eq)] : []),
+    ...(branch.hasAlbums ? [existsAlbumLink(eb, branch.hasAlbums.eq)] : []),
+    ...(branch.hasPeople ? [existsPersonLink(eb, branch.hasPeople.eq)] : []),
+    ...(branch.hasTags ? [existsTagLink(eb, branch.hasTags.eq)] : []),
+    ...stringEqNeInPredicates(eb, 'asset_exif.city', branch.city),
+    ...stringEqNeInPredicates(eb, 'asset_exif.state', branch.state),
+    ...stringEqNeInPredicates(eb, 'asset_exif.country', branch.country),
+    ...stringEqNeInPredicates(eb, 'asset_exif.make', branch.make),
+    ...stringEqNeInPredicates(eb, 'asset_exif.model', branch.model),
+    ...stringEqNeInPredicates(eb, 'asset_exif.lensModel', branch.lensModel),
+    ...stringPatternPredicates(eb, 'asset_exif.description', branch.description),
+    ...stringPatternPredicates(eb, 'asset.originalFileName', branch.originalFileName),
+    ...stringPatternPredicates(eb, 'asset.originalPath', branch.originalPath),
+    ...(branch.ocr ? [existsOcrMatch(eb, branch.ocr.matches)] : []),
+    ...numberPredicates(eb, 'asset_exif.rating', branch.rating),
+    ...numberPredicates(eb, 'asset_exif.fileSizeInByte', branch.fileSizeInBytes),
+    ...datePredicates(eb, 'asset.fileCreatedAt', branch.takenAt),
+    ...datePredicates(eb, 'asset.createdAt', branch.createdAt),
+    ...datePredicates(eb, 'asset.updatedAt', branch.updatedAt),
+    ...datePredicates(eb, 'asset.deletedAt', branch.trashedAt),
+    ...idsPredicates(eb, 'album', branch.albumIds),
+    ...idsPredicates(eb, 'person', branch.personIds),
+    ...idsPredicates(eb, 'tag', branch.tagIds),
+    ...checksumPredicates(eb, branch.checksum),
+    ...(branch.encodedVideoPath ? existsEncodedVideoPath(eb, branch.encodedVideoPath) : []),
+  ];
 }
 
 function applySearchOrder<O>(
