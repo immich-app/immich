@@ -366,8 +366,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? download;
       bool? upload;
       bool? meta;
-      String? desc;
       var password = const Optional<String?>.absent();
+      var description = const Optional<String?>.absent();
       String? slug;
       DateTime? expiry;
       bool? changeExpiry;
@@ -384,8 +384,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         meta = showMetadata.value;
       }
 
-      if (descriptionController.text != existingLink!.description) {
-        desc = descriptionController.text;
+      if (descriptionController.text != (existingLink!.description ?? '')) {
+        description = descriptionController.text.isEmpty
+            ? const Optional.present(null)
+            : Optional.present(descriptionController.text);
       }
 
       if (passwordController.text != (existingLink!.password ?? '')) {
@@ -413,7 +415,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             showMeta: meta,
             allowDownload: download,
             allowUpload: upload,
-            description: desc,
+            description: description,
             password: password,
             slug: slug,
             expiresAt: expiry?.toUtc(),
