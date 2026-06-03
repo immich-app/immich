@@ -42,12 +42,6 @@ const SharedLinkEditSchema = z
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().optional().describe('Allow downloads'),
     showMetadata: z.boolean().optional().describe('Show metadata'),
-    changeExpiryTime: z
-      .boolean()
-      .optional()
-      .describe(
-        'Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.',
-      ),
   })
   .meta({ id: 'SharedLinkEditDto' });
 
