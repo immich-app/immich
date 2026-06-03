@@ -3,7 +3,10 @@ import {
   AssetUploadAction,
   AssetVisibility,
   checkBulkUpload,
+  createAlbum,
+  getAllAlbums,
   getBaseUrl,
+  type AlbumResponseDto,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
@@ -11,6 +14,7 @@ import { tick } from 'svelte';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { addAssetsToAlbums } from '$lib/services/album.service';
 import { uploadAssetsStore } from '$lib/stores/upload';
@@ -43,13 +47,17 @@ export const addDummyItems = () => {
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
-type FilePickerParam = { multiple?: boolean; extensions?: string[] };
-type FileUploadParam = { multiple?: boolean; albumId?: string };
+type FilePickerParam = { multiple?: boolean; extensions?: string[]; rootFolderName?: string };
+type DirectoryPickerParam = FilePickerParam & { recursive?: boolean };
+type FileUploadParam = { multiple?: boolean; albumId?: string; albumNameFromFolder?: boolean };
+type UploadableFile = File & { webkitRelativePath?: string };
+
+const rootFolderNames = new WeakMap<File, string>();
 
 export const openFilePicker = async (options: FilePickerParam = {}) => {
-  const { multiple = true, extensions } = options;
+  const { multiple = true, extensions, rootFolderName = get(t)('upload_files_root_folder') } = options;
 
-  return new Promise<File[]>((resolve, reject) => {
+  const files = await new Promise<File[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
 
@@ -80,47 +88,191 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
       reject(error);
     }
   });
+
+  return withRootFolderName(files, rootFolderName);
+};
+
+export const openDirectoryPicker = async (options: DirectoryPickerParam = {}) => {
+  const { recursive = true, ...filePickerOptions } = options;
+
+  const files = await new Promise<File[]>((resolve, reject) => {
+    try {
+      const fileSelector = document.createElement('input') as HTMLInputElement & {
+        webkitdirectory?: boolean;
+        directory?: boolean;
+      };
+
+      fileSelector.type = 'file';
+      fileSelector.multiple = true;
+      fileSelector.webkitdirectory = true;
+      fileSelector.directory = true;
+
+      if (filePickerOptions.extensions) {
+        fileSelector.accept = filePickerOptions.extensions.join(',');
+      }
+
+      fileSelector.addEventListener(
+        'change',
+        (e: Event) => {
+          const target = e.target as HTMLInputElement;
+          resolve(target.files ? Array.from(target.files) : []);
+        },
+        { passive: true },
+      );
+
+      fileSelector.click();
+    } catch (error) {
+      console.log('Error selecting folder', error);
+      reject(error);
+    }
+  });
+
+  const filteredFiles = recursive
+    ? files
+    : files.filter((file) => {
+        const relativePath = (file as UploadableFile).webkitRelativePath;
+        return !relativePath || relativePath.split('/').filter(Boolean).length <= 2;
+      });
+
+  return withDirectoryRootFolderNames(filteredFiles);
 };
 
 export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
-  const { albumId, multiple = true } = options;
+  const { albumId, albumNameFromFolder, multiple = true } = options;
   const extensions = uploadManager.getExtensions();
   const files = await openFilePicker({
     multiple,
     extensions,
   });
 
-  return fileUploadHandler({ files, albumId });
+  return fileUploadHandler({ files, albumId, albumNameFromFolder });
+};
+
+export const openDirectoryUploadDialog = async ({
+  albumId,
+  albumNameFromFolder,
+  recursive = true,
+}: FileUploadParam & { recursive?: boolean } = {}) => {
+  const extensions = uploadManager.getExtensions();
+  const files = await openDirectoryPicker({ extensions, recursive });
+
+  return fileUploadHandler({ files, albumId, albumNameFromFolder });
 };
 
 type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'assetFile'> & {
   files: File[];
+  albumNameFromFolder?: boolean;
 };
 
 export const fileUploadHandler = async ({
   files,
   albumId,
+  albumNameFromFolder = false,
   isLockedAssets = false,
 }: FileUploadHandlerParams): Promise<string[]> => {
   const extensions = uploadManager.getExtensions();
-  const promises = [];
-  for (const file of files) {
+  const validFiles = files.filter((file) => {
     const name = file.name.toLowerCase();
     if (extensions.some((extension) => name.endsWith(extension))) {
-      const deviceAssetId = getDeviceAssetId(file);
-      uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId });
-      promises.push(
-        uploadExecutionQueue.addTask(() => fileUploader({ deviceAssetId, assetFile: file, albumId, isLockedAssets })),
-      );
-    } else {
-      toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
-        timeout: 10_000,
-      });
+      return true;
     }
+
+    toastManager.warning(get(t)('unsupported_file_type', { values: { file: file.name, type: file.type } }), {
+      timeout: 10_000,
+    });
+    return false;
+  });
+
+  const albumIdsByFile = albumNameFromFolder ? await getAlbumIdsByFolder(validFiles) : new Map<File, string>();
+  const promises = [];
+  for (const file of validFiles) {
+    const fileAlbumId = albumIdsByFile.get(file) ?? albumId;
+    const deviceAssetId = getDeviceAssetId(file);
+    uploadAssetsStore.addItem({ id: deviceAssetId, file, albumId: fileAlbumId });
+    promises.push(
+      uploadExecutionQueue.addTask(() =>
+        fileUploader({ assetFile: file, deviceAssetId, albumId: fileAlbumId, isLockedAssets }),
+      ),
+    );
   }
 
   const results = await Promise.all(promises);
   return results.filter((result): result is string => !!result);
+};
+
+const withRootFolderName = (files: File[], rootFolderName: string) => {
+  for (const file of files) {
+    rootFolderNames.set(file, rootFolderName);
+  }
+
+  return files;
+};
+
+const withDirectoryRootFolderNames = (files: File[]) => {
+  for (const file of files) {
+    const rootFolderName = getDirectoryRootFolderName(file);
+    if (rootFolderName) {
+      rootFolderNames.set(file, rootFolderName);
+    }
+  }
+
+  return files;
+};
+
+const getDirectoryRootFolderName = (file: File) => {
+  const relativePath = (file as UploadableFile).webkitRelativePath;
+  if (!relativePath) {
+    return;
+  }
+
+  const parts = relativePath.split('/').filter(Boolean);
+  if (parts.length < 2) {
+    return;
+  }
+
+  return parts[0];
+};
+
+const getFolderAlbumName = (file: File) => {
+  return rootFolderNames.get(file) ?? getDirectoryRootFolderName(file);
+};
+
+const getAlbumIdsByFolder = async (files: File[]) => {
+  const albumNames = new Set<string>();
+  for (const file of files) {
+    const albumName = getFolderAlbumName(file);
+    if (albumName) {
+      albumNames.add(albumName);
+    }
+  }
+
+  if (albumNames.size === 0) {
+    return new Map<File, string>();
+  }
+
+  const albums = await Promise.all([getAllAlbums({ isOwned: true }), getAllAlbums({ isShared: true })]);
+  const existingAlbums = new Map<string, AlbumResponseDto>(albums.flat().map((album) => [album.albumName, album]));
+
+  for (const albumName of albumNames) {
+    if (existingAlbums.has(albumName)) {
+      continue;
+    }
+
+    const album = await createAlbum({ createAlbumDto: { albumName } });
+    existingAlbums.set(album.albumName, album);
+    eventManager.emit('AlbumCreate', album);
+  }
+
+  const albumIdsByFile = new Map<File, string>();
+  for (const file of files) {
+    const albumName = getFolderAlbumName(file);
+    const album = albumName ? existingAlbums.get(albumName) : undefined;
+    if (album) {
+      albumIdsByFile.set(file, album.id);
+    }
+  }
+
+  return albumIdsByFile;
 };
 
 function getDeviceAssetId(asset: File) {

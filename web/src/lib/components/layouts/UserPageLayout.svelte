@@ -6,9 +6,9 @@
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/UserSidebar.svelte';
+  import UploadOptionsModal from '$lib/modals/UploadOptionsModal.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
+  import { Button, ContextMenuButton, HStack, isMenuItemType, modalManager, type MenuItemType } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -48,7 +48,7 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar onUploadClick={() => openFileUploadDialog()} />
+    <NavigationBar onUploadClick={() => modalManager.show(UploadOptionsModal, {})} />
   {/if}
 </header>
 <div
