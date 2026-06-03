@@ -403,9 +403,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       final newExpiry = expiryAfter.value;
       if (newExpiry?.toUtc() != existingLink!.expiresAt?.toUtc()) {
-        expiry = newExpiry == null
-            ? const Optional.present(null)
-            : Optional.present(newExpiry.toUtc());
+        expiry = newExpiry == null ? const Optional.present(null) : Optional.present(newExpiry.toUtc());
       }
 
       await ref
