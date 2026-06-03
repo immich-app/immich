@@ -251,16 +251,4 @@ export const hexColor = z
   .regex(hexColorRegex)
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
 
-/**
- * Transform empty strings to null. Inner schema passed to this function must accept null.
- * @docs https://zod.dev/api?id=preprocess
- * @example emptyStringToNull(z.string().nullable()).optional() // [encouraged] final schema is optional
- * @example emptyStringToNull(z.string().nullable()) // [encouraged] same as the one above, but final schema is not optional
- * @example emptyStringToNull(z.string().nullish()) // [discouraged] same as the one above, might be confusing
- * @example emptyStringToNull(z.string().optional()) // fails: string schema rejects null
- * @example emptyStringToNull(z.string().nullable()).nullish() // [discouraged] passes, null is duplicated. use the first example instead
- */
-export const emptyStringToNull = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess((val) => (val === '' ? null : val), schema);
-
 export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));
