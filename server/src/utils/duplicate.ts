@@ -18,6 +18,7 @@ export const getExifCount = (asset: AssetResponseDto): number => {
  * The best asset is determined by the following criteria:
  *  1. Largest image file size in bytes
  *  2. Largest count of EXIF data (as tie-breaker)
+ *  3. Earliest local date/time (as final tie-breaker)
  *
  * @param assets List of duplicate assets
  * @returns The best asset to keep, or undefined if empty list
@@ -41,10 +42,23 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
   // If there are multiple assets with the same file size, sort by EXIF count
   if (duplicateAssets.length >= 2) {
     duplicateAssets = duplicateAssets.toSorted((a, b) => getExifCount(a) - getExifCount(b));
+
+    // Get the highest EXIF count
+    const largestExifCount = getExifCount(duplicateAssets.at(-1)!);
+
+    // Filter to keep only assets with the highest EXIF count
+    duplicateAssets = duplicateAssets.filter((asset) => getExifCount(asset) === largestExifCount);
   }
 
-  // Return the last asset (highest EXIF count among highest file size)
-  return duplicateAssets.at(-1);
+  // If there are still multiple assets, sort by earliest local date/time
+  if (duplicateAssets.length >= 2) {
+    duplicateAssets = duplicateAssets.toSorted(
+      (a, b) => new Date(a.localDateTime).getTime() - new Date(b.localDateTime).getTime(),
+    );
+  }
+
+  // Return the asset with the largest file size, then largest EXIF count, then earliest date
+  return duplicateAssets.at(0);
 };
 
 /**

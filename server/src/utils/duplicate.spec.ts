@@ -5,40 +5,44 @@ import { getExifCount, suggestDuplicate, suggestDuplicateKeepAssetIds } from 'sr
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
-type ExifInfoInput = Partial<z.infer<typeof ExifResponseSchema>>;
+type ExifInfoInput = Partial<z.infer<typeof ExifResponseSchema>> & { localDateTime?: string };
 
 const createAsset = (
   id: string,
   fileSizeInByte: number | null = null,
   exifFields: ExifInfoInput = {},
-): AssetResponseDto => ({
-  id,
-  type: AssetType.Image,
-  thumbhash: null,
-  localDateTime: new Date().toISOString(),
-  duration: 0,
-  hasMetadata: true,
-  width: 1920,
-  height: 1080,
-  createdAt: new Date().toISOString(),
-  ownerId: 'owner-1',
-  originalPath: '/path/to/asset',
-  originalFileName: 'asset.jpg',
-  fileCreatedAt: new Date().toISOString(),
-  fileModifiedAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  isFavorite: false,
-  isArchived: false,
-  isTrashed: false,
-  isOffline: false,
-  isEdited: false,
-  visibility: AssetVisibility.Timeline,
-  checksum: 'checksum',
-  exifInfo:
-    fileSizeInByte !== null || Object.keys(exifFields).length > 0
-      ? ExifResponseSchema.parse({ fileSizeInByte, ...exifFields })
-      : undefined,
-});
+): AssetResponseDto => {
+  const { localDateTime: localDateTimeValue, ...restExifFields } = exifFields;
+
+  return {
+    id,
+    type: AssetType.Image,
+    thumbhash: null,
+    localDateTime: localDateTimeValue ?? new Date().toISOString(),
+    duration: 0,
+    hasMetadata: true,
+    width: 1920,
+    height: 1080,
+    createdAt: new Date().toISOString(),
+    ownerId: 'owner-1',
+    originalPath: '/path/to/asset',
+    originalFileName: 'asset.jpg',
+    fileCreatedAt: new Date().toISOString(),
+    fileModifiedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isFavorite: false,
+    isArchived: false,
+    isTrashed: false,
+    isOffline: false,
+    isEdited: false,
+    visibility: AssetVisibility.Timeline,
+    checksum: 'checksum',
+    exifInfo:
+      fileSizeInByte !== null || Object.keys(restExifFields).length > 0
+        ? ExifResponseSchema.parse({ fileSizeInByte, ...restExifFields })
+        : undefined,
+  };
+};
 
 describe('duplicate utils', () => {
   describe('getExifCount', () => {
@@ -135,19 +139,46 @@ describe('duplicate utils', () => {
       expect(suggestDuplicate([noFileSize, withFileSize])?.id).toBe('with-file-size');
     });
 
-    it('should return last asset when all have same file size and EXIF count', () => {
+    it('should return an asset when all have same file size, EXIF count, and localDateTime', () => {
       const asset1 = createAsset('asset-1', 1000, { make: 'Canon' });
       const asset2 = createAsset('asset-2', 1000, { make: 'Nikon' });
 
-      // Both have same file size (1000) and same EXIF count (2: fileSizeInByte + make)
-      // Should return the last one in the sorted array
+      // Both have same file size (1000), same EXIF count (2), and same localDateTime
+      // Should return the first asset after all tiebreakers are exhausted
       const result = suggestDuplicate([asset1, asset2]);
-      // Since they're equal, the last one after sorting should be returned
       expect(result).toBeDefined();
       expect(['asset-1', 'asset-2']).toContain(result?.id);
     });
 
-    it('should prioritize file size over EXIF count', () => {
+    it('should prioritize earliest localDateTime when file size and EXIF count are equal', () => {
+      const earlier = createAsset('earlier', 1000, {
+        make: 'Canon',
+        localDateTime: '2023-01-01T00:00:00.000Z',
+      });
+      const later = createAsset('later', 1000, {
+        make: 'Canon',
+        localDateTime: '2024-01-01T00:00:00.000Z',
+      });
+
+      expect(suggestDuplicate([later, earlier])?.id).toBe('earlier');
+      expect(suggestDuplicate([earlier, later])?.id).toBe('earlier');
+    });
+
+    it('should prioritize EXIF count over localDateTime', () => {
+      const olderLessExif = createAsset('older-less-exif', 1000, {
+        make: 'Canon',
+        localDateTime: '2023-01-01T00:00:00.000Z',
+      });
+      const newerMoreExif = createAsset('newer-more-exif', 1000, {
+        make: 'Canon',
+        model: 'EOS 5D',
+        localDateTime: '2024-01-01T00:00:00.000Z',
+      });
+
+      expect(suggestDuplicate([olderLessExif, newerMoreExif])?.id).toBe('newer-more-exif');
+    });
+
+    it('should prioritize file size over localDateTime', () => {
       const largeWithLessExif = createAsset('large-less-exif', 5000, { make: 'Canon' });
       const smallWithMoreExif = createAsset('small-more-exif', 1000, {
         make: 'Canon',
