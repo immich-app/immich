@@ -11,6 +11,7 @@ import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
+import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -365,7 +366,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? download;
       bool? upload;
       bool? meta;
-      String? desc;
+      var description = const Optional<String?>.absent();
       String? password;
       String? slug;
       DateTime? expiry;
@@ -383,8 +384,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         meta = showMetadata.value;
       }
 
-      if (descriptionController.text != existingLink!.description) {
-        desc = descriptionController.text;
+      if (descriptionController.text != (existingLink!.description ?? '')) {
+        description = descriptionController.text.isEmpty
+            ? const Optional.present(null)
+            : Optional.present(descriptionController.text);
       }
 
       if (passwordController.text != existingLink!.password) {
@@ -410,7 +413,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             showMeta: meta,
             allowDownload: download,
             allowUpload: upload,
-            description: desc,
+            description: description,
             password: password,
             slug: slug,
             expiresAt: expiry?.toUtc(),
