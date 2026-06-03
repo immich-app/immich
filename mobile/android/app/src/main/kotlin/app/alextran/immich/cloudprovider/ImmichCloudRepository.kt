@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.graphics.Point
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import android.webkit.MimeTypeMap
 import app.alextran.immich.core.HttpClientManager
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -21,6 +22,7 @@ private const val SYNC_PREFS_NAME = "immich.cloud_provider"
 
 data class ImmichAsset(
   val id: String,
+  val originalFileName: String,
   val mimeType: String,
   val dateTakenMillis: Long,
   val width: Int,
@@ -71,12 +73,17 @@ object ImmichCloudRepository {
 
   private fun getServerUrl(): String? = HttpClientManager.getServerUrl()
 
+  private fun getServerUrls(): List<String> = HttpClientManager.getServerUrls()
+
   private fun getClient(): OkHttpClient = HttpClientManager.getClient()
 
-  private fun buildUrl(path: String): okhttp3.HttpUrl? {
-    val base = getServerUrl() ?: return null
+  private fun buildUrl(base: String, path: String): okhttp3.HttpUrl? {
     val baseWithoutTrailingApi = base.removeSuffix("/api").removeSuffix("/")
     return "$baseWithoutTrailingApi/api$path".toHttpUrlOrNull()
+  }
+
+  private fun buildUrls(path: String): List<okhttp3.HttpUrl> {
+    return getServerUrls().mapNotNull { buildUrl(it, path) }
   }
 
   private fun getDatabaseFile(): File? {
@@ -147,9 +154,8 @@ object ImmichCloudRepository {
     }
 
     return try {
-      val url = buildUrl("/users/me") ?: return (getServerUrl() ?: "Immich")
-      val request = Request.Builder().url(url).get().build()
-      val response = getClient().newCall(request).execute()
+      val response = executeFirstSuccessful("/users/me") { Request.Builder().url(it).get().build() }
+        ?: return getServerUrl() ?: "Immich"
       if (response.isSuccessful) {
         val json = JSONObject(response.body?.string() ?: "")
         val email = json.optString("email", "")
@@ -161,8 +167,10 @@ object ImmichCloudRepository {
           else -> getServerUrl() ?: "Immich"
         }
         syncPrefs.edit().putString("account_name", accountName).apply()
+        response.close()
         accountName
       } else {
+        response.close()
         getServerUrl() ?: "Immich"
       }
     } catch (e: Exception) {
@@ -217,9 +225,9 @@ object ImmichCloudRepository {
 
       val cursor = db.rawQuery(
         """
-        SELECT r.id, r.type, r.created_at, r.width, r.height,
-               r.duration_in_seconds, r.is_favorite,
-               COALESCE(e.file_size, 1) AS file_size,
+        SELECT DISTINCT r.id, r.type, r.created_at, r.width, r.height,
+               r.duration_in_seconds, r.is_favorite, r.name,
+               e.file_size,
                COALESCE(e.orientation, '0') AS orientation
         FROM remote_asset_entity r
         LEFT JOIN remote_exif_entity e ON e.asset_id = r.id
@@ -259,29 +267,17 @@ object ImmichCloudRepository {
   ): QueryResult {
     Log.d(TAG, "queryAlbumAssets: albumId=$albumId, pageSize=$pageSize, pageToken=$pageToken")
     return try {
-      val url = buildUrl("/albums/$albumId") ?: return QueryResult(emptyList(), null)
-      val request = Request.Builder().url(url).get().build()
-      val response = getClient().newCall(request).execute()
-      if (!response.isSuccessful) {
-        Log.e(TAG, "queryAlbumAssets API failed: ${response.code}")
-        response.close()
-        return QueryResult(emptyList(), null)
-      }
-      val body = response.body?.string() ?: "{}"
-      response.close()
-      val obj = JSONObject(body)
-      val assetsArr = obj.optJSONArray("assets") ?: return QueryResult(emptyList(), null)
-
-      val offset = pageToken?.toIntOrNull() ?: 0
-      val end = minOf(offset + pageSize, assetsArr.length())
-      val assets = mutableListOf<ImmichAsset>()
-
-      for (i in offset until end) {
-        val a = assetsArr.getJSONObject(i)
-        assets.add(assetFromApiJson(a))
-      }
-
-      val nextToken = if (end < assetsArr.length()) end.toString() else null
+      val offset = pageToken?.toLongOrNull() ?: 0L
+      val assets = queryAssetsFromDb(
+        """
+        JOIN remote_album_asset_entity aa ON aa.asset_id = r.id
+        WHERE aa.album_id = ? AND r.visibility = 0 AND r.deleted_at IS NULL
+        """,
+        arrayOf(albumId),
+        pageSize,
+        offset
+      )
+      val nextToken = if (assets.size == pageSize) (offset + pageSize).toString() else null
       Log.d(TAG, "queryAlbumAssets: returning ${assets.size} assets, nextToken=$nextToken")
       QueryResult(assets, nextToken)
     } catch (e: Exception) {
@@ -311,12 +307,13 @@ object ImmichCloudRepository {
     val height = if (c.isNull(4)) 0 else c.getInt(4)
     val durationSec = if (c.isNull(5)) 0 else c.getInt(5)
     val isFavorite = c.getInt(6) != 0
-    val fileSize = c.getLong(7)
-    val orientationStr = c.getString(8)
+    val originalFileName = c.getString(7)
+    val fileSize = if (c.isNull(8)) 0L else c.getLong(8)
+    val orientationStr = c.getString(9)
 
     val isImage = typeInt == 1
     val orientation = orientationStr.toIntOrNull() ?: 0
-    val sizeBytes = if (fileSize > 0) fileSize else 1L
+    val sizeBytes = fileSize.coerceAtLeast(0L)
 
     val dateTakenMillis = try {
       java.time.Instant.parse(createdAtStr).toEpochMilli()
@@ -333,7 +330,8 @@ object ImmichCloudRepository {
 
     return ImmichAsset(
       id = id,
-      mimeType = if (isImage) "image/jpeg" else "video/mp4",
+      originalFileName = originalFileName,
+      mimeType = inferMimeType(originalFileName, isImage),
       dateTakenMillis = dateTakenMillis,
       width = width,
       height = height,
@@ -351,8 +349,8 @@ object ImmichCloudRepository {
       val cursor = db.rawQuery(
         """
         SELECT r.id, r.type, r.created_at, r.width, r.height,
-               r.duration_in_seconds, r.is_favorite,
-               COALESCE(e.file_size, 1) AS file_size,
+               r.duration_in_seconds, r.is_favorite, r.name,
+               e.file_size,
                COALESCE(e.orientation, '0') AS orientation
         FROM remote_asset_entity r
         LEFT JOIN remote_exif_entity e ON e.asset_id = r.id
@@ -372,15 +370,38 @@ object ImmichCloudRepository {
   }
 
   fun queryAlbums(): List<ImmichAlbum> {
-    return try {
-      val url = buildUrl("/albums") ?: return emptyList()
-      val request = Request.Builder().url(url).get().build()
-      val response = getClient().newCall(request).execute()
-      if (!response.isSuccessful) {
-        Log.e(TAG, "queryAlbums API failed: ${response.code}")
-        response.close()
-        return emptyList()
+    val db = openDatabase()
+    if (db != null) {
+      try {
+        val albums = mutableListOf<ImmichAlbum>()
+        db.rawQuery(
+          """
+          SELECT a.id, a.name, COUNT(aa.asset_id) AS media_count,
+                 a.thumbnail_asset_id, a.updated_at
+          FROM remote_album_entity a
+          JOIN remote_album_asset_entity aa ON aa.album_id = a.id
+          GROUP BY a.id, a.name, a.thumbnail_asset_id, a.updated_at
+          HAVING media_count > 0
+          ORDER BY a.name COLLATE NOCASE
+          """.trimIndent(),
+          null
+        ).use { cursor ->
+          while (cursor.moveToNext()) {
+            albums.add(albumFromCursor(cursor))
+          }
+        }
+        Log.d(TAG, "queryAlbums: returning ${albums.size} albums from local DB")
+        return albums
+      } catch (e: Exception) {
+        Log.e(TAG, "queryAlbums DB error", e)
+      } finally {
+        db.close()
       }
+    }
+
+    return try {
+      val response = executeFirstSuccessful("/albums") { Request.Builder().url(it).get().build() }
+        ?: return emptyList()
       val body = response.body?.string() ?: "[]"
       response.close()
       val arr = JSONArray(body)
@@ -408,6 +429,31 @@ object ImmichCloudRepository {
     } catch (e: Exception) {
       Log.e(TAG, "queryAlbums error", e)
       emptyList()
+    }
+  }
+
+  fun getAlbumById(albumId: String): ImmichAlbum? {
+    val db = openDatabase() ?: return null
+    return try {
+      db.rawQuery(
+        """
+        SELECT a.id, a.name, COUNT(aa.asset_id) AS media_count,
+               a.thumbnail_asset_id, a.updated_at
+        FROM remote_album_entity a
+        LEFT JOIN remote_album_asset_entity aa ON aa.album_id = a.id
+        WHERE a.id = ?
+        GROUP BY a.id, a.name, a.thumbnail_asset_id, a.updated_at
+        LIMIT 1
+        """.trimIndent(),
+        arrayOf(albumId)
+      ).use { cursor ->
+        if (cursor.moveToFirst()) albumFromCursor(cursor) else null
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "getAlbumById error", e)
+      null
+    } finally {
+      db.close()
     }
   }
 
@@ -456,6 +502,34 @@ object ImmichCloudRepository {
     }
   }
 
+  fun getPersonById(personId: String): ImmichPerson? {
+    val db = openDatabase() ?: return null
+    return try {
+      db.rawQuery(
+        """
+        SELECT id, name
+        FROM person_entity
+        WHERE id = ? AND is_hidden = 0
+        LIMIT 1
+        """.trimIndent(),
+        arrayOf(personId)
+      ).use { cursor ->
+        if (cursor.moveToFirst()) {
+          ImmichPerson(
+            id = cursor.getString(0),
+            name = cursor.getString(1),
+            coverAssetId = "person:$personId"
+          )
+        } else null
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "getPersonById error", e)
+      null
+    } finally {
+      db.close()
+    }
+  }
+
   fun queryPersonAssets(
     personId: String,
     pageSize: Int = 1000,
@@ -463,37 +537,17 @@ object ImmichCloudRepository {
   ): QueryResult {
     Log.d(TAG, "queryPersonAssets: personId=$personId, pageSize=$pageSize, pageToken=$pageToken")
     return try {
-      val page = pageToken?.toIntOrNull() ?: 1
-      val url = buildUrl("/search/metadata") ?: return QueryResult(emptyList(), null)
-      val jsonBody = JSONObject().apply {
-        put("personIds", org.json.JSONArray().put(personId))
-        put("page", page)
-        put("size", pageSize)
-      }
-      val mediaType = "application/json".toMediaType()
-      val requestBody = jsonBody.toString().toRequestBody(mediaType)
-      val request = Request.Builder().url(url).post(requestBody).build()
-      val response = getClient().newCall(request).execute()
-      if (!response.isSuccessful) {
-        Log.e(TAG, "queryPersonAssets API failed: ${response.code}")
-        response.close()
-        return QueryResult(emptyList(), null)
-      }
-      val body = response.body?.string() ?: "{}"
-      response.close()
-      val result = JSONObject(body)
-      val assetsObj = result.optJSONObject("assets") ?: return QueryResult(emptyList(), null)
-      val items = assetsObj.optJSONArray("items") ?: return QueryResult(emptyList(), null)
-      val total = assetsObj.optInt("total", 0)
-
-      val assets = mutableListOf<ImmichAsset>()
-      for (i in 0 until items.length()) {
-        val a = items.getJSONObject(i)
-        assets.add(assetFromApiJson(a))
-      }
-
-      val fetched = (page - 1) * pageSize + assets.size
-      val nextToken = if (fetched < total) (page + 1).toString() else null
+      val offset = pageToken?.toLongOrNull() ?: 0L
+      val assets = queryAssetsFromDb(
+        """
+        JOIN asset_face_entity af ON af.asset_id = r.id
+        WHERE af.person_id = ? AND r.visibility = 0 AND r.deleted_at IS NULL
+        """,
+        arrayOf(personId),
+        pageSize,
+        offset
+      )
+      val nextToken = if (assets.size == pageSize) (offset + pageSize).toString() else null
       Log.d(TAG, "queryPersonAssets: returning ${assets.size} assets, nextToken=$nextToken")
       QueryResult(assets, nextToken)
     } catch (e: Exception) {
@@ -508,7 +562,7 @@ object ImmichCloudRepository {
     val isImage = type == "IMAGE"
     val createdAt = a.optString("fileCreatedAt", a.optString("createdAt", ""))
     val exifInfo = a.optJSONObject("exifInfo")
-    val fileSize = exifInfo?.optLong("fileSizeInByte", 1) ?: 1L
+    val fileSize = exifInfo?.optLong("fileSizeInByte", 0) ?: 0L
     val orientation = exifInfo?.optString("orientation", "0")?.toIntOrNull() ?: 0
     val width = exifInfo?.optInt("exifImageWidth", 0) ?: 0
     val height = exifInfo?.optInt("exifImageHeight", 0) ?: 0
@@ -517,16 +571,45 @@ object ImmichCloudRepository {
 
     return ImmichAsset(
       id = id,
-      mimeType = if (isImage) "image/jpeg" else "video/mp4",
+      originalFileName = a.optString("originalFileName", id),
+      mimeType = inferMimeType(a.optString("originalFileName", ""), isImage),
       dateTakenMillis = parseIso8601(createdAt),
       width = width,
       height = height,
-      sizeBytes = if (fileSize > 0) fileSize else 1L,
+      sizeBytes = fileSize.coerceAtLeast(0L),
       durationMillis = durationMillis,
       isFavorite = a.optBoolean("isFavorite", false),
       orientation = orientation,
       isImage = isImage
     )
+  }
+
+  fun searchAssets(query: String, pageSize: Int = 100): QueryResult {
+    if (query.isBlank()) return QueryResult(emptyList(), null)
+    return try {
+      val response = executeFirstSuccessful("/search/smart") { url ->
+        val body = JSONObject().apply {
+          put("query", query)
+          put("page", 1)
+          put("size", pageSize)
+          put("visibility", "timeline")
+        }.toString().toRequestBody("application/json".toMediaType())
+        Request.Builder().url(url).post(body).build()
+      } ?: return QueryResult(emptyList(), null)
+
+      val result = JSONObject(response.body?.string() ?: "{}")
+      response.close()
+      val assetsObj = result.optJSONObject("assets") ?: return QueryResult(emptyList(), null)
+      val items = assetsObj.optJSONArray("items") ?: return QueryResult(emptyList(), null)
+      val assets = mutableListOf<ImmichAsset>()
+      for (i in 0 until items.length()) {
+        assets.add(assetFromApiJson(items.getJSONObject(i)))
+      }
+      QueryResult(assets, null)
+    } catch (e: Exception) {
+      Log.e(TAG, "searchAssets error", e)
+      QueryResult(emptyList(), null)
+    }
   }
 
   private fun parseIso8601(dateStr: String): Long {
@@ -547,23 +630,14 @@ object ImmichCloudRepository {
   fun openMedia(assetId: String): ParcelFileDescriptor? {
     if (assetId.startsWith("person:")) {
       val personId = assetId.removePrefix("person:")
-      val url = buildUrl("/people/$personId/thumbnail") ?: return null
-      val request = Request.Builder().url(url).get().build()
-      return downloadToTempFile(request, "person_thumb_$personId")
+      return downloadToTempFile("/people/$personId/thumbnail", "person_thumb_$personId")
     }
-    val url = buildUrl("/assets/$assetId/original") ?: return null
-    val request = Request.Builder().url(url).get().build()
-    return downloadToTempFile(request, "media_$assetId")
+    return downloadToTempFile("/assets/$assetId/original", "media_$assetId")
   }
 
-  private fun downloadToTempFile(request: Request, prefix: String): ParcelFileDescriptor? {
+  private fun downloadToTempFile(path: String, prefix: String): ParcelFileDescriptor? {
     return try {
-      val response = getClient().newCall(request).execute()
-      if (!response.isSuccessful) {
-        Log.e(TAG, "Download to temp failed: ${response.code}")
-        response.close()
-        return null
-      }
+      val response = executeFirstSuccessful(path) { Request.Builder().url(it).get().build() } ?: return null
       val tempFile = java.io.File.createTempFile(prefix, null, appContext.cacheDir)
       response.body?.byteStream()?.use { input ->
         tempFile.outputStream().use { output ->
@@ -571,7 +645,11 @@ object ImmichCloudRepository {
         }
       }
       response.close()
-      ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+      val fd = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+      if (!tempFile.delete()) {
+        Log.w(TAG, "Failed to unlink temp file: ${tempFile.absolutePath}")
+      }
+      fd
     } catch (e: Exception) {
       Log.e(TAG, "downloadToTempFile error", e)
       null
@@ -581,16 +659,78 @@ object ImmichCloudRepository {
   fun openPreview(assetId: String, size: Point): ParcelFileDescriptor? {
     if (assetId.startsWith("person:")) {
       val personId = assetId.removePrefix("person:")
-      val url = buildUrl("/people/$personId/thumbnail") ?: return null
-      val request = Request.Builder().url(url).get().build()
-      return downloadToTempFile(request, "person_thumb_$personId")
+      return downloadToTempFile("/people/$personId/thumbnail", "person_thumb_$personId")
     }
     val sizeParam = if (size.x <= 250 && size.y <= 250) "thumbnail" else "preview"
-    val url = buildUrl("/assets/$assetId/thumbnail") ?: return null
-    val urlWithParams = url.newBuilder()
-      .addQueryParameter("size", sizeParam)
-      .build()
-    val request = Request.Builder().url(urlWithParams).get().build()
-    return downloadToTempFile(request, "preview_${assetId}_$sizeParam")
+    return downloadToTempFile("/assets/$assetId/thumbnail?size=$sizeParam", "preview_${assetId}_$sizeParam")
+  }
+
+  private fun queryAssetsFromDb(
+    joinAndWhere: String,
+    whereArgs: Array<String>,
+    pageSize: Int,
+    offset: Long
+  ): List<ImmichAsset> {
+    val db = openDatabase() ?: return emptyList()
+    return try {
+      val args = whereArgs.toMutableList()
+      args.add(pageSize.toString())
+      args.add(offset.toString())
+      val cursor = db.rawQuery(
+        """
+        SELECT r.id, r.type, r.created_at, r.width, r.height,
+               r.duration_in_seconds, r.is_favorite, r.name,
+               e.file_size,
+               COALESCE(e.orientation, '0') AS orientation
+        FROM remote_asset_entity r
+        LEFT JOIN remote_exif_entity e ON e.asset_id = r.id
+        $joinAndWhere
+        ORDER BY COALESCE(r.local_date_time, r.created_at) DESC
+        LIMIT ? OFFSET ?
+        """.trimIndent(),
+        args.toTypedArray()
+      )
+      val assets = mutableListOf<ImmichAsset>()
+      cursor.use {
+        while (it.moveToNext()) assets.add(assetFromCursor(it))
+      }
+      assets
+    } catch (e: Exception) {
+      Log.e(TAG, "queryAssetsFromDb error", e)
+      emptyList()
+    } finally {
+      db.close()
+    }
+  }
+
+  private fun albumFromCursor(cursor: android.database.Cursor): ImmichAlbum {
+    return ImmichAlbum(
+      id = cursor.getString(0),
+      displayName = cursor.getString(1),
+      mediaCount = cursor.getInt(2),
+      coverAssetId = if (cursor.isNull(3)) null else cursor.getString(3),
+      dateTakenMillis = parseIso8601(cursor.getString(4))
+    )
+  }
+
+  private fun inferMimeType(fileName: String, isImage: Boolean): String {
+    val extension = fileName.substringAfterLast('.', "").lowercase()
+    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+    if (mimeType != null) return mimeType
+    return if (isImage) "image/jpeg" else "video/mp4"
+  }
+
+  private fun executeFirstSuccessful(path: String, requestBuilder: (okhttp3.HttpUrl) -> Request): okhttp3.Response? {
+    for (url in buildUrls(path)) {
+      try {
+        val response = getClient().newCall(requestBuilder(url)).execute()
+        if (response.isSuccessful) return response
+        Log.e(TAG, "Request failed for ${url.host}: ${response.code}")
+        response.close()
+      } catch (e: Exception) {
+        Log.e(TAG, "Request failed for ${url.host}", e)
+      }
+    }
+    return null
   }
 }

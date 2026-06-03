@@ -100,9 +100,14 @@ object HttpClientManager {
 
   fun getServerUrl(): String? {
     if (!initialized) return null
-    val json = prefs.getString(PREFS_SERVER_URLS, null) ?: return null
-    val urls = Json.decodeFromString<List<String>>(json)
-    return urls.firstOrNull { it.toHttpUrlOrNull() != null }?.trimEnd('/')
+    return getServerUrls().firstOrNull()
+  }
+
+  fun getServerUrls(): List<String> {
+    if (!initialized) return emptyList()
+    val json = prefs.getString(PREFS_SERVER_URLS, null) ?: return emptyList()
+    return Json.decodeFromString<List<String>>(json)
+      .mapNotNull { it.toHttpUrlOrNull()?.toString()?.trimEnd('/') }
   }
 
   fun initialize(context: Context) {

@@ -1,14 +1,17 @@
 package app.alextran.immich.cloudprovider
 
 import android.content.res.AssetFileDescriptor
+import android.content.ContentResolver
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.graphics.Point
+import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.provider.DocumentsProvider
 import android.util.Log
+import android.webkit.MimeTypeMap
 import app.alextran.immich.R
 
 private const val TAG = "ImmichDocProvider"
@@ -45,7 +48,8 @@ class ImmichDocumentProvider : DocumentsProvider() {
       add(
         DocumentsContract.Root.COLUMN_FLAGS,
         DocumentsContract.Root.FLAG_SUPPORTS_SEARCH or
-          DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD
+          DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD or
+          DocumentsContract.Root.FLAG_SUPPORTS_RECENTS
       )
       add(DocumentsContract.Root.COLUMN_MIME_TYPES, "image/* video/*")
     }
@@ -99,8 +103,7 @@ class ImmichDocumentProvider : DocumentsProvider() {
       }
       documentId.startsWith(ALBUM_PREFIX) -> {
         val albumId = documentId.removePrefix(ALBUM_PREFIX)
-        val albums = ImmichCloudRepository.queryAlbums()
-        val album = albums.find { it.id == albumId }
+        val album = ImmichCloudRepository.getAlbumById(albumId)
         if (album != null) {
           result.newRow().apply {
             add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, documentId)
@@ -114,8 +117,7 @@ class ImmichDocumentProvider : DocumentsProvider() {
       }
       documentId.startsWith(PERSON_PREFIX) -> {
         val personId = documentId.removePrefix(PERSON_PREFIX)
-        val people = ImmichCloudRepository.queryPeople()
-        val person = people.find { it.id == personId }
+        val person = ImmichCloudRepository.getPersonById(personId)
         if (person != null) {
           result.newRow().apply {
             add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, documentId)
@@ -144,7 +146,29 @@ class ImmichDocumentProvider : DocumentsProvider() {
     projection: Array<out String>?,
     sortOrder: String?
   ): Cursor {
+    return queryChildDocuments(parentDocumentId, projection, pageSize = 500, pageToken = null)
+  }
+
+  override fun queryChildDocuments(
+    parentDocumentId: String,
+    projection: Array<out String>?,
+    queryArgs: Bundle?
+  ): Cursor {
+    val pageSize = queryArgs?.getInt(ContentResolver.QUERY_ARG_LIMIT)?.takeIf { it > 0 } ?: 500
+    val pageToken = queryArgs?.getInt(ContentResolver.QUERY_ARG_OFFSET)
+      ?.takeIf { it > 0 }
+      ?.toString()
+    return queryChildDocuments(parentDocumentId, projection, pageSize, pageToken)
+  }
+
+  private fun queryChildDocuments(
+    parentDocumentId: String,
+    projection: Array<out String>?,
+    pageSize: Int,
+    pageToken: String?
+  ): Cursor {
     val result = MatrixCursor(resolveDocumentProjection(projection))
+    var nextPageToken: String? = null
 
     when (parentDocumentId) {
       ROOT_DOC_ID -> {
@@ -174,7 +198,8 @@ class ImmichDocumentProvider : DocumentsProvider() {
         }
       }
       ALL_PHOTOS_DOC_ID -> {
-        val queryResult = ImmichCloudRepository.queryAllAssets(pageSize = 500)
+        val queryResult = ImmichCloudRepository.queryAllAssets(pageSize = pageSize, pageToken = pageToken)
+        nextPageToken = queryResult.nextPageToken
         for (asset in queryResult.assets) {
           addAssetRow(result, asset)
         }
@@ -208,13 +233,23 @@ class ImmichDocumentProvider : DocumentsProvider() {
       else -> {
         if (parentDocumentId.startsWith(ALBUM_PREFIX)) {
           val albumId = parentDocumentId.removePrefix(ALBUM_PREFIX)
-          val queryResult = ImmichCloudRepository.queryAlbumAssets(albumId = albumId, pageSize = 500)
+          val queryResult = ImmichCloudRepository.queryAlbumAssets(
+            albumId = albumId,
+            pageSize = pageSize,
+            pageToken = pageToken
+          )
+          nextPageToken = queryResult.nextPageToken
           for (asset in queryResult.assets) {
             addAssetRow(result, asset)
           }
         } else if (parentDocumentId.startsWith(PERSON_PREFIX)) {
           val personId = parentDocumentId.removePrefix(PERSON_PREFIX)
-          val queryResult = ImmichCloudRepository.queryPersonAssets(personId = personId, pageSize = 500)
+          val queryResult = ImmichCloudRepository.queryPersonAssets(
+            personId = personId,
+            pageSize = pageSize,
+            pageToken = pageToken
+          )
+          nextPageToken = queryResult.nextPageToken
           for (asset in queryResult.assets) {
             addAssetRow(result, asset)
           }
@@ -222,6 +257,9 @@ class ImmichDocumentProvider : DocumentsProvider() {
       }
     }
 
+    result.extras = Bundle().apply {
+      putBoolean(DocumentsContract.EXTRA_LOADING, nextPageToken != null)
+    }
     return result
   }
 
@@ -246,19 +284,27 @@ class ImmichDocumentProvider : DocumentsProvider() {
     return AssetFileDescriptor(fd, 0, AssetFileDescriptor.UNKNOWN_LENGTH)
   }
 
+  override fun queryRecentDocuments(
+    rootId: String,
+    projection: Array<out String>?
+  ): Cursor {
+    val result = MatrixCursor(resolveDocumentProjection(projection))
+    val queryResult = ImmichCloudRepository.queryAllAssets(pageSize = 100)
+    for (asset in queryResult.assets) {
+      addAssetRow(result, asset)
+    }
+    return result
+  }
+
   override fun querySearchDocuments(
     rootId: String,
     query: String,
     projection: Array<out String>?
   ): Cursor {
     val result = MatrixCursor(resolveDocumentProjection(projection))
-    val queryResult = ImmichCloudRepository.queryAllAssets(pageSize = 100)
+    val queryResult = ImmichCloudRepository.searchAssets(query, pageSize = 100)
     for (asset in queryResult.assets) {
-      if (asset.mimeType.contains(query, ignoreCase = true) ||
-        asset.id.contains(query, ignoreCase = true)
-      ) {
-        addAssetRow(result, asset)
-      }
+      addAssetRow(result, asset)
     }
     return result
   }
@@ -282,9 +328,10 @@ class ImmichDocumentProvider : DocumentsProvider() {
     val timestamp = java.time.Instant.ofEpochMilli(asset.dateTakenMillis)
       .atZone(java.time.ZoneId.systemDefault())
       .toLocalDateTime()
-    val displayName = "${if (asset.isImage) "IMG" else "VID"}_${
+    val fallbackDisplayName = "${if (asset.isImage) "IMG" else "VID"}_${
       timestamp.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
     }.$extension"
+    val displayName = asset.originalFileName.ifBlank { fallbackDisplayName }
 
     var flags = DocumentsContract.Document.FLAG_SUPPORTS_THUMBNAIL
     cursor.newRow().apply {
@@ -298,25 +345,8 @@ class ImmichDocumentProvider : DocumentsProvider() {
   }
 
   private fun mimeTypeToExtension(mimeType: String): String {
-    return when (mimeType) {
-      "image/jpeg" -> "jpg"
-      "image/png" -> "png"
-      "image/gif" -> "gif"
-      "image/webp" -> "webp"
-      "image/heic" -> "heic"
-      "image/heif" -> "heif"
-      "image/avif" -> "avif"
-      "image/tiff" -> "tiff"
-      "image/bmp" -> "bmp"
-      "image/svg+xml" -> "svg"
-      "video/mp4" -> "mp4"
-      "video/quicktime" -> "mov"
-      "video/x-msvideo" -> "avi"
-      "video/x-matroska" -> "mkv"
-      "video/webm" -> "webm"
-      "video/3gpp" -> "3gp"
-      else -> mimeType.substringAfterLast("/", "bin")
-    }
+    return MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
+      ?: mimeType.substringAfterLast("/", "bin")
   }
 
   companion object {
