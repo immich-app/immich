@@ -1300,6 +1300,7 @@
   "hide_schema": "Hide schema",
   "hide_text_recognition": "Hide text recognition",
   "hide_unnamed_people": "Hide unnamed people",
+  "hold_key_to_pan": "Hold {key} to pan",
   "home_page_add_to_album_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
   "home_page_add_to_album_err_local": "Can not add local assets to albums yet, skipping",
   "home_page_add_to_album_success": "Added {added} assets to album {album}.",
