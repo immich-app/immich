@@ -29,7 +29,8 @@ run = [
   "dart run pigeon --input pigeon/background_worker_lock_api.dart",
   "dart run pigeon --input pigeon/connectivity_api.dart",
   "dart run pigeon --input pigeon/network_api.dart",
-  "dart format lib/platform/native_sync_api.g.dart lib/platform/local_image_api.g.dart lib/platform/remote_image_api.g.dart lib/platform/background_worker_api.g.dart lib/platform/background_worker_lock_api.g.dart lib/platform/connectivity_api.g.dart lib/platform/network_api.g.dart",
+  "dart run pigeon --input pigeon/view_intent_api.dart",
+  "dart format lib/platform/native_sync_api.g.dart lib/platform/local_image_api.g.dart lib/platform/remote_image_api.g.dart lib/platform/background_worker_api.g.dart lib/platform/background_worker_lock_api.g.dart lib/platform/connectivity_api.g.dart lib/platform/network_api.g.dart lib/platform/view_intent_api.g.dart",
 ]
 
 [tasks."codegen:translation"]
