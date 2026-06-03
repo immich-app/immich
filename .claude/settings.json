@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sudo chown:*)",
+      "Read(//usr/lib/**)",
+      "Bash(extism-js --version)",
+      "Read(//home/min/**)",
+      "Read(//usr/local/**)",
+      "Read(//LUNA/**)"
+    ]
+  }
+}

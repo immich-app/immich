@@ -69,6 +69,8 @@
     sharedLink?: SharedLinkResponseDto;
     objectFit?: 'contain' | 'cover';
     container: Size;
+    imageClass?: string;
+    transitionName?: string;
     onUrlChange?: (url: string) => void;
     onImageReady?: () => void;
     onError?: () => void;
@@ -86,6 +88,8 @@
     sharedLink,
     objectFit = 'contain',
     container,
+    imageClass,
+    transitionName,
     onUrlChange,
     onImageReady,
     onError,
@@ -149,18 +153,20 @@
     return { width: 1, height: 1 };
   });
 
-  const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
+  const { insetInlineStart, top, visualWidth, visualHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
     () => {
       const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
       const { width, height } = scaleFn(imageDimensions, container);
+      const visualWidth = width + 'px';
+      const visualHeight = height + 'px';
       if (maxRasterPixels === 0) {
         return {
           insetInlineStart: (container.width - width) / 2 + 'px',
           top: (container.height - height) / 2 + 'px',
-          displayWidth: width + 'px',
-          displayHeight: height + 'px',
-          rasterWidth: width + 'px',
-          rasterHeight: height + 'px',
+          visualWidth,
+          visualHeight,
+          rasterWidth: visualWidth,
+          rasterHeight: visualHeight,
           rasterScale: 1,
         };
       }
@@ -170,8 +176,8 @@
       return {
         insetInlineStart: (container.width - width) / 2 + 'px',
         top: (container.height - height) / 2 + 'px',
-        displayWidth: width + 'px',
-        displayHeight: height + 'px',
+        visualWidth,
+        visualHeight,
         rasterWidth: width * rasterRatio + 'px',
         rasterHeight: height * rasterRatio + 'px',
         rasterScale: 1 / rasterRatio,
@@ -222,11 +228,12 @@
   {@render backdrop?.()}
 
   <div
-    class="pointer-events-none absolute overflow-hidden"
+    class={['pointer-events-none absolute overflow-hidden', imageClass]}
     style:inset-inline-start={insetInlineStart}
     style:top
-    style:width={displayWidth}
-    style:height={displayHeight}
+    style:width={visualWidth}
+    style:height={visualHeight}
+    style:view-transition-name={transitionName ?? assetViewerManager.transitionName}
   >
     <div
       style:width={rasterWidth}
@@ -271,6 +278,7 @@
           {alt}
           width={rasterWidth}
           height={rasterHeight}
+          {overlays}
           quality="preview"
           src={status.urls.preview}
           bind:ref={previewElement}
@@ -283,17 +291,12 @@
           {alt}
           width={rasterWidth}
           height={rasterHeight}
+          {overlays}
           quality="original"
           src={status.urls.original}
           bind:ref={originalElement}
         />
       {/if}
     </div>
-
-    {#if overlays}
-      <div class="pointer-events-none absolute inset-0">
-        {@render overlays()}
-      </div>
-    {/if}
   </div>
 </div>
