@@ -83,7 +83,7 @@ version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
 
 [tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
+asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
 
 [[tools."github:webassembly/binaryen"]]
 version = "version_124"
