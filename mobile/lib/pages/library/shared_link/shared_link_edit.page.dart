@@ -11,6 +11,7 @@ import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
+import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -366,7 +367,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? upload;
       bool? meta;
       String? desc;
-      String? password;
+      var password = const Optional<String?>.absent();
       String? slug;
       DateTime? expiry;
       bool? changeExpiry;
@@ -387,8 +388,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         desc = descriptionController.text;
       }
 
-      if (passwordController.text != existingLink!.password) {
-        password = passwordController.text;
+      if (passwordController.text != (existingLink!.password ?? '')) {
+        password = passwordController.text.isEmpty
+            ? const Optional.present(null)
+            : Optional.present(passwordController.text);
       }
 
       if (slugController.text != (existingLink!.slug ?? "")) {

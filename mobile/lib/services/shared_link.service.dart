@@ -90,7 +90,7 @@ class SharedLinkService {
     required bool? allowUpload,
     bool? changeExpiry = false,
     String? description,
-    String? password,
+    Optional<String?> password = const Optional.absent(),
     String? slug,
     DateTime? expiresAt,
   }) async {
@@ -103,7 +103,7 @@ class SharedLinkService {
           allowUpload: allowUpload == null ? const Optional.absent() : Optional.present(allowUpload),
           expiresAt: expiresAt == null ? const Optional.absent() : Optional.present(expiresAt),
           description: description == null ? const Optional.absent() : Optional.present(description),
-          password: password == null ? const Optional.absent() : Optional.present(password),
+          password: password,
           slug: slug == null ? const Optional.absent() : Optional.present(slug),
           changeExpiryTime: changeExpiry == null ? const Optional.absent() : Optional.present(changeExpiry),
         ),
