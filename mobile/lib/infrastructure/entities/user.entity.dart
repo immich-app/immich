@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class UserEntity extends Table with DriftDefaultsMixin {
@@ -16,4 +17,13 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  static User rowToUser(UserEntityData row) => User(
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    profileChangedAt: row.profileChangedAt,
+    hasProfileImage: row.hasProfileImage,
+    avatarColor: row.avatarColor,
+  );
 }

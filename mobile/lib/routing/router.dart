@@ -57,8 +57,8 @@ import 'package:immich_mobile/presentation/pages/drift_people_collection.page.da
 import 'package:immich_mobile/presentation/pages/drift_person.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_recently_added.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
