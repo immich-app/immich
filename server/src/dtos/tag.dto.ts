@@ -2,20 +2,20 @@ import { createZodDto } from 'nestjs-zod';
 import { Tag } from 'src/database';
 import { MaybeDehydrated } from 'src/types';
 import { asDateString } from 'src/utils/date';
-import { emptyStringToNull, hexColor } from 'src/validation';
+import { hexColor } from 'src/validation';
 import z from 'zod';
 
 const TagCreateSchema = z
   .object({
     name: z.string().describe('Tag name'),
     parentId: z.uuidv4().nullish().describe('Parent tag ID'),
-    color: emptyStringToNull(hexColor.nullable()).optional().describe('Tag color (hex)'),
+    color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagCreateDto' });
 
 const TagUpdateSchema = z
   .object({
-    color: emptyStringToNull(hexColor.nullable()).optional().describe('Tag color (hex)'),
+    color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagUpdateDto' });
 

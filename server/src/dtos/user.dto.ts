@@ -4,7 +4,7 @@ import { pinCodeRegex } from 'src/dtos/auth.dto';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
 import { MaybeDehydrated, UserMetadataItem } from 'src/types';
 import { asDateString } from 'src/utils/date';
-import { emptyStringToNull, isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
+import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
 import z from 'zod';
 
 export const UserUpdateMeSchema = z
@@ -80,10 +80,7 @@ export const UserAdminCreateSchema = z
     password: z.string().describe('User password'),
     name: z.string().describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
-    pinCode: emptyStringToNull(z.string().regex(pinCodeRegex).nullable())
-      .optional()
-      .describe('PIN code')
-      .meta({ example: '123456' }),
+    pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
     quotaSizeInBytes: z.int().min(0).nullish().describe('Storage quota in bytes'),
     shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
@@ -98,10 +95,7 @@ const UserAdminUpdateSchema = z
   .object({
     email: toEmail.optional().describe('User email'),
     password: z.string().optional().describe('User password'),
-    pinCode: emptyStringToNull(z.string().regex(pinCodeRegex).nullable())
-      .optional()
-      .describe('PIN code')
-      .meta({ example: '123456' }),
+    pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code').meta({ example: '123456' }),
     name: z.string().optional().describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
     storageLabel: z.string().pipe(sanitizeFilename).nullish().describe('Storage label'),
