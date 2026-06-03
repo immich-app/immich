@@ -179,8 +179,8 @@ export class TimelineMonth {
       );
 
       const timelineAsset: TimelineAsset = {
-        city: bucketAssets.city[i],
-        country: bucketAssets.country[i],
+        city: bucketAssets.city?.[i] ?? null,
+        country: bucketAssets.country?.[i] ?? null,
         duration: bucketAssets.duration[i],
         id: bucketAssets.id[i],
         visibility: bucketAssets.visibility[i],
@@ -254,7 +254,7 @@ export class TimelineMonth {
       addContext.newTimelineDays.add(timelineDay);
     }
 
-    const viewerAsset = new ViewerAsset(timelineDay, timelineAsset);
+    const viewerAsset = new ViewerAsset(timelineAsset);
     timelineDay.viewerAssets.push(viewerAsset);
     addContext.changedTimelineDays.add(timelineDay);
   }

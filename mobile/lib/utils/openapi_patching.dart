@@ -19,6 +19,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
       if (value is Map) {
         addDefault(value, 'mapLightStyleUrl', 'https://tiles.immich.cloud/v1/style/light.json');
         addDefault(value, 'mapDarkStyleUrl', 'https://tiles.immich.cloud/v1/style/dark.json');
+        addDefault(value, 'minFaces', 3);
       }
     case 'UserResponseDto':
       if (value is Map) {
@@ -54,6 +55,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'ServerFeaturesDto':
       if (value is Map) {
         addDefault(value, 'ocr', false);
+        addDefault(value, 'realtimeTranscoding', false);
       }
       break;
     case 'MemoriesResponse':

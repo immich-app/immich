@@ -24,7 +24,7 @@
           <div class="grow text-start">
             <Text fontWeight="medium" class="flex items-center gap-1"
               >{method.title}
-              {#if method.uiHints.includes('filter')}
+              {#if method.uiHints.includes('Filter')}
                 <Badge size="tiny" color="info" title={$t('plugin_method_filter_type_description')}
                   >{$t('plugin_method_filter_type')}</Badge
                 >

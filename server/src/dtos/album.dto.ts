@@ -65,6 +65,8 @@ const UpdateAlbumSchema = z
 
 const GetAlbumsSchema = z
   .object({
+    id: z.uuidv4().optional().describe('Album ID'),
+    name: z.string().optional().describe('Album name (exact match)'),
     isOwned: stringToBool
       .optional()
       .describe('Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter'),

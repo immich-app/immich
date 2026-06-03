@@ -37,15 +37,12 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll(
-    { user: { id: ownerId } }: AuthDto,
-    { assetId, isOwned, isShared }: GetAlbumsDto,
-  ): Promise<AlbumResponseDto[]> {
+  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, ...rest }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
     const albums = assetId
       ? await this.albumRepository.getByAssetId(ownerId, assetId)
-      : await this.albumRepository.getAll(ownerId, { isOwned, isShared });
+      : await this.albumRepository.getAll(ownerId, rest);
 
     if (albums.length === 0) {
       return [];

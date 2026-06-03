@@ -209,11 +209,16 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { isOwned: true, isShared: true }] })
-  getAll(ownerId: string, options: { isOwned?: boolean; isShared?: boolean } = {}): Promise<MapAlbumDto[]> {
+  getAll(
+    ownerId: string,
+    options: { id?: string; isOwned?: boolean; isShared?: boolean; name?: string } = {},
+  ): Promise<MapAlbumDto[]> {
     return this.buildAlbumBaseQuery(ownerId, options)
       .selectAll('album')
       .select(withAlbumUsers(ownerId))
       .select(withSharedLink)
+      .$if(!!options.id, (qb) => qb.where('album.id', '=', options.id!))
+      .$if(!!options.name, (qb) => qb.where('album.albumName', '=', options.name!))
       .orderBy('album.createdAt', 'desc')
       .execute();
   }

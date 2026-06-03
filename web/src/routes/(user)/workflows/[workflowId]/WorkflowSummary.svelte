@@ -2,20 +2,18 @@
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import { getTriggerName } from '$lib/utils/workflow';
   import type { WorkflowStepDto, WorkflowTrigger } from '@immich/sdk';
-  import { Icon, IconButton, Text } from '@immich/ui';
+  import { Icon, IconButton, shortcut, Text } from '@immich/ui';
   import { mdiCheck, mdiClose, mdiContentCopy, mdiViewDashboardOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
-  type WorkflowSummaryData = {
-    name: string | null;
-    description: string | null;
-    trigger: WorkflowTrigger;
-    steps: WorkflowStepDto[];
-  };
-
   type Props = {
-    workflow: WorkflowSummaryData;
+    workflow: {
+      name: string | null;
+      description: string | null;
+      trigger: WorkflowTrigger;
+      steps: WorkflowStepDto[];
+    };
   };
 
   let { workflow }: Props = $props();
@@ -23,35 +21,6 @@
   let isOpen = $state(false);
   let justCopied = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
-  let panelElement = $state<HTMLElement | undefined>(undefined);
-
-  $effect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        event.preventDefault();
-        isOpen = false;
-      }
-    };
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (panelElement && event.target instanceof Node && !panelElement.contains(event.target)) {
-        isOpen = false;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeydown, { capture: true });
-    document.addEventListener('pointerdown', handlePointerDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeydown, { capture: true });
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
-  });
 
   const formatConfigValue = (value: unknown): string => {
     if (value === null || value === undefined) {
@@ -98,7 +67,7 @@
 
     for (const [i, step] of workflow.steps.entries()) {
       const method = pluginManager.getMethod(step.method);
-      const isFilter = method?.uiHints?.includes('filter') ?? false;
+      const isFilter = method?.uiHints?.includes('Filter') ?? false;
       const type = isFilter ? $t('filter') : $t('action');
       const label = pluginManager.getMethodLabel(step.method);
       lines.push(`    [${i + 1}] ${type.toUpperCase()} · ${label}`);
@@ -127,9 +96,10 @@
   };
 </script>
 
+<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: () => (isOpen = false) }} />
+
 {#if isOpen}
   <aside
-    bind:this={panelElement}
     class="fixed inset-y-20 right-4 bottom-4 hidden max-w-lg flex-col overflow-hidden rounded-2xl border border-light-200 bg-light shadow-2xl sm:flex"
     transition:fly={{ x: 400, duration: 250 }}
     aria-label={$t('workflow_summary')}

@@ -7,12 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -36,7 +36,7 @@ class BootstrapErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext _) {
-    final immichTheme = MetadataKey.themePrimaryColor.defaultValue.themeOfPreset;
+    final immichTheme = defaultConfig.theme.primaryColor.themeOfPreset;
 
     return EasyLocalization(
       supportedLocales: locales.values.toList(),
@@ -341,7 +341,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 await backgroundManager.hashAssets();
               }
 
-              if (MetadataRepository.instance.appConfig.backup.syncAlbums) {
+              if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
                 await backgroundManager.syncLinkedAlbum();
               }
             } catch (e) {
@@ -370,7 +370,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
-    final isEnableBackup = MetadataRepository.instance.appConfig.backup.enabled;
+    final isEnableBackup = SettingsRepository.instance.appConfig.backup.enabled;
 
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);

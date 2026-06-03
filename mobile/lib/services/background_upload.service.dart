@@ -13,7 +13,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
@@ -359,7 +359,7 @@ class BackgroundUploadService {
   }
 
   bool _shouldRequireWiFi(LocalAsset asset) {
-    final backup = MetadataRepository.instance.appConfig.backup;
+    final backup = SettingsRepository.instance.appConfig.backup;
     if (asset.isVideo && backup.useCellularForVideos) {
       return false;
     }

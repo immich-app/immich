@@ -38,6 +38,7 @@ const PluginManifestTemplateSchema = z
     description: z.string().min(1).describe('Template description'),
     trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
     steps: z.array(PluginManifestTemplateStepSchema).describe('Workflow steps'),
+    uiHints: z.array(z.string()).optional().default([]).describe('Ui hints, for example "smart-album"'),
   })
   .meta({ id: 'PluginManifestTemplateDto' });
 

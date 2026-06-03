@@ -25,7 +25,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
@@ -48,6 +48,7 @@ class DeprecatedApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +59,8 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
-    final response = await createPartnerDeprecatedWithHttpInfo(id,);
+  Future<PartnerResponseDto?> createPartnerDeprecated(String id, { Future<void>? abortTrigger, }) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -78,7 +79,7 @@ class DeprecatedApi {
   /// Retrieve the counts of the current queue, as well as the current status.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getQueuesLegacyWithHttpInfo() async {
+  Future<Response> getQueuesLegacyWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs';
 
@@ -100,14 +101,15 @@ class DeprecatedApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve queue counts and status
   ///
   /// Retrieve the counts of the current queue, as well as the current status.
-  Future<QueuesResponseLegacyDto?> getQueuesLegacy() async {
-    final response = await getQueuesLegacyWithHttpInfo();
+  Future<QueuesResponseLegacyDto?> getQueuesLegacy({ Future<void>? abortTrigger, }) async {
+    final response = await getQueuesLegacyWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -132,7 +134,7 @@ class DeprecatedApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
+  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs/{name}'
       .replaceAll('{name}', name.toString());
@@ -155,6 +157,7 @@ class DeprecatedApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -167,8 +170,8 @@ class DeprecatedApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
-    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
+  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto, { Future<void>? abortTrigger, }) async {
+    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

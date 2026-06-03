@@ -42,7 +42,7 @@ import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils/asset-utils';
+import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 

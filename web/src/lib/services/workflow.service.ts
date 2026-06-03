@@ -10,12 +10,25 @@ import {
   type WorkflowUpdateDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCodeJson, mdiDelete, mdiFileDocumentMultipleOutline, mdiPause, mdiPencil, mdiPlay, mdiPlus } from '@mdi/js';
+import {
+  mdiCodeJson,
+  mdiContentCopy,
+  mdiContentDuplicate,
+  mdiDeleteOutline,
+  mdiDownload,
+  mdiFileDocumentMultipleOutline,
+  mdiPause,
+  mdiPencil,
+  mdiPlay,
+  mdiPlus,
+} from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import WorkflowTemplatePicker from '$lib/modals/WorkflowTemplatePicker.svelte';
+import WorkflowDuplicateModal from '$lib/modals/WorkflowDuplicateModal.svelte';
+import WorkflowTemplatePickerModal from '$lib/modals/WorkflowTemplatePickerModal.svelte';
 import { Route } from '$lib/route';
+import { copyToClipboard, downloadJson } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
@@ -37,7 +50,7 @@ export const getWorkflowsActions = ($t: MessageFormatter) => {
   const UseTemplate: ActionItem = {
     title: $t('browse_templates'),
     icon: mdiFileDocumentMultipleOutline,
-    onAction: () => modalManager.show(WorkflowTemplatePicker, {}),
+    onAction: () => modalManager.show(WorkflowTemplatePickerModal, {}),
   };
 
   return { Create, UseTemplate };
@@ -47,8 +60,48 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
   const ToggleEnabled: ActionItem = {
     title: workflow.enabled ? $t('disable') : $t('enable'),
     icon: workflow.enabled ? mdiPause : mdiPlay,
-    color: workflow.enabled ? 'danger' : 'primary',
     onAction: () => handleUpdateWorkflow(workflow.id, { enabled: !workflow.enabled }),
+  };
+
+  const CopyJson: ActionItem = {
+    title: $t('copy_json'),
+    icon: mdiContentCopy,
+    onAction: () =>
+      copyToClipboard(
+        JSON.stringify(
+          {
+            name: workflow.name,
+            description: workflow.description,
+            enabled: workflow.enabled,
+            trigger: workflow.trigger,
+            steps: workflow.steps,
+          },
+          null,
+          2,
+        ),
+      ),
+  };
+
+  const Download: ActionItem = {
+    title: $t('download'),
+    icon: mdiDownload,
+    onAction: () =>
+      downloadJson(
+        {
+          name: workflow.name,
+          description: workflow.description,
+          enabled: workflow.enabled,
+          trigger: workflow.trigger,
+          steps: workflow.steps,
+        },
+        'workflow.json',
+      ),
+  };
+
+  const Duplicate: ActionItem = {
+    title: $t('duplicate'),
+    icon: mdiContentDuplicate,
+    onAction: async () => modalManager.show(WorkflowDuplicateModal, { workflow }),
   };
 
   const Edit: ActionItem = {
@@ -59,14 +112,12 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
 
   const Delete: ActionItem = {
     title: $t('delete'),
-    icon: mdiDelete,
+    icon: mdiDeleteOutline,
     color: 'danger',
-    onAction: async () => {
-      await handleDeleteWorkflow(workflow);
-    },
+    onAction: () => handleDeleteWorkflow(workflow),
   };
 
-  return { ToggleEnabled, Edit, Delete };
+  return { CopyJson, Download, Duplicate, ToggleEnabled, Edit, Delete };
 };
 
 export const getWorkflowShowSchemaAction = (
@@ -85,10 +136,10 @@ export const handleCreateWorkflow = async (dto: WorkflowCreateDto) => {
   try {
     const response = await createWorkflow({ workflowCreateDto: dto });
     eventManager.emit('WorkflowCreate', response);
-    return true;
+    toastManager.success();
+    return response;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create'));
-    return false;
   }
 };
 

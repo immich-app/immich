@@ -1,5 +1,25 @@
+<script module lang="ts">
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { getAlbumInfo } from '@immich/sdk';
+
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const albumNameCache = new Map<string, Promise<string>>();
+
+  const getAlbumName = (id: string): Promise<string> => {
+    let albumName = albumNameCache.get(id);
+    if (!albumName) {
+      albumName = getAlbumInfo({ ...authManager.params, id })
+        .then((album) => album.albumName)
+        .catch(() => id);
+      albumNameCache.set(id, albumName);
+    }
+    return albumName;
+  };
+</script>
+
 <script lang="ts">
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
+  import type { JSONSchemaProperty } from '$lib/types';
   import type { WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import {
@@ -10,49 +30,33 @@
     mdiPlus,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { mount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import WorkflowStepDragImage from './WorkflowStepDragImage.svelte';
 
   type Props = {
     step: WorkflowStepDto;
     index: number;
-    isDragging: boolean;
-    isDragHandleHovered: boolean;
-    isDropTarget: boolean;
     onEdit: (index: number) => void;
     onDelete: (index: number) => void;
     onInsertBefore: (index: number) => void;
-    onDragStart: (index: number, event: DragEvent) => void;
-    onDragEnd: () => void;
-    onDragOver: (index: number, event: DragEvent) => void;
-    onDragLeave: (index: number) => void;
     onDrop: (index: number, event: DragEvent) => void;
-    onDragHandleEnter: (index: number) => void;
-    onDragHandleLeave: () => void;
   };
 
-  let {
-    step,
-    index,
-    isDragging,
-    isDragHandleHovered,
-    isDropTarget,
-    onEdit,
-    onDelete,
-    onInsertBefore,
-    onDragStart,
-    onDragEnd,
-    onDragOver,
-    onDragLeave,
-    onDrop,
-    onDragHandleEnter,
-    onDragHandleLeave,
-  }: Props = $props();
+  let { step, index, onEdit, onDelete, onInsertBefore, onDrop }: Props = $props();
 
   const method = $derived(pluginManager.getMethod(step.method));
-  const isFilter = $derived(method?.uiHints?.includes('filter') ?? false);
+  const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
+  const schema = $derived(method?.schema as JSONSchemaProperty | undefined);
   const configEntries = $derived(
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
+
+  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint;
+  const toIds = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : [String(value)]);
+  let dragImage = $state<Element>();
+  let isDropTarget = $state(false);
+  let hoverDrag = $state(false);
 
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
@@ -73,14 +77,61 @@
       if (value.length === 0) {
         return $t('none');
       }
-      const items = value.map((v) => (v !== null && typeof v === 'object' ? '{…}' : String(v)));
+      const items = value.map((v) => (v !== null && typeof v === 'object' ? JSON.stringify(v) : String(v)));
       const joined = items.join(' · ');
       if (joined.length <= 28) {
         return `"${joined}"`;
       }
       return $t('items_count', { values: { count: value.length } });
     }
-    return '{…}';
+    return JSON.stringify(value);
+  };
+
+  const handleDragStart = (index: number, event: DragEvent) => {
+    if (!event.dataTransfer) {
+      return;
+    }
+
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(index));
+
+    mount(WorkflowStepDragImage, {
+      target: document.body,
+      props: {
+        description: method?.description,
+        isFilter: method?.uiHints?.includes('Filter') ?? false,
+        label: step ? pluginManager.getMethodLabel(step.method) : '',
+        stepNumber: index + 1,
+      },
+    });
+
+    dragImage = document.body.querySelector('#workflow-step-drag-image')!;
+    event.dataTransfer.setDragImage(dragImage, 16, 22);
+  };
+
+  const handleDrop = (index: number, event: DragEvent) => {
+    if (!event.dataTransfer) {
+      return;
+    }
+    event.preventDefault();
+
+    const from = Number(event.dataTransfer.getData('text/plain'));
+    if (from === index) {
+      return;
+    }
+
+    onDrop(index, event);
+  };
+
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+    isDropTarget = true;
+  };
+
+  const handleDragEnd = () => {
+    dragImage?.remove();
+    dragImage = undefined;
+    isDropTarget = false;
   };
 </script>
 
@@ -102,17 +153,17 @@
 
   <div
     class="w-full transition-all"
-    class:opacity-40={isDragging}
-    class:scale-[0.99]={isDragging}
-    ondragover={(event) => onDragOver(index, event)}
-    ondragleave={() => onDragLeave(index)}
-    ondrop={(event) => onDrop(index, event)}
+    class:opacity-40={!!dragImage}
+    class:scale-[0.99]={!!dragImage}
+    ondragover={handleDragOver}
+    ondragleave={() => (isDropTarget = false)}
+    ondrop={(event) => handleDrop(index, event)}
     role="listitem"
   >
     <Card
       class="shadow-none transition-colors {isDropTarget
         ? 'border-primary ring-2 ring-primary-200'
-        : isDragHandleHovered
+        : hoverDrag
           ? 'border-dashed border-primary'
           : ''}"
     >
@@ -123,10 +174,10 @@
             class="flex shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent p-1 text-light-400 select-none hover:border-primary-200 hover:bg-primary-50 hover:text-primary active:cursor-grabbing"
             aria-label={$t('drag_to_reorder')}
             draggable="true"
-            onmouseenter={() => onDragHandleEnter(index)}
-            onmouseleave={onDragHandleLeave}
-            ondragstart={(event) => onDragStart(index, event)}
-            ondragend={onDragEnd}
+            onmouseenter={() => (hoverDrag = true)}
+            onmouseleave={() => (hoverDrag = false)}
+            ondragstart={(event) => handleDragStart(index, event)}
+            ondragend={handleDragEnd}
             title={$t('drag_to_reorder')}
           >
             <Icon icon={mdiDragVertical} size="20" />
@@ -177,15 +228,28 @@
       {#if configEntries.length > 0}
         <CardBody class="py-3">
           <div class="flex flex-wrap items-center gap-1.5">
-            {#each configEntries as [key, value] (key)}
+            {#snippet badge(key: string, content: string)}
               <Badge
                 color={isFilter ? 'info' : 'warning'}
                 shape="round"
                 size="small"
                 class="border font-mono {isFilter ? 'border-primary-200' : 'border-warning-200'}"
               >
-                <span class="opacity-60">{key}</span>{formatConfigValue(value)}
+                <span class="opacity-60">{key}</span>{content}
               </Badge>
+            {/snippet}
+            {#each configEntries as [key, value] (key)}
+              {#if getUiHint(key) === 'AlbumId'}
+                {#each toIds(value) as albumId (albumId)}
+                  {#await getAlbumName(albumId)}
+                    {@render badge($t('album'), '…')}
+                  {:then albumName}
+                    {@render badge($t('album'), `"${truncate(albumName)}"`)}
+                  {/await}
+                {/each}
+              {:else}
+                {@render badge(key, formatConfigValue(value))}
+              {/if}
             {/each}
           </div>
         </CardBody>
