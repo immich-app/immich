@@ -71,7 +71,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     String albumId,
     UserDto owner, {
     String? name,
-    String? description,
+    Optional<String?> description = const Optional.absent(),
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
@@ -86,7 +86,7 @@ class DriftAlbumApiRepository extends ApiRepository {
         albumId,
         UpdateAlbumDto(
           albumName: name == null ? const Optional.absent() : Optional.present(name),
-          description: description == null ? const Optional.absent() : Optional.present(description),
+          description: description,
           albumThumbnailAssetId: thumbnailAssetId == null
               ? const Optional.absent()
               : Optional.present(thumbnailAssetId),
