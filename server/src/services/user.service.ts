@@ -77,7 +77,7 @@ export class UserService extends BaseService {
       from: fromDate.toISODate()!,
       to: toDate.toISODate()!,
       series,
-      totalCount: series.reduce((totalCount, item) => totalCount + item.count, 0),
+      totalCount: series.reduce((totalCount, { count }) => totalCount + count, 0),
     };
   }
 
