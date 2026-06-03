@@ -88,11 +88,10 @@ class SharedLinkService {
     required bool? showMeta,
     required bool? allowDownload,
     required bool? allowUpload,
-    bool? changeExpiry = false,
     Optional<String?> password = const Optional.absent(),
     Optional<String?> description = const Optional.absent(),
     String? slug,
-    DateTime? expiresAt,
+    Optional<DateTime?> expiresAt = const Optional.absent(),
   }) async {
     try {
       final responseDto = await _apiService.sharedLinksApi.updateSharedLink(
@@ -101,11 +100,10 @@ class SharedLinkService {
           showMetadata: showMeta == null ? const Optional.absent() : Optional.present(showMeta),
           allowDownload: allowDownload == null ? const Optional.absent() : Optional.present(allowDownload),
           allowUpload: allowUpload == null ? const Optional.absent() : Optional.present(allowUpload),
-          expiresAt: expiresAt == null ? const Optional.absent() : Optional.present(expiresAt),
           password: password,
           description: description,
+          expiresAt: expiresAt,
           slug: slug == null ? const Optional.absent() : Optional.present(slug),
-          changeExpiryTime: changeExpiry == null ? const Optional.absent() : Optional.present(changeExpiry),
         ),
       );
       if (responseDto != null) {

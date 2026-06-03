@@ -369,8 +369,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       var password = const Optional<String?>.absent();
       var description = const Optional<String?>.absent();
       String? slug;
-      DateTime? expiry;
-      bool? changeExpiry;
+      var expiry = const Optional<DateTime?>.absent();
 
       if (allowDownload.value != existingLink!.allowDownload) {
         download = allowDownload.value;
@@ -404,8 +403,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       final newExpiry = expiryAfter.value;
       if (newExpiry?.toUtc() != existingLink!.expiresAt?.toUtc()) {
-        expiry = newExpiry;
-        changeExpiry = true;
+        expiry = newExpiry == null ? const Optional.present(null) : Optional.present(newExpiry.toUtc());
       }
 
       await ref
@@ -418,8 +416,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             description: description,
             password: password,
             slug: slug,
-            expiresAt: expiry?.toUtc(),
-            changeExpiry: changeExpiry,
+            expiresAt: expiry,
           );
       if (!context.mounted) {
         return;
