@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -17,7 +19,7 @@ class HashService {
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
-  final bool Function()? _cancelChecker;
+  final Completer<void>? _cancellation;
   final _log = Logger('HashService');
 
   HashService({
@@ -25,11 +27,15 @@ class HashService {
     required this._localAssetRepository,
     required this._trashedLocalAssetRepository,
     required this._nativeSyncApi,
-    this._cancelChecker,
+    this._cancellation,
     int? batchSize,
-  }) : _batchSize = batchSize ?? kBatchHashFileLimit;
+  }) : _batchSize = batchSize ?? kBatchHashFileLimit {
+    // Stop the in-flight native hash call promptly on cancellation; the loops
+    // below also observe [isCancelled] to bail between batches.
+    _cancellation?.future.then((_) => _nativeSyncApi.cancelHashing().onError(_log.warning));
+  }
 
-  bool get isCancelled => _cancelChecker?.call() ?? false;
+  bool get isCancelled => _cancellation?.isCompleted ?? false;
 
   Future<void> hashAssets() async {
     _log.info("Starting hashing of assets");

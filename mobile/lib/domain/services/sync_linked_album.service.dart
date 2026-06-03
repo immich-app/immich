@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -5,6 +7,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -16,6 +19,7 @@ final syncLinkedAlbumServiceProvider = Provider(
     ref.watch(remoteAlbumRepository),
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(storeServiceProvider),
+    cancellation: ref.watch(cancellationProvider),
   ),
 );
 
@@ -24,13 +28,15 @@ class SyncLinkedAlbumService {
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
   final StoreService _storeService;
+  final Completer<void>? _cancellation;
 
   SyncLinkedAlbumService(
     this._localAlbumRepository,
     this._remoteAlbumRepository,
     this._albumApiRepository,
-    this._storeService,
-  );
+    this._storeService, {
+    this._cancellation,
+  });
 
   final _log = Logger("SyncLinkedAlbumService");
 
@@ -55,7 +61,11 @@ class SyncLinkedAlbumService {
         final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
         _log.fine("Syncing ${assetIds.length} assets to remote album: ${remoteAlbum.name}");
         if (assetIds.isNotEmpty) {
-          final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
+          final album = await _albumApiRepository.addAssets(
+            remoteAlbum.id,
+            assetIds,
+            abortTrigger: _cancellation?.future,
+          );
           await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
         }
       }),

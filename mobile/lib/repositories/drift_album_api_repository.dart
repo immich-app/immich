@@ -47,8 +47,14 @@ class DriftAlbumApiRepository extends ApiRepository {
     return (removed: removed, failed: failed);
   }
 
-  Future<({List<String> added, List<String> failed})> addAssets(String albumId, Iterable<String> assetIds) async {
-    final response = await checkNull(_api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
+  Future<({List<String> added, List<String> failed})> addAssets(
+    String albumId,
+    Iterable<String> assetIds, {
+    Future<void>? abortTrigger,
+  }) async {
+    final response = await checkNull(
+      _api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList()), abortTrigger: abortTrigger),
+    );
     final List<String> added = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
