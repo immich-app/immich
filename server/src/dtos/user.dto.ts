@@ -3,7 +3,7 @@ import { User, UserAdmin } from 'src/database';
 import { pinCodeRegex } from 'src/dtos/auth.dto';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
 import { MaybeDehydrated, UserMetadataItem } from 'src/types';
-import { asDateString } from 'src/utils/date';
+import { asDateTimeString } from 'src/utils/date';
 import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
 import z from 'zod';
 
@@ -61,7 +61,7 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
-    profileChangedAt: asDateString(entity.profileChangedAt),
+    profileChangedAt: asDateTimeString(entity.profileChangedAt),
   };
 };
 
