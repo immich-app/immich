@@ -12,6 +12,7 @@ When using "Deduplicate All" or viewing suggestions, Immich automatically presel
 
 1. **Image size in bytes** — larger files are preferred as they typically have higher quality.
 2. **Count of EXIF data** — assets with more metadata are preferred.
+3. **Capture date** — the asset with the earliest capture date is preferred.
 
 ### Synchronizing metadata
 
