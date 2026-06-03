@@ -370,6 +370,7 @@
           <video
             bind:this={videoPlayer}
             slot="media"
+            src={assetFileUrl}
             loop={$loopVideoPreference && loopVideo}
             autoplay={$autoPlayVideo}
             disablePictureInPicture
