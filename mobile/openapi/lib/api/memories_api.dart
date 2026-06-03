@@ -27,7 +27,7 @@ class MemoriesApi {
   /// * [String] id (required):
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> addMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
+  Future<Response> addMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}/assets'
       .replaceAll('{id}', id);
@@ -50,6 +50,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -62,8 +63,8 @@ class MemoriesApi {
   /// * [String] id (required):
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<List<BulkIdResponseDto>?> addMemoryAssets(String id, BulkIdsDto bulkIdsDto,) async {
-    final response = await addMemoryAssetsWithHttpInfo(id, bulkIdsDto,);
+  Future<List<BulkIdResponseDto>?> addMemoryAssets(String id, BulkIdsDto bulkIdsDto, { Future<void>? abortTrigger, }) async {
+    final response = await addMemoryAssetsWithHttpInfo(id, bulkIdsDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -89,7 +90,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [MemoryCreateDto] memoryCreateDto (required):
-  Future<Response> createMemoryWithHttpInfo(MemoryCreateDto memoryCreateDto,) async {
+  Future<Response> createMemoryWithHttpInfo(MemoryCreateDto memoryCreateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
 
@@ -111,6 +112,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -121,8 +123,8 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [MemoryCreateDto] memoryCreateDto (required):
-  Future<MemoryResponseDto?> createMemory(MemoryCreateDto memoryCreateDto,) async {
-    final response = await createMemoryWithHttpInfo(memoryCreateDto,);
+  Future<MemoryResponseDto?> createMemory(MemoryCreateDto memoryCreateDto, { Future<void>? abortTrigger, }) async {
+    final response = await createMemoryWithHttpInfo(memoryCreateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -145,7 +147,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteMemoryWithHttpInfo(String id,) async {
+  Future<Response> deleteMemoryWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}'
       .replaceAll('{id}', id);
@@ -168,6 +170,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -178,8 +181,8 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteMemory(String id,) async {
-    final response = await deleteMemoryWithHttpInfo(id,);
+  Future<void> deleteMemory(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteMemoryWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -194,7 +197,7 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getMemoryWithHttpInfo(String id,) async {
+  Future<Response> getMemoryWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}'
       .replaceAll('{id}', id);
@@ -217,6 +220,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -227,8 +231,8 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<MemoryResponseDto?> getMemory(String id,) async {
-    final response = await getMemoryWithHttpInfo(id,);
+  Future<MemoryResponseDto?> getMemory(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getMemoryWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -268,7 +272,7 @@ class MemoriesApi {
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
+  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/statistics';
 
@@ -312,6 +316,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -339,8 +344,8 @@ class MemoriesApi {
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
-    final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, );
+  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+    final response = await memoriesStatisticsWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -365,7 +370,7 @@ class MemoriesApi {
   /// * [String] id (required):
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> removeMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
+  Future<Response> removeMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}/assets'
       .replaceAll('{id}', id);
@@ -388,6 +393,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -400,8 +406,8 @@ class MemoriesApi {
   /// * [String] id (required):
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<List<BulkIdResponseDto>?> removeMemoryAssets(String id, BulkIdsDto bulkIdsDto,) async {
-    final response = await removeMemoryAssetsWithHttpInfo(id, bulkIdsDto,);
+  Future<List<BulkIdResponseDto>?> removeMemoryAssets(String id, BulkIdsDto bulkIdsDto, { Future<void>? abortTrigger, }) async {
+    final response = await removeMemoryAssetsWithHttpInfo(id, bulkIdsDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -444,7 +450,7 @@ class MemoriesApi {
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
+  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
 
@@ -488,6 +494,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -515,8 +522,8 @@ class MemoriesApi {
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<MemorySearchResponseDto?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, }) async {
-    final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, );
+  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+    final response = await searchMemoriesWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -541,7 +548,7 @@ class MemoriesApi {
   /// * [String] id (required):
   ///
   /// * [MemoryUpdateDto] memoryUpdateDto (required):
-  Future<Response> updateMemoryWithHttpInfo(String id, MemoryUpdateDto memoryUpdateDto,) async {
+  Future<Response> updateMemoryWithHttpInfo(String id, MemoryUpdateDto memoryUpdateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/{id}'
       .replaceAll('{id}', id);
@@ -564,6 +571,7 @@ class MemoriesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -576,8 +584,8 @@ class MemoriesApi {
   /// * [String] id (required):
   ///
   /// * [MemoryUpdateDto] memoryUpdateDto (required):
-  Future<MemoryResponseDto?> updateMemory(String id, MemoryUpdateDto memoryUpdateDto,) async {
-    final response = await updateMemoryWithHttpInfo(id, memoryUpdateDto,);
+  Future<MemoryResponseDto?> updateMemory(String id, MemoryUpdateDto memoryUpdateDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateMemoryWithHttpInfo(id, memoryUpdateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

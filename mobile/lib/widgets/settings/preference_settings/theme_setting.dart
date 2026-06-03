@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/primary_color_setting.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
@@ -22,7 +22,7 @@ class ThemeSetting extends HookConsumerWidget {
 
     void onThemeChange(bool isDark) {
       currentTheme.value = isDark ? ThemeMode.dark : ThemeMode.light;
-      ref.read(metadataProvider).write(.themeMode, currentTheme.value);
+      ref.read(settingsProvider).write(.themeMode, currentTheme.value);
     }
 
     void onSystemThemeChange(bool isSystem) {
@@ -39,11 +39,11 @@ class ThemeSetting extends HookConsumerWidget {
           currentTheme.value = ThemeMode.dark;
         }
       }
-      ref.read(metadataProvider).write(.themeMode, currentTheme.value);
+      ref.read(settingsProvider).write(.themeMode, currentTheme.value);
     }
 
     void onSurfaceColorSettingChange(bool useColorfulInterface) {
-      ref.read(metadataProvider).write(.themeColorfulInterface, useColorfulInterface);
+      ref.read(settingsProvider).write(.themeColorfulInterface, useColorfulInterface);
       colorfulInterface.value = useColorfulInterface;
     }
 

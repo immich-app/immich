@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 
@@ -39,12 +39,12 @@ enum TimelineOrigin {
 
 class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
-  final MetadataRepository _metadataRepository;
+  final SettingsRepository _settingsRepository;
 
-  const TimelineFactory({required this._timelineRepository, required this._metadataRepository});
+  const TimelineFactory({required this._timelineRepository, required this._settingsRepository});
 
   GroupAssetsBy get groupBy {
-    final group = _metadataRepository.appConfig.timeline.groupAssetsBy;
+    final group = _settingsRepository.appConfig.timeline.groupAssetsBy;
     // We do not support auto grouping in the new timeline yet, fallback to day grouping
     return group == GroupAssetsBy.auto ? GroupAssetsBy.day : group;
   }

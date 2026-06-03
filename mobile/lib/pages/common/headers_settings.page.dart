@@ -3,10 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 
 class SettingsHeader {
   String key = "";
@@ -22,7 +21,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    final storedHeaders = ref.read(metadataProvider).appConfig.network.customHeaders;
+    final storedHeaders = ref.read(appConfigProvider).network.customHeaders;
     if (!setInitialHeaders.value) {
       storedHeaders.forEach((k, v) {
         final header = SettingsHeader();
@@ -94,7 +93,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
       headersMap[key] = value;
     }
 
-    await ref.read(metadataProvider).write(MetadataKey.networkCustomHeaders, headersMap);
+    await ref.read(settingsProvider).write(.networkCustomHeaders, headersMap);
     await ref.read(apiServiceProvider).updateHeaders();
   }
 }

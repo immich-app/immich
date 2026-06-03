@@ -14,6 +14,7 @@ class PeopleUpdate {
   /// Returns a new [PeopleUpdate] instance.
   PeopleUpdate({
     this.enabled,
+    this.minimumFaces,
     this.sidebarWeb,
   });
 
@@ -25,6 +26,18 @@ class PeopleUpdate {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? enabled;
+
+  /// People face threshold
+  ///
+  /// Minimum value: 1
+  /// Maximum value: 9007199254740991
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  int? minimumFaces;
 
   /// Whether people appear in web sidebar
   ///
@@ -38,16 +51,18 @@ class PeopleUpdate {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdate &&
     other.enabled == enabled &&
+    other.minimumFaces == minimumFaces &&
     other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled == null ? 0 : enabled!.hashCode) +
+    (minimumFaces == null ? 0 : minimumFaces!.hashCode) +
     (sidebarWeb == null ? 0 : sidebarWeb!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdate[enabled=$enabled, sidebarWeb=$sidebarWeb]';
+  String toString() => 'PeopleUpdate[enabled=$enabled, minimumFaces=$minimumFaces, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -55,6 +70,11 @@ class PeopleUpdate {
       json[r'enabled'] = this.enabled;
     } else {
     //  json[r'enabled'] = null;
+    }
+    if (this.minimumFaces != null) {
+      json[r'minimumFaces'] = this.minimumFaces;
+    } else {
+    //  json[r'minimumFaces'] = null;
     }
     if (this.sidebarWeb != null) {
       json[r'sidebarWeb'] = this.sidebarWeb;
@@ -74,6 +94,7 @@ class PeopleUpdate {
 
       return PeopleUpdate(
         enabled: mapValueOfType<bool>(json, r'enabled'),
+        minimumFaces: mapValueOfType<int>(json, r'minimumFaces'),
         sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb'),
       );
     }

@@ -1,6 +1,7 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { createZodDto } from 'nestjs-zod';
 import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
-import { WorkflowTrigger, WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
+import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
 import { asPluginKey } from 'src/utils/workflow';
 import z from 'zod';
 
@@ -58,6 +59,7 @@ const PluginTemplateResponseSchema = z
     description: z.string().describe('Template description'),
     trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
     steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
+    uiHints: z.array(z.string()).describe('Ui hints, for example "smart-album"'),
   })
   .meta({ id: 'PluginTemplateResponseDto' });
 
@@ -91,6 +93,7 @@ export type PluginTemplate = {
     config?: Record<string, unknown> | null;
     enabled?: boolean;
   }>;
+  uiHints: string[];
 };
 
 export const mapTemplate = (plugin: { name: string }, template: PluginTemplate): PluginTemplateResponseDto => {
@@ -104,6 +107,7 @@ export const mapTemplate = (plugin: { name: string }, template: PluginTemplate):
       config: step.config ?? null,
       enabled: step.enabled,
     })),
+    uiHints: template.uiHints ?? [],
   };
 };
 

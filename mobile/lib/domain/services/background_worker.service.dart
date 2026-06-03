@@ -11,7 +11,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -39,7 +39,7 @@ class BackgroundWorkerFgService {
       _foregroundHostApi.saveNotificationMessage(title, body);
 
   Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) {
-    final backup = MetadataRepository.instance.appConfig.backup;
+    final backup = SettingsRepository.instance.appConfig.backup;
     return _foregroundHostApi.configure(
       BackgroundWorkerSettings(
         minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
@@ -67,7 +67,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
-  bool get _isBackupEnabled => MetadataRepository.instance.appConfig.backup.enabled;
+  bool get _isBackupEnabled => SettingsRepository.instance.appConfig.backup.enabled;
 
   Future<void> init() async {
     try {

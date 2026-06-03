@@ -42,7 +42,18 @@ group by
 having
   (
     "person"."name" != $3
-    or count("asset_face"."assetId") >= $4
+    or count("asset_face"."assetId") >= COALESCE(
+      (
+        SELECT
+          value -> 'people' ->> 'minimumFaces'
+        FROM
+          user_metadata
+        WHERE
+          "userId" = $4
+          AND key = 'preferences'
+      ),
+      '3'
+    )::int
   )
 order by
   "person"."isHidden" asc,

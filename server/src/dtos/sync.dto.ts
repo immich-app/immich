@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { createZodDto } from 'nestjs-zod';
+import { ExtraModel } from 'src/decorators';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
@@ -16,15 +16,6 @@ import {
 } from 'src/enum';
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
-
-export const extraSyncModels: Function[] = [];
-
-const ExtraModel = (): ClassDecorator => {
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  return (object: Function) => {
-    extraSyncModels.push(object);
-  };
-};
 
 const SyncUserV1Schema = z
   .object({
