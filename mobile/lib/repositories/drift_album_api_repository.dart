@@ -15,6 +15,11 @@ class DriftAlbumApiRepository extends ApiRepository {
 
   DriftAlbumApiRepository(this._api);
 
+  Future<List<RemoteAlbum>> getAllOwned(UserDto owner) async {
+    final response = await checkNull(_api.getAllAlbums(isOwned: true));
+    return response.map((dto) => dto.toRemoteAlbum(owner)).toList();
+  }
+
   Future<RemoteAlbum> createDriftAlbum(
     String name,
     UserDto owner, {
@@ -42,17 +47,24 @@ class DriftAlbumApiRepository extends ApiRepository {
   }
 
   Future<({List<String> added, List<String> failed})> addAssets(String albumId, Iterable<String> assetIds) async {
-    final response = await checkNull(_api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
-    final List<String> added = [], failed = [];
-    for (final dto in response) {
-      if (dto.success) {
-        added.add(dto.id);
-      } else {
-        failed.add(dto.id);
+    try {
+      final response = await checkNull(_api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
+      final List<String> added = [], failed = [];
+      for (final dto in response) {
+        if (dto.success) {
+          added.add(dto.id);
+        } else {
+          failed.add(dto.id);
+        }
       }
-    }
 
-    return (added: added, failed: failed);
+      return (added: added, failed: failed);
+    } on ApiException catch (e) {
+      if (e.code == 400 && (e.message?.contains('"message":"Album not found"') ?? false)) {
+        throw RemoteAlbumNotFoundException(albumId);
+      }
+      rethrow;
+    }
   }
 
   Future<RemoteAlbum> updateAlbum(
@@ -102,6 +114,14 @@ class DriftAlbumApiRepository extends ApiRepository {
     final response = await checkNull(_api.updateAlbumInfo(albumId, UpdateAlbumDto(isActivityEnabled: isEnabled)));
     return response.isActivityEnabled;
   }
+}
+
+class RemoteAlbumNotFoundException implements Exception {
+  final String albumId;
+  const RemoteAlbumNotFoundException(this.albumId);
+
+  @override
+  String toString() => 'RemoteAlbumNotFoundException: $albumId';
 }
 
 extension on AlbumResponseDto {
