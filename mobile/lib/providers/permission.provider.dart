@@ -49,15 +49,9 @@ final batteryOptimizationProvider = AsyncNotifierProvider<BatteryOptimizationNot
 
 class BatteryOptimizationNotifier extends AsyncNotifier<PermissionStatus> {
   Future<PermissionStatus> getBatteryOptimizationPermission() async {
-    final PermissionStatus status;
     final isIgnoring = await ref.read(permissionApiProvider).isIgnoringBatteryOptimizations().then((p) => p.toStatus());
-    if (isIgnoring == PermissionStatus.granted) {
-      status = PermissionStatus.granted;
-    } else {
-      status = PermissionStatus.denied;
-    }
-    state = AsyncValue.data(status);
-    return status;
+    state = AsyncValue.data(isIgnoring);
+    return isIgnoring;
   }
 
   @override
