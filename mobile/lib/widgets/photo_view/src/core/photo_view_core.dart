@@ -235,34 +235,31 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     nextScaleState();
   }
 
-  void animateScale(double from, double to) {
+  Future<void> animateScale(double from, double to) {
     if (!mounted) {
-      return;
+      return Future.value();
     }
     _scaleAnimation = Tween<double>(begin: from, end: to).animate(_scaleAnimationController);
-    _scaleAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _scaleAnimationController.value = 0.0;
+    return _scaleAnimationController.fling(velocity: 0.4);
   }
 
-  void animatePosition(Offset from, Offset to) {
+  Future<void> animatePosition(Offset from, Offset to) {
     if (!mounted) {
-      return;
+      return Future.value();
     }
     _positionAnimation = Tween<Offset>(begin: from, end: to).animate(_positionAnimationController);
-    _positionAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _positionAnimationController.value = 0.0;
+    return _positionAnimationController.fling(velocity: 0.4);
   }
 
-  void animateRotation(double from, double to) {
+  Future<void> animateRotation(double from, double to) {
     if (!mounted) {
-      return;
+      return Future.value();
     }
     _rotationAnimation = Tween<double>(begin: from, end: to).animate(_rotationAnimationController);
-    _rotationAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _rotationAnimationController.value = 0.0;
+    return _rotationAnimationController.fling(velocity: 0.4);
   }
 
   void onAnimationStatus(AnimationStatus status) {
@@ -278,18 +275,19 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
   }
 
-  void _animateControllerPosition(Offset position) {
-    animatePosition(controller.position, position);
+  Future<void> _animateControllerPosition(Offset position) {
+    return animatePosition(controller.position, position);
   }
 
-  void _animateControllerScale(double scale) {
+  Future<void> _animateControllerScale(double scale) {
     if (controller.scale != null) {
-      animateScale(controller.scale!, scale);
+      return animateScale(controller.scale!, scale);
     }
+    return Future.value();
   }
 
-  void _animateControllerRotation(double rotation) {
-    animateRotation(controller.rotation, rotation);
+  Future<void> _animateControllerRotation(double rotation) {
+    return animateRotation(controller.rotation, rotation);
   }
 
   @override

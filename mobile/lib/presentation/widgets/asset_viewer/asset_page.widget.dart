@@ -48,6 +48,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   bool _showingDetails = false;
   bool _isZoomed = false;
+  // Frozen during dismiss drag + settle to prevent widget tree swap mid-animation.
+  bool _frozenMotionPlaying = false;
+  bool _dismissSettling = false;
 
   final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
@@ -152,6 +155,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         > 0 => _DragIntent.dismiss,
         _ => _DragIntent.none,
       };
+      if (_dragIntent == _DragIntent.dismiss) {
+        _frozenMotionPlaying = ref.read(isPlayingMotionVideoProvider);
+      }
     }
 
     switch (_dragIntent) {
@@ -193,12 +199,18 @@ class _AssetPageState extends ConsumerState<AssetPage> {
           context.maybePop();
           return;
         }
-        _viewController?.animateMultiple(
-          position: _initialPhotoViewState.position,
-          scale: _viewController?.initialScale ?? _initialPhotoViewState.scale,
-          rotation: _initialPhotoViewState.rotation,
-        );
         _viewer.setOpacity(1.0);
+        _dismissSettling = true;
+        _viewController
+            ?.animateMultiple(
+              position: _initialPhotoViewState.position,
+              scale: _viewController?.initialScale ?? _initialPhotoViewState.scale,
+              rotation: _initialPhotoViewState.rotation,
+            )
+            .whenComplete(() {
+              if (!mounted) return;
+              setState(() => _dismissSettling = false);
+            });
     }
   }
 
@@ -392,7 +404,10 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final currentHeroTag = ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
-    final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
+    final liveMotionPlaying = ref.watch(isPlayingMotionVideoProvider);
+    final isPlayingMotionVideo = (_dragIntent == _DragIntent.dismiss || _dismissSettling)
+        ? _frozenMotionPlaying
+        : liveMotionPlaying;
 
     final asset = _asset;
     if (asset == null) {
