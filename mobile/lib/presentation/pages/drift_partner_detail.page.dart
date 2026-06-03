@@ -63,7 +63,9 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
     }
 
     try {
-      await ref.read(partnerServiceProvider).update(widget.partner.id, user.id, inTimeline: !_inTimeline);
+      await ref
+          .read(partnerServiceProvider)
+          .update(sharedById: widget.partner.id, sharedWithId: user.id, inTimeline: !_inTimeline);
 
       setState(() {
         _inTimeline = !_inTimeline;

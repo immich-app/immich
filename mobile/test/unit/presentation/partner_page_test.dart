@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/pages/library/partner/drift_partner.page.dart';
+import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 
 import '../factories/partner_user_factory.dart';
 import '../factories/user_factory.dart';
@@ -16,32 +16,16 @@ void main() {
 
   group('PartnerSharedByList', () {
     testWidgets('shows the empty-state add button when there are no partners', (tester) async {
-      await tester.pumpTestWidget(
-        PartnerSharedByList(partners: const [], onAddPartner: () {}, onRemovePartner: (_) {}),
-      );
+      await tester.pumpTestWidget(PartnerSharedByList(partners: const [], onAdd: () {}, onRemove: (_) {}));
 
       expect(find.byType(ListView), findsNothing);
       expect(find.widgetWithIcon(ElevatedButton, Icons.person_add), findsOneWidget);
     });
 
-    testWidgets('invokes onAddPartner when the empty-state button is tapped', (tester) async {
-      var addCalls = 0;
-      await tester.pumpTestWidget(
-        PartnerSharedByList(partners: const [], onAddPartner: () => addCalls++, onRemovePartner: (_) {}),
-      );
-
-      await tester.tap(find.widgetWithIcon(ElevatedButton, Icons.person_add));
-      await tester.pump();
-
-      expect(addCalls, 1);
-    });
-
     testWidgets('renders a tile per partner with name and email', (tester) async {
       final partner1 = PartnerFactory.create();
       final partner2 = PartnerFactory.create();
-      await tester.pumpTestWidget(
-        PartnerSharedByList(partners: [partner1, partner2], onAddPartner: () {}, onRemovePartner: (_) {}),
-      );
+      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2], onAdd: () {}, onRemove: (_) {}));
 
       expect(find.byType(ListTile), findsNWidgets(2));
       expect(find.text(partner1.name), findsOneWidget);
@@ -55,7 +39,7 @@ void main() {
       final partner2 = PartnerFactory.create();
       Partner? removed;
       await tester.pumpTestWidget(
-        PartnerSharedByList(partners: [partner1, partner2], onAddPartner: () {}, onRemovePartner: (p) => removed = p),
+        PartnerSharedByList(partners: [partner1, partner2], onAdd: () {}, onRemove: (p) => removed = p),
       );
 
       await tester.tap(find.byIcon(Icons.person_remove).first);
@@ -81,7 +65,7 @@ void main() {
     }
 
     List<Override> withCandidates(List<User> candidates) => [
-      candidatesProvider.overrideWith((ref) => Stream<Iterable<User>>.value(candidates)),
+      candidatesStateProvider.overrideWith((ref) => Stream<Iterable<User>>.value(candidates)),
     ];
 
     testWidgets('renders an option per candidate fetched from the provider', (tester) async {

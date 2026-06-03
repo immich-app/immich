@@ -332,6 +332,16 @@ class Partner extends User {
     this.inTimeline = false,
   });
 
+  Partner.fromUser(User user, {this.inTimeline = false})
+    : super(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profileChangedAt: user.profileChangedAt,
+        hasProfileImage: user.hasProfileImage,
+        avatarColor: user.avatarColor,
+      );
+
   @override
   String toString() {
     return 'Partner(user: ${super.toString()}, inTimeline: $inTimeline)';

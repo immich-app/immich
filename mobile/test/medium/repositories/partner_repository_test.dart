@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 
 import '../repository_context.dart';
@@ -25,7 +24,7 @@ void main() {
       await ctx.newPartner(sharedById: me.id, sharedWithId: recipient.id);
       await ctx.newPartner(sharedById: sharer.id, sharedWithId: me.id);
 
-      final result = await sut.search(me.id, PartnerDirection.sharedBy).first;
+      final result = await sut.search(me.id, .sharedBy).first;
 
       expect(result.map((partner) => partner.id), unorderedEquals([recipient.id]));
     });
@@ -37,7 +36,7 @@ void main() {
       await ctx.newPartner(sharedById: me.id, sharedWithId: recipient.id);
       await ctx.newPartner(sharedById: sharer.id, sharedWithId: me.id);
 
-      final result = await sut.search(me.id, PartnerDirection.sharedWith).first;
+      final result = await sut.search(me.id, .sharedWith).first;
 
       expect(result.map((partner) => partner.id), unorderedEquals([sharer.id]));
     });
@@ -46,7 +45,7 @@ void main() {
       final me = await ctx.newUser();
       final recipient = await ctx.newUser();
 
-      final ids = sut.search(me.id, PartnerDirection.sharedBy).map((partners) => partners.map((p) => p.id).toList());
+      final ids = sut.search(me.id, .sharedBy).map((partners) => partners.map((p) => p.id).toList());
       final expectation = expectLater(
         ids,
         emitsInOrder([
@@ -65,7 +64,7 @@ void main() {
       final me = await ctx.newUser();
       final partner = await ctx.newUser();
 
-      await sut.create(partner.id, me.id);
+      await sut.create(sharedById: me.id, sharedWithId: partner.id);
 
       final result = (await sut.search(me.id, .sharedBy).first).first;
       expect(result.id, partner.id);
@@ -79,9 +78,9 @@ void main() {
       final sharer = await ctx.newUser();
       await ctx.newPartner(sharedById: sharer.id, sharedWithId: me.id, inTimeline: false);
 
-      await sut.update(sharer.id, me.id, inTimeline: true);
+      await sut.update(sharedById: sharer.id, sharedWithId: me.id, inTimeline: true);
 
-      final result = await sut.get(sharer.id, me.id);
+      final result = await sut.get(sharedById: sharer.id, sharedWithId: me.id);
       expect(result.inTimeline, isTrue);
     });
   });
@@ -92,7 +91,7 @@ void main() {
       final recipient = await ctx.newUser();
       await ctx.newPartner(sharedById: me.id, sharedWithId: recipient.id);
 
-      await sut.delete(recipient.id, me.id);
+      await sut.delete(sharedById: me.id, sharedWithId: recipient.id);
 
       final rows = await ctx.db.select(ctx.db.partnerEntity).get();
       expect(rows, isEmpty);

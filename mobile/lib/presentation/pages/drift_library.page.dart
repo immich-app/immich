@@ -329,11 +329,11 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
 }
 
 @visibleForTesting
-final driftSharedWithPartnerProvider = StreamProvider.autoDispose<Iterable<Partner>>((ref) {
+final sharedWithPartnerProvider = StreamProvider.autoDispose<Iterable<Partner>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) {
     // TODO: Refactor with a route guard to avoid this check in every provider
-    return const Stream.empty();
+    return const .empty();
   }
 
   return ref.watch(partnerServiceProvider).search(currentUser.id, .sharedWith);
@@ -344,7 +344,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final partnerSharedWithAsync = ref.watch(driftSharedWithPartnerProvider);
+    final partnerSharedWithAsync = ref.watch(sharedWithPartnerProvider);
     final partners = partnerSharedWithAsync.valueOrNull ?? [];
 
     return SliverPadding(
@@ -399,7 +399,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
                   'partners'.t(context: context),
                   style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                 ),
-                onTap: () => context.pushRoute(const DriftPartnerRoute()),
+                onTap: () => context.pushRoute(const PartnerRoute()),
               ),
               _PartnerList(partners: partners.toList()),
             ],

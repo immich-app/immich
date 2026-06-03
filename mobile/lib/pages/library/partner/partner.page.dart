@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 @visibleForTesting
-final candidatesProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
+final candidatesStateProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   // TODO: Refactor with a route guard to avoid this check in every provider
   if (currentUser == null) {
@@ -20,7 +20,7 @@ final candidatesProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
 });
 
 @visibleForTesting
-final partnersProvider = StreamProvider.autoDispose<Iterable<Partner>>((ref) {
+final partnersStateProvider = StreamProvider.autoDispose<Iterable<Partner>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   // TODO: Refactor with a route guard to avoid this check in every provider
   if (currentUser == null) {
@@ -30,35 +30,35 @@ final partnersProvider = StreamProvider.autoDispose<Iterable<Partner>>((ref) {
   return ref.watch(partnerServiceProvider).search(currentUser.id, .sharedBy);
 });
 
-@RoutePage()
-class DriftPartnerPage extends ConsumerWidget {
-  const DriftPartnerPage({super.key});
-
-  Future<void> _addPartner(BuildContext context, WidgetRef ref) async {
-    final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
-    final currentUser = ref.read(currentUserProvider);
-    if (selected != null && currentUser != null) {
-      await ref.read(partnerServiceProvider).create(selected.id, currentUser.id);
-    }
+Future<void> _addPartner(BuildContext context, WidgetRef ref) async {
+  final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
+  final currentUser = ref.read(currentUserProvider);
+  if (selected != null && currentUser != null) {
+    await ref.read(partnerServiceProvider).create(sharedById: currentUser.id, sharedWithId: selected.id);
   }
+}
 
-  Future<void> _removePartner(BuildContext context, WidgetRef ref, Partner partner) => showDialog(
-    context: context,
-    builder: (_) => ConfirmDialog(
-      title: "stop_photo_sharing",
-      content: context.t.partner_page_stop_sharing_content(partner: partner.name),
-      onOk: () {
-        final currentUser = ref.read(currentUserProvider);
-        if (currentUser != null) {
-          ref.read(partnerServiceProvider).delete(partner.id, currentUser.id);
-        }
-      },
-    ),
-  );
+Future<void> _removePartner(BuildContext context, WidgetRef ref, Partner partner) => showDialog(
+  context: context,
+  builder: (_) => ConfirmDialog(
+    title: "stop_photo_sharing",
+    content: context.t.partner_page_stop_sharing_content(partner: partner.name),
+    onOk: () {
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser != null) {
+        ref.read(partnerServiceProvider).delete(sharedById: currentUser.id, sharedWithId: partner.id);
+      }
+    },
+  ),
+);
+
+@RoutePage()
+class PartnerPage extends ConsumerWidget {
+  const PartnerPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedByAsync = ref.watch(partnersProvider);
+    final sharedByAsync = ref.watch(partnersStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -76,8 +76,8 @@ class DriftPartnerPage extends ConsumerWidget {
       body: sharedByAsync.when(
         data: (partners) => PartnerSharedByList(
           partners: partners.toList(growable: false),
-          onAddPartner: () => _addPartner(context, ref),
-          onRemovePartner: (partner) => _removePartner(context, ref, partner),
+          onAdd: () => _addPartner(context, ref),
+          onRemove: (partner) => _removePartner(context, ref, partner),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text(context.t.error_loading_partners(error: error))),
@@ -86,42 +86,48 @@ class DriftPartnerPage extends ConsumerWidget {
   }
 }
 
+class _EmptyPartners extends StatelessWidget {
+  const _EmptyPartners({required this.onAdd});
+
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const .symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: .start,
+        children: [
+          Padding(
+            padding: const .symmetric(vertical: 8),
+            child: Text(context.t.partner_page_empty_message, style: const TextStyle(fontSize: 14)),
+          ),
+          Align(
+            alignment: .center,
+            child: ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.person_add),
+              label: Text(context.t.add_partner),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 @visibleForTesting
 class PartnerSharedByList extends StatelessWidget {
-  const PartnerSharedByList({
-    super.key,
-    required this.partners,
-    required this.onAddPartner,
-    required this.onRemovePartner,
-  });
+  const PartnerSharedByList({super.key, required this.partners, required this.onAdd, required this.onRemove});
 
   final List<Partner> partners;
-  final VoidCallback onAddPartner;
-  final ValueChanged<Partner> onRemovePartner;
+  final VoidCallback onAdd;
+  final ValueChanged<Partner> onRemove;
 
   @override
   Widget build(BuildContext context) {
     if (partners.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(context.t.partner_page_empty_message, style: const TextStyle(fontSize: 14)),
-            ),
-            Align(
-              alignment: Alignment.center,
-              child: ElevatedButton.icon(
-                onPressed: onAddPartner,
-                icon: const Icon(Icons.person_add),
-                label: Text(context.t.add_partner),
-              ),
-            ),
-          ],
-        ),
-      );
+      return _EmptyPartners(onAdd: onAdd);
     }
 
     return ListView.builder(
@@ -132,7 +138,7 @@ class PartnerSharedByList extends StatelessWidget {
           leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
           title: Text(partner.name),
           subtitle: Text(partner.email),
-          trailing: IconButton(icon: const Icon(Icons.person_remove), onPressed: () => onRemovePartner(partner)),
+          trailing: IconButton(icon: const Icon(Icons.person_remove), onPressed: () => onRemove(partner)),
         );
       },
     );
@@ -145,7 +151,7 @@ class PartnerSelectionDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final candidatesAsync = ref.watch(candidatesProvider);
+    final candidatesAsync = ref.watch(candidatesStateProvider);
 
     return SimpleDialog(
       title: const Text("partner_page_select_partner").tr(),
@@ -155,7 +161,7 @@ class PartnerSelectionDialog extends ConsumerWidget {
           if (users.isEmpty) {
             return [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const .symmetric(horizontal: 24, vertical: 8),
                 child: const Text("partner_page_no_more_users").tr(),
               ),
             ];
@@ -167,7 +173,7 @@ class PartnerSelectionDialog extends ConsumerWidget {
                 child: Row(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const .only(right: 8),
                       child: PartnerUserAvatar(userId: candidate.id, name: candidate.name),
                     ),
                     Text(candidate.name),
@@ -178,14 +184,14 @@ class PartnerSelectionDialog extends ConsumerWidget {
         },
         loading: () => const [
           Padding(
-            padding: EdgeInsets.all(24),
+            padding: .all(24),
             child: Center(child: CircularProgressIndicator()),
           ),
         ],
         error: (error, _) => [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Text("error_loading_partners".tr(args: [error.toString()])),
+            padding: const .symmetric(horizontal: 24, vertical: 8),
+            child: Text(context.t.error_loading_partners(error: error)),
           ),
         ],
       ),

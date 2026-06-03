@@ -870,22 +870,6 @@ class DriftPartnerDetailRouteArgs {
 }
 
 /// generated route for
-/// [DriftPartnerPage]
-class DriftPartnerRoute extends PageRouteInfo<void> {
-  const DriftPartnerRoute({List<PageRouteInfo>? children})
-    : super(DriftPartnerRoute.name, initialChildren: children);
-
-  static const String name = 'DriftPartnerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftPartnerPage();
-    },
-  );
-}
-
-/// generated route for
 /// [DriftPeopleCollectionPage]
 class DriftPeopleCollectionRoute extends PageRouteInfo<void> {
   const DriftPeopleCollectionRoute({List<PageRouteInfo>? children})
@@ -1454,6 +1438,22 @@ class MapLocationPickerRouteArgs {
 
   @override
   int get hashCode => key.hashCode ^ initialLatLng.hashCode;
+}
+
+/// generated route for
+/// [PartnerPage]
+class PartnerRoute extends PageRouteInfo<void> {
+  const PartnerRoute({List<PageRouteInfo>? children})
+    : super(PartnerRoute.name, initialChildren: children);
+
+  static const String name = 'PartnerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PartnerPage();
+    },
+  );
 }
 
 /// generated route for

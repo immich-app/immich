@@ -25,18 +25,18 @@ class PartnerService {
   Stream<Iterable<Partner>> search(String userId, PartnerDirection direction) =>
       _partnerRepository.search(userId, direction);
 
-  Future<void> update(String partnerId, String userId, {required bool inTimeline}) async {
-    await _partnerApiRepository.update(partnerId, inTimeline: inTimeline);
-    await _partnerRepository.update(partnerId, userId, inTimeline: inTimeline);
+  Future<void> update({required String sharedById, required String sharedWithId, required bool inTimeline}) async {
+    await _partnerApiRepository.update(sharedById, inTimeline: inTimeline);
+    await _partnerRepository.update(sharedById: sharedById, sharedWithId: sharedWithId, inTimeline: inTimeline);
   }
 
-  Future<void> create(String partnerId, String userId) async {
-    await _partnerApiRepository.create(partnerId);
-    await _partnerRepository.create(partnerId, userId);
+  Future<void> create({required String sharedById, required String sharedWithId, bool inTimeline = false}) async {
+    await _partnerApiRepository.create(sharedWithId);
+    await _partnerRepository.create(sharedById: sharedById, sharedWithId: sharedWithId, inTimeline: inTimeline);
   }
 
-  Future<void> delete(String partnerId, String userId) async {
-    await _partnerApiRepository.delete(partnerId);
-    await _partnerRepository.delete(partnerId, userId);
+  Future<void> delete({required String sharedById, required String sharedWithId}) async {
+    await _partnerApiRepository.delete(sharedWithId);
+    await _partnerRepository.delete(sharedById: sharedById, sharedWithId: sharedWithId);
   }
 }

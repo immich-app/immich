@@ -72,7 +72,7 @@ void main() {
       final me = await ctx.newUser();
       final partner = await ctx.newUser();
 
-      await sut.create(partner.id, me.id);
+      await sut.create(sharedById: me.id, sharedWithId: partner.id);
 
       verify(() => ctx.partnerApi.create(partner.id)).called(1);
       final shared = await sut.search(me.id, .sharedBy).first;
@@ -86,7 +86,7 @@ void main() {
       final recipient = await ctx.newUser();
       await ctx.newPartner(sharedById: me.id, sharedWithId: recipient.id);
 
-      await sut.delete(recipient.id, me.id);
+      await sut.delete(sharedById: me.id, sharedWithId: recipient.id);
 
       verify(() => ctx.partnerApi.delete(recipient.id)).called(1);
       final shared = await sut.search(me.id, .sharedBy).first;
@@ -100,10 +100,10 @@ void main() {
       final sharer = await ctx.newUser();
       await ctx.newPartner(sharedById: sharer.id, sharedWithId: me.id, inTimeline: false);
 
-      await sut.update(sharer.id, me.id, inTimeline: true);
+      await sut.update(sharedById: sharer.id, sharedWithId: me.id, inTimeline: true);
 
       verify(() => ctx.partnerApi.update(sharer.id, inTimeline: true)).called(1);
-      final partner = await ctx.partnerRepository.get(sharer.id, me.id);
+      final partner = await ctx.partnerRepository.get(sharedById: sharer.id, sharedWithId: me.id);
       expect(partner.inTimeline, isTrue);
     });
   });

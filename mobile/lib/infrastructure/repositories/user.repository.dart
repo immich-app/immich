@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
 
@@ -10,7 +10,7 @@ class UserRepository {
   final Drift _db;
   const UserRepository(this._db);
 
-  Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(UserEntity.rowToUser).watch();
+  Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
 }
 
 class DriftAuthUserRepository extends DriftDatabaseRepository {
