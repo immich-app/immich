@@ -1,18 +1,15 @@
 import {
-  getContentMetrics,
+  computeContentMetrics,
   getNaturalSize,
+  mapContentRectToNatural,
   mapNormalizedRectToContent,
   mapNormalizedToContent,
   scaleToCover,
   scaleToFit,
 } from '$lib/utils/container-utils';
 
-const mockImage = (props: {
-  naturalWidth: number;
-  naturalHeight: number;
-  width: number;
-  height: number;
-}): HTMLImageElement => props as unknown as HTMLImageElement;
+const mockImage = (props: { naturalWidth: number; naturalHeight: number }): HTMLImageElement =>
+  props as unknown as HTMLImageElement;
 
 const mockVideo = (props: {
   videoWidth: number;
@@ -49,48 +46,85 @@ describe('scaleToFit', () => {
   });
 });
 
-describe('getContentMetrics', () => {
-  it('should compute zero offsets when aspect ratios match', () => {
-    const img = mockImage({ naturalWidth: 1600, naturalHeight: 900, width: 800, height: 450 });
-    expect(getContentMetrics(img)).toEqual({
+describe('computeContentMetrics', () => {
+  it('should return zero metrics for zero-width content', () => {
+    expect(computeContentMetrics({ width: 0, height: 1080 }, { width: 800, height: 600 })).toEqual({
+      contentWidth: 0,
+      contentHeight: 0,
+      offsetX: 0,
+      offsetY: 0,
+    });
+  });
+
+  it('should return zero metrics for zero-height content', () => {
+    expect(computeContentMetrics({ width: 1920, height: 0 }, { width: 800, height: 600 })).toEqual({
+      contentWidth: 0,
+      contentHeight: 0,
+      offsetX: 0,
+      offsetY: 0,
+    });
+  });
+
+  it('should center wide content vertically', () => {
+    expect(computeContentMetrics({ width: 2000, height: 1000 }, { width: 800, height: 600 })).toEqual({
+      contentWidth: 800,
+      contentHeight: 400,
+      offsetX: 0,
+      offsetY: 100,
+    });
+  });
+
+  it('should center tall content horizontally', () => {
+    expect(computeContentMetrics({ width: 1000, height: 2000 }, { width: 800, height: 600 })).toEqual({
+      contentWidth: 300,
+      contentHeight: 600,
+      offsetX: 250,
+      offsetY: 0,
+    });
+  });
+
+  it('should produce zero offsets when aspect ratios match', () => {
+    expect(computeContentMetrics({ width: 1600, height: 900 }, { width: 800, height: 450 })).toEqual({
       contentWidth: 800,
       contentHeight: 450,
       offsetX: 0,
       offsetY: 0,
     });
   });
+});
 
-  it('should compute horizontal letterbox offsets for tall image', () => {
-    const img = mockImage({ naturalWidth: 1000, naturalHeight: 2000, width: 800, height: 600 });
-    const metrics = getContentMetrics(img);
-    expect(metrics.contentWidth).toBe(300);
-    expect(metrics.contentHeight).toBe(600);
-    expect(metrics.offsetX).toBe(250);
-    expect(metrics.offsetY).toBe(0);
+describe('mapContentRectToNatural', () => {
+  it('should map a full-content rect back to natural size', () => {
+    const metrics = { contentWidth: 800, contentHeight: 400, offsetX: 0, offsetY: 100 };
+    const rect = mapContentRectToNatural({ left: 0, top: 100, width: 800, height: 400 }, metrics, {
+      width: 2000,
+      height: 1000,
+    });
+    expect(rect).toEqual({ left: 0, top: 0, width: 2000, height: 1000 });
   });
 
-  it('should compute vertical letterbox offsets for wide image', () => {
-    const img = mockImage({ naturalWidth: 2000, naturalHeight: 1000, width: 800, height: 600 });
-    const metrics = getContentMetrics(img);
-    expect(metrics.contentWidth).toBe(800);
-    expect(metrics.contentHeight).toBe(400);
-    expect(metrics.offsetX).toBe(0);
-    expect(metrics.offsetY).toBe(100);
+  it('should map a centered sub-rect to natural coordinates', () => {
+    const metrics = { contentWidth: 800, contentHeight: 400, offsetX: 0, offsetY: 100 };
+    const rect = mapContentRectToNatural({ left: 200, top: 200, width: 400, height: 200 }, metrics, {
+      width: 2000,
+      height: 1000,
+    });
+    expect(rect).toEqual({ left: 500, top: 250, width: 1000, height: 500 });
   });
 
-  it('should use clientWidth/clientHeight for video elements', () => {
-    const video = mockVideo({ videoWidth: 1920, videoHeight: 1080, clientWidth: 800, clientHeight: 600 });
-    const metrics = getContentMetrics(video);
-    expect(metrics.contentWidth).toBe(800);
-    expect(metrics.contentHeight).toBe(450);
-    expect(metrics.offsetX).toBe(0);
-    expect(metrics.offsetY).toBe(75);
+  it('should handle letterboxed content with horizontal offset', () => {
+    const metrics = { contentWidth: 300, contentHeight: 600, offsetX: 250, offsetY: 0 };
+    const rect = mapContentRectToNatural({ left: 250, top: 0, width: 300, height: 600 }, metrics, {
+      width: 1000,
+      height: 2000,
+    });
+    expect(rect).toEqual({ left: 0, top: 0, width: 1000, height: 2000 });
   });
 });
 
 describe('getNaturalSize', () => {
   it('should return naturalWidth/naturalHeight for images', () => {
-    const img = mockImage({ naturalWidth: 4000, naturalHeight: 3000, width: 800, height: 600 });
+    const img = mockImage({ naturalWidth: 4000, naturalHeight: 3000 });
     expect(getNaturalSize(img)).toEqual({ width: 4000, height: 3000 });
   });
 
