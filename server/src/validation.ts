@@ -125,11 +125,6 @@ const FilenameParamSchema = z.object({
 
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
-export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
-  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
-  return Number.isInteger(value) && value >= min && value <= max;
-};
-
 /**
  * Unified email validation
  * Converts email strings to lowercase and validates against HTML5 email regex
