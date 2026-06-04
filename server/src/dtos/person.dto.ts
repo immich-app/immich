@@ -7,7 +7,7 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SourceTypeSchema } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { ImageDimensions, MaybeDehydrated } from 'src/types';
-import { asBirthDateString, asDateString } from 'src/utils/date';
+import { asDateString, asDateTimeString } from 'src/utils/date';
 import { transformFaceBoundingBox } from 'src/utils/transform';
 import { hexColor, stringToBool } from 'src/validation';
 import z from 'zod';
@@ -175,12 +175,12 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: asBirthDateString(person.birthDate),
+    birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: asDateString(person.updatedAt),
+    updatedAt: asDateTimeString(person.updatedAt),
   };
 }
 

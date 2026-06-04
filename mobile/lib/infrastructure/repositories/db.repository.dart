@@ -98,7 +98,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 27;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -278,6 +278,9 @@ class Drift extends $Drift {
           },
           from26To27: (m, v27) async {
             await customStatement('ALTER TABLE metadata RENAME TO settings');
+          },
+          from27To28: (m, v28) async {
+            await m.createIndex(v28.idxLocalAssetCreatedAt);
           },
         ),
       );
