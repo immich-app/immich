@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -88,10 +89,10 @@ class SharedLinkService {
     required bool? showMeta,
     required bool? allowDownload,
     required bool? allowUpload,
-    Optional<String?> password = const Optional.absent(),
-    Optional<String?> description = const Optional.absent(),
+    Option<String?> password = const Option.none(),
+    Option<String?> description = const Option.none(),
     String? slug,
-    Optional<DateTime?> expiresAt = const Optional.absent(),
+    Option<DateTime?> expiresAt = const Option.none(),
   }) async {
     try {
       final responseDto = await _apiService.sharedLinksApi.updateSharedLink(
@@ -100,9 +101,9 @@ class SharedLinkService {
           showMetadata: showMeta == null ? const Optional.absent() : Optional.present(showMeta),
           allowDownload: allowDownload == null ? const Optional.absent() : Optional.present(allowDownload),
           allowUpload: allowUpload == null ? const Optional.absent() : Optional.present(allowUpload),
-          password: password,
-          description: description,
-          expiresAt: expiresAt,
+          password: password.toOptional(),
+          description: description.toOptional(),
+          expiresAt: expiresAt.toOptional(),
           slug: slug == null ? const Optional.absent() : Optional.present(slug),
         ),
       );
