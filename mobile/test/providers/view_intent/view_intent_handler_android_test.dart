@@ -4,12 +4,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -24,6 +28,8 @@ import 'package:mocktail/mocktail.dart';
 class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 
 class MockViewIntentAssetResolver extends Mock implements ViewIntentAssetResolver {}
+
+class MockAssetService extends Mock implements AssetService {}
 
 class MockAppRouter extends Mock implements AppRouter {}
 
@@ -93,6 +99,7 @@ void main() {
 
   late TestViewIntentService viewIntentService;
   late MockViewIntentAssetResolver resolver;
+  late MockAssetService assetService;
   late MockAppRouter router;
   late TestAuthNotifier authNotifier;
   late ProviderContainer container;
@@ -105,6 +112,7 @@ void main() {
     registerFallbackValue(FakePageRouteInfo());
     registerFallbackValue(<PageRouteInfo<dynamic>>[]);
     registerFallbackValue(FakeTimelineService());
+    registerFallbackValue(_remoteAsset(id: 'fallback-remote', localId: 'fallback-local'));
     registerFallbackValue(
       ViewIntentPayload(path: '/tmp/fallback.jpg', mimeType: 'image/jpeg', localAssetId: 'fallback'),
     );
@@ -113,17 +121,20 @@ void main() {
   setUp(() async {
     viewIntentService = TestViewIntentService();
     resolver = MockViewIntentAssetResolver();
+    assetService = MockAssetService();
     router = MockAppRouter();
     payload = ViewIntentPayload(path: '/tmp/incoming.jpg', mimeType: 'image/jpeg', localAssetId: 'local-1');
     deepLinkAsset = _localAsset(id: 'local-1');
     deepLinkTimelineService = await _createReadyTimelineService([deepLinkAsset], TimelineOrigin.deepLink);
 
     when(() => router.replaceAll(any())).thenAnswer((_) async {});
+    when(() => router.replace(any())).thenAnswer((_) async => null);
 
     container = ProviderContainer(
       overrides: [
         viewIntentServiceProvider.overrideWithValue(viewIntentService),
         viewIntentAssetResolverProvider.overrideWithValue(resolver),
+        assetServiceProvider.overrideWithValue(assetService),
         appRouterProvider.overrideWithValue(router),
         authProvider.overrideWith((ref) {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
@@ -195,9 +206,9 @@ void main() {
 
   testWidgets('onAppResumed handles attachment immediately when authenticated', (tester) async {
     viewIntentService.consumedAttachment = payload;
-    when(() => resolver.resolve(payload)).thenAnswer(
-      (_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService),
-    );
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
 
     unawaited(handler.onAppResumed());
     await tester.pump();
@@ -206,14 +217,111 @@ void main() {
     await tester.idle();
 
     verify(() => resolver.resolve(payload)).called(1);
-    // Routes the user to [TabShell, AssetViewer] so back-press lands on the
-    // main timeline — mirrors the home-screen widget navigation pattern.
     final captured = verify(() => router.replaceAll(captureAny())).captured;
     expect(captured, hasLength(1));
     final routes = captured.single as List<PageRouteInfo<dynamic>>;
     expect(routes, hasLength(2));
     expect(routes[0].routeName, TabShellRoute.name);
     expect(routes[1].routeName, AssetViewerRoute.name);
+  });
+
+  test('handle updates current viewer asset when a new view intent arrives', () async {
+    final secondPayload = ViewIntentPayload(
+      path: '/tmp/incoming-b.jpg',
+      mimeType: 'image/jpeg',
+      localAssetId: 'local-2',
+    );
+    final secondAsset = _localAsset(id: 'local-2');
+    final secondTimelineService = await _createReadyTimelineService([secondAsset], TimelineOrigin.deepLink);
+    addTearDown(() async => secondTimelineService.dispose());
+
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    when(
+      () => resolver.resolve(secondPayload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: secondAsset, timelineService: secondTimelineService));
+
+    await handler.handle(payload);
+    expect(container.read(assetViewerProvider).currentAsset, deepLinkAsset);
+    expect(container.read(viewIntentCurrentProvider), payload);
+
+    await handler.handle(secondPayload);
+
+    expect(container.read(assetViewerProvider).currentAsset, secondAsset);
+    expect(container.read(viewIntentCurrentProvider), secondPayload);
+    verify(() => resolver.resolve(payload)).called(1);
+    verify(() => resolver.resolve(secondPayload)).called(1);
+    verify(() => router.replaceAll(any())).called(2);
+    verifyNever(() => router.replace(any()));
+  });
+
+  test('refreshCurrentAfterUpload waits until the current asset becomes remote-backed', () async {
+    final remoteAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
+    final remoteTimelineService = await _createReadyTimelineService([remoteAsset], TimelineOrigin.deepLink);
+    addTearDown(() async => remoteTimelineService.dispose());
+
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    when(() => assetService.watchRemoteAsset('remote-1')).thenAnswer((_) => Stream.value(remoteAsset));
+    when(() => resolver.timelineFor(any())).thenReturn(remoteTimelineService);
+
+    await handler.handle(payload);
+    await handler.refreshCurrentAfterUpload(remoteAssetId: 'remote-1');
+
+    expect(container.read(assetViewerProvider).currentAsset, remoteAsset);
+    verify(() => resolver.resolve(payload)).called(1);
+    verify(() => assetService.watchRemoteAsset('remote-1')).called(1);
+    verify(() => router.replaceAll(any())).called(2);
+    verifyNever(() => router.replace(any()));
+  });
+
+  test('refreshCurrentAfterUpload uses attachment localAssetId when watched remote asset is remote-only', () async {
+    final remoteAsset = _remoteAsset(id: 'remote-1', localId: null);
+    final viewerAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
+    final remoteTimelineService = _timelineServiceFromAssets([viewerAsset], TimelineOrigin.deepLink);
+    addTearDown(() async => remoteTimelineService.dispose());
+
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    final remoteAssetController = StreamController<RemoteAsset?>();
+    addTearDown(remoteAssetController.close);
+
+    when(() => assetService.watchRemoteAsset('remote-1')).thenAnswer((_) => remoteAssetController.stream);
+    when(() => resolver.timelineFor(any())).thenReturn(remoteTimelineService);
+
+    await handler.handle(payload);
+    final refresh = handler.refreshCurrentAfterUpload(remoteAssetId: 'remote-1');
+    remoteAssetController.add(null);
+    await Future<void>.delayed(Duration.zero);
+    remoteAssetController.add(remoteAsset);
+    await refresh;
+
+    expect(container.read(assetViewerProvider).currentAsset, viewerAsset);
+    verify(() => assetService.watchRemoteAsset('remote-1')).called(1);
+    verify(() => router.replaceAll(any())).called(2);
+    verifyNever(() => router.replace(any()));
+  });
+
+  test('refreshCurrentAfterUpload watches only the uploaded remote asset stream', () async {
+    final remoteAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
+    final remoteTimelineService = _timelineServiceFromAssets([remoteAsset], TimelineOrigin.deepLink);
+    addTearDown(() async => remoteTimelineService.dispose());
+
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    when(() => assetService.watchRemoteAsset('remote-1')).thenAnswer((_) => Stream.value(remoteAsset));
+    when(() => resolver.timelineFor(any())).thenReturn(remoteTimelineService);
+
+    await handler.handle(payload);
+    await handler.refreshCurrentAfterUpload(remoteAssetId: 'remote-1');
+
+    expect(container.read(assetViewerProvider).currentAsset, remoteAsset);
+    verify(() => assetService.watchRemoteAsset('remote-1')).called(1);
+    verifyNever(() => assetService.watchRemoteAsset('remote-2'));
   });
 }
 
@@ -229,15 +337,30 @@ AuthState _authState({required bool isAuthenticated}) {
   );
 }
 
-LocalAsset _localAsset({required String id}) {
+LocalAsset _localAsset({required String id, String? checksum = 'checksum-1', String? remoteId}) {
   return LocalAsset(
     id: id,
+    remoteId: remoteId,
+    name: '$id.jpg',
+    checksum: checksum,
+    type: AssetType.image,
+    createdAt: DateTime(2026, 4, 20),
+    updatedAt: DateTime(2026, 4, 20),
+    playbackStyle: AssetPlaybackStyle.image,
+    isEdited: false,
+  );
+}
+
+RemoteAsset _remoteAsset({required String id, required String? localId}) {
+  return RemoteAsset(
+    id: id,
+    localId: localId,
+    ownerId: 'user-1',
     name: '$id.jpg',
     checksum: 'checksum-1',
     type: AssetType.image,
     createdAt: DateTime(2026, 4, 20),
     updatedAt: DateTime(2026, 4, 20),
-    playbackStyle: AssetPlaybackStyle.image,
     isEdited: false,
   );
 }

@@ -239,7 +239,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
       _onAssetChanged(index);
-    } else if (currentAsset != null && assetIndex == null) {
+    } else if (currentAsset != null && assetIndex == null && timelineService.origin != TimelineOrigin.deepLink) {
       _onAssetChanged(index);
     }
 

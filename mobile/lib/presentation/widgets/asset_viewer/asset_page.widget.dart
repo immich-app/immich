@@ -389,13 +389,14 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentHeroTag = ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
+    final currentViewerAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final currentHeroTag = currentViewerAsset?.heroTag;
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
 
-    final asset = _asset;
+    final asset = timelineOrigin == TimelineOrigin.deepLink && currentViewerAsset != null ? currentViewerAsset : _asset;
     if (asset == null) {
       return const Center(child: ImmichLoadingIndicator());
     }
