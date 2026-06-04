@@ -11,7 +11,7 @@ import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -366,10 +366,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? download;
       bool? upload;
       bool? meta;
-      var password = const Optional<String?>.absent();
-      var description = const Optional<String?>.absent();
+      var password = const Option<String?>.none();
+      var description = const Option<String?>.none();
       String? slug;
-      var expiry = const Optional<DateTime?>.absent();
+      var expiry = const Option<DateTime?>.none();
 
       if (allowDownload.value != existingLink!.allowDownload) {
         download = allowDownload.value;
@@ -385,14 +385,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       if (descriptionController.text != (existingLink!.description ?? '')) {
         description = descriptionController.text.isEmpty
-            ? const Optional.present(null)
-            : Optional.present(descriptionController.text);
+            ? const Option.some(null)
+            : Option.some(descriptionController.text);
       }
 
       if (passwordController.text != (existingLink!.password ?? '')) {
-        password = passwordController.text.isEmpty
-            ? const Optional.present(null)
-            : Optional.present(passwordController.text);
+        password = passwordController.text.isEmpty ? const Option.some(null) : Option.some(passwordController.text);
       }
 
       if (slugController.text != (existingLink!.slug ?? "")) {
@@ -403,7 +401,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       final newExpiry = expiryAfter.value;
       if (newExpiry?.toUtc() != existingLink!.expiresAt?.toUtc()) {
-        expiry = newExpiry == null ? const Optional.present(null) : Optional.present(newExpiry.toUtc());
+        expiry = newExpiry == null ? const Option.some(null) : Option.some(newExpiry.toUtc());
       }
 
       await ref
