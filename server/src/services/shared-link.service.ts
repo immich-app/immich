@@ -124,7 +124,7 @@ export class SharedLinkService extends BaseService {
         userId: auth.user.id,
         description: dto.description,
         password: dto.password,
-        expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
+        expiresAt: dto.expiresAt,
         allowUpload: dto.allowUpload,
         allowDownload: dto.allowDownload,
         showExif: dto.showMetadata,

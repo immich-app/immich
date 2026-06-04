@@ -15,7 +15,6 @@ class SharedLinkEditDto {
   SharedLinkEditDto({
     this.allowDownload = const Optional.absent(),
     this.allowUpload = const Optional.absent(),
-    this.changeExpiryTime = const Optional.absent(),
     this.description = const Optional.absent(),
     this.expiresAt = const Optional.absent(),
     this.password = const Optional.absent(),
@@ -40,15 +39,6 @@ class SharedLinkEditDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   Optional<bool?> allowUpload;
-
-  /// Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Optional<bool?> changeExpiryTime;
 
   /// Link description
   Optional<String?> description;
@@ -75,7 +65,6 @@ class SharedLinkEditDto {
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
     other.allowDownload == allowDownload &&
     other.allowUpload == allowUpload &&
-    other.changeExpiryTime == changeExpiryTime &&
     other.description == description &&
     other.expiresAt == expiresAt &&
     other.password == password &&
@@ -87,7 +76,6 @@ class SharedLinkEditDto {
     // ignore: unnecessary_parenthesis
     (allowDownload == null ? 0 : allowDownload!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
-    (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
@@ -95,7 +83,7 @@ class SharedLinkEditDto {
     (slug == null ? 0 : slug!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -106,10 +94,6 @@ class SharedLinkEditDto {
     if (this.allowUpload.isPresent) {
       final value = this.allowUpload.value;
       json[r'allowUpload'] = value;
-    }
-    if (this.changeExpiryTime.isPresent) {
-      final value = this.changeExpiryTime.value;
-      json[r'changeExpiryTime'] = value;
     }
     if (this.description.isPresent) {
       final value = this.description.value;
@@ -147,7 +131,6 @@ class SharedLinkEditDto {
       return SharedLinkEditDto(
         allowDownload: json.containsKey(r'allowDownload') ? Optional.present(mapValueOfType<bool>(json, r'allowDownload')) : const Optional.absent(),
         allowUpload: json.containsKey(r'allowUpload') ? Optional.present(mapValueOfType<bool>(json, r'allowUpload')) : const Optional.absent(),
-        changeExpiryTime: json.containsKey(r'changeExpiryTime') ? Optional.present(mapValueOfType<bool>(json, r'changeExpiryTime')) : const Optional.absent(),
         description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
         expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
         password: json.containsKey(r'password') ? Optional.present(mapValueOfType<String>(json, r'password')) : const Optional.absent(),
