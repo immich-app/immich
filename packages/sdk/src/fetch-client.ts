@@ -262,6 +262,20 @@ export type UserAdminUpdateDto = {
     /** Storage label */
     storageLabel?: string | null;
 };
+export type CalendarHeatmapResponseDto = {
+    /** Start date in UTC */
+    "from": string;
+    series: {
+        /** Activity count */
+        count: number;
+        /** Date in UTC */
+        date: string;
+    }[];
+    /** End date in UTC */
+    to: string;
+    /** Total activity count over the period */
+    totalCount: number;
+};
 export type AlbumsResponse = {
     defaultAssetOrder: AssetOrder;
 };
@@ -3545,6 +3559,26 @@ export function updateUserAdmin({ id, userAdminUpdateDto }: {
     })));
 }
 /**
+ * Retrieve calendar heatmap activity
+ */
+export function getUserCalendarHeatmapAdmin({ $from, id, to, $type }: {
+    $from?: string;
+    id: string;
+    to?: string;
+    $type?: CalendarHeatmapType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: CalendarHeatmapResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/calendar-heatmap${QS.query(QS.explode({
+        "from": $from,
+        to,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Retrieve user preferences
  */
 export function getUserPreferencesAdmin({ id }: {
@@ -6579,6 +6613,25 @@ export function updateMyUser({ userUpdateMeDto }: {
     })));
 }
 /**
+ * Retrieve calendar heatmap activity
+ */
+export function getMyCalendarHeatmap({ $from, to, $type }: {
+    $from?: string;
+    to?: string;
+    $type?: CalendarHeatmapType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: CalendarHeatmapResponseDto;
+    }>(`/users/me/calendar-heatmap${QS.query(QS.explode({
+        "from": $from,
+        to,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Delete user product key
  */
 export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
@@ -6904,6 +6957,10 @@ export enum UserStatus {
     Active = "active",
     Removing = "removing",
     Deleted = "deleted"
+}
+export enum CalendarHeatmapType {
+    Upload = "Upload",
+    Taken = "Taken"
 }
 export enum AssetOrder {
     Asc = "asc",

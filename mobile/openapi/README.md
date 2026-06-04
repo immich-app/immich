@@ -293,6 +293,7 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**deleteProfileImage**](doc//UsersApi.md#deleteprofileimage) | **DELETE** /users/profile-image | Delete user profile image
 *UsersApi* | [**deleteUserLicense**](doc//UsersApi.md#deleteuserlicense) | **DELETE** /users/me/license | Delete user product key
 *UsersApi* | [**deleteUserOnboarding**](doc//UsersApi.md#deleteuseronboarding) | **DELETE** /users/me/onboarding | Delete user onboarding
+*UsersApi* | [**getMyCalendarHeatmap**](doc//UsersApi.md#getmycalendarheatmap) | **GET** /users/me/calendar-heatmap | Retrieve calendar heatmap activity
 *UsersApi* | [**getMyPreferences**](doc//UsersApi.md#getmypreferences) | **GET** /users/me/preferences | Get my preferences
 *UsersApi* | [**getMyUser**](doc//UsersApi.md#getmyuser) | **GET** /users/me | Get current user
 *UsersApi* | [**getProfileImage**](doc//UsersApi.md#getprofileimage) | **GET** /users/{id}/profile-image | Retrieve user profile image
@@ -307,6 +308,7 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**createUserAdmin**](doc//UsersAdminApi.md#createuseradmin) | **POST** /admin/users | Create a user
 *UsersAdminApi* | [**deleteUserAdmin**](doc//UsersAdminApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | Delete a user
 *UsersAdminApi* | [**getUserAdmin**](doc//UsersAdminApi.md#getuseradmin) | **GET** /admin/users/{id} | Retrieve a user
+*UsersAdminApi* | [**getUserCalendarHeatmapAdmin**](doc//UsersAdminApi.md#getusercalendarheatmapadmin) | **GET** /admin/users/{id}/calendar-heatmap | Retrieve calendar heatmap activity
 *UsersAdminApi* | [**getUserPreferencesAdmin**](doc//UsersAdminApi.md#getuserpreferencesadmin) | **GET** /admin/users/{id}/preferences | Retrieve user preferences
 *UsersAdminApi* | [**getUserSessionsAdmin**](doc//UsersAdminApi.md#getusersessionsadmin) | **GET** /admin/users/{id}/sessions | Retrieve user sessions
 *UsersAdminApi* | [**getUserStatisticsAdmin**](doc//UsersAdminApi.md#getuserstatisticsadmin) | **GET** /admin/users/{id}/statistics | Retrieve user statistics
@@ -398,6 +400,9 @@ Class | Method | HTTP request | Description
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CQMode](doc//CQMode.md)
+ - [CalendarHeatmapResponseDto](doc//CalendarHeatmapResponseDto.md)
+ - [CalendarHeatmapResponseDtoSeriesInner](doc//CalendarHeatmapResponseDtoSeriesInner.md)
+ - [CalendarHeatmapType](doc//CalendarHeatmapType.md)
  - [CastResponse](doc//CastResponse.md)
  - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)

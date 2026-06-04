@@ -78,3 +78,12 @@ export const getAlbumDateRange = (album: { startDate?: string; endDate?: string 
  */
 export const asLocalTimeISO = (date: DateTime<true>) =>
   (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();
+
+const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+type DayOfWeek = (typeof days)[number];
+export const dayOfWeek = (day: DayOfWeek, options?: { locale?: string; style?: 'long' | 'short' | 'narrow' }) => {
+  const fmt = new Intl.DateTimeFormat(options?.locale, { weekday: options?.style ?? 'long', timeZone: 'UTC' });
+  // 2021-08-01 is a Sunday
+  return fmt.format(new Date(Date.UTC(2021, 7, 1 + days.indexOf(day))));
+};

@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { twMerge } from 'tailwind-merge';
 
 export const cleanClass = (...classNames: unknown[]) => {
@@ -16,3 +17,10 @@ export const cleanClass = (...classNames: unknown[]) => {
 };
 
 export const isDefined = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;
+
+export const getHeatmapRange = () => {
+  const to = DateTime.utc().startOf('day');
+  const from = to.minus({ weeks: 51 }).plus({ days: 1 });
+  const fromSunday = from.minus({ days: from.weekday % 7 });
+  return { $from: fromSunday.toISODate()!, to: to.toISODate()! };
+};
