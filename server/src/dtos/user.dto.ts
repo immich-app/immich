@@ -4,7 +4,7 @@ import { pinCodeRegex } from 'src/dtos/auth.dto';
 import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
 import { MaybeDehydrated, UserMetadataItem } from 'src/types';
 import { asDateTimeString } from 'src/utils/date';
-import { isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
+import { isoDateToDate, isoDatetimeToDate, sanitizeFilename, stringToBool, toEmail } from 'src/validation';
 import z from 'zod';
 
 export const UserUpdateMeSchema = z
