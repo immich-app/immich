@@ -97,7 +97,7 @@ class AssetApiRepository extends ApiRepository {
     return _api.updateAsset(assetId, UpdateAssetDto(description: Optional.present(description)));
   }
 
-  Future<void> updateRating(String assetId, int rating) {
+  Future<void> updateRating(String assetId, int? rating) {
     return _api.updateAsset(assetId, UpdateAssetDto(rating: Optional.present(rating)));
   }
 
