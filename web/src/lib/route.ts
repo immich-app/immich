@@ -154,13 +154,13 @@ export const Route = {
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
 
   // continue helper for ensuring same-origin URLs
-  continue: (url: string | null, fallback: string) => {
+  continue: (url: string | null, fallback: string): string | URL => {
     const resolved = new URL(url ?? fallback, document.baseURI);
 
     if (resolved.origin !== location.origin) {
       return fallback;
     }
 
-    return url;
+    return resolved;
   },
 };
