@@ -133,7 +133,7 @@
           fullWidth
           text={$t('no_libraries_message')}
           onClick={() => goto(Route.newLibrary())}
-          class="mt-10 mx-auto"
+          class="mx-auto mt-10"
         />
       {/if}
 

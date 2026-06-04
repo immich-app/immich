@@ -43,9 +43,11 @@ describe(AssetService.name, () => {
       ctx.getMock(EventRepository).emit.mockResolvedValue();
       ctx.getMock(JobRepository).queue.mockResolvedValue();
 
+      const fileSizeInByte = 12_345;
+
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, fileSizeInByte: 12_345 });
+      await ctx.newExif({ assetId: asset.id, fileSizeInByte });
       const auth = factory.auth({ user: { id: user.id } });
 
       await expect(
@@ -56,7 +58,7 @@ describe(AssetService.name, () => {
             fileCreatedAt: new Date(),
             assetData: Buffer.from('some data'),
           },
-          mediumFactory.uploadFile(),
+          mediumFactory.uploadFile({ size: fileSizeInByte }),
         ),
       ).resolves.toEqual({
         id: expect.any(String),
@@ -65,6 +67,7 @@ describe(AssetService.name, () => {
 
       expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AssetCreate', {
         asset: expect.objectContaining({}),
+        file: expect.objectContaining({ size: fileSizeInByte }),
       });
     });
 

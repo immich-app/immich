@@ -130,7 +130,3 @@ These storage mediums have different performance characteristics. As a result, t
 #### Can I use the new database image as a general PostgreSQL image outside of Immich?
 
 It’s a standard PostgreSQL container image that additionally contains the VectorChord, pgvector, and (optionally) pgvecto.rs extensions. If you were using the previous pgvecto.rs image for other purposes, you can similarly do so with this image.
-
-#### If pgvecto.rs and pgvector still work, why should I switch to VectorChord?
-
-VectorChord is faster, more stable, uses less RAM, and (with the settings Immich uses) offers higher-quality results than pgvector and pgvecto.rs. This translates to better search and facial recognition experiences. In addition, pgvecto.rs support will be dropped in the future, so changing it sooner will avoid disruption.

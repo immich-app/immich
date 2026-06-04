@@ -13,18 +13,18 @@ part of openapi.api;
 class UserPreferencesUpdateDto {
   /// Returns a new [UserPreferencesUpdateDto] instance.
   UserPreferencesUpdateDto({
-    this.albums,
-    this.avatar,
-    this.cast,
-    this.download,
-    this.emailNotifications,
-    this.folders,
-    this.memories,
-    this.people,
-    this.purchase,
-    this.ratings,
-    this.sharedLinks,
-    this.tags,
+    this.albums = const Optional.absent(),
+    this.avatar = const Optional.absent(),
+    this.cast = const Optional.absent(),
+    this.download = const Optional.absent(),
+    this.emailNotifications = const Optional.absent(),
+    this.folders = const Optional.absent(),
+    this.memories = const Optional.absent(),
+    this.people = const Optional.absent(),
+    this.purchase = const Optional.absent(),
+    this.ratings = const Optional.absent(),
+    this.sharedLinks = const Optional.absent(),
+    this.tags = const Optional.absent(),
   });
 
   ///
@@ -33,7 +33,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  AlbumsUpdate? albums;
+  Optional<AlbumsUpdate?> albums;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -41,7 +41,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  AvatarUpdate? avatar;
+  Optional<AvatarUpdate?> avatar;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -49,7 +49,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  CastUpdate? cast;
+  Optional<CastUpdate?> cast;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -57,7 +57,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DownloadUpdate? download;
+  Optional<DownloadUpdate?> download;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -65,7 +65,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  EmailNotificationsUpdate? emailNotifications;
+  Optional<EmailNotificationsUpdate?> emailNotifications;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -73,7 +73,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  FoldersUpdate? folders;
+  Optional<FoldersUpdate?> folders;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -81,7 +81,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  MemoriesUpdate? memories;
+  Optional<MemoriesUpdate?> memories;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -89,7 +89,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  PeopleUpdate? people;
+  Optional<PeopleUpdate?> people;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -97,7 +97,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  PurchaseUpdate? purchase;
+  Optional<PurchaseUpdate?> purchase;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -105,7 +105,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  RatingsUpdate? ratings;
+  Optional<RatingsUpdate?> ratings;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -113,7 +113,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  SharedLinksUpdate? sharedLinks;
+  Optional<SharedLinksUpdate?> sharedLinks;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -121,7 +121,7 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  TagsUpdate? tags;
+  Optional<TagsUpdate?> tags;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserPreferencesUpdateDto &&
@@ -159,65 +159,53 @@ class UserPreferencesUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albums != null) {
-      json[r'albums'] = this.albums;
-    } else {
-    //  json[r'albums'] = null;
+    if (this.albums.isPresent) {
+      final value = this.albums.value;
+      json[r'albums'] = value;
     }
-    if (this.avatar != null) {
-      json[r'avatar'] = this.avatar;
-    } else {
-    //  json[r'avatar'] = null;
+    if (this.avatar.isPresent) {
+      final value = this.avatar.value;
+      json[r'avatar'] = value;
     }
-    if (this.cast != null) {
-      json[r'cast'] = this.cast;
-    } else {
-    //  json[r'cast'] = null;
+    if (this.cast.isPresent) {
+      final value = this.cast.value;
+      json[r'cast'] = value;
     }
-    if (this.download != null) {
-      json[r'download'] = this.download;
-    } else {
-    //  json[r'download'] = null;
+    if (this.download.isPresent) {
+      final value = this.download.value;
+      json[r'download'] = value;
     }
-    if (this.emailNotifications != null) {
-      json[r'emailNotifications'] = this.emailNotifications;
-    } else {
-    //  json[r'emailNotifications'] = null;
+    if (this.emailNotifications.isPresent) {
+      final value = this.emailNotifications.value;
+      json[r'emailNotifications'] = value;
     }
-    if (this.folders != null) {
-      json[r'folders'] = this.folders;
-    } else {
-    //  json[r'folders'] = null;
+    if (this.folders.isPresent) {
+      final value = this.folders.value;
+      json[r'folders'] = value;
     }
-    if (this.memories != null) {
-      json[r'memories'] = this.memories;
-    } else {
-    //  json[r'memories'] = null;
+    if (this.memories.isPresent) {
+      final value = this.memories.value;
+      json[r'memories'] = value;
     }
-    if (this.people != null) {
-      json[r'people'] = this.people;
-    } else {
-    //  json[r'people'] = null;
+    if (this.people.isPresent) {
+      final value = this.people.value;
+      json[r'people'] = value;
     }
-    if (this.purchase != null) {
-      json[r'purchase'] = this.purchase;
-    } else {
-    //  json[r'purchase'] = null;
+    if (this.purchase.isPresent) {
+      final value = this.purchase.value;
+      json[r'purchase'] = value;
     }
-    if (this.ratings != null) {
-      json[r'ratings'] = this.ratings;
-    } else {
-    //  json[r'ratings'] = null;
+    if (this.ratings.isPresent) {
+      final value = this.ratings.value;
+      json[r'ratings'] = value;
     }
-    if (this.sharedLinks != null) {
-      json[r'sharedLinks'] = this.sharedLinks;
-    } else {
-    //  json[r'sharedLinks'] = null;
+    if (this.sharedLinks.isPresent) {
+      final value = this.sharedLinks.value;
+      json[r'sharedLinks'] = value;
     }
-    if (this.tags != null) {
-      json[r'tags'] = this.tags;
-    } else {
-    //  json[r'tags'] = null;
+    if (this.tags.isPresent) {
+      final value = this.tags.value;
+      json[r'tags'] = value;
     }
     return json;
   }
@@ -231,18 +219,18 @@ class UserPreferencesUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return UserPreferencesUpdateDto(
-        albums: AlbumsUpdate.fromJson(json[r'albums']),
-        avatar: AvatarUpdate.fromJson(json[r'avatar']),
-        cast: CastUpdate.fromJson(json[r'cast']),
-        download: DownloadUpdate.fromJson(json[r'download']),
-        emailNotifications: EmailNotificationsUpdate.fromJson(json[r'emailNotifications']),
-        folders: FoldersUpdate.fromJson(json[r'folders']),
-        memories: MemoriesUpdate.fromJson(json[r'memories']),
-        people: PeopleUpdate.fromJson(json[r'people']),
-        purchase: PurchaseUpdate.fromJson(json[r'purchase']),
-        ratings: RatingsUpdate.fromJson(json[r'ratings']),
-        sharedLinks: SharedLinksUpdate.fromJson(json[r'sharedLinks']),
-        tags: TagsUpdate.fromJson(json[r'tags']),
+        albums: json.containsKey(r'albums') ? Optional.present(AlbumsUpdate.fromJson(json[r'albums'])) : const Optional.absent(),
+        avatar: json.containsKey(r'avatar') ? Optional.present(AvatarUpdate.fromJson(json[r'avatar'])) : const Optional.absent(),
+        cast: json.containsKey(r'cast') ? Optional.present(CastUpdate.fromJson(json[r'cast'])) : const Optional.absent(),
+        download: json.containsKey(r'download') ? Optional.present(DownloadUpdate.fromJson(json[r'download'])) : const Optional.absent(),
+        emailNotifications: json.containsKey(r'emailNotifications') ? Optional.present(EmailNotificationsUpdate.fromJson(json[r'emailNotifications'])) : const Optional.absent(),
+        folders: json.containsKey(r'folders') ? Optional.present(FoldersUpdate.fromJson(json[r'folders'])) : const Optional.absent(),
+        memories: json.containsKey(r'memories') ? Optional.present(MemoriesUpdate.fromJson(json[r'memories'])) : const Optional.absent(),
+        people: json.containsKey(r'people') ? Optional.present(PeopleUpdate.fromJson(json[r'people'])) : const Optional.absent(),
+        purchase: json.containsKey(r'purchase') ? Optional.present(PurchaseUpdate.fromJson(json[r'purchase'])) : const Optional.absent(),
+        ratings: json.containsKey(r'ratings') ? Optional.present(RatingsUpdate.fromJson(json[r'ratings'])) : const Optional.absent(),
+        sharedLinks: json.containsKey(r'sharedLinks') ? Optional.present(SharedLinksUpdate.fromJson(json[r'sharedLinks'])) : const Optional.absent(),
+        tags: json.containsKey(r'tags') ? Optional.present(TagsUpdate.fromJson(json[r'tags'])) : const Optional.absent(),
       );
     }
     return null;

@@ -53,10 +53,12 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { UserTable } from 'src/schema/tables/user.table';
+import { ClassConstructor } from 'src/types';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
@@ -109,6 +111,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   TrashRepository,
   UserRepository,
   VersionHistoryRepository,
+  VideoStreamRepository,
   ViewRepository,
   WebsocketRepository,
   WorkflowRepository,
@@ -167,6 +170,7 @@ export class BaseService {
     protected trashRepository: TrashRepository,
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
+    protected videoStreamRepository: VideoStreamRepository,
     protected viewRepository: ViewRepository,
     protected websocketRepository: WebsocketRepository,
     protected workflowRepository: WorkflowRepository,
@@ -182,6 +186,66 @@ export class BaseService {
       systemMetadataRepository,
       this.logger,
     );
+  }
+
+  static create<T extends BaseService>(Service: ClassConstructor<T>, ctx: BaseService) {
+    const service = new Service(
+      LoggingRepository.create(),
+      ctx.accessRepository,
+      ctx.activityRepository,
+      ctx.albumRepository,
+      ctx.albumUserRepository,
+      ctx.apiKeyRepository,
+      ctx.appRepository,
+      ctx.assetRepository,
+      ctx.assetEditRepository,
+      ctx.assetJobRepository,
+      ctx.configRepository,
+      ctx.cronRepository,
+      ctx.cryptoRepository,
+      ctx.databaseRepository,
+      ctx.downloadRepository,
+      ctx.duplicateRepository,
+      ctx.emailRepository,
+      ctx.eventRepository,
+      ctx.jobRepository,
+      ctx.libraryRepository,
+      ctx.machineLearningRepository,
+      ctx.mapRepository,
+      ctx.mediaRepository,
+      ctx.memoryRepository,
+      ctx.metadataRepository,
+      ctx.moveRepository,
+      ctx.notificationRepository,
+      ctx.oauthRepository,
+      ctx.ocrRepository,
+      ctx.partnerRepository,
+      ctx.personRepository,
+      ctx.pluginRepository,
+      ctx.processRepository,
+      ctx.searchRepository,
+      ctx.serverInfoRepository,
+      ctx.sessionRepository,
+      ctx.sharedLinkRepository,
+      ctx.sharedLinkAssetRepository,
+      ctx.stackRepository,
+      ctx.storageRepository,
+      ctx.syncRepository,
+      ctx.syncCheckpointRepository,
+      ctx.systemMetadataRepository,
+      ctx.tagRepository,
+      ctx.telemetryRepository,
+      ctx.trashRepository,
+      ctx.userRepository,
+      ctx.versionRepository,
+      ctx.viewRepository,
+      ctx.websocketRepository,
+      ctx.workflowRepository,
+    );
+
+    service.logger.setContext(this.name);
+
+    return service as T;
   }
 
   get worker() {
@@ -215,7 +279,8 @@ export class BaseService {
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
     const exists = await this.userRepository.getByEmail(dto.email);
     if (exists) {
-      throw new BadRequestException('User exists');
+      this.logger.debug('User creation rejected: user already exists');
+      throw new BadRequestException('Email is not available');
     }
 
     if (!dto.isAdmin) {

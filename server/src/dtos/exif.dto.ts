@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { Exif } from 'src/database';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
+import { asDateTimeString } from 'src/utils/date';
 import z from 'zod';
 
 export const ExifResponseSchema = z
@@ -44,8 +44,8 @@ export function mapExif(entity: MaybeDehydrated<Exif>): ExifResponseDto {
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: asDateString(entity.dateTimeOriginal),
-    modifyDate: asDateString(entity.modifyDate),
+    dateTimeOriginal: asDateTimeString(entity.dateTimeOriginal),
+    modifyDate: asDateTimeString(entity.modifyDate),
     timeZone: entity.timeZone,
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,

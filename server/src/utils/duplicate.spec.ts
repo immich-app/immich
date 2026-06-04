@@ -16,7 +16,7 @@ const createAsset = (
   type: AssetType.Image,
   thumbhash: null,
   localDateTime: new Date().toISOString(),
-  duration: '0:00:00.00000',
+  duration: 0,
   hasMetadata: true,
   width: 1920,
   height: 1080,

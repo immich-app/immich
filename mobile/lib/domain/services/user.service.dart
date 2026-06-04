@@ -12,9 +12,7 @@ class UserService {
   final UserApiRepository _userApiRepository;
   final StoreService _storeService;
 
-  UserService({required UserApiRepository userApiRepository, required StoreService storeService})
-    : _userApiRepository = userApiRepository,
-      _storeService = storeService;
+  UserService({required this._userApiRepository, required this._storeService});
 
   UserDto getMyUser() {
     return _storeService.get(StoreKey.currentUser);
@@ -30,7 +28,9 @@ class UserService {
 
   Future<UserDto?> refreshMyUser() async {
     final user = await _userApiRepository.getMyUser();
-    if (user == null) return null;
+    if (user == null) {
+      return null;
+    }
     await _storeService.put(StoreKey.currentUser, user);
     return user;
   }

@@ -50,9 +50,7 @@ class AppBarServerInfo extends HookConsumerWidget {
           divider,
           _ServerInfoItem(
             label: "server_version".tr(),
-            text: serverInfoState.serverVersion.major > 0
-                ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                : "--",
+            text: serverInfoState.serverVersion.major > 0 ? "${serverInfoState.serverVersion}" : "--",
           ),
           divider,
           _ServerInfoItem(label: "server_info_box_server_url".tr(), text: getServerUrl() ?? '--', tooltip: true),
@@ -60,9 +58,7 @@ class AppBarServerInfo extends HookConsumerWidget {
             divider,
             _ServerInfoItem(
               label: "latest_version".tr(),
-              text: serverInfoState.latestVersion!.major > 0
-                  ? "${serverInfoState.latestVersion!.major}.${serverInfoState.latestVersion!.minor}.${serverInfoState.latestVersion!.patch}"
-                  : "--",
+              text: serverInfoState.latestVersion!.major > 0 ? "${serverInfoState.latestVersion!}" : "--",
               tooltip: true,
               icon: serverInfoState.versionStatus == VersionStatus.serverOutOfDate
                   ? const Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12)

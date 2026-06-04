@@ -31,7 +31,7 @@ describe(AssetController.name, () => {
         .send({ ids: ['123'] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[ids.0] Invalid UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['ids', 0], message: 'Invalid UUID' }]));
     });
 
     it('should require duplicateId to be a string', async () => {
@@ -42,7 +42,9 @@ describe(AssetController.name, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['[duplicateId] Invalid input: expected string, received boolean']),
+        factory.responses.validationError([
+          { path: ['duplicateId'], message: 'Invalid input: expected string, received boolean' },
+        ]),
       );
     });
 
@@ -70,7 +72,7 @@ describe(AssetController.name, () => {
         .send({ ids: ['123'] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[ids.0] Invalid UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['ids', 0], message: 'Invalid UUID' }]));
     });
   });
 
@@ -83,7 +85,7 @@ describe(AssetController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[id] Invalid UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 
@@ -97,12 +99,10 @@ describe(AssetController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).put('/assets/copy').send({});
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining([
-            '[sourceId] Invalid input: expected string, received undefined',
-            '[targetId] Invalid input: expected string, received undefined',
-          ]),
-        ),
+        factory.responses.validationError([
+          { path: ['sourceId'], message: 'Invalid input: expected string, received undefined' },
+          { path: ['targetId'], message: 'Invalid input: expected string, received undefined' },
+        ]),
       );
     });
 
@@ -125,7 +125,9 @@ describe(AssetController.name, () => {
         .put('/assets/metadata')
         .send({ items: [{ assetId: '123', key: 'test', value: {} }] });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['[items.0.assetId] Invalid UUID'])));
+      expect(body).toEqual(
+        factory.responses.validationError([{ path: ['items', 0, 'assetId'], message: 'Invalid UUID' }]),
+      );
     });
 
     it('should require a key', async () => {
@@ -134,9 +136,9 @@ describe(AssetController.name, () => {
         .send({ items: [{ assetId: factory.uuid(), value: {} }] });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining(['[items.0.key] Invalid input: expected string, received undefined']),
-        ),
+        factory.responses.validationError([
+          { path: ['items', 0, 'key'], message: 'Invalid input: expected string, received undefined' },
+        ]),
       );
     });
 
@@ -159,7 +161,9 @@ describe(AssetController.name, () => {
         .delete('/assets/metadata')
         .send({ items: [{ assetId: '123', key: 'test' }] });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['[items.0.assetId] Invalid UUID'])));
+      expect(body).toEqual(
+        factory.responses.validationError([{ path: ['items', 0, 'assetId'], message: 'Invalid UUID' }]),
+      );
     });
 
     it('should require a key', async () => {
@@ -168,9 +172,9 @@ describe(AssetController.name, () => {
         .send({ items: [{ assetId: factory.uuid() }] });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining(['[items.0.key] Invalid input: expected string, received undefined']),
-        ),
+        factory.responses.validationError([
+          { path: ['items', 0, 'key'], message: 'Invalid input: expected string, received undefined' },
+        ]),
       );
     });
 
@@ -191,33 +195,56 @@ describe(AssetController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/assets/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['Invalid input: expected object, received undefined']));
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: [], message: 'Invalid input: expected object, received undefined' },
+        ]),
+      );
     });
 
     it('should reject invalid gps coordinates', async () => {
-      for (const test of [
-        { latitude: 12 },
-        { longitude: 12 },
-        { latitude: 12, longitude: 'abc' },
-        { latitude: 'abc', longitude: 12 },
-        { latitude: null, longitude: 12 },
-        { latitude: 12, longitude: null },
-        { latitude: 91, longitude: 12 },
-        { latitude: -91, longitude: 12 },
-        { latitude: 12, longitude: -181 },
-        { latitude: 12, longitude: 181 },
-      ]) {
+      for (const [test, errors] of [
+        [{ latitude: 12 }, [{ path: [], message: 'Latitude and longitude must be provided together' }]],
+        [{ longitude: 12 }, [{ path: [], message: 'Latitude and longitude must be provided together' }]],
+        [
+          { latitude: 12, longitude: 'abc' },
+          [{ path: ['longitude'], message: 'Invalid input: expected number, received string' }],
+        ],
+        [
+          { latitude: 'abc', longitude: 12 },
+          [{ path: ['latitude'], message: 'Invalid input: expected number, received string' }],
+        ],
+        [
+          { latitude: null, longitude: 12 },
+          [{ path: ['latitude'], message: 'Invalid input: expected number, received null' }],
+        ],
+        [
+          { latitude: 12, longitude: null },
+          [{ path: ['longitude'], message: 'Invalid input: expected number, received null' }],
+        ],
+        [{ latitude: 91, longitude: 12 }, [{ path: ['latitude'], message: 'Too big: expected number to be <=90' }]],
+        [{ latitude: -91, longitude: 12 }, [{ path: ['latitude'], message: 'Too small: expected number to be >=-90' }]],
+        [
+          { latitude: 12, longitude: -181 },
+          [{ path: ['longitude'], message: 'Too small: expected number to be >=-180' }],
+        ],
+        [{ latitude: 12, longitude: 181 }, [{ path: ['longitude'], message: 'Too big: expected number to be <=180' }]],
+      ] as const) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
-        expect(body).toEqual(factory.responses.badRequest());
+        expect(body).toEqual(factory.responses.validationError(errors));
       }
     });
 
     it('should reject invalid rating', async () => {
-      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: -2 }]) {
+      for (const [test, errors] of [
+        [{ rating: 7 }, [{ path: ['rating'], message: 'Too big: expected number to be <=5' }]],
+        [{ rating: 3.5 }, [{ path: ['rating'], message: 'Invalid input: expected int, received number' }]],
+        [{ rating: -2 }, [{ path: ['rating'], message: 'Too small: expected number to be >=-1' }]],
+      ] as const) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
-        expect(body).toEqual(factory.responses.badRequest());
+        expect(body).toEqual(factory.responses.validationError(errors));
       }
     });
 
@@ -261,13 +288,17 @@ describe(AssetController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/assets/123/metadata`).send({ items: [] });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['[id] Invalid UUID'])));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should require items to be an array', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}/metadata`).send({});
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[items] Invalid input: expected array, received undefined']));
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['items'], message: 'Invalid input: expected array, received undefined' },
+        ]),
+      );
     });
 
     it('should require each item to have a valid key', async () => {
@@ -276,7 +307,9 @@ describe(AssetController.name, () => {
         .send({ items: [{ value: { some: 'value' } }] });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['[items.0.key] Invalid input: expected string, received undefined']),
+        factory.responses.validationError([
+          { path: ['items', 0, 'key'], message: 'Invalid input: expected string, received undefined' },
+        ]),
       );
     });
 
@@ -286,9 +319,9 @@ describe(AssetController.name, () => {
         .send({ items: [{ key: 'mobile-app', value: null }] });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining(['[items.0.value] Invalid input: expected record, received null']),
-        ),
+        factory.responses.validationError([
+          { path: ['items', 0, 'value'], message: 'Invalid input: expected record, received null' },
+        ]),
       );
     });
 
@@ -326,7 +359,7 @@ describe(AssetController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/assets/123/metadata/mobile-app`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['[id] Invalid UUID'])));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 
@@ -376,7 +409,7 @@ describe(AssetController.name, () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['[id] Invalid UUID'])));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should check the action and parameters discriminator', async () => {
@@ -398,13 +431,12 @@ describe(AssetController.name, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(
-          expect.arrayContaining([
-            expect.stringContaining(
-              "[edits.0.parameters] Invalid parameters for action 'rotate', expecting keys: angle",
-            ),
-          ]),
-        ),
+        factory.responses.validationError([
+          {
+            path: ['edits', 0, 'parameters'],
+            message: expect.stringContaining("Invalid parameters for action 'rotate', expecting keys: angle"),
+          },
+        ]),
       );
     });
 
@@ -413,7 +445,11 @@ describe(AssetController.name, () => {
         .put(`/assets/${factory.uuid()}/edits`)
         .send({ edits: [] });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[edits] Too small: expected array to have >=1 items']));
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['edits'], message: 'Too small: expected array to have >=1 items' },
+        ]),
+      );
     });
   });
 
@@ -426,7 +462,7 @@ describe(AssetController.name, () => {
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/assets/123/metadata/mobile-app`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['[id] Invalid UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 });

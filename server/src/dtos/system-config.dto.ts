@@ -7,7 +7,6 @@ import {
   OcrConfigSchema,
 } from 'src/dtos/model-config.dto';
 import {
-  AudioCodec,
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
@@ -65,10 +64,7 @@ const SystemConfigFFmpegSchema = z
     targetVideoCodec: VideoCodecSchema,
     acceptedVideoCodecs: z.array(VideoCodecSchema).describe('Accepted video codecs'),
     targetAudioCodec: AudioCodecSchema,
-    acceptedAudioCodecs: z
-      .array(AudioCodecSchema)
-      .transform((value): AudioCodec[] => value.map((v) => (v === AudioCodec.Libopus ? AudioCodec.Opus : v)))
-      .describe('Accepted audio codecs'),
+    acceptedAudioCodecs: z.array(AudioCodecSchema).describe('Accepted audio codecs'),
     acceptedContainers: z.array(VideoContainerSchema).describe('Accepted containers'),
     targetResolution: z.string().describe('Target resolution'),
     maxBitrate: z.string().describe('Max bitrate'),
@@ -83,6 +79,11 @@ const SystemConfigFFmpegSchema = z
     accel: TranscodeHardwareAccelerationSchema,
     accelDecode: configBool.describe('Accelerated decode'),
     tonemap: ToneMappingSchema,
+    realtime: z
+      .object({
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+      })
+      .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 
@@ -155,8 +156,15 @@ const SystemConfigMapSchema = z
   })
   .meta({ id: 'SystemConfigMapDto' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 const SystemConfigNewVersionCheckSchema = z
-  .object({ enabled: configBool.describe('Enabled') })
+  .object({ enabled: configBool.describe('Enabled'), channel: ReleaseChannelSchema })
   .meta({ id: 'SystemConfigNewVersionCheckDto' });
 
 const SystemConfigNightlyTasksSchema = z

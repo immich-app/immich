@@ -41,7 +41,7 @@
   withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
   withBackdrop={$status?.action === MaintenanceAction.Start}
 >
-  <div class="flex flex-col place-items-center text-center gap-8">
+  <div class="flex flex-col place-items-center gap-8 text-center">
     {#if $status?.action === MaintenanceAction.RestoreDatabase}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
       {#if $status.error}

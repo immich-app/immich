@@ -1,6 +1,5 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:openapi/api.dart' as api;
 
@@ -12,17 +11,18 @@ extension DTOToAsset on api.AssetResponseDto {
       checksum: checksum,
       createdAt: fileCreatedAt,
       updatedAt: updatedAt,
+      uploadedAt: createdAt,
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
-      durationMs: duration?.toDuration()?.inMilliseconds ?? 0,
+      durationMs: duration,
       height: height?.toInt(),
       width: width?.toInt(),
       isFavorite: isFavorite,
-      livePhotoVideoId: livePhotoVideoId,
+      livePhotoVideoId: livePhotoVideoId.orElse(null),
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
-      stackId: stack?.id,
+      stackId: stack.orElse(null)?.id,
       isEdited: isEdited,
     );
   }
@@ -34,19 +34,20 @@ extension DTOToAsset on api.AssetResponseDto {
       checksum: checksum,
       createdAt: fileCreatedAt,
       updatedAt: updatedAt,
+      uploadedAt: createdAt,
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
-      durationMs: duration?.toDuration()?.inMilliseconds ?? 0,
+      durationMs: duration,
       height: height?.toInt(),
       width: width?.toInt(),
       isFavorite: isFavorite,
-      livePhotoVideoId: livePhotoVideoId,
+      livePhotoVideoId: livePhotoVideoId.orElse(null),
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
-      stackId: stack?.id,
+      stackId: stack.orElse(null)?.id,
       isEdited: isEdited,
-      exifInfo: exifInfo != null ? ExifDtoConverter.fromDto(exifInfo!) : const ExifInfo(),
+      exifInfo: exifInfo.orElse(null) != null ? ExifDtoConverter.fromDto(exifInfo.orElse(null)!) : const ExifInfo(),
     );
   }
 }

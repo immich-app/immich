@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 
 LocalAsset createLocalAsset({
@@ -35,7 +36,9 @@ RemoteAsset createRemoteAsset({
   AssetType type = AssetType.image,
   DateTime? createdAt,
   DateTime? updatedAt,
+  DateTime? uploadedAt,
   bool isFavorite = false,
+  DateTime? deletedAt,
 }) {
   return RemoteAsset(
     id: 'remote-id',
@@ -46,8 +49,10 @@ RemoteAsset createRemoteAsset({
     ownerId: 'owner-id',
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
+    uploadedAt: uploadedAt ?? DateTime.now(),
     isFavorite: isFavorite,
     isEdited: false,
+    deletedAt: deletedAt,
   );
 }
 
@@ -456,6 +461,62 @@ void main() {
 
         expect(ActionButtonType.trash.shouldShow(context), isFalse);
       });
+
+      test('should not show when asset is already trashed', () {
+        final remoteAsset = createRemoteAsset(deletedAt: DateTime(2024));
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.viewer,
+          timelineOrigin: TimelineOrigin.trash,
+        );
+
+        expect(ActionButtonType.trash.shouldShow(context), isFalse);
+      });
+    });
+
+    group('restoreTrash button', () {
+      test('should show when owner, not locked, has remote, and is in trash timeline', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.trash,
+        );
+
+        expect(ActionButtonType.restoreTrash.shouldShow(context), isTrue);
+      });
+
+      test('should not show when not in trash timeline', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: false,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.main,
+        );
+
+        expect(ActionButtonType.restoreTrash.shouldShow(context), isFalse);
+      });
     });
 
     group('deletePermanent button', () {
@@ -491,6 +552,24 @@ void main() {
         );
 
         expect(ActionButtonType.deletePermanent.shouldShow(context), isFalse);
+      });
+
+      test('should show when asset is trashed even with trash enabled', () {
+        final remoteAsset = createRemoteAsset(deletedAt: DateTime(2024));
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.viewer,
+          timelineOrigin: TimelineOrigin.trash,
+        );
+
+        expect(ActionButtonType.deletePermanent.shouldShow(context), isTrue);
       });
     });
 
