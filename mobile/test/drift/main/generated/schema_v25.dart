@@ -8792,216 +8792,67 @@ class AssetEditEntityCompanion extends UpdateCompanion<AssetEditEntityData> {
   }
 }
 
-class AssetOcrEntity extends Table
-    with TableInfo<AssetOcrEntity, AssetOcrEntityData> {
+class Metadata extends Table with TableInfo<Metadata, MetadataData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  AssetOcrEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
+  Metadata(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
-  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
-    'asset_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints:
-        'NOT NULL REFERENCES remote_asset_entity(id)ON DELETE CASCADE',
-  );
-  late final GeneratedColumn<double> x1 = GeneratedColumn<double>(
-    'x1',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> y1 = GeneratedColumn<double>(
-    'y1',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> x2 = GeneratedColumn<double>(
-    'x2',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> y2 = GeneratedColumn<double>(
-    'y2',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> x3 = GeneratedColumn<double>(
-    'x3',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> y3 = GeneratedColumn<double>(
-    'y3',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> x4 = GeneratedColumn<double>(
-    'x4',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> y4 = GeneratedColumn<double>(
-    'y4',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> boxScore = GeneratedColumn<double>(
-    'box_score',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<double> textScore = GeneratedColumn<double>(
-    'text_score',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<String> recognizedText = GeneratedColumn<String>(
-    'recognized_text',
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
-  late final GeneratedColumn<int> isVisible = GeneratedColumn<int>(
-    'is_visible',
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 1 CHECK (is_visible IN (0, 1))',
-    defaultValue: const CustomExpression('1'),
+    $customConstraints: 'NOT NULL DEFAULT CURRENT_TIMESTAMP',
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    assetId,
-    x1,
-    y1,
-    x2,
-    y2,
-    x3,
-    y3,
-    x4,
-    y4,
-    boxScore,
-    textScore,
-    recognizedText,
-    isVisible,
-  ];
+  List<GeneratedColumn> get $columns => [key, value, updatedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'asset_ocr_entity';
+  static const String $name = 'metadata';
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {key};
   @override
-  AssetOcrEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  MetadataData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AssetOcrEntityData(
-      id: attachedDatabase.typeMapping.read(
+    return MetadataData(
+      key: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}id'],
+        data['${effectivePrefix}key'],
       )!,
-      assetId: attachedDatabase.typeMapping.read(
+      value: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}asset_id'],
+        data['${effectivePrefix}value'],
       )!,
-      x1: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}x1'],
-      )!,
-      y1: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}y1'],
-      )!,
-      x2: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}x2'],
-      )!,
-      y2: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}y2'],
-      )!,
-      x3: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}x3'],
-      )!,
-      y3: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}y3'],
-      )!,
-      x4: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}x4'],
-      )!,
-      y4: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}y4'],
-      )!,
-      boxScore: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}box_score'],
-      )!,
-      textScore: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}text_score'],
-      )!,
-      recognizedText: attachedDatabase.typeMapping.read(
+      updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}recognized_text'],
-      )!,
-      isVisible: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}is_visible'],
+        data['${effectivePrefix}updated_at'],
       )!,
     );
   }
 
   @override
-  AssetOcrEntity createAlias(String alias) {
-    return AssetOcrEntity(attachedDatabase, alias);
+  Metadata createAlias(String alias) {
+    return Metadata(attachedDatabase, alias);
   }
 
   @override
@@ -9009,408 +8860,145 @@ class AssetOcrEntity extends Table
   @override
   bool get isStrict => true;
   @override
-  List<String> get customConstraints => const ['PRIMARY KEY(id)'];
+  List<String> get customConstraints => const ['PRIMARY KEY("key")'];
   @override
   bool get dontWriteConstraints => true;
 }
 
-class AssetOcrEntityData extends DataClass
-    implements Insertable<AssetOcrEntityData> {
-  final String id;
-  final String assetId;
-  final double x1;
-  final double y1;
-  final double x2;
-  final double y2;
-  final double x3;
-  final double y3;
-  final double x4;
-  final double y4;
-  final double boxScore;
-  final double textScore;
-  final String recognizedText;
-  final int isVisible;
-  const AssetOcrEntityData({
-    required this.id,
-    required this.assetId,
-    required this.x1,
-    required this.y1,
-    required this.x2,
-    required this.y2,
-    required this.x3,
-    required this.y3,
-    required this.x4,
-    required this.y4,
-    required this.boxScore,
-    required this.textScore,
-    required this.recognizedText,
-    required this.isVisible,
+class MetadataData extends DataClass implements Insertable<MetadataData> {
+  final String key;
+  final String value;
+  final String updatedAt;
+  const MetadataData({
+    required this.key,
+    required this.value,
+    required this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['asset_id'] = Variable<String>(assetId);
-    map['x1'] = Variable<double>(x1);
-    map['y1'] = Variable<double>(y1);
-    map['x2'] = Variable<double>(x2);
-    map['y2'] = Variable<double>(y2);
-    map['x3'] = Variable<double>(x3);
-    map['y3'] = Variable<double>(y3);
-    map['x4'] = Variable<double>(x4);
-    map['y4'] = Variable<double>(y4);
-    map['box_score'] = Variable<double>(boxScore);
-    map['text_score'] = Variable<double>(textScore);
-    map['recognized_text'] = Variable<String>(recognizedText);
-    map['is_visible'] = Variable<int>(isVisible);
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    map['updated_at'] = Variable<String>(updatedAt);
     return map;
   }
 
-  factory AssetOcrEntityData.fromJson(
+  factory MetadataData.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AssetOcrEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      assetId: serializer.fromJson<String>(json['assetId']),
-      x1: serializer.fromJson<double>(json['x1']),
-      y1: serializer.fromJson<double>(json['y1']),
-      x2: serializer.fromJson<double>(json['x2']),
-      y2: serializer.fromJson<double>(json['y2']),
-      x3: serializer.fromJson<double>(json['x3']),
-      y3: serializer.fromJson<double>(json['y3']),
-      x4: serializer.fromJson<double>(json['x4']),
-      y4: serializer.fromJson<double>(json['y4']),
-      boxScore: serializer.fromJson<double>(json['boxScore']),
-      textScore: serializer.fromJson<double>(json['textScore']),
-      recognizedText: serializer.fromJson<String>(json['recognizedText']),
-      isVisible: serializer.fromJson<int>(json['isVisible']),
+    return MetadataData(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'assetId': serializer.toJson<String>(assetId),
-      'x1': serializer.toJson<double>(x1),
-      'y1': serializer.toJson<double>(y1),
-      'x2': serializer.toJson<double>(x2),
-      'y2': serializer.toJson<double>(y2),
-      'x3': serializer.toJson<double>(x3),
-      'y3': serializer.toJson<double>(y3),
-      'x4': serializer.toJson<double>(x4),
-      'y4': serializer.toJson<double>(y4),
-      'boxScore': serializer.toJson<double>(boxScore),
-      'textScore': serializer.toJson<double>(textScore),
-      'recognizedText': serializer.toJson<String>(recognizedText),
-      'isVisible': serializer.toJson<int>(isVisible),
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+      'updatedAt': serializer.toJson<String>(updatedAt),
     };
   }
 
-  AssetOcrEntityData copyWith({
-    String? id,
-    String? assetId,
-    double? x1,
-    double? y1,
-    double? x2,
-    double? y2,
-    double? x3,
-    double? y3,
-    double? x4,
-    double? y4,
-    double? boxScore,
-    double? textScore,
-    String? recognizedText,
-    int? isVisible,
-  }) => AssetOcrEntityData(
-    id: id ?? this.id,
-    assetId: assetId ?? this.assetId,
-    x1: x1 ?? this.x1,
-    y1: y1 ?? this.y1,
-    x2: x2 ?? this.x2,
-    y2: y2 ?? this.y2,
-    x3: x3 ?? this.x3,
-    y3: y3 ?? this.y3,
-    x4: x4 ?? this.x4,
-    y4: y4 ?? this.y4,
-    boxScore: boxScore ?? this.boxScore,
-    textScore: textScore ?? this.textScore,
-    recognizedText: recognizedText ?? this.recognizedText,
-    isVisible: isVisible ?? this.isVisible,
-  );
-  AssetOcrEntityData copyWithCompanion(AssetOcrEntityCompanion data) {
-    return AssetOcrEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      assetId: data.assetId.present ? data.assetId.value : this.assetId,
-      x1: data.x1.present ? data.x1.value : this.x1,
-      y1: data.y1.present ? data.y1.value : this.y1,
-      x2: data.x2.present ? data.x2.value : this.x2,
-      y2: data.y2.present ? data.y2.value : this.y2,
-      x3: data.x3.present ? data.x3.value : this.x3,
-      y3: data.y3.present ? data.y3.value : this.y3,
-      x4: data.x4.present ? data.x4.value : this.x4,
-      y4: data.y4.present ? data.y4.value : this.y4,
-      boxScore: data.boxScore.present ? data.boxScore.value : this.boxScore,
-      textScore: data.textScore.present ? data.textScore.value : this.textScore,
-      recognizedText: data.recognizedText.present
-          ? data.recognizedText.value
-          : this.recognizedText,
-      isVisible: data.isVisible.present ? data.isVisible.value : this.isVisible,
+  MetadataData copyWith({String? key, String? value, String? updatedAt}) =>
+      MetadataData(
+        key: key ?? this.key,
+        value: value ?? this.value,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  MetadataData copyWithCompanion(MetadataCompanion data) {
+    return MetadataData(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('AssetOcrEntityData(')
-          ..write('id: $id, ')
-          ..write('assetId: $assetId, ')
-          ..write('x1: $x1, ')
-          ..write('y1: $y1, ')
-          ..write('x2: $x2, ')
-          ..write('y2: $y2, ')
-          ..write('x3: $x3, ')
-          ..write('y3: $y3, ')
-          ..write('x4: $x4, ')
-          ..write('y4: $y4, ')
-          ..write('boxScore: $boxScore, ')
-          ..write('textScore: $textScore, ')
-          ..write('recognizedText: $recognizedText, ')
-          ..write('isVisible: $isVisible')
+    return (StringBuffer('MetadataData(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    assetId,
-    x1,
-    y1,
-    x2,
-    y2,
-    x3,
-    y3,
-    x4,
-    y4,
-    boxScore,
-    textScore,
-    recognizedText,
-    isVisible,
-  );
+  int get hashCode => Object.hash(key, value, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AssetOcrEntityData &&
-          other.id == this.id &&
-          other.assetId == this.assetId &&
-          other.x1 == this.x1 &&
-          other.y1 == this.y1 &&
-          other.x2 == this.x2 &&
-          other.y2 == this.y2 &&
-          other.x3 == this.x3 &&
-          other.y3 == this.y3 &&
-          other.x4 == this.x4 &&
-          other.y4 == this.y4 &&
-          other.boxScore == this.boxScore &&
-          other.textScore == this.textScore &&
-          other.recognizedText == this.recognizedText &&
-          other.isVisible == this.isVisible);
+      (other is MetadataData &&
+          other.key == this.key &&
+          other.value == this.value &&
+          other.updatedAt == this.updatedAt);
 }
 
-class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
-  final Value<String> id;
-  final Value<String> assetId;
-  final Value<double> x1;
-  final Value<double> y1;
-  final Value<double> x2;
-  final Value<double> y2;
-  final Value<double> x3;
-  final Value<double> y3;
-  final Value<double> x4;
-  final Value<double> y4;
-  final Value<double> boxScore;
-  final Value<double> textScore;
-  final Value<String> recognizedText;
-  final Value<int> isVisible;
-  const AssetOcrEntityCompanion({
-    this.id = const Value.absent(),
-    this.assetId = const Value.absent(),
-    this.x1 = const Value.absent(),
-    this.y1 = const Value.absent(),
-    this.x2 = const Value.absent(),
-    this.y2 = const Value.absent(),
-    this.x3 = const Value.absent(),
-    this.y3 = const Value.absent(),
-    this.x4 = const Value.absent(),
-    this.y4 = const Value.absent(),
-    this.boxScore = const Value.absent(),
-    this.textScore = const Value.absent(),
-    this.recognizedText = const Value.absent(),
-    this.isVisible = const Value.absent(),
+class MetadataCompanion extends UpdateCompanion<MetadataData> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<String> updatedAt;
+  const MetadataCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.updatedAt = const Value.absent(),
   });
-  AssetOcrEntityCompanion.insert({
-    required String id,
-    required String assetId,
-    required double x1,
-    required double y1,
-    required double x2,
-    required double y2,
-    required double x3,
-    required double y3,
-    required double x4,
-    required double y4,
-    required double boxScore,
-    required double textScore,
-    required String recognizedText,
-    this.isVisible = const Value.absent(),
-  }) : id = Value(id),
-       assetId = Value(assetId),
-       x1 = Value(x1),
-       y1 = Value(y1),
-       x2 = Value(x2),
-       y2 = Value(y2),
-       x3 = Value(x3),
-       y3 = Value(y3),
-       x4 = Value(x4),
-       y4 = Value(y4),
-       boxScore = Value(boxScore),
-       textScore = Value(textScore),
-       recognizedText = Value(recognizedText);
-  static Insertable<AssetOcrEntityData> custom({
-    Expression<String>? id,
-    Expression<String>? assetId,
-    Expression<double>? x1,
-    Expression<double>? y1,
-    Expression<double>? x2,
-    Expression<double>? y2,
-    Expression<double>? x3,
-    Expression<double>? y3,
-    Expression<double>? x4,
-    Expression<double>? y4,
-    Expression<double>? boxScore,
-    Expression<double>? textScore,
-    Expression<String>? recognizedText,
-    Expression<int>? isVisible,
+  MetadataCompanion.insert({
+    required String key,
+    required String value,
+    this.updatedAt = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<MetadataData> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<String>? updatedAt,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (assetId != null) 'asset_id': assetId,
-      if (x1 != null) 'x1': x1,
-      if (y1 != null) 'y1': y1,
-      if (x2 != null) 'x2': x2,
-      if (y2 != null) 'y2': y2,
-      if (x3 != null) 'x3': x3,
-      if (y3 != null) 'y3': y3,
-      if (x4 != null) 'x4': x4,
-      if (y4 != null) 'y4': y4,
-      if (boxScore != null) 'box_score': boxScore,
-      if (textScore != null) 'text_score': textScore,
-      if (recognizedText != null) 'recognized_text': recognizedText,
-      if (isVisible != null) 'is_visible': isVisible,
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
 
-  AssetOcrEntityCompanion copyWith({
-    Value<String>? id,
-    Value<String>? assetId,
-    Value<double>? x1,
-    Value<double>? y1,
-    Value<double>? x2,
-    Value<double>? y2,
-    Value<double>? x3,
-    Value<double>? y3,
-    Value<double>? x4,
-    Value<double>? y4,
-    Value<double>? boxScore,
-    Value<double>? textScore,
-    Value<String>? recognizedText,
-    Value<int>? isVisible,
+  MetadataCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<String>? updatedAt,
   }) {
-    return AssetOcrEntityCompanion(
-      id: id ?? this.id,
-      assetId: assetId ?? this.assetId,
-      x1: x1 ?? this.x1,
-      y1: y1 ?? this.y1,
-      x2: x2 ?? this.x2,
-      y2: y2 ?? this.y2,
-      x3: x3 ?? this.x3,
-      y3: y3 ?? this.y3,
-      x4: x4 ?? this.x4,
-      y4: y4 ?? this.y4,
-      boxScore: boxScore ?? this.boxScore,
-      textScore: textScore ?? this.textScore,
-      recognizedText: recognizedText ?? this.recognizedText,
-      isVisible: isVisible ?? this.isVisible,
+    return MetadataCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
     }
-    if (assetId.present) {
-      map['asset_id'] = Variable<String>(assetId.value);
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
     }
-    if (x1.present) {
-      map['x1'] = Variable<double>(x1.value);
-    }
-    if (y1.present) {
-      map['y1'] = Variable<double>(y1.value);
-    }
-    if (x2.present) {
-      map['x2'] = Variable<double>(x2.value);
-    }
-    if (y2.present) {
-      map['y2'] = Variable<double>(y2.value);
-    }
-    if (x3.present) {
-      map['x3'] = Variable<double>(x3.value);
-    }
-    if (y3.present) {
-      map['y3'] = Variable<double>(y3.value);
-    }
-    if (x4.present) {
-      map['x4'] = Variable<double>(x4.value);
-    }
-    if (y4.present) {
-      map['y4'] = Variable<double>(y4.value);
-    }
-    if (boxScore.present) {
-      map['box_score'] = Variable<double>(boxScore.value);
-    }
-    if (textScore.present) {
-      map['text_score'] = Variable<double>(textScore.value);
-    }
-    if (recognizedText.present) {
-      map['recognized_text'] = Variable<String>(recognizedText.value);
-    }
-    if (isVisible.present) {
-      map['is_visible'] = Variable<int>(isVisible.value);
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('AssetOcrEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('assetId: $assetId, ')
-          ..write('x1: $x1, ')
-          ..write('y1: $y1, ')
-          ..write('x2: $x2, ')
-          ..write('y2: $y2, ')
-          ..write('x3: $x3, ')
-          ..write('y3: $y3, ')
-          ..write('x4: $x4, ')
-          ..write('y4: $y4, ')
-          ..write('boxScore: $boxScore, ')
-          ..write('textScore: $textScore, ')
-          ..write('recognizedText: $recognizedText, ')
-          ..write('isVisible: $isVisible')
+    return (StringBuffer('MetadataCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -9442,10 +9030,6 @@ class DatabaseAtV25 extends GeneratedDatabase {
     'idx_stack_primary_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_stack_primary_asset_id ON stack_entity (primary_asset_id)',
   );
-  late final Index idxRemoteAssetOwnerChecksum = Index(
-    'idx_remote_asset_owner_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
-  );
   late final Index uQRemoteAssetsOwnerChecksum = Index(
     'UQ_remote_assets_owner_checksum',
     'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
@@ -9462,13 +9046,9 @@ class DatabaseAtV25 extends GeneratedDatabase {
     'idx_remote_asset_stack_id',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
   );
-  late final Index idxRemoteAssetLocalDateTimeDay = Index(
-    'idx_remote_asset_local_date_time_day',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
-  );
-  late final Index idxRemoteAssetLocalDateTimeMonth = Index(
-    'idx_remote_asset_local_date_time_month',
-    'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+  late final Index idxRemoteAssetOwnerVisibilityDeletedCreated = Index(
+    'idx_remote_asset_owner_visibility_deleted_created',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
   );
   late final AuthUserEntity authUserEntity = AuthUserEntity(this);
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
@@ -9488,7 +9068,7 @@ class DatabaseAtV25 extends GeneratedDatabase {
   late final TrashedLocalAssetEntity trashedLocalAssetEntity =
       TrashedLocalAssetEntity(this);
   late final AssetEditEntity assetEditEntity = AssetEditEntity(this);
-  late final AssetOcrEntity assetOcrEntity = AssetOcrEntity(this);
+  late final Metadata metadata = Metadata(this);
   late final Index idxPartnerSharedWithId = Index(
     'idx_partner_shared_with_id',
     'CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)',
@@ -9496,6 +9076,10 @@ class DatabaseAtV25 extends GeneratedDatabase {
   late final Index idxLatLng = Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+  );
+  late final Index idxRemoteExifCity = Index(
+    'idx_remote_exif_city',
+    'CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL',
   );
   late final Index idxRemoteAlbumAssetAlbumAsset = Index(
     'idx_remote_album_asset_album_asset',
@@ -9516,6 +9100,10 @@ class DatabaseAtV25 extends GeneratedDatabase {
   late final Index idxAssetFaceAssetId = Index(
     'idx_asset_face_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
+  );
+  late final Index idxAssetFaceVisiblePerson = Index(
+    'idx_asset_face_visible_person',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL',
   );
   late final Index idxTrashedLocalAssetChecksum = Index(
     'idx_trashed_local_asset_checksum',
@@ -9545,13 +9133,11 @@ class DatabaseAtV25 extends GeneratedDatabase {
     idxLocalAssetChecksum,
     idxLocalAssetCloudId,
     idxStackPrimaryAssetId,
-    idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
     idxRemoteAssetStackId,
-    idxRemoteAssetLocalDateTimeDay,
-    idxRemoteAssetLocalDateTimeMonth,
+    idxRemoteAssetOwnerVisibilityDeletedCreated,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
@@ -9566,14 +9152,16 @@ class DatabaseAtV25 extends GeneratedDatabase {
     storeEntity,
     trashedLocalAssetEntity,
     assetEditEntity,
-    assetOcrEntity,
+    metadata,
     idxPartnerSharedWithId,
     idxLatLng,
+    idxRemoteExifCity,
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
     idxAssetFacePersonId,
     idxAssetFaceAssetId,
+    idxAssetFaceVisiblePerson,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
@@ -9747,13 +9335,6 @@ class DatabaseAtV25 extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('asset_edit_entity', kind: UpdateKind.delete)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'remote_asset_entity',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('asset_ocr_entity', kind: UpdateKind.delete)],
     ),
   ]);
   @override

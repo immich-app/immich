@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SyncAckDeleteDto, SyncAckDto, SyncAckSetDto, SyncStreamDto } from 'src/dtos/sync.dto';
@@ -27,12 +27,12 @@ export class SyncController {
       'Retrieve a JSON lines streamed response of changes for synchronization. This endpoint is used by the mobile app to efficiently stay up to date with changes.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  async getSyncStream(@Auth() auth: AuthDto, @Res() res: Response, @Body() dto: SyncStreamDto) {
+  async getSyncStream(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Body() dto: SyncStreamDto) {
     try {
       await this.service.stream(auth, res, dto);
     } catch (error: Error | any) {
       res.setHeader('Content-Type', 'application/json');
-      this.errorService.handleError(res, error);
+      this.errorService.handleError(req, res, error);
     }
   }
 

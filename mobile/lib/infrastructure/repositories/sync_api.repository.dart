@@ -3,9 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
@@ -22,7 +20,7 @@ class SyncApiRepository {
   }
 
   Future<void> deleteSyncAck(List<SyncEntityType> types) {
-    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: types));
+    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: Optional.present(types)));
   }
 
   Future<void> streamChanges(
@@ -31,6 +29,7 @@ class SyncApiRepository {
     Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
+    Future<void>? abortSignal,
   }) async {
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? NetworkRepository.client;
@@ -38,8 +37,7 @@ class SyncApiRepository {
 
     final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
-    final shouldReset = Store.get(StoreKey.shouldResetSync, false);
-    final request = http.Request('POST', Uri.parse(endpoint));
+    final request = http.AbortableRequest('POST', Uri.parse(endpoint), abortTrigger: abortSignal);
     request.headers.addAll(headers);
     request.body = jsonEncode(
       SyncStreamDto(
@@ -78,7 +76,6 @@ class SyncApiRepository {
               : SyncRequestType.assetFacesV1,
           if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetOcrV1,
         ],
-        reset: shouldReset,
       ).toJson(),
     );
 
@@ -101,9 +98,6 @@ class SyncApiRepository {
         final errorBody = await response.stream.bytesToString();
         throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
-
-      // Reset after successful stream start
-      await Store.put(StoreKey.shouldResetSync, false);
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         if (shouldAbort) {

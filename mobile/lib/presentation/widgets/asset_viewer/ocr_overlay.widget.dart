@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -58,7 +59,9 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
   }
 
   void _attachController(PhotoViewControllerBase? controller) {
-    if (controller == null) return;
+    if (controller == null) {
+      return;
+    }
 
     // Seed with the current value only when scaleBoundaries is already set.
     // Before the image finishes loading, PhotoView uses childSize = outerSize
@@ -72,7 +75,9 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
     }
 
     _controllerSub = controller.outputStateStream.listen((value) {
-      if (mounted) setState(() => _controllerValue = value);
+      if (mounted) {
+        setState(() => _controllerValue = value);
+      }
     });
   }
 
@@ -276,10 +281,7 @@ class _OcrBoxItem extends StatelessWidget {
                           borderRadius: const BorderRadius.all(Radius.circular(4)),
                         ),
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: math.max(50, width),
-                            maxHeight: math.max(20, height),
-                          ),
+                          constraints: BoxConstraints(maxWidth: math.max(50, width), maxHeight: math.max(20, height)),
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: SelectableText(

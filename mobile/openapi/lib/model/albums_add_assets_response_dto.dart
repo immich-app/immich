@@ -13,7 +13,7 @@ part of openapi.api;
 class AlbumsAddAssetsResponseDto {
   /// Returns a new [AlbumsAddAssetsResponseDto] instance.
   AlbumsAddAssetsResponseDto({
-    this.error,
+    this.error = const Optional.absent(),
     required this.success,
   });
 
@@ -23,7 +23,7 @@ class AlbumsAddAssetsResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  BulkIdErrorReason? error;
+  Optional<BulkIdErrorReason?> error;
 
   /// Operation success
   bool success;
@@ -44,10 +44,9 @@ class AlbumsAddAssetsResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.error != null) {
-      json[r'error'] = this.error;
-    } else {
-    //  json[r'error'] = null;
+    if (this.error.isPresent) {
+      final value = this.error.value;
+      json[r'error'] = value;
     }
       json[r'success'] = this.success;
     return json;
@@ -62,7 +61,7 @@ class AlbumsAddAssetsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AlbumsAddAssetsResponseDto(
-        error: BulkIdErrorReason.fromJson(json[r'error']),
+        error: json.containsKey(r'error') ? Optional.present(BulkIdErrorReason.fromJson(json[r'error'])) : const Optional.absent(),
         success: mapValueOfType<bool>(json, r'success')!,
       );
     }

@@ -14,7 +14,7 @@ class SystemConfigGeneratedImageDto {
   /// Returns a new [SystemConfigGeneratedImageDto] instance.
   SystemConfigGeneratedImageDto({
     required this.format,
-    this.progressive,
+    this.progressive = const Optional.absent(),
     required this.quality,
     required this.size,
   });
@@ -28,7 +28,7 @@ class SystemConfigGeneratedImageDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? progressive;
+  Optional<bool?> progressive;
 
   /// Quality
   ///
@@ -63,10 +63,9 @@ class SystemConfigGeneratedImageDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'format'] = this.format;
-    if (this.progressive != null) {
-      json[r'progressive'] = this.progressive;
-    } else {
-    //  json[r'progressive'] = null;
+    if (this.progressive.isPresent) {
+      final value = this.progressive.value;
+      json[r'progressive'] = value;
     }
       json[r'quality'] = this.quality;
       json[r'size'] = this.size;
@@ -83,7 +82,7 @@ class SystemConfigGeneratedImageDto {
 
       return SystemConfigGeneratedImageDto(
         format: ImageFormat.fromJson(json[r'format'])!,
-        progressive: mapValueOfType<bool>(json, r'progressive'),
+        progressive: json.containsKey(r'progressive') ? Optional.present(mapValueOfType<bool>(json, r'progressive')) : const Optional.absent(),
         quality: mapValueOfType<int>(json, r'quality')!,
         size: mapValueOfType<int>(json, r'size')!,
       );

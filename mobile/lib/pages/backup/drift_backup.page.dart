@@ -418,7 +418,9 @@ class _PreparingStatusState extends ConsumerState {
   }
 
   void _startPollingIfNeeded() {
-    if (_pollingTimer != null) return;
+    if (_pollingTimer != null) {
+      return;
+    }
 
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       final currentUser = ref.read(currentUserProvider);

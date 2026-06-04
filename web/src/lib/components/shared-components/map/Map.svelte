@@ -212,16 +212,10 @@
       };
     }
 
-    try {
-      return {
-        fileCreatedAfter: dateAfter ? new Date(dateAfter).toISOString() : undefined,
-        fileCreatedBefore: dateBefore ? new Date(dateBefore).toISOString() : undefined,
-      };
-    } catch {
-      $mapSettings.dateAfter = '';
-      $mapSettings.dateBefore = '';
-      return {};
-    }
+    return {
+      fileCreatedAfter: dateAfter?.toUTC().toISO(),
+      fileCreatedBefore: dateBefore?.toUTC().toISO(),
+    };
   }
 
   async function loadMapMarkers() {
@@ -237,7 +231,7 @@
       {
         isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
-        fileCreatedAfter: fileCreatedAfter || undefined,
+        fileCreatedAfter,
         fileCreatedBefore,
         withPartners: withPartners || undefined,
         withSharedAlbums: withSharedAlbums || undefined,

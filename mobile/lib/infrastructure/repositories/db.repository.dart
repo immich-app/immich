@@ -22,6 +22,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/settings.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
@@ -30,6 +31,7 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
+import 'package:logging/logging.dart';
 
 @DriftDatabase(
   tables: [
@@ -54,6 +56,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.da
     StoreEntity,
     TrashedLocalAssetEntity,
     AssetEditEntity,
+    SettingsEntity,
     AssetOcrEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
@@ -85,8 +88,19 @@ class Drift extends $Drift {
     });
   }
 
+  Future<void> optimize({bool allTables = false}) async {
+    try {
+      if (allTables) {
+        await customStatement('PRAGMA optimize=0x10002');
+      }
+      await customStatement('PRAGMA optimize');
+    } catch (error) {
+      Logger('Drift').fine('Failed to optimize database', error);
+    }
+  }
+
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 29;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -253,7 +267,26 @@ class Drift extends $Drift {
             await m.alterTable(TableMigration(v24.remoteAlbumEntity));
           },
           from24To25: (m, v25) async {
-            await m.create(v25.assetOcrEntity);
+            await m.createTable(v25.metadata);
+            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_owner_checksum');
+            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_day');
+            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_month');
+            await m.createIndex(v25.idxRemoteAssetOwnerVisibilityDeletedCreated);
+            await m.createIndex(v25.idxRemoteExifCity);
+            await m.createIndex(v25.idxAssetFaceVisiblePerson);
+          },
+          from25To26: (m, v26) async {
+            await m.addColumn(v26.remoteAssetEntity, v26.remoteAssetEntity.uploadedAt);
+          },
+          from26To27: (m, v27) async {
+            await customStatement('ALTER TABLE metadata RENAME TO settings');
+          },
+          from27To28: (m, v28) async {
+            await m.createIndex(v28.idxLocalAssetCreatedAt);
+          },
+          from28To29: (m, v29) async {
+            await m.createTable(v29.assetOcrEntity);
+            await m.createIndex(v29.idxAssetOcrAssetId);
           },
         ),
       );
@@ -265,6 +298,7 @@ class Drift extends $Drift {
       }
 
       await customStatement('PRAGMA foreign_keys = ON;');
+      await optimize();
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');

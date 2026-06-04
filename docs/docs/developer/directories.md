@@ -10,7 +10,8 @@ Our [GitHub Repository](https://github.com/immich-app/immich) is a [monorepo](ht
 | :------------------ | :------------------------------------------------------------------- |
 | `.github/`          | Github templates and action workflows                                |
 | `.vscode/`          | VSCode debug launch profiles                                         |
-| `cli/`              | Source code for the work-in-progress CLI rewrite                     |
+| `packages/cli`      | Source code for the CLI                                              |
+| `packages/sdk`      | Source code for the generated OpenAPI SDK                            |
 | `docker/`           | Docker compose resources for dev, test, production                   |
 | `design/`           | Screenshots and logos for the README                                 |
 | `docs/`             | Source code for the [https://immich.app](https://immich.app) website |

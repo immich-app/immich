@@ -18,6 +18,7 @@ import { MoveRepository } from 'src/repositories/move.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { VideoInterfaces } from 'src/types';
 import { getAssetFile } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 
@@ -33,6 +34,10 @@ export interface MoveRequest {
 }
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
+
+export type HlsSessionFolder = { ownerId: string; sessionId: string };
+
+export type HlsVariantFolder = { ownerId: string; sessionId: string; variantIndex: number };
 
 export type ImagePathOptions = { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean };
 
@@ -122,6 +127,14 @@ export class StorageCore {
 
   static getEncodedVideoPath(asset: ThumbnailPathEntity) {
     return StorageCore.getNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}.mp4`);
+  }
+
+  static getHlsSessionFolder({ ownerId, sessionId }: HlsSessionFolder) {
+    return StorageCore.getNestedPath(StorageFolder.EncodedVideo, ownerId, sessionId);
+  }
+
+  static getHlsVariantFolder({ ownerId, sessionId, variantIndex }: HlsVariantFolder) {
+    return join(StorageCore.getHlsSessionFolder({ ownerId, sessionId }), variantIndex.toString());
   }
 
   static getAndroidMotionPath(asset: ThumbnailPathEntity, uuid: string) {
@@ -299,6 +312,11 @@ export class StorageCore {
     return this.storageRepository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
   }
 
+  async getVideoInterfaces(): Promise<VideoInterfaces> {
+    const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
+    return { dri, mali };
+  }
+
   private savePath(pathType: PathType, id: string, newPath: string) {
     switch (pathType) {
       case AssetPathType.Original: {
@@ -329,5 +347,27 @@ export class StorageCore {
 
   static getTempPathInDir(dir: string): string {
     return join(dir, `${randomUUID()}.tmp`);
+  }
+
+  private async getDevices() {
+    try {
+      return await this.storageRepository.readdir('/dev/dri');
+    } catch {
+      this.logger.debug('No devices found in /dev/dri.');
+      return [];
+    }
+  }
+
+  private async hasMaliOpenCL() {
+    try {
+      const [maliIcdStat, maliDeviceStat] = await Promise.all([
+        this.storageRepository.stat('/etc/OpenCL/vendors/mali.icd'),
+        this.storageRepository.stat('/dev/mali0'),
+      ]);
+      return maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
+    } catch {
+      this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU tonemapping');
+      return false;
+    }
   }
 }

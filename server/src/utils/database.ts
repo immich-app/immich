@@ -17,11 +17,11 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
+import { AssetFileType, AssetOrderBy, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AudioStreamInfo, VectorExtension, VideoFormat, VideoStreamInfo } from 'src/types';
+import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -71,10 +71,13 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
 };
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
+export const VIDEO_STREAM_SESSION_PK_CONSTRAINT = 'video_stream_session_pkey';
 
-export const isAssetChecksumConstraint = (error: unknown) => {
-  return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
-};
+export const isAssetChecksumConstraint = (error: unknown) =>
+  (error as PostgresError)?.constraint_name === ASSET_CHECKSUM_CONSTRAINT;
+
+export const isVideoStreamSessionPkConstraint = (error: unknown) =>
+  (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
@@ -146,7 +149,7 @@ export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
         'asset_video.dvBlSignalCompatibilityId',
       ])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
-  ).$castTo<(VideoStreamInfo & { timeBase: NotNull }) | null>();
+  ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();
 }
 
 export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video'>) {
@@ -156,6 +159,22 @@ export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video
       .select(['asset_video.formatName', 'asset_video.formatLongName', 'asset.duration', 'asset_video.bitrate'])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
   ).$castTo<VideoFormat | null>();
+}
+
+export function withVideoPackets(eb: ExpressionBuilder<DB, 'asset' | 'asset_keyframe'>) {
+  return jsonObjectFrom(
+    eb
+      .selectFrom(dummy)
+      .where('asset_keyframe.assetId', 'is not', sql.lit(null))
+      .select([
+        'asset_keyframe.pts as keyframePts',
+        'asset_keyframe.accDuration as keyframeAccDuration',
+        'asset_keyframe.ownDuration as keyframeOwnDuration',
+        'asset_keyframe.totalDuration',
+        'asset_keyframe.packetCount',
+        'asset_keyframe.outputFrames',
+      ]),
+  ).$castTo<VideoPacketInfo | null>();
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
@@ -282,8 +301,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>() {
-  return sql<O>`date_trunc(${sql.lit('MONTH')}, "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt) {
+  return sql<O>`date_trunc(${sql.lit('MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {

@@ -4,13 +4,18 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
+  import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getAltText } from '$lib/utils/thumbnail-util';
+  import Portal from '$lib/elements/Portal.svelte';
 
   interface Props {
     data: PageData;
@@ -24,6 +29,9 @@
   };
 
   let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
+  let recents = $derived(
+    getFieldItems(data.items, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
+  );
   let people = $state(data.response.people);
 
   let hasPeople = $derived(data.response.total > 0);
@@ -35,6 +43,15 @@
       }
     }
   };
+
+  const onViewAsset = async (id: string) => {
+    const asset = await getAssetInfo({ ...authManager.params, id });
+    assetViewerManager.setAsset(asset);
+  };
+
+  const assetCursor = $derived({
+    current: assetViewerManager.asset!,
+  });
 </script>
 
 <OnEvents {onPersonThumbnailReady} />
@@ -107,7 +124,48 @@
     </div>
   {/if}
 
-  {#if !hasPeople && places.length === 0}
+  {#if recents.length > 0}
+    <div class="mt-2 mb-6">
+      <div class="flex justify-between">
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('recently_added')}</p>
+        <a
+          href={Route.recentlyAdded()}
+          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          draggable="false">{$t('view_all')}</a
+        >
+      </div>
+      <div class="flex h-24 max-w-fit flex-wrap gap-x-1 overflow-hidden md:h-42">
+        {#each recents as item (item.data.id)}
+          <button
+            type="button"
+            class="relative h-full flex-auto"
+            onclick={() => onViewAsset(item.data.id)}
+            draggable="false"
+          >
+            <img
+              src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+              alt={$getAltText(toTimelineAsset(item.data))}
+              class="size-full min-w-max rounded-xl object-cover"
+            />
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  {#if !hasPeople && places.length === 0 && recents.length === 0}
     <EmptyPlaceholder text={$t('no_explore_results_message')} class="mx-auto mt-10" />
   {/if}
 </UserPageLayout>
+
+{#if assetViewerManager.isViewing}
+  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+    <Portal target="body">
+      <AssetViewer
+        cursor={assetCursor}
+        showNavigation={false}
+        onClose={() => assetViewerManager.showAssetViewer(false)}
+      />
+    </Portal>
+  {/await}
+{/if}

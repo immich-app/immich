@@ -49,8 +49,12 @@ class AssetViewerState {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other.runtimeType != runtimeType) return false;
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
     return other is AssetViewerState &&
         other.backgroundOpacity == backgroundOpacity &&
         other.showingDetails == showingDetails &&
@@ -89,7 +93,9 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   }
 
   void setAsset(BaseAsset asset) {
-    if (asset == state.currentAsset) return;
+    if (asset == state.currentAsset) {
+      return;
+    }
     state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
   }
 
@@ -148,6 +154,8 @@ final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetView
 final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
   ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
   final asset = ref.read(assetViewerProvider).currentAsset;
-  if (asset == null) return const Stream.empty();
+  if (asset == null) {
+    return const Stream.empty();
+  }
   return ref.read(assetServiceProvider).watchAsset(asset);
 });

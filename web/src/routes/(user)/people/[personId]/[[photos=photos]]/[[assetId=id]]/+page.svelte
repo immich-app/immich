@@ -5,9 +5,6 @@
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import EditNameInput from './EditNameInput.svelte';
-  import MergeFaceSelector from './MergeFaceSelector.svelte';
-  import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -54,6 +51,9 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import EditNameInput from './EditNameInput.svelte';
+  import MergeFaceSelector from './MergeFaceSelector.svelte';
+  import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
 
   interface Props {
     data: PageData;
@@ -62,6 +62,8 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $derived(data.statistics.assets);
+  let person = $derived(data.person);
+  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
@@ -74,7 +76,7 @@
   let potentialMergePeople: PersonResponseDto[] = $state([]);
   let isSuggestionSelectedByUser = $state(false);
 
-  let personName = '';
+  let personName = $derived(person.name);
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
@@ -187,7 +189,6 @@
     isEditingName = false;
     if (person.id !== person2.id) {
       potentialMergePeople = [];
-      personName = person.name;
       personMerge1 = person;
       personMerge2 = person2;
       isSuggestionSelectedByUser = true;
@@ -275,10 +276,6 @@
     timelineManager.upsertAssets(assets);
     await updateAssetCount();
   };
-
-  let person = $derived(data.person);
-
-  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
@@ -496,7 +493,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
+      <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
           <ContextMenuButton
             items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}

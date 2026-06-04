@@ -536,6 +536,10 @@ typedef $$AssetOcrEntityTableProcessedTableManager =
       i1.AssetOcrEntityData,
       i0.PrefetchHooks Function({bool assetId})
     >;
+i0.Index get idxAssetOcrAssetId => i0.Index(
+  'idx_asset_ocr_asset_id',
+  'CREATE INDEX IF NOT EXISTS idx_asset_ocr_asset_id ON asset_ocr_entity (asset_id)',
+);
 
 class $AssetOcrEntityTable extends i2.AssetOcrEntity
     with i0.TableInfo<$AssetOcrEntityTable, i1.AssetOcrEntityData> {

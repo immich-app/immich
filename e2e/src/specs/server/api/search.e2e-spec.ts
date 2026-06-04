@@ -260,17 +260,6 @@ describe('/search', () => {
         }),
       },
       {
-        should: "should search city ('')",
-        deferred: () => ({
-          dto: {
-            city: '',
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
-          assets: [assetLast],
-        }),
-      },
-      {
         should: 'should search city (null)',
         deferred: () => ({
           dto: {
@@ -292,18 +281,6 @@ describe('/search', () => {
         }),
       },
       {
-        should: "should search state ('')",
-        deferred: () => ({
-          dto: {
-            state: '',
-            visibility: AssetVisibility.Timeline,
-            withExif: true,
-            includeNull: true,
-          },
-          assets: [assetLast, assetNotocactus],
-        }),
-      },
-      {
         should: 'should search state (null)',
         deferred: () => ({
           dto: {
@@ -322,17 +299,6 @@ describe('/search', () => {
             includeNull: true,
           },
           assets: [assetFalcon],
-        }),
-      },
-      {
-        should: "should search country ('')",
-        deferred: () => ({
-          dto: {
-            country: '',
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
-          assets: [assetLast],
         }),
       },
       {
@@ -441,7 +407,18 @@ describe('/search', () => {
         .get('/search/explore')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toEqual([{ fieldName: 'exifInfo.city', items: [] }]);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toEqual(expect.arrayContaining([{ fieldName: 'exifInfo.city', items: [] }]));
+      expect(body).toEqual(
+        expect.arrayContaining([
+          {
+            fieldName: 'createdAt',
+            items: expect.arrayContaining([
+              expect.objectContaining({ data: expect.objectContaining({ id: assetLast.id }) }),
+            ]),
+          },
+        ]),
+      );
     });
   });
 

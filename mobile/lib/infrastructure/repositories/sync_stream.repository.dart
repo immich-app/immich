@@ -15,6 +15,7 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
 import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
@@ -46,26 +47,36 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         // foreign_keys PRAGMA is no-op within transactions
         // https://www.sqlite.org/pragma.html#pragma_foreign_keys
         await _db.customStatement('PRAGMA foreign_keys = OFF');
-        await transaction(() async {
-          await _db.assetFaceEntity.deleteAll();
-          await _db.memoryAssetEntity.deleteAll();
-          await _db.memoryEntity.deleteAll();
-          await _db.partnerEntity.deleteAll();
-          await _db.personEntity.deleteAll();
-          await _db.remoteAlbumAssetEntity.deleteAll();
-          await _db.remoteAlbumEntity.deleteAll();
-          await _db.remoteAlbumUserEntity.deleteAll();
-          await _db.remoteAssetEntity.deleteAll();
-          await _db.remoteExifEntity.deleteAll();
-          await _db.stackEntity.deleteAll();
-          await _db.authUserEntity.deleteAll();
-          await _db.userEntity.deleteAll();
-          await _db.userMetadataEntity.deleteAll();
-          await _db.remoteAssetCloudIdEntity.deleteAll();
-          await _db.assetEditEntity.deleteAll();
-          await _db.assetOcrEntity.deleteAll();
-        });
-        await _db.customStatement('PRAGMA foreign_keys = ON');
+        try {
+          await transaction(() async {
+            // FK cascade (ON DELETE SET NULL) does not fire while foreign_keys = OFF,
+            // so null linkedRemoteAlbumId manually to avoid dangling pointers in local_album_entity.
+            await _db.localAlbumEntity.update().write(
+              const LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(null)),
+            );
+            await _db.assetFaceEntity.deleteAll();
+            await _db.memoryAssetEntity.deleteAll();
+            await _db.memoryEntity.deleteAll();
+            await _db.partnerEntity.deleteAll();
+            await _db.personEntity.deleteAll();
+            await _db.remoteAlbumAssetEntity.deleteAll();
+            await _db.remoteAlbumEntity.deleteAll();
+            await _db.remoteAlbumUserEntity.deleteAll();
+            await _db.remoteAssetEntity.deleteAll();
+            await _db.remoteExifEntity.deleteAll();
+            await _db.stackEntity.deleteAll();
+            await _db.authUserEntity.deleteAll();
+            await _db.userEntity.deleteAll();
+            await _db.userMetadataEntity.deleteAll();
+            await _db.remoteAssetCloudIdEntity.deleteAll();
+            await _db.assetEditEntity.deleteAll();
+            await _db.assetOcrEntity.deleteAll();
+          });
+        } finally {
+          // re-enable FK even if the transaction throws, otherwise the connection
+          // would be left with foreign_keys = OFF, silently disabling cascades.
+          await _db.customStatement('PRAGMA foreign_keys = ON');
+        }
       });
     } catch (error, stack) {
       _logger.severe('Error: SyncResetV1', error, stack);
@@ -82,7 +93,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
-            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
             isAdmin: Value(user.isAdmin),
             pinCode: Value(user.pinCode),
             quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
@@ -124,7 +135,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
-            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
+            avatarColor: Value(user.avatarColor.orElse(null)?.toAvatarColor() ?? AvatarColor.primary),
           );
 
           batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));
@@ -193,6 +204,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
+            uploadedAt: Value(asset.createdAt),
             durationMs: Value(asset.duration?.toDuration()?.inMilliseconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
@@ -231,6 +243,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
+            uploadedAt: Value(asset.createdAt),
             durationMs: Value(asset.duration),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),

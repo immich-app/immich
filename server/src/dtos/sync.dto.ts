@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { createZodDto } from 'nestjs-zod';
+import { ExtraModel } from 'src/decorators';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
@@ -16,15 +16,6 @@ import {
 } from 'src/enum';
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
-
-export const extraSyncModels: Function[] = [];
-
-const ExtraModel = (): ClassDecorator => {
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  return (object: Function) => {
-    extraSyncModels.push(object);
-  };
-};
 
 const SyncUserV1Schema = z
   .object({
@@ -75,6 +66,7 @@ const SyncAssetV1Schema = z
     checksum: z.string().describe('Checksum'),
     fileCreatedAt: isoDatetimeToDate.nullable().describe('File created at'),
     fileModifiedAt: isoDatetimeToDate.nullable().describe('File modified at'),
+    createdAt: isoDatetimeToDate.nullable().describe('Uploaded to Immich at'),
     localDateTime: isoDatetimeToDate.nullable().describe('Local date time'),
     duration: z.string().nullable().describe('Duration'),
     type: AssetTypeSchema,
@@ -99,6 +91,7 @@ const SyncAssetV2Schema = z
     checksum: z.string().describe('Checksum'),
     fileCreatedAt: isoDatetimeToDate.nullable().describe('File created at'),
     fileModifiedAt: isoDatetimeToDate.nullable().describe('File modified at'),
+    createdAt: isoDatetimeToDate.nullable().describe('Uploaded to Immich at'),
     localDateTime: isoDatetimeToDate.nullable().describe('Local date time'),
     duration: z.int32().min(0).nullable().describe('Duration'),
     type: AssetTypeSchema,

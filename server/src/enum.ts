@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import z from 'zod';
 
 export enum AuthType {
@@ -73,6 +74,13 @@ export enum AssetOrder {
 }
 
 export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ id: 'AssetOrder' });
+
+export enum AssetOrderBy {
+  TakenAt = 'takenAt',
+  CreatedAt = 'createdAt',
+}
+
+export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting property').meta({ id: 'AssetOrderBy' });
 
 export enum MemoryType {
   /** pictures taken on this day X years ago */
@@ -445,17 +453,11 @@ export enum VideoCodec {
 
 export const VideoCodecSchema = z.enum(VideoCodec).describe('Target video codec').meta({ id: 'VideoCodec' });
 
-export enum VideoSegmentCodec {
-  Av1 = 'av1',
-  Hevc = 'hevc',
-  H264 = 'h264',
-}
+export type VideoSegmentCodec = VideoCodec.Av1 | VideoCodec.Hevc | VideoCodec.H264;
 
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  /** @deprecated Use `Opus` instead */
-  Libopus = 'libopus',
   Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
@@ -744,8 +746,11 @@ export enum BootstrapEventPriority {
   StorageService = -195,
   // Other services may need to queue jobs on bootstrap.
   JobService = -190,
-  // Initialise config after other bootstrap services, stop other services from using config on bootstrap
+  // Initialize config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
+  PluginSync = 190,
+  // Load plugins into memory after sync
+  PluginLoad = 200,
 }
 
 export enum QueueName {
@@ -818,6 +823,8 @@ export enum JobName {
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',
 
+  HlsSessionCleanup = 'HlsSessionCleanup',
+
   MemoryCleanup = 'MemoryCleanup',
   MemoryGenerate = 'MemoryGenerate',
 
@@ -858,7 +865,7 @@ export enum JobName {
   Ocr = 'Ocr',
 
   // Workflow
-  WorkflowRun = 'WorkflowRun',
+  WorkflowAssetTrigger = 'WorkflowAssetTrigger',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -904,12 +911,14 @@ export enum DatabaseLock {
   CLIPDimSize = 512,
   Library = 1337,
   NightlyJobs = 600,
+  PluginImport = 666,
   MediaLocation = 700,
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MaintenanceOperation = 621,
   MemoryCreation = 777,
   VersionCheck = 800,
+  HlsSessionCleanup = 850,
 }
 
 export enum MaintenanceAction {
@@ -1158,12 +1167,14 @@ export enum PluginContext {
 
 export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
 
-export enum PluginTriggerType {
-  AssetCreate = 'AssetCreate',
-  PersonRecognized = 'PersonRecognized',
+export const WorkflowTriggerSchema = z
+  .enum(WorkflowTrigger)
+  .describe('Plugin trigger type')
+  .meta({ id: 'WorkflowTrigger' });
+
+export enum WorkflowType {
+  AssetV1 = 'AssetV1',
+  AssetPersonV1 = 'AssetPersonV1',
 }
 
-export const PluginTriggerTypeSchema = z
-  .enum(PluginTriggerType)
-  .describe('Plugin trigger type')
-  .meta({ id: 'PluginTriggerType' });
+export const WorkflowTypeSchema = z.enum(WorkflowType).describe('Workflow type').meta({ id: 'WorkflowType' });
