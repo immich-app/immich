@@ -8,13 +8,13 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 @RoutePage()
 class DriftPartnerDetailPage extends StatelessWidget {
-  final PartnerUserDto partner;
+  final Partner partner;
 
   const DriftPartnerDetailPage({super.key, required this.partner});
 
@@ -39,7 +39,7 @@ class DriftPartnerDetailPage extends StatelessWidget {
 }
 
 class _InfoBox extends ConsumerStatefulWidget {
-  final PartnerUserDto partner;
+  final Partner partner;
 
   const _InfoBox({required this.partner});
 
@@ -63,7 +63,9 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
     }
 
     try {
-      await ref.read(partnerUsersProvider.notifier).toggleShowInTimeline(widget.partner.id, user.id);
+      await ref
+          .read(partnerServiceProvider)
+          .update(sharedById: widget.partner.id, sharedWithId: user.id, inTimeline: !_inTimeline);
 
       setState(() {
         _inTimeline = !_inTimeline;

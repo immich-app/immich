@@ -10,7 +10,7 @@ import '../mocks.dart';
 
 void main() {
   late HashService sut;
-  final mocks = UnitMocks();
+  final mocks = RepositoryMocks();
 
   setUp(() {
     sut = HashService(
