@@ -404,12 +404,15 @@ class DriftSearchPage extends HookConsumerWidget {
 
       handleClear() {
         ratingCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(rating: SearchRatingFilter(rating: null)));
+        search(filter.value.copyWith(rating: SearchRatingFilter()));
       }
 
       handleApply() {
-        ratingCurrentFilterWidget.value = rating.rating != null
-            ? Text('rating_count'.t(args: {'count': rating.rating!}), style: context.textTheme.labelLarge)
+        ratingCurrentFilterWidget.value = rating.rating.isSome
+            ? Text(
+                'rating_count'.t(args: {'count': rating.rating.unwrapOrNull ?? 0}),
+                style: context.textTheme.labelLarge,
+              )
             : null;
         search(filter.value.copyWith(rating: rating));
       }
