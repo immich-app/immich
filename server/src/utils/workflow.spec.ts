@@ -30,17 +30,12 @@ const tests: Array<{ trigger: WorkflowTrigger; types: WorkflowType[]; expected: 
   },
   {
     trigger: WorkflowTrigger.AlbumAssetAdded,
-    types: [WorkflowType.AssetAlbumV1],
+    types: [WorkflowType.AssetV1],
     expected: true,
   },
   {
     trigger: WorkflowTrigger.AlbumAssetAdded,
-    types: [WorkflowType.AssetV1],
-    expected: false,
-  },
-  {
-    trigger: WorkflowTrigger.AssetCreate,
-    types: [WorkflowType.AssetAlbumV1],
+    types: [WorkflowType.AssetPersonV1],
     expected: true,
   },
 ];

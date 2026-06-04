@@ -26840,8 +26840,7 @@
         "description": "Workflow type",
         "enum": [
           "AssetV1",
-          "AssetPersonV1",
-          "AssetAlbumV1"
+          "AssetPersonV1"
         ],
         "type": "string"
       },

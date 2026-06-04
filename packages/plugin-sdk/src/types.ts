@@ -11,7 +11,6 @@ type DeepPartial<T> = T extends Date
 export type WorkflowEventMap = {
   [WorkflowType.AssetV1]: AssetV1;
   [WorkflowType.AssetPersonV1]: AssetPersonV1;
-  [WorkflowType.AssetAlbumV1]: AssetAlbumV1;
 };
 
 export type WorkflowEventData<T extends WorkflowType> = WorkflowEventMap[T];
@@ -128,14 +127,5 @@ export type AssetPersonV1 = AssetV1 & {
   person: {
     id: string;
     name: string;
-  };
-};
-
-export type AssetAlbumV1 = AssetV1 & {
-  album: {
-    id: string;
-    ownerId: string;
-    albumName: string;
-    description: string;
   };
 };

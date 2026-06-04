@@ -7179,8 +7179,7 @@ export enum PartnerDirection {
 }
 export enum WorkflowType {
     AssetV1 = "AssetV1",
-    AssetPersonV1 = "AssetPersonV1",
-    AssetAlbumV1 = "AssetAlbumV1"
+    AssetPersonV1 = "AssetPersonV1"
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
