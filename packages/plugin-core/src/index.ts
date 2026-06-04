@@ -50,6 +50,20 @@ export const assetMissingTimeZoneFilter = () => {
   });
 };
 
+export const filterByAlbum = () => {
+  return wrapper<WorkflowType.AssetV1, { albumIds: string[]; inverse?: boolean }>(({ config, data, functions }) => {
+    const { albumIds = [], inverse = false } = config;
+    if (albumIds.length === 0) {
+      return {};
+    }
+
+    const albums = functions.searchAlbums({ assetId: data.asset.id });
+    const isMember = albums.some((album) => albumIds.includes(album.id));
+
+    return { workflow: { continue: isMember !== inverse } };
+  });
+};
+
 export const assetFavorite = () => {
   return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
     const target = config.inverse ? false : true;

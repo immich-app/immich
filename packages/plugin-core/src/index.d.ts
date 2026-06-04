@@ -13,6 +13,7 @@ declare module 'main' {
   // filters
   export function assetFileFilter(): I32;
   export function assetMissingTimeZoneFilter(): I32;
+  export function filterByAlbum(): I32;
 
   // updates
   export function assetFavorite(): I32;

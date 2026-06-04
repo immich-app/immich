@@ -153,6 +153,33 @@
       "uiHints": ["Filter"]
     },
     {
+      "name": "filterByAlbum",
+      "title": "Filter by album",
+      "description": "Continue only when the asset belongs to one of the selected albums",
+      "types": ["AssetV1"],
+      "hostFunctions": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "albumIds": {
+            "type": "string",
+            "array": true,
+            "title": "Album IDs",
+            "description": "Albums to match against",
+            "uiHint": "AlbumId"
+          },
+          "inverse": {
+            "type": "boolean",
+            "title": "Inverse",
+            "description": "Continue only when the asset is NOT in the selected albums",
+            "default": false
+          }
+        },
+        "required": ["albumIds"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "assetArchive",
       "title": "Archive asset",
       "description": "Change asset visibility to archive",

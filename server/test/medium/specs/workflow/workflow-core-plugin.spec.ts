@@ -332,4 +332,65 @@ describe('core plugin', () => {
       await expect(ctx.get(AlbumRepository).getAssetIds(album.id, [asset.id])).resolves.not.toContain(asset.id);
     });
   });
+
+  describe('filterByAlbum', () => {
+    it('should continue when the asset is in a selected album', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id }, [asset.id]);
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AlbumAssetAdded,
+        steps: [
+          { method: 'immich-plugin-core#filterByAlbum', config: { albumIds: [album.id] } },
+          { method: 'immich-plugin-core#assetFavorite' },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+
+    it('should stop when the asset is not in a selected album', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const [{ album }, { album: other }] = await Promise.all([
+        ctx.newAlbum({ ownerId: user.id }, [asset.id]),
+        ctx.newAlbum({ ownerId: user.id }),
+      ]);
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AlbumAssetAdded,
+        steps: [
+          { method: 'immich-plugin-core#filterByAlbum', config: { albumIds: [other.id] } },
+          { method: 'immich-plugin-core#assetFavorite' },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it('should continue when no albums are configured', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AlbumAssetAdded,
+        steps: [
+          { method: 'immich-plugin-core#filterByAlbum', config: { albumIds: [] } },
+          { method: 'immich-plugin-core#assetFavorite' },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
 });
