@@ -325,6 +325,12 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CQMode':
           return CQModeTypeTransformer().decode(value);
+        case 'CalendarHeatmapResponseDto':
+          return CalendarHeatmapResponseDto.fromJson(value);
+        case 'CalendarHeatmapResponseDtoSeriesInner':
+          return CalendarHeatmapResponseDtoSeriesInner.fromJson(value);
+        case 'CalendarHeatmapType':
+          return CalendarHeatmapTypeTypeTransformer().decode(value);
         case 'CastResponse':
           return CastResponse.fromJson(value);
         case 'CastUpdate':
