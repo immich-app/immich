@@ -6,6 +6,7 @@ import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
@@ -62,6 +63,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     TrashedLocalAssetEntity,
     AssetEditEntity,
     SettingsEntity,
+    AssetOcrEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -105,7 +107,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 29;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -288,6 +290,10 @@ class Drift extends $Drift {
           },
           from27To28: (m, v28) async {
             await m.createIndex(v28.idxLocalAssetCreatedAt);
+          },
+          from28To29: (m, v29) async {
+            await m.createTable(v29.assetOcrEntity);
+            await m.createIndex(v29.idxAssetOcrAssetId);
           },
         ),
       );

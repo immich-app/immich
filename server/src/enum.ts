@@ -952,6 +952,7 @@ export enum SyncRequestType {
   AssetExifsV1 = 'AssetExifsV1',
   AssetEditsV1 = 'AssetEditsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
+  AssetOcrV1 = 'AssetOcrV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
@@ -990,6 +991,8 @@ export enum SyncEntityType {
   AssetEditDeleteV1 = 'AssetEditDeleteV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
+  AssetOcrV1 = 'AssetOcrV1',
+  AssetOcrDeleteV1 = 'AssetOcrDeleteV1',
 
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',

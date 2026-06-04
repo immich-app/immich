@@ -697,6 +697,10 @@ class ApiClient {
           return SyncAssetMetadataDeleteV1.fromJson(value);
         case 'SyncAssetMetadataV1':
           return SyncAssetMetadataV1.fromJson(value);
+        case 'SyncAssetOcrDeleteV1':
+          return SyncAssetOcrDeleteV1.fromJson(value);
+        case 'SyncAssetOcrV1':
+          return SyncAssetOcrV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
         case 'SyncAssetV2':

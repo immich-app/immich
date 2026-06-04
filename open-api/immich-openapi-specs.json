@@ -23805,6 +23805,118 @@
         ],
         "type": "object"
       },
+      "SyncAssetOcrDeleteV1": {
+        "properties": {
+          "assetId": {
+            "description": "Original asset ID of the deleted OCR entry",
+            "type": "string"
+          },
+          "deletedAt": {
+            "description": "Timestamp when the OCR entry was deleted",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Audit row ID of the deleted OCR entry",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "deletedAt",
+          "id"
+        ],
+        "type": "object"
+      },
+      "SyncAssetOcrV1": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "boxScore": {
+            "description": "Confidence score of the bounding box",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "description": "OCR entry ID",
+            "type": "string"
+          },
+          "isVisible": {
+            "description": "Whether the OCR entry is visible",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "Recognized text content",
+            "type": "string"
+          },
+          "textScore": {
+            "description": "Confidence score of the recognized text",
+            "format": "double",
+            "type": "number"
+          },
+          "x1": {
+            "description": "Top-left X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x2": {
+            "description": "Top-right X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x3": {
+            "description": "Bottom-right X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x4": {
+            "description": "Bottom-left X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y1": {
+            "description": "Top-left Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y2": {
+            "description": "Top-right Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y3": {
+            "description": "Bottom-right Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y4": {
+            "description": "Bottom-left Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "boxScore",
+          "id",
+          "isVisible",
+          "text",
+          "textScore",
+          "x1",
+          "x2",
+          "x3",
+          "x4",
+          "y1",
+          "y2",
+          "y3",
+          "y4"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -24186,6 +24298,8 @@
           "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
+          "AssetOcrV1",
+          "AssetOcrDeleteV1",
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
@@ -24508,6 +24622,7 @@
           "AssetExifsV1",
           "AssetEditsV1",
           "AssetMetadataV1",
+          "AssetOcrV1",
           "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",
