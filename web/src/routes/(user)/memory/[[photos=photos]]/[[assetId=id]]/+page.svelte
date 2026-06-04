@@ -53,7 +53,10 @@
 {#if page.url.searchParams.has(QueryParameter.ID)}
   <MemoryViewer />
 {:else}
-  <UserPageLayout title={data.meta.title} description={`(${memoryManager.total.toLocaleString($locale)})`}>
+  <UserPageLayout
+    title={data.meta.title}
+    description={memoryManager.total === undefined ? undefined : `(${memoryManager.total.toLocaleString($locale)})`}
+  >
     {#snippet buttons()}
       <div class="flex place-items-center gap-2">
         <Button
@@ -100,7 +103,7 @@
           </a>
         {/each}
       </div>
-    {:else if memoryManager.total > 0}
+    {:else if memoryManager.total === undefined}
       <div class="flex items-center justify-center py-16">
         <LoadingSpinner size="giant" />
       </div>

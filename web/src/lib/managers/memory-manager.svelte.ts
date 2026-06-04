@@ -44,13 +44,13 @@ class MemoryManager {
     | undefined;
   #hasNextPage: boolean;
   #page: number;
-  #total: number;
+  #total: number | undefined;
 
   constructor() {
     this.#filters = undefined;
     this.#hasNextPage = true;
     this.#page = 1;
-    this.#total = 0;
+    this.#total = $state(undefined);
 
     eventManager.on({
       AuthLogout: () => this.clearCache(),
@@ -177,6 +177,7 @@ class MemoryManager {
     this.#loading = undefined;
     this.#hasNextPage = true;
     this.#page = 1;
+    this.#total = undefined;
     this.memories = [];
   }
 
