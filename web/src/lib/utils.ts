@@ -291,7 +291,10 @@ export const downloadUrl = (url: string, filename: string) => {
   anchor.click();
   anchor.remove();
 
-  URL.revokeObjectURL(url);
+  // Safari starts the anchor download asynchronously after the current task, so
+  // revoking the object URL synchronously cancels the download before it begins.
+  // Defer the revoke to give the browser time to start downloading.
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 };
 
 export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
