@@ -6,10 +6,15 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
+  import {
+    computeDifferingMetadataFields,
+    countDifferingMetadataItems,
+    type DifferingMetadataFields,
+  } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, Icon } from '@immich/ui';
+  import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -25,6 +30,13 @@
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+
+  const InitialVisibleCount = 5;
+
+  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+  const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
+  const hasMore = $derived(differingCount > InitialVisibleCount);
+  let showMore = $state(false);
 
   onMount(() => {
     if (suggestedKeepAssetIds.length > 0) {
@@ -160,10 +172,29 @@
   <div class="overflow-x-auto p-2">
     <div class="mx-auto flex w-fit min-w-full flex-nowrap place-items-start justify-center gap-1">
       {#each assets as asset (asset.id)}
-        <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
+        <DuplicateAsset
+          {asset}
+          {onSelectAsset}
+          isSelected={selectedAssetIds.has(asset.id)}
+          {onViewAsset}
+          {differingMetadataFields}
+          {showMore}
+          initialVisibleCount={InitialVisibleCount}
+        />
       {/each}
     </div>
   </div>
+
+  {#if hasMore}
+    <div class="flex justify-center pb-2">
+      <Button size="small" variant="ghost" color="secondary" onclick={() => (showMore = !showMore)}>
+        <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
+        {showMore
+          ? $t('show_less')
+          : $t('show_more_fields', { values: { count: differingCount - InitialVisibleCount } })}
+      </Button>
+    </div>
+  {/if}
 </div>
 
 {#if assetViewerManager.isViewing}

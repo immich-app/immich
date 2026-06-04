@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapState {
@@ -88,49 +86,34 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(metadataProvider).write(MetadataKey.mapShowFavoriteOnly, isFavoriteOnly);
+    ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(metadataProvider).write(MetadataKey.mapIncludeArchived, isIncludeArchived);
+    ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
     state = state.copyWith(includeArchived: isIncludeArchived);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(metadataProvider).write(MetadataKey.mapWithPartners, isWithPartners);
+    ref.read(settingsProvider).write(.mapWithPartners, isWithPartners);
     state = state.copyWith(withPartners: isWithPartners);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setRelativeTime(int relativeDays) {
-    ref.read(metadataProvider).write(MetadataKey.mapRelativeDate, relativeDays);
+    ref.read(settingsProvider).write(.mapRelativeDate, relativeDays);
     state = state.copyWith(relativeDays: relativeDays);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setTimeRange(TimeRange range) {
-    final from = range.from.unwrapOrNull;
-    final to = range.to.unwrapOrNull;
-
-    ref.read(metadataProvider).write(MetadataKey.mapCustomFrom, from?.toIso8601String() ?? '');
-    ref.read(metadataProvider).write(MetadataKey.mapCustomTo, to?.toIso8601String() ?? '');
-
+    ref.read(settingsProvider).write(.mapCustomFrom, range.from);
+    ref.read(settingsProvider).write(.mapCustomTo, range.to);
     state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
-  }
-
-  Option<DateTime> parseDateOption(String s) {
-    try {
-      if (s.trim().isEmpty) {
-        return const Option.none();
-      }
-      return Option.some(DateTime.parse(s));
-    } catch (_) {
-      return const Option.none();
-    }
   }
 
   @override

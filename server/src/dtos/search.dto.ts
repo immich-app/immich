@@ -4,7 +4,7 @@ import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema } from 'src/dtos/album.dto';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/enum';
-import { emptyStringToNull, isoDatetimeToDate, stringToBool } from 'src/validation';
+import { isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const BaseSearchSchema = z.object({
@@ -23,12 +23,12 @@ const BaseSearchSchema = z.object({
   trashedAfter: isoDatetimeToDate.optional().describe('Filter by trash date (after)'),
   takenBefore: isoDatetimeToDate.optional().describe('Filter by taken date (before)'),
   takenAfter: isoDatetimeToDate.optional().describe('Filter by taken date (after)'),
-  city: emptyStringToNull(z.string().nullable()).optional().describe('Filter by city name'),
-  state: emptyStringToNull(z.string().nullable()).optional().describe('Filter by state/province name'),
-  country: emptyStringToNull(z.string().nullable()).optional().describe('Filter by country name'),
-  make: emptyStringToNull(z.string().nullable()).optional().describe('Filter by camera make'),
-  model: emptyStringToNull(z.string().nullable()).optional().describe('Filter by camera model'),
-  lensModel: emptyStringToNull(z.string().nullable()).optional().describe('Filter by lens model'),
+  city: z.string().nullable().optional().describe('Filter by city name'),
+  state: z.string().nullable().optional().describe('Filter by state/province name'),
+  country: z.string().nullable().optional().describe('Filter by country name'),
+  make: z.string().nullable().optional().describe('Filter by camera make'),
+  model: z.string().nullable().optional().describe('Filter by camera model'),
+  lensModel: z.string().nullable().optional().describe('Filter by lens model'),
   isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album'),
   personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs'),
   tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),
@@ -186,7 +186,11 @@ const SearchAlbumResponseSchema = z
 
 const SearchAssetResponseSchema = z
   .object({
-    total: z.int().min(0).describe('Total number of matching assets'),
+    total: z
+      .int()
+      .min(0)
+      .describe('Total number of matching assets')
+      .meta(new HistoryBuilder().deprecated('v3.0.0').getExtensions()),
     count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),

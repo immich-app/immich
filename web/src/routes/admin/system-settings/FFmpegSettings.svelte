@@ -388,6 +388,22 @@
             />
           </div>
         </SettingAccordion>
+
+        <SettingAccordion
+          key="realtime-transcoding"
+          title={$t('admin.transcoding_realtime')}
+          subtitle={$t('admin.transcoding_realtime_description')}
+        >
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <SettingSwitch
+              title={$t('admin.transcoding_realtime_enabled')}
+              subtitle={$t('admin.transcoding_realtime_enabled_description')}
+              bind:checked={configToEdit.ffmpeg.realtime.enabled}
+              isEdited={configToEdit.ffmpeg.realtime.enabled !== configToEdit.ffmpeg.realtime.enabled}
+              {disabled}
+            />
+          </div>
+        </SettingAccordion>
       </div>
 
       <div class="ms-4">

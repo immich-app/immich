@@ -298,6 +298,8 @@ export type MemoriesResponse = {
 export type PeopleResponse = {
     /** Whether people are enabled */
     enabled: boolean;
+    /** People face threshold */
+    minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb: boolean;
 };
@@ -375,6 +377,8 @@ export type MemoriesUpdate = {
 export type PeopleUpdate = {
     /** Whether people are enabled */
     enabled?: boolean;
+    /** People face threshold */
+    minimumFaces?: number;
     /** Whether people appear in web sidebar */
     sidebarWeb?: boolean;
 };
@@ -1478,72 +1482,33 @@ export type PersonStatisticsResponseDto = {
     /** Number of assets */
     assets: number;
 };
-export type PluginJsonSchemaProperty = {
-    additionalProperties?: boolean | PluginJsonSchemaProperty;
-    "default"?: any;
-    description?: string;
-    "enum"?: string[];
-    items?: PluginJsonSchemaProperty;
-    properties?: {
-        [key: string]: PluginJsonSchemaProperty;
-    };
-    required?: string[];
-    "type"?: PluginJsonSchemaType;
-};
-export type PluginJsonSchema = {
-    additionalProperties?: boolean;
-    description?: string;
-    properties?: {
-        [key: string]: PluginJsonSchemaProperty;
-    };
-    required?: string[];
-    "type"?: PluginJsonSchemaType;
-};
-export type PluginActionResponseDto = {
-    /** Action description */
+export type PluginMethodResponseDto = {
+    /** Description */
     description: string;
-    /** Action ID */
-    id: string;
-    /** Method name */
-    methodName: string;
-    /** Plugin ID */
-    pluginId: string;
-    /** Action schema */
-    schema: (PluginJsonSchema) | null;
-    /** Supported contexts */
-    supportedContexts: PluginContextType[];
-    /** Action title */
+    hostFunctions: boolean;
+    /** Key */
+    key: string;
+    /** Name */
+    name: string;
+    schema?: {};
+    /** Title */
     title: string;
-};
-export type PluginFilterResponseDto = {
-    /** Filter description */
-    description: string;
-    /** Filter ID */
-    id: string;
-    /** Method name */
-    methodName: string;
-    /** Plugin ID */
-    pluginId: string;
-    /** Filter schema */
-    schema: (PluginJsonSchema) | null;
-    /** Supported contexts */
-    supportedContexts: PluginContextType[];
-    /** Filter title */
-    title: string;
+    /** Workflow types */
+    types: WorkflowType[];
+    /** Ui hints */
+    uiHints: string[];
 };
 export type PluginResponseDto = {
-    /** Plugin actions */
-    actions: PluginActionResponseDto[];
     /** Plugin author */
     author: string;
     /** Creation date */
     createdAt: string;
     /** Plugin description */
     description: string;
-    /** Plugin filters */
-    filters: PluginFilterResponseDto[];
     /** Plugin ID */
     id: string;
+    /** Plugin methods */
+    methods: PluginMethodResponseDto[];
     /** Plugin name */
     name: string;
     /** Plugin title */
@@ -1553,9 +1518,29 @@ export type PluginResponseDto = {
     /** Plugin version */
     version: string;
 };
-export type PluginTriggerResponseDto = {
-    contextType: PluginContextType;
-    "type": PluginTriggerType;
+export type PluginTemplateStepResponseDto = {
+    /** Step configuration */
+    config: {
+        [key: string]: any;
+    } | null;
+    /** Whether the step is enabled */
+    enabled?: boolean;
+    /** Step plugin method */
+    method: string;
+};
+export type PluginTemplateResponseDto = {
+    /** Template description */
+    description: string;
+    /** Template key (unique across all templates) */
+    key: string;
+    /** Workflow steps */
+    steps: PluginTemplateStepResponseDto[];
+    /** Template title */
+    title: string;
+    /** Workflow trigger */
+    trigger: WorkflowTrigger;
+    /** Ui hints, for example "smart-album" */
+    uiHints: string[];
 };
 export type QueueResponseDto = {
     /** Whether the queue is paused */
@@ -1982,6 +1967,8 @@ export type ServerConfigDto = {
     mapDarkStyleUrl: string;
     /** Map light style URL */
     mapLightStyleUrl: string;
+    /** People min faces server default */
+    minFaces: number;
     /** OAuth button text */
     oauthButtonText: string;
     /** Whether public user registration is enabled */
@@ -2012,6 +1999,8 @@ export type ServerFeaturesDto = {
     ocr: boolean;
     /** Whether password login is enabled */
     passwordLogin: boolean;
+    /** Whether real-time transcoding is enabled */
+    realtimeTranscoding: boolean;
     /** Whether reverse geocoding is enabled */
     reverseGeocoding: boolean;
     /** Whether search is enabled */
@@ -2095,6 +2084,8 @@ export type ServerVersionResponseDto = {
     minor: number;
     /** Patch version number */
     patch: number;
+    /** Pre-release version number */
+    prerelease: number | null;
 };
 export type VersionCheckStateResponseDto = {
     /** Last check timestamp */
@@ -2201,8 +2192,6 @@ export type SharedLinkEditDto = {
     allowDownload?: boolean;
     /** Allow uploads */
     allowUpload?: boolean;
-    /** Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this. */
-    changeExpiryTime?: boolean;
     /** Link description */
     description?: string | null;
     /** Expiration date */
@@ -2270,6 +2259,10 @@ export type DatabaseBackupConfig = {
 export type SystemConfigBackupsDto = {
     database: DatabaseBackupConfig;
 };
+export type SystemConfigFFmpegRealtimeDto = {
+    /** Enable real-time HLS transcoding (alpha) */
+    enabled: boolean;
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     /** Accelerated decode */
@@ -2293,6 +2286,7 @@ export type SystemConfigFFmpegDto = {
     preferredHwDevice: string;
     /** Preset */
     preset: string;
+    realtime: SystemConfigFFmpegRealtimeDto;
     /** References */
     refs: number;
     targetAudioCodec: AudioCodec;
@@ -2442,6 +2436,7 @@ export type SystemConfigMetadataDto = {
     faces: SystemConfigFacesDto;
 };
 export type SystemConfigNewVersionCheckDto = {
+    channel: ReleaseChannel;
     /** Enabled */
     enabled: boolean;
 };
@@ -2633,9 +2628,9 @@ export type TagUpdateDto = {
 };
 export type TimeBucketAssetResponseDto = {
     /** Array of city names extracted from EXIF GPS data */
-    city: (string | null)[];
+    city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
-    country: (string | null)[];
+    country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
     /** Array of video/gif durations in milliseconds (null for static images) */
@@ -2710,91 +2705,93 @@ export type CreateProfileImageResponseDto = {
     /** User ID */
     userId: string;
 };
-export type PluginConfigValue = any;
-export type WorkflowActionConfig = {
-    [key: string]: PluginConfigValue;
-};
-export type WorkflowActionResponseDto = {
-    actionConfig: (WorkflowActionConfig) | null;
-    /** Action ID */
-    id: string;
-    /** Action order */
-    order: number;
-    /** Plugin action ID */
-    pluginActionId: string;
-    /** Workflow ID */
-    workflowId: string;
-};
-export type WorkflowFilterConfig = {
-    [key: string]: PluginConfigValue;
-};
-export type WorkflowFilterResponseDto = {
-    filterConfig: (WorkflowFilterConfig) | null;
-    /** Filter ID */
-    id: string;
-    /** Filter order */
-    order: number;
-    /** Plugin filter ID */
-    pluginFilterId: string;
-    /** Workflow ID */
-    workflowId: string;
+export type WorkflowStepDto = {
+    /** Step configuration */
+    config: {
+        [key: string]: any;
+    } | null;
+    /** Step is enabled */
+    enabled?: boolean;
+    /** Step plugin method */
+    method: string;
 };
 export type WorkflowResponseDto = {
-    /** Workflow actions */
-    actions: WorkflowActionResponseDto[];
     /** Creation date */
     createdAt: string;
     /** Workflow description */
-    description: string;
+    description: string | null;
     /** Workflow enabled */
     enabled: boolean;
-    /** Workflow filters */
-    filters: WorkflowFilterResponseDto[];
     /** Workflow ID */
     id: string;
     /** Workflow name */
     name: string | null;
-    /** Owner user ID */
-    ownerId: string;
-    triggerType: PluginTriggerType;
-};
-export type WorkflowActionItemDto = {
-    actionConfig?: WorkflowActionConfig;
-    /** Plugin action ID */
-    pluginActionId: string;
-};
-export type WorkflowFilterItemDto = {
-    filterConfig?: WorkflowFilterConfig;
-    /** Plugin filter ID */
-    pluginFilterId: string;
+    /** Workflow steps */
+    steps: WorkflowStepDto[];
+    /** Workflow trigger type */
+    trigger: WorkflowTrigger;
+    /** Update date */
+    updatedAt: string;
 };
 export type WorkflowCreateDto = {
-    /** Workflow actions */
-    actions: WorkflowActionItemDto[];
     /** Workflow description */
-    description?: string;
+    description?: string | null;
     /** Workflow enabled */
     enabled?: boolean;
-    /** Workflow filters */
-    filters: WorkflowFilterItemDto[];
     /** Workflow name */
-    name: string;
-    triggerType: PluginTriggerType;
+    name?: string | null;
+    steps?: WorkflowStepDto[];
+    /** Workflow trigger type */
+    trigger: WorkflowTrigger;
+};
+export type WorkflowTriggerResponseDto = {
+    /** Trigger type */
+    trigger: WorkflowTrigger;
+    /** Workflow types */
+    types: WorkflowType[];
 };
 export type WorkflowUpdateDto = {
-    /** Workflow actions */
-    actions?: WorkflowActionItemDto[];
     /** Workflow description */
-    description?: string;
+    description?: string | null;
     /** Workflow enabled */
     enabled?: boolean;
-    /** Workflow filters */
-    filters?: WorkflowFilterItemDto[];
     /** Workflow name */
-    name?: string;
-    triggerType?: PluginTriggerType;
+    name?: string | null;
+    steps?: WorkflowStepDto[];
+    /** Workflow trigger type */
+    trigger?: WorkflowTrigger;
+};
+export type WorkflowShareStepDto = {
+    /** Step configuration */
+    config: {
+        [key: string]: any;
+    } | null;
+    /** Step is enabled */
+    enabled?: boolean;
+    /** Step plugin method */
+    method: string;
+};
+export type WorkflowShareResponseDto = {
+    /** Workflow description */
+    description: string | null;
+    /** Workflow name */
+    name: string | null;
+    /** Workflow steps */
+    steps: WorkflowShareStepDto[];
+    /** Workflow trigger type */
+    trigger: WorkflowTrigger;
 };
 export type LicenseResponseDto = UserLicense;
+export type ReleaseEventV1 = {
+    /** When the server last checked for a latest version. As an ISO timestamp */
+    checkedAt: string;
+    /** Whether a new version is available */
+    isAvailable: boolean;
+    releaseVersion: ServerVersionResponseDto;
+    serverVersion: ServerVersionResponseDto;
+    /** Release type */
+    "type": ReleaseType;
+};
 export type SyncAckV1 = {};
 export type SyncAlbumDeleteV1 = {
     /** Album ID */
@@ -3626,18 +3623,22 @@ export function getUserStatisticsAdmin({ id, isFavorite, isTrashed, visibility }
 /**
  * List all albums
  */
-export function getAllAlbums({ assetId, isOwned, isShared }: {
+export function getAllAlbums({ assetId, id, isOwned, isShared, name }: {
     assetId?: string;
+    id?: string;
     isOwned?: boolean;
     isShared?: boolean;
+    name?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
+        id,
         isOwned,
-        isShared
+        isShared,
+        name
     }))}`, {
         ...opts
     }));
@@ -4229,6 +4230,82 @@ export function playAssetVideo({ id, key, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/video/playback${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Get HLS main playlist
+ */
+export function getMainPlaylist({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: string;
+    }>(`/assets/${encodeURIComponent(id)}/video/stream/main.m3u8${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * End HLS streaming session
+ */
+export function endSession({ id, key, sessionId, slug }: {
+    id: string;
+    key?: string;
+    sessionId: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/video/stream/${encodeURIComponent(sessionId)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Get HLS media playlist
+ */
+export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
+    id: string;
+    key?: string;
+    sessionId: string;
+    slug?: string;
+    variantIndex: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: string;
+    }>(`/assets/${encodeURIComponent(id)}/video/stream/${encodeURIComponent(sessionId)}/${encodeURIComponent(variantIndex)}/playlist.m3u8${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Get HLS segment or init file
+ */
+export function getSegment({ filename, id, key, sessionId, slug, variantIndex }: {
+    filename: string;
+    id: string;
+    key?: string;
+    sessionId: string;
+    slug?: string;
+    variantIndex: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/assets/${encodeURIComponent(id)}/video/stream/${encodeURIComponent(sessionId)}/${encodeURIComponent(variantIndex)}/${encodeURIComponent(filename)}${QS.query(QS.explode({
         key,
         slug
     }))}`, {
@@ -5240,22 +5317,67 @@ export function getPersonThumbnail({ id }: {
 /**
  * List all plugins
  */
-export function getPlugins(opts?: Oazapfts.RequestOpts) {
+export function searchPlugins({ description, enabled, id, name, title, version }: {
+    description?: string;
+    enabled?: boolean;
+    id?: string;
+    name?: string;
+    title?: string;
+    version?: string;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: PluginResponseDto[];
-    }>("/plugins", {
+    }>(`/plugins${QS.query(QS.explode({
+        description,
+        enabled,
+        id,
+        name,
+        title,
+        version
+    }))}`, {
         ...opts
     }));
 }
 /**
- * List all plugin triggers
+ * Retrieve plugin methods
  */
-export function getPluginTriggers(opts?: Oazapfts.RequestOpts) {
+export function searchPluginMethods({ description, enabled, id, name, pluginName, pluginVersion, title, trigger, $type }: {
+    description?: string;
+    enabled?: boolean;
+    id?: string;
+    name?: string;
+    pluginName?: string;
+    pluginVersion?: string;
+    title?: string;
+    trigger?: WorkflowTrigger;
+    $type?: WorkflowType;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: PluginTriggerResponseDto[];
-    }>("/plugins/triggers", {
+        data: PluginMethodResponseDto[];
+    }>(`/plugins/methods${QS.query(QS.explode({
+        description,
+        enabled,
+        id,
+        name,
+        pluginName,
+        pluginVersion,
+        title,
+        trigger,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Retrieve workflow templates
+ */
+export function searchPluginTemplates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTemplateResponseDto[];
+    }>("/plugins/templates", {
         ...opts
     }));
 }
@@ -6631,11 +6753,23 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
 /**
  * List all workflows
  */
-export function getWorkflows(opts?: Oazapfts.RequestOpts) {
+export function searchWorkflows({ description, enabled, id, name, trigger }: {
+    description?: string;
+    enabled?: boolean;
+    id?: string;
+    name?: string;
+    trigger?: WorkflowTrigger;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: WorkflowResponseDto[];
-    }>("/workflows", {
+    }>(`/workflows${QS.query(QS.explode({
+        description,
+        enabled,
+        id,
+        name,
+        trigger
+    }))}`, {
         ...opts
     }));
 }
@@ -6653,6 +6787,17 @@ export function createWorkflow({ workflowCreateDto }: {
         method: "POST",
         body: workflowCreateDto
     })));
+}
+/**
+ * List all workflow triggers
+ */
+export function getWorkflowTriggers(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowTriggerResponseDto[];
+    }>("/workflows/triggers", {
+        ...opts
+    }));
 }
 /**
  * Delete a workflow
@@ -6693,6 +6838,19 @@ export function updateWorkflow({ id, workflowUpdateDto }: {
         method: "PUT",
         body: workflowUpdateDto
     })));
+}
+/**
+ * Retrieve a workflow
+ */
+export function getWorkflowForShare({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowShareResponseDto;
+    }>(`/workflows/${encodeURIComponent(id)}/share`, {
+        ...opts
+    }));
 }
 export enum ReactionLevel {
     Album = "album",
@@ -7017,22 +7175,13 @@ export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
-export enum PluginJsonSchemaType {
-    String = "string",
-    Number = "number",
-    Integer = "integer",
-    Boolean = "boolean",
-    Object = "object",
-    Array = "array",
-    Null = "null"
+export enum WorkflowType {
+    AssetV1 = "AssetV1",
+    AssetPersonV1 = "AssetPersonV1"
 }
-export enum PluginContextType {
-    Asset = "asset",
-    Album = "album",
-    Person = "person"
-}
-export enum PluginTriggerType {
+export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
+    AssetMetadataExtraction = "AssetMetadataExtraction",
     PersonRecognized = "PersonRecognized"
 }
 export enum QueueJobStatus {
@@ -7073,6 +7222,7 @@ export enum JobName {
     LibrarySyncFilesQueueAll = "LibrarySyncFilesQueueAll",
     LibrarySyncFiles = "LibrarySyncFiles",
     LibraryScanQueueAll = "LibraryScanQueueAll",
+    HlsSessionCleanup = "HlsSessionCleanup",
     MemoryCleanup = "MemoryCleanup",
     MemoryGenerate = "MemoryGenerate",
     NotificationsCleanup = "NotificationsCleanup",
@@ -7098,7 +7248,7 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowRun = "WorkflowRun"
+    WorkflowAssetTrigger = "WorkflowAssetTrigger"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -7263,6 +7413,10 @@ export enum LogLevel {
     Error = "error",
     Fatal = "fatal"
 }
+export enum ReleaseChannel {
+    Stable = "stable",
+    ReleaseCandidate = "releaseCandidate"
+}
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
@@ -7270,6 +7424,15 @@ export enum OAuthTokenEndpointAuthMethod {
 export enum AssetOrderBy {
     TakenAt = "takenAt",
     CreatedAt = "createdAt"
+}
+export enum ReleaseType {
+    Major = "major",
+    Premajor = "premajor",
+    Minor = "minor",
+    Preminor = "preminor",
+    Patch = "patch",
+    Prepatch = "prepatch",
+    Prerelease = "prerelease"
 }
 export enum UserMetadataKey {
     Preferences = "preferences",

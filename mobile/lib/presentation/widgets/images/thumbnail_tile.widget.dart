@@ -9,7 +9,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class ThumbnailTile extends ConsumerStatefulWidget {
@@ -120,6 +120,9 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                     flightShuttleBuilder: (context, animation, direction, from, to) {
                       void animationStatusListener(AnimationStatus status) {
+                        if (!mounted) {
+                          return;
+                        }
                         final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
                         if (_hideIndicators != heroInFlight) {
                           setState(() => _hideIndicators = heroInFlight);

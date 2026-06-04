@@ -146,10 +146,19 @@ export const Route = {
   geolocationUtility: () => '/utilities/geolocation',
 
   // workflows
-  workflows: () => '/utilities/workflows',
-  viewWorkflow: ({ id }: { id: string }) => `/utilities/workflows/${id}`,
+  workflows: () => '/workflows',
+  viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
+
+  // continue helper for ensuring same-origin URLs
+  continue: (url: string | null, fallback: string) => {
+    if (!url || !url.startsWith('/') || url.startsWith('//')) {
+      return fallback;
+    }
+
+    return url;
+  },
 };

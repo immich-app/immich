@@ -17,6 +17,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
 import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,15 +41,18 @@ sealed class AssetResult {
 private const val TAG = "NativeSyncApiImplBase"
 
 @SuppressLint("InlinedApi")
-open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
+open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAware {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
+  private var syncJob: Job? = null
+  private val mediaTrashDelegate = MediaTrashDelegate(ctx)
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
     private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
     private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+    private const val SYNC_CANCELLED_CODE = "SYNC_CANCELLED"
 
     // MediaStore.Files.FileColumns.SPECIAL_FORMAT — S Extensions 21+
     // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
@@ -292,7 +297,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     return PlatformAssetPlaybackStyle.IMAGE
   }
 
-  fun getAlbums(): List<PlatformAlbum> {
+  fun getAlbums(callback: (Result<List<PlatformAlbum>>) -> Unit) {
+    runSync(callback) { getAlbums() }
+  }
+
+  private suspend fun getAlbums(): List<PlatformAlbum> {
     val albums = mutableListOf<PlatformAlbum>()
     val albumsCount = mutableMapOf<String, Int>()
 
@@ -319,6 +328,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED)
 
       while (cursor.moveToNext()) {
+        currentCoroutineContext().ensureActive()
         val id = cursor.getString(bucketIdColumn)
 
         val count = albumsCount.getOrDefault(id, 0)
@@ -339,7 +349,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       .sortedBy { it.id }
   }
 
-  fun getAssetIdsForAlbum(albumId: String): List<String> {
+  fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit) {
+    runSync(callback) { getAssetIdsForAlbum(albumId) }
+  }
+
+  private fun getAssetIdsForAlbum(albumId: String): List<String> {
     val projection = arrayOf(MediaStore.MediaColumns._ID)
 
     return getCursor(
@@ -363,7 +377,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
+  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?, callback: (Result<List<PlatformAsset>>) -> Unit) {
+    runSync(callback) { getAssetsForAlbum(albumId, updatedTimeCond) }
+  }
+
+  private fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
     var selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
     val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
 
@@ -446,6 +464,44 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   fun cancelHashing() {
     hashTask?.cancel()
     hashTask = null
+  }
+
+  fun cancelSync() {
+    syncJob?.cancel()
+    syncJob = null
+  }
+
+  protected fun <T> runSync(callback: (Result<T>) -> Unit, work: suspend () -> T) {
+    syncJob?.cancel()
+    syncJob = CoroutineScope(Dispatchers.IO).launch {
+      try {
+        completeWhenActive(callback, Result.success(work()))
+      } catch (e: CancellationException) {
+        completeWhenActive(callback, Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null)))
+      } catch (e: Exception) {
+        completeWhenActive(callback, Result.failure(e))
+      }
+    }
+  }
+
+  fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
+    mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
+  }
+
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    mediaTrashDelegate.onAttachedToActivity(binding)
+  }
+
+  override fun onDetachedFromActivityForConfigChanges() {
+    mediaTrashDelegate.onDetachedFromActivity()
+  }
+
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    mediaTrashDelegate.onAttachedToActivity(binding)
+  }
+
+  override fun onDetachedFromActivity() {
+    mediaTrashDelegate.onDetachedFromActivity()
   }
 
   // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs

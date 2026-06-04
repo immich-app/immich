@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -9,13 +10,15 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
+
+const String _kSyncCancelledCode = "SYNC_CANCELLED";
 
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
@@ -23,29 +26,30 @@ class LocalSyncService {
   final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
-  final LocalFilesManagerRepository _localFilesManager;
-  final StorageRepository _storageRepository;
+  final AssetMediaRepository _assetMediaRepository;
+  final IPermissionRepository _permissionRepository;
+  final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
-    required DriftLocalAlbumRepository localAlbumRepository,
-    required DriftLocalAssetRepository localAssetRepository,
-    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
-    required LocalFilesManagerRepository localFilesManager,
-    required StorageRepository storageRepository,
-    required NativeSyncApi nativeSyncApi,
-  }) : _localAlbumRepository = localAlbumRepository,
-       _localAssetRepository = localAssetRepository,
-       _trashedLocalAssetRepository = trashedLocalAssetRepository,
-       _localFilesManager = localFilesManager,
-       _storageRepository = storageRepository,
-       _nativeSyncApi = nativeSyncApi;
+    required this._localAlbumRepository,
+    required this._localAssetRepository,
+    required this._nativeSyncApi,
+    required this._trashedLocalAssetRepository,
+    required this._assetMediaRepository,
+    required this._permissionRepository,
+    this._cancellation,
+  }) {
+    _cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning));
+  }
+
+  bool get _isCancelled => _cancellation?.isCompleted ?? false;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-        final hasPermission = await _localFilesManager.hasManageMediaPermission();
+        final hasPermission = await _permissionRepository.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
         } else {
@@ -86,6 +90,10 @@ class LocalSyncService {
       // detect album deletions from the native side
       if (CurrentPlatform.isAndroid) {
         for (final album in dbAlbums) {
+          if (_isCancelled) {
+            _log.warning("Local sync cancelled. Stopped processing albums.");
+            return;
+          }
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
@@ -96,6 +104,10 @@ class LocalSyncService {
         // does not include changes for cloud albums.
         final cloudAlbums = deviceAlbums.where((a) => a.isCloud).toLocalAlbums();
         for (final album in cloudAlbums) {
+          if (_isCancelled) {
+            _log.warning("Local sync cancelled. Stopped processing cloud albums.");
+            return;
+          }
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
           if (dbAlbum == null) {
             _log.warning("Cloud album ${album.name} not found in local database. Skipping sync.");
@@ -107,6 +119,12 @@ class LocalSyncService {
         await _mapIosCloudIds(newAssets);
       }
       await _nativeSyncApi.checkpointSync();
+    } on PlatformException catch (e, s) {
+      if (e.code == _kSyncCancelledCode) {
+        _log.warning("Local sync cancelled");
+      } else {
+        _log.severe("Error performing device sync", e, s);
+      }
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
     } finally {
@@ -134,12 +152,21 @@ class LocalSyncService {
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
+    } on PlatformException catch (e, s) {
+      if (e.code == _kSyncCancelledCode) {
+        _log.warning("Full device sync cancelled");
+      } else {
+        _log.severe("Error performing full device sync", e, s);
+      }
     } catch (e, s) {
       _log.severe("Error performing full device sync", e, s);
     }
   }
 
   Future<void> addAlbum(LocalAlbum album) async {
+    if (_isCancelled) {
+      return;
+    }
     try {
       _log.fine("Adding device album ${album.name}");
 
@@ -167,6 +194,9 @@ class LocalSyncService {
 
   // The deviceAlbum is ignored since we are going to refresh it anyways
   FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
+    if (_isCancelled) {
+      return false;
+    }
     try {
       _log.fine("Syncing device album ${dbAlbum.name}");
 
@@ -373,7 +403,7 @@ class LocalSyncService {
 
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (assetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+      final restoredIds = await _assetMediaRepository.restoreAssetsFromTrash(assetsToRestore);
       await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _log.info("syncTrashedAssets, No remote assets found for restoration");
@@ -381,15 +411,15 @@ class LocalSyncService {
 
     final localAssetsToTrash = await _trashedLocalAssetRepository.getToTrash();
     if (localAssetsToTrash.isNotEmpty) {
-      final mediaUrls = await Future.wait(
-        localAssetsToTrash.values
-            .expand((e) => e)
-            .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
-      );
-      _log.info("Moving to trash ${mediaUrls.join(", ")} assets");
-      final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-      if (result) {
-        await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+      final localIds = localAssetsToTrash.values.expand((assets) => assets).map((asset) => asset.id).toList();
+      _log.info("Moving to trash ${localIds.join(", ")} assets");
+      final movedIds = await _assetMediaRepository.deleteAll(localIds);
+      if (movedIds.isNotEmpty) {
+        final movedAssetsByAlbum = localAssetsToTrash.map(
+          (albumId, assets) => MapEntry(albumId, assets.where((asset) => movedIds.contains(asset.id)).toList()),
+        )..removeWhere((_, assets) => assets.isEmpty);
+
+        await _trashedLocalAssetRepository.trashLocalAsset(movedAssetsByAlbum);
       }
     } else {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");

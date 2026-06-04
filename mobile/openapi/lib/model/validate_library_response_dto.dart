@@ -13,11 +13,11 @@ part of openapi.api;
 class ValidateLibraryResponseDto {
   /// Returns a new [ValidateLibraryResponseDto] instance.
   ValidateLibraryResponseDto({
-    this.importPaths = const [],
+    this.importPaths = const Optional.present(const []),
   });
 
   /// Validation results for import paths
-  List<ValidateLibraryImportPathResponseDto> importPaths;
+  Optional<List<ValidateLibraryImportPathResponseDto>?> importPaths;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryResponseDto &&
@@ -33,7 +33,10 @@ class ValidateLibraryResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'importPaths'] = this.importPaths;
+    if (this.importPaths.isPresent) {
+      final value = this.importPaths.value;
+      json[r'importPaths'] = value;
+    }
     return json;
   }
 
@@ -46,7 +49,7 @@ class ValidateLibraryResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ValidateLibraryResponseDto(
-        importPaths: ValidateLibraryImportPathResponseDto.listFromJson(json[r'importPaths']),
+        importPaths: json.containsKey(r'importPaths') ? Optional.present(ValidateLibraryImportPathResponseDto.listFromJson(json[r'importPaths'])) : const Optional.absent(),
       );
     }
     return null;

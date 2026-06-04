@@ -145,7 +145,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _lastStack = null;
 
         _didLoadSynchronously = synchronousCall;
-        widget.controller.scaleBoundaries = scaleBoundaries;
       }
 
       synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
