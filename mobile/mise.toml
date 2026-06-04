@@ -1,3 +1,19 @@
+[tools]
+"aqua:flutter/flutter" = "3.44.1"
+java = "21.0.2"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.37.0"
+bin = "dcm"
+postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
+
+[tools."github:CQLabs/homebrew-dcm".platforms]
+linux-x64 = { asset_pattern = "dcm-linux-x64-release.zip" }
+linux-arm64 = { asset_pattern = "dcm-linux-arm-release.zip" }
+macos-x64 = { asset_pattern = "dcm-macos-x64-release.zip" }
+macos-arm64 = { asset_pattern = "dcm-macos-arm-release.zip" }
+windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
+
 [tasks."codegen:dart"]
 alias = "codegen"
 description = "Execute build_runner to auto-generate dart code"
