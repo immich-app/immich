@@ -35,9 +35,8 @@ const BaseSearchSchema = z.object({
   albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs'),
   rating: z
     .int()
-    .min(0)
+    .min(1)
     .max(5)
-    .transform((value) => (value === 0 ? null : value))
     .nullish()
     .describe('Filter by rating [1-5], or null for unrated')
     .meta({

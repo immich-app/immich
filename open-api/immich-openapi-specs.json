@@ -9895,7 +9895,7 @@
             "x-immich-state": "Stable",
             "schema": {
               "type": "integer",
-              "minimum": 0,
+              "minimum": 1,
               "maximum": 5,
               "nullable": true
             }
@@ -16335,7 +16335,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -19378,7 +19378,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -21056,7 +21056,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22525,7 +22525,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22790,7 +22790,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -25990,7 +25990,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": 0,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
