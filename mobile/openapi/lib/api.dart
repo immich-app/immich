@@ -29,6 +29,7 @@ part 'auth/api_key_auth.dart';
 part 'auth/oauth.dart';
 part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
+part 'optional.dart';
 
 part 'api/api_keys_api.dart';
 part 'api/activities_api.dart';

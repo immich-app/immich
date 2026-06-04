@@ -9904,12 +9904,17 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable",
             "schema": {
               "type": "integer",
-              "minimum": -1,
+              "minimum": 1,
               "maximum": 5,
               "nullable": true
             }
@@ -16349,7 +16354,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -16365,6 +16370,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -18355,8 +18365,8 @@
           "rating": {
             "default": null,
             "description": "Rating",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "maximum": 5,
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -19413,7 +19423,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -19429,6 +19439,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -21086,7 +21101,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -21102,6 +21117,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -22242,10 +22262,6 @@
             "description": "Allow uploads",
             "type": "boolean"
           },
-          "changeExpiryTime": {
-            "description": "Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.",
-            "type": "boolean"
-          },
           "description": {
             "description": "Link description",
             "nullable": true,
@@ -22554,7 +22570,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22570,6 +22586,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -22814,7 +22835,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22830,6 +22851,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -26009,7 +26035,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -26025,6 +26051,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"

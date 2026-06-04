@@ -14,7 +14,7 @@ class SetMaintenanceModeDto {
   /// Returns a new [SetMaintenanceModeDto] instance.
   SetMaintenanceModeDto({
     required this.action,
-    this.restoreBackupFilename,
+    this.restoreBackupFilename = const Optional.absent(),
   });
 
   MaintenanceAction action;
@@ -26,7 +26,7 @@ class SetMaintenanceModeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? restoreBackupFilename;
+  Optional<String?> restoreBackupFilename;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SetMaintenanceModeDto &&
@@ -45,10 +45,9 @@ class SetMaintenanceModeDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
-    if (this.restoreBackupFilename != null) {
-      json[r'restoreBackupFilename'] = this.restoreBackupFilename;
-    } else {
-    //  json[r'restoreBackupFilename'] = null;
+    if (this.restoreBackupFilename.isPresent) {
+      final value = this.restoreBackupFilename.value;
+      json[r'restoreBackupFilename'] = value;
     }
     return json;
   }
@@ -63,7 +62,7 @@ class SetMaintenanceModeDto {
 
       return SetMaintenanceModeDto(
         action: MaintenanceAction.fromJson(json[r'action'])!,
-        restoreBackupFilename: mapValueOfType<String>(json, r'restoreBackupFilename'),
+        restoreBackupFilename: json.containsKey(r'restoreBackupFilename') ? Optional.present(mapValueOfType<String>(json, r'restoreBackupFilename')) : const Optional.absent(),
       );
     }
     return null;

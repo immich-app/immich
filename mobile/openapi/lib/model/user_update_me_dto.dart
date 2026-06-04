@@ -13,13 +13,13 @@ part of openapi.api;
 class UserUpdateMeDto {
   /// Returns a new [UserUpdateMeDto] instance.
   UserUpdateMeDto({
-    this.avatarColor,
-    this.email,
-    this.name,
-    this.password,
+    this.avatarColor = const Optional.absent(),
+    this.email = const Optional.absent(),
+    this.name = const Optional.absent(),
+    this.password = const Optional.absent(),
   });
 
-  UserAvatarColor? avatarColor;
+  Optional<UserAvatarColor?> avatarColor;
 
   /// User email
   ///
@@ -28,7 +28,7 @@ class UserUpdateMeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? email;
+  Optional<String?> email;
 
   /// User name
   ///
@@ -37,7 +37,7 @@ class UserUpdateMeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? name;
+  Optional<String?> name;
 
   /// User password (deprecated, use change password endpoint)
   ///
@@ -46,7 +46,7 @@ class UserUpdateMeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? password;
+  Optional<String?> password;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserUpdateMeDto &&
@@ -68,25 +68,21 @@ class UserUpdateMeDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
-      json[r'avatarColor'] = this.avatarColor;
-    } else {
-    //  json[r'avatarColor'] = null;
+    if (this.avatarColor.isPresent) {
+      final value = this.avatarColor.value;
+      json[r'avatarColor'] = value;
     }
-    if (this.email != null) {
-      json[r'email'] = this.email;
-    } else {
-    //  json[r'email'] = null;
+    if (this.email.isPresent) {
+      final value = this.email.value;
+      json[r'email'] = value;
     }
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (this.password.isPresent) {
+      final value = this.password.value;
+      json[r'password'] = value;
     }
     return json;
   }
@@ -100,10 +96,10 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
-        email: mapValueOfType<String>(json, r'email'),
-        name: mapValueOfType<String>(json, r'name'),
-        password: mapValueOfType<String>(json, r'password'),
+        avatarColor: json.containsKey(r'avatarColor') ? Optional.present(UserAvatarColor.fromJson(json[r'avatarColor'])) : const Optional.absent(),
+        email: json.containsKey(r'email') ? Optional.present(mapValueOfType<String>(json, r'email')) : const Optional.absent(),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
+        password: json.containsKey(r'password') ? Optional.present(mapValueOfType<String>(json, r'password')) : const Optional.absent(),
       );
     }
     return null;

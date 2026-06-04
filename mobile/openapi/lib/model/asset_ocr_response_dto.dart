@@ -129,18 +129,18 @@ class AssetOcrResponseDto {
 
       return AssetOcrResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        boxScore: (mapValueOfType<num>(json, r'boxScore')!).toDouble(),
+        boxScore: mapValueOfType<double>(json, r'boxScore')!,
         id: mapValueOfType<String>(json, r'id')!,
         text: mapValueOfType<String>(json, r'text')!,
-        textScore: (mapValueOfType<num>(json, r'textScore')!).toDouble(),
-        x1: (mapValueOfType<num>(json, r'x1')!).toDouble(),
-        x2: (mapValueOfType<num>(json, r'x2')!).toDouble(),
-        x3: (mapValueOfType<num>(json, r'x3')!).toDouble(),
-        x4: (mapValueOfType<num>(json, r'x4')!).toDouble(),
-        y1: (mapValueOfType<num>(json, r'y1')!).toDouble(),
-        y2: (mapValueOfType<num>(json, r'y2')!).toDouble(),
-        y3: (mapValueOfType<num>(json, r'y3')!).toDouble(),
-        y4: (mapValueOfType<num>(json, r'y4')!).toDouble(),
+        textScore: mapValueOfType<double>(json, r'textScore')!,
+        x1: mapValueOfType<double>(json, r'x1')!,
+        x2: mapValueOfType<double>(json, r'x2')!,
+        x3: mapValueOfType<double>(json, r'x3')!,
+        x4: mapValueOfType<double>(json, r'x4')!,
+        y1: mapValueOfType<double>(json, r'y1')!,
+        y2: mapValueOfType<double>(json, r'y2')!,
+        y3: mapValueOfType<double>(json, r'y3')!,
+        y4: mapValueOfType<double>(json, r'y4')!,
       );
     }
     return null;

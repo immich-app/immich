@@ -476,16 +476,18 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
 <OnEvents {onAssetUpdate} />
 
-<svelte:document bind:fullscreenElement />
+<svelte:document
+  bind:fullscreenElement
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
+    { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
+  ]}
+/>
 
 <section
   id="immich-asset-viewer"
   class="fixed inset-s-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
-    { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
-  ]}
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->

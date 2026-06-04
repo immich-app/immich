@@ -16,7 +16,7 @@ void main() {
       expect(() => SemVer.fromString('1.2.3.4'), throwsFormatException);
     });
 
-    test('Compares equal versons correctly', () {
+    test('Compares equal versions correctly', () {
       final v1 = SemVer.fromString('1.2.3');
       final v2 = SemVer.fromString('1.2.3');
       expect(v1 == v2, isTrue);

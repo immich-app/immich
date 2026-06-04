@@ -36,11 +36,12 @@ class ActionResult {
   final int count;
   final bool success;
   final String? error;
+  final List<String> remoteAssetIds;
 
-  const ActionResult({required this.count, required this.success, this.error});
+  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error)';
+  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -465,7 +466,7 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> updateRating(ActionSource source, int rating) async {
+  Future<ActionResult> updateRating(ActionSource source, int? rating) async {
     final ids = _getRemoteIdsForSource(source);
     if (ids.length != 1) {
       _logger.warning('updateRating called with multiple assets, expected single asset');
@@ -554,10 +555,14 @@ class ActionNotifier extends Notifier<void> {
     final uploadedAssetIds = <String>{};
     final failedAssetIds = <String>{};
     final postUploadTasks = <Future<void>>[];
+    if (assetsToUpload.isEmpty) {
+      return const ActionResult(count: 0, success: false, error: 'No assets to upload');
+    }
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
     final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+    final remoteAssetIds = <String>[];
 
     // Initialize progress for all assets
     for (final asset in assetsToUpload) {
@@ -574,6 +579,7 @@ class ActionNotifier extends Notifier<void> {
             progressNotifier.setProgress(localAssetId, progress);
           },
           onSuccess: (localAssetId, remoteAssetId) {
+            remoteAssetIds.add(remoteAssetId);
             progressNotifier.remove(localAssetId);
             uploadedAssetIds.add(localAssetId);
             final asset = assetById[localAssetId];

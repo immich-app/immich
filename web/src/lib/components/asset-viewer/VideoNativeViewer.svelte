@@ -4,10 +4,12 @@
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, LoadingSpinner } from '@immich/ui';
+  import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
     mdiCheck,
     mdiChevronLeft,
@@ -21,9 +23,9 @@
     mdiVolumeMedium,
     mdiVolumeMute,
   } from '@mdi/js';
-  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
   import 'hls-video-element';
   import type HlsVideoElement from 'hls-video-element';
+  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
   import 'media-chrome/media-control-bar';
   import 'media-chrome/media-controller';
   import 'media-chrome/media-fullscreen-button';
@@ -31,7 +33,6 @@
   import 'media-chrome/media-play-button';
   import 'media-chrome/media-playback-rate-button';
   import 'media-chrome/media-time-display';
-  import './immich-time-range';
   import 'media-chrome/media-volume-range';
   import 'media-chrome/menu/media-playback-rate-menu';
   import 'media-chrome/menu/media-rendition-menu';
@@ -42,8 +43,7 @@
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
+  import './immich-time-range';
 
   interface Props {
     asset: AssetResponseDto;
@@ -318,6 +318,15 @@
   const onSeeking = (event: Event) => event.currentTarget?.dispatchEvent(new Event('timeupdate'));
 </script>
 
+<svelte:body
+  use:shortcuts={[
+    {
+      shortcut: { key: ' ' },
+      onShortcut: () => (videoPlayer?.paused ? videoPlayer?.play() : videoPlayer?.pause()),
+    },
+  ]}
+/>
+
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
@@ -370,6 +379,7 @@
           <video
             bind:this={videoPlayer}
             slot="media"
+            src={assetFileUrl}
             loop={$loopVideoPreference && loopVideo}
             autoplay={$autoPlayVideo}
             disablePictureInPicture

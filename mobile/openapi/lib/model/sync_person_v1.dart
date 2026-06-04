@@ -92,12 +92,12 @@ class SyncPersonV1 {
         ? this.birthDate!.millisecondsSinceEpoch
         : this.birthDate!.toUtc().toIso8601String();
     } else {
-    //  json[r'birthDate'] = null;
+      json[r'birthDate'] = null;
     }
     if (this.color != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      json[r'color'] = null;
     }
       json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.createdAt.millisecondsSinceEpoch
@@ -105,7 +105,7 @@ class SyncPersonV1 {
     if (this.faceAssetId != null) {
       json[r'faceAssetId'] = this.faceAssetId;
     } else {
-    //  json[r'faceAssetId'] = null;
+      json[r'faceAssetId'] = null;
     }
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
