@@ -18,7 +18,7 @@ import { AlbumUserRole, Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
-import { asDateString } from 'src/utils/date';
+import { asDateTimeString } from 'src/utils/date';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -59,11 +59,11 @@ export class AlbumService extends BaseService {
     return albums.map((album) => ({
       ...mapAlbum(album),
       sharedLinks: undefined,
-      startDate: asDateString(albumMetadata[album.id]?.startDate ?? undefined),
-      endDate: asDateString(albumMetadata[album.id]?.endDate ?? undefined),
+      startDate: asDateTimeString(albumMetadata[album.id]?.startDate ?? undefined),
+      endDate: asDateTimeString(albumMetadata[album.id]?.endDate ?? undefined),
       assetCount: albumMetadata[album.id]?.assetCount ?? 0,
       // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-      lastModifiedAssetTimestamp: asDateString(albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined),
+      lastModifiedAssetTimestamp: asDateTimeString(albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined),
     }));
   }
 
@@ -79,10 +79,10 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album),
-      startDate: asDateString(albumMetadataForIds?.startDate ?? undefined),
-      endDate: asDateString(albumMetadataForIds?.endDate ?? undefined),
+      startDate: asDateTimeString(albumMetadataForIds?.startDate ?? undefined),
+      endDate: asDateTimeString(albumMetadataForIds?.endDate ?? undefined),
       assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: asDateString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
+      lastModifiedAssetTimestamp: asDateTimeString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
       contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }

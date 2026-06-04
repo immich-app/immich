@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'open-api/**'
+      - 'mobile/lib/utils/openapi_patching.dart'
       - '.github/workflows/check-openapi.yml'
 
 concurrency:
@@ -24,8 +25,40 @@ jobs:
           persist-credentials: false
 
       - name: Check for breaking API changes
-        uses: oasdiff/oasdiff-action/breaking@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
+        uses: oasdiff/oasdiff-action/breaking@50e6a3413e5aa9c3ae4d8393c34745be44288b46 # v0.0.48
         with:
           base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
           revision: open-api/immich-openapi-specs.json
           fail-on: ERR
+
+  check-mobile-patches:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Get packages
+        working-directory: ./mobile
+        run: flutter pub get
+
+      - name: Fetch base spec from main
+        run: |
+          curl -fsSL \
+            "https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json" \
+            -o /tmp/base-spec.json
+
+      - name: Check newly-required fields have a backward-compat patch
+        working-directory: ./mobile
+        env:
+          OPENAPI_BASE_SPEC: /tmp/base-spec.json
+          OPENAPI_REVISION_SPEC: ../open-api/immich-openapi-specs.json
+        run: flutter test test/openapi_patches_coverage.dart

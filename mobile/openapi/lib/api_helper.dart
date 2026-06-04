@@ -157,6 +157,12 @@ String parameterToString(dynamic value) {
   if (value is ReactionType) {
     return ReactionTypeTypeTransformer().encode(value).toString();
   }
+  if (value is ReleaseChannel) {
+    return ReleaseChannelTypeTransformer().encode(value).toString();
+  }
+  if (value is ReleaseType) {
+    return ReleaseTypeTypeTransformer().encode(value).toString();
+  }
   if (value is SearchSuggestionType) {
     return SearchSuggestionTypeTypeTransformer().encode(value).toString();
   }
@@ -220,6 +226,9 @@ Future<String> _decodeBodyBytes(Response response) async {
 /// Returns a valid [T] value found at the specified Map [key], null otherwise.
 T? mapValueOfType<T>(dynamic map, String key) {
   final dynamic value = map is Map ? map[key] : null;
+  if (T == double && value is int) {
+    return value.toDouble() as T;
+  }
   return value is T ? value : null;
 }
 

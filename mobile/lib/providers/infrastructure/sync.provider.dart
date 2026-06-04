@@ -26,7 +26,7 @@ final syncStreamServiceProvider = Provider(
     permissionRepository: ref.watch(permissionRepositoryProvider),
     syncMigrationRepository: ref.watch(syncMigrationRepositoryProvider),
     api: ref.watch(apiServiceProvider),
-    cancelChecker: ref.watch(cancellationProvider),
+    cancellation: ref.watch(cancellationProvider),
   ),
 );
 
@@ -42,6 +42,7 @@ final localSyncServiceProvider = Provider(
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
+    cancellation: ref.watch(cancellationProvider),
   ),
 );
 
@@ -51,5 +52,6 @@ final hashServiceProvider = Provider(
     localAssetRepository: ref.watch(localAssetRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
+    cancellation: ref.watch(cancellationProvider),
   ),
 );

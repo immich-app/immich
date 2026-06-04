@@ -92,6 +92,14 @@ type EventMap = {
 
   AuthChangePassword: [{ userId: string; currentSessionId?: string; invalidateSessions?: boolean }];
 
+  // hls streaming events
+  HlsSegmentRequest: [{ sessionId: string; assetId: string; variantIndex: number; segmentIndex: number }];
+  HlsSegmentResult: [{ sessionId: string; variantIndex: number; segmentIndex: number; error?: string }];
+  HlsHeartbeat: [{ sessionId: string; variantIndex?: number; segmentIndex?: number }];
+  HlsSessionRequest: [{ sessionId: string; assetId: string; ownerId: string }];
+  HlsSessionResult: [{ sessionId: string; error?: string }];
+  HlsSessionEnd: [{ sessionId: string }];
+
   // websocket events
   WebsocketConnect: [{ userId: string }];
 };

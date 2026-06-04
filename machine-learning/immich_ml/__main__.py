@@ -49,6 +49,7 @@ try:
             str(settings.http_keepalive_timeout_s),
             "--graceful-timeout",
             "10",
+            "--no-control-socket",
         ],
     ) as cmd:
         cmd.wait()
