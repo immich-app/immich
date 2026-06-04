@@ -48,6 +48,24 @@
       intersectionObserver.observe(lastElement);
     }
   });
+
+  const rotation = () => {
+    const classes = [
+      'rotate-[-2.5deg]',
+      '-rotate-2',
+      'rotate-[-1.5deg]',
+      '-rotate-1',
+      'rotate-[-0.5deg]',
+      'rotate-0',
+      'rotate-[0.5deg]',
+      'rotate-1',
+      'rotate-[1.5deg]',
+      'rotate-2',
+      'rotate-[2.5deg]',
+    ];
+
+    return classes[Math.round(Math.random() * classes.length)];
+  };
 </script>
 
 {#if page.url.searchParams.has(QueryParameter.ID)}
@@ -73,8 +91,7 @@
         {#each memoryManager.memories as memory, index (memory.id)}
           <a
             href={Route.memories({ id: memory.assets[0].id })}
-            class="relative rounded-md bg-gray-50 p-2 pb-0 shadow-md sm:p-5 sm:pb-0"
-            style:transform={`rotate(${Math.random() * 5 - 2.5}deg)`}
+            class={`relative rounded-md bg-gray-50 p-2 pb-0 shadow-md transition-all hover:scale-102 hover:rotate-0 hover:shadow-lg sm:p-5 sm:pb-0 ${rotation()}`}
             bind:this={
               () => (index === memoryManager.memories.length - 1 ? lastElement : null),
               (e) => {
