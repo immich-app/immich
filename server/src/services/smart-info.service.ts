@@ -5,7 +5,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf, MlStreamTask } from 'src/types';
+import { JobItem, JobOf, MlStreamTask, MlWorkRequest } from 'src/types';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -83,6 +83,33 @@ export class SmartInfoService extends BaseService {
       await this.databaseRepository.setDimensionSize(dimSize);
     }
 
+    // Stream mode: publish directly to Redis streams, bypassing BullMQ
+    if (machineLearning.streamMode?.enabled) {
+      let batch: MlWorkRequest[] = [];
+      const assets = this.assetJobRepository.streamForEncodeClipWithFiles(force);
+      for await (const asset of assets) {
+        const previewFile = asset.files[0];
+        if (!previewFile?.s3Key || !previewFile?.s3Bucket) {
+          continue;
+        }
+        batch.push({
+          correlationId: this.cryptoRepository.randomUUID(),
+          assetId: asset.id,
+          taskType: MlStreamTask.Clip,
+          imagePath: `s3://${previewFile.s3Bucket}/${previewFile.s3Key}`,
+          config: { modelName: machineLearning.clip.modelName },
+          timestamp: Date.now(),
+          attempt: 1,
+        });
+        if (batch.length >= JOBS_ASSET_PAGINATION_SIZE) {
+          await this.mlStreamRepository.publishBatch(batch);
+          batch = [];
+        }
+      }
+      await this.mlStreamRepository.publishBatch(batch);
+      return JobStatus.Success;
+    }
+
     let queue: JobItem[] = [];
     const assets = this.assetJobRepository.streamForEncodeClip(force);
     for await (const asset of assets) {
@@ -115,20 +142,32 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Stream mode with S3: publish S3 URL directly, no local download needed
+    if (machineLearning.streamMode?.enabled && previewFile.storageBackend === 's3' && previewFile.s3Bucket && previewFile.s3Key) {
+      await this.mlStreamRepository.publish({
+        correlationId: this.cryptoRepository.randomUUID(),
+        assetId: asset.id,
+        taskType: MlStreamTask.Clip,
+        imagePath: `s3://${previewFile.s3Bucket}/${previewFile.s3Key}`,
+        config: { modelName: machineLearning.clip.modelName },
+        timestamp: Date.now(),
+        attempt: 1,
+      });
+      return JobStatus.Success;
+    }
+
     // Ensure preview file is available locally (download from S3 if needed)
     const { downloadedFromS3, localPath } = await this.ensurePreviewFile(asset.id, previewFile, 'smart search');
 
     try {
-      // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+      // Stream mode with local file
       if (machineLearning.streamMode?.enabled) {
         await this.mlStreamRepository.publish({
           correlationId: this.cryptoRepository.randomUUID(),
           assetId: asset.id,
           taskType: MlStreamTask.Clip,
           imagePath: localPath,
-          config: {
-            modelName: machineLearning.clip.modelName,
-          },
+          config: { modelName: machineLearning.clip.modelName },
           timestamp: Date.now(),
           attempt: 1,
         });

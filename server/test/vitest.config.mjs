@@ -1,15 +1,25 @@
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import swc from 'unplugin-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
-// Set the timezone to UTC to avoid timezone issues during testing
-process.env.TZ = 'UTC';
+const serverRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const maxForks = Number(process.env.VITEST_MAX_FORKS || 1);
+const maxOldSpaceSize = Number(process.env.VITEST_MAX_OLD_SPACE_SIZE || 16384);
 
 export default defineConfig({
   test: {
-    root: './',
+    name: 'server:unit',
+    root: serverRoot,
     globals: true,
     include: ['src/**/*.spec.ts'],
+    poolOptions: {
+      forks: {
+        maxForks,
+        execArgv: [`--max-old-space-size=${maxOldSpaceSize}`],
+      },
+    },
     coverage: {
       provider: 'v8',
       include: ['src/cores/**', 'src/services/**', 'src/utils/**', 'src/sql-tools/**'],
@@ -24,6 +34,9 @@ export default defineConfig({
       deps: {
         fallbackCJS: true,
       },
+    },
+    env: {
+      TZ: 'UTC',
     },
   },
   plugins: [swc.vite(), tsconfigPaths()],

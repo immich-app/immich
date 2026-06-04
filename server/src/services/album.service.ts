@@ -21,6 +21,7 @@ import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { checkAlbumAssetAccess } from 'src/utils/access';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -209,7 +210,7 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
+    const allowedAssetIds = await checkAlbumAssetAccess(this.accessRepository, { auth, ids: dto.assetIds });
     if (allowedAssetIds.size === 0) {
       results.error = BulkIdErrorReason.NO_PERMISSION;
       return results;

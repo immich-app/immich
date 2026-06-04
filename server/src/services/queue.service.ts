@@ -30,7 +30,7 @@ import {
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { ConcurrentQueueName, JobItem } from 'src/types';
+import { ConcurrentQueueName, JobItem, MlStreamTask } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 const asNightlyTasksCron = (config: SystemConfig) => {
@@ -89,12 +89,24 @@ export class QueueService extends BaseService {
     }
   }
 
+  private static readonly STREAM_MODE_QUEUES = new Set<QueueName>([
+    QueueName.SmartSearch,
+    QueueName.FaceDetection,
+    QueueName.Ocr,
+  ]);
+
   private updateConcurrency(config: SystemConfig) {
     this.logger.debug(`Updating queue concurrency settings`);
+    const streamModeEnabled = config.machineLearning.streamMode?.enabled ?? false;
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
       if (this.isConcurrentQueue(queueName)) {
         concurrency = config.job[queueName].concurrency;
+      }
+      // Stream mode decouples publishing from inference -- these queues just do
+      // a lightweight DB read + Redis XADD, so remove the concurrency throttle
+      if (streamModeEnabled && QueueService.STREAM_MODE_QUEUES.has(queueName)) {
+        concurrency = 200;
       }
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
@@ -180,6 +192,12 @@ export class QueueService extends BaseService {
     }
   }
 
+  private static readonly QUEUE_TO_STREAM_TASK: Partial<Record<QueueName, MlStreamTask>> = {
+    [QueueName.SmartSearch]: MlStreamTask.Clip,
+    [QueueName.FaceDetection]: MlStreamTask.Face,
+    [QueueName.Ocr]: MlStreamTask.Ocr,
+  };
+
   private async getByName(name: QueueName): Promise<QueueResponseDto> {
     const [statistics, isPaused, queueState, missingCount] = await Promise.all([
       this.jobRepository.getJobCounts(name),
@@ -187,6 +205,19 @@ export class QueueService extends BaseService {
       this.systemMetadataRepository.get(SystemMetadataKey.QueueState),
       this.getMissingCount(name),
     ]);
+
+    // Add Redis stream counts for ML queues in stream mode
+    const streamTask = QueueService.QUEUE_TO_STREAM_TASK[name];
+    if (streamTask) {
+      try {
+        const streamCounts = await this.mlStreamRepository.getStreamCounts(streamTask);
+        statistics.waiting += streamCounts.lag;
+        statistics.active += streamCounts.active;
+      } catch {
+        // Stream not available, just show BullMQ counts
+      }
+    }
+
     const lastTriggeredAt = queueState?.[name]?.lastTriggeredAt;
     return { name, isPaused, statistics, lastTriggeredAt, missingCount };
   }

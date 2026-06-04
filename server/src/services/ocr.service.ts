@@ -4,7 +4,7 @@ import { OnJob } from 'src/decorators';
 import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf, MlStreamTask } from 'src/types';
+import { JobItem, JobOf, MlStreamTask, MlWorkRequest } from 'src/types';
 import { tokenizeForSearch } from 'src/utils/database';
 import { isOcrEnabled } from 'src/utils/misc';
 
@@ -19,6 +19,38 @@ export class OcrService extends BaseService {
 
     if (force) {
       await this.ocrRepository.deleteAll();
+    }
+
+    // Stream mode: publish directly to Redis streams, bypassing BullMQ
+    if (machineLearning.streamMode?.enabled) {
+      let batch: MlWorkRequest[] = [];
+      const assets = this.assetJobRepository.streamForOcrWithFiles(force);
+      for await (const asset of assets) {
+        const previewFile = asset.files[0];
+        if (!previewFile?.s3Key || !previewFile?.s3Bucket) {
+          continue;
+        }
+        batch.push({
+          correlationId: this.cryptoRepository.randomUUID(),
+          assetId: asset.id,
+          taskType: MlStreamTask.Ocr,
+          imagePath: `s3://${previewFile.s3Bucket}/${previewFile.s3Key}`,
+          config: {
+            modelName: machineLearning.ocr.modelName,
+            minDetectionScore: machineLearning.ocr.minDetectionScore,
+            minRecognitionScore: machineLearning.ocr.minRecognitionScore,
+            maxResolution: machineLearning.ocr.maxResolution,
+          },
+          timestamp: Date.now(),
+          attempt: 1,
+        });
+        if (batch.length >= JOBS_ASSET_PAGINATION_SIZE) {
+          await this.mlStreamRepository.publishBatch(batch);
+          batch = [];
+        }
+      }
+      await this.mlStreamRepository.publishBatch(batch);
+      return JobStatus.Success;
     }
 
     let jobs: JobItem[] = [];
@@ -54,11 +86,30 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Stream mode with S3: publish S3 URL directly, no local download needed
+    if (machineLearning.streamMode?.enabled && previewFile.storageBackend === 's3' && previewFile.s3Bucket && previewFile.s3Key) {
+      await this.mlStreamRepository.publish({
+        correlationId: this.cryptoRepository.randomUUID(),
+        assetId: id,
+        taskType: MlStreamTask.Ocr,
+        imagePath: `s3://${previewFile.s3Bucket}/${previewFile.s3Key}`,
+        config: {
+          modelName: machineLearning.ocr.modelName,
+          minDetectionScore: machineLearning.ocr.minDetectionScore,
+          minRecognitionScore: machineLearning.ocr.minRecognitionScore,
+          maxResolution: machineLearning.ocr.maxResolution,
+        },
+        timestamp: Date.now(),
+        attempt: 1,
+      });
+      return JobStatus.Success;
+    }
+
     // Ensure preview file is available locally (download from S3 if needed)
     const { downloadedFromS3, localPath } = await this.ensurePreviewFile(asset.id, previewFile, 'OCR');
 
     try {
-      // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+      // Stream mode with local file
       if (machineLearning.streamMode?.enabled) {
         await this.mlStreamRepository.publish({
           correlationId: this.cryptoRepository.randomUUID(),

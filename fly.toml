@@ -66,16 +66,16 @@ primary_region = 'ord'
 # Web: lightweight API server
 [[vm]]
   processes = ["web"]
-  memory = '1gb'
+  memory = '2gb'
   cpus = 1
   cpu_kind = "shared"
 
 # Worker: heavier job processing (video transcoding, thumbnails, etc.)
 [[vm]]
   processes = ["worker"]
-  memory = '4gb'
-  cpus = 2
-  cpu_kind = "performance"
+  memory = '8gb'
+  cpus = 8
+  cpu_kind = "shared"
 
 # Give workers time to finish current job before SIGKILL (matches 10-min lock duration)
 kill_timeout = "660s"

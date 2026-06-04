@@ -6,6 +6,11 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/svelte';
 import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
 
+vi.mock('$lib/managers/feature-flags-manager.svelte', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { smartSearch: true } } as any };
+});
+
 describe('AssetViewerNavBar component', () => {
   const additionalProps = {
     showCopyButton: false,
@@ -28,14 +33,13 @@ describe('AssetViewerNavBar component', () => {
     Element.prototype.animate = vi.fn().mockImplementation(() => ({
       cancel: () => {},
     }));
-    vi.stubGlobal(
-      'ResizeObserver',
-      vi.fn(() => ({ observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() })),
-    );
-    vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { smartSearch: true } } as any };
-    });
+    class ResizeObserverMock {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    }
+
+    vi.stubGlobal('ResizeObserver', ResizeObserverMock);
   });
 
   afterEach(() => {

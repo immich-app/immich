@@ -38,12 +38,18 @@ class BatchProcessor:
         if self._s3_client is None:
             async with self._s3_client_lock:
                 if self._s3_client is None:  # Double-check after lock
+                    from botocore.config import Config as BotoConfig
                     self._s3_client = await self._s3_session.client(
                         "s3",
                         endpoint_url=settings.s3.endpoint,
                         region_name=settings.s3.region,
                         aws_access_key_id=settings.s3.access_key_id,
                         aws_secret_access_key=settings.s3.secret_access_key,
+                        config=BotoConfig(
+                            connect_timeout=5,
+                            read_timeout=10,
+                            retries={"max_attempts": 1},
+                        ),
                     ).__aenter__()
         return self._s3_client
 
@@ -68,6 +74,10 @@ class BatchProcessor:
 
         return bucket, key
 
+    async def preload_images(self, batch: list[WorkRequest]) -> list[tuple[WorkRequest, Image.Image | None]]:
+        """Preload images for a batch. Can run concurrently with inference on another batch."""
+        return await self._load_images(batch)
+
     async def process(self, task_type: str, batch: list[WorkRequest]) -> list[WorkResult]:
         """Process a batch of requests for a given task type."""
         if task_type == "clip":
@@ -76,6 +86,17 @@ class BatchProcessor:
             return await self._process_face_batch(batch)
         elif task_type == "ocr":
             return await self._process_ocr_batch(batch)
+        else:
+            raise ValueError(f"Unknown task type: {task_type}")
+
+    async def process_preloaded(self, task_type: str, loaded: list[tuple[WorkRequest, Image.Image | None]]) -> list[WorkResult]:
+        """Process a batch with already-loaded images (skips S3 download)."""
+        if task_type == "clip":
+            return await self._process_clip_batch(None, loaded)
+        elif task_type == "face":
+            return await self._process_face_batch(None, loaded)
+        elif task_type == "ocr":
+            return await self._process_ocr_batch(None, loaded)
         else:
             raise ValueError(f"Unknown task type: {task_type}")
 
@@ -115,18 +136,21 @@ class BatchProcessor:
         response = await client.get_object(Bucket=bucket, Key=key)
         return await response["Body"].read()
 
-    async def _process_clip_batch(self, batch: list[WorkRequest]) -> list[WorkResult]:
+    async def _process_clip_batch(self, batch: list[WorkRequest] | None, preloaded: list[tuple[WorkRequest, Image.Image | None]] | None = None) -> list[WorkResult]:
         """Process CLIP visual encoding in batch."""
         results: list[WorkResult] = []
 
-        # Load all images
-        loaded = await self._load_images(batch)
-
-        # Get model
-        if not batch:
+        if preloaded is not None:
+            loaded = preloaded
+        elif batch:
+            loaded = await self._load_images(batch)
+        else:
             return results
 
-        model_name = batch[0].config.get("modelName", "ViT-B-32__openai")
+        if not loaded:
+            return results
+
+        model_name = loaded[0][0].config.get("modelName", "ViT-B-32__openai")
 
         model = await self.model_cache.get(
             model_name, ModelType.VISUAL, ModelTask.SEARCH, ttl=settings.model_ttl
@@ -172,18 +196,22 @@ class BatchProcessor:
 
         return results
 
-    async def _process_face_batch(self, batch: list[WorkRequest]) -> list[WorkResult]:
+    async def _process_face_batch(self, batch: list[WorkRequest] | None, preloaded: list[tuple[WorkRequest, Image.Image | None]] | None = None) -> list[WorkResult]:
         """Process face detection in batch."""
         results: list[WorkResult] = []
 
-        # Load all images
-        loaded = await self._load_images(batch)
-
-        if not batch:
+        if preloaded is not None:
+            loaded = preloaded
+        elif batch:
+            loaded = await self._load_images(batch)
+        else:
             return results
 
-        model_name = batch[0].config.get("modelName", "buffalo_l")
-        min_score = batch[0].config.get("minScore", 0.7)
+        if not loaded:
+            return results
+
+        model_name = loaded[0][0].config.get("modelName", "buffalo_l")
+        min_score = loaded[0][0].config.get("minScore", 0.7)
 
         # Get detection and recognition models
         detection_model = await self.model_cache.get(
@@ -215,15 +243,22 @@ class BatchProcessor:
 
             try:
                 # Detect faces
-                faces = await self._run(detection_model.predict, image, minScore=min_score)
+                detections = await self._run(detection_model.predict, image, minScore=min_score)
 
                 # Get embeddings for each face
-                if faces:
-                    embeddings = await self._run(recognition_model.predict, image, faces)
-                    # Merge embeddings into faces
-                    for i, face in enumerate(faces):
-                        if i < len(embeddings):
-                            face["embedding"] = self._embedding_to_string(embeddings[i])
+                if detections and detections["boxes"].shape[0] > 0:
+                    face_results = await self._run(recognition_model.predict, image, detections)
+                else:
+                    face_results = []
+
+                # Ensure numpy scalars are converted to native Python types for JSON serialization
+                serializable_faces = []
+                for face in face_results:
+                    serializable_faces.append({
+                        "boundingBox": {k: float(v) for k, v in face["boundingBox"].items()},
+                        "embedding": face["embedding"],
+                        "score": float(face["score"]),
+                    })
 
                 results.append(WorkResult(
                     correlation_id=request.correlation_id,
@@ -231,7 +266,7 @@ class BatchProcessor:
                     task_type="face",
                     status="success",
                     result={
-                        "faces": faces,
+                        "faces": serializable_faces,
                         "imageHeight": image.height,
                         "imageWidth": image.width,
                     },
@@ -248,20 +283,24 @@ class BatchProcessor:
 
         return results
 
-    async def _process_ocr_batch(self, batch: list[WorkRequest]) -> list[WorkResult]:
+    async def _process_ocr_batch(self, batch: list[WorkRequest] | None, preloaded: list[tuple[WorkRequest, Image.Image | None]] | None = None) -> list[WorkResult]:
         """Process OCR in batch."""
         results: list[WorkResult] = []
 
-        # Load all images
-        loaded = await self._load_images(batch)
-
-        if not batch:
+        if preloaded is not None:
+            loaded = preloaded
+        elif batch:
+            loaded = await self._load_images(batch)
+        else:
             return results
 
-        model_name = batch[0].config.get("modelName", "PP-OCRv5_mobile")
-        min_detection_score = batch[0].config.get("minDetectionScore", 0.5)
-        min_recognition_score = batch[0].config.get("minRecognitionScore", 0.8)
-        max_resolution = batch[0].config.get("maxResolution", 736)
+        if not loaded:
+            return results
+
+        model_name = loaded[0][0].config.get("modelName", "PP-OCRv5_mobile")
+        min_detection_score = loaded[0][0].config.get("minDetectionScore", 0.5)
+        min_recognition_score = loaded[0][0].config.get("minRecognitionScore", 0.8)
+        max_resolution = loaded[0][0].config.get("maxResolution", 736)
 
         # Get detection and recognition models
         detection_model = await self.model_cache.get(
@@ -304,12 +343,18 @@ class BatchProcessor:
                 else:
                     ocr_result = {"text": [], "box": [], "boxScore": [], "textScore": []}
 
+                # Convert numpy arrays to lists for JSON serialization
+                import numpy as np
+                serializable_result = {}
+                for k, v in ocr_result.items():
+                    serializable_result[k] = v.tolist() if isinstance(v, np.ndarray) else v
+
                 results.append(WorkResult(
                     correlation_id=request.correlation_id,
                     asset_id=request.asset_id,
                     task_type="ocr",
                     status="success",
-                    result=ocr_result,
+                    result=serializable_result,
                 ))
             except Exception as e:
                 log.error(f"OCR failed for {request.asset_id}: {e}")

@@ -11,7 +11,7 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types';
-import { checkAccess } from 'src/utils/access';
+import { checkAccess, checkAlbumAssetAccess } from 'src/utils/access';
 
 export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType) => {
   return files.find((file) => file.type === type);
@@ -32,11 +32,7 @@ export const addAssets = async (
   const { access, bulk } = repositories;
   const existingAssetIds = await bulk.getAssetIds(dto.parentId, dto.assetIds);
   const notPresentAssetIds = dto.assetIds.filter((id) => !existingAssetIds.has(id));
-  const allowedAssetIds = await checkAccess(access, {
-    auth,
-    permission: Permission.AssetShare,
-    ids: notPresentAssetIds,
-  });
+  const allowedAssetIds = await checkAlbumAssetAccess(access, { auth, ids: notPresentAssetIds });
 
   const results: BulkIdResponseDto[] = [];
   for (const assetId of dto.assetIds) {

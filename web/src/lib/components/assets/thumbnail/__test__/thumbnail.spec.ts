@@ -21,13 +21,14 @@ vi.hoisted(() => {
   });
 });
 
+vi.mock('$lib/utils/navigation', () => ({
+  currentUrlReplaceAssetId: vi.fn(),
+  isSharedLinkRoute: vi.fn().mockReturnValue(false),
+}));
+
 describe('Thumbnail component', () => {
   beforeAll(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
-    vi.mock('$lib/utils/navigation', () => ({
-      currentUrlReplaceAssetId: vi.fn(),
-      isSharedLinkRoute: vi.fn().mockReturnValue(false),
-    }));
   });
 
   it('should only contain a single tabbable element (the container)', () => {

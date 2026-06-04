@@ -76,6 +76,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             stream_consumer = StreamConsumer(
                 redis_url=settings.stream.redis_url,
                 processor=batch_processor.process,
+                batch_processor=batch_processor,
             )
             stream_consumer_task = asyncio.create_task(stream_consumer.start())
             log.info("Started Redis stream consumer for ML tasks")

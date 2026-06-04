@@ -259,6 +259,17 @@ export class AssetJobRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [], stream: true })
+  streamForEncodeClipWithFiles(force?: boolean) {
+    return this.assetsWithPreviews()
+      .select(['asset.id'])
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .$if(!force, (qb) =>
+        qb.where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'asset.id')))),
+      )
+      .stream();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getForClipEncoding(id: string) {
     return this.db
@@ -470,6 +481,32 @@ export class AssetJobRepository {
       .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['asset.id'])
       .orderBy('asset.fileCreatedAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForDetectFacesWithFiles(force?: boolean) {
+    return this.assetsWithPreviews()
+      .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .select(['asset.id'])
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .orderBy('asset.fileCreatedAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForOcrWithFiles(force?: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .where('asset_job_status.ocrAt', 'is', null),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 

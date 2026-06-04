@@ -55,6 +55,22 @@ export const checkAccess = async (
     : checkOtherAccess(access, { auth, permission, ids: idSet });
 };
 
+export const checkAlbumAssetAccess = async (
+  access: AccessRepository,
+  { ids, auth }: Omit<AccessRequest, 'permission'>,
+): Promise<Set<string>> => {
+  const idSet = Array.isArray(ids) ? new Set(ids) : ids;
+  if (idSet.size === 0) {
+    return new Set<string>();
+  }
+
+  if (auth.sharedLink) {
+    return await access.asset.checkOwnerAccess(auth.sharedLink.userId, idSet, false);
+  }
+
+  return await checkAccess(access, { auth, permission: Permission.AssetShare, ids: idSet });
+};
+
 const checkSharedLinkAccess = async (
   access: AccessRepository,
   request: SharedLinkAccessRequest,

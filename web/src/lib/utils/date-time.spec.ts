@@ -1,6 +1,12 @@
 import { writable } from 'svelte/store';
 import { getAlbumDateRange, timeToSeconds } from './date-time';
 
+process.env.TZ = 'UTC';
+
+vi.mock('$lib/stores/preferences.store', () => ({
+  locale: writable('en'),
+}));
+
 describe('converting time to seconds', () => {
   it('parses hh:mm:ss correctly', () => {
     expect(timeToSeconds('01:02:03')).toBeCloseTo(3723);
@@ -50,14 +56,6 @@ describe('converting time to seconds', () => {
 });
 
 describe('getAlbumDate', () => {
-  beforeAll(() => {
-    process.env.TZ = 'UTC';
-
-    vitest.mock('$lib/stores/preferences.store', () => ({
-      locale: writable('en'),
-    }));
-  });
-
   it('should work with only a start date', () => {
     expect(getAlbumDateRange({ startDate: '2021-01-01T00:00:00Z' })).toEqual('Jan 1, 2021');
   });

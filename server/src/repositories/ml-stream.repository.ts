@@ -43,6 +43,7 @@ type ResultHandler = (result: MlWorkResult) => Promise<void>;
 export class MlStreamRepository implements OnModuleDestroy {
   private redis?: Redis;
   private subscriber?: Redis;
+  private statsRedis?: Redis;
   private resultConsumerRunning = false;
   private consumerName: string;
   private s3Config: MlStreamS3Config = { enabled: false, bucket: '', prefix: '' };
@@ -100,6 +101,11 @@ export class MlStreamRepository implements OnModuleDestroy {
     if (this.redis) {
       this.redis.disconnect();
       this.redis = undefined;
+    }
+
+    if (this.statsRedis) {
+      this.statsRedis.disconnect();
+      this.statsRedis = undefined;
     }
 
     if (this.subscriber) {
@@ -237,8 +243,15 @@ export class MlStreamRepository implements OnModuleDestroy {
 
     for (const [task, stream] of Object.entries(STREAM_KEYS.requests)) {
       try {
-        const length = await this.redis.xlen(stream);
-        pending[task as MlStreamTask] = length;
+        // Use XINFO GROUPS to get consumer group lag (unconsumed messages)
+        const groups = await this.redis.xinfo('GROUPS', stream) as unknown[];
+        const lag = this.parseConsumerGroupLag(groups, 'ml-workers');
+        if (lag !== null) {
+          pending[task as MlStreamTask] = lag;
+        } else {
+          // Fallback to total stream length if no consumer group
+          pending[task as MlStreamTask] = await this.redis.xlen(stream);
+        }
       } catch {
         pending[task as MlStreamTask] = 0;
       }
@@ -250,6 +263,105 @@ export class MlStreamRepository implements OnModuleDestroy {
     ]);
 
     return { pending, results, deadLetter };
+  }
+
+  async getStreamLag(task: MlStreamTask): Promise<number> {
+    const stats = await this.getStreamCounts(task);
+    return stats.lag;
+  }
+
+  async getStreamCounts(task: MlStreamTask): Promise<{ lag: number; active: number }> {
+    const client = await this.getRedisForStats();
+    if (!client) {
+      return { lag: 0, active: 0 };
+    }
+
+    const stream = STREAM_KEYS.requests[task];
+    try {
+      const groups = await client.xinfo('GROUPS', stream) as unknown[];
+      const parsed = this.parseConsumerGroupStats(groups, 'ml-workers');
+      if (parsed) {
+        return parsed;
+      }
+      const total = await client.xlen(stream);
+      return { lag: total, active: 0 };
+    } catch {
+      return { lag: 0, active: 0 };
+    }
+  }
+
+  /**
+   * Get a Redis client for stats queries. Uses the existing connection if available,
+   * otherwise creates a lightweight on-demand connection (for web workers).
+   */
+  private async getRedisForStats(): Promise<Redis | undefined> {
+    if (this.redis) {
+      return this.redis;
+    }
+
+    // On-demand connection for web workers that don't call setup()
+    if (!this.statsRedis) {
+      try {
+        const { redis } = this.configRepository.getEnv();
+        this.statsRedis = new Redis({ ...redis, lazyConnect: true });
+        await this.statsRedis.connect();
+      } catch {
+        return undefined;
+      }
+    }
+    return this.statsRedis;
+  }
+
+  private parseConsumerGroupStats(groups: unknown[], groupName: string): { lag: number; active: number } | null {
+    for (const group of groups) {
+      if (Array.isArray(group)) {
+        let isMatch = false;
+        let lag: number | null = null;
+        let pending = 0;
+        for (let i = 0; i < group.length - 1; i += 2) {
+          const key = String(group[i]);
+          const value = group[i + 1];
+          if (key === 'name' && String(value) === groupName) {
+            isMatch = true;
+          }
+          if (key === 'lag' && value !== null && value !== undefined) {
+            lag = Number(value);
+          }
+          if (key === 'pending' && value !== null && value !== undefined) {
+            pending = Number(value);
+          }
+        }
+        if (isMatch && lag !== null) {
+          return { lag, active: pending };
+        }
+      }
+    }
+    return null;
+  }
+
+  private parseConsumerGroupLag(groups: unknown[], groupName: string): number | null {
+    // XINFO GROUPS returns an array of [field, value, field, value, ...] per group
+    // or an array of objects depending on the Redis client
+    for (const group of groups) {
+      if (Array.isArray(group)) {
+        let isMatch = false;
+        let lag: number | null = null;
+        for (let i = 0; i < group.length - 1; i += 2) {
+          const key = String(group[i]);
+          const value = group[i + 1];
+          if (key === 'name' && String(value) === groupName) {
+            isMatch = true;
+          }
+          if (key === 'lag' && value !== null && value !== undefined) {
+            lag = Number(value);
+          }
+        }
+        if (isMatch && lag !== null) {
+          return lag;
+        }
+      }
+    }
+    return null;
   }
 
   async moveToDeadLetter(request: MlWorkRequest): Promise<void> {
@@ -312,39 +424,35 @@ export class MlStreamRepository implements OnModuleDestroy {
   }
 
   /**
-   * Convert a local filesystem path to an S3 URL.
-   * Example: /usr/src/app/upload/users/abc/preview/xyz.jpeg
-   *       -> s3://bucket/users/abc/preview/xyz.jpeg
-   *
-   * The relative path after stripping the media location is used directly as the S3 key,
-   * since Immich's S3 storage uses the same path structure.
+   * Convert a path to an S3 URL if needed.
+   * Paths already in s3:// format are passed through unchanged.
+   * Local paths are converted by stripping the media location prefix.
    */
-  private toS3Path(localPath: string): string {
+  private toS3Path(path: string): string {
+    if (path.startsWith('s3://')) {
+      return path;
+    }
+
     if (!this.s3Config.enabled) {
-      return localPath;
+      return path;
     }
 
     try {
-      // Get the base media location (e.g., /usr/src/app/upload)
       const mediaLocation = StorageCore.getMediaLocation();
 
-      // Strip the media location prefix to get the relative path
-      if (!localPath.startsWith(mediaLocation)) {
-        this.logger.warn(`Path ${localPath} does not start with media location ${mediaLocation}`);
-        return localPath;
+      if (!path.startsWith(mediaLocation)) {
+        this.logger.warn(`Path ${path} does not start with media location ${mediaLocation}`);
+        return path;
       }
 
-      // Get relative path (e.g., users/abc/preview/xyz.jpeg)
-      let s3Key = localPath.slice(mediaLocation.length);
-      // Remove leading slash if present
+      let s3Key = path.slice(mediaLocation.length);
       if (s3Key.startsWith('/')) {
         s3Key = s3Key.slice(1);
       }
 
       return `s3://${this.s3Config.bucket}/${s3Key}`;
     } catch {
-      // If StorageCore is not initialized, return original path
-      return localPath;
+      return path;
     }
   }
 

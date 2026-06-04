@@ -51,7 +51,7 @@
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.28.0",
     "utimes": "^5.2.1",
-    "vitest": "^3.0.0"
+    "vitest": "^4.0.0"
   },
   "volta": {
     "node": "24.11.1"
