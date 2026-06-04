@@ -127,7 +127,7 @@ class SyncAssetFaceV2 {
         ? this.deletedAt!.millisecondsSinceEpoch
         : this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      json[r'deletedAt'] = null;
     }
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
@@ -136,7 +136,7 @@ class SyncAssetFaceV2 {
     if (this.personId != null) {
       json[r'personId'] = this.personId;
     } else {
-    //  json[r'personId'] = null;
+      json[r'personId'] = null;
     }
       json[r'sourceType'] = this.sourceType;
     return json;

@@ -20,7 +20,7 @@ class SyncApiRepository {
   }
 
   Future<void> deleteSyncAck(List<SyncEntityType> types) {
-    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: types));
+    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: Optional.present(types)));
   }
 
   Future<void> streamChanges(
@@ -29,6 +29,7 @@ class SyncApiRepository {
     Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
+    Future<void>? abortSignal,
   }) async {
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? NetworkRepository.client;
@@ -36,7 +37,7 @@ class SyncApiRepository {
 
     final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
-    final request = http.Request('POST', Uri.parse(endpoint));
+    final request = http.AbortableRequest('POST', Uri.parse(endpoint), abortTrigger: abortSignal);
     request.headers.addAll(headers);
     request.body = jsonEncode(
       SyncStreamDto(

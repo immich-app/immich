@@ -38,7 +38,7 @@ class SyncStreamService {
   final IPermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
-  final bool Function()? _cancelChecker;
+  final Completer<void>? _cancellation;
 
   SyncStreamService({
     required this._syncApiRepository,
@@ -49,10 +49,10 @@ class SyncStreamService {
     required this._permissionRepository,
     required this._syncMigrationRepository,
     required this._api,
-    this._cancelChecker,
+    this._cancellation,
   });
 
-  bool get isCancelled => _cancelChecker?.call() ?? false;
+  bool get isCancelled => _cancellation?.isCompleted ?? false;
 
   Future<bool> sync() async {
     _logger.info("Remote sync request for user");
@@ -80,10 +80,15 @@ class SyncStreamService {
       _handleEvents,
       serverVersion: serverSemVer,
       onReset: () => shouldReset = true,
+      abortSignal: _cancellation?.future,
     );
     if (shouldReset) {
       _logger.info("Resetting sync state as requested by server");
-      await _syncApiRepository.streamChanges(_handleEvents, serverVersion: serverSemVer);
+      await _syncApiRepository.streamChanges(
+        _handleEvents,
+        serverVersion: serverSemVer,
+        abortSignal: _cancellation?.future,
+      );
     }
 
     previousLength = migrations.length;
@@ -318,7 +323,7 @@ class SyncStreamService {
   }
 
   Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) {
+    if (batchData.isEmpty || isCancelled) {
       return;
     }
 
@@ -361,7 +366,7 @@ class SyncStreamService {
   }
 
   Future<void> handleWsAssetUploadReadyV2Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) {
+    if (batchData.isEmpty || isCancelled) {
       return;
     }
 
@@ -404,6 +409,9 @@ class SyncStreamService {
   }
 
   Future<void> handleWsAssetEditReadyV1(dynamic data) async {
+    if (isCancelled) {
+      return;
+    }
     _logger.info('Processing AssetEditReadyV1 event');
 
     try {
@@ -444,6 +452,9 @@ class SyncStreamService {
   }
 
   Future<void> handleWsAssetEditReadyV2(dynamic data) async {
+    if (isCancelled) {
+      return;
+    }
     _logger.info('Processing AssetEditReadyV2 event');
 
     try {

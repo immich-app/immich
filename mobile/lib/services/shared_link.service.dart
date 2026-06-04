@@ -48,26 +48,26 @@ class SharedLinkService {
       if (type == SharedLinkType.ALBUM) {
         dto = SharedLinkCreateDto(
           type: type,
-          albumId: albumId,
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-          password: password,
-          slug: slug,
+          albumId: albumId == null ? const Optional.absent() : Optional.present(albumId),
+          showMetadata: Optional.present(showMeta),
+          allowDownload: Optional.present(allowDownload),
+          allowUpload: Optional.present(allowUpload),
+          expiresAt: expiresAt == null ? const Optional.absent() : Optional.present(expiresAt),
+          description: description == null ? const Optional.absent() : Optional.present(description),
+          password: password == null ? const Optional.absent() : Optional.present(password),
+          slug: slug == null ? const Optional.absent() : Optional.present(slug),
         );
       } else if (assetIds != null) {
         dto = SharedLinkCreateDto(
           type: type,
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
-          password: password,
-          slug: slug,
-          assetIds: assetIds,
+          showMetadata: Optional.present(showMeta),
+          allowDownload: Optional.present(allowDownload),
+          allowUpload: Optional.present(allowUpload),
+          expiresAt: expiresAt == null ? const Optional.absent() : Optional.present(expiresAt),
+          description: description == null ? const Optional.absent() : Optional.present(description),
+          password: password == null ? const Optional.absent() : Optional.present(password),
+          slug: slug == null ? const Optional.absent() : Optional.present(slug),
+          assetIds: Optional.present(assetIds),
         );
       }
 
@@ -88,24 +88,22 @@ class SharedLinkService {
     required bool? showMeta,
     required bool? allowDownload,
     required bool? allowUpload,
-    bool? changeExpiry = false,
-    String? description,
-    String? password,
+    Optional<String?> password = const Optional.absent(),
+    Optional<String?> description = const Optional.absent(),
     String? slug,
-    DateTime? expiresAt,
+    Optional<DateTime?> expiresAt = const Optional.absent(),
   }) async {
     try {
       final responseDto = await _apiService.sharedLinksApi.updateSharedLink(
         id,
         SharedLinkEditDto(
-          showMetadata: showMeta,
-          allowDownload: allowDownload,
-          allowUpload: allowUpload,
-          expiresAt: expiresAt,
-          description: description,
+          showMetadata: showMeta == null ? const Optional.absent() : Optional.present(showMeta),
+          allowDownload: allowDownload == null ? const Optional.absent() : Optional.present(allowDownload),
+          allowUpload: allowUpload == null ? const Optional.absent() : Optional.present(allowUpload),
           password: password,
-          slug: slug,
-          changeExpiryTime: changeExpiry,
+          description: description,
+          expiresAt: expiresAt,
+          slug: slug == null ? const Optional.absent() : Optional.present(slug),
         ),
       );
       if (responseDto != null) {

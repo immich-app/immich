@@ -14,7 +14,7 @@ class PeopleResponse {
   /// Returns a new [PeopleResponse] instance.
   PeopleResponse({
     required this.enabled,
-    this.minimumFaces,
+    this.minimumFaces = const Optional.absent(),
     required this.sidebarWeb,
   });
 
@@ -31,7 +31,7 @@ class PeopleResponse {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  int? minimumFaces;
+  Optional<int?> minimumFaces;
 
   /// Whether people appear in web sidebar
   bool sidebarWeb;
@@ -55,10 +55,9 @@ class PeopleResponse {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
-    if (this.minimumFaces != null) {
-      json[r'minimumFaces'] = this.minimumFaces;
-    } else {
-    //  json[r'minimumFaces'] = null;
+    if (this.minimumFaces.isPresent) {
+      final value = this.minimumFaces.value;
+      json[r'minimumFaces'] = value;
     }
       json[r'sidebarWeb'] = this.sidebarWeb;
     return json;
@@ -74,7 +73,7 @@ class PeopleResponse {
 
       return PeopleResponse(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        minimumFaces: mapValueOfType<int>(json, r'minimumFaces'),
+        minimumFaces: json.containsKey(r'minimumFaces') ? Optional.present(json[r'minimumFaces'] == null ? null : int.parse('${json[r'minimumFaces']}')) : const Optional.absent(),
         sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb')!,
       );
     }
