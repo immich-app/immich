@@ -395,7 +395,7 @@
               onInsertBefore={handleInsertStep}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              onDragEnd={() => (steps = steps.filter(({ id }) => id !== 'ghost'))}
+              onDragEnd={handleDrop}
               onDragStart={(event) => (dragSourceId = event.dataTransfer?.getData('text/plain'))}
             />
           </div>
