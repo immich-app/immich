@@ -161,6 +161,7 @@ enum ActionButtonType {
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
+            context.timelineOrigin != TimelineOrigin.deepLink &&
             context.currentAlbum != null &&
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,

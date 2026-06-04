@@ -23,6 +23,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
@@ -89,6 +90,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   StreamSubscription? _reloadSubscription;
   KeepAliveLink? _stackChildrenKeepAlive;
+  bool _isDisposed = false;
 
   void _onTapNavigate(int direction) {
     final page = _pageController.page?.toInt();
@@ -123,6 +125,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _pageController.dispose();
     _preloader.dispose();
     _reloadSubscription?.cancel();
@@ -203,6 +206,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onEvent(Event event) {
+    if (_isDisposed || !mounted) {
+      return;
+    }
+
     switch (event) {
       case TimelineReloadEvent():
         _onTimelineReloadEvent();
@@ -224,6 +231,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onTimelineReloadEvent() {
+    if (_isDisposed || !mounted) {
+      return;
+    }
+
     final timelineService = ref.read(timelineServiceProvider);
     final totalAssets = timelineService.totalAssets;
 
@@ -239,7 +250,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
       _onAssetChanged(index);
-    } else if (currentAsset != null && assetIndex == null && timelineService.origin != TimelineOrigin.deepLink) {
+    } else if (currentAsset != null &&
+        assetIndex == null &&
+        !_shouldIgnoreMissingAssetOnTimelineReload(currentAsset, timelineService)) {
       _onAssetChanged(index);
     }
 
@@ -248,6 +261,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         _totalAssets = totalAssets;
       });
     }
+  }
+
+  // A view intent can update currentAsset before the previous viewer route is
+  // disposed. Do not let the old viewer's timeline reload restore its previous asset.
+  bool _shouldIgnoreMissingAssetOnTimelineReload(BaseAsset currentAsset, TimelineService timelineService) {
+    if (timelineService.origin == TimelineOrigin.deepLink) {
+      return true;
+    }
+
+    final localAssetId = ref.read(viewIntentCurrentProvider)?.localAssetId;
+    return localAssetId != null && currentAsset.localId == localAssetId;
   }
 
   void _setSystemUIMode(bool controls, bool details) {

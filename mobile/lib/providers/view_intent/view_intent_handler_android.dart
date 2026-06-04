@@ -139,8 +139,8 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     if (asset.isVideo) {
       notifier.setControls(false);
     }
-    notifier.setAsset(asset);
     _ref.read(viewIntentCurrentProvider.notifier).setPayload(attachment);
+    notifier.setAsset(asset);
 
     if (viewIntentFilePath != null) {
       _ref.read(viewIntentFilePathProvider.notifier).setPath(viewIntentFilePath);
@@ -150,9 +150,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       unawaited(_viewIntentService.cleanupManagedTempFile());
     }
 
-    await _router.replaceAll([
-      const TabShellRoute(),
-      AssetViewerRoute(initialIndex: 0, timelineService: timelineService),
-    ]);
+    _router.popUntilRoot();
+    await _router.push(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
   }
 }
