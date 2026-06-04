@@ -1,18 +1,22 @@
 <script lang="ts">
+  import { getHeatmapRange } from '$lib';
+  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
+  import Skeleton from '$lib/elements/Skeleton.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import {
     AssetVisibility,
+    CalendarHeatmapType,
     getAlbumStatistics,
     getAssetStatistics,
-    getMyUploadStatistics,
+    getMyCalendarHeatmap,
     type AlbumStatisticsResponseDto,
     type AssetStatsResponseDto,
-    type UserUploadStatsResponseDto,
   } from '@immich/sdk';
   import { Heading, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
-  import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+
+  // always start on Sunday
 
   let timelineStats: AssetStatsResponseDto = $state({
     videos: 0,
@@ -44,63 +48,14 @@
     notShared: 0,
   });
 
-  let uploadStats: UserUploadStatsResponseDto = $state({
-    userId: '',
-    from: '',
-    to: '',
-    series: [],
-    totalCount: 0,
-  });
-
-  const today = DateTime.utc().startOf('day');
-  const uploadActivityTo = today.toISODate();
-  const uploadActivityFrom = today.minus({ weeks: 52 }).plus({ days: 1 }).toISODate();
-
   const getUsage = async () => {
-    [timelineStats, favoriteStats, archiveStats, trashStats, albumStats, uploadStats] = await Promise.all([
+    [timelineStats, favoriteStats, archiveStats, trashStats, albumStats] = await Promise.all([
       getAssetStatistics({ visibility: AssetVisibility.Timeline }),
       getAssetStatistics({ isFavorite: true }),
       getAssetStatistics({ visibility: AssetVisibility.Archive }),
       getAssetStatistics({ isTrashed: true }),
       getAlbumStatistics(),
-      getMyUploadStatistics({ $from: uploadActivityFrom, to: uploadActivityTo }),
     ]);
-  };
-
-  const getUploadActivityWeeks = () => {
-    return Array.from({ length: Math.ceil(uploadStats.series.length / 7) }, (_, index) =>
-      uploadStats.series.slice(index * 7, index * 7 + 7),
-    );
-  };
-
-  const getUploadActivityLevel = (count: number) => {
-    const maxCount = Math.max(...uploadStats.series.map((item) => item.count), 0);
-
-    if (count === 0 || maxCount === 0) {
-      return 'bg-gray-200 dark:bg-gray-700';
-    }
-
-    if (count <= Math.ceil(maxCount * 0.25)) {
-      return 'bg-immich-primary/30';
-    }
-
-    if (count <= Math.ceil(maxCount * 0.5)) {
-      return 'bg-immich-primary/50';
-    }
-
-    if (count <= Math.ceil(maxCount * 0.75)) {
-      return 'bg-immich-primary/70';
-    }
-
-    return 'bg-immich-primary';
-  };
-
-  const getUploadActivityMonths = () => {
-    const endDate = uploadStats.to ? DateTime.fromISO(uploadStats.to, { zone: 'utc' }) : today;
-    return Array.from({ length: 12 }, (_, index) => {
-      const monthDate = endDate.minus({ months: 11 - index });
-      return monthDate.toLocaleString({ month: 'short' }, { locale: $locale });
-    });
   };
 
   onMount(async () => {
@@ -148,51 +103,27 @@
     </TableBody>
   </Table>
 
-  <Heading size="tiny" class="mt-8">{$t('upload_activity')}</Heading>
-  <div class="mt-4 w-full">
-    <div class="w-full">
-      <div class="mb-1 ml-7 flex justify-between text-xs text-gray-500 dark:text-gray-400">
-        {#each getUploadActivityMonths() as month (month)}
-          <div>{month}</div>
-        {/each}
-      </div>
+  <div class="hidden lg:block">
+    <Heading size="tiny" class="mt-8">{$t('uploads')}</Heading>
+    {#await getMyCalendarHeatmap({ ...getHeatmapRange(), $type: CalendarHeatmapType.Upload })}
+      <Skeleton height={80} class="mt-2 rounded-lg" />
+    {:then data}
+      <CalendarHeatmap
+        {data}
+        itemLabel={(item) => $t('upload_day_count', { values: item })}
+        totalLabel={(count) => $t('uploads_count', { values: { count } })}
+      />
+    {/await}
 
-      <div class="flex gap-1">
-        <div class="grid w-6 shrink-0 grid-rows-7 gap-px py-0.5 text-xs text-gray-500 sm:gap-1 dark:text-gray-400">
-          <div></div>
-          <div>{$t('upload_activity_day_monday')}</div>
-          <div></div>
-          <div>{$t('upload_activity_day_wednesday')}</div>
-          <div></div>
-          <div>{$t('upload_activity_day_friday')}</div>
-          <div></div>
-        </div>
-
-        <div class="grid flex-1 grid-cols-52 gap-px sm:gap-1">
-          {#each getUploadActivityWeeks() as week (week[0]?.date)}
-            <div class="grid grid-rows-7 gap-px sm:gap-1">
-              {#each week as day (day.date)}
-                <div
-                  class={`aspect-square w-full min-w-0 rounded-sm ${getUploadActivityLevel(day.count)}`}
-                  title={$t('upload_activity_day_count', { values: { date: day.date, count: day.count } })}
-                  aria-label={$t('upload_activity_day_count', { values: { date: day.date, count: day.count } })}
-                ></div>
-              {/each}
-            </div>
-          {/each}
-        </div>
-      </div>
-
-      <div class="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-        <span>{$t('less')}</span>
-        <span class="size-3 rounded-sm bg-gray-200 dark:bg-gray-700"></span>
-        <span class="size-3 rounded-sm bg-immich-primary/30"></span>
-        <span class="size-3 rounded-sm bg-immich-primary/50"></span>
-        <span class="size-3 rounded-sm bg-immich-primary/70"></span>
-        <span class="size-3 rounded-sm bg-immich-primary"></span>
-        <span>{$t('more')}</span>
-        <span class="ml-4">{$t('upload_activity_total_count', { values: { count: uploadStats.totalCount } })}</span>
-      </div>
-    </div>
+    <Heading size="tiny" class="mt-8">{$t('assets')}</Heading>
+    {#await getMyCalendarHeatmap({ ...getHeatmapRange(), $type: CalendarHeatmapType.Taken })}
+      <Skeleton height={80} class="mt-2 rounded-lg" />
+    {:then data}
+      <CalendarHeatmap
+        {data}
+        itemLabel={(item) => $t('asset_day_count', { values: item })}
+        totalLabel={(count) => $t('assets_count', { values: { count } })}
+      />
+    {/await}
   </div>
 </section>

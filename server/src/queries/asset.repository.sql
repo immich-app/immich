@@ -339,9 +339,9 @@ where
 limit
   $3
 
--- AssetRepository.getUploadStatistics
+-- AssetRepository.getCalendarHeatmap
 select
-  date_trunc('day', "createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "date",
+  date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "date",
   count(*) as "count"
 from
   "asset"
@@ -351,7 +351,7 @@ where
   and "createdAt" < $3
   and "deletedAt" is null
 group by
-  date_trunc('day', "createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+  date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
 order by
   "date" asc
 

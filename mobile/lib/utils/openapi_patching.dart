@@ -40,7 +40,6 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'MemoriesResponse': {'duration': 5},
-  'UserUploadStatsResponseDto': {'userId': '', 'from': '', 'to': '', 'series': [], 'totalCount': 0},
 };
 
 void upgradeDto(dynamic value, String targetType) {

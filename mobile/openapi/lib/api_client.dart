@@ -325,6 +325,12 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CQMode':
           return CQModeTypeTransformer().decode(value);
+        case 'CalendarHeatmapResponseDto':
+          return CalendarHeatmapResponseDto.fromJson(value);
+        case 'CalendarHeatmapResponseDtoSeriesInner':
+          return CalendarHeatmapResponseDtoSeriesInner.fromJson(value);
+        case 'CalendarHeatmapType':
+          return CalendarHeatmapTypeTypeTransformer().decode(value);
         case 'CastResponse':
           return CastResponse.fromJson(value);
         case 'CastUpdate':
@@ -863,10 +869,6 @@ class ApiClient {
           return UserStatusTypeTransformer().decode(value);
         case 'UserUpdateMeDto':
           return UserUpdateMeDto.fromJson(value);
-        case 'UserUploadStatsResponseDto':
-          return UserUploadStatsResponseDto.fromJson(value);
-        case 'UserUploadStatsResponseDtoSeriesInner':
-          return UserUploadStatsResponseDtoSeriesInner.fromJson(value);
         case 'ValidateAccessTokenResponseDto':
           return ValidateAccessTokenResponseDto.fromJson(value);
         case 'ValidateLibraryDto':

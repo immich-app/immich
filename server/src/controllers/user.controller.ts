@@ -18,17 +18,12 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
-import {
-  UserAdminResponseDto,
-  UserResponseDto,
-  UserUpdateMeDto,
-  UserUploadStatsDto,
-  UserUploadStatsResponseDto,
-} from 'src/dtos/user.dto';
+import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -67,15 +62,15 @@ export class UserController {
     return this.service.getMe(auth);
   }
 
-  @Get('me/stats/uploads')
+  @Get('me/calendar-heatmap')
   @Authenticated({ permission: Permission.UserRead })
   @Endpoint({
-    summary: 'Get current user upload statistics',
-    description: 'Retrieve daily upload counts and totals for the current user.',
+    summary: 'Retrieve calendar heatmap activity',
+    description: 'Retrieve activity counts for a specified period, in a calendar heatmap format.',
     history: new HistoryBuilder().added('v3').stable('v3'),
   })
-  getMyUploadStatistics(@Auth() auth: AuthDto, @Query() dto: UserUploadStatsDto): Promise<UserUploadStatsResponseDto> {
-    return this.service.getUploadStatistics(auth, dto);
+  getMyCalendarHeatmap(@Auth() auth: AuthDto, @Query() dto: CalendarHeatmapDto): Promise<CalendarHeatmapResponseDto> {
+    return this.service.getCalendarHeatmap(auth, dto);
   }
 
   @Put('me')

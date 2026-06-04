@@ -1175,3 +1175,8 @@ export enum WorkflowType {
 }
 
 export const WorkflowTypeSchema = z.enum(WorkflowType).describe('Workflow type').meta({ id: 'WorkflowType' });
+
+export enum CalendarHeatmapType {
+  Upload = 'Upload',
+  Taken = 'Taken',
+}

@@ -1264,6 +1264,96 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/users/{id}/calendar-heatmap": {
+      "get": {
+        "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
+        "operationId": "getUserCalendarHeatmapAdmin",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "Upload",
+              "$ref": "#/components/schemas/CalendarHeatmapType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarHeatmapResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve calendar heatmap activity",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/admin/users/{id}/preferences": {
       "get": {
         "description": "Retrieve the preferences of a specific user.",
@@ -14480,6 +14570,86 @@
         "x-immich-state": "Stable"
       }
     },
+    "/users/me/calendar-heatmap": {
+      "get": {
+        "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
+        "operationId": "getMyCalendarHeatmap",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "Upload",
+              "$ref": "#/components/schemas/CalendarHeatmapType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarHeatmapResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve calendar heatmap activity",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/users/me/license": {
       "delete": {
         "description": "Delete the registered product key for the current user.",
@@ -14883,77 +15053,6 @@
           }
         ],
         "x-immich-permission": "userPreference.update",
-        "x-immich-state": "Stable"
-      }
-    },
-    "/users/me/stats/uploads": {
-      "get": {
-        "description": "Retrieve daily upload counts and totals for the current user.",
-        "operationId": "getMyUploadStatistics",
-        "parameters": [
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "Start date in UTC",
-            "schema": {
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2024-01-01",
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "End date in UTC",
-            "schema": {
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2024-01-01",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserUploadStatsResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Get current user upload statistics",
-        "tags": [
-          "Users"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v3",
-            "state": "Added"
-          },
-          {
-            "version": "v3",
-            "state": "Stable"
-          }
-        ],
-        "x-immich-permission": "user.read",
         "x-immich-state": "Stable"
       }
     },
@@ -17703,6 +17802,64 @@
           "auto",
           "cqp",
           "icq"
+        ],
+        "type": "string"
+      },
+      "CalendarHeatmapResponseDto": {
+        "properties": {
+          "from": {
+            "description": "Start date in UTC",
+            "example": "2024-01-01",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "properties": {
+                "count": {
+                  "description": "Activity count",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "date": {
+                  "description": "Date in UTC",
+                  "example": "2024-01-01",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "date",
+                "count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "to": {
+            "description": "End date in UTC",
+            "example": "2024-12-31",
+            "type": "string"
+          },
+          "totalCount": {
+            "description": "Total activity count over the period",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from",
+          "series",
+          "to",
+          "totalCount"
+        ],
+        "type": "object"
+      },
+      "CalendarHeatmapType": {
+        "description": "Type of calendar heatmap",
+        "enum": [
+          "Upload",
+          "Taken"
         ],
         "type": "string"
       },
@@ -26608,63 +26765,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "UserUploadStatsResponseDto": {
-        "properties": {
-          "from": {
-            "description": "Start date in UTC",
-            "example": "2024-01-01",
-            "type": "string"
-          },
-          "series": {
-            "items": {
-              "properties": {
-                "count": {
-                  "description": "Number of uploads",
-                  "maximum": 9007199254740991,
-                  "minimum": 0,
-                  "type": "integer"
-                },
-                "date": {
-                  "description": "Date in UTC",
-                  "example": "2024-01-01",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "date",
-                "count"
-              ],
-              "type": "object"
-            },
-            "type": "array"
-          },
-          "to": {
-            "description": "End date in UTC",
-            "example": "2024-12-31",
-            "type": "string"
-          },
-          "totalCount": {
-            "description": "Total number of uploads",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "userId": {
-            "description": "User ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "from",
-          "series",
-          "to",
-          "totalCount",
-          "userId"
-        ],
         "type": "object"
       },
       "ValidateAccessTokenResponseDto": {
