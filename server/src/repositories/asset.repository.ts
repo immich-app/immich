@@ -92,6 +92,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  hasCoordinates?: boolean;
   bbox?: BoundingBox;
 }
 
@@ -800,7 +801,21 @@ export class AssetRepository {
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .$if(options.hasCoordinates !== undefined, (qb) =>
+            qb.where((eb) =>
+              eb.exists(
+                eb
+                  .selectFrom('asset_exif')
+                  .whereRef('asset_exif.assetId', '=', 'asset.id')
+                  .where((eb) =>
+                    options.hasCoordinates
+                      ? eb.or([eb('asset_exif.latitude', 'is not', null), eb('asset_exif.longitude', 'is not', null)])
+                      : eb.and([eb('asset_exif.latitude', 'is', null), eb('asset_exif.longitude', 'is', null)]),
+                  ),
+              ),
+            ),
+          ),
       )
       .selectFrom('asset')
       .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
@@ -893,6 +908,13 @@ export class AssetRepository {
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+          .$if(options.hasCoordinates !== undefined, (qb) =>
+            qb.where((eb) =>
+              options.hasCoordinates
+                ? eb.or([eb('asset_exif.latitude', 'is not', null), eb('asset_exif.longitude', 'is not', null)])
+                : eb.and([eb('asset_exif.latitude', 'is', null), eb('asset_exif.longitude', 'is', null)]),
+            ),
+          )
           .$if(!!options.withStacked, (qb) =>
             qb
               .where((eb) =>
