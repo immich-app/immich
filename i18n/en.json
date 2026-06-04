@@ -2246,6 +2246,7 @@
   "slideshow_repeat_description": "Loop back to beginning when slideshow ends",
   "slideshow_settings": "Slideshow settings",
   "smart_album": "Smart album",
+  "some_assets_already_have_a_location_warning": "Some of the selected assets already have a location",
   "sort_albums_by": "Sort albums by...",
   "sort_created": "Date created",
   "sort_items": "Number of items",
