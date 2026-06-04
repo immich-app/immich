@@ -155,7 +155,9 @@ export const Route = {
 
   // continue helper for ensuring same-origin URLs
   continue: (url: string | null, fallback: string) => {
-    if (!url || !url.startsWith('/') || url.startsWith('//')) {
+    const resolved = new URL(url ?? fallback, document.baseURI);
+
+    if (resolved.origin !== location.origin) {
       return fallback;
     }
 
