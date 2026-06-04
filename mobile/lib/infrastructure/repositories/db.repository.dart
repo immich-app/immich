@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
@@ -32,6 +33,11 @@ import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart'
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite_async/native.dart';
+import 'package:sqlite_async/sqlite_async.dart';
 
 @DriftDatabase(
   tables: [
@@ -62,8 +68,9 @@ import 'package:logging/logging.dart';
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
 class Drift extends $Drift {
-  Drift([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
+  Drift(super.executor);
+
+  Drift.sqlite(SqliteConnection db) : super(SqliteAsyncDriftConnection(db));
 
   Future<void> reset() async {
     // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
@@ -316,4 +323,42 @@ class DriftDatabaseRepository {
   const DriftDatabaseRepository(this._db);
 
   Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
+}
+
+Future<SqliteConnection> openSqliteConnection({required String name}) async {
+  final dbFolder = await getApplicationDocumentsDirectory();
+  final file = File(p.join(dbFolder.path, '$name.sqlite'));
+  return SqliteDatabase.withFactory(
+    _ImmichSqliteOpenFactory(
+      path: file.path,
+      sqliteOptions: const SqliteOptions(
+        journalMode: SqliteJournalMode.wal, // PRAGMA journal_mode (writer only)
+        synchronous: SqliteSynchronous.normal, // PRAGMA synchronous
+        lockTimeout: Duration(seconds: 30), // -> PRAGMA busy_timeout = 30000
+      ),
+    ),
+  );
+}
+
+final class _ImmichSqliteOpenFactory extends NativeSqliteOpenFactory {
+  _ImmichSqliteOpenFactory({required super.path, super.sqliteOptions});
+
+  @override
+  List<String> pragmaStatements(SqliteOpenOptions options) {
+    return [
+      ...super.pragmaStatements(options),
+      'PRAGMA cache_size = -32000', // 32MB
+      'PRAGMA temp_store = MEMORY',
+      'PRAGMA foreign_keys = ON',
+    ];
+  }
+}
+
+Future<void> configureSqliteCache() async {
+  // Make sqlite3 pick a more suitable location for temporary files - the
+  // one from the system may be inaccessible due to sand-boxing.
+  final cacheBase = (await getTemporaryDirectory()).path;
+  // We can't access /tmp on Android, which sqlite3 would try by default.
+  // Explicitly tell it about the correct temporary directory.
+  sqlite3.tempDirectory = cacheBase;
 }

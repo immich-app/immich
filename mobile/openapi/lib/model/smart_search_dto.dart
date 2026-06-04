@@ -186,7 +186,7 @@ class SmartSearchDto {
 
   /// Filter by rating [1-5], or null for unrated
   ///
-  /// Minimum value: -1
+  /// Minimum value: 1
   /// Maximum value: 5
   Optional<int?> rating;
 
