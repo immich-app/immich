@@ -113,9 +113,35 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
-    final hashTimeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
-    final backupTimeout = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
-    return _backgroundLoop(hashTimeout: hashTimeout, backupTimeout: backupTimeout, debugLabel: 'iOS background upload');
+    _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
+    final sw = Stopwatch()..start();
+    try {
+      final budget = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
+
+      final sync = _ref?.read(backgroundSyncProvider);
+      if (sync == null) {
+        return;
+      }
+
+      // Run sync local, sync remote, hash and backup concurrently so the bg
+      // refresh task (20s budget) can make progress on all four instead of
+      // racing them sequentially. Phases are independent at the data layer:
+      // hash and handle_backup read drift state and tolerate stale reads
+      // (server-side dedup catches the rare race). The single budget caps the
+      // whole batch; no phase needs its own timeout.
+      final all = Future.wait<dynamic>([sync.syncLocal(), sync.syncRemote(), sync.hashAssets(), _handleBackup()]);
+      if (budget != null) {
+        await all.timeout(budget, onTimeout: () => <dynamic>[]);
+      } else {
+        await all;
+      }
+    } catch (error, stack) {
+      _logger.severe("Failed to complete iOS background upload", error, stack);
+    } finally {
+      sw.stop();
+      _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
+      await _cleanup();
+    }
   }
 
   Future<void> _backgroundLoop({
