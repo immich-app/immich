@@ -371,6 +371,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     groupBy: groupBy,
   );
 
+  TimelineQuery remoteOnly(String userId, GroupAssetsBy groupBy) {
+    final localChecksums = _db.localAssetEntity.selectOnly()
+      ..addColumns([_db.localAssetEntity.checksum])
+      ..where(_db.localAssetEntity.checksum.isNotNull());
+    return _remoteQueryBuilder(
+      filter: (row) =>
+          row.deletedAt.isNull() &
+          row.ownerId.equals(userId) &
+          row.visibility.equalsValue(AssetVisibility.timeline) &
+          row.checksum.isInQuery(localChecksums).not(),
+      origin: TimelineOrigin.remoteAssets,
+      groupBy: groupBy,
+    );
+  }
+
   TimelineQuery place(String place, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchPlaceBucket(place, groupBy: groupBy),
     assetSource: (offset, count) => _getPlaceBucketAssets(place, offset: offset, count: count),
