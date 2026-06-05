@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -7,6 +8,7 @@ import 'package:immich_mobile/infrastructure/repositories/network.repository.dar
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -197,6 +199,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     try {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV1(_batchedAssetUploadReady.toList()).then((_) {
+          _notifyAssetUploadReadyProcessed();
           if (isSyncAlbumEnabled) {
             _ref.read(backgroundSyncProvider).syncLinkedAlbum();
           }
@@ -218,6 +221,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     try {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV2(_batchedAssetUploadReady.toList()).then((_) {
+          _notifyAssetUploadReadyProcessed();
           if (isSyncAlbumEnabled) {
             _ref.read(backgroundSyncProvider).syncLinkedAlbum();
           }
@@ -228,6 +232,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
 
     _batchedAssetUploadReady.clear();
+  }
+
+  void _notifyAssetUploadReadyProcessed() {
+    final db = _ref.read(driftProvider);
+    db.notifyUpdates({TableUpdate.onTable(db.remoteAssetEntity), TableUpdate.onTable(db.remoteExifEntity)});
   }
 }
 
