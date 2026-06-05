@@ -71,6 +71,7 @@ class _ShareFileTypeDialog extends StatelessWidget {
           ),
         ],
       ),
+      actions: [TextButton(onPressed: () => context.pop(), child: Text('cancel'.t(context: context)))],
     );
   }
 }

@@ -155,7 +155,10 @@ class AssetMediaRepository {
     return ThumbnailSize(scaledWidth < 1 ? 1 : scaledWidth, _localPreviewMaxDimension);
   }
 
-  Future<({File file, bool cleanup})?> _getLocalOriginalShareFile(BaseAsset asset, String localId) async {
+  Future<({File file, bool cleanup, String displayName})?> _getLocalOriginalShareFile(
+    BaseAsset asset,
+    String localId,
+  ) async {
     final file = await AssetEntity(
       id: localId,
       width: asset.width ?? 1,
@@ -167,10 +170,14 @@ class AssetMediaRepository {
       return null;
     }
 
-    return (file: file, cleanup: CurrentPlatform.isIOS);
+    return (file: file, cleanup: CurrentPlatform.isIOS, displayName: _sanitizeFilename(asset.name));
   }
 
-  Future<({File file, bool cleanup})?> _getLocalPreviewShareFile(BaseAsset asset, String localId) async {
+  Future<({File file, bool cleanup, String displayName})?> _getLocalPreviewShareFile(
+    BaseAsset asset,
+    String localId, {
+    Completer<void>? cancelCompleter,
+  }) async {
     final entity = AssetEntity(
       id: localId,
       width: asset.width ?? 1,
@@ -187,18 +194,21 @@ class AssetMediaRepository {
       return null;
     }
 
+    if (cancelCompleter != null && cancelCompleter.isCompleted) {
+      return null;
+    }
+
+    final displayName = _getPreviewFilename(asset);
     final tempDirectory = await getTemporaryDirectory();
-    final file = File(
-      p.join(tempDirectory.path, 'immich-share-${DateTime.now().microsecondsSinceEpoch}-${_getPreviewFilename(asset)}'),
-    );
+    final file = File(p.join(tempDirectory.path, 'immich-share-${DateTime.now().microsecondsSinceEpoch}-$displayName'));
     await file.writeAsBytes(data, flush: true);
-    return (file: file, cleanup: true);
+    return (file: file, cleanup: true, displayName: displayName);
   }
 
-  Future<({File file, bool cleanup})?> _downloadRemoteShareFile({
+  Future<({File file, bool cleanup, String displayName})?> _downloadRemoteShareFile({
     required String taskId,
     required String url,
-    required String filename,
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) async {
@@ -206,7 +216,7 @@ class AssetMediaRepository {
       taskId: taskId,
       url: url,
       headers: ApiService.getRequestHeaders(),
-      filename: filename,
+      filename: '$taskId-$displayName',
       baseDirectory: BaseDirectory.temporary,
       group: kShareDownloadGroup,
       updates: Updates.statusAndProgress,
@@ -228,14 +238,14 @@ class AssetMediaRepository {
     }
 
     if (statusUpdate.status == TaskStatus.complete) {
-      return (file: File(await task.filePath()), cleanup: true);
+      return (file: File(await task.filePath()), cleanup: true, displayName: displayName);
     }
 
-    _log.severe("Download for $filename failed with status ${statusUpdate.status}", statusUpdate.exception);
+    _log.severe("Download for $displayName failed with status ${statusUpdate.status}", statusUpdate.exception);
     return null;
   }
 
-  Future<({File file, bool cleanup})?> _getRemoteOriginalShareFile(
+  Future<({File file, bool cleanup, String displayName})?> _getRemoteOriginalShareFile(
     BaseAsset asset,
     String remoteId, {
     Completer<void>? cancelCompleter,
@@ -244,13 +254,13 @@ class AssetMediaRepository {
     return _downloadRemoteShareFile(
       taskId: 'share-original-$remoteId-${DateTime.now().microsecondsSinceEpoch}',
       url: getOriginalUrlForRemoteId(remoteId, edited: asset.isEdited),
-      filename: _sanitizeFilename(asset.name),
+      displayName: _sanitizeFilename(asset.name),
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
   }
 
-  Future<({File file, bool cleanup})?> _getRemotePreviewShareFile(
+  Future<({File file, bool cleanup, String displayName})?> _getRemotePreviewShareFile(
     BaseAsset asset,
     String remoteId, {
     Completer<void>? cancelCompleter,
@@ -259,13 +269,13 @@ class AssetMediaRepository {
     return _downloadRemoteShareFile(
       taskId: 'share-preview-$remoteId-${DateTime.now().microsecondsSinceEpoch}',
       url: getThumbnailUrlForRemoteId(remoteId, type: AssetMediaSize.preview, edited: asset.isEdited),
-      filename: _getPreviewFilename(asset),
+      displayName: _getPreviewFilename(asset),
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
   }
 
-  Future<({File file, bool cleanup})?> _getOriginalShareFile(
+  Future<({File file, bool cleanup, String displayName})?> _getOriginalShareFile(
     BaseAsset asset, {
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
@@ -284,7 +294,7 @@ class AssetMediaRepository {
     return _getRemoteOriginalShareFile(asset, remoteId, cancelCompleter: cancelCompleter, onProgress: onProgress);
   }
 
-  Future<({File file, bool cleanup})?> _getPreviewShareFile(
+  Future<({File file, bool cleanup, String displayName})?> _getPreviewShareFile(
     BaseAsset asset, {
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
@@ -304,7 +314,7 @@ class AssetMediaRepository {
 
     final localId = _getLocalId(asset);
     if (localId != null) {
-      return _getLocalPreviewShareFile(asset, localId);
+      return _getLocalPreviewShareFile(asset, localId, cancelCompleter: cancelCompleter);
     }
 
     _log.warning("Asset has no local or remote ID for preview sharing: $asset");
@@ -367,7 +377,7 @@ class AssetMediaRepository {
         continue;
       }
 
-      downloadedXFiles.add(XFile(shareFile.file.path));
+      downloadedXFiles.add(XFile(shareFile.file.path, name: shareFile.displayName));
       if (shareFile.cleanup) {
         tempFiles.add(shareFile.file);
       }
