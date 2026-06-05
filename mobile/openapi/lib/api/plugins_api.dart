@@ -25,7 +25,7 @@ class PluginsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getPluginWithHttpInfo(String id,) async {
+  Future<Response> getPluginWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins/{id}'
       .replaceAll('{id}', id);
@@ -48,6 +48,7 @@ class PluginsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +59,8 @@ class PluginsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PluginResponseDto?> getPlugin(String id,) async {
-    final response = await getPluginWithHttpInfo(id,);
+  Future<PluginResponseDto?> getPlugin(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getPluginWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -104,7 +105,7 @@ class PluginsApi {
   ///
   /// * [WorkflowType] type:
   ///   Workflow types
-  Future<Response> searchPluginMethodsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, }) async {
+  Future<Response> searchPluginMethodsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins/methods';
 
@@ -154,6 +155,7 @@ class PluginsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -186,8 +188,8 @@ class PluginsApi {
   ///
   /// * [WorkflowType] type:
   ///   Workflow types
-  Future<List<PluginMethodResponseDto>?> searchPluginMethods({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, }) async {
-    final response = await searchPluginMethodsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, pluginName: pluginName, pluginVersion: pluginVersion, title: title, trigger: trigger, type: type, );
+  Future<List<PluginMethodResponseDto>?> searchPluginMethods({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, Future<void>? abortTrigger, }) async {
+    final response = await searchPluginMethodsWithHttpInfo(description: description, enabled: enabled, id: id, name: name, pluginName: pluginName, pluginVersion: pluginVersion, title: title, trigger: trigger, type: type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -209,7 +211,7 @@ class PluginsApi {
   /// Retrieve workflow templates provided by installed plugins
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> searchPluginTemplatesWithHttpInfo() async {
+  Future<Response> searchPluginTemplatesWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins/templates';
 
@@ -231,14 +233,15 @@ class PluginsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve workflow templates
   ///
   /// Retrieve workflow templates provided by installed plugins
-  Future<List<PluginTemplateResponseDto>?> searchPluginTemplates() async {
-    final response = await searchPluginTemplatesWithHttpInfo();
+  Future<List<PluginTemplateResponseDto>?> searchPluginTemplates({ Future<void>? abortTrigger, }) async {
+    final response = await searchPluginTemplatesWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -276,7 +279,7 @@ class PluginsApi {
   /// * [String] title:
   ///
   /// * [String] version:
-  Future<Response> searchPluginsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? title, String? version, }) async {
+  Future<Response> searchPluginsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? title, String? version, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins';
 
@@ -317,6 +320,7 @@ class PluginsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -339,8 +343,8 @@ class PluginsApi {
   /// * [String] title:
   ///
   /// * [String] version:
-  Future<List<PluginResponseDto>?> searchPlugins({ String? description, bool? enabled, String? id, String? name, String? title, String? version, }) async {
-    final response = await searchPluginsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, title: title, version: version, );
+  Future<List<PluginResponseDto>?> searchPlugins({ String? description, bool? enabled, String? id, String? name, String? title, String? version, Future<void>? abortTrigger, }) async {
+    final response = await searchPluginsWithHttpInfo(description: description, enabled: enabled, id: id, name: name, title: title, version: version, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

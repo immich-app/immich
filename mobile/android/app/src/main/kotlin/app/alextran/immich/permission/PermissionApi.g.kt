@@ -47,18 +47,44 @@ class FlutterError (
   override val message: String? = null,
   val details: Any? = null
 ) : RuntimeException()
+
+enum class PermissionStatus(val raw: Int) {
+  GRANTED(0),
+  DENIED(1),
+  PERMANENTLY_DENIED(2);
+
+  companion object {
+    fun ofRaw(raw: Int): PermissionStatus? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
 private open class PermissionApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
-    return     super.readValueOfType(type, buffer)
+    return when (type) {
+      129.toByte() -> {
+        return (readValue(buffer) as Long?)?.let {
+          PermissionStatus.ofRaw(it.toInt())
+        }
+      }
+      else -> super.readValueOfType(type, buffer)
+    }
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
-    super.writeValue(stream, value)
+    when (value) {
+      is PermissionStatus -> {
+        stream.write(129)
+        writeValue(stream, value.raw.toLong())
+      }
+      else -> super.writeValue(stream, value)
+    }
   }
 }
 
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface PermissionApi {
+  fun isIgnoringBatteryOptimizations(): PermissionStatus
   fun hasManageMediaPermission(): Boolean
   fun requestManageMediaPermission(callback: (Result<Boolean>) -> Unit)
   fun manageMediaPermission(callback: (Result<Boolean>) -> Unit)
@@ -72,6 +98,21 @@ interface PermissionApi {
     @JvmOverloads
     fun setUp(binaryMessenger: BinaryMessenger, api: PermissionApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.PermissionApi.isIgnoringBatteryOptimizations$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.isIgnoringBatteryOptimizations())
+            } catch (exception: Throwable) {
+              PermissionApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.PermissionApi.hasManageMediaPermission$separatedMessageChannelSuffix", codec)
         if (api != null) {

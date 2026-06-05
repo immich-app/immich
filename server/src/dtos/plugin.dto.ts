@@ -1,6 +1,7 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { createZodDto } from 'nestjs-zod';
 import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
-import { WorkflowTrigger, WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
+import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
 import { asPluginKey } from 'src/utils/workflow';
 import z from 'zod';
 

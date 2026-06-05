@@ -13,7 +13,7 @@ part of openapi.api;
 class ApiKeyCreateDto {
   /// Returns a new [ApiKeyCreateDto] instance.
   ApiKeyCreateDto({
-    this.name,
+    this.name = const Optional.absent(),
     this.permissions = const [],
   });
 
@@ -24,7 +24,7 @@ class ApiKeyCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? name;
+  Optional<String?> name;
 
   /// List of permissions
   List<Permission> permissions;
@@ -45,10 +45,9 @@ class ApiKeyCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
       json[r'permissions'] = this.permissions;
     return json;
@@ -63,7 +62,7 @@ class ApiKeyCreateDto {
       final json = value.cast<String, dynamic>();
 
       return ApiKeyCreateDto(
-        name: mapValueOfType<String>(json, r'name'),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
         permissions: Permission.listFromJson(json[r'permissions']),
       );
     }

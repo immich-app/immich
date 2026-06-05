@@ -31,13 +31,6 @@ class _AbortCallbackWrapper {
 
 class _MockAbortCallbackWrapper extends Mock implements _AbortCallbackWrapper {}
 
-class _CancellationWrapper {
-  const _CancellationWrapper();
-
-  bool call() => false;
-}
-
-class _MockCancellationWrapper extends Mock implements _CancellationWrapper {}
 
 class MockTrashSyncService extends Mock implements TrashSyncService {}
 
@@ -85,9 +78,13 @@ void main() {
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
-    when(() => mockSyncApiRepo.streamChanges(any(), serverVersion: any(named: 'serverVersion'))).thenAnswer((
-      invocation,
-    ) async {
+    when(
+      () => mockSyncApiRepo.streamChanges(
+        any(),
+        serverVersion: any(named: 'serverVersion'),
+        abortSignal: any(named: 'abortSignal'),
+      ),
+    ).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
@@ -96,6 +93,7 @@ void main() {
         any(),
         onReset: any(named: 'onReset'),
         serverVersion: any(named: 'serverVersion'),
+        abortSignal: any(named: 'abortSignal'),
       ),
     ).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
@@ -107,7 +105,7 @@ void main() {
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
     when(
       () => mockServerApi.getServerVersion(),
-    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0));
+    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0, prerelease: null));
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
@@ -213,14 +211,13 @@ void main() {
     });
 
     test("aborts and stops processing if cancelled during iteration", () async {
-      final cancellationChecker = _MockCancellationWrapper();
-      when(() => cancellationChecker()).thenReturn(false);
+      final cancellation = Completer<void>();
 
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
         trashSyncService: mockTrashSyncService,
-        cancelChecker: cancellationChecker.call,
+        cancellation: cancellation,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
       );
@@ -229,7 +226,7 @@ void main() {
       final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin, SyncStreamStub.partnerDeleteV1];
 
       when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
-        when(() => cancellationChecker()).thenReturn(true);
+        cancellation.complete();
       });
 
       await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
@@ -244,8 +241,7 @@ void main() {
     });
 
     test("aborts and stops processing if cancelled before processing batch", () async {
-      final cancellationChecker = _MockCancellationWrapper();
-      when(() => cancellationChecker()).thenReturn(false);
+      final cancellation = Completer<void>();
 
       final processingCompleter = Completer<void>();
       bool handler1Started = false;
@@ -258,7 +254,7 @@ void main() {
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
         trashSyncService: mockTrashSyncService,
-        cancelChecker: cancellationChecker.call,
+        cancellation: cancellation,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
       );
@@ -277,7 +273,7 @@ void main() {
       expect(handler1Started, isTrue);
 
       // Signal cancellation while handler 1 is waiting
-      when(() => cancellationChecker()).thenReturn(true);
+      cancellation.complete();
       await pumpEventQueue();
 
       processingCompleter.complete();
@@ -436,7 +432,7 @@ void main() {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
       when(
         () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1));
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
 
       await sut.sync();
 
@@ -464,7 +460,7 @@ void main() {
       await Store.put(StoreKey.syncMigrationStatus, "[]");
       when(
         () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0));
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null));
       await sut.sync();
 
       verifyInOrder([
@@ -494,7 +490,7 @@ void main() {
 
       when(
         () => mockServerApi.getServerVersion(),
-      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1));
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
 
       await sut.sync();
 

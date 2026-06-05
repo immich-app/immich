@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
@@ -100,7 +100,7 @@ class AuthService {
         _log.severe("Error clearing local data", error, stackTrace);
       });
 
-      await MetadataRepository.instance.write(MetadataKey.backupEnabled, false);
+      await SettingsRepository.instance.write(SettingsKey.backupEnabled, false);
     }
   }
 
@@ -120,7 +120,7 @@ class AuthService {
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
       Store.delete(StoreKey.accessToken),
-      MetadataRepository.instance.clear(const [
+      SettingsRepository.instance.clear(const [
         .networkAutoEndpointSwitching,
         .networkPreferredWifiName,
         .networkLocalEndpoint,

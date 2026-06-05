@@ -107,14 +107,14 @@ class SyncMemoryV1 {
         ? this.deletedAt!.millisecondsSinceEpoch
         : this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      json[r'deletedAt'] = null;
     }
     if (this.hideAt != null) {
       json[r'hideAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.hideAt!.millisecondsSinceEpoch
         : this.hideAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'hideAt'] = null;
+      json[r'hideAt'] = null;
     }
       json[r'id'] = this.id;
       json[r'isSaved'] = this.isSaved;
@@ -127,14 +127,14 @@ class SyncMemoryV1 {
         ? this.seenAt!.millisecondsSinceEpoch
         : this.seenAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'seenAt'] = null;
+      json[r'seenAt'] = null;
     }
     if (this.showAt != null) {
       json[r'showAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.showAt!.millisecondsSinceEpoch
         : this.showAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'showAt'] = null;
+      json[r'showAt'] = null;
     }
       json[r'type'] = this.type;
       json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')

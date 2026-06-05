@@ -370,14 +370,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.33.0"
-  drift_flutter:
+  drift_sqlite_async:
     dependency: "direct main"
     description:
-      name: drift_flutter
-      sha256: "887fdec622174dc7eaefd0048403e34ee07cc18626ac8a7544cc3b8a4a172166"
+      name: drift_sqlite_async
+      sha256: "28c666847ecbc2e90dbcf8e8c2eecbf847a38af7e6480efc08f3a3c39e060f8d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.3.1"
   dynamic_color:
     dependency: "direct main"
     description:
@@ -1627,30 +1627,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.2"
-  sqlcipher_flutter_libs:
-    dependency: transitive
-    description:
-      name: sqlcipher_flutter_libs
-      sha256: "38d62d659d2fb8739bf25a42c9a350d1fdd6c29a5a61f13a946778ec75d27929"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.0+eol"
   sqlite3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3
-      sha256: "56da3e13ed7d28a66f930aa2b2b29db6736a233f08283326e96321dd812030f5"
+      sha256: "9488c7d2cdb1091c91cacf7e207cff81b28bff8e366f042bad3afe7d34afe189"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.1"
-  sqlite3_flutter_libs:
+    version: "3.3.2"
+  sqlite3_connection_pool:
     dependency: transitive
     description:
-      name: sqlite3_flutter_libs
-      sha256: "3ed7553eee7bb368f8950f58ba29f634e06e813c029aff6a0d60862b96de8454"
+      name: sqlite3_connection_pool
+      sha256: "9d2b3b398b03c96743fd071521fc665be73c33c9cd5c56d87196baff8d8b4398"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.0+eol"
+    version: "0.2.6"
+  sqlite3_web:
+    dependency: transitive
+    description:
+      name: sqlite3_web
+      sha256: fab6f6921f8fc3f703536c018d709ccb4ad5654d92f53e9b206c222f77c50021
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.1"
+  sqlite_async:
+    dependency: "direct main"
+    description:
+      name: sqlite_async
+      sha256: e3e486e536253e17260c52b6f824b749adff3f1fed878d4abe629796b858290b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.2"
   sqlparser:
     dependency: transitive
     description:
@@ -1997,4 +2005,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.12.0 <4.0.0"
-  flutter: "3.44.0"
+  flutter: "3.44.1"

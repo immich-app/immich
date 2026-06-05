@@ -13,7 +13,7 @@ part of openapi.api;
 class AvatarUpdate {
   /// Returns a new [AvatarUpdate] instance.
   AvatarUpdate({
-    this.color,
+    this.color = const Optional.absent(),
   });
 
   ///
@@ -22,7 +22,7 @@ class AvatarUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  UserAvatarColor? color;
+  Optional<UserAvatarColor?> color;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AvatarUpdate &&
@@ -38,10 +38,9 @@ class AvatarUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color != null) {
-      json[r'color'] = this.color;
-    } else {
-    //  json[r'color'] = null;
+    if (this.color.isPresent) {
+      final value = this.color.value;
+      json[r'color'] = value;
     }
     return json;
   }
@@ -55,7 +54,7 @@ class AvatarUpdate {
       final json = value.cast<String, dynamic>();
 
       return AvatarUpdate(
-        color: UserAvatarColor.fromJson(json[r'color']),
+        color: json.containsKey(r'color') ? Optional.present(UserAvatarColor.fromJson(json[r'color'])) : const Optional.absent(),
       );
     }
     return null;

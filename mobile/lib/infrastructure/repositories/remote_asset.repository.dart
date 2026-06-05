@@ -267,7 +267,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<void> updateRating(String assetId, int rating) async {
+  Future<void> updateRating(String assetId, int? rating) async {
     await (_db.remoteExifEntity.update()..where((row) => row.assetId.equals(assetId))).write(
       RemoteExifEntityCompanion(rating: Value(rating)),
     );

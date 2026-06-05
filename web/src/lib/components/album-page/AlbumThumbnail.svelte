@@ -2,7 +2,7 @@
   import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAlbumInfo } from '@immich/sdk';
-  import { IconButton, LoadingSpinner } from '@immich/ui';
+  import { IconButton, Text, LoadingSpinner } from '@immich/ui';
   import { mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -35,6 +35,23 @@
           {album.description}
         </p>
       {/if}
+      <div class="">
+        <IconButton
+          icon={mdiTrashCanOutline}
+          shape="round"
+          color="danger"
+          variant="ghost"
+          onclick={onDelete}
+          aria-label={$t('remove')}
+        />
+      </div>
+    </div>
+  {:catch}
+    <div class="flex justify-between gap-2">
+      <div class="flex flex-col gap-1">
+        <Text>{$t('unknown')}</Text>
+        <Text color="muted" size="small" variant="italic">{albumId}</Text>
+      </div>
       <div class="">
         <IconButton
           icon={mdiTrashCanOutline}

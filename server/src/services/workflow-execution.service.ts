@@ -1,9 +1,15 @@
 import { CurrentPlugin } from '@extism/extism';
-import { WorkflowChanges, WorkflowEventData, WorkflowEventPayload, WorkflowResponse } from '@immich/plugin-sdk';
+import {
+  WorkflowChanges,
+  WorkflowEventData,
+  WorkflowEventPayload,
+  WorkflowResponse,
+  WorkflowTrigger,
+} from '@immich/plugin-sdk';
 import { HttpException, UnauthorizedException } from '@nestjs/common';
 import { join } from 'node:path';
 import { DummyValue, OnEvent, OnJob } from 'src/decorators';
-import { AlbumsAddAssetsDto } from 'src/dtos/album.dto';
+import { AlbumsAddAssetsDto, CreateAlbumDto, GetAlbumsDto } from 'src/dtos/album.dto';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
@@ -15,7 +21,6 @@ import {
   JobName,
   JobStatus,
   QueueName,
-  WorkflowTrigger,
   WorkflowType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
@@ -61,7 +66,9 @@ export class WorkflowExecutionService extends BaseService {
 
     const albumService = BaseService.create(AlbumService, this);
 
-    const albumAddAssets = this.wrap<[id: string, dto: BulkIdsDto]>((authDto, args) =>
+    const searchAlbums = this.wrap<[dto: GetAlbumsDto]>((authDto, args) => albumService.getAll(authDto, ...args));
+    const createAlbum = this.wrap<[dto: CreateAlbumDto]>((authDto, args) => albumService.create(authDto, ...args));
+    const addAssetsToAlbum = this.wrap<[id: string, dto: BulkIdsDto]>((authDto, args) =>
       albumService.addAssets(authDto, ...args),
     );
     const addAssetsToAlbums = this.wrap<[dto: AlbumsAddAssetsDto]>((authDto, args) =>
@@ -69,12 +76,16 @@ export class WorkflowExecutionService extends BaseService {
     );
 
     const functions = {
-      albumAddAssets,
+      searchAlbums,
+      createAlbum,
+      addAssetsToAlbum,
       addAssetsToAlbums,
     };
 
-    const stubs = {
-      albumAddAssets: dummy,
+    const stubs: typeof functions = {
+      searchAlbums: dummy,
+      createAlbum: dummy,
+      addAssetsToAlbum: dummy,
       addAssetsToAlbums: dummy,
     };
 
@@ -252,6 +263,17 @@ export class WorkflowExecutionService extends BaseService {
     return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetCreate });
   }
 
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  onAssetMetadataExtracted({ userId, assetId, source }: ArgOf<'AssetMetadataExtracted'>) {
+    // prevent loops
+    // TODO loop detection in job service directly
+    if (source === 'sidecar-write') {
+      return;
+    }
+
+    return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetMetadataExtraction });
+  }
+
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
     const items = await this.workflowRepository.search({ userId, trigger });
     await this.jobRepository.queueAll(
@@ -286,6 +308,25 @@ export class WorkflowExecutionService extends BaseService {
               await assetService.update(auth, assetId, {
                 isFavorite: asset.isFavorite,
                 visibility: asset.visibility,
+                dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
+                // TODO allow setting to null
+                longitude: asset.exifInfo?.longitude ?? undefined,
+                // TODO allow setting to null
+                latitude: asset.exifInfo?.latitude ?? undefined,
+                // TODO allow setting to null
+                description: asset.exifInfo?.description ?? undefined,
+                rating: asset.exifInfo?.rating,
+
+                // TODO add to update dto
+                // make: asset.exifInfo?.make,
+                // model: asset.exifInfo?.model,
+                // city: asset.exifInfo?.city,
+                // state: asset.exifInfo?.state,
+                // country: asset.exifInfo?.country,
+                // lensModel: asset.exifInfo?.lensModel,
+                // fNumber: asset.exifInfo?.fNumber,
+                // fps: asset.exifInfo?.fps,
+                // iso: asset.exifInfo?.iso,
               });
             },
           } satisfies ExecuteOptions<typeof type>;
@@ -365,6 +406,10 @@ export class WorkflowExecutionService extends BaseService {
             result.changes,
           );
           ({ data } = await read(type));
+        }
+
+        if (result?.config) {
+          await this.workflowRepository.updateStep(step.id, { config: result.config });
         }
 
         const shouldContinue = result?.workflow?.continue ?? true;

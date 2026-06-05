@@ -25,6 +25,7 @@ class SystemConfigFFmpegDto {
     required this.maxBitrate,
     required this.preferredHwDevice,
     required this.preset,
+    required this.realtime,
     required this.refs,
     required this.targetAudioCodec,
     required this.targetResolution,
@@ -79,6 +80,8 @@ class SystemConfigFFmpegDto {
   /// Preset
   String preset;
 
+  SystemConfigFFmpegRealtimeDto realtime;
+
   /// References
   ///
   /// Minimum value: 0
@@ -122,6 +125,7 @@ class SystemConfigFFmpegDto {
     other.maxBitrate == maxBitrate &&
     other.preferredHwDevice == preferredHwDevice &&
     other.preset == preset &&
+    other.realtime == realtime &&
     other.refs == refs &&
     other.targetAudioCodec == targetAudioCodec &&
     other.targetResolution == targetResolution &&
@@ -147,6 +151,7 @@ class SystemConfigFFmpegDto {
     (maxBitrate.hashCode) +
     (preferredHwDevice.hashCode) +
     (preset.hashCode) +
+    (realtime.hashCode) +
     (refs.hashCode) +
     (targetAudioCodec.hashCode) +
     (targetResolution.hashCode) +
@@ -158,7 +163,7 @@ class SystemConfigFFmpegDto {
     (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[accel=$accel, accelDecode=$accelDecode, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedContainers=$acceptedContainers, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, preferredHwDevice=$preferredHwDevice, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, accelDecode=$accelDecode, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedContainers=$acceptedContainers, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, preferredHwDevice=$preferredHwDevice, preset=$preset, realtime=$realtime, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -174,6 +179,7 @@ class SystemConfigFFmpegDto {
       json[r'maxBitrate'] = this.maxBitrate;
       json[r'preferredHwDevice'] = this.preferredHwDevice;
       json[r'preset'] = this.preset;
+      json[r'realtime'] = this.realtime;
       json[r'refs'] = this.refs;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetResolution'] = this.targetResolution;
@@ -207,6 +213,7 @@ class SystemConfigFFmpegDto {
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
         preferredHwDevice: mapValueOfType<String>(json, r'preferredHwDevice')!,
         preset: mapValueOfType<String>(json, r'preset')!,
+        realtime: SystemConfigFFmpegRealtimeDto.fromJson(json[r'realtime'])!,
         refs: mapValueOfType<int>(json, r'refs')!,
         targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
         targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
@@ -275,6 +282,7 @@ class SystemConfigFFmpegDto {
     'maxBitrate',
     'preferredHwDevice',
     'preset',
+    'realtime',
     'refs',
     'targetAudioCodec',
     'targetResolution',

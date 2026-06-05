@@ -2499,104 +2499,6 @@
         "was_declared_in_moor": false,
         "columns": [
           {
-            "name": "id",
-            "getter_name": "id",
-            "moor_type": "string",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "checksum",
-            "getter_name": "checksum",
-            "moor_type": "string",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "is_favorite",
-            "getter_name": "isFavorite",
-            "moor_type": "bool",
-            "nullable": false,
-            "customConstraints": null,
-            "defaultConstraints": "CHECK (\"is_favorite\" IN (0, 1))",
-            "dialectAwareDefaultConstraints": {
-              "sqlite": "CHECK (\"is_favorite\" IN (0, 1))"
-            },
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "orientation",
-            "getter_name": "orientation",
-            "moor_type": "int",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "i_cloud_id",
-            "getter_name": "iCloudId",
-            "moor_type": "string",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "adjustment_time",
-            "getter_name": "adjustmentTime",
-            "moor_type": "dateTime",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "latitude",
-            "getter_name": "latitude",
-            "moor_type": "double",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "longitude",
-            "getter_name": "longitude",
-            "moor_type": "double",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "playback_style",
-            "getter_name": "playbackStyle",
-            "moor_type": "int",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const EnumIndexConverter<AssetPlaybackStyle>(AssetPlaybackStyle.values)",
-              "dart_type_name": "AssetPlaybackStyle"
-            }
-          },
-          {
             "name": "name",
             "getter_name": "name",
             "moor_type": "string",
@@ -2671,12 +2573,56 @@
             "dsl_features": []
           },
           {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
             "name": "album_id",
             "getter_name": "albumId",
             "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "checksum",
+            "getter_name": "checksum",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "is_favorite",
+            "getter_name": "isFavorite",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"is_favorite\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"is_favorite\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "orientation",
+            "getter_name": "orientation",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
             "default_client_dart": null,
             "dsl_features": []
           },
@@ -2692,6 +2638,20 @@
             "type_converter": {
               "dart_expr": "const EnumIndexConverter<TrashOrigin>(TrashOrigin.values)",
               "dart_type_name": "TrashOrigin"
+            }
+          },
+          {
+            "name": "playback_style",
+            "getter_name": "playbackStyle",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumIndexConverter<AssetPlaybackStyle>(AssetPlaybackStyle.values)",
+              "dart_type_name": "AssetPlaybackStyle"
             }
           }
         ],
@@ -2804,7 +2764,7 @@
       "references": [],
       "type": "table",
       "data": {
-        "name": "metadata",
+        "name": "settings",
         "was_declared_in_moor": false,
         "columns": [
           {
@@ -2849,58 +2809,6 @@
     },
     {
       "id": 31,
-      "references": [],
-      "type": "table",
-      "data": {
-        "name": "trash_sync_entity",
-        "was_declared_in_moor": false,
-        "columns": [
-          {
-            "name": "checksum",
-            "getter_name": "checksum",
-            "moor_type": "string",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "is_sync_approved",
-            "getter_name": "isSyncApproved",
-            "moor_type": "bool",
-            "nullable": true,
-            "customConstraints": null,
-            "defaultConstraints": "CHECK (\"is_sync_approved\" IN (0, 1))",
-            "dialectAwareDefaultConstraints": {
-              "sqlite": "CHECK (\"is_sync_approved\" IN (0, 1))"
-            },
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "remote_deleted_at",
-            "getter_name": "remoteDeletedAt",
-            "moor_type": "dateTime",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          }
-        ],
-        "is_virtual": false,
-        "without_rowid": true,
-        "constraints": [],
-        "strict": true,
-        "explicit_pk": [
-          "checksum"
-        ]
-      }
-    },
-    {
-      "id": 32,
       "references": [
         18
       ],
@@ -2914,7 +2822,7 @@
       }
     },
     {
-      "id": 33,
+      "id": 32,
       "references": [
         19
       ],
@@ -2928,7 +2836,7 @@
       }
     },
     {
-      "id": 34,
+      "id": 33,
       "references": [
         19
       ],
@@ -2942,7 +2850,7 @@
       }
     },
     {
-      "id": 35,
+      "id": 34,
       "references": [
         20
       ],
@@ -2956,7 +2864,7 @@
       }
     },
     {
-      "id": 36,
+      "id": 35,
       "references": [
         22
       ],
@@ -2970,7 +2878,7 @@
       }
     },
     {
-      "id": 37,
+      "id": 36,
       "references": [
         25
       ],
@@ -2984,7 +2892,7 @@
       }
     },
     {
-      "id": 38,
+      "id": 37,
       "references": [
         26
       ],
@@ -2998,7 +2906,7 @@
       }
     },
     {
-      "id": 39,
+      "id": 38,
       "references": [
         26
       ],
@@ -3012,7 +2920,7 @@
       }
     },
     {
-      "id": 40,
+      "id": 39,
       "references": [
         26
       ],
@@ -3026,7 +2934,7 @@
       }
     },
     {
-      "id": 41,
+      "id": 40,
       "references": [
         28
       ],
@@ -3040,7 +2948,7 @@
       }
     },
     {
-      "id": 42,
+      "id": 41,
       "references": [
         28
       ],
@@ -3054,7 +2962,7 @@
       }
     },
     {
-      "id": 43,
+      "id": 42,
       "references": [
         29
       ],
@@ -3063,34 +2971,6 @@
         "on": 29,
         "name": "idx_asset_edit_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 44,
-      "references": [
-        31
-      ],
-      "type": "index",
-      "data": {
-        "on": 31,
-        "name": "idx_trash_sync_is_sync_approved",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 45,
-      "references": [
-        31
-      ],
-      "type": "index",
-      "data": {
-        "on": 31,
-        "name": "idx_trash_sync_checksum_status",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)",
         "unique": false,
         "columns": []
       }
@@ -3354,7 +3234,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"trashed_local_asset_entity\" (\"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"album_id\" TEXT NOT NULL, \"source\" INTEGER NOT NULL, PRIMARY KEY (\"id\", \"album_id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"trashed_local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"album_id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"source\" INTEGER NOT NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (\"id\", \"album_id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3368,20 +3248,11 @@
       ]
     },
     {
-      "name": "metadata",
+      "name": "settings",
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"metadata\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
-        }
-      ]
-    },
-    {
-      "name": "trash_sync_entity",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"trash_sync_entity\" (\"checksum\" TEXT NOT NULL, \"is_sync_approved\" INTEGER NULL CHECK (\"is_sync_approved\" IN (0, 1)), \"remote_deleted_at\" TEXT NOT NULL, PRIMARY KEY (\"checksum\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"settings\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3490,24 +3361,6 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)"
-        }
-      ]
-    },
-    {
-      "name": "idx_trash_sync_is_sync_approved",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)"
-        }
-      ]
-    },
-    {
-      "name": "idx_trash_sync_checksum_status",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)"
         }
       ]
     }

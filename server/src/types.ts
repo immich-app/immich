@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
@@ -28,8 +29,6 @@ import {
   SystemMetadataKey,
   TranscodeTarget,
   UserMetadataKey,
-  VideoCodec,
-  WorkflowTrigger,
   WorkflowType,
 } from 'src/enum';
 
@@ -162,6 +161,25 @@ export interface TranscodeCommand {
   };
 }
 
+export interface VideoTuning {
+  strictGop: boolean;
+  lowLatency: boolean;
+}
+
+export interface HlsCommandOptions {
+  initFilename: string;
+  inputPath: string;
+  packetCount: number;
+  playlistFilename: string;
+  seekSeconds?: number;
+  segmentDuration: number;
+  segmentFilename: string;
+  startSegment: number;
+  target: TranscodeTarget;
+  timeBase: number;
+  totalDuration: number;
+}
+
 export interface BitrateDistribution {
   max: number;
   target: number;
@@ -177,14 +195,11 @@ export interface ImageBuffer {
 export interface VideoCodecSWConfig {
   getCommand(
     target: TranscodeTarget,
-    videoStream: VideoStreamInfo,
-    audioStream?: AudioStreamInfo,
+    video: VideoStreamInfo,
+    audio?: AudioStreamInfo,
     format?: VideoFormat,
   ): TranscodeCommand;
-}
-
-export interface VideoCodecHWConfig extends VideoCodecSWConfig {
-  getSupportedCodecs(): Array<VideoCodec>;
+  getHlsCommand(options: HlsCommandOptions, video: VideoStreamInfo, audio?: AudioStreamInfo): string[];
 }
 
 export interface ProbeOptions {
@@ -371,6 +386,7 @@ export type JobItem =
 
   // Cleanup
   | { name: JobName.SessionCleanup; data?: IBaseJob }
+  | { name: JobName.HlsSessionCleanup; data?: IBaseJob }
 
   // Tags
   | { name: JobName.TagCleanup; data?: IBaseJob }
@@ -523,6 +539,7 @@ export type UserPreferences = {
   people: {
     enabled: boolean;
     sidebarWeb: boolean;
+    minimumFaces: number;
   };
   ratings: {
     enabled: boolean;
