@@ -41,7 +41,7 @@
     onInsertBefore: (index: number) => void;
     onDragOver: (index: number, event: DragEvent, boundingRect: DOMRect) => void;
     onDrop: (event: DragEvent) => void;
-    onDragEnd: () => void;
+    onDragEnd: (event: DragEvent) => void;
     onDragStart: (event: DragEvent) => void;
   };
 
@@ -121,11 +121,11 @@
     onDragOver(index, event, event.currentTarget.getBoundingClientRect());
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (event: DragEvent) => {
     dragImage?.remove();
     dragImage = undefined;
     isDropTarget = false;
-    onDragEnd();
+    onDragEnd(event);
   };
 </script>
 
