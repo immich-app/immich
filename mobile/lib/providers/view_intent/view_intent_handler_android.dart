@@ -88,17 +88,23 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   @override
   Future<void> refreshCurrentAfterUpload({
     required String remoteAssetId,
+    required ViewIntentPayload attachment,
     Duration timeout = const Duration(seconds: 15),
   }) async {
-    final attachment = _ref.read(viewIntentCurrentProvider);
-    if (attachment == null) {
-      _logger.fine('refreshCurrentAfterUpload skipped: no current view intent');
+    bool isCurrentAttachment() => _ref.read(viewIntentCurrentProvider) == attachment;
+
+    if (!isCurrentAttachment()) {
+      _logger.fine('refreshCurrentAfterUpload skipped: view intent changed');
       return;
     }
 
     final uploadedAsset = await _waitForUploadedAsset(remoteAssetId: remoteAssetId, timeout: timeout);
     if (uploadedAsset == null) {
       _logger.warning('refreshCurrentAfterUpload timed out, remoteAssetId=$remoteAssetId');
+      return;
+    }
+    if (!isCurrentAttachment()) {
+      _logger.fine('refreshCurrentAfterUpload skipped: view intent changed');
       return;
     }
 

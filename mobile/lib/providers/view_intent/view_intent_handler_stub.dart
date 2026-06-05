@@ -19,6 +19,7 @@ class StubViewIntentHandler implements ViewIntentHandler {
   @override
   Future<void> refreshCurrentAfterUpload({
     required String remoteAssetId,
+    required ViewIntentPayload attachment,
     Duration timeout = const Duration(seconds: 15),
   }) async {}
 }

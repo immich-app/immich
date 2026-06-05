@@ -6,10 +6,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
@@ -32,6 +34,9 @@ class UploadActionButton extends ConsumerWidget {
     }
 
     final isTimeline = source == ActionSource.timeline;
+    final isViewIntentUpload =
+        source == ActionSource.viewer && ref.read(timelineServiceProvider).origin == TimelineOrigin.deepLink;
+    final viewIntentPayload = isViewIntentUpload ? ref.read(viewIntentCurrentProvider) : null;
     final viewerIntentFilePath = source == ActionSource.viewer ? ref.read(viewIntentFilePathProvider) : null;
     List<LocalAsset>? assets;
     var isUploadDialogOpen = false;
@@ -93,8 +98,13 @@ class UploadActionButton extends ConsumerWidget {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
-    if (!isTimeline && success && ref.read(viewIntentCurrentProvider) != null && remoteAssetId != null) {
-      await ref.read(viewIntentHandlerProvider).refreshCurrentAfterUpload(remoteAssetId: remoteAssetId!);
+    if (success &&
+        viewIntentPayload != null &&
+        ref.read(viewIntentCurrentProvider) == viewIntentPayload &&
+        remoteAssetId != null) {
+      await ref
+          .read(viewIntentHandlerProvider)
+          .refreshCurrentAfterUpload(remoteAssetId: remoteAssetId!, attachment: viewIntentPayload);
     }
 
     if (context.mounted && !success && !wasUploadCancelled) {

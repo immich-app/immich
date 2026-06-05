@@ -15,6 +15,7 @@ abstract class ViewIntentHandler {
 
   Future<void> refreshCurrentAfterUpload({
     required String remoteAssetId,
+    required ViewIntentPayload attachment,
     Duration timeout = const Duration(seconds: 15),
   });
 }
