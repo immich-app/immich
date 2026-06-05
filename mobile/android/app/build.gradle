@@ -13,6 +13,11 @@ if (keystorePropertiesFile.exists()) {
   keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 
+def androidApplicationId = System.getenv("ANDROID_APPLICATION_ID")?.trim()
+if (!androidApplicationId) {
+  androidApplicationId = "app.alextran.immich"
+}
+
 android {
   compileSdk = flutter.compileSdkVersion
   ndkVersion = flutter.ndkVersion
@@ -37,7 +42,7 @@ android {
   }
 
   defaultConfig {
-    applicationId "app.alextran.immich"
+    applicationId androidApplicationId
     minSdk = 26
     targetSdk = flutter.targetSdkVersion
     versionCode flutter.versionCode
