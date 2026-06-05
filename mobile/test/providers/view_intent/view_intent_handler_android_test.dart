@@ -129,6 +129,7 @@ void main() {
 
     when(() => router.replaceAll(any())).thenAnswer((_) async {});
     when(() => router.replace(any())).thenAnswer((_) async => null);
+    when(() => router.push<Object?>(any())).thenAnswer((_) async => null);
 
     container = ProviderContainer(
       overrides: [
@@ -217,12 +218,11 @@ void main() {
     await tester.idle();
 
     verify(() => resolver.resolve(payload)).called(1);
-    final captured = verify(() => router.replaceAll(captureAny())).captured;
+    verify(() => router.popUntilRoot()).called(1);
+    final captured = verify(() => router.push<Object?>(captureAny())).captured;
     expect(captured, hasLength(1));
-    final routes = captured.single as List<PageRouteInfo<dynamic>>;
-    expect(routes, hasLength(2));
-    expect(routes[0].routeName, TabShellRoute.name);
-    expect(routes[1].routeName, AssetViewerRoute.name);
+    final route = captured.single as PageRouteInfo<dynamic>;
+    expect(route.routeName, AssetViewerRoute.name);
   });
 
   test('handle updates current viewer asset when a new view intent arrives', () async {
@@ -252,8 +252,10 @@ void main() {
     expect(container.read(viewIntentCurrentProvider), secondPayload);
     verify(() => resolver.resolve(payload)).called(1);
     verify(() => resolver.resolve(secondPayload)).called(1);
-    verify(() => router.replaceAll(any())).called(2);
+    verify(() => router.popUntilRoot()).called(2);
+    verify(() => router.push<Object?>(any())).called(2);
     verifyNever(() => router.replace(any()));
+    verifyNever(() => router.replaceAll(any()));
   });
 
   test('refreshCurrentAfterUpload waits until the current asset becomes remote-backed', () async {
@@ -273,8 +275,10 @@ void main() {
     expect(container.read(assetViewerProvider).currentAsset, remoteAsset);
     verify(() => resolver.resolve(payload)).called(1);
     verify(() => assetService.watchRemoteAsset('remote-1')).called(1);
-    verify(() => router.replaceAll(any())).called(2);
+    verify(() => router.popUntilRoot()).called(2);
+    verify(() => router.push<Object?>(any())).called(2);
     verifyNever(() => router.replace(any()));
+    verifyNever(() => router.replaceAll(any()));
   });
 
   test('refreshCurrentAfterUpload uses attachment localAssetId when watched remote asset is remote-only', () async {
@@ -301,8 +305,10 @@ void main() {
 
     expect(container.read(assetViewerProvider).currentAsset, viewerAsset);
     verify(() => assetService.watchRemoteAsset('remote-1')).called(1);
-    verify(() => router.replaceAll(any())).called(2);
+    verify(() => router.popUntilRoot()).called(2);
+    verify(() => router.push<Object?>(any())).called(2);
     verifyNever(() => router.replace(any()));
+    verifyNever(() => router.replaceAll(any()));
   });
 
   test('refreshCurrentAfterUpload watches only the uploaded remote asset stream', () async {

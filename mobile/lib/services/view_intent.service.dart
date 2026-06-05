@@ -26,11 +26,12 @@ class ViewIntentService {
   }
 
   Future<void> setManagedTempFilePath(String path) async {
+    final normalizedPath = p.normalize(path);
     final previous = _managedTempFilePath;
-    if (previous == path) {
+    if (previous == normalizedPath) {
       return;
     }
-    _managedTempFilePath = path;
+    _managedTempFilePath = normalizedPath;
     if (previous != null) {
       await cleanupTempFile(previous);
     }
@@ -45,22 +46,24 @@ class ViewIntentService {
   }
 
   Future<void> cleanupManagedTempFileIfCurrent(String path) async {
-    if (_managedTempFilePath == path) {
+    final normalizedPath = p.normalize(path);
+    if (_managedTempFilePath == normalizedPath) {
       _managedTempFilePath = null;
     }
-    await cleanupTempFile(path);
+    await cleanupTempFile(normalizedPath);
   }
 
   Future<void> cleanupTempFile(String path) async {
-    if (!_isManagedTempFile(path)) {
+    final normalizedPath = p.normalize(path);
+    if (!_isManagedTempFile(normalizedPath)) {
       return;
     }
-    if (_activeUploadPaths.contains(path)) {
+    if (_activeUploadPaths.contains(normalizedPath)) {
       return;
     }
 
     try {
-      final file = File(path);
+      final file = File(normalizedPath);
       if (await file.exists()) {
         await file.delete();
       }
@@ -77,7 +80,7 @@ class ViewIntentService {
           continue;
         }
 
-        final path = entity.path;
+        final path = p.normalize(entity.path);
         if (!_isManagedTempFile(path) || path == _managedTempFilePath || _activeUploadPaths.contains(path)) {
           continue;
         }
@@ -90,15 +93,16 @@ class ViewIntentService {
   }
 
   void markUploadActive(String path) {
-    _activeUploadPaths.add(path);
+    _activeUploadPaths.add(p.normalize(path));
   }
 
   Future<void> markUploadInactive(String path) async {
-    if (!_activeUploadPaths.remove(path)) {
+    final normalizedPath = p.normalize(path);
+    if (!_activeUploadPaths.remove(normalizedPath)) {
       return;
     }
-    if (_managedTempFilePath != path) {
-      await cleanupTempFile(path);
+    if (_managedTempFilePath != normalizedPath) {
+      await cleanupTempFile(normalizedPath);
     }
   }
 
