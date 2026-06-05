@@ -539,6 +539,7 @@ export type UserPreferences = {
   people: {
     enabled: boolean;
     sidebarWeb: boolean;
+    minimumFaces: number;
   };
   ratings: {
     enabled: boolean;

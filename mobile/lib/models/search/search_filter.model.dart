@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/utils/option.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -133,19 +134,26 @@ class SearchDateFilter {
 }
 
 class SearchRatingFilter {
-  int? rating;
-  SearchRatingFilter({this.rating});
+  /// none = no filter; some(null) = filter for unrated; some(1-5) = filter for that rating
+  Option<int?> rating;
+  SearchRatingFilter({this.rating = const Option.none()});
 
-  SearchRatingFilter copyWith({int? rating}) {
+  SearchRatingFilter copyWith({Option<int?>? rating}) {
     return SearchRatingFilter(rating: rating ?? this.rating);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'rating': rating};
+    if (rating.isNone) {
+      return <String, dynamic>{'active': false};
+    }
+    return <String, dynamic>{'active': true, 'value': rating.unwrapOrNull};
   }
 
   factory SearchRatingFilter.fromMap(Map<String, dynamic> map) {
-    return SearchRatingFilter(rating: map['rating'] != null ? map['rating'] as int : null);
+    if (!(map['active'] as bool? ?? false)) {
+      return SearchRatingFilter();
+    }
+    return SearchRatingFilter(rating: Option.some(map['value'] as int?));
   }
 
   String toJson() => json.encode(toMap());
@@ -270,7 +278,7 @@ class SearchFilter {
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
-        rating.rating == null &&
+        rating.rating.isNone &&
         mediaType == AssetType.other;
   }
 

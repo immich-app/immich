@@ -13,7 +13,7 @@ part of openapi.api;
 class RatingsUpdate {
   /// Returns a new [RatingsUpdate] instance.
   RatingsUpdate({
-    this.enabled,
+    this.enabled = const Optional.absent(),
   });
 
   /// Whether ratings are enabled
@@ -23,7 +23,7 @@ class RatingsUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? enabled;
+  Optional<bool?> enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RatingsUpdate &&
@@ -39,10 +39,9 @@ class RatingsUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.enabled != null) {
-      json[r'enabled'] = this.enabled;
-    } else {
-    //  json[r'enabled'] = null;
+    if (this.enabled.isPresent) {
+      final value = this.enabled.value;
+      json[r'enabled'] = value;
     }
     return json;
   }
@@ -56,7 +55,7 @@ class RatingsUpdate {
       final json = value.cast<String, dynamic>();
 
       return RatingsUpdate(
-        enabled: mapValueOfType<bool>(json, r'enabled'),
+        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
       );
     }
     return null;

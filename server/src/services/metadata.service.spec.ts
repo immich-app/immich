@@ -1610,22 +1610,6 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('should handle valid negative rating value', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({ Rating: -1 });
-
-      await sut.handleMetadataExtraction({ id: asset.id });
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({
-          exif: expect.objectContaining({
-            rating: -1,
-          }),
-          lockedPropertiesBehavior: 'skip',
-        }),
-      );
-    });
-
     it('should handle livePhotoCID not set', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));

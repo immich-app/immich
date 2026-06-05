@@ -36,13 +36,6 @@ class _AbortCallbackWrapper {
 
 class _MockAbortCallbackWrapper extends Mock implements _AbortCallbackWrapper {}
 
-class _CancellationWrapper {
-  const _CancellationWrapper();
-
-  bool call() => false;
-}
-
-class _MockCancellationWrapper extends Mock implements _CancellationWrapper {}
 
 void main() {
   late SyncStreamService sut;
@@ -94,9 +87,13 @@ void main() {
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
-    when(() => mockSyncApiRepo.streamChanges(any(), serverVersion: any(named: 'serverVersion'))).thenAnswer((
-      invocation,
-    ) async {
+    when(
+      () => mockSyncApiRepo.streamChanges(
+        any(),
+        serverVersion: any(named: 'serverVersion'),
+        abortSignal: any(named: 'abortSignal'),
+      ),
+    ).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
@@ -105,6 +102,7 @@ void main() {
         any(),
         onReset: any(named: 'onReset'),
         serverVersion: any(named: 'serverVersion'),
+        abortSignal: any(named: 'abortSignal'),
       ),
     ).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
@@ -233,8 +231,7 @@ void main() {
     });
 
     test("aborts and stops processing if cancelled during iteration", () async {
-      final cancellationChecker = _MockCancellationWrapper();
-      when(() => cancellationChecker()).thenReturn(false);
+      final cancellation = Completer<void>();
 
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
@@ -243,7 +240,7 @@ void main() {
         trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
         assetMediaRepository: mockAssetMediaRepo,
         permissionRepository: mockPermissionRepo,
-        cancelChecker: cancellationChecker.call,
+        cancellation: cancellation,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
       );
@@ -252,7 +249,7 @@ void main() {
       final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin, SyncStreamStub.partnerDeleteV1];
 
       when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
-        when(() => cancellationChecker()).thenReturn(true);
+        cancellation.complete();
       });
 
       await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
@@ -267,8 +264,7 @@ void main() {
     });
 
     test("aborts and stops processing if cancelled before processing batch", () async {
-      final cancellationChecker = _MockCancellationWrapper();
-      when(() => cancellationChecker()).thenReturn(false);
+      final cancellation = Completer<void>();
 
       final processingCompleter = Completer<void>();
       bool handler1Started = false;
@@ -284,7 +280,7 @@ void main() {
         trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
         assetMediaRepository: mockAssetMediaRepo,
         permissionRepository: mockPermissionRepo,
-        cancelChecker: cancellationChecker.call,
+        cancellation: cancellation,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
       );
@@ -303,7 +299,7 @@ void main() {
       expect(handler1Started, isTrue);
 
       // Signal cancellation while handler 1 is waiting
-      when(() => cancellationChecker()).thenReturn(true);
+      cancellation.complete();
       await pumpEventQueue();
 
       processingCompleter.complete();

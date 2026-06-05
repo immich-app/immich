@@ -69,7 +69,7 @@ class ServerVersionResponseDto {
     if (this.prerelease != null) {
       json[r'prerelease'] = this.prerelease;
     } else {
-    //  json[r'prerelease'] = null;
+      json[r'prerelease'] = null;
     }
     return json;
   }

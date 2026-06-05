@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
@@ -137,7 +138,7 @@ class RemoteAlbumService {
   Future<RemoteAlbum> updateAlbum(
     String albumId, {
     String? name,
-    String? description,
+    Option<String?> description = const Option.none(),
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,

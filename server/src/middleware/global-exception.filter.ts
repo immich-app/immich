@@ -1,10 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { ZodSerializationException, ZodValidationException } from 'nestjs-zod';
 import { ImmichHeader } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { logGlobalError } from 'src/utils/logger';
+import { onRequestError } from 'src/utils/logger';
 import { ZodError } from 'zod';
 
 @Catch()
@@ -17,10 +17,13 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   }
 
   catch(error: Error, host: ArgumentsHost) {
-    this.handleError(host.switchToHttp().getResponse<Response>(), error);
+    const http = host.switchToHttp();
+    this.handleError(http.getRequest<Request>(), http.getResponse<Response>(), error);
   }
 
-  handleError(res: Response, error: Error) {
+  handleError(req: Request, res: Response, error: Error) {
+    onRequestError(req, error, this.logger);
+
     const { status, body } = this.fromError(error);
     if (!res.headersSent) {
       res.header(ImmichHeader.CorrelationId, this.cls.getId()).status(status).json(body);
@@ -28,8 +31,6 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   }
 
   private fromError(error: Error) {
-    logGlobalError(this.logger, error);
-
     if (error instanceof HttpException) {
       const status = error.getStatus();
       const response = error.getResponse();

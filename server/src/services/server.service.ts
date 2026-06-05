@@ -128,6 +128,7 @@ export class ServerService extends BaseService {
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: false,
+      minFaces: config.machineLearning.facialRecognition.minFaces,
     };
   }
 

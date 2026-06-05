@@ -100,6 +100,9 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
+  if (value is CalendarHeatmapType) {
+    return CalendarHeatmapTypeTypeTransformer().encode(value).toString();
+  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
@@ -226,6 +229,9 @@ Future<String> _decodeBodyBytes(Response response) async {
 /// Returns a valid [T] value found at the specified Map [key], null otherwise.
 T? mapValueOfType<T>(dynamic map, String key) {
   final dynamic value = map is Map ? map[key] : null;
+  if (T == double && value is int) {
+    return value.toDouble() as T;
+  }
   return value is T ? value : null;
 }
 

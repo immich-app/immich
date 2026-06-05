@@ -19,7 +19,7 @@ class LocalAlbumFactory {
       id: id,
       name: name ?? 'local_album_$id',
       updatedAt: TestUtils.date(updatedAt),
-      backupSelection: backupSelection ?? BackupSelection.none,
+      backupSelection: backupSelection ?? .none,
       isIosSharedAlbum: isIosSharedAlbum ?? false,
       linkedRemoteAlbumId: linkedRemoteAlbumId,
       assetCount: assetCount ?? 10,

@@ -201,6 +201,7 @@ const assetSidecarWriteFactory = () => {
 const assetOcrFactory = (
   ocr: {
     id?: string;
+    updateId?: string;
     assetId?: string;
     x1?: number;
     y1?: number;
@@ -217,6 +218,7 @@ const assetOcrFactory = (
   } = {},
 ) => ({
   id: newUuid(),
+  updateId: newUuidV7(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,

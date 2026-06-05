@@ -78,6 +78,7 @@
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
+  let skipFade = $state(false);
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -252,7 +253,12 @@
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
-        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
+        onComplete={(errored) => {
+          const rect = element?.getBoundingClientRect();
+          skipFade = !rect || rect.bottom < 0 || rect.top > window.innerHeight;
+          loaded = true;
+          thumbError = errored;
+        }}
       />
       {#if asset.isVideo}
         <div class="pointer-events-none absolute size-full group-focus-visible:rounded-lg">
@@ -297,7 +303,10 @@
         <Thumbhash
           base64ThumbHash={asset.thumbhash}
           data-testid="thumbhash"
-          class={['absolute top-0 object-cover group-focus-visible:rounded-lg', { 'rounded-xl': selected }]}
+          class={[
+            'absolute top-0 object-cover group-focus-visible:rounded-lg',
+            { 'rounded-xl': selected, hidden: skipFade },
+          ]}
           style="width: {width}px; height: {height}px"
           draggable="false"
           fadeOut

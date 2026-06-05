@@ -24,3 +24,5 @@ enum AssetDateAggregation { start, end }
 enum SlideshowLook { contain, cover, blurredBackground }
 
 enum SlideshowDirection { forward, backward, shuffle }
+
+enum PartnerDirection { sharedBy, sharedWith }
