@@ -14,6 +14,7 @@ import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -395,6 +396,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     final asset = timelineOrigin == TimelineOrigin.deepLink && currentViewerAsset != null ? currentViewerAsset : _asset;
     if (asset == null) {
@@ -447,6 +449,15 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     localFilePath: viewIntentFilePath,
                   ),
                 ),
+                if (showingOcr && displayAsset.width != null && displayAsset.height != null)
+                  Positioned.fill(
+                    child: OcrOverlay(
+                      asset: displayAsset,
+                      imageSize: Size(displayAsset.width!.toDouble(), displayAsset.height!.toDouble()),
+                      viewportSize: Size(viewportWidth, viewportHeight),
+                      controller: _viewController,
+                    ),
+                  ),
                 IgnorePointer(
                   ignoring: !_showingDetails,
                   child: Column(

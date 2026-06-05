@@ -100,6 +100,9 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
+  if (value is CalendarHeatmapType) {
+    return CalendarHeatmapTypeTypeTransformer().encode(value).toString();
+  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }

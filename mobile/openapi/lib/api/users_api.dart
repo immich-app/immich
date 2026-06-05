@@ -208,6 +208,85 @@ class UsersApi {
     }
   }
 
+  /// Retrieve calendar heatmap activity
+  ///
+  /// Retrieve activity counts for a specified period, in a calendar heatmap format.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [DateTime] from:
+  ///   Start date in UTC
+  ///
+  /// * [DateTime] to:
+  ///   End date in UTC
+  ///
+  /// * [CalendarHeatmapType] type:
+  Future<Response> getMyCalendarHeatmapWithHttpInfo({ DateTime? from, DateTime? to, CalendarHeatmapType? type, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/users/me/calendar-heatmap';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (from != null) {
+      queryParams.addAll(_queryParams('', 'from', from));
+    }
+    if (to != null) {
+      queryParams.addAll(_queryParams('', 'to', to));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve calendar heatmap activity
+  ///
+  /// Retrieve activity counts for a specified period, in a calendar heatmap format.
+  ///
+  /// Parameters:
+  ///
+  /// * [DateTime] from:
+  ///   Start date in UTC
+  ///
+  /// * [DateTime] to:
+  ///   End date in UTC
+  ///
+  /// * [CalendarHeatmapType] type:
+  Future<CalendarHeatmapResponseDto?> getMyCalendarHeatmap({ DateTime? from, DateTime? to, CalendarHeatmapType? type, Future<void>? abortTrigger, }) async {
+    final response = await getMyCalendarHeatmapWithHttpInfo(from: from, to: to, type: type, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CalendarHeatmapResponseDto',) as CalendarHeatmapResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Get my preferences
   ///
   /// Retrieve the preferences for the current user.

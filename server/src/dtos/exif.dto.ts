@@ -29,7 +29,7 @@ export const ExifResponseSchema = z
     country: z.string().nullish().default(null).describe('Country name'),
     description: z.string().nullish().default(null).describe('Image description'),
     projectionType: z.string().nullish().default(null).describe('Projection type'),
-    rating: z.int().nullish().default(null).describe('Rating'),
+    rating: z.int().min(1).max(5).nullish().default(null).describe('Rating'),
   })
   .describe('EXIF response')
   .meta({ id: 'ExifResponseDto' });

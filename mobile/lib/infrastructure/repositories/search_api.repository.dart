@@ -1,6 +1,7 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/infrastructure/repositories/api.repository.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:openapi/api.dart';
 
 class SearchApiRepository extends ApiRepository {
@@ -37,7 +38,7 @@ class SearchApiRepository extends ApiRepository {
               ? const Optional.absent()
               : Optional.present(filter.date.takenBefore!),
           visibility: Optional.present(filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline),
-          rating: filter.rating.rating == null ? const Optional.absent() : Optional.present(filter.rating.rating!),
+          rating: filter.rating.rating.toOptional(),
           isFavorite: filter.display.isFavorite ? const Optional.present(true) : const Optional.absent(),
           isNotInAlbum: filter.display.isNotInAlbum ? const Optional.present(true) : const Optional.absent(),
           personIds: Optional.present(filter.people.map((e) => e.id).toList()),
@@ -70,7 +71,7 @@ class SearchApiRepository extends ApiRepository {
             ? const Optional.absent()
             : Optional.present(filter.date.takenBefore!),
         visibility: Optional.present(filter.display.isArchive ? AssetVisibility.archive : AssetVisibility.timeline),
-        rating: filter.rating.rating == null ? const Optional.absent() : Optional.present(filter.rating.rating!),
+        rating: filter.rating.rating.toOptional(),
         isFavorite: filter.display.isFavorite ? const Optional.present(true) : const Optional.absent(),
         isNotInAlbum: filter.display.isNotInAlbum ? const Optional.present(true) : const Optional.absent(),
         personIds: Optional.present(filter.people.map((e) => e.id).toList()),

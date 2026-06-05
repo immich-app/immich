@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
@@ -69,6 +70,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             await _db.userMetadataEntity.deleteAll();
             await _db.remoteAssetCloudIdEntity.deleteAll();
             await _db.assetEditEntity.deleteAll();
+            await _db.assetOcrEntity.deleteAll();
           });
         } finally {
           // re-enable FK even if the transaction throws, otherwise the connection
@@ -844,6 +846,52 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: deleteAssetFacesV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetOcrV1(Iterable<SyncAssetOcrV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetOcr in data) {
+          final companion = AssetOcrEntityCompanion(
+            assetId: Value(assetOcr.assetId),
+            recognizedText: Value(assetOcr.text),
+            x1: Value(assetOcr.x1),
+            y1: Value(assetOcr.y1),
+            x2: Value(assetOcr.x2),
+            y2: Value(assetOcr.y2),
+            x3: Value(assetOcr.x3),
+            y3: Value(assetOcr.y3),
+            x4: Value(assetOcr.x4),
+            y4: Value(assetOcr.y4),
+            boxScore: Value(assetOcr.boxScore),
+            textScore: Value(assetOcr.textScore),
+            isVisible: Value(assetOcr.isVisible),
+          );
+
+          batch.insert(
+            _db.assetOcrEntity,
+            companion.copyWith(id: Value(assetOcr.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetOcrV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetOcrV1(Iterable<SyncAssetOcrDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetOcr in data) {
+          batch.deleteWhere(_db.assetOcrEntity, (row) => row.id.equals(assetOcr.id));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetOcrV1', error, stack);
       rethrow;
     }
   }

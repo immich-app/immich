@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
 import { SessionResponseDto } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import {
@@ -83,6 +84,21 @@ export class UserAdminController {
     @Body() dto: UserAdminDeleteDto,
   ): Promise<UserAdminResponseDto> {
     return this.service.delete(auth, id, dto);
+  }
+
+  @Get(':id/calendar-heatmap')
+  @Authenticated({ permission: Permission.UserRead })
+  @Endpoint({
+    summary: 'Retrieve calendar heatmap activity',
+    description: 'Retrieve activity counts for a specified period, in a calendar heatmap format.',
+    history: new HistoryBuilder().added('v3').stable('v3'),
+  })
+  getUserCalendarHeatmapAdmin(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: CalendarHeatmapDto,
+  ): Promise<CalendarHeatmapResponseDto> {
+    return this.service.getCalendarHeatmap(auth, id, dto);
   }
 
   @Get(':id/sessions')

@@ -466,7 +466,7 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> updateRating(ActionSource source, int rating) async {
+  Future<ActionResult> updateRating(ActionSource source, int? rating) async {
     final ids = _getRemoteIdsForSource(source);
     if (ids.length != 1) {
       _logger.warning('updateRating called with multiple assets, expected single asset');
