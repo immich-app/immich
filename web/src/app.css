@@ -176,3 +176,9 @@
     @apply bg-subtle rounded-lg;
   }
 }
+
+immich-video > video {
+  width: 100%;
+  height: 100%;
+  object-fit: var(--media-object-fit, contain);
+}
