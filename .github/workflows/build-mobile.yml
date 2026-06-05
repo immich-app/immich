@@ -144,8 +144,13 @@ jobs:
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
           IS_MAIN_DEPLOYMENT: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          IS_DEPLOYMENT_BUILD: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          if [[ $IS_DEPLOYMENT_BUILD == 'true' ]]; then
+            export ANDROID_APP_LABEL='Immich Staging'
+          fi
+
           if [[ $IS_MAIN == 'true' ]]; then
             if [[ $IS_MAIN_DEPLOYMENT == 'true' ]]; then
               export ANDROID_APPLICATION_ID=app.immich.main

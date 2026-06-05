@@ -18,6 +18,11 @@ if (!androidApplicationId) {
   androidApplicationId = "app.alextran.immich"
 }
 
+def androidAppLabel = System.getenv("ANDROID_APP_LABEL")?.trim()
+if (!androidAppLabel) {
+  androidAppLabel = "Immich"
+}
+
 android {
   compileSdk = flutter.compileSdkVersion
   ndkVersion = flutter.ndkVersion
@@ -47,6 +52,7 @@ android {
     targetSdk = flutter.targetSdkVersion
     versionCode flutter.versionCode
     versionName flutter.versionName
+    manifestPlaceholders = [appLabel: androidAppLabel]
   }
 
   signingConfigs {
