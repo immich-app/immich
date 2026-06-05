@@ -68,6 +68,7 @@ dependencies:
   stream_transform: ^2.1.1
   sqlite3: ^3.3.2
   sqlite_async: 0.14.2
+  sqlite3_connection_pool: ^0.2.6
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
   url_launcher: ^6.3.2
