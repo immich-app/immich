@@ -242,7 +242,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     bool isSyncRemoteDeletionsMode() =>
-        Platform.isAndroid && MetadataRepository.instance.appConfig.trashSync.mode == TrashSyncMode.autoSync;
+        Platform.isAndroid && SettingsRepository.instance.appConfig.trashSync.mode == TrashSyncMode.autoSync;
 
     login() async {
       TextInput.finishAutofillContext();

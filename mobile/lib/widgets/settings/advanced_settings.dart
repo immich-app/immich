@@ -185,7 +185,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
     }
 
     Future<void> setTrashSyncMode(TrashSyncMode mode) {
-      return ref.read(metadataProvider).write(.trashSyncMode, mode);
+      return ref.read(settingsProvider).write(.trashSyncMode, mode);
     }
 
     Future<void> attemptToEnableSetting(TrashSyncMode mode) async {

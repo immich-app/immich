@@ -33,7 +33,7 @@ void main() {
   late DriftTrashSyncRepository mockTrashSyncRepo;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late MockNativeSyncApi mockNativeSyncApi;
-  late MockMetadataRepository mockMetadataRepository;
+  late MockSettingsRepository mockSettingsRepository;
   late Drift db;
   late bool hasManageMediaPermission;
   late TrashSyncMode trashSyncMode;
@@ -67,10 +67,10 @@ void main() {
     mockPermissionRepository = MockPermissionRepository();
     mockTrashSyncRepo = MockTrashSyncRepository();
     mockNativeSyncApi = MockNativeSyncApi();
-    mockMetadataRepository = MockMetadataRepository();
+    mockSettingsRepository = MockSettingsRepository();
     trashSyncMode = TrashSyncMode.off;
     when(
-      () => mockMetadataRepository.appConfig,
+      () => mockSettingsRepository.appConfig,
     ).thenAnswer((_) => AppConfig(trashSync: TrashSyncConfig(mode: trashSyncMode)));
 
     when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => false);
@@ -96,7 +96,7 @@ void main() {
       permissionRepository: mockPermissionRepository,
       nativeSyncApi: mockNativeSyncApi,
       trashSyncRepository: mockTrashSyncRepo,
-      metadataRepository: mockMetadataRepository,
+      settingsRepository: mockSettingsRepository,
     );
 
     await Store.clear();

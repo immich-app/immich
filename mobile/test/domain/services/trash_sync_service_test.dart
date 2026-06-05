@@ -26,7 +26,7 @@ void main() {
   late DriftTrashSyncRepository mockTrashSyncRepo;
   late MockAssetMediaRepository mockAssetMediaRepo;
   late MockPermissionRepository mockPermissionRepo;
-  late MockMetadataRepository mockMetadataRepository;
+  late MockSettingsRepository mockSettingsRepository;
   late Drift db;
   late bool hasManageMediaPermission;
   late TrashSyncMode trashSyncMode;
@@ -56,10 +56,10 @@ void main() {
     mockTrashSyncRepo = MockTrashSyncRepository();
     mockAssetMediaRepo = MockAssetMediaRepository();
     mockPermissionRepo = MockPermissionRepository();
-    mockMetadataRepository = MockMetadataRepository();
+    mockSettingsRepository = MockSettingsRepository();
     trashSyncMode = TrashSyncMode.off;
     when(
-      () => mockMetadataRepository.appConfig,
+      () => mockSettingsRepository.appConfig,
     ).thenAnswer((_) => AppConfig(trashSync: TrashSyncConfig(mode: trashSyncMode)));
 
     sut = TrashSyncService(
@@ -67,7 +67,7 @@ void main() {
       trashSyncRepository: mockTrashSyncRepo,
       assetMediaRepository: mockAssetMediaRepo,
       permissionRepository: mockPermissionRepo,
-      metadataRepository: mockMetadataRepository,
+      settingsRepository: mockSettingsRepository,
     );
 
     when(

@@ -15,7 +15,7 @@ import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
@@ -42,7 +42,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   await Store.put(StoreKey.version, targetVersion);
   if (migratedMetadata) {
-    await MetadataRepository.instance.refresh();
+    await SettingsRepository.instance.refresh();
   }
   return;
 }
@@ -149,9 +149,9 @@ Future<void> _migrateTo26(Drift drift) async {
 }
 
 Future<void> _migrateTo27(Drift drift) async {
-  final key = MetadataKey.trashSyncMode;
+  final key = SettingsKey.trashSyncMode;
   final existing = await (drift.select(
-    drift.metadataEntity,
+    drift.settingsEntity,
   )..where((row) => row.key.equals(key.name))).getSingleOrNull();
 
   if (existing == null) {
@@ -161,9 +161,9 @@ Future<void> _migrateTo27(Drift drift) async {
 
     if (legacy != null) {
       await drift
-          .into(drift.metadataEntity)
+          .into(drift.settingsEntity)
           .insertOnConflictUpdate(
-            MetadataEntityCompanion.insert(
+            SettingsEntityCompanion.insert(
               key: key.name,
               value: key.encode(TrashSyncMode.autoSync),
               updatedAt: Value(DateTime.now()),

@@ -1,7 +1,7 @@
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -17,17 +17,17 @@ class TrashSyncService {
   final DriftTrashSyncRepository _trashSyncRepository;
   final AssetMediaRepository _assetMediaRepository;
   final IPermissionRepository _permissionRepository;
-  final MetadataRepository _metadataRepository;
+  final SettingsRepository _settingsRepository;
 
   TrashSyncService({
     required this._trashedLocalAssetRepository,
     required this._trashSyncRepository,
     required this._assetMediaRepository,
     required this._permissionRepository,
-    required this._metadataRepository,
+    required this._settingsRepository,
   });
 
-  TrashSyncMode get mode => _metadataRepository.appConfig.trashSync.mode;
+  TrashSyncMode get mode => _settingsRepository.appConfig.trashSync.mode;
 
   bool get isAutoRestoreEnabled =>
       CurrentPlatform.isAndroid && (mode == TrashSyncMode.autoSync || mode == TrashSyncMode.review);

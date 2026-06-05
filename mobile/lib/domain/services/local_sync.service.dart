@@ -9,7 +9,7 @@ import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -31,7 +31,7 @@ class LocalSyncService {
   final IPermissionRepository _permissionRepository;
   final Completer<void>? _cancellation;
   final DriftTrashSyncRepository _trashSyncRepository;
-  final MetadataRepository _metadataRepository;
+  final SettingsRepository _settingsRepository;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
@@ -42,7 +42,7 @@ class LocalSyncService {
     required this._assetMediaRepository,
     required this._permissionRepository,
     required this._trashSyncRepository,
-    required this._metadataRepository,
+    required this._settingsRepository,
     this._cancellation,
   }) {
     _cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning));
@@ -411,7 +411,7 @@ class LocalSyncService {
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
     await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
 
-    final trashSyncMode = _metadataRepository.appConfig.trashSync.mode;
+    final trashSyncMode = _settingsRepository.appConfig.trashSync.mode;
     if (trashSyncMode != TrashSyncMode.off) {
       final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
       if (assetsToRestore.isEmpty) {

@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -42,7 +42,7 @@ final localSyncServiceProvider = Provider(
     permissionRepository: ref.watch(permissionRepositoryProvider),
     trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
-    metadataRepository: ref.watch(metadataProvider),
+    settingsRepository: ref.watch(settingsProvider),
     cancellation: ref.watch(cancellationProvider),
   ),
 );
