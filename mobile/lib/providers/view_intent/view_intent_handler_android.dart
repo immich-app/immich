@@ -122,7 +122,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     } on TimeoutException {
       final asset = await _assetService.getRemoteAsset(remoteAssetId);
       _logger.warning('watchRemoteAsset timed out for $remoteAssetId; direct get result: $asset');
-      return null;
+      return asset;
     }
 
     return uploadedAsset;

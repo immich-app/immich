@@ -311,6 +311,33 @@ void main() {
     verifyNever(() => router.replaceAll(any()));
   });
 
+  test('refreshCurrentAfterUpload falls back to direct get when watch times out', () async {
+    final remoteAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
+    final remoteTimelineService = _timelineServiceFromAssets([remoteAsset], TimelineOrigin.deepLink);
+    addTearDown(() async => remoteTimelineService.dispose());
+
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    final remoteAssetController = StreamController<RemoteAsset?>();
+    addTearDown(remoteAssetController.close);
+
+    when(() => assetService.watchRemoteAsset('remote-1')).thenAnswer((_) => remoteAssetController.stream);
+    when(() => assetService.getRemoteAsset('remote-1')).thenAnswer((_) async => remoteAsset);
+    when(() => resolver.timelineFor(any())).thenReturn(remoteTimelineService);
+
+    await handler.handle(payload);
+    await handler.refreshCurrentAfterUpload(remoteAssetId: 'remote-1', timeout: Duration.zero);
+
+    expect(container.read(assetViewerProvider).currentAsset, remoteAsset);
+    verify(() => assetService.watchRemoteAsset('remote-1')).called(1);
+    verify(() => assetService.getRemoteAsset('remote-1')).called(1);
+    verify(() => router.popUntilRoot()).called(2);
+    verify(() => router.push<Object?>(any())).called(2);
+    verifyNever(() => router.replace(any()));
+    verifyNever(() => router.replaceAll(any()));
+  });
+
   test('refreshCurrentAfterUpload watches only the uploaded remote asset stream', () async {
     final remoteAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
     final remoteTimelineService = _timelineServiceFromAssets([remoteAsset], TimelineOrigin.deepLink);
