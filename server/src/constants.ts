@@ -227,6 +227,7 @@ export const HLS_LEASE_DURATION_MS = 30 * 60 * 1000;
 export const HLS_PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 export const HLS_SEGMENT_DURATION = 2;
 export const HLS_SEGMENT_FILENAME_REGEX = /^seg_(\d+)\.m4s$/;
+export const HLS_TARGET_SEGMENT_HEADER = 'x-immich-hls-msn';
 export const HLS_VARIANTS = [
   { resolution: 480, codec: VideoCodec.Av1, bitrate: 1_000_000, codecString: 'av01.0.04M.08' },
   { resolution: 480, codec: VideoCodec.Hevc, bitrate: 1_200_000, codecString: 'hvc1.1.6.L90.B0' },

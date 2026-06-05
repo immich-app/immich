@@ -1,7 +1,7 @@
-import { Controller, Delete, Get, Header, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
+import { Controller, Delete, Get, Header, Headers, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants';
+import { HLS_PLAYLIST_CONTENT_TYPE, HLS_TARGET_SEGMENT_HEADER } from 'src/constants';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { HlsSegmentParamDto, HlsSessionParamDto, HlsVariantParamDto } from 'src/dtos/streaming.dto';
@@ -59,10 +59,23 @@ export class VideoStreamController {
   async getSegment(
     @Auth() auth: AuthDto,
     @Param() { id, sessionId, variantIndex, filename }: HlsSegmentParamDto,
+    // Allows the client to hint at which segment will be loaded after init.mp4
+    @Headers(HLS_TARGET_SEGMENT_HEADER) targetSegment: string | undefined,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.getSegment(auth, id, sessionId, variantIndex, filename), this.logger);
+    const target = targetSegment === undefined ? undefined : Number.parseInt(targetSegment);
+    if (target !== undefined && (!Number.isFinite(target) || target < 0)) {
+      res.status(HttpStatus.BAD_REQUEST).send('Invalid target segment');
+      return;
+    }
+
+    await sendFile(
+      res,
+      next,
+      () => this.service.getSegment(auth, id, sessionId, variantIndex, filename, target),
+      this.logger,
+    );
   }
 
   @Delete(':id/video/stream/:sessionId')
