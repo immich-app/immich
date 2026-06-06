@@ -111,7 +111,7 @@ export class JobRepository {
   }
 
   private async checkWorkers() {
-    let present = false;
+    let present: boolean;
     try {
       const suffix = `:w:${ImmichWorker.Microservices}`;
       const workers = await this.getQueue(QueueName.BackgroundTask).getWorkers();
