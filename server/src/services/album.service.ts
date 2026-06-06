@@ -134,7 +134,7 @@ export class AlbumService extends BaseService {
     );
 
     for (const { userId } of albumUsers) {
-      await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name });
+      await this.eventRepository.emit('AlbumInvite', { id: album.id, userId, senderName: auth.user.name || '' });
     }
 
     return mapAlbum(album);
@@ -304,7 +304,7 @@ export class AlbumService extends BaseService {
       }
 
       await this.albumUserRepository.create({ userId, albumId: id, role });
-      await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
+      await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name || '' });
     }
 
     return this.findOrFail(id, auth.user.id, { withAssets: true }).then(mapAlbum);

@@ -145,7 +145,7 @@ export class ServerService extends BaseService {
     for (const user of userStats) {
       const usage = new UsageByUserDto();
       usage.userId = user.userId;
-      usage.userName = user.userName;
+      usage.userName = user.userName || '';
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;

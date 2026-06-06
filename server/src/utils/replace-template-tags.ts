@@ -1,5 +1,5 @@
-export const replaceTemplateTags = (template: string, variables: Record<string, string | undefined>) => {
+export const replaceTemplateTags = (template: string, variables: Record<string, string | null | undefined>) => {
   return template.replaceAll(/{(.*?)}/g, (_, key) => {
-    return variables[key] || `{${key}}`;
+    return variables[key] ?? `{${key}}`;
   });
 };

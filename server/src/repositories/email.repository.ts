@@ -47,11 +47,11 @@ interface BaseEmailProps {
 }
 
 export interface TestEmailProps extends BaseEmailProps {
-  displayName: string;
+  displayName: string | null;
 }
 
 export interface WelcomeEmailProps extends BaseEmailProps {
-  displayName: string;
+  displayName: string | null;
   username: string;
   password?: string;
 }
@@ -59,15 +59,15 @@ export interface WelcomeEmailProps extends BaseEmailProps {
 export interface AlbumInviteEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
-  senderName: string;
-  recipientName: string;
+  senderName: string | null;
+  recipientName: string | null;
   cid?: string;
 }
 
 export interface AlbumUpdateEmailProps extends BaseEmailProps {
   albumName: string;
   albumId: string;
-  recipientName: string;
+  recipientName: string | null;
   cid?: string;
 }
 

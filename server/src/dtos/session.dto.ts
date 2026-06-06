@@ -6,7 +6,7 @@ const SessionCreateSchema = z
   .object({
     duration: z.int().min(1).optional().describe('Session duration in seconds'),
     deviceType: z.string().optional().describe('Device type'),
-    deviceOS: z.string().nullable().optional().transform((val) => (val === '' ? null : val)).describe('Device OS'),
+    deviceOS: z.string().optional().describe('Device OS'),
   })
   .meta({ id: 'SessionCreateDto' });
 

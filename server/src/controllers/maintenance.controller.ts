@@ -66,7 +66,7 @@ export class MaintenanceController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     if (dto.action !== MaintenanceAction.End) {
-      const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
+      const { jwt } = await this.service.startMaintenance(dto, auth.user.name || auth.user.email);
       return respondWithCookie(res, undefined, {
         isSecure: loginDetails.isSecure,
         values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
