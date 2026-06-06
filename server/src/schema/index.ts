@@ -11,6 +11,7 @@ import {
   asset_delete_audit,
   asset_face_audit,
   asset_metadata_audit,
+  asset_ocr_delete_audit,
   f_concat_ws,
   f_unaccent,
   immich_uuid_v7,
@@ -43,6 +44,7 @@ import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
+import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -107,6 +109,7 @@ export class ImmichDatabase {
     AssetMetadataAuditTable,
     AssetJobStatusTable,
     AssetOcrTable,
+    AssetOcrAuditTable,
     AssetTable,
     AssetFileTable,
     AssetExifTable,
@@ -168,6 +171,7 @@ export class ImmichDatabase {
     user_metadata_audit,
     asset_metadata_audit,
     asset_face_audit,
+    asset_ocr_delete_audit,
   ];
 
   enum = [album_user_role_enum, assets_status_enum, asset_face_source_type, asset_visibility_enum];
@@ -205,6 +209,7 @@ export interface DB {
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
   asset_ocr: AssetOcrTable;
+  asset_ocr_audit: AssetOcrAuditTable;
   asset_audio: AssetAudioTable;
   asset_video: AssetVideoTable;
   asset_keyframe: AssetKeyframeTable;

@@ -35,6 +35,10 @@ export interface MoveRequest {
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
 
+export type HlsSessionFolder = { ownerId: string; sessionId: string };
+
+export type HlsVariantFolder = { ownerId: string; sessionId: string; variantIndex: number };
+
 export type ImagePathOptions = { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean };
 
 let instance: StorageCore | null;
@@ -123,6 +127,14 @@ export class StorageCore {
 
   static getEncodedVideoPath(asset: ThumbnailPathEntity) {
     return StorageCore.getNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}.mp4`);
+  }
+
+  static getHlsSessionFolder({ ownerId, sessionId }: HlsSessionFolder) {
+    return StorageCore.getNestedPath(StorageFolder.EncodedVideo, ownerId, sessionId);
+  }
+
+  static getHlsVariantFolder({ ownerId, sessionId, variantIndex }: HlsVariantFolder) {
+    return join(StorageCore.getHlsSessionFolder({ ownerId, sessionId }), variantIndex.toString());
   }
 
   static getAndroidMotionPath(asset: ThumbnailPathEntity, uuid: string) {

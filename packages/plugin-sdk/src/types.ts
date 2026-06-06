@@ -1,10 +1,4 @@
-import type {
-  AssetStatus,
-  AssetType,
-  AssetVisibility,
-  WorkflowTrigger,
-  WorkflowType,
-} from 'src/enum.js';
+import type { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
 
 type DeepPartial<T> = T extends Date
   ? T
@@ -20,6 +14,12 @@ export type WorkflowEventMap = {
 };
 
 export type WorkflowEventData<T extends WorkflowType> = WorkflowEventMap[T];
+
+export enum WorkflowTrigger {
+  AssetCreate = 'AssetCreate',
+  AssetMetadataExtraction = 'AssetMetadataExtraction',
+  PersonRecognized = 'PersonRecognized',
+}
 
 export type WorkflowEventPayload<
   T extends WorkflowType = WorkflowType,
@@ -48,6 +48,8 @@ export type WorkflowResponse<T extends WorkflowType = WorkflowType> = {
   changes?: WorkflowChanges<T>;
   /** data to be passed to the next workflow step */
   data?: Record<string, unknown>;
+  /** update step config */
+  config?: WorkflowStepConfig;
 };
 
 export type WorkflowStepConfig = {
@@ -66,24 +68,23 @@ export type AssetV1 = {
   asset: {
     id: string;
     ownerId: string;
-    type: AssetType;
+    type: AssetTypeEnum;
     originalPath: string;
-    fileCreatedAt: Date;
-    fileModifiedAt: Date;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
     isFavorite: boolean;
     checksum: Buffer; // sha1 checksum
     livePhotoVideoId: string | null;
-    updatedAt: Date;
-    createdAt: Date;
+    updatedAt: string;
+    createdAt: string;
     originalFileName: string;
     isOffline: boolean;
     libraryId: string | null;
     isExternal: boolean;
-    deletedAt: Date | null;
-    localDateTime: Date;
+    deletedAt: string | null;
+    localDateTime: string;
     stackId: string | null;
     duplicateId: string | null;
-    status: AssetStatus;
     visibility: AssetVisibility;
     isEdited: boolean;
     exifInfo: {
@@ -93,8 +94,8 @@ export type AssetV1 = {
       exifImageHeight: number | null;
       fileSizeInByte: number | null;
       orientation: string | null;
-      dateTimeOriginal: Date | null;
-      modifyDate: Date | null;
+      dateTimeOriginal: string | null;
+      modifyDate: string | null;
       lensModel: string | null;
       fNumber: number | null;
       focalLength: number | null;
@@ -116,7 +117,7 @@ export type AssetV1 = {
       autoStackId: string | null;
       rating: number | null;
       tags: string[] | null;
-      updatedAt: Date | null;
+      updatedAt: string | null;
     } | null;
   };
 };

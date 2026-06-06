@@ -152,4 +152,15 @@ export const Route = {
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
+
+  // continue helper for ensuring same-origin URLs
+  continue: (url: string | null, fallback: string): string | URL => {
+    const resolved = new URL(url ?? fallback, document.baseURI);
+
+    if (resolved.origin !== location.origin) {
+      return fallback;
+    }
+
+    return resolved;
+  },
 };

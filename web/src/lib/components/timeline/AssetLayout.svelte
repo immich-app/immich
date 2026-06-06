@@ -30,14 +30,11 @@
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-
-  const firstInOrNearViewport = $derived(viewerAssets.findIndex((a) => a.isInOrNearViewport));
-  const lastInOrNearViewport = $derived(viewerAssets.findLastIndex((a) => a.isInOrNearViewport));
 </script>
 
 <!-- Image grid -->
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
-  {#each viewerAssets.slice(firstInOrNearViewport, lastInOrNearViewport + 1) as viewerAsset (viewerAsset.id)}
+  {#each viewerAssets as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
 

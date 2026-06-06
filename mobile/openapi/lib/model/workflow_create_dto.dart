@@ -13,15 +13,15 @@ part of openapi.api;
 class WorkflowCreateDto {
   /// Returns a new [WorkflowCreateDto] instance.
   WorkflowCreateDto({
-    this.description,
-    this.enabled,
-    this.name,
-    this.steps = const [],
+    this.description = const Optional.absent(),
+    this.enabled = const Optional.absent(),
+    this.name = const Optional.absent(),
+    this.steps = const Optional.present(const []),
     required this.trigger,
   });
 
   /// Workflow description
-  String? description;
+  Optional<String?> description;
 
   /// Workflow enabled
   ///
@@ -30,12 +30,12 @@ class WorkflowCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? enabled;
+  Optional<bool?> enabled;
 
   /// Workflow name
-  String? name;
+  Optional<String?> name;
 
-  List<WorkflowStepDto> steps;
+  Optional<List<WorkflowStepDto>?> steps;
 
   WorkflowTrigger trigger;
 
@@ -61,22 +61,22 @@ class WorkflowCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (this.description.isPresent) {
+      final value = this.description.value;
+      json[r'description'] = value;
     }
-    if (this.enabled != null) {
-      json[r'enabled'] = this.enabled;
-    } else {
-    //  json[r'enabled'] = null;
+    if (this.enabled.isPresent) {
+      final value = this.enabled.value;
+      json[r'enabled'] = value;
     }
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
-      json[r'steps'] = this.steps;
+    if (this.steps.isPresent) {
+      final value = this.steps.value;
+      json[r'steps'] = value;
+    }
       json[r'trigger'] = this.trigger;
     return json;
   }
@@ -90,10 +90,10 @@ class WorkflowCreateDto {
       final json = value.cast<String, dynamic>();
 
       return WorkflowCreateDto(
-        description: mapValueOfType<String>(json, r'description'),
-        enabled: mapValueOfType<bool>(json, r'enabled'),
-        name: mapValueOfType<String>(json, r'name'),
-        steps: WorkflowStepDto.listFromJson(json[r'steps']),
+        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
+        steps: json.containsKey(r'steps') ? Optional.present(WorkflowStepDto.listFromJson(json[r'steps'])) : const Optional.absent(),
         trigger: WorkflowTrigger.fromJson(json[r'trigger'])!,
       );
     }

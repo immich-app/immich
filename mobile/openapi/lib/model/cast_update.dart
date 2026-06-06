@@ -13,7 +13,7 @@ part of openapi.api;
 class CastUpdate {
   /// Returns a new [CastUpdate] instance.
   CastUpdate({
-    this.gCastEnabled,
+    this.gCastEnabled = const Optional.absent(),
   });
 
   /// Whether Google Cast is enabled
@@ -23,7 +23,7 @@ class CastUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? gCastEnabled;
+  Optional<bool?> gCastEnabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CastUpdate &&
@@ -39,10 +39,9 @@ class CastUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.gCastEnabled != null) {
-      json[r'gCastEnabled'] = this.gCastEnabled;
-    } else {
-    //  json[r'gCastEnabled'] = null;
+    if (this.gCastEnabled.isPresent) {
+      final value = this.gCastEnabled.value;
+      json[r'gCastEnabled'] = value;
     }
     return json;
   }
@@ -56,7 +55,7 @@ class CastUpdate {
       final json = value.cast<String, dynamic>();
 
       return CastUpdate(
-        gCastEnabled: mapValueOfType<bool>(json, r'gCastEnabled'),
+        gCastEnabled: json.containsKey(r'gCastEnabled') ? Optional.present(mapValueOfType<bool>(json, r'gCastEnabled')) : const Optional.absent(),
       );
     }
     return null;

@@ -1,4 +1,5 @@
-import { WorkflowTrigger, WorkflowType } from 'src/enum';
+import { WorkflowTrigger } from '@immich/plugin-sdk';
+import { WorkflowType } from 'src/enum';
 import { isMethodCompatible } from 'src/utils/workflow';
 
 const tests: Array<{ trigger: WorkflowTrigger; types: WorkflowType[]; expected: boolean }> = [

@@ -1,9 +1,10 @@
-import type { WorkflowType } from 'src/enum.js';
+import type { WorkflowType } from '@immich/sdk';
 import { hostFunctions } from 'src/host-functions.js';
 import type {
   ConfigValue,
   WorkflowEventPayload,
   WorkflowResponse,
+  WorkflowStepConfig,
 } from 'src/types.js';
 
 export const wrapper = <
@@ -19,19 +20,28 @@ export const wrapper = <
   const input = Host.inputString();
 
   try {
-    const event = JSON.parse(input) as WorkflowEventPayload<T, TConfig>;
-    // const debug = event.workflow.debug ?? false;
+    const payload = JSON.parse(input) as WorkflowEventPayload<T, TConfig>;
+    const event = {
+      ...payload,
+      functions: hostFunctions(payload.workflow.authToken),
+    };
+
+    const eventConfigBefore = JSON.stringify(event.config);
 
     console.debug(
-      `Inputs: trigger=${event.trigger}, event=${event.type}, config=${JSON.stringify(event.config)}`,
+      `Inputs: trigger=${event.trigger}, event=${event.type}, config=${eventConfigBefore}`,
     );
 
-    const response =
-      fn({ ...event, functions: hostFunctions(event.workflow.authToken) }) ??
-      {};
+    const response = fn(event) ?? {};
+
+    // if config changed, notify host
+    const eventConfigAfter = JSON.stringify(event.config);
+    if (!response.config && eventConfigBefore !== eventConfigAfter) {
+      response.config = event.config as WorkflowStepConfig;
+    }
 
     console.debug(
-      `Outputs: workflow=${JSON.stringify(response.workflow)}, changes=${JSON.stringify(response.changes)}, data=${JSON.stringify(response.data)}`,
+      `Outputs: workflow=${JSON.stringify(response.workflow)}, changes=${JSON.stringify(response.changes)}, data=${JSON.stringify(response.data)}, config=${JSON.stringify(response.config)}`,
     );
 
     const output = JSON.stringify(response);

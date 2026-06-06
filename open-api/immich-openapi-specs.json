@@ -1264,6 +1264,96 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/users/{id}/calendar-heatmap": {
+      "get": {
+        "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
+        "operationId": "getUserCalendarHeatmapAdmin",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "Upload",
+              "$ref": "#/components/schemas/CalendarHeatmapType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarHeatmapResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve calendar heatmap activity",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/admin/users/{id}/preferences": {
       "get": {
         "description": "Retrieve the preferences of a specific user.",
@@ -1628,6 +1718,17 @@
             }
           },
           {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "description": "Album ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
             "name": "isOwned",
             "required": false,
             "in": "query",
@@ -1643,6 +1744,15 @@
             "description": "Filter by shared status: true = only shared, false = not shared, undefined = no filter",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "description": "Album name (exact match)",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -4286,6 +4396,351 @@
         ],
         "x-immich-permission": "asset.view",
         "x-immich-state": "Stable"
+      }
+    },
+    "/assets/{id}/video/stream/main.m3u8": {
+      "get": {
+        "description": "Returns an HLS main playlist with all available variants for the asset.",
+        "operationId": "getMainPlaylist",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.apple.mpegurl": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get HLS main playlist",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/assets/{id}/video/stream/{sessionId}": {
+      "delete": {
+        "description": "Releases server resources for the streaming session.",
+        "operationId": "endSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "End HLS streaming session",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/assets/{id}/video/stream/{sessionId}/{variantIndex}/playlist.m3u8": {
+      "get": {
+        "description": "Returns an HLS media playlist for one variant of the streaming session.",
+        "operationId": "getMediaPlaylist",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantIndex",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.apple.mpegurl": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get HLS media playlist",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/assets/{id}/video/stream/{sessionId}/{variantIndex}/{filename}": {
+      "get": {
+        "description": "Streams an HLS init segment (init.mp4) or media segment (seg_N.m4s).",
+        "operationId": "getSegment",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "pattern": "^(init\\.mp4|seg_\\d+\\.m4s)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "variantIndex",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get HLS segment or init file",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Alpha"
       }
     },
     "/auth/admin-sign-up": {
@@ -8818,6 +9273,50 @@
         "x-immich-permission": "plugin.read"
       }
     },
+    "/plugins/templates": {
+      "get": {
+        "description": "Retrieve workflow templates provided by installed plugins",
+        "operationId": "searchPluginTemplates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginTemplateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve workflow templates",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "plugin.read"
+      }
+    },
     "/plugins/{id}": {
       "get": {
         "description": "Retrieve information about a specific plugin by its ID.",
@@ -9476,12 +9975,17 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable",
             "schema": {
               "type": "integer",
-              "minimum": -1,
+              "minimum": 1,
               "maximum": 5,
               "nullable": true
             }
@@ -14071,6 +14575,86 @@
         "x-immich-state": "Stable"
       }
     },
+    "/users/me/calendar-heatmap": {
+      "get": {
+        "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
+        "operationId": "getMyCalendarHeatmap",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "Upload",
+              "$ref": "#/components/schemas/CalendarHeatmapType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarHeatmapResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve calendar heatmap activity",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    },
     "/users/me/license": {
       "delete": {
         "description": "Delete the registered product key for the current user.",
@@ -15921,7 +16505,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -15937,6 +16521,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -17226,6 +17815,64 @@
         ],
         "type": "string"
       },
+      "CalendarHeatmapResponseDto": {
+        "properties": {
+          "from": {
+            "description": "Start date in UTC",
+            "example": "2024-01-01",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "properties": {
+                "count": {
+                  "description": "Activity count",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "date": {
+                  "description": "Date in UTC",
+                  "example": "2024-01-01",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "date",
+                "count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "to": {
+            "description": "End date in UTC",
+            "example": "2024-12-31",
+            "type": "string"
+          },
+          "totalCount": {
+            "description": "Total activity count over the period",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from",
+          "series",
+          "to",
+          "totalCount"
+        ],
+        "type": "object"
+      },
+      "CalendarHeatmapType": {
+        "description": "Type of calendar heatmap",
+        "enum": [
+          "Upload",
+          "Taken"
+        ],
+        "type": "string"
+      },
       "CastResponse": {
         "properties": {
           "gCastEnabled": {
@@ -17927,8 +18574,8 @@
           "rating": {
             "default": null,
             "description": "Rating",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "maximum": 5,
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -18082,6 +18729,7 @@
           "LibrarySyncFilesQueueAll",
           "LibrarySyncFiles",
           "LibraryScanQueueAll",
+          "HlsSessionCleanup",
           "MemoryCleanup",
           "MemoryGenerate",
           "NotificationsCleanup",
@@ -18107,7 +18755,7 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowAssetCreate"
+          "WorkflowAssetTrigger"
         ],
         "type": "string"
       },
@@ -18958,7 +19606,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -18974,6 +19622,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -19497,6 +20150,12 @@
             "description": "Whether people are enabled",
             "type": "boolean"
           },
+          "minimumFaces": {
+            "description": "People face threshold",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
             "type": "boolean"
@@ -19557,6 +20216,12 @@
           "enabled": {
             "description": "Whether people are enabled",
             "type": "boolean"
+          },
+          "minimumFaces": {
+            "description": "People face threshold",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
           },
           "sidebarWeb": {
             "description": "Whether people appear in web sidebar",
@@ -20131,6 +20796,72 @@
         ],
         "type": "object"
       },
+      "PluginTemplateResponseDto": {
+        "properties": {
+          "description": {
+            "description": "Template description",
+            "type": "string"
+          },
+          "key": {
+            "description": "Template key (unique across all templates)",
+            "type": "string"
+          },
+          "steps": {
+            "description": "Workflow steps",
+            "items": {
+              "$ref": "#/components/schemas/PluginTemplateStepResponseDto"
+            },
+            "type": "array"
+          },
+          "title": {
+            "description": "Template title",
+            "type": "string"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WorkflowTrigger",
+            "description": "Workflow trigger"
+          },
+          "uiHints": {
+            "description": "Ui hints, for example \"smart-album\"",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "key",
+          "steps",
+          "title",
+          "trigger",
+          "uiHints"
+        ],
+        "type": "object"
+      },
+      "PluginTemplateStepResponseDto": {
+        "properties": {
+          "config": {
+            "additionalProperties": {},
+            "description": "Step configuration",
+            "nullable": true,
+            "type": "object"
+          },
+          "enabled": {
+            "description": "Whether the step is enabled",
+            "type": "boolean"
+          },
+          "method": {
+            "description": "Step plugin method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "method"
+        ],
+        "type": "object"
+      },
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
@@ -20553,7 +21284,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -20569,6 +21300,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -20698,6 +21434,57 @@
         ],
         "type": "string"
       },
+      "ReleaseChannel": {
+        "description": "Release channel",
+        "enum": [
+          "stable",
+          "releaseCandidate"
+        ],
+        "type": "string"
+      },
+      "ReleaseEventV1": {
+        "properties": {
+          "checkedAt": {
+            "description": "When the server last checked for a latest version. As an ISO timestamp",
+            "type": "string"
+          },
+          "isAvailable": {
+            "description": "Whether a new version is available",
+            "type": "boolean"
+          },
+          "releaseVersion": {
+            "$ref": "#/components/schemas/ServerVersionResponseDto"
+          },
+          "serverVersion": {
+            "$ref": "#/components/schemas/ServerVersionResponseDto"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ReleaseType",
+            "description": "Release type",
+            "nullable": true
+          }
+        },
+        "required": [
+          "checkedAt",
+          "isAvailable",
+          "releaseVersion",
+          "serverVersion",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ReleaseType": {
+        "enum": [
+          "major",
+          "premajor",
+          "minor",
+          "preminor",
+          "patch",
+          "prepatch",
+          "prerelease"
+        ],
+        "type": "string"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -20793,7 +21580,14 @@
             "description": "Total number of matching assets",
             "maximum": 9007199254740991,
             "minimum": 0,
-            "type": "integer"
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v3.0.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "required": [
@@ -21070,6 +21864,12 @@
             "description": "Map light style URL",
             "type": "string"
           },
+          "minFaces": {
+            "description": "People min faces server default",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
           "oauthButtonText": {
             "description": "OAuth button text",
             "type": "string"
@@ -21099,6 +21899,7 @@
           "maintenanceMode",
           "mapDarkStyleUrl",
           "mapLightStyleUrl",
+          "minFaces",
           "oauthButtonText",
           "publicUsers",
           "trashDays",
@@ -21148,6 +21949,10 @@
             "description": "Whether password login is enabled",
             "type": "boolean"
           },
+          "realtimeTranscoding": {
+            "description": "Whether real-time transcoding is enabled",
+            "type": "boolean"
+          },
           "reverseGeocoding": {
             "description": "Whether reverse geocoding is enabled",
             "type": "boolean"
@@ -21180,6 +21985,7 @@
           "oauthAutoLaunch",
           "ocr",
           "passwordLogin",
+          "realtimeTranscoding",
           "reverseGeocoding",
           "search",
           "sidecar",
@@ -21360,26 +22166,40 @@
           "major": {
             "description": "Major version number",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "minor": {
             "description": "Minor version number",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "patch": {
             "description": "Patch version number",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
+          },
+          "prerelease": {
+            "description": "Pre-release version number",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v3.0.0",
+                "state": "Added"
+              }
+            ]
           }
         },
         "required": [
           "major",
           "minor",
-          "patch"
+          "patch",
+          "prerelease"
         ],
         "type": "object"
       },
@@ -21623,10 +22443,6 @@
           },
           "allowUpload": {
             "description": "Allow uploads",
-            "type": "boolean"
-          },
-          "changeExpiryTime": {
-            "description": "Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.",
             "type": "boolean"
           },
           "description": {
@@ -21937,7 +22753,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -21953,6 +22769,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -22197,7 +23018,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22213,6 +23034,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -22979,6 +23805,118 @@
         ],
         "type": "object"
       },
+      "SyncAssetOcrDeleteV1": {
+        "properties": {
+          "assetId": {
+            "description": "Original asset ID of the deleted OCR entry",
+            "type": "string"
+          },
+          "deletedAt": {
+            "description": "Timestamp when the OCR entry was deleted",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Audit row ID of the deleted OCR entry",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "deletedAt",
+          "id"
+        ],
+        "type": "object"
+      },
+      "SyncAssetOcrV1": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "boxScore": {
+            "description": "Confidence score of the bounding box",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "description": "OCR entry ID",
+            "type": "string"
+          },
+          "isVisible": {
+            "description": "Whether the OCR entry is visible",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "Recognized text content",
+            "type": "string"
+          },
+          "textScore": {
+            "description": "Confidence score of the recognized text",
+            "format": "double",
+            "type": "number"
+          },
+          "x1": {
+            "description": "Top-left X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x2": {
+            "description": "Top-right X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x3": {
+            "description": "Bottom-right X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x4": {
+            "description": "Bottom-left X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y1": {
+            "description": "Top-left Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y2": {
+            "description": "Top-right Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y3": {
+            "description": "Bottom-right Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y4": {
+            "description": "Bottom-left Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "boxScore",
+          "id",
+          "isVisible",
+          "text",
+          "textScore",
+          "x1",
+          "x2",
+          "x3",
+          "x4",
+          "y1",
+          "y2",
+          "y3",
+          "y4"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -23360,6 +24298,8 @@
           "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
+          "AssetOcrV1",
+          "AssetOcrDeleteV1",
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
@@ -23682,6 +24622,7 @@
           "AssetExifsV1",
           "AssetEditsV1",
           "AssetMetadataV1",
+          "AssetOcrV1",
           "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",
@@ -24040,6 +24981,9 @@
             "description": "Preset",
             "type": "string"
           },
+          "realtime": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegRealtimeDto"
+          },
           "refs": {
             "description": "References",
             "maximum": 6,
@@ -24090,6 +25034,7 @@
           "maxBitrate",
           "preferredHwDevice",
           "preset",
+          "realtime",
           "refs",
           "targetAudioCodec",
           "targetResolution",
@@ -24099,6 +25044,18 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFFmpegRealtimeDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable real-time HLS transcoding (alpha)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },
@@ -24400,12 +25357,16 @@
       },
       "SystemConfigNewVersionCheckDto": {
         "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ReleaseChannel"
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
           }
         },
         "required": [
+          "channel",
           "enabled"
         ],
         "type": "object"
@@ -25215,8 +26176,6 @@
           }
         },
         "required": [
-          "city",
-          "country",
           "createdAt",
           "duration",
           "fileCreatedAt",
@@ -25374,7 +26333,7 @@
           "rating": {
             "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -25390,6 +26349,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -26220,6 +27184,7 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
+          "AssetMetadataExtraction",
           "PersonRecognized"
         ],
         "type": "string"

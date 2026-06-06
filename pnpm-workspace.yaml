@@ -60,6 +60,9 @@ packageExtensions:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+  '@nestjs/swagger':
+    peerDependencies:
+      typescript: '*'
 dedupePeerDependents: false
 preferWorkspacePackages: true
 injectWorkspacePackages: true

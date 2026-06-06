@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
@@ -19,6 +20,5 @@ final userMetadataProvider = FutureProvider<List<UserMetadata>>((ref) async {
 
 final userMetadataPreferencesProvider = FutureProvider<Preferences?>((ref) async {
   final metadataList = await ref.watch(userMetadataProvider.future);
-  final metadataWithPrefs = metadataList.firstWhere((meta) => meta.preferences != null);
-  return metadataWithPrefs.preferences;
+  return metadataList.firstWhereOrNull((meta) => meta.preferences != null)?.preferences;
 });

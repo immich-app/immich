@@ -490,18 +490,43 @@ export class MediaRepository {
     return this.parseInt(b.bit_rate) - this.parseInt(a.bit_rate);
   }
 
+  /* Ported from https://code.ffmpeg.org/FFmpeg/FFmpeg/src/commit/5c44245878e235ae64fe87fb9877644856d33d1d/fftools/ffmpeg_filter.c
+   * SPDX-License-Identifier: LGPL-2.1-or-later
+   * Copyright (c) FFmpeg authors and contributors — https://ffmpeg.org/
+   * Modifications: TS port operating on probe-derived packet metadata rather than decoded AVFrames. */
   private cfrOutputFrames(packets: { pts: number; duration: number }[], slotsPerTick: number) {
-    // Packets may be out of PTS order due to B-frames
     packets.sort((a, b) => a.pts - b.pts);
     const firstPts = packets[0].pts;
     let outputFrames = 0;
     let nextPts = 0;
+    const history = [0, 0, 0];
     for (const pkt of packets) {
-      const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
-      const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
+      const syncIpts = (pkt.pts - firstPts) * slotsPerTick;
+      const duration = pkt.duration * slotsPerTick;
+      let delta0 = syncIpts - nextPts;
+      const delta = delta0 + duration;
+
+      if (delta0 < 0 && delta > 0) {
+        delta0 = 0;
+      }
+
+      let nb = 1;
+      let nbPrev = 0;
+      if (delta < -1.1) {
+        nb = 0;
+      } else if (delta > 1.1) {
+        nb = Math.round(delta);
+        if (delta0 > 1.1) {
+          nbPrev = Math.round(delta0 - 0.6);
+        }
+      }
       outputFrames += nb;
       nextPts += nb;
+      history[2] = history[1];
+      history[1] = history[0];
+      history[0] = nbPrev;
     }
-    return outputFrames;
+    const median = history.sort((a, b) => a - b)[1];
+    return outputFrames + median;
   }
 }

@@ -89,4 +89,10 @@ class FaceRecognizer(InferenceModel):
     @property
     def _batch_size_default(self) -> int | None:
         providers = ort.get_available_providers()
-        return None if self.model_format == ModelFormat.ONNX and "OpenVINOExecutionProvider" not in providers else 1
+        if (
+            self.model_format == ModelFormat.ONNX
+            and "MIGraphXExecutionProvider" not in providers
+            and "OpenVINOExecutionProvider" not in providers
+        ):
+            return None
+        return 1
