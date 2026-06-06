@@ -49,7 +49,7 @@ void main() {
 
     test('handles German umlauts', () => expect('Müller'.removeDiacritics(), 'Muller'));
 
-    test('handles Nordic characters', () => expect('Blomqvist'.removeDiacritics(), 'Blomqvist'));
+    test('handles Nordic characters', () => expect('Göteborg'.removeDiacritics(), 'Goteborg'));
 
     test('handles empty string', () => expect(''.removeDiacritics(), ''));
 
