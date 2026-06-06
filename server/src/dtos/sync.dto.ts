@@ -337,7 +337,7 @@ const SyncPersonV1Schema = z
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     ownerId: z.string().describe('Owner ID'),
-    name: z.string().describe('Person name'),
+    name: z.string().nullable().describe('Person name'),
     birthDate: isoDatetimeToDate.nullable().describe('Birth date'),
     isHidden: z.boolean().describe('Is hidden'),
     isFavorite: z.boolean().describe('Is favorite'),

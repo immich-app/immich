@@ -23,7 +23,7 @@ export interface PersonNameSearchOptions {
 
 export interface PersonNameResponse {
   id: string;
-  name: string;
+  name: string | null;
 }
 
 export interface AssetFaceId {

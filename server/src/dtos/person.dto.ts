@@ -14,7 +14,12 @@ import z from 'zod';
 
 const PersonCreateSchema = z
   .object({
-    name: z.string().optional().describe('Person name'),
+    name: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((val) => (val === '' ? null : val))
+      .describe('Person name'),
     birthDate: z
       .string()
       .meta({ format: 'date' })
@@ -61,7 +66,7 @@ const PersonSearchSchema = z
 export const PersonResponseSchema = z
   .object({
     id: z.string().describe('Person ID'),
-    name: z.string().describe('Person name'),
+    name: z.string().nullable().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
     thumbnailPath: z.string().describe('Thumbnail path'),
