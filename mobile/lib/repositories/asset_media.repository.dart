@@ -21,6 +21,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
+typedef _ShareFile = ({File file, bool cleanup, String displayName});
+
 final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(nativeSyncApiProvider)));
 
 class AssetMediaRepository {
@@ -139,6 +141,17 @@ class AssetMediaRepository {
     return '${baseName.isEmpty ? fallbackName : baseName}-preview.jpg';
   }
 
+  AssetEntity _buildAssetEntity(BaseAsset asset, String localId) {
+    return AssetEntity(
+      id: localId,
+      width: asset.width ?? 1,
+      height: asset.height ?? 1,
+      typeInt: asset.type.index,
+    );
+  }
+
+  bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
+
   ThumbnailSize _getLocalPreviewSize(BaseAsset asset) {
     final width = asset.width;
     final height = asset.height;
@@ -155,16 +168,8 @@ class AssetMediaRepository {
     return ThumbnailSize(scaledWidth < 1 ? 1 : scaledWidth, _localPreviewMaxDimension);
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _getLocalOriginalShareFile(
-    BaseAsset asset,
-    String localId,
-  ) async {
-    final file = await AssetEntity(
-      id: localId,
-      width: asset.width ?? 1,
-      height: asset.height ?? 1,
-      typeInt: asset.type.index,
-    ).originFile;
+  Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId) async {
+    final file = await _buildAssetEntity(asset, localId).originFile;
     if (file == null) {
       _log.warning("Local original file not found for sharing: $asset");
       return null;
@@ -173,18 +178,12 @@ class AssetMediaRepository {
     return (file: file, cleanup: CurrentPlatform.isIOS, displayName: _sanitizeFilename(asset.name));
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _getLocalPreviewShareFile(
+  Future<_ShareFile?> _getLocalPreviewShareFile(
     BaseAsset asset,
     String localId, {
     Completer<void>? cancelCompleter,
   }) async {
-    final entity = AssetEntity(
-      id: localId,
-      width: asset.width ?? 1,
-      height: asset.height ?? 1,
-      typeInt: asset.type.index,
-    );
-    final data = await entity.thumbnailDataWithSize(
+    final data = await _buildAssetEntity(asset, localId).thumbnailDataWithSize(
       _getLocalPreviewSize(asset),
       format: ThumbnailFormat.jpeg,
       quality: _localPreviewQuality,
@@ -194,7 +193,7 @@ class AssetMediaRepository {
       return null;
     }
 
-    if (cancelCompleter != null && cancelCompleter.isCompleted) {
+    if (_isCancelled(cancelCompleter)) {
       return null;
     }
 
@@ -205,7 +204,7 @@ class AssetMediaRepository {
     return (file: file, cleanup: true, displayName: displayName);
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _downloadRemoteShareFile({
+  Future<_ShareFile?> _downloadRemoteShareFile({
     required String taskId,
     required String url,
     required String displayName,
@@ -225,7 +224,7 @@ class AssetMediaRepository {
     final statusUpdate = await downloader.download(
       task,
       onProgress: (value) {
-        if (cancelCompleter != null && cancelCompleter.isCompleted) {
+        if (_isCancelled(cancelCompleter)) {
           unawaited(downloader.cancelTaskWithId(taskId));
           return;
         }
@@ -233,7 +232,7 @@ class AssetMediaRepository {
       },
     );
 
-    if (cancelCompleter != null && cancelCompleter.isCompleted) {
+    if (_isCancelled(cancelCompleter)) {
       return null;
     }
 
@@ -245,7 +244,7 @@ class AssetMediaRepository {
     return null;
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _getRemoteOriginalShareFile(
+  Future<_ShareFile?> _getRemoteOriginalShareFile(
     BaseAsset asset,
     String remoteId, {
     Completer<void>? cancelCompleter,
@@ -260,7 +259,7 @@ class AssetMediaRepository {
     );
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _getRemotePreviewShareFile(
+  Future<_ShareFile?> _getRemotePreviewShareFile(
     BaseAsset asset,
     String remoteId, {
     Completer<void>? cancelCompleter,
@@ -275,7 +274,7 @@ class AssetMediaRepository {
     );
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _getOriginalShareFile(
+  Future<_ShareFile?> _getOriginalShareFile(
     BaseAsset asset, {
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
@@ -294,7 +293,7 @@ class AssetMediaRepository {
     return _getRemoteOriginalShareFile(asset, remoteId, cancelCompleter: cancelCompleter, onProgress: onProgress);
   }
 
-  Future<({File file, bool cleanup, String displayName})?> _getPreviewShareFile(
+  Future<_ShareFile?> _getPreviewShareFile(
     BaseAsset asset, {
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
@@ -347,8 +346,7 @@ class AssetMediaRepository {
     updateProgress();
 
     for (final asset in assets) {
-      if (cancelCompleter != null && cancelCompleter.isCompleted) {
-        // if cancelled, delete any temp files created so far
+      if (_isCancelled(cancelCompleter)) {
         await _cleanupTempFiles(tempFiles);
         return 0;
       }
@@ -366,7 +364,7 @@ class AssetMediaRepository {
         ),
       };
 
-      if (cancelCompleter != null && cancelCompleter.isCompleted) {
+      if (_isCancelled(cancelCompleter)) {
         await _cleanupTempFiles(tempFiles);
         return 0;
       }
@@ -390,7 +388,7 @@ class AssetMediaRepository {
       return 0;
     }
 
-    if (cancelCompleter != null && cancelCompleter.isCompleted) {
+    if (_isCancelled(cancelCompleter)) {
       await _cleanupTempFiles(tempFiles);
       return 0;
     }
