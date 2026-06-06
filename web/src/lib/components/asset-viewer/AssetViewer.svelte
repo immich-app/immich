@@ -628,7 +628,7 @@
 
   {#if stack && withStacked && !assetViewerManager.isShowEditor}
     {@const stackedAssets = stack.assets}
-    <div id="stack-slideshow" class="pointer-events-none absolute bottom-0 col-span-4 col-start-1 w-full">
+    <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
