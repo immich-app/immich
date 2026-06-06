@@ -22,12 +22,45 @@
   let { data }: Props = $props();
   let selectedClusterIds = $state.raw(new Set<string>());
   let selectedClusterBBox = $state.raw<SelectionBBox>();
+  let currentMapBBox = $state.raw<SelectionBBox>();
   let isTimelinePanelVisible = $state(false);
+  let visibleAssetIds = $state<Set<string>>();
+
+  // Mobile Bottom Sheet State
+  let sheetHeight = $state(50);
+  let isDraggingSheet = $state(false);
+  let innerWidth = $state(1024);
+  let isMobile = $derived(innerWidth < 768);
+
+  const isSameBbox = (a: SelectionBBox | undefined, b: SelectionBBox) => {
+    if (!a) {
+      return false;
+    }
+    const epsilon = 0.000_01;
+    return (
+      Math.abs(a.west - b.west) <= epsilon &&
+      Math.abs(a.south - b.south) <= epsilon &&
+      Math.abs(a.east - b.east) <= epsilon &&
+      Math.abs(a.north - b.north) <= epsilon
+    );
+  };
 
   function closeTimelinePanel() {
     isTimelinePanelVisible = false;
     selectedClusterBBox = undefined;
     selectedClusterIds = new Set();
+    visibleAssetIds = undefined;
+    sheetHeight = 50; // Reset for next open
+  }
+
+  function toggleTimeline() {
+    isTimelinePanelVisible = !isTimelinePanelVisible;
+    if (!isTimelinePanelVisible) {
+      closeTimelinePanel();
+    } else if (currentMapBBox) {
+      selectedClusterBBox = currentMapBBox;
+      selectedClusterIds = new Set();
+    }
   }
 
   onDestroy(() => {
@@ -50,6 +83,18 @@
     assetViewerManager.showAssetViewer(false);
     handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
   }
+
+  function onBoundsChange(bbox: SelectionBBox) {
+    currentMapBBox = bbox;
+    if (isTimelinePanelVisible) {
+      if (!isSameBbox(selectedClusterBBox, bbox)) {
+        selectedClusterBBox = bbox;
+      }
+      if (selectedClusterIds.size > 0) {
+        selectedClusterIds = new Set();
+      }
+    }
+  }
 </script>
 
 {#if featureFlagsManager.value.map}
@@ -69,7 +114,15 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map hash onSelect={onViewAssets} {onClusterSelect} />
+          <Map
+            hash
+            onSelect={onViewAssets}
+            {onClusterSelect}
+            {onBoundsChange}
+            {visibleAssetIds}
+            isTimelineOpen={isTimelinePanelVisible}
+            onToggleTimeline={toggleTimeline}
+          />
         {/await}
       </div>
 
@@ -78,8 +131,8 @@
           <MapTimelinePanel
             bbox={selectedClusterBBox}
             {selectedClusterIds}
-            assetCount={selectedClusterIds.size}
             onClose={closeTimelinePanel}
+            onVisibleIdsChange={(ids) => (visibleAssetIds = ids)}
           />
         </div>
       {/if}

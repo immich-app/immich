@@ -34,15 +34,16 @@
   import { mdiDotsVertical, mdiImageMultiple } from '@mdi/js';
   import { ceil, floor } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     bbox: SelectionBBox;
     selectedClusterIds: Set<string>;
-    assetCount: number;
     onClose: () => void;
+    onVisibleIdsChange?: (ids: Set<string> | undefined) => void;
   }
 
-  let { bbox, selectedClusterIds, assetCount, onClose }: Props = $props();
+  let { bbox, selectedClusterIds, onClose, onVisibleIdsChange }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let selectedAssets = $derived(assetMultiSelectManager.assets);
@@ -80,17 +81,56 @@
     `${floor(bbox.west, 6)},${floor(bbox.south, 6)},${ceil(bbox.east, 6)},${ceil(bbox.north, 6)}`,
   );
 
-  const timelineOptions = $derived({
-    bbox: timelineBoundingBox,
-    visibility: $mapSettings.includeArchived ? undefined : AssetVisibility.Timeline,
-    isFavorite: $mapSettings.onlyFavorites || undefined,
-    withPartners: $mapSettings.withPartners || undefined,
-    assetFilter: selectedClusterIds,
+  const timelineOptions = $derived.by(() => {
+    if (!timelineBoundingBox) {
+      return undefined;
+    }
+    const assetFilter = selectedClusterIds.size > 0 ? selectedClusterIds : undefined;
+    return {
+      bbox: timelineBoundingBox,
+      visibility: $mapSettings.includeArchived ? undefined : AssetVisibility.Timeline,
+      isFavorite: $mapSettings.onlyFavorites || undefined,
+      withPartners: $mapSettings.withPartners || undefined,
+      assetFilter,
+    };
   });
 
   $effect.pre(() => {
     void timelineOptions;
     assetMultiSelectManager.clear();
+  });
+
+  const isIntersecting = (top1: number, bottom1: number, top2: number, bottom2: number) => {
+    return Math.max(top1, top2) <= Math.min(bottom1, bottom2);
+  };
+
+  let visibleAssetIds = $derived.by(() => {
+    if (!timelineManager?.isInitialized || !timelineManager.months) {
+      return undefined;
+    }
+    const ids = new SvelteSet<string>();
+    const top = timelineManager.visibleWindow.top;
+    const bottom = timelineManager.visibleWindow.bottom;
+    for (const month of timelineManager.months) {
+      if (month.isInViewport) {
+        for (const day of month.timelineDays) {
+          const dayTop = month.top + day.top;
+          const dayBottom = dayTop + day.height;
+          if (isIntersecting(dayTop, dayBottom, top, bottom)) {
+            for (const asset of day.getAssets()) {
+              if (asset && asset.id) {
+                ids.add(asset.id);
+              }
+            }
+          }
+        }
+      }
+    }
+    return ids;
+  });
+
+  $effect(() => {
+    onVisibleIdsChange?.(visibleAssetIds);
   });
 </script>
 
@@ -99,7 +139,7 @@
     <div class="flex items-center gap-2">
       <Icon icon={mdiImageMultiple} size="20" />
       <p class="text-sm font-medium text-immich-fg dark:text-immich-dark-fg">
-        {$t('assets_count', { values: { count: assetCount } })}
+        {$t('assets_count', { values: { count: timelineManager?.assetsCount ?? 0 } })}
       </p>
     </div>
     <CloseButton onclick={onClose} />
