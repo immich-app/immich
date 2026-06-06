@@ -27,6 +27,7 @@ void main() {
   late MockTrashedLocalAssetRepository trashedLocalAssetRepository;
   late MockAssetMediaRepository assetMediaRepository;
   late MockDownloadRepository downloadRepository;
+  late MockTagService tagService;
 
   late Drift db;
 
@@ -53,6 +54,7 @@ void main() {
     trashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     assetMediaRepository = MockAssetMediaRepository();
     downloadRepository = MockDownloadRepository();
+    tagService = MockTagService();
 
     sut = ActionService(
       assetApiRepository,
@@ -63,11 +65,38 @@ void main() {
       trashedLocalAssetRepository,
       assetMediaRepository,
       downloadRepository,
+      tagService,
     );
   });
 
   tearDown(() async {
     await Store.clear();
+  });
+
+  group('ActionService.updateRating', () {
+    const assetId = 'asset_id_1';
+
+    test('calls both repositories with the given rating', () async {
+      when(() => assetApiRepository.updateRating(assetId, 3)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateRating(assetId, 3)).thenAnswer((_) async {});
+
+      final result = await sut.updateRating(assetId, 3);
+
+      expect(result, isTrue);
+      verify(() => assetApiRepository.updateRating(assetId, 3)).called(1);
+      verify(() => remoteAssetRepository.updateRating(assetId, 3)).called(1);
+    });
+
+    test('calls both repositories with null to clear rating', () async {
+      when(() => assetApiRepository.updateRating(assetId, null)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateRating(assetId, null)).thenAnswer((_) async {});
+
+      final result = await sut.updateRating(assetId, null);
+
+      expect(result, isTrue);
+      verify(() => assetApiRepository.updateRating(assetId, null)).called(1);
+      verify(() => remoteAssetRepository.updateRating(assetId, null)).called(1);
+    });
   });
 
   group('ActionService.deleteLocal', () {

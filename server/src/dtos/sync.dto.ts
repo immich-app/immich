@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { createZodDto } from 'nestjs-zod';
+import { ExtraModel } from 'src/decorators';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
@@ -16,15 +16,6 @@ import {
 } from 'src/enum';
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
-
-export const extraSyncModels: Function[] = [];
-
-const ExtraModel = (): ClassDecorator => {
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  return (object: Function) => {
-    extraSyncModels.push(object);
-  };
-};
 
 const SyncUserV1Schema = z
   .object({
@@ -75,6 +66,7 @@ const SyncAssetV1Schema = z
     checksum: z.string().describe('Checksum'),
     fileCreatedAt: isoDatetimeToDate.nullable().describe('File created at'),
     fileModifiedAt: isoDatetimeToDate.nullable().describe('File modified at'),
+    createdAt: isoDatetimeToDate.nullable().describe('Uploaded to Immich at'),
     localDateTime: isoDatetimeToDate.nullable().describe('Local date time'),
     duration: z.string().nullable().describe('Duration'),
     type: AssetTypeSchema,
@@ -99,6 +91,7 @@ const SyncAssetV2Schema = z
     checksum: z.string().describe('Checksum'),
     fileCreatedAt: isoDatetimeToDate.nullable().describe('File created at'),
     fileModifiedAt: isoDatetimeToDate.nullable().describe('File modified at'),
+    createdAt: isoDatetimeToDate.nullable().describe('Uploaded to Immich at'),
     localDateTime: isoDatetimeToDate.nullable().describe('Local date time'),
     duration: z.int32().min(0).nullable().describe('Duration'),
     type: AssetTypeSchema,
@@ -408,6 +401,41 @@ class SyncMemoryDeleteV1 extends createZodDto(SyncMemoryDeleteV1Schema) {}
 class SyncMemoryAssetV1 extends createZodDto(SyncMemoryAssetV1Schema) {}
 @ExtraModel()
 class SyncMemoryAssetDeleteV1 extends createZodDto(SyncMemoryAssetDeleteV1Schema) {}
+
+const SyncAssetOcrV1Schema = z
+  .object({
+    id: z.string().describe('OCR entry ID'),
+    assetId: z.string().describe('Asset ID'),
+
+    x1: z.number().meta({ format: 'double' }).describe('Top-left X coordinate (normalized 0–1)'),
+    y1: z.number().meta({ format: 'double' }).describe('Top-left Y coordinate (normalized 0–1)'),
+    x2: z.number().meta({ format: 'double' }).describe('Top-right X coordinate (normalized 0–1)'),
+    y2: z.number().meta({ format: 'double' }).describe('Top-right Y coordinate (normalized 0–1)'),
+    x3: z.number().meta({ format: 'double' }).describe('Bottom-right X coordinate (normalized 0–1)'),
+    y3: z.number().meta({ format: 'double' }).describe('Bottom-right Y coordinate (normalized 0–1)'),
+    x4: z.number().meta({ format: 'double' }).describe('Bottom-left X coordinate (normalized 0–1)'),
+    y4: z.number().meta({ format: 'double' }).describe('Bottom-left Y coordinate (normalized 0–1)'),
+
+    boxScore: z.number().meta({ format: 'double' }).describe('Confidence score of the bounding box'),
+    textScore: z.number().meta({ format: 'double' }).describe('Confidence score of the recognized text'),
+    text: z.string().describe('Recognized text content'),
+    isVisible: z.boolean().describe('Whether the OCR entry is visible'),
+  })
+  .meta({ id: 'SyncAssetOcrV1' });
+
+const SyncAssetOcrDeleteV1Schema = z
+  .object({
+    id: z.string().describe('Audit row ID of the deleted OCR entry'),
+    assetId: z.string().describe('Original asset ID of the deleted OCR entry'),
+    deletedAt: isoDatetimeToDate.describe('Timestamp when the OCR entry was deleted'),
+  })
+  .meta({ id: 'SyncAssetOcrDeleteV1' });
+
+@ExtraModel()
+class SyncAssetOcrV1 extends createZodDto(SyncAssetOcrV1Schema) {}
+
+@ExtraModel()
+class SyncAssetOcrDeleteV1 extends createZodDto(SyncAssetOcrDeleteV1Schema) {}
 @ExtraModel()
 class SyncStackV1 extends createZodDto(SyncStackV1Schema) {}
 @ExtraModel()
@@ -444,6 +472,8 @@ export type SyncItem = {
   [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
   [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AssetOcrV1]: SyncAssetOcrV1;
+  [SyncEntityType.AssetOcrDeleteV1]: SyncAssetOcrDeleteV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;

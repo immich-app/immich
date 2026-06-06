@@ -32,7 +32,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     }).get();
   }
 
-  Future<List<DriftPerson>> getAllPeople() async {
+  Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) async {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
@@ -49,7 +49,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
                 faces.isVisible.equals(true) &
                 faces.deletedAt.isNull(),
           )
-          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(3) | people.name.equals('').not())
+          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
           ..orderBy([
             OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),

@@ -21,6 +21,7 @@ platform :ios do
   CODE_SIGN_IDENTITY = "Apple Distribution: FUTO Holdings, Inc. (#{TEAM_ID})"
   BASE_BUNDLE_ID = "app.alextran.immich"
   DEV_BUNDLE_ID  = "tech.futo.immich.testflight"
+  DEV_GROUP_ID   = "group.app.immich.share.testflight"
 
   # Helper method to get App Store Connect API key
   def get_api_key
@@ -33,6 +34,13 @@ platform :ios do
     )
   end
   
+  # Helper method to assemble xcargs with optional CUSTOM_GROUP_ID override
+  def build_xcargs(group_id: nil)
+    args = "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual"
+    args += " CUSTOM_GROUP_ID='#{group_id}'" if group_id
+    args
+  end
+
   # Helper method to get version from pubspec.yaml
 def get_version_from_pubspec
   require 'yaml'
@@ -41,7 +49,7 @@ def get_version_from_pubspec
   pubspec = YAML.load_file(pubspec_path)
   
   version_string = pubspec['version']
-  version_string ? version_string.split('+').first : nil
+  version_string ? version_string.split('+').first.split('-').first : nil
 end
   
   # Helper method to configure code signing for all targets
@@ -89,7 +97,8 @@ end
     version_number: nil,
     profile_name_main:,
     profile_name_share:,
-    profile_name_widget:
+    profile_name_widget:,
+    group_id: nil
   )
     app_identifier = base_bundle_id
 
@@ -97,7 +106,7 @@ end
     if version_number
       increment_version_number(version_number: version_number)
     end
-    
+
     # Increment build number
     increment_build_number(
       build_number: latest_testflight_build_number(
@@ -106,14 +115,14 @@ end
       ) + 1,
       xcodeproj: "./Runner.xcodeproj"
     )
-    
+
     # Build the app
     build_app(
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
       configuration: configuration,
       export_method: "app-store",
-      xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      xcargs: build_xcargs(group_id: group_id),
       export_options: {
         provisioningProfiles: {
           "#{app_identifier}" => profile_name_main,
@@ -165,7 +174,8 @@ end
       distribute_external: false,
       profile_name_main: main_profile_name,
       profile_name_share: share_profile_name,
-      profile_name_widget: widget_profile_name
+      profile_name_widget: widget_profile_name,
+      group_id: DEV_GROUP_ID
     )
   end
 
@@ -274,7 +284,7 @@ end
       configuration: "Release",
       export_method: "app-store",
       skip_package_ipa: true,
-      xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      xcargs: build_xcargs(group_id: DEV_GROUP_ID),
       export_options: {
         provisioningProfiles: {
           DEV_BUNDLE_ID => main_profile_name,

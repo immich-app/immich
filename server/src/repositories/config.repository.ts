@@ -9,7 +9,7 @@ import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { citiesFile, excludePaths, IWorker } from 'src/constants';
+import { citiesFile, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvSchema } from 'src/dtos/env.dto';
 import {
@@ -328,10 +328,6 @@ const getEnv = (): EnvData => {
     otel: {
       metrics: {
         hostMetrics: telemetries.has(ImmichTelemetry.Host),
-        apiMetrics: {
-          enable: telemetries.has(ImmichTelemetry.Api),
-          ignoreRoutes: excludePaths,
-        },
       },
     },
 
@@ -350,7 +346,7 @@ const getEnv = (): EnvData => {
         root: folders.web,
         indexHtml: join(folders.web, 'index.html'),
       },
-      corePlugin: join(buildFolder, 'corePlugin'),
+      corePlugin: join(buildFolder, 'plugins', 'immich-plugin-core'),
     },
 
     setup: {

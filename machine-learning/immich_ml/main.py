@@ -12,7 +12,7 @@ from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, File, Form, HTTPException
-from fastapi.responses import ORJSONResponse, PlainTextResponse
+from fastapi.responses import PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
 from pydantic import ValidationError
@@ -32,6 +32,7 @@ from .schemas import (
     ModelIdentity,
     ModelTask,
     ModelType,
+    ORJSONResponse,
     PipelineRequest,
     T,
 )
@@ -115,20 +116,6 @@ async def preload_models(preload: PreloadModelData) -> None:
             preload.ocr.recognition,
             ModelType.RECOGNITION,
             ModelTask.OCR,
-        )
-
-    if preload.clip_fallback is not None:
-        log.warning(
-            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__CLIP'. "
-            "Use 'MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL' and "
-            "'MACHINE_LEARNING_PRELOAD__CLIP__VISUAL' instead."
-        )
-
-    if preload.facial_recognition_fallback is not None:
-        log.warning(
-            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION'. "
-            "Use 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION' and "
-            "'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION' instead."
         )
 
 

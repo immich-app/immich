@@ -13,7 +13,7 @@ class AuthApiRepository extends ApiRepository {
   AuthApiRepository(this._apiService);
 
   Future<void> changePassword(String newPassword) async {
-    await _apiService.usersApi.updateMyUser(UserUpdateMeDto(password: newPassword));
+    await _apiService.usersApi.updateMyUser(UserUpdateMeDto(password: Optional.present(newPassword)));
   }
 
   Future<LoginResponse> login(String email, String password) async {
@@ -25,7 +25,9 @@ class AuthApiRepository extends ApiRepository {
   }
 
   Future<void> logout() async {
-    if (_apiService.apiClient.basePath.isEmpty) return;
+    if (_apiService.apiClient.basePath.isEmpty) {
+      return;
+    }
 
     await _apiService.authenticationApi.logout().timeout(const Duration(seconds: 7));
   }
@@ -44,7 +46,7 @@ class AuthApiRepository extends ApiRepository {
 
   Future<bool> unlockPinCode(String pinCode) async {
     try {
-      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: pinCode));
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: Optional.present(pinCode)));
       return true;
     } catch (_) {
       return false;

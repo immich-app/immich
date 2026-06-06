@@ -54,10 +54,6 @@ export const envData: EnvData = {
   otel: {
     metrics: {
       hostMetrics: false,
-      apiMetrics: {
-        enable: false,
-        ignoreRoutes: [],
-      },
     },
   },
 
@@ -80,7 +76,7 @@ export const envData: EnvData = {
       root: '/build/www',
       indexHtml: '/build/www/index.html',
     },
-    corePlugin: '/build/corePlugin',
+    corePlugin: '/build/plugins/immich-plugin-core',
   },
 
   setup: {

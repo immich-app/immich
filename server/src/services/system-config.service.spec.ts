@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults, SystemConfig } from 'src/config';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
@@ -70,8 +71,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
     preferredHwDevice: 'auto',
     transcode: TranscodePolicy.Required,
     accel: TranscodeHardwareAcceleration.Disabled,
-    accelDecode: false,
+    accelDecode: true,
     tonemap: ToneMapping.Hable,
+    realtime: {
+      enabled: false,
+    },
   },
   logging: {
     enabled: true,
@@ -184,6 +188,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+    channel: ReleaseChannel.Stable,
   },
   trash: {
     enabled: true,

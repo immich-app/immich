@@ -4,6 +4,7 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -64,10 +65,12 @@ export class ServerInfoRepository {
     this.logger.setContext(ServerInfoRepository.name);
   }
 
-  async getLatestRelease(): Promise<VersionResponse> {
+  async getLatestRelease(channel: ReleaseChannel): Promise<VersionResponse> {
     try {
       const { versionCheck } = this.configRepository.getEnv();
-      const response = await fetch(versionCheck.url);
+      const url = new URL(versionCheck.url);
+      url.searchParams.append('channel', channel);
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Version check request failed with status ${response.status}: ${await response.text()}`);

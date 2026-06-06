@@ -20,7 +20,9 @@ class LogMessage {
 
   @override
   bool operator ==(covariant LogMessage other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.message == message &&
         other.level == level &&

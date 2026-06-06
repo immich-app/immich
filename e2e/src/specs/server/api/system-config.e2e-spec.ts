@@ -21,18 +21,18 @@ describe('/system-config', () => {
       const response1 = await request(app)
         .put('/system-config')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ...config, newVersionCheck: { enabled: false } });
+        .send({ ...config, newVersionCheck: { enabled: false, channel: 'stable' } });
 
       expect(response1.status).toBe(200);
-      expect(response1.body).toEqual({ ...config, newVersionCheck: { enabled: false } });
+      expect(response1.body).toEqual({ ...config, newVersionCheck: { enabled: false, channel: 'stable' } });
 
       const response2 = await request(app)
         .put('/system-config')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ...config, newVersionCheck: { enabled: true } });
+        .send({ ...config, newVersionCheck: { enabled: true, channel: 'stable' } });
 
       expect(response2.status).toBe(200);
-      expect(response2.body).toEqual({ ...config, newVersionCheck: { enabled: true } });
+      expect(response2.body).toEqual({ ...config, newVersionCheck: { enabled: true, channel: 'stable' } });
     });
 
     it('should reject an invalid config entry', async () => {

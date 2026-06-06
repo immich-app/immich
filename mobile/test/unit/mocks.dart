@@ -5,26 +5,30 @@ import 'package:mocktail/mocktail.dart' as mocktail;
 import '../domain/service.mock.dart';
 import '../infrastructure/repository.mock.dart';
 
-class UnitMocks {
+void _registerFallbacks() {
+  mocktail.registerFallbackValue(LocalAlbum(id: '', name: '', updatedAt: DateTime.now()));
+  mocktail.registerFallbackValue(
+    LocalAsset(
+      id: '',
+      name: '',
+      type: AssetType.image,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      playbackStyle: AssetPlaybackStyle.image,
+      isEdited: false,
+    ),
+  );
+}
+
+class RepositoryMocks {
   final localAlbum = MockLocalAlbumRepository();
   final localAsset = MockDriftLocalAssetRepository();
   final trashedAsset = MockTrashedLocalAssetRepository();
 
   final nativeApi = MockNativeSyncApi();
 
-  UnitMocks() {
-    mocktail.registerFallbackValue(LocalAlbum(id: '', name: '', updatedAt: DateTime.now()));
-    mocktail.registerFallbackValue(
-      LocalAsset(
-        id: '',
-        name: '',
-        type: AssetType.image,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        playbackStyle: AssetPlaybackStyle.image,
-        isEdited: false,
-      ),
-    );
+  RepositoryMocks() {
+    _registerFallbacks();
   }
 
   void reset() {
@@ -32,5 +36,17 @@ class UnitMocks {
     mocktail.reset(localAsset);
     mocktail.reset(trashedAsset);
     mocktail.reset(nativeApi);
+  }
+}
+
+class ServiceMocks {
+  final partner = MockPartnerService();
+
+  ServiceMocks() {
+    _registerFallbacks();
+  }
+
+  void reset() {
+    mocktail.reset(partner);
   }
 }

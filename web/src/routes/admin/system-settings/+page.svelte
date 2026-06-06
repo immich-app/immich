@@ -18,9 +18,7 @@
   import TrashSettings from './TrashSettings.svelte';
   import UserSettings from './UserSettings.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import SettingAccordionState from '$lib/components/shared-components/settings/SettingAccordionState.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
-  import { QueryParameter } from '$lib/constants';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
@@ -215,12 +213,10 @@
     <div>
       <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
     </div>
-    <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-      {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
-        <SettingAccordion {title} {subtitle} {key} {icon}>
-          <Component />
-        </SettingAccordion>
-      {/each}
-    </SettingAccordionState>
+    {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
+      <SettingAccordion {title} {subtitle} {key} {icon}>
+        <Component />
+      </SettingAccordion>
+    {/each}
   </Container>
 </AdminPageLayout>
