@@ -6,7 +6,7 @@ const SessionCreateSchema = z
   .object({
     duration: z.int().min(1).optional().describe('Session duration in seconds'),
     deviceType: z.string().optional().describe('Device type'),
-    deviceOS: z.string().optional().describe('Device OS'),
+    deviceOS: z.string().nullable().optional().transform((val) => (val === '' ? null : val)).describe('Device OS'),
   })
   .meta({ id: 'SessionCreateDto' });
 
@@ -23,8 +23,8 @@ const SessionResponseSchema = z
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),
     current: z.boolean().describe('Is current session'),
-    deviceType: z.string().describe('Device type'),
-    deviceOS: z.string().describe('Device OS'),
+    deviceType: z.string().nullable().optional().transform((val) => (val === '' ? null : val)).describe('Device type'),
+    deviceOS: z.string().nullable().optional().transform((val) => (val === '' ? null : val)).describe('Device OS'),
     appVersion: z.string().nullable().describe('App version'),
     isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
   })
