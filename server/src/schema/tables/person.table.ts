@@ -46,8 +46,8 @@ export class PersonTable {
   @Column({ type: 'character varying', nullable: true, default: null })
   name!: string | null;
 
-  @Column({ default: '' })
-  thumbnailPath!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  thumbnailPath!: string | null;
 
   @Column({ type: 'boolean', default: false })
   isHidden!: Generated<boolean>;
