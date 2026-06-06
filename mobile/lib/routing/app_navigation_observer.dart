@@ -24,17 +24,18 @@ class AppNavigationObserver extends AutoRouterObserver {
       ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
       ref.read(previousRouteNameProvider.notifier).state = previousRoute?.settings.name;
       ref.read(previousRouteDataProvider.notifier).state = previousRoute?.settings;
+      if (route.settings.name == AssetViewerRoute.name) {
+        ref.read(isAssetViewerOpenProvider.notifier).state = true;
+      }
     });
   }
 
   @override
   void didPop(Route route, Route? previousRoute) {
     _handleDriftLockedFolderState(previousRoute ?? route, null);
-    Future(() {
-      ref.read(currentRouteNameProvider.notifier).state = previousRoute?.settings.name;
-      ref.read(previousRouteNameProvider.notifier).state = ref.read(previousRouteNameProvider);
-      ref.read(previousRouteDataProvider.notifier).state = previousRoute?.settings;
-    });
+    if (route.settings.name == AssetViewerRoute.name) {
+      Future(() => ref.read(isAssetViewerOpenProvider.notifier).state = false);
+    }
   }
 
   _handleDriftLockedFolderState(Route route, Route? previousRoute) {
