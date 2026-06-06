@@ -18,6 +18,7 @@ dependencies:
   crop_image: ^1.0.17
   crypto: ^3.0.7
   device_info_plus: ^12.4.0
+  diacritic: ^0.1.6
   drift: ^2.32.1
   drift_sqlite_async: 0.3.1
   dynamic_color: ^1.8.1

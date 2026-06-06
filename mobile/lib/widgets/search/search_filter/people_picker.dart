@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
@@ -22,6 +23,7 @@ class PeoplePicker extends HookConsumerWidget {
     final formFocus = useFocusNode();
     final imageSize = 60.0;
     final searchQuery = useState('');
+    final normalizedQuery = searchQuery.value.toLowerCase().removeDiacritics();
     final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
 
@@ -47,12 +49,12 @@ class PeoplePicker extends HookConsumerWidget {
               return ListView.builder(
                 shrinkWrap: true,
                 itemCount: people
-                    .where((person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
+                    .where((person) => person.name.toLowerCase().removeDiacritics().contains(normalizedQuery))
                     .length,
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
                   final person = people
-                      .where((person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
+                      .where((person) => person.name.toLowerCase().removeDiacritics().contains(normalizedQuery))
                       .toList()[index];
                   final isSelected = selectedPeople.value.contains(person);
 
