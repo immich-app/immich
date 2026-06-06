@@ -272,22 +272,55 @@ export class MediaService extends BaseService {
   }
 
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
-    const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
-    const generateFullsize =
-      ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
-        !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
-      useEdits;
-    const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
+    const isRaw = mimeTypes.isRaw(asset.originalFileName);
+    const extractEmbedded = image.extractEmbedded && isRaw;
+    let extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
 
-    const thumbSource = extracted ? extracted.buffer : asset.originalPath;
-    const { data, info, colorspace } = await this.decodeImage(
-      thumbSource,
-      // only specify orientation to extracted images which don't have EXIF orientation data
-      // or it can double rotate the image
-      extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
-      convertFullsize ? undefined : image.preview.size,
-    );
+    const decode = async () => {
+      const generateFullsize =
+        ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
+          !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
+        useEdits;
+      const convertFullsize =
+        generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
+
+      const thumbSource = extracted ? extracted.buffer : asset.originalPath;
+      const { data, info, colorspace } = await this.decodeImage(
+        thumbSource,
+        // only specify orientation to extracted images which don't have EXIF orientation data
+        // or it can double rotate the image
+        extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
+        convertFullsize ? undefined : image.preview.size,
+      );
+
+      return { data, info, colorspace, convertFullsize, generateFullsize };
+    };
+
+    let decoded: Awaited<ReturnType<typeof decode>>;
+    try {
+      decoded = await decode();
+    } catch (error: any) {
+      // Some RAW files (e.g. certain DNGs produced by Lightroom HDR/panorama merges) cannot be
+      // decoded by libraw. Rather than failing the whole asset, fall back to the embedded preview
+      // even when it's smaller than the configured preview size — a reduced-resolution image is
+      // preferable to a broken one. Only attempt this when we decoded the original RAW directly.
+      if (!isRaw || extracted) {
+        throw error;
+      }
+
+      const fallback = await this.mediaRepository.extract(asset.originalPath);
+      if (!fallback) {
+        throw error;
+      }
+
+      this.logger.warn(
+        `Failed to decode RAW image ${asset.originalPath}, falling back to its embedded preview: ${error.message ?? error}`,
+      );
+      extracted = fallback;
+      decoded = await decode();
+    }
+
+    const { data, info, colorspace, convertFullsize, generateFullsize } = decoded;
 
     let isTransparent = false;
     if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {

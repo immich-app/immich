@@ -988,6 +988,77 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should fall back to the embedded preview when decoding a RAW file fails', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
+        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
+        .build();
+      // extractEmbedded is disabled, so the original RAW is decoded directly - but libraw can't parse it.
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
+      mocks.media.decodeImage.mockReset();
+      mocks.media.decodeImage.mockImplementation((input) =>
+        typeof input === 'string'
+          ? Promise.reject(new Error('Unsupported file format or not RAW file'))
+          : Promise.resolve({ data: fullsizeBuffer, info: rawInfo as OutputInfo }),
+      );
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      // the original decode failed, so the embedded preview was extracted and decoded instead
+      expect(mocks.media.extract).toHaveBeenCalledWith(asset.originalPath);
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, expect.anything());
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, expect.anything());
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should fall back to the embedded preview even when it is smaller than the preview size', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
+        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
+        .build();
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      // embedded preview is smaller than the configured preview size, so the size-gated extract returns null
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
+      mocks.media.decodeImage.mockReset();
+      mocks.media.decodeImage.mockImplementation((input) =>
+        typeof input === 'string'
+          ? Promise.reject(new Error('Unsupported file format or not RAW file'))
+          : Promise.resolve({ data: fullsizeBuffer, info: rawInfo as OutputInfo }),
+      );
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, expect.anything());
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+    });
+
+    it('should rethrow the decode error for a RAW file with no embedded preview', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
+        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
+        .build();
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
+      mocks.media.decodeImage.mockReset();
+      mocks.media.decodeImage.mockRejectedValue(new Error('Unsupported file format or not RAW file'));
+      mocks.media.extract.mockResolvedValue(null);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).rejects.toThrowError(
+        'Unsupported file format or not RAW file',
+      );
+    });
+
+    it('should not attempt the embedded-preview fallback for non-RAW images', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.jpg' }).exif().build();
+      mocks.media.decodeImage.mockReset();
+      mocks.media.decodeImage.mockRejectedValue(new Error('Input buffer contains unsupported image format'));
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).rejects.toThrowError();
+      expect(mocks.media.extract).not.toHaveBeenCalled();
+    });
+
     it('should resize original image if embedded image extraction is not enabled', async () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
