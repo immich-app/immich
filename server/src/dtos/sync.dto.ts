@@ -222,7 +222,7 @@ const SyncAlbumV1Schema = z
     id: z.string().describe('Album ID'),
     ownerId: z.string().describe('Owner ID'),
     name: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z.string().nullable().describe('Album description'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
@@ -235,7 +235,7 @@ const SyncAlbumV2Schema = z
   .object({
     id: z.string().describe('Album ID'),
     name: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z.string().nullable().describe('Album description'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
@@ -265,9 +265,9 @@ class SyncAlbumUserDeleteV1 extends createZodDto(SyncAlbumUserDeleteV1Schema) {}
 @ExtraModel()
 class SyncAlbumUserV1 extends createZodDto(SyncAlbumUserV1Schema) {}
 @ExtraModel()
-class SyncAlbumV1 extends createZodDto(SyncAlbumV1Schema) {}
+export class SyncAlbumV1 extends createZodDto(SyncAlbumV1Schema) {}
 @ExtraModel()
-class SyncAlbumV2 extends createZodDto(SyncAlbumV2Schema) {}
+export class SyncAlbumV2 extends createZodDto(SyncAlbumV2Schema) {}
 @ExtraModel()
 class SyncAlbumToAssetV1 extends createZodDto(SyncAlbumToAssetV1Schema) {}
 @ExtraModel()

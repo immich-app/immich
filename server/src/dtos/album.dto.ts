@@ -109,7 +109,7 @@ export const AlbumResponseSchema = z
   .object({
     id: z.string().describe('Album ID'),
     albumName: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z.string().nullable().optional().transform((val) => (val === '' ? null : val)).describe('Album description'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -157,7 +157,7 @@ export type MapAlbumDto = {
   assets?: ShallowDehydrateObject<MapAsset>[];
   sharedLinks?: ShallowDehydrateObject<AuthSharedLink>[];
   albumName: string;
-  description: string;
+  description: string | null;
   albumThumbnailAssetId: string | null;
   createdAt: Date;
   updatedAt: Date;
