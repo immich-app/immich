@@ -18,9 +18,10 @@
     containerWidth: number;
     containerHeight: number;
     assetId: string;
+    onTagFace?: () => Promise<void>;
   };
 
-  let { htmlElement, containerWidth, containerHeight, assetId }: Props = $props();
+  let { htmlElement, containerWidth, containerHeight, assetId, onTagFace }: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -325,7 +326,7 @@
         },
       });
 
-      await assetViewerManager.setAssetId(assetId);
+      await onTagFace?.();
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
