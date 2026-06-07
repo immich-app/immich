@@ -137,11 +137,14 @@ export class AssetTable {
   @Column({ enum: asset_visibility_enum, default: AssetVisibility.Timeline })
   visibility!: Generated<AssetVisibility>;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true, index: true })
   width!: number | null;
 
-  @Column({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true, index: true })
   height!: number | null;
+
+  @Column({ type: 'real', nullable: true, synchronize: false })
+  aspectRatio!: number | null;
 
   @Column({ type: 'boolean', default: false })
   isEdited!: Generated<boolean>;
