@@ -148,6 +148,20 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
+*DeprecatedApi* | [**updateApiKey**](doc//DeprecatedApi.md#updateapikey) | **PUT** /api-keys/{id} | Update an API key
+*DeprecatedApi* | [**updateAsset**](doc//DeprecatedApi.md#updateasset) | **PUT** /assets/{id} | Update an asset
+*DeprecatedApi* | [**updateAssets**](doc//DeprecatedApi.md#updateassets) | **PUT** /assets | Update assets
+*DeprecatedApi* | [**updateLibrary**](doc//DeprecatedApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
+*DeprecatedApi* | [**updateMemory**](doc//DeprecatedApi.md#updatememory) | **PUT** /memories/{id} | Update a memory
+*DeprecatedApi* | [**updateMyPreferences**](doc//DeprecatedApi.md#updatemypreferences) | **PUT** /users/me/preferences | Update my preferences
+*DeprecatedApi* | [**updateMyUser**](doc//DeprecatedApi.md#updatemyuser) | **PUT** /users/me | Update current user
+*DeprecatedApi* | [**updatePerson**](doc//DeprecatedApi.md#updateperson) | **PUT** /people/{id} | Update person
+*DeprecatedApi* | [**updateSession**](doc//DeprecatedApi.md#updatesession) | **PUT** /sessions/{id} | Update a session
+*DeprecatedApi* | [**updateStack**](doc//DeprecatedApi.md#updatestack) | **PUT** /stacks/{id} | Update a stack
+*DeprecatedApi* | [**updateTag**](doc//DeprecatedApi.md#updatetag) | **PUT** /tags/{id} | Update a tag
+*DeprecatedApi* | [**updateUserAdmin**](doc//DeprecatedApi.md#updateuseradmin) | **PUT** /admin/users/{id} | Update a user
+*DeprecatedApi* | [**updateUserPreferencesAdmin**](doc//DeprecatedApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
+*DeprecatedApi* | [**updateWorkflow**](doc//DeprecatedApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Dismiss a duplicate group
