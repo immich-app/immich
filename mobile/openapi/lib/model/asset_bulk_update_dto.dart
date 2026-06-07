@@ -95,10 +95,10 @@ class AssetBulkUpdateDto {
   ///
   Optional<num?> longitude;
 
-  /// Rating in range [1-5], or null for unrated
+  /// Rating in range [1-5], -1 (rejected) or null (unrated)
   ///
-  /// Minimum value: 1
-  /// Maximum value: 5
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   Optional<int?> rating;
 
   /// Time zone (IANA timezone)
