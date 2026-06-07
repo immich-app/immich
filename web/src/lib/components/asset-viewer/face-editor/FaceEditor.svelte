@@ -326,9 +326,9 @@
       });
 
       await assetViewerManager.setAssetId(assetId);
+      onClose();
     } catch (error) {
       handleError(error, 'Error tagging face');
-    } finally {
       onClose();
     }
   };
