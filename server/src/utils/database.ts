@@ -731,25 +731,24 @@ type EnumColumn = {
   'asset.visibility': AssetVisibility;
 };
 
-type EnumValue = EnumColumn[keyof EnumColumn];
-
-function enumPredicates(
+function enumPredicates<C extends keyof EnumColumn>(
   eb: AssetExpressionBuilder,
-  column: keyof EnumColumn,
-  filter: { eq?: EnumValue; ne?: EnumValue; in?: EnumValue[]; notIn?: EnumValue[] } = {},
+  column: C,
+  filter: { eq?: EnumColumn[C]; ne?: EnumColumn[C]; in?: EnumColumn[C][]; notIn?: EnumColumn[C][] } = {},
 ) {
+  // casts: kysely's `eb` doesn't distribute its column-value narrowing through the generic
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
-    predicates.push(eb(column, '=', filter.eq));
+    predicates.push(eb(column, '=', filter.eq as never));
   }
   if (filter.ne !== undefined) {
-    predicates.push(eb(column, '<>', filter.ne));
+    predicates.push(eb(column, '<>', filter.ne as never));
   }
   if (filter.in !== undefined) {
-    predicates.push(eb(column, 'in', filter.in));
+    predicates.push(eb(column, 'in', filter.in as never));
   }
   if (filter.notIn !== undefined) {
-    predicates.push(eb(column, 'not in', filter.notIn));
+    predicates.push(eb(column, 'not in', filter.notIn as never));
   }
   return predicates;
 }
