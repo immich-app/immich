@@ -30,15 +30,11 @@
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-
-  const filterIntersecting = <T extends { intersecting: boolean }>(intersectables: T[]) => {
-    return intersectables.filter(({ intersecting }) => intersecting);
-  };
 </script>
 
 <!-- Image grid -->
 <div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
-  {#each filterIntersecting(viewerAssets) as viewerAsset (viewerAsset.id)}
+  {#each viewerAssets as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
 

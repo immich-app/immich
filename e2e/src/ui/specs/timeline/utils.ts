@@ -62,7 +62,7 @@ export const thumbnailUtils = {
     return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"]`);
   },
   selectButton(page: Page, assetId: string) {
-    return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"] button`);
+    return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"] button[role="checkbox"]`);
   },
   selectedAsset(page: Page) {
     return page.locator('[data-thumbnail-focus-container][data-selected]');

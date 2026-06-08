@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
@@ -36,12 +35,14 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
     final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
-    return loadRequest(request, decode);
+    return loadRequest(request, decode, isFinal: true);
   }
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalThumbProvider) {
       return id == other.id;
     }
@@ -100,37 +101,35 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
+    final loadOriginal = SettingsRepository.instance.appConfig.image.loadOriginal;
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     var request = this.request = LocalImageRequest(
       localId: key.id,
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-    yield* loadRequest(request, decode);
+    yield* loadRequest(request, decode, isFinal: !loadOriginal);
 
-    if (!Store.get(StoreKey.loadOriginal, false)) {
+    if (!loadOriginal) {
       return;
     }
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     request = this.request = LocalImageRequest(localId: key.id, assetType: key.assetType, size: Size.zero);
 
-    yield* loadRequest(request, decode);
+    yield* loadRequest(request, decode, isFinal: true);
   }
 
   Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     yield* initialImageStream();
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -140,17 +139,19 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-    yield* loadRequest(previewRequest, decode);
+    yield* loadRequest(previewRequest, decode, isFinal: false);
 
     if (isCancelled) {
-      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     // always try original for animated, since previews don't support animation
     final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
-    final codec = await loadCodecRequest(originalRequest);
+    final codec = await loadCodecRequest(originalRequest, isFinal: true);
     if (codec == null) {
+      if (isCancelled) {
+        return;
+      }
       throw StateError('Failed to load animated codec for local asset ${key.id}');
     }
     yield codec;
@@ -158,7 +159,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is LocalFullImageProvider) {
       return id == other.id && size == other.size && isAnimated == other.isAnimated;
     }

@@ -241,7 +241,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
-          ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
 
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
@@ -297,7 +297,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           updatedAt: Value(asset.updatedAt),
           width: Value(asset.width),
           height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
+          durationMs: Value(asset.durationMs),
           id: asset.id,
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
@@ -329,7 +329,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           updatedAt: Value(asset.updatedAt),
           width: Value(asset.width),
           height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
+          durationMs: Value(asset.durationMs),
           id: asset.id,
           checksum: const Value(null),
           orientation: Value(asset.orientation),

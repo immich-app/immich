@@ -1,3 +1,5 @@
+import 'package:openapi/api.dart' show Optional;
+
 sealed class Option<T> {
   const Option();
 
@@ -55,4 +57,11 @@ final class None<T> extends Option<T> {
 
 extension ObjectOptionExtension<T> on T? {
   Option<T> toOption() => Option.fromNullable(this);
+}
+
+extension OptionToOptional<T> on Option<T> {
+  Optional<T> toOptional() => switch (this) {
+    None() => const Optional.absent(),
+    Some(:final value) => Optional.present(value),
+  };
 }

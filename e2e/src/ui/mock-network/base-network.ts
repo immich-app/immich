@@ -1,5 +1,5 @@
 import { BrowserContext } from '@playwright/test';
-import { playwrightHost } from 'playwright.config';
+import { playwrightHost } from 'src/../playwright.config';
 
 export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserId: string) => {
   await context.addCookies([
@@ -173,6 +173,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           '.mpeg',
           '.mpg',
           '.mts',
+          '.ts',
           '.vob',
           '.webm',
           '.wmv',
@@ -222,6 +223,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           '.jp2',
           '.jpe',
           '.jxl',
+          '.mpo',
           '.svg',
           '.tif',
           '.tiff',
@@ -238,7 +240,8 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
     });
   });
   await context.route('**/api/albums*', async (route, request) => {
-    if (request.url().endsWith('albums?shared=true') || request.url().endsWith('albums')) {
+    const url = request.url();
+    if (url.endsWith('albums?isShared=true') || url.endsWith('albums?isOwned=true') || url.endsWith('albums')) {
       return route.fulfill({
         status: 200,
         contentType: 'application/json',

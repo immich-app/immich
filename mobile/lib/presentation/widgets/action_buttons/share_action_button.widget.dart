@@ -14,7 +14,9 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class _SharePreparingDialog extends StatelessWidget {
-  const _SharePreparingDialog();
+  final ValueNotifier<double?> progress;
+
+  const _SharePreparingDialog({required this.progress});
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +24,24 @@ class _SharePreparingDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(),
-          Container(margin: const EdgeInsets.only(top: 12), child: const Text('share_dialog_preparing').tr()),
+          Container(margin: const EdgeInsets.only(bottom: 12), child: const Text('share_dialog_preparing').tr()),
+          SizedBox(
+            width: 240,
+            child: ValueListenableBuilder<double?>(
+              valueListenable: progress,
+              builder: (context, value, _) {
+                final percent = value == null ? null : (value * 100).clamp(0, 100);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    LinearProgressIndicator(value: value, minHeight: 8.0),
+                    if (percent != null)
+                      Container(margin: const EdgeInsets.only(top: 8), child: Text('${percent.toStringAsFixed(0)}%')),
+                  ],
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -43,32 +61,39 @@ class ShareActionButton extends ConsumerWidget {
     }
 
     final cancelCompleter = Completer<void>();
-    const preparingDialog = _SharePreparingDialog();
+    final progress = ValueNotifier<double?>(null);
+    final preparingDialog = _SharePreparingDialog(progress: progress);
     await showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref.read(actionProvider.notifier).shareAssets(source, context, cancelCompleter: cancelCompleter).then((
-          ActionResult result,
-        ) {
-          if (cancelCompleter.isCompleted || !context.mounted) {
-            return;
-          }
+        ref
+            .read(actionProvider.notifier)
+            .shareAssets(
+              source,
+              context,
+              cancelCompleter: cancelCompleter,
+              onAssetDownloadProgress: (value) => progress.value = value,
+            )
+            .then((ActionResult result) {
+              if (cancelCompleter.isCompleted || !context.mounted) {
+                return;
+              }
 
-          ref.read(multiSelectProvider.notifier).reset();
+              ref.read(multiSelectProvider.notifier).reset();
 
-          if (!result.success) {
-            ImmichToast.show(
-              context: context,
-              msg: 'scaffold_body_error_occurred'.t(context: context),
-              gravity: ToastGravity.BOTTOM,
-              toastType: ToastType.error,
-            );
-          }
+              if (!result.success) {
+                ImmichToast.show(
+                  context: context,
+                  msg: 'scaffold_body_error_occurred'.t(context: context),
+                  gravity: ToastGravity.BOTTOM,
+                  toastType: ToastType.error,
+                );
+              }
 
-          buildContext.pop();
-        });
+              buildContext.pop();
+            });
 
-        // show a loading spinner with a "Preparing" message
+        // Show download progress with a "Preparing" message
         return preparingDialog;
       },
       barrierDismissible: false,
@@ -77,6 +102,7 @@ class ShareActionButton extends ConsumerWidget {
       if (!cancelCompleter.isCompleted) {
         cancelCompleter.complete();
       }
+      progress.dispose();
     });
   }
 

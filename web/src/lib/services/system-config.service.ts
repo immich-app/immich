@@ -1,14 +1,12 @@
-import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { copyToClipboard } from '$lib/utils';
-import { downloadBlob } from '$lib/utils/asset-utils';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import { getConfig, updateConfig, type ServerFeaturesDto, type SystemConfigDto } from '@immich/sdk';
 import { toastManager, type ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiDownload, mdiUpload } from '@mdi/js';
 import { isEqual } from 'lodash-es';
 import type { MessageFormatter } from 'svelte-i18n';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { copyToClipboard, downloadJson } from '$lib/utils';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getSystemConfigActions = (
   $t: MessageFormatter,
@@ -18,18 +16,16 @@ export const getSystemConfigActions = (
   const CopyToClipboard: ActionItem = {
     title: $t('copy_to_clipboard'),
     description: $t('admin.copy_config_to_clipboard_description'),
-    type: $t('command'),
     icon: mdiContentCopy,
-    onAction: () => handleCopyToClipboard(config),
+    onAction: () => copyToClipboard(config),
     shortcuts: { shift: true, key: 'c' },
   };
 
   const Download: ActionItem = {
     title: $t('export_as_json'),
     description: $t('admin.export_config_as_json_description'),
-    type: $t('command'),
     icon: mdiDownload,
-    onAction: () => handleDownloadConfig(config),
+    onAction: () => downloadJson(config, 'immich-config.json'),
     shortcuts: [
       { shift: true, key: 's' },
       { shift: true, key: 'd' },
@@ -39,7 +35,6 @@ export const getSystemConfigActions = (
   const Upload: ActionItem = {
     title: $t('import_from_json'),
     description: $t('admin.import_config_from_json_description'),
-    type: $t('command'),
     icon: mdiUpload,
     $if: () => !featureFlags.configFile,
     onAction: () => handleUploadConfig(),
@@ -66,31 +61,6 @@ export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) =
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_settings'));
   }
-};
-
-// https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify/43636793#43636793
-const jsonReplacer = (_key: string, value: unknown) =>
-  value instanceof Object && !Array.isArray(value)
-    ? Object.keys(value)
-        .sort()
-        // eslint-disable-next-line unicorn/no-array-reduce
-        .reduce((sorted: { [key: string]: unknown }, key) => {
-          sorted[key] = (value as { [key: string]: unknown })[key];
-          return sorted;
-        }, {})
-    : value;
-
-export const handleCopyToClipboard = async (config: SystemConfigDto) => {
-  await copyToClipboard(JSON.stringify(config, jsonReplacer, 2));
-};
-
-export const handleDownloadConfig = (config: SystemConfigDto) => {
-  const blob = new Blob([JSON.stringify(config, jsonReplacer, 2)], { type: 'application/json' });
-  const downloadKey = 'immich-config.json';
-  downloadManager.add(downloadKey, blob.size);
-  downloadManager.update(downloadKey, blob.size);
-  downloadBlob(blob, downloadKey);
-  setTimeout(() => downloadManager.clear(downloadKey), 5000);
 };
 
 export const handleUploadConfig = () => {

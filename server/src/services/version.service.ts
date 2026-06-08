@@ -3,26 +3,47 @@ import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import { ReleaseEventV1, ReleaseType, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
+import { CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VersionCheckMetadata } from 'src/types';
+import { handlePromiseError } from 'src/utils/misc';
 
-const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
+const asNotification = (
+  channel: ReleaseChannel,
+  { checkedAt, releaseVersion }: VersionCheckMetadata,
+): ReleaseEventV1 => {
   return {
-    isAvailable: semver.gt(releaseVersion, serverVersion),
+    // can't use gt because it's broken for release candidates F https://github.com/npm/node-semver/issues/483
+    isAvailable: semver.intersects(`>${serverVersion}`, releaseVersion.toString(), {
+      includePrerelease: channel === ReleaseChannel.ReleaseCandidate,
+    }),
     checkedAt,
     serverVersion: ServerVersionResponseDto.fromSemVer(serverVersion),
     releaseVersion: ServerVersionResponseDto.fromSemVer(new SemVer(releaseVersion)),
+    type: semver.diff(serverVersion, releaseVersion) as ReleaseType,
   };
 };
 
 @Injectable()
 export class VersionService extends BaseService {
-  @OnEvent({ name: 'AppBootstrap' })
+  @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Microservices] })
   async onBootstrap(): Promise<void> {
-    await this.handleVersionCheck();
+    const hasLock = await this.databaseRepository.tryLock(DatabaseLock.VersionCheck);
+    if (hasLock) {
+      await this.handleVersionCheck();
+
+      const randomMinute = Math.floor(Math.random() * 60);
+      const expression = `${randomMinute} * * * *`;
+      this.logger.debug(`Scheduling version check for cron ${expression}`);
+      this.cronRepository.create({
+        name: CronJob.VersionCheck,
+        expression,
+        onTick: () => handlePromiseError(this.handleQueueVersionCheck(), this.logger),
+      });
+    }
 
     await this.databaseRepository.withLock(DatabaseLock.VersionHistory, async () => {
       const previous = await this.versionRepository.getLatest();
@@ -71,11 +92,6 @@ export class VersionService extends BaseService {
     try {
       this.logger.debug('Running version check');
 
-      const { environment } = this.configRepository.getEnv();
-      if (environment === ImmichEnvironment.Development) {
-        return JobStatus.Skipped;
-      }
-
       const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
         return JobStatus.Skipped;
@@ -84,22 +100,27 @@ export class VersionService extends BaseService {
       const versionCheck = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
       if (versionCheck?.checkedAt) {
         const lastUpdate = DateTime.fromISO(versionCheck.checkedAt);
-        const elapsedTime = DateTime.now().diff(lastUpdate).as('minutes');
-        // check once per hour (max)
-        if (elapsedTime < 60) {
+        const elapsedTime = DateTime.now().diff(lastUpdate).as('seconds');
+        if (elapsedTime < 50) {
           return JobStatus.Skipped;
         }
       }
 
-      const { tag_name: releaseVersion, published_at: publishedAt } =
-        await this.serverInfoRepository.getGitHubRelease();
+      const { version: releaseVersion, published_at: publishedAt } = await this.serverInfoRepository.getLatestRelease(
+        newVersionCheck.channel,
+      );
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
       await this.systemMetadataRepository.set(SystemMetadataKey.VersionCheckState, metadata);
 
-      if (semver.gt(releaseVersion, serverVersion)) {
+      // can't use gt because it's broken for release candidates F https://github.com/npm/node-semver/issues/483
+      if (
+        semver.intersects(`>${serverVersion}`, releaseVersion.toString(), {
+          includePrerelease: newVersionCheck.channel === ReleaseChannel.ReleaseCandidate,
+        })
+      ) {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
-        this.websocketRepository.clientBroadcast('on_new_release', asNotification(metadata));
+        this.websocketRepository.clientBroadcast('on_new_release', asNotification(newVersionCheck.channel, metadata));
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}\n${error?.stack}`);
@@ -111,7 +132,11 @@ export class VersionService extends BaseService {
 
   @OnEvent({ name: 'WebsocketConnect' })
   async onWebsocketConnection({ userId }: ArgOf<'WebsocketConnect'>) {
-    this.websocketRepository.clientSend('on_server_version', userId, serverVersion);
+    this.websocketRepository.clientSend(
+      'on_server_version',
+      userId,
+      ServerVersionResponseDto.fromSemVer(serverVersion),
+    );
 
     const { newVersionCheck } = await this.getConfig({ withCache: true });
     if (!newVersionCheck.enabled) {
@@ -120,7 +145,7 @@ export class VersionService extends BaseService {
 
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
     if (metadata) {
-      this.websocketRepository.clientSend('on_new_release', userId, asNotification(metadata));
+      this.websocketRepository.clientSend('on_new_release', userId, asNotification(newVersionCheck.channel, metadata));
     }
   }
 }

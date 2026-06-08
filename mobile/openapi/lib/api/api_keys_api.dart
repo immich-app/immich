@@ -24,13 +24,13 @@ class APIKeysApi {
   ///
   /// Parameters:
   ///
-  /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  Future<Response> createApiKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
+  /// * [ApiKeyCreateDto] apiKeyCreateDto (required):
+  Future<Response> createApiKeyWithHttpInfo(ApiKeyCreateDto apiKeyCreateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys';
 
     // ignore: prefer_final_locals
-    Object? postBody = aPIKeyCreateDto;
+    Object? postBody = apiKeyCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -47,6 +47,7 @@ class APIKeysApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -56,9 +57,9 @@ class APIKeysApi {
   ///
   /// Parameters:
   ///
-  /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  Future<APIKeyCreateResponseDto?> createApiKey(APIKeyCreateDto aPIKeyCreateDto,) async {
-    final response = await createApiKeyWithHttpInfo(aPIKeyCreateDto,);
+  /// * [ApiKeyCreateDto] apiKeyCreateDto (required):
+  Future<ApiKeyCreateResponseDto?> createApiKey(ApiKeyCreateDto apiKeyCreateDto, { Future<void>? abortTrigger, }) async {
+    final response = await createApiKeyWithHttpInfo(apiKeyCreateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -66,7 +67,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyCreateResponseDto',) as APIKeyCreateResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyCreateResponseDto',) as ApiKeyCreateResponseDto;
     
     }
     return null;
@@ -81,7 +82,7 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteApiKeyWithHttpInfo(String id,) async {
+  Future<Response> deleteApiKeyWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
@@ -104,6 +105,7 @@ class APIKeysApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -114,8 +116,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteApiKey(String id,) async {
-    final response = await deleteApiKeyWithHttpInfo(id,);
+  Future<void> deleteApiKey(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteApiKeyWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -130,7 +132,7 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getApiKeyWithHttpInfo(String id,) async {
+  Future<Response> getApiKeyWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
@@ -153,6 +155,7 @@ class APIKeysApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -163,8 +166,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<APIKeyResponseDto?> getApiKey(String id,) async {
-    final response = await getApiKeyWithHttpInfo(id,);
+  Future<ApiKeyResponseDto?> getApiKey(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getApiKeyWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -172,7 +175,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyResponseDto',) as ApiKeyResponseDto;
     
     }
     return null;
@@ -183,7 +186,7 @@ class APIKeysApi {
   /// Retrieve all API keys of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getApiKeysWithHttpInfo() async {
+  Future<Response> getApiKeysWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys';
 
@@ -205,14 +208,15 @@ class APIKeysApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// List all API keys
   ///
   /// Retrieve all API keys of the current user.
-  Future<List<APIKeyResponseDto>?> getApiKeys() async {
-    final response = await getApiKeysWithHttpInfo();
+  Future<List<ApiKeyResponseDto>?> getApiKeys({ Future<void>? abortTrigger, }) async {
+    final response = await getApiKeysWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -221,8 +225,8 @@ class APIKeysApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<APIKeyResponseDto>') as List)
-        .cast<APIKeyResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<ApiKeyResponseDto>') as List)
+        .cast<ApiKeyResponseDto>()
         .toList(growable: false);
 
     }
@@ -234,7 +238,7 @@ class APIKeysApi {
   /// Retrieve the API key that is used to access this endpoint.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMyApiKeyWithHttpInfo() async {
+  Future<Response> getMyApiKeyWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/me';
 
@@ -256,14 +260,15 @@ class APIKeysApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve the current API key
   ///
   /// Retrieve the API key that is used to access this endpoint.
-  Future<APIKeyResponseDto?> getMyApiKey() async {
-    final response = await getMyApiKeyWithHttpInfo();
+  Future<ApiKeyResponseDto?> getMyApiKey({ Future<void>? abortTrigger, }) async {
+    final response = await getMyApiKeyWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -271,7 +276,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyResponseDto',) as ApiKeyResponseDto;
     
     }
     return null;
@@ -287,14 +292,14 @@ class APIKeysApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<Response> updateApiKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
+  /// * [ApiKeyUpdateDto] apiKeyUpdateDto (required):
+  Future<Response> updateApiKeyWithHttpInfo(String id, ApiKeyUpdateDto apiKeyUpdateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = aPIKeyUpdateDto;
+    Object? postBody = apiKeyUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -311,6 +316,7 @@ class APIKeysApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -322,9 +328,9 @@ class APIKeysApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<APIKeyResponseDto?> updateApiKey(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
-    final response = await updateApiKeyWithHttpInfo(id, aPIKeyUpdateDto,);
+  /// * [ApiKeyUpdateDto] apiKeyUpdateDto (required):
+  Future<ApiKeyResponseDto?> updateApiKey(String id, ApiKeyUpdateDto apiKeyUpdateDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateApiKeyWithHttpInfo(id, apiKeyUpdateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -332,7 +338,7 @@ class APIKeysApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ApiKeyResponseDto',) as ApiKeyResponseDto;
     
     }
     return null;

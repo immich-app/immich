@@ -29,7 +29,7 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadArchiveWithHttpInfo(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, }) async {
+  Future<Response> downloadArchiveWithHttpInfo(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/archive';
 
@@ -58,6 +58,7 @@ class DownloadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -72,8 +73,8 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadArchive(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, }) async {
-    final response = await downloadArchiveWithHttpInfo(downloadArchiveDto,  key: key, slug: slug, );
+  Future<MultipartFile?> downloadArchive(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await downloadArchiveWithHttpInfo(downloadArchiveDto, key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -100,7 +101,7 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
+  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/info';
 
@@ -129,6 +130,7 @@ class DownloadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -143,8 +145,8 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
-    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, slug: slug, );
+  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto, key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

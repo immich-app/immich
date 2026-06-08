@@ -4,18 +4,19 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
-  import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
+  import FeatureSetting from './FeatureSetting.svelte';
   import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { type UserAdminResponseDto } from '@immich/sdk';
+  import { CalendarHeatmapType, getUserCalendarHeatmapAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
     Badge,
+    CardTitle,
     Code,
     CommandPaletteDefaultProvider,
     Container,
@@ -23,6 +24,7 @@
     Heading,
     Icon,
     MenuItemType,
+    Meter,
     Stack,
     Text,
   } from '@immich/ui';
@@ -32,6 +34,7 @@
     mdiChartPie,
     mdiChartPieOutline,
     mdiCheckCircle,
+    mdiCloudUploadOutline,
     mdiDevices,
     mdiFeatureSearchOutline,
     mdiPlayCircle,
@@ -40,6 +43,9 @@
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { LayoutData } from './$types';
+  import { getHeatmapRange } from '$lib';
+  import Skeleton from '$lib/elements/Skeleton.svelte';
+  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
 
   type Props = {
     children?: Snippet;
@@ -49,30 +55,21 @@
   const { children, data }: Props = $props();
 
   const { user, userPreferences, userStatistics, userSessions } = $derived(data);
-  const TiB = 1024 ** 4;
-  const usage = $derived(user.quotaUsageInBytes ?? 0);
-  let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usage, usage > TiB ? 2 : 0));
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
-  const availableBytes = $derived(user.quotaSizeInBytes ?? 1);
-  let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
+  const availableBytes = $derived(user.quotaSizeInBytes ?? 0);
+  const TiB = 1024 ** 4;
+  const [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usedBytes, usedBytes > TiB ? 2 : 0));
 
   let editedLocale = $derived(findLocale($locale).code);
-  let createAtDate: Date = $derived(new Date(user.createdAt));
-  let updatedAtDate: Date = $derived(new Date(user.updatedAt));
-  let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
-  let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
+  let createAtDate = $derived(new Date(user.createdAt));
+  let updatedAtDate = $derived(new Date(user.updatedAt));
+  let userCreatedAtDateAndTime = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
+  let userUpdatedAtDateAndTime = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
 
-  const getUsageClass = () => {
-    if (usedPercentage >= 95) {
-      return 'bg-red-500';
-    }
-
-    if (usedPercentage > 80) {
-      return 'bg-yellow-500';
-    }
-
-    return 'bg-primary';
-  };
+  const storageUsageThresholds = [
+    { from: 0.8, className: 'bg-warning' },
+    { from: 0.95, className: 'bg-danger' },
+  ];
 
   const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
@@ -109,8 +106,8 @@
         <Alert color="danger" class="my-4" title={$t('user_has_been_deleted')} icon={mdiTrashCanOutline} />
       {/if}
 
-      <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
-        <div class="col-span-full flex flex-col gap-4 my-4">
+      <div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
+        <div class="col-span-full my-4 flex flex-col gap-4">
           <div class="flex items-center gap-4">
             <UserAvatar {user} size="md" />
             <Heading tag="h1" size="large">{user.name}</Heading>
@@ -122,10 +119,22 @@
           {/if}
         </div>
         <div class="col-span-full">
-          <div class="flex flex-col lg:flex-row gap-4 w-full">
-            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics.images} />
-            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics.videos} />
-            <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
+          <div class="flex w-full flex-col gap-4 lg:flex-row">
+            <ServerStatisticsCard
+              icon={mdiCameraIris}
+              title={$t('photos')}
+              valuePromise={Promise.resolve({ value: userStatistics.images })}
+            />
+            <ServerStatisticsCard
+              icon={mdiPlayCircle}
+              title={$t('videos')}
+              valuePromise={Promise.resolve({ value: userStatistics.videos })}
+            />
+            <ServerStatisticsCard
+              icon={mdiChartPie}
+              title={$t('storage')}
+              valuePromise={Promise.resolve({ value: statsUsage, unit: statsUsageUnit })}
+            />
           </div>
         </div>
 
@@ -170,36 +179,25 @@
 
         <AdminCard icon={mdiChartPieOutline} title={$t('storage_quota')}>
           {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-            <Text>
-              {$t('storage_usage', {
+            <Meter
+              size="small"
+              class="bg-gray-200 dark:bg-gray-700"
+              containerClass="p-4 gap-4 bg-gray-100 dark:bg-gray-800 rounded-lg leading-6"
+              label={$t('storage')}
+              valueLabel={$t('storage_usage', {
                 values: {
-                  used: getByteUnitString(usedBytes, $locale, 3),
-                  available: getByteUnitString(availableBytes, $locale, 3),
+                  used: getByteUnitString(usedBytes, $locale, 2),
+                  available: getByteUnitString(availableBytes, $locale, 2),
                 },
               })}
-            </Text>
+              value={usedBytes / availableBytes}
+              thresholds={storageUsageThresholds}
+            />
           {:else}
             <Text class="flex items-center gap-1">
               <Icon icon={mdiCheckCircle} size="1.25rem" class="text-success" />
               {$t('unlimited')}
             </Text>
-          {/if}
-
-          {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
-            <div
-              class="storage-status p-4 mt-4 bg-gray-100 dark:bg-immich-dark-primary/10 rounded-lg text-sm w-full"
-              title={$t('storage_usage', {
-                values: {
-                  used: getByteUnitString(usedBytes, $locale, 3),
-                  available: getByteUnitString(availableBytes, $locale, 3),
-                },
-              })}
-            >
-              <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-              <div class="mt-4 h-1.75 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-1.75 rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
-              </div>
-            </div>
           {/if}
         </AdminCard>
 
@@ -212,6 +210,23 @@
             {/each}
           </Stack>
         </AdminCard>
+
+        <div class="col-span-2 px-4 py-2">
+          <div class="flex gap-2 text-primary">
+            <Icon icon={mdiCloudUploadOutline} size="1.5rem" />
+            <CardTitle>{$t('uploads')}</CardTitle>
+          </div>
+          {#await getUserCalendarHeatmapAdmin({ ...getHeatmapRange(), id: user.id, $type: CalendarHeatmapType.Upload })}
+            <Skeleton height={80} class="mt-2 rounded-lg" />
+          {:then data}
+            <CalendarHeatmap
+              {data}
+              itemLabel={(item) => $t('upload_day_count', { values: item })}
+              totalLabel={(count) => $t('uploads_count', { values: { count } })}
+            />
+          {/await}
+        </div>
+        <!-- </AdminCard> -->
       </div>
 
       {@render children?.()}

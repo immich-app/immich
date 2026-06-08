@@ -110,7 +110,8 @@ export class SharedLinkService extends BaseService {
 
   private handleError(error: unknown): never {
     if ((error as PostgresError).constraint_name === 'shared_link_slug_uq') {
-      throw new BadRequestException('Shared link with this slug already exists');
+      this.logger.debug('Shared link with this slug already exists');
+      throw new BadRequestException('Failed to save shared link');
     }
     throw error;
   }
@@ -123,7 +124,7 @@ export class SharedLinkService extends BaseService {
         userId: auth.user.id,
         description: dto.description,
         password: dto.password,
-        expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
+        expiresAt: dto.expiresAt,
         allowUpload: dto.allowUpload,
         allowDownload: dto.allowDownload,
         showExif: dto.showMetadata,
@@ -150,14 +151,7 @@ export class SharedLinkService extends BaseService {
   }
 
   async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
-    if (auth.sharedLink) {
-      this.logger.deprecate(
-        'Assets uploaded using shared link authentication are now automatically added to the shared link during upload and in the next major release this endpoint will no longer accept shared link authentication',
-      );
-    }
-
     const sharedLink = await this.findOrFail(auth.user.id, id);
-
     if (sharedLink.type !== SharedLinkType.Individual) {
       throw new BadRequestException('Invalid shared link type');
     }

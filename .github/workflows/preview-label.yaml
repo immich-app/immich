@@ -14,16 +14,16 @@ jobs:
       pull-requests: write
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@9db058b2e6eec20e07760b0e17a0505c78ec3191 # create-workflow-token-action-v2.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: mshick/add-pr-comment@ffd016c7e151d97d69d21a843022fd4cd5b96fe5 # v3.9.0
+      - uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
         with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'preview-status'
-          message: 'Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.build/'
+          id: preview-status
+          token: ${{ steps.token.outputs.token }}
+          body: 'Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.build/'
 
   remove-label:
     runs-on: ubuntu-latest
@@ -32,12 +32,12 @@ jobs:
       pull-requests: write
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@9db058b2e6eec20e07760b0e17a0505c78ec3191 # create-workflow-token-action-v2.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ steps.token.outputs.token }}
           script: |
@@ -48,16 +48,16 @@ jobs:
               name: 'preview'
             })
 
-      - uses: mshick/add-pr-comment@ffd016c7e151d97d69d21a843022fd4cd5b96fe5 # v3.9.0
+      - uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
         if: ${{ github.event.pull_request.head.repo.fork }}
         with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'preview-status'
-          message: 'PRs from forks cannot have preview environments.'
+          id: preview-status
+          token: ${{ steps.token.outputs.token }}
+          body: 'PRs from forks cannot have preview environments.'
 
-      - uses: mshick/add-pr-comment@ffd016c7e151d97d69d21a843022fd4cd5b96fe5 # v3.9.0
+      - uses: immich-app/devtools/actions/sticky-comment@0135acd12ad9f3369b94a2aa3c0ae8c835a4e926 # sticky-comment-action-v1.0.0
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
-          github-token: ${{ steps.token.outputs.token }}
-          message-id: 'preview-status'
-          message: 'Preview environment has been removed.'
+          id: preview-status
+          token: ${{ steps.token.outputs.token }}
+          body: 'Preview environment has been removed.'

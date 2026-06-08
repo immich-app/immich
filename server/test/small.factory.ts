@@ -3,6 +3,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { AssetFileType, Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
+import { expect } from 'vitest';
 
 export const newUuid = () => v4();
 export const newUuids = () =>
@@ -200,6 +201,7 @@ const assetSidecarWriteFactory = () => {
 const assetOcrFactory = (
   ocr: {
     id?: string;
+    updateId?: string;
     assetId?: string;
     x1?: number;
     y1?: number;
@@ -216,6 +218,7 @@ const assetOcrFactory = (
   } = {},
 ) => ({
   id: newUuid(),
+  updateId: newUuidV7(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,
@@ -246,9 +249,11 @@ export const factory = {
   date: newDate,
   responses: {
     badRequest: (message: any = null) => ({
-      error: 'Bad Request',
-      statusCode: 400,
       message: message ?? expect.anything(),
+    }),
+    validationError: (errors?: ReadonlyArray<{ path: ReadonlyArray<string | number>; message: string }>) => ({
+      message: 'Validation failed',
+      errors: errors ? expect.arrayContaining(errors.map((e) => expect.objectContaining(e))) : expect.any(Array),
     }),
   },
 };

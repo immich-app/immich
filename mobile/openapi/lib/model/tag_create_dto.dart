@@ -13,25 +13,19 @@ part of openapi.api;
 class TagCreateDto {
   /// Returns a new [TagCreateDto] instance.
   TagCreateDto({
-    this.color,
+    this.color = const Optional.absent(),
     required this.name,
-    this.parentId,
+    this.parentId = const Optional.absent(),
   });
 
   /// Tag color (hex)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? color;
+  Optional<String?> color;
 
   /// Tag name
   String name;
 
   /// Parent tag ID
-  String? parentId;
+  Optional<String?> parentId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
@@ -51,16 +45,14 @@ class TagCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color != null) {
-      json[r'color'] = this.color;
-    } else {
-    //  json[r'color'] = null;
+    if (this.color.isPresent) {
+      final value = this.color.value;
+      json[r'color'] = value;
     }
       json[r'name'] = this.name;
-    if (this.parentId != null) {
-      json[r'parentId'] = this.parentId;
-    } else {
-    //  json[r'parentId'] = null;
+    if (this.parentId.isPresent) {
+      final value = this.parentId.value;
+      json[r'parentId'] = value;
     }
     return json;
   }
@@ -74,9 +66,9 @@ class TagCreateDto {
       final json = value.cast<String, dynamic>();
 
       return TagCreateDto(
-        color: mapValueOfType<String>(json, r'color'),
+        color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
         name: mapValueOfType<String>(json, r'name')!,
-        parentId: mapValueOfType<String>(json, r'parentId'),
+        parentId: json.containsKey(r'parentId') ? Optional.present(mapValueOfType<String>(json, r'parentId')) : const Optional.absent(),
       );
     }
     return null;

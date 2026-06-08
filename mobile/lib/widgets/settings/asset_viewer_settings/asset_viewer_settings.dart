@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/image_viewer_tap_to_navigate_setting.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/video_viewer_settings.dart';
+import 'package:immich_mobile/widgets/settings/asset_viewer_settings/slideshow_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
 class AssetViewerSettings extends StatelessWidget {
@@ -13,6 +14,7 @@ class AssetViewerSettings extends StatelessWidget {
       const ImageViewerQualitySetting(),
       const ImageViewerTapToNavigateSetting(),
       const VideoViewerSettings(),
+      const SlideshowSettings(),
     ];
 
     return SettingsSubPageScaffold(settings: assetViewerSetting, showDivider: true);

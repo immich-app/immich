@@ -1,18 +1,17 @@
 <script lang="ts">
   import { isDefined } from '$lib';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+  import type { TimelineDay } from '$lib/managers/timeline-manager/timeline-day.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { LatLng } from '$lib/types';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { setQueryValue } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
@@ -28,7 +27,6 @@
   let { data }: Props = $props();
 
   let isLoading = $state(false);
-  let assetInteraction = new AssetInteraction();
   let point = $state<LatLng>();
   let locationUpdated = $state(false);
 
@@ -40,6 +38,8 @@
     withCoordinates: true,
   };
 
+  const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
+
   const handleUpdate = async () => {
     if (!point) {
       return;
@@ -47,7 +47,7 @@
 
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
       point,
-      assetCount: assetInteraction.selectedAssets.length,
+      assetCount: assetMultiSelectManager.assets.length,
     });
 
     if (!confirmed) {
@@ -56,14 +56,14 @@
 
     await updateAssets({
       assetBulkUpdateDto: {
-        ids: assetInteraction.selectedAssets.map((asset) => asset.id),
+        ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
         latitude: point.lat,
         longitude: point.lng,
       },
     });
 
     const updatedAssets = await Promise.all(
-      assetInteraction.selectedAssets.map(async (asset) => {
+      assetMultiSelectManager.assets.map(async (asset) => {
         const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
         return toTimelineAsset(updatedAsset);
       }),
@@ -71,25 +71,21 @@
 
     timelineManager.upsertAssets(updatedAssets);
 
-    handleDeselectAll();
+    assetMultiSelectManager.clear();
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Shift') {
       event.preventDefault();
     }
-    if (event.key === 'Escape' && assetInteraction.selectionActive) {
-      cancelMultiselect(assetInteraction);
+    if (event.key === 'Escape' && assetMultiSelectManager.selectionActive) {
+      assetMultiSelectManager.clear();
     }
   };
   const onKeyUp = (event: KeyboardEvent) => {
     if (event.key === 'Shift') {
       event.preventDefault();
     }
-  };
-
-  const handleDeselectAll = () => {
-    cancelMultiselect(assetInteraction);
   };
 
   const handlePickPoint = async () => {
@@ -101,8 +97,8 @@
     point = selected;
   };
   const handleEscape = () => {
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
+    if (assetMultiSelectManager.selectionActive) {
+      assetMultiSelectManager.clear();
       return;
     }
   };
@@ -115,7 +111,7 @@
   const handleThumbnailClick = (
     asset: TimelineAsset,
     timelineManager: TimelineManager,
-    dayGroup: DayGroup,
+    timelineDay: TimelineDay,
     onClick: (
       timelineManager: TimelineManager,
       assets: TimelineAsset[],
@@ -130,8 +126,8 @@
       }, 1500);
       point = { lat: asset.latitude, lng: asset.longitude };
       void setQueryValue('at', asset.id);
-    } else {
-      onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+    } else if (isOwnAsset(asset)) {
+      onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
     }
   };
 </script>
@@ -140,16 +136,16 @@
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
-    <div class="flex gap-2 justify-end place-items-center">
-      <Text class="hidden md:block mr-4" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
-      <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
-        <Text class="hidden md:inline-block font-mono mr-5 ml-2" color="muted" size="tiny">
+    <div class="flex place-items-center justify-end gap-2">
+      <Text class="mr-4 hidden md:block" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
+      <div class="flex place-content-center place-items-center rounded-2xl border bg-primary/10 px-2 py-1">
+        <Text class="mr-5 ml-2 hidden font-mono md:inline-block" color="muted" size="tiny">
           {$t('selected_gps_coordinates')}
         </Text>
         <Text
           title="latitude, longitude"
-          class="rounded-3xl font-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
-            ? 'bg-primary/90 text-light font-semibold scale-105'
+          class="rounded-3xl px-2 py-1 font-mono text-sm text-primary transition-all duration-100 ease-in-out {locationUpdated
+            ? 'scale-105 bg-primary/90 font-semibold text-light'
             : ''}"
         >
           {#if point}
@@ -168,8 +164,8 @@
         size="small"
         color="secondary"
         variant="ghost"
-        disabled={!assetInteraction.selectionActive}
-        onclick={handleDeselectAll}
+        disabled={!assetMultiSelectManager.selectionActive}
+        onclick={() => assetMultiSelectManager.clear()}
       >
         {$t('unselect_all')}
       </Button>
@@ -177,18 +173,18 @@
         leadingIcon={mdiMapMarkerMultipleOutline}
         size="small"
         color="primary"
-        disabled={assetInteraction.selectedAssets.length === 0}
+        disabled={assetMultiSelectManager.assets.length === 0}
         onclick={() => handleUpdate()}
       >
         <Text class="hidden sm:inline-block">
-          {$t('apply_count', { values: { count: assetInteraction.selectedAssets.length } })}
+          {$t('apply_count', { values: { count: assetMultiSelectManager.assets.length } })}
         </Text>
       </Button>
     </div>
   {/snippet}
 
   {#if isLoading}
-    <div class="h-full w-full flex items-center justify-center">
+    <div class="flex size-full items-center justify-center">
       <LoadingSpinner size="giant" />
     </div>
   {/if}
@@ -198,25 +194,28 @@
     enableRouting={true}
     bind:timelineManager
     {options}
-    {assetInteraction}
+    assetInteraction={assetMultiSelectManager}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
+      {#if !isOwnAsset(asset)}
+        <div class="pointer-events-none absolute inset-0 rounded-sm bg-black/40"></div>
+      {/if}
       {#if hasGps(asset)}
-        <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
+        <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
           {asset.city || $t('gps')}
         </div>
       {:else}
-        <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-danger text-light">
+        <div class="absolute inset-e-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
           {$t('gps_missing')}
         </div>
       {/if}
     {/snippet}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} class="mt-10 mx-auto" />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} class="mx-auto mt-10" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

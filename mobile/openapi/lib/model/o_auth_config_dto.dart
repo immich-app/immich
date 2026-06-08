@@ -13,9 +13,9 @@ part of openapi.api;
 class OAuthConfigDto {
   /// Returns a new [OAuthConfigDto] instance.
   OAuthConfigDto({
-    this.codeChallenge,
+    this.codeChallenge = const Optional.absent(),
     required this.redirectUri,
-    this.state,
+    this.state = const Optional.absent(),
   });
 
   /// OAuth code challenge (PKCE)
@@ -25,7 +25,7 @@ class OAuthConfigDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? codeChallenge;
+  Optional<String?> codeChallenge;
 
   /// OAuth redirect URI
   String redirectUri;
@@ -37,7 +37,7 @@ class OAuthConfigDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? state;
+  Optional<String?> state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigDto &&
@@ -57,16 +57,14 @@ class OAuthConfigDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.codeChallenge != null) {
-      json[r'codeChallenge'] = this.codeChallenge;
-    } else {
-    //  json[r'codeChallenge'] = null;
+    if (this.codeChallenge.isPresent) {
+      final value = this.codeChallenge.value;
+      json[r'codeChallenge'] = value;
     }
       json[r'redirectUri'] = this.redirectUri;
-    if (this.state != null) {
-      json[r'state'] = this.state;
-    } else {
-    //  json[r'state'] = null;
+    if (this.state.isPresent) {
+      final value = this.state.value;
+      json[r'state'] = value;
     }
     return json;
   }
@@ -80,9 +78,9 @@ class OAuthConfigDto {
       final json = value.cast<String, dynamic>();
 
       return OAuthConfigDto(
-        codeChallenge: mapValueOfType<String>(json, r'codeChallenge'),
+        codeChallenge: json.containsKey(r'codeChallenge') ? Optional.present(mapValueOfType<String>(json, r'codeChallenge')) : const Optional.absent(),
         redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
-        state: mapValueOfType<String>(json, r'state'),
+        state: json.containsKey(r'state') ? Optional.present(mapValueOfType<String>(json, r'state')) : const Optional.absent(),
       );
     }
     return null;

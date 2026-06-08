@@ -13,14 +13,14 @@ part of openapi.api;
 class QueueJobResponseDto {
   /// Returns a new [QueueJobResponseDto] instance.
   QueueJobResponseDto({
-    required this.data,
-    this.id,
+    this.data = const {},
+    this.id = const Optional.absent(),
     required this.name,
     required this.timestamp,
   });
 
   /// Job data payload
-  Object data;
+  Map<String, Object> data;
 
   /// Job ID
   ///
@@ -29,17 +29,19 @@ class QueueJobResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? id;
+  Optional<String?> id;
 
-  /// Job name
   JobName name;
 
   /// Job creation timestamp
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int timestamp;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueJobResponseDto &&
-    other.data == data &&
+    _deepEquality.equals(other.data, data) &&
     other.id == id &&
     other.name == name &&
     other.timestamp == timestamp;
@@ -58,10 +60,9 @@ class QueueJobResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'data'] = this.data;
-    if (this.id != null) {
-      json[r'id'] = this.id;
-    } else {
-    //  json[r'id'] = null;
+    if (this.id.isPresent) {
+      final value = this.id.value;
+      json[r'id'] = value;
     }
       json[r'name'] = this.name;
       json[r'timestamp'] = this.timestamp;
@@ -77,8 +78,8 @@ class QueueJobResponseDto {
       final json = value.cast<String, dynamic>();
 
       return QueueJobResponseDto(
-        data: mapValueOfType<Object>(json, r'data')!,
-        id: mapValueOfType<String>(json, r'id'),
+        data: mapCastOfType<String, Object>(json, r'data')!,
+        id: json.containsKey(r'id') ? Optional.present(mapValueOfType<String>(json, r'id')) : const Optional.absent(),
         name: JobName.fromJson(json[r'name'])!,
         timestamp: mapValueOfType<int>(json, r'timestamp')!,
       );

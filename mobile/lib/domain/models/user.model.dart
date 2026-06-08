@@ -125,7 +125,9 @@ profileChangedAt: $profileChangedAt
 
   @override
   bool operator ==(covariant UserDto other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         ((updatedAt == null && other.updatedAt == null) ||
@@ -219,7 +221,9 @@ class PartnerUserDto {
 
   @override
   bool operator ==(covariant PartnerUserDto other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.email == email &&
@@ -232,4 +236,126 @@ class PartnerUserDto {
   int get hashCode {
     return id.hashCode ^ email.hashCode ^ name.hashCode ^ inTimeline.hashCode ^ profileImagePath.hashCode;
   }
+}
+
+class User {
+  final String id;
+  final String name;
+  final String email;
+  final DateTime profileChangedAt;
+  final bool hasProfileImage;
+  final AvatarColor? avatarColor;
+
+  const User({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.profileChangedAt,
+    required this.hasProfileImage,
+    this.avatarColor = AvatarColor.primary,
+  });
+
+  @override
+  String toString() {
+    return 'User(id: $id, name: $name, email: $email, profileChangedAt: $profileChangedAt, hasProfileImage: $hasProfileImage, avatarColor: $avatarColor)';
+  }
+
+  @override
+  bool operator ==(covariant User other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return other.id == id &&
+        other.name == name &&
+        other.email == email &&
+        other.profileChangedAt == profileChangedAt &&
+        other.hasProfileImage == hasProfileImage &&
+        other.avatarColor == avatarColor;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, email, profileChangedAt, hasProfileImage, avatarColor);
+}
+
+class AuthUser extends User {
+  final bool isAdmin;
+  final String? pinCode;
+  final int? quotaSizeInBytes;
+  final int quotaUsageInBytes;
+
+  const AuthUser({
+    required super.id,
+    required super.name,
+    required super.email,
+    required super.profileChangedAt,
+    required super.hasProfileImage,
+    super.avatarColor,
+    this.isAdmin = false,
+    this.pinCode,
+    this.quotaSizeInBytes = 0,
+    this.quotaUsageInBytes = 0,
+  });
+
+  @override
+  String toString() {
+    return 'AuthUser(user: ${super.toString()}, isAdmin: $isAdmin, pinCode: $pinCode, quotaSizeInBytes: $quotaSizeInBytes, quotaUsageInBytes: $quotaUsageInBytes)';
+  }
+
+  @override
+  bool operator ==(covariant AuthUser other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return super == other &&
+        other.isAdmin == isAdmin &&
+        other.pinCode == pinCode &&
+        other.quotaSizeInBytes == quotaSizeInBytes &&
+        other.quotaUsageInBytes == quotaUsageInBytes;
+  }
+
+  @override
+  int get hashCode => Object.hash(super.hashCode, isAdmin, pinCode, quotaSizeInBytes, quotaUsageInBytes);
+}
+
+class Partner extends User {
+  final bool inTimeline;
+
+  const Partner({
+    required super.id,
+    required super.name,
+    required super.email,
+    required super.profileChangedAt,
+    required super.hasProfileImage,
+    super.avatarColor,
+    this.inTimeline = false,
+  });
+
+  Partner.fromUser(User user, {this.inTimeline = false})
+    : super(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profileChangedAt: user.profileChangedAt,
+        hasProfileImage: user.hasProfileImage,
+        avatarColor: user.avatarColor,
+      );
+
+  @override
+  String toString() {
+    return 'Partner(user: ${super.toString()}, inTimeline: $inTimeline)';
+  }
+
+  @override
+  bool operator ==(covariant Partner other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return super == other && other.inTimeline == inTimeline;
+  }
+
+  @override
+  int get hashCode => Object.hash(super.hashCode, inTimeline);
 }

@@ -1883,3 +1883,8 @@ class RemoteExifEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxRemoteExifCity => i0.Index(
+  'idx_remote_exif_city',
+  'CREATE INDEX IF NOT EXISTS idx_remote_exif_city ON remote_exif_entity (city) WHERE city IS NOT NULL',
+);

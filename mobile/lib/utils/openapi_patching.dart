@@ -1,67 +1,58 @@
+import 'package:flutter/foundation.dart';
 import 'package:openapi/api.dart';
 
-dynamic upgradeDto(dynamic value, String targetType) {
-  switch (targetType) {
-    case 'UserPreferencesResponseDto':
-      if (value is Map) {
-        addDefault(value, 'download.includeEmbeddedVideos', false);
-        addDefault(value, 'folders', FoldersResponse().toJson());
-        addDefault(value, 'memories', MemoriesResponse().toJson());
-        addDefault(value, 'ratings', RatingsResponse().toJson());
-        addDefault(value, 'people', PeopleResponse().toJson());
-        addDefault(value, 'tags', TagsResponse().toJson());
-        addDefault(value, 'sharedLinks', SharedLinksResponse().toJson());
-        addDefault(value, 'cast', CastResponse().toJson());
-        addDefault(value, 'albums', {'defaultAssetOrder': 'desc'});
-      }
-      break;
-    case 'ServerConfigDto':
-      if (value is Map) {
-        addDefault(value, 'mapLightStyleUrl', 'https://tiles.immich.cloud/v1/style/light.json');
-        addDefault(value, 'mapDarkStyleUrl', 'https://tiles.immich.cloud/v1/style/dark.json');
-      }
-    case 'UserResponseDto':
-      if (value is Map) {
-        addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
-      }
-      break;
-    case 'AssetResponseDto':
-      if (value is Map) {
-        addDefault(value, 'visibility', 'timeline');
-        addDefault(value, 'createdAt', DateTime.now().toIso8601String());
-        addDefault(value, 'isEdited', false);
-      }
-      break;
-    case 'UserAdminResponseDto':
-      if (value is Map) {
-        addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
-      }
-      break;
-    case 'LoginResponseDto':
-      if (value is Map) {
-        addDefault(value, 'isOnboarded', false);
-      }
-      break;
-    case 'SyncUserV1':
-      if (value is Map) {
-        addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
-        addDefault(value, 'hasProfileImage', false);
-      }
-    case 'SyncAssetV1':
-      if (value is Map) {
-        addDefault(value, 'isEdited', false);
-      }
-    case 'ServerFeaturesDto':
-      if (value is Map) {
-        addDefault(value, 'ocr', false);
-      }
-      break;
-    case 'MemoriesResponse':
-      if (value is Map) {
-        addDefault(value, 'duration', 5);
-      }
-      break;
+abstract interface class _Dynamic {
+  Object? resolve();
+}
+
+class _CurrentTimestamp implements _Dynamic {
+  const _CurrentTimestamp();
+
+  @override
+  Object? resolve() => DateTime.now().toIso8601String();
+}
+
+const _now = _CurrentTimestamp();
+
+@visibleForTesting
+final Map<String, Map<String, Object?>> openApiPatches = {
+  'UserPreferencesResponseDto': {
+    'download.includeEmbeddedVideos': false,
+    'folders': FoldersResponse(enabled: false, sidebarWeb: false).toJson(),
+    'memories': MemoriesResponse(enabled: true, duration: 5).toJson(),
+    'ratings': RatingsResponse(enabled: false).toJson(),
+    'people': PeopleResponse(enabled: true, sidebarWeb: false).toJson(),
+    'tags': TagsResponse(enabled: false, sidebarWeb: false).toJson(),
+    'sharedLinks': SharedLinksResponse(enabled: true, sidebarWeb: false).toJson(),
+    'cast': CastResponse(gCastEnabled: false).toJson(),
+    'albums': {'defaultAssetOrder': 'desc'},
+  },
+  'ServerConfigDto': {
+    'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
+    'mapDarkStyleUrl': 'https://tiles.immich.cloud/v1/style/dark.json',
+    'minFaces': 3,
+  },
+  'UserResponseDto': {'profileChangedAt': _now},
+  'AssetResponseDto': {'visibility': 'timeline', 'createdAt': _now, 'isEdited': false},
+  'UserAdminResponseDto': {'profileChangedAt': _now},
+  'LoginResponseDto': {'isOnboarded': false},
+  'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
+  'SyncAssetV1': {'isEdited': false},
+  'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
+  'MemoriesResponse': {'duration': 5},
+};
+
+void upgradeDto(dynamic value, String targetType) {
+  if (value is! Map) {
+    return;
   }
+  final fields = openApiPatches[targetType];
+  if (fields == null) {
+    return;
+  }
+  fields.forEach((key, defaultValue) {
+    addDefault(value, key, defaultValue is _Dynamic ? defaultValue.resolve() : defaultValue);
+  });
 }
 
 addDefault(dynamic value, String keys, dynamic defaultValue) {
