@@ -43,10 +43,10 @@ export class PersonTable {
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
 
-  @Column({ type: 'character varying', nullable: true, default: null })
+  @Column({ type: 'character varying', nullable: true })
   name!: string | null;
 
-  @Column({ nullable: true, default: null })
+  @Column({ nullable: true })
   thumbnailPath!: string | null;
 
   @Column({ type: 'boolean', default: false })

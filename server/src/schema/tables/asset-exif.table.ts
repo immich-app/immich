@@ -74,7 +74,7 @@ export class AssetExifTable {
   @Column({ type: 'character varying', nullable: true })
   country!: string | null;
 
-  @Column({ type: 'text', nullable: true,default: null })
+  @Column({ type: 'text', nullable: true })
   description!: string | null; // or caption
 
   @Column({ type: 'double precision', nullable: true })

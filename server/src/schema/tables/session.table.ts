@@ -35,10 +35,10 @@ export class SessionTable {
   @ForeignKeyColumn(() => SessionTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE', nullable: true })
   parentId!: string | null;
 
-  @Column({ nullable: true,default: null })
+  @Column({ nullable: true })
   deviceType!: string | null;
 
-  @Column({ nullable: true,default: null })
+  @Column({ nullable: true })
   deviceOS!: string | null;
 
   @Column({ nullable: true })
