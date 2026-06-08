@@ -15,6 +15,7 @@ import type {
   WorkflowResponseDto,
 } from '@immich/sdk';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { TreeNode } from '$lib/utils/tree-utils';
 
 export type Events = {
@@ -33,7 +34,7 @@ export type Events = {
 
   AssetUpdate: [AssetResponseDto];
   AssetsArchive: [string[]];
-  AssetsUnarchive: [string[]];
+  AssetsUnarchive: [TimelineAsset[]];
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];
   AssetsTag: [string[]];

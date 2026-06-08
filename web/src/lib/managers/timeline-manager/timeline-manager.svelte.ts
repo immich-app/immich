@@ -1,7 +1,6 @@
 import {
   AssetOrder,
   AssetOrderBy,
-  AssetVisibility,
   getAssetInfo,
   getTimeBuckets,
   type AssetResponseDto,
@@ -122,7 +121,7 @@ export class TimelineManager extends VirtualScrollManager {
     this.#unsubscribes.push(
       eventManager.on({
         AssetUpdate: (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]),
-        AssetsUnarchive: (ids) => this.update(ids, (asset) => (asset.visibility = AssetVisibility.Timeline)),
+        AssetsUnarchive: (assets) => this.upsertAssets(assets),
       }),
     );
   }
