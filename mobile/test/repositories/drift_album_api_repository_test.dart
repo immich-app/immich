@@ -32,10 +32,10 @@ void main() {
     final result = await repo.addAssets('album1', ['a1']);
 
     expect(result.added, isEmpty);
-    expect(result.failed, ['a1']);
+    expect(result.failureReasons, {BulkIdErrorReason.noPermission: 1});
   });
 
-  test('duplicate is neither added nor failed (genuinely already in album)', () async {
+  test('duplicate is tracked as a duplicate failure reason', () async {
     stubResponse([
       BulkIdResponseDto(id: 'a1', success: false, error: const Optional.present(BulkIdErrorReason.duplicate)),
     ]);
@@ -43,7 +43,7 @@ void main() {
     final result = await repo.addAssets('album1', ['a1']);
 
     expect(result.added, isEmpty);
-    expect(result.failed, isEmpty);
+    expect(result.failureReasons, {BulkIdErrorReason.duplicate: 1});
   });
 
   test('success is added', () async {
@@ -52,7 +52,7 @@ void main() {
     final result = await repo.addAssets('album1', ['a1']);
 
     expect(result.added, ['a1']);
-    expect(result.failed, isEmpty);
+    expect(result.failureReasons, isEmpty);
   });
 
   test('not_found and unknown count as failures', () async {
@@ -64,10 +64,10 @@ void main() {
     final result = await repo.addAssets('album1', ['a1', 'a2']);
 
     expect(result.added, isEmpty);
-    expect(result.failed, ['a1', 'a2']);
+    expect(result.failureReasons, {BulkIdErrorReason.notFound: 1, BulkIdErrorReason.unknown: 1});
   });
 
-  test('mixed: added kept, no_permission failed, duplicate dropped', () async {
+  test('mixed: added kept, no_permission and duplicate counted separately', () async {
     stubResponse([
       BulkIdResponseDto(id: 'ok', success: true),
       BulkIdResponseDto(id: 'perm', success: false, error: const Optional.present(BulkIdErrorReason.noPermission)),
@@ -77,6 +77,6 @@ void main() {
     final result = await repo.addAssets('album1', ['ok', 'perm', 'dup']);
 
     expect(result.added, ['ok']);
-    expect(result.failed, ['perm']);
+    expect(result.failureReasons, {BulkIdErrorReason.noPermission: 1, BulkIdErrorReason.duplicate: 1});
   });
 }
