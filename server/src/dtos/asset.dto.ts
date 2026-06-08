@@ -21,7 +21,7 @@ const UpdateAssetBaseSchema = z
       .refine((v) => v !== 0, {
         error: 'Rating must be -1 (rejected), 1–5 (starred), or null (unrated); 0 is not valid',
       })
-      .describe('Rating in range [1-5] (starred), -1 (rejected) or null (unrated)')
+      .describe('Rating in range [1-5] (starred), -1 (rejected), or null (unrated)')
       .meta({
         ...new HistoryBuilder()
           .added('v1')
