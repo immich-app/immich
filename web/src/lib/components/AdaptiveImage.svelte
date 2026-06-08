@@ -146,6 +146,9 @@
     if (width && width > 0 && height && height > 0) {
       return { width, height };
     }
+    if (imgRef?.naturalWidth && imgRef.naturalWidth > 0 && imgRef?.naturalHeight && imgRef.naturalHeight > 0) {
+      return { width: imgRef.naturalWidth, height: imgRef.naturalHeight };
+    }
     return { width: 1, height: 1 };
   });
 
