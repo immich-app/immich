@@ -72,8 +72,6 @@ export const mapUtils = {
     return page.getByLabel(/map settings/i);
   },
 
-
-
   /**
    * Verify all standard map controls are visible
    */

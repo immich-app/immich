@@ -397,7 +397,7 @@
     {#if onToggleTimeline}
       <Control position="top-right">
         <ControlGroup>
-          <ControlButton onclick={() => onToggleTimeline?.()}>
+          <ControlButton title={$t('timeline')} onclick={() => onToggleTimeline?.()}>
             <Icon
               title={$t('timeline')}
               icon={mdiImageMultiple}

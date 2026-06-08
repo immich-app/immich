@@ -139,7 +139,7 @@
     <div class="flex items-center gap-2">
       <Icon icon={mdiImageMultiple} size="20" />
       <p class="text-sm font-medium text-immich-fg dark:text-immich-dark-fg">
-        {$t('assets_count', { values: { count: timelineManager?.assetsCount ?? 0 } })}
+        {$t('assets_count', { values: { count: timelineManager?.assetCount ?? 0 } })}
       </p>
     </div>
     <CloseButton onclick={onClose} />

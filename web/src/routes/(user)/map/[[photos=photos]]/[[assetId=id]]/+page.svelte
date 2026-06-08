@@ -26,12 +26,6 @@
   let isTimelinePanelVisible = $state(false);
   let visibleAssetIds = $state<Set<string>>();
 
-  // Mobile Bottom Sheet State
-  let sheetHeight = $state(50);
-  let isDraggingSheet = $state(false);
-  let innerWidth = $state(1024);
-  let isMobile = $derived(innerWidth < 768);
-
   const isSameBbox = (a: SelectionBBox | undefined, b: SelectionBBox) => {
     if (!a) {
       return false;
@@ -50,7 +44,6 @@
     selectedClusterBBox = undefined;
     selectedClusterIds = new Set();
     visibleAssetIds = undefined;
-    sheetHeight = 50; // Reset for next open
   }
 
   function toggleTimeline() {
