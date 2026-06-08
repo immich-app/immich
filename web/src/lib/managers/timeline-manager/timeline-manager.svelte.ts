@@ -114,7 +114,14 @@ export class TimelineManager extends VirtualScrollManager {
 
     this.#unsubscribes.push(
       eventManager.on({
-        AssetUpdate: (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]),
+        AssetUpdate: (asset: AssetResponseDto) => {
+          const timelineAsset = toTimelineAsset(asset);
+          if (this.#options.albumId || this.#options.personId) {
+            this.#updateAssets([timelineAsset]);
+          } else {
+            this.upsertAssets([timelineAsset]);
+          }
+        },
         AssetsUnarchive: (assets) => this.upsertAssets(assets),
       }),
     );
