@@ -23,7 +23,6 @@ class PeoplePicker extends HookConsumerWidget {
     final formFocus = useFocusNode();
     final imageSize = 60.0;
     final searchQuery = useState('');
-    final normalizedQuery = searchQuery.value.toLowerCase().removeDiacritics();
     final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
 
@@ -47,7 +46,11 @@ class PeoplePicker extends HookConsumerWidget {
           child: people.widgetWhen(
             onData: (people) {
               final filtered = people
-                  .where((person) => person.name.toLowerCase().removeDiacritics().contains(normalizedQuery))
+                  .where(
+                    (person) => person.name.toLowerCase().removeDiacritics().contains(
+                      searchQuery.value.toLowerCase().removeDiacritics(),
+                    ),
+                  )
                   .toList();
               return ListView.builder(
                 shrinkWrap: true,
