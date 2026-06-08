@@ -6,6 +6,7 @@ const makePerson = (overrides: Partial<PersonResponseDto> = {}): PersonResponseD
   name: 'Amélie',
   thumbnailPath: '',
   isHidden: false,
+  birthDate: null,
   ...overrides,
 });
 
