@@ -4,16 +4,15 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
+import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { removeUndefinedKeys, withFilePath } from 'src/utils/database';
+import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
-  minimumFaceCount: number;
   withHidden: boolean;
   closestFaceAssetId?: string;
 }
@@ -168,7 +167,17 @@ export class PersonRepository {
       .having((eb) =>
         eb.or([
           eb('person.name', '!=', ''),
-          eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
+          eb(
+            (innerEb) => innerEb.fn.count('asset_face.assetId'),
+            '>=',
+            sql<number>`COALESCE(
+              (SELECT value -> 'people' ->> 'minimumFaces'
+              FROM user_metadata
+              WHERE "userId" = ${userId}
+                AND key = ${sql.lit(UserMetadataKey.Preferences)}),
+              '3'
+            )::int `,
+          ),
         ]),
       )
       .groupBy('person.id')
@@ -418,7 +427,7 @@ export class PersonRepository {
       (query as any) = query.with('added_embeddings', (db) => db.insertInto('face_search').values(embeddingsToAdd));
     }
 
-    await query.selectFrom(sql`(select 1)`.as('dummy')).execute();
+    await query.selectFrom(dummy).execute();
   }
 
   async update(person: Updateable<PersonTable> & { id: string }) {

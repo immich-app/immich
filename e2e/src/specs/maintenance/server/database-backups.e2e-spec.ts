@@ -2,7 +2,7 @@ import { LoginResponseDto, ManualJobName } from '@immich/sdk';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 describe('/admin/database-backups', () => {
   let cookie: string | undefined;
@@ -13,6 +13,9 @@ describe('/admin/database-backups', () => {
     admin = await utils.adminSetup({
       onboarding: false,
     });
+  });
+
+  beforeEach(async () => {
     await utils.resetBackups(admin.accessToken);
   });
 

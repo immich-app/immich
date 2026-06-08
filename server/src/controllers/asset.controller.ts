@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -15,8 +15,6 @@ import {
   AssetMetadataUpsertDto,
   AssetStatsDto,
   AssetStatsResponseDto,
-  DeviceIdDto,
-  RandomAssetsDto,
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -31,28 +29,6 @@ import { UUIDParamDto } from 'src/validation';
 @Controller(RouteKey.Asset)
 export class AssetController {
   constructor(private service: AssetService) {}
-
-  @Get('random')
-  @Authenticated({ permission: Permission.AssetRead })
-  @Endpoint({
-    summary: 'Get random assets',
-    description: 'Retrieve a specified number of random assets for the authenticated user.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'searchAssets' }),
-  })
-  getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
-    return this.service.getRandom(auth, dto.count ?? 1);
-  }
-
-  @Get('/device/:deviceId')
-  @Endpoint({
-    summary: 'Retrieve assets by device ID',
-    description: 'Get all asset of a device that are in the database, ID only.',
-    history: new HistoryBuilder().added('v1').deprecated('v2'),
-  })
-  @Authenticated()
-  getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
-    return this.service.getUserAssetsByDeviceId(auth, deviceId);
-  }
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
@@ -83,9 +59,21 @@ export class AssetController {
   @Endpoint({
     summary: 'Update assets',
     description: 'Updates multiple assets at the same time.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateAssets' }),
   })
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
+    return this.service.updateAll(auth, dto);
+  }
+
+  @Patch()
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  updateAssetsV3(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
 
@@ -155,9 +143,24 @@ export class AssetController {
   @Endpoint({
     summary: 'Update an asset',
     description: 'Update information of a specific asset.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateAsset' }),
   })
   updateAsset(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateAssetDto,
+  ): Promise<AssetResponseDto> {
+    return this.service.update(auth, id, dto);
+  }
+
+  @Patch(':id')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.AssetUpdate })
+  updateAssetV3(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UpdateAssetDto,

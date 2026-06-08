@@ -161,7 +161,9 @@ class ProgressMultipartRequest extends MultipartRequest with Abortable {
   @override
   ByteStream finalize() {
     final byteStream = super.finalize();
-    if (onProgress == null) return byteStream;
+    if (onProgress == null) {
+      return byteStream;
+    }
 
     final total = contentLength;
     var bytes = 0;

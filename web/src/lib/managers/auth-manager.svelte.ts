@@ -1,9 +1,3 @@
-import { browser } from '$app/environment';
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { Route } from '$lib/route';
-import { isSharedLinkRoute } from '$lib/utils/navigation';
 import {
   getAboutInfo,
   getMyPreferences,
@@ -12,6 +6,12 @@ import {
   type UserAdminResponseDto,
   type UserPreferencesResponseDto,
 } from '@immich/sdk';
+import { browser } from '$app/environment';
+import { goto } from '$app/navigation';
+import { page } from '$app/state';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
+import { isSharedLinkRoute } from '$lib/utils/navigation';
 
 class AuthManager {
   isPurchased = $state(false);
@@ -39,6 +39,12 @@ class AuthManager {
     }
 
     return this.#preferences;
+  }
+
+  constructor() {
+    eventManager.on({
+      SessionDelete: () => goto(Route.logout()),
+    });
   }
 
   async load() {
@@ -84,30 +90,26 @@ class AuthManager {
   }
 
   async logout() {
-    let redirectUri;
+    let redirectUri = Route.login();
 
     try {
       const response = await logout();
       if (response.redirectUri) {
         redirectUri = response.redirectUri;
       }
-    } catch (error) {
-      console.log('Error logging out:', error);
+    } catch {
+      // noop
     }
 
-    redirectUri = redirectUri ?? Route.login();
-
-    try {
-      if (redirectUri.startsWith('/')) {
-        await goto(redirectUri);
-      } else {
-        globalThis.location.href = redirectUri;
-      }
-    } finally {
+    if (redirectUri.startsWith('/')) {
       this.isPurchased = false;
 
       this.reset();
       eventManager.emit('AuthLogout');
+
+      await goto(redirectUri);
+    } else {
+      globalThis.location.href = redirectUri;
     }
   }
 

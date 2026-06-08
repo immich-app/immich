@@ -25,7 +25,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerCreateDto] partnerCreateDto (required):
-  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto,) async {
+  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners';
 
@@ -47,6 +47,7 @@ class PartnersApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -57,8 +58,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerCreateDto] partnerCreateDto (required):
-  Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto,) async {
-    final response = await createPartnerWithHttpInfo(partnerCreateDto,);
+  Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto, { Future<void>? abortTrigger, }) async {
+    final response = await createPartnerWithHttpInfo(partnerCreateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -81,7 +82,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
@@ -104,6 +105,7 @@ class PartnersApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -114,8 +116,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
-    final response = await createPartnerDeprecatedWithHttpInfo(id,);
+  Future<PartnerResponseDto?> createPartnerDeprecated(String id, { Future<void>? abortTrigger, }) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -138,8 +140,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
-  ///   Partner direction
-  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
+  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners';
 
@@ -163,6 +164,7 @@ class PartnersApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -173,9 +175,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
-  ///   Partner direction
-  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
-    final response = await getPartnersWithHttpInfo(direction,);
+  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction, { Future<void>? abortTrigger, }) async {
+    final response = await getPartnersWithHttpInfo(direction, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -201,7 +202,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> removePartnerWithHttpInfo(String id,) async {
+  Future<Response> removePartnerWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
@@ -224,6 +225,7 @@ class PartnersApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -234,8 +236,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> removePartner(String id,) async {
-    final response = await removePartnerWithHttpInfo(id,);
+  Future<void> removePartner(String id, { Future<void>? abortTrigger, }) async {
+    final response = await removePartnerWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -252,7 +254,7 @@ class PartnersApi {
   /// * [String] id (required):
   ///
   /// * [PartnerUpdateDto] partnerUpdateDto (required):
-  Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto,) async {
+  Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
@@ -275,6 +277,7 @@ class PartnersApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -287,8 +290,8 @@ class PartnersApi {
   /// * [String] id (required):
   ///
   /// * [PartnerUpdateDto] partnerUpdateDto (required):
-  Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto,) async {
-    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto,);
+  Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto, { Future<void>? abortTrigger, }) async {
+    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
 import { SessionResponseDto } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import {
@@ -60,9 +61,24 @@ export class UserAdminController {
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateUserAdmin' }),
   })
   updateUserAdmin(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UserAdminUpdateDto,
+  ): Promise<UserAdminResponseDto> {
+    return this.service.update(auth, id, dto);
+  }
+
+  @Patch(':id')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  updateUserAdminV3(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UserAdminUpdateDto,
@@ -83,6 +99,21 @@ export class UserAdminController {
     @Body() dto: UserAdminDeleteDto,
   ): Promise<UserAdminResponseDto> {
     return this.service.delete(auth, id, dto);
+  }
+
+  @Get(':id/calendar-heatmap')
+  @Authenticated({ permission: Permission.UserRead })
+  @Endpoint({
+    summary: 'Retrieve calendar heatmap activity',
+    description: 'Retrieve activity counts for a specified period, in a calendar heatmap format.',
+    history: new HistoryBuilder().added('v3').stable('v3'),
+  })
+  getUserCalendarHeatmapAdmin(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Query() dto: CalendarHeatmapDto,
+  ): Promise<CalendarHeatmapResponseDto> {
+    return this.service.getCalendarHeatmap(auth, id, dto);
   }
 
   @Get(':id/sessions')
@@ -127,9 +158,24 @@ export class UserAdminController {
   @Endpoint({
     summary: 'Update user preferences',
     description: 'Update the preferences of a specific user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateUserPreferencesAdmin' }),
   })
   updateUserPreferencesAdmin(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UserPreferencesUpdateDto,
+  ): Promise<UserPreferencesResponseDto> {
+    return this.service.updatePreferences(auth, id, dto);
+  }
+
+  @Patch(':id/preferences')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
+  updateUserPreferencesAdminV3(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UserPreferencesUpdateDto,

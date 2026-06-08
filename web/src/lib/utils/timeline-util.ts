@@ -1,10 +1,10 @@
-import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-import { locale } from '$lib/stores/preferences.store';
-import { getAssetRatio } from '$lib/utils/asset-utils';
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
+import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+import { locale } from '$lib/stores/preferences.store';
+import { getAssetRatio } from '$lib/utils/asset-utils';
 
 // Move type definitions to the top
 export type TimelineYearMonth = {
@@ -128,7 +128,7 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar({ locale: get(locale) });
+    return date.toRelativeCalendar({ locale: get(locale), unit: 'days' });
   }
 
   // Last week
@@ -166,6 +166,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   const fileCreatedAt = fromISODateTimeToObject(assetResponse.fileCreatedAt, assetResponse.exifInfo?.timeZone ?? 'UTC');
+  const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);
 
   return {
     id: assetResponse.id,
@@ -174,6 +175,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     ratio,
     thumbhash: assetResponse.thumbhash,
     localDateTime,
+    createdAt,
     fileCreatedAt,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
@@ -236,3 +238,6 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   }
   return result;
 }
+
+export const getOrderingDate = (asset: TimelineAsset, order: AssetOrderBy) =>
+  order === AssetOrderBy.CreatedAt ? asset.createdAt : asset.localDateTime;

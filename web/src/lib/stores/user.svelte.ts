@@ -1,10 +1,10 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import type {
   AlbumResponseDto,
   ServerAboutResponseDto,
   ServerStorageResponseDto,
   ServerVersionHistoryResponseDto,
 } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 interface UserInteractions {
   recentAlbums?: AlbumResponseDto[];

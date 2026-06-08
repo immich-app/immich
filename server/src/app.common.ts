@@ -1,5 +1,5 @@
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { json } from 'body-parser';
+import { json, urlencoded } from 'body-parser';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmetMiddleware from 'helmet';
@@ -56,6 +56,7 @@ export async function configureExpress(
 
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ limit: '10mb' }));
 
   if (configRepository.isDev()) {
     app.enableCors();

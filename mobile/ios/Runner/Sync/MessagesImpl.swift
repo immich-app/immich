@@ -39,6 +39,9 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   private static let hashCancelledCode = "HASH_CANCELLED"
   private static let hashCancelled = Result<[HashResult], Error>.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil))
   
+  private var syncTask: Task<Void?, Error>?
+  private static let syncCancelledCode = "SYNC_CANCELLED"
+  private static let syncCancelled = PigeonError(code: syncCancelledCode, message: "Sync cancelled", details: nil)
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -71,7 +74,11 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     saveChangeToken(token: PHPhotoLibrary.shared().currentChangeToken)
   }
   
-  func shouldFullSync() -> Bool {
+  func shouldFullSync(completion: @escaping (Result<Bool, Error>) -> Void) {
+    runSync(completion) { $0.shouldFullSync() }
+  }
+  
+  private func shouldFullSync() -> Bool {
     guard #available(iOS 16, *),
           PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized,
           let storedToken = getChangeToken() else {
@@ -87,12 +94,17 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     return false
   }
   
-  func getAlbums() throws -> [PlatformAlbum] {
+  func getAlbums(completion: @escaping (Result<[PlatformAlbum], Error>) -> Void) {
+    runSync(completion) { try $0.getAlbums() }
+  }
+  
+  private func getAlbums() throws -> [PlatformAlbum] {
     var albums: [PlatformAlbum] = []
     
-    albumTypes.forEach { type in
+    for type in albumTypes {
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
       for i in 0..<collections.count {
+        try Task.checkCancellation()
         let album = collections.object(at: i)
         
         // Ignore recovered album
@@ -110,7 +122,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         
         var domainAlbum = PlatformAlbum(
           id: album.localIdentifier,
-          name: album.localizedTitle!,
+          name: album.localizedTitle ?? album.localIdentifier,
           updatedAt: nil,
           isCloud: isCloud,
           assetCount: Int64(assets.count)
@@ -126,7 +138,11 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     return albums.sorted { $0.id < $1.id }
   }
   
-  func getMediaChanges() throws -> SyncDelta {
+  func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void) {
+    runSync(completion) { try $0.getMediaChanges() }
+  }
+  
+  private func getMediaChanges() throws -> SyncDelta {
     guard #available(iOS 16, *) else {
       throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)
     }
@@ -146,50 +162,48 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       return SyncDelta(hasChanges: false, updates: [], deletes: [], assetAlbums: [:])
     }
     
-    do {
-      let changes = try PHPhotoLibrary.shared().fetchPersistentChanges(since: storedToken)
+    let changes = try PHPhotoLibrary.shared().fetchPersistentChanges(since: storedToken)
+    
+    var updatedAssets: Set<AssetWrapper> = []
+    var deletedAssets: Set<String> = []
+    
+    for change in changes {
+      try Task.checkCancellation()
+      guard let details = try? change.changeDetails(for: PHObjectType.asset) else { continue }
       
-      var updatedAssets: Set<AssetWrapper> = []
-      var deletedAssets: Set<String> = []
+      let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
+      deletedAssets.formUnion(details.deletedLocalIdentifiers)
       
-      for change in changes {
-        guard let details = try? change.changeDetails(for: PHObjectType.asset) else { continue }
+      if (updated.isEmpty) { continue }
+      
+      let options = PHFetchOptions()
+      options.includeHiddenAssets = false
+      let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
+      for i in 0..<result.count {
+        let asset = result.object(at: i)
         
-        let updated = details.updatedLocalIdentifiers.union(details.insertedLocalIdentifiers)
-        deletedAssets.formUnion(details.deletedLocalIdentifiers)
-        
-        if (updated.isEmpty) { continue }
-        
-        let options = PHFetchOptions()
-        options.includeHiddenAssets = false
-        let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
-        for i in 0..<result.count {
-          let asset = result.object(at: i)
-          
-          // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
-          let predicate = PlatformAsset(
-            id: asset.localIdentifier,
-            name: "",
-            type: 0,
-            durationInSeconds: 0,
-            orientation: 0,
-            isFavorite: false,
-            playbackStyle: .unknown
-          )
-          if (updatedAssets.contains(AssetWrapper(with: predicate))) {
-            continue
-          }
-          
-          let domainAsset = AssetWrapper(with: asset.toPlatformAsset())
-          updatedAssets.insert(domainAsset)
+        // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
+        let predicate = PlatformAsset(
+          id: asset.localIdentifier,
+          name: "",
+          type: 0,
+          durationMs: 0,
+          orientation: 0,
+          isFavorite: false,
+          playbackStyle: .unknown
+        )
+        if (updatedAssets.contains(AssetWrapper(with: predicate))) {
+          continue
         }
+        
+        let domainAsset = AssetWrapper(with: asset.toPlatformAsset())
+        updatedAssets.insert(domainAsset)
       }
-      
-      let updates = Array(updatedAssets.map { $0.asset })
-      return SyncDelta(hasChanges: true, updates: updates, deletes: Array(deletedAssets), assetAlbums: buildAssetAlbumsMap(assets: updates))
     }
+    
+    let updates = Array(updatedAssets.map { $0.asset })
+    return SyncDelta(hasChanges: true, updates: updates, deletes: Array(deletedAssets), assetAlbums: buildAssetAlbumsMap(assets: updates))
   }
-  
   
   private func buildAssetAlbumsMap(assets: Array<PlatformAsset>) -> [String: [String]] {
     guard !assets.isEmpty else {
@@ -213,7 +227,11 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     return albumAssets
   }
   
-  func getAssetIdsForAlbum(albumId: String) throws -> [String] {
+  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], Error>) -> Void) {
+    runSync(completion) { try $0.getAssetIdsForAlbum(albumId: albumId) }
+  }
+  
+  private func getAssetIdsForAlbum(albumId: String) throws -> [String] {
     let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
     guard let album = collections.firstObject else {
       return []
@@ -223,9 +241,14 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     let options = PHFetchOptions()
     options.includeHiddenAssets = false
     let assets = getAssetsFromAlbum(in: album, options: options)
-    assets.enumerateObjects { (asset, _, _) in
+    assets.enumerateObjects { (asset, _, stop) in
+      if Task.isCancelled {
+        stop.pointee = true
+        return 
+      }
       ids.append(asset.localIdentifier)
     }
+    try Task.checkCancellation()
     return ids
   }
   
@@ -243,7 +266,11 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     return Int64(assets.count)
   }
   
-  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset] {
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?, completion: @escaping (Result<[PlatformAsset], Error>) -> Void) {
+    runSync(completion) { try $0.getAssetsForAlbum(albumId: albumId, updatedTimeCond: updatedTimeCond) }
+  }
+  
+  private func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset] {
     let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
     guard let album = collections.firstObject else {
       return []
@@ -262,9 +289,14 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     }
     
     var assets: [PlatformAsset] = []
-    result.enumerateObjects { (asset, _, _) in
+    result.enumerateObjects { (asset, _, stop) in
+      if Task.isCancelled {
+        stop.pointee = true
+        return 
+      }
       assets.append(asset.toPlatformAsset())
     }
+    try Task.checkCancellation()
     return assets
   }
   
@@ -324,6 +356,31 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     hashTask = nil
   }
   
+  func cancelSync() {
+    syncTask?.cancel()
+    syncTask = nil
+  }
+  
+  private func runSync<T>(
+    _ completion: @escaping (Result<T, Error>) -> Void,
+    _ work: @escaping (NativeSyncApiImpl) throws -> T
+  ) {
+    syncTask?.cancel()
+    syncTask = Task { [weak self] in
+      guard let self else { return nil }
+      let result: Result<T, Error>
+      do {
+        result = .success(try work(self))
+      } catch is CancellationError {
+        result = .failure(Self.syncCancelled)
+      } catch {
+        result = .failure(error)
+      }
+      self.completeWhenActive(for: completion, with: result)
+      return nil
+    }
+  }
+  
   private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult? {
     class RequestRef {
       var id: PHAssetResourceDataRequestID?
@@ -381,6 +438,10 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   
   func getTrashedAssets() throws -> [String: [PlatformAsset]] {
     throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
+  }
+
+  func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
+    completion(.success(false))
   }
   
   private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {

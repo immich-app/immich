@@ -1,25 +1,7 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart' as isar hide AssetTypeEnumHelper;
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
-import 'package:immich_mobile/utils/timezone.dart';
 import 'package:openapi/api.dart' as api;
-
-extension TZExtension on isar.Asset {
-  /// Returns the created time of the asset from the exif info (if available) or from
-  /// the fileCreatedAt field, adjusted to the timezone value from the exif info along with
-  /// the timezone offset in [Duration]
-  (DateTime, Duration) getTZAdjustedTimeAndOffset() {
-    DateTime dt = fileCreatedAt.toLocal();
-
-    if (exifInfo?.dateTimeOriginal != null) {
-      return applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo?.timeZone);
-    }
-
-    return (dt, dt.timeZoneOffset);
-  }
-}
 
 extension DTOToAsset on api.AssetResponseDto {
   RemoteAsset toDto() {
@@ -29,17 +11,18 @@ extension DTOToAsset on api.AssetResponseDto {
       checksum: checksum,
       createdAt: fileCreatedAt,
       updatedAt: updatedAt,
+      uploadedAt: createdAt,
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
-      durationInSeconds: duration.toDuration()?.inSeconds ?? 0,
+      durationMs: duration,
       height: height?.toInt(),
       width: width?.toInt(),
       isFavorite: isFavorite,
-      livePhotoVideoId: livePhotoVideoId,
+      livePhotoVideoId: livePhotoVideoId.orElse(null),
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
-      stackId: stack?.id,
+      stackId: stack.orElse(null)?.id,
       isEdited: isEdited,
     );
   }
@@ -51,19 +34,20 @@ extension DTOToAsset on api.AssetResponseDto {
       checksum: checksum,
       createdAt: fileCreatedAt,
       updatedAt: updatedAt,
+      uploadedAt: createdAt,
       ownerId: ownerId,
       visibility: visibility.toAssetVisibility(),
-      durationInSeconds: duration.toDuration()?.inSeconds ?? 0,
+      durationMs: duration,
       height: height?.toInt(),
       width: width?.toInt(),
       isFavorite: isFavorite,
-      livePhotoVideoId: livePhotoVideoId,
+      livePhotoVideoId: livePhotoVideoId.orElse(null),
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
-      stackId: stack?.id,
+      stackId: stack.orElse(null)?.id,
       isEdited: isEdited,
-      exifInfo: exifInfo != null ? ExifDtoConverter.fromDto(exifInfo!) : const ExifInfo(),
+      exifInfo: exifInfo.orElse(null) != null ? ExifDtoConverter.fromDto(exifInfo.orElse(null)!) : const ExifInfo(),
     );
   }
 }

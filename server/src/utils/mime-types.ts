@@ -58,6 +58,7 @@ const webUnsupportedImage = {
   '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
   '.jxl': ['image/jxl'],
+  '.mpo': ['image/jpeg'],
   '.svg': ['image/svg'],
   '.tif': ['image/tiff'],
   '.tiff': ['image/tiff'],

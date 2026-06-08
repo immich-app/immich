@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Suggestion type
 class SearchSuggestionType {
   /// Instantiate a new enum with the provided [value].
   const SearchSuggestionType._(this.value);

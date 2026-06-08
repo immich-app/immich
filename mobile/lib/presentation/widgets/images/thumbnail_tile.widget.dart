@@ -2,15 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class ThumbnailTile extends ConsumerStatefulWidget {
@@ -21,6 +20,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
     this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
+    this.showStackIndicator = false,
     super.key,
   });
 
@@ -30,6 +30,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
+  final bool showStackIndicator;
 
   @override
   ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
@@ -59,7 +60,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
     );
 
     final bool storageIndicator =
-        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && widget.showStorageIndicator;
+        ref.watch(appConfigProvider.select((s) => s.timeline.storageIndicator)) && widget.showStorageIndicator;
 
     if (!isCurrentAsset) {
       _hideIndicators = false;
@@ -119,6 +120,9 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                     flightShuttleBuilder: (context, animation, direction, from, to) {
                       void animationStatusListener(AnimationStatus status) {
+                        if (!mounted) {
+                          return;
+                        }
                         final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
                         if (_hideIndicators != heroInFlight) {
                           setState(() => _hideIndicators = heroInFlight);
@@ -129,7 +133,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                       }
 
                       animation.addStatusListener(animationStatusListener);
-                      return to.widget;
+                      return direction == HeroFlightDirection.push ? from.widget : to.widget;
                     },
                   ),
                 ),
@@ -139,7 +143,14 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     duration: Durations.short4,
                     child: Align(
                       alignment: Alignment.topRight,
-                      child: _AssetTypeIcons(asset: asset),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _AssetTypeIcons(asset: asset),
+                          if (widget.showStackIndicator) _StackIndicator(asset: asset),
+                        ],
+                      ),
                     ),
                   ),
                 if (storageIndicator && asset != null)
@@ -286,8 +297,8 @@ class _AssetTypeIcons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
-    final isLivePhoto = asset is RemoteAsset && asset.livePhotoVideoId != null;
+    final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
+    final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -295,11 +306,6 @@ class _AssetTypeIcons extends StatelessWidget {
       children: [
         if (asset.isVideo)
           Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
-        if (hasStack)
-          const Padding(
-            padding: EdgeInsets.only(right: 10.0, top: 6.0),
-            child: _TileOverlayIcon(Icons.burst_mode_rounded),
-          ),
         if (isLivePhoto)
           const Padding(
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
@@ -308,6 +314,24 @@ class _AssetTypeIcons extends StatelessWidget {
         if (asset.isAnimatedImage)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
       ],
+    );
+  }
+}
+
+class _StackIndicator extends StatelessWidget {
+  final BaseAsset asset;
+
+  const _StackIndicator({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    if (asset is! RemoteAsset || (asset as RemoteAsset).stackId == null) {
+      return const SizedBox.shrink();
+    }
+
+    return const Padding(
+      padding: EdgeInsets.only(right: 10.0, top: 6.0),
+      child: _TileOverlayIcon(Icons.burst_mode_rounded),
     );
   }
 }

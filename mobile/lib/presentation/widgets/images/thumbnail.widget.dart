@@ -82,7 +82,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
   void _loadFromThumbhashProvider() {
     _stopListeningToThumbhashStream();
     final thumbhashProvider = widget.thumbhashProvider;
-    if (thumbhashProvider == null || _providerImage != null) return;
+    if (thumbhashProvider == null || _providerImage != null) {
+      return;
+    }
 
     final thumbhashStream = _thumbhashStream = thumbhashProvider.resolve(ImageConfiguration.empty);
     final thumbhashStreamListener = _thumbhashStreamListener = ImageStreamListener(
@@ -108,7 +110,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
   void _loadFromImageProvider() {
     _stopListeningToImageStream();
     final imageProvider = widget.imageProvider;
-    if (imageProvider == null) return;
+    if (imageProvider == null) {
+      return;
+    }
 
     final imageStream = _imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final imageStreamListener = _imageStreamListener = ImageStreamListener(
@@ -201,7 +205,9 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   bool _isVisible() {
     final renderObject = context.findRenderObject() as RenderBox?;
-    if (renderObject == null || !renderObject.attached) return false;
+    if (renderObject == null || !renderObject.attached) {
+      return false;
+    }
 
     final topLeft = renderObject.localToGlobal(Offset.zero);
     final bottomRight = renderObject.localToGlobal(Offset(renderObject.size.width, renderObject.size.height));
@@ -290,16 +296,12 @@ class _ThumbnailRenderBox extends RenderBox {
   bool isRepaintBoundary = true;
 
   _ThumbnailRenderBox({
-    required ui.Image? image,
-    required ui.Image? previousImage,
-    required double fadeValue,
-    required BoxFit fit,
-    required Gradient placeholderGradient,
-  }) : _image = image,
-       _previousImage = previousImage,
-       _fadeValue = fadeValue,
-       _fit = fit,
-       _placeholderGradient = placeholderGradient;
+    required this._image,
+    required this._previousImage,
+    required this._fadeValue,
+    required this._fit,
+    required this._placeholderGradient,
+  });
 
   @override
   void paint(PaintingContext context, Offset offset) {
