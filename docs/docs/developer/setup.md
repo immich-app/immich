@@ -45,7 +45,7 @@ All the services are packaged to run as with single Docker Compose command.
 5. From the root directory, run:
 
 ```bash title="Start development server"
-mise dev # required Makefile installed on the system.
+mise dev
 ```
 
 5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.
