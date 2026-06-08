@@ -202,7 +202,10 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<({int added, Map<BulkIdErrorReason, int> failureReasons})> addAssets(String albumId, List<String> assetIds) async {
+  Future<({int added, Map<BulkIdErrorReason, int> failureReasons})> addAssets(
+    String albumId,
+    List<String> assetIds,
+  ) async {
     final result = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
     if (result.added > 0) {
       await _refreshAlbumInState(albumId);

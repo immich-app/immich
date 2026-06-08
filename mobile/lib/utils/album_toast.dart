@@ -12,36 +12,25 @@ import 'package:openapi/api.dart' show BulkIdErrorReason;
 ///   3. No permission → specific error
 ///   4. Not found → specific error
 ///   5. Anything else → generic error
-(String msg, ToastType type) resolveAlbumAddToast(
-  ActionResult result,
-  String albumName,
-  BuildContext context,
-) {
+(String msg, ToastType type) resolveAlbumAddToast(ActionResult result, String albumName, BuildContext context) {
   final duplicate = result.failureReasons[BulkIdErrorReason.duplicate] ?? 0;
 
   if (result.count > 0 && duplicate == 0) {
-    return (
-      'add_to_album_bottom_sheet_added'.t(context: context, args: {'album': albumName}),
-      ToastType.info,
-    );
+    return ('add_to_album_bottom_sheet_added'.t(context: context, args: {'album': albumName}), ToastType.info);
   }
 
   if (result.count > 0 && duplicate > 0) {
     return (
-      'home_page_add_to_album_conflicts'.t(context: context, args: {
-        'added': result.count,
-        'album': albumName,
-        'failed': duplicate,
-      }),
+      'home_page_add_to_album_conflicts'.t(
+        context: context,
+        args: {'added': result.count, 'album': albumName, 'failed': duplicate},
+      ),
       ToastType.info,
     );
   }
 
   if (duplicate > 0) {
-    return (
-      'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {'album': albumName}),
-      ToastType.info,
-    );
+    return ('add_to_album_bottom_sheet_already_exists'.t(context: context, args: {'album': albumName}), ToastType.info);
   }
 
   if ((result.failureReasons[BulkIdErrorReason.noPermission] ?? 0) > 0) {
