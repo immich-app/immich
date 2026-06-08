@@ -74,6 +74,11 @@ const possiblyAnimatedImage: Record<string, string[]> = Object.fromEntries(
   Object.entries(image).filter(([key]) => possiblyAnimatedImageExtensions.has(key)),
 );
 
+const heifImageExtensions = new Set(['.avif', '.heic', '.heif', '.hif']);
+const heifImage: Record<string, string[]> = Object.fromEntries(
+  Object.entries(image).filter(([key]) => heifImageExtensions.has(key)),
+);
+
 const extensionOverrides: Record<string, string> = {
   'image/jpeg': '.jpg',
 };
@@ -147,6 +152,7 @@ export const mimeTypes = {
   isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
   isImage: (filename: string) => isType(filename, image),
   isWebSupportedImage: (filename: string) => isType(filename, webSupportedImage),
+  isHeifImage: (filename: string) => isType(filename, heifImage),
   isPossiblyAnimatedImage: (filename: string) => isType(filename, possiblyAnimatedImage),
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
