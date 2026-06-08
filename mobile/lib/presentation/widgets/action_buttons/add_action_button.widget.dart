@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/album_toast.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -123,26 +124,12 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return;
     }
 
-    // Only report the failure when nothing was added; if some succeeded we show "added".
-    if (result.count > 0) {
-      ImmichToast.show(
-        context: context,
-        msg: context.t.add_to_album_bottom_sheet_added(album: album.name),
-      );
+    final (msg, toastType) = resolveAlbumAddToast(result, album.name, context);
+    ImmichToast.show(context: context, msg: msg, toastType: toastType);
 
+    if (result.count > 0) {
       // Refresh the "Appears in" list on the asset's info panel.
       ref.invalidate(albumsContainingAssetProvider(latest.remoteId!));
-    } else if (result.failedCount > 0) {
-      ImmichToast.show(
-        context: context,
-        msg: context.t.assets_cannot_be_added_to_album_count(count: result.failedCount),
-        toastType: ToastType.error,
-      );
-    } else {
-      ImmichToast.show(
-        context: context,
-        msg: context.t.add_to_album_bottom_sheet_already_exists(album: album.name),
-      );
     }
 
     if (!mounted) {

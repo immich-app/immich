@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/utils/album_toast.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GeneralBottomSheet extends ConsumerStatefulWidget {
@@ -57,12 +58,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         ImmichToast.show(context: context, msg: context.t.scaffold_body_error_occurred, toastType: ToastType.error);
         return;
       }
-      ImmichToast.show(
-        context: context,
-        msg: result.count == 0
-            ? context.t.add_to_album_bottom_sheet_already_exists(album: album.name)
-            : context.t.add_to_album_bottom_sheet_added(album: album.name),
-      );
+      final (msg, toastType) = resolveAlbumAddToast(result, album.name, context);
+      ImmichToast.show(context: context, msg: msg, toastType: toastType);
     }
 
     Future<void> onKeyboardExpand() {
