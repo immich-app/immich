@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
@@ -23,10 +24,15 @@ class MapBottomSheet extends StatelessWidget {
       resizeOnScroll: false,
       actions: [],
       backgroundColor: context.themeData.colorScheme.surface,
-      slivers: [const SliverFillRemaining(hasScrollBody: false, child: _ScopedMapTimeline())],
+      slivers: [const SliverFillRemaining(hasScrollBody: true, child: _ScopedMapTimeline())],
     );
   }
 }
+
+final _mapAssetCountProvider = StreamProvider.autoDispose<int>((ref) {
+  final service = ref.watch(timelineServiceProvider);
+  return service.watchBuckets().map((buckets) => buckets.fold(0, (acc, b) => acc + b.assetCount));
+}, dependencies: [timelineServiceProvider]);
 
 class _ScopedMapTimeline extends StatelessWidget {
   const _ScopedMapTimeline();
@@ -53,7 +59,24 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
+      child: const _MapTimelineContent(),
+    );
+  }
+}
+
+class _MapTimelineContent extends ConsumerWidget {
+  const _MapTimelineContent();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(_mapAssetCountProvider).valueOrNull ?? 0;
+    return Column(
+      children: [
+        Text(context.t.map_assets_in_bounds(count: count), style: context.themeData.textTheme.headlineSmall),
+        const Expanded(
+          child: Timeline(appBar: null, bottomSheet: GeneralBottomSheet(minChildSize: 0.23), withScrubber: false),
+        ),
+      ],
     );
   }
 }
