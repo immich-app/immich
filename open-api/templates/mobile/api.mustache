@@ -129,7 +129,6 @@ class {{{classname}}} {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -163,8 +162,8 @@ class {{{classname}}} {
   ///
     {{/-last}}
   {{/allParams}}
-  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}}, {{/required}}{{/allParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}}, {{/required}}{{/allParams}}Future<void>? abortTrigger, }) async {
-    final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}}, {{/required}}{{/allParams}}{{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}}, {{/required}}{{/allParams}}abortTrigger: abortTrigger,);
+  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+    final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}} {{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} {{/hasOptionalParams}});
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
