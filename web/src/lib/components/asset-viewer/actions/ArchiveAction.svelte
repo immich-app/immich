@@ -3,6 +3,7 @@
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { AssetAction } from '$lib/constants';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { toggleArchive } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -13,15 +14,16 @@
     asset: AssetResponseDto;
     onAction: OnAction;
     preAction: PreAction;
+    onUndoArchive?: (assets: TimelineAsset[]) => void;
   }
 
-  let { asset, onAction, preAction }: Props = $props();
+  let { asset, onAction, preAction, onUndoArchive }: Props = $props();
 
   const onArchive = async () => {
     if (!asset.isArchived) {
       preAction({ type: AssetAction.ARCHIVE, asset: toTimelineAsset(asset) });
     }
-    const updatedAsset = await toggleArchive(asset);
+    const updatedAsset = await toggleArchive(asset, onUndoArchive);
     if (updatedAsset) {
       onAction({ type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: toTimelineAsset(asset) });
     }

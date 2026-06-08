@@ -20,7 +20,7 @@
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
-  import type { OnUndoDelete } from '$lib/utils/actions';
+  import type { OnUndoArchive, OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -70,6 +70,7 @@
     preAction?: PreAction;
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
+    onUndoArchive?: OnUndoArchive;
     onClose?: (assetId: string) => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
@@ -86,6 +87,7 @@
     preAction,
     onAction,
     onUndoDelete,
+    onUndoArchive,
     onClose,
     onRemoveFromAlbum,
     onRandom,
@@ -502,6 +504,7 @@
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
+        {onUndoArchive}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {onRemoveFromAlbum}

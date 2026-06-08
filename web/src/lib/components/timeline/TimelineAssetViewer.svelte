@@ -209,6 +209,17 @@
     await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
+  const handleUndoArchive = async (assets: TimelineAsset[]) => {
+    if (assets.length === 0) {
+      return;
+    }
+
+    const restoredAsset = assets[0];
+    const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
+    assetViewerManager.setAsset(asset);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
   const handleUpdateOrUpload = (asset: AssetResponseDto) => {
     if (asset.id === assetCursor.current.id) {
       void loadCloseAssets(asset);
@@ -248,6 +259,7 @@
       assetCacheManager.invalidate();
     }}
     onUndoDelete={handleUndoDelete}
+    onUndoArchive={handleUndoArchive}
     onRandom={handleRandom}
     onRemoveFromAlbum={handleRemoveFromAlbum}
     onClose={handleClose}

@@ -391,7 +391,7 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   }
 };
 
-export const toggleArchive = async (asset: AssetResponseDto) => {
+export const toggleArchive = async (asset: AssetResponseDto, onUndoArchive?: (assets: TimelineAsset[]) => void) => {
   const $t = get(t);
   try {
     const data = await updateAsset({
@@ -403,12 +403,13 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
 
     asset.isArchived = data.isArchived;
     if (asset.isArchived) {
+      const timelineAsset = toTimelineAsset(asset);
       toastManager.primary(
         {
           description: $t('added_to_archive'),
           button: {
             label: $t('undo'),
-            onclick: () => undoArchiveAssets([toTimelineAsset(asset)]),
+            onclick: () => undoArchiveAssets([timelineAsset], onUndoArchive),
           },
         },
         { timeout: 5000 },
@@ -423,7 +424,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   return asset;
 };
 
-const undoArchiveAssets = async (assets: TimelineAsset[]) => {
+const undoArchiveAssets = async (assets: TimelineAsset[], onUndoArchive?: (assets: TimelineAsset[]) => void) => {
   const $t = get(t);
   try {
     const ids = assets.map((a) => a.id);
@@ -440,6 +441,7 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
       asset.visibility = AssetVisibility.Timeline;
     }
     eventManager.emit('AssetsUnarchive', assets);
+    onUndoArchive?.(assets);
   } catch (error) {
     handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
