@@ -15,12 +15,13 @@ const UpdateAssetBaseSchema = z
     longitude: longitudeSchema.optional().describe('Longitude coordinate'),
     rating: z
       .int()
-      .nullable()
-      .refine((v) => v === null || v === -1 || (v >= 1 && v <= 5), {
-        error: 'Must be -1, a number from 1 to 5, or null',
+      .min(-1)
+      .max(5)
+      .nullish()
+      .refine((v) => v !== 0, {
+        error: 'Rating must be -1 (rejected), 1–5 (starred), or null (unrated); 0 is not valid',
       })
-      .optional()
-      .describe('Rating in range [1-5], -1 (rejected) or null (unrated)')
+      .describe('Rating in range [1-5] (starred), -1 (rejected) or null (unrated)')
       .meta({
         ...new HistoryBuilder()
           .added('v1')
