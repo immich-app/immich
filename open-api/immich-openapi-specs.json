@@ -16602,9 +16602,9 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], -1 (rejected) or null (unrated)",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "description": "Rating in range [1-5] (starred), -1 (rejected) or null (unrated)",
+            "maximum": 5,
+            "minimum": -1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -26425,9 +26425,9 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], -1 (rejected) or null (unrated)",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "description": "Rating in range [1-5] (starred), -1 (rejected) or null (unrated)",
+            "maximum": 5,
+            "minimum": -1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
