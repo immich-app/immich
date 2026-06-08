@@ -12,7 +12,7 @@ You need to run `mise //server:install` before _once_.
 The e2e tests can be run by first starting up a test production environment via:
 
 ```bash
-make e2e
+mise e2e
 ```
 
 Before you can run the tests, you need to run the following commands _once_:

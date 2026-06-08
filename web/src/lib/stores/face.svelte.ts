@@ -67,6 +67,7 @@ class FaceManager {
 
   clear() {
     this.#cleared = true;
+    assetCacheManager.clearFaceCache();
     this.#data = [];
   }
 }

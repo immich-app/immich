@@ -3,6 +3,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -326,6 +327,7 @@
       });
 
       await assetViewerManager.setAssetId(assetId);
+      faceManager.clear();
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
