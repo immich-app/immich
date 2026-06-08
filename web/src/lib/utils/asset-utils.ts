@@ -32,6 +32,7 @@ import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
 
 export const tagAssets = async ({
@@ -407,7 +408,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
           description: $t('added_to_archive'),
           button: {
             label: $t('undo'),
-            onclick: () => undoArchiveAssets([asset.id]),
+            onclick: () => undoArchiveAssets([toTimelineAsset(asset)]),
           },
         },
         { timeout: 5000 },
