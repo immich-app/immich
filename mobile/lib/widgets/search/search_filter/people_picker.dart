@@ -46,16 +46,15 @@ class PeoplePicker extends HookConsumerWidget {
         Expanded(
           child: people.widgetWhen(
             onData: (people) {
+              final filtered = people
+                  .where((person) => person.name.toLowerCase().removeDiacritics().contains(normalizedQuery))
+                  .toList();
               return ListView.builder(
                 shrinkWrap: true,
-                itemCount: people
-                    .where((person) => person.name.toLowerCase().removeDiacritics().contains(normalizedQuery))
-                    .length,
+                itemCount: filtered.length,
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
-                  final person = people
-                      .where((person) => person.name.toLowerCase().removeDiacritics().contains(normalizedQuery))
-                      .toList()[index];
+                  final person = filtered[index];
                   final isSelected = selectedPeople.value.contains(person);
 
                   return Padding(
