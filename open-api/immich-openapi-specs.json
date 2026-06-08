@@ -16602,7 +16602,7 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5] (starred), -1 (rejected) or null (unrated)",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
@@ -26425,7 +26425,7 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5] (starred), -1 (rejected) or null (unrated)",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
