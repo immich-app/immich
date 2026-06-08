@@ -90,6 +90,8 @@ jobs:
             mobile/**/*.g.dart
             mobile/**/*.gr.dart
             mobile/**/*.drift.dart
+            mobile/**/*.g.swift
+            mobile/**/*.g.kt
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
