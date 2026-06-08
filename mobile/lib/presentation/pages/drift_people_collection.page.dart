@@ -65,7 +65,9 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
               data: (people) {
                 if (_search != null) {
                   people = people.where((person) {
-                    return person.name.toLowerCase().removeDiacritics().contains(_search!.toLowerCase().removeDiacritics());
+                    return person.name.toLowerCase().removeDiacritics().contains(
+                      _search!.toLowerCase().removeDiacritics(),
+                    );
                   }).toList();
                 }
                 return GridView.builder(

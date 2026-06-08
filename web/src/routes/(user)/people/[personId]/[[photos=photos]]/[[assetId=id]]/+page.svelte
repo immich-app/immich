@@ -239,7 +239,8 @@
 
     const normalizedPersonName = normalizeSearchString(personName);
     const existingPerson = result.find(
-      ({ name, id }: PersonResponseDto) => normalizeSearchString(name) === normalizedPersonName && id !== person.id && name,
+      ({ name, id }: PersonResponseDto) =>
+        normalizeSearchString(name) === normalizedPersonName && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;

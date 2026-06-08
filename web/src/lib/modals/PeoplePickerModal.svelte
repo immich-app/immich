@@ -25,7 +25,9 @@
   const filteredPeople = $derived(
     people
       .filter((person) => !excludedIds.includes(person.id))
-      .filter((person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName))),
+      .filter(
+        (person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName)),
+      ),
   );
 
   onMount(async () => {

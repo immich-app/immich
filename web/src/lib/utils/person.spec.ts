@@ -97,10 +97,7 @@ describe('searchNameLocal with multi-word names', () => {
 
 describe('searchNameLocal with personId exclusion', () => {
   it('should exclude the person with the given id', () => {
-    const people = [
-      makePerson({ id: '1', name: 'Amélie' }),
-      makePerson({ id: '2', name: 'Amélie' }),
-    ];
+    const people = [makePerson({ id: '1', name: 'Amélie' }), makePerson({ id: '2', name: 'Amélie' })];
     const result = searchNameLocal('amélie', people, 10, '1');
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('2');
@@ -112,10 +109,7 @@ describe('searchNameLocal with personId exclusion', () => {
   });
 
   it('should still exclude when search is accent-insensitive', () => {
-    const people = [
-      makePerson({ id: '1', name: 'Amélie' }),
-      makePerson({ id: '2', name: 'Amélie' }),
-    ];
+    const people = [makePerson({ id: '1', name: 'Amélie' }), makePerson({ id: '2', name: 'Amélie' })];
     const result = searchNameLocal('amelie', people, 10, '1');
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('2');
