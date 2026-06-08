@@ -65,7 +65,6 @@
 
   let timelineManager = $state<TimelineManager>();
 
-  // Mobile Swipe Logic
   const SHEET_MIN_HEIGHT = 15;
   const SHEET_COLLAPSED_HEIGHT = 30;
   const SHEET_DEFAULT_HEIGHT = 50;
@@ -102,9 +101,8 @@
     }
     isDraggingSheet = false;
 
-    // Snap states
     if (sheetHeight < SHEET_DISMISS_THRESHOLD) {
-      onClose(); // Swipe to dismiss
+      onClose();
     } else if (sheetHeight < SHEET_COLLAPSE_THRESHOLD) {
       sheetHeight = SHEET_COLLAPSED_HEIGHT;
     } else if (sheetHeight > SHEET_EXPAND_THRESHOLD) {

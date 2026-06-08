@@ -28,13 +28,11 @@
 
   let isTimelinePanelVisible = $state(false);
 
-  // Desktop Sidebar State
   const DEFAULT_PANEL_WIDTH = 384;
   const DESKTOP_PANEL_MIN_WIDTH = 320;
   const DESKTOP_PANEL_MAX_WIDTH = 700;
   let timelinePanelWidth = $state(DEFAULT_PANEL_WIDTH);
 
-  // Mobile Bottom Sheet State
   let sheetHeight = $state(50);
   let isDraggingSheet = $state(false);
   let innerWidth = $state(1024);
@@ -77,7 +75,7 @@
     isTimelinePanelVisible = false;
     selectedClusterBBox = undefined;
     selectedClusterIds = new Set();
-    sheetHeight = 50; // Reset for next open
+    sheetHeight = 50;
   }
 
   function toggleTimeline() {

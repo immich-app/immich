@@ -32,13 +32,11 @@ test.describe('Map', () => {
   });
 
   test('mobile viewport displays all controls', async ({ page }) => {
-    // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
     await mapUtils.navigateToMap(page);
     await mapUtils.expectMapVisible(page);
 
-    // Timeline toggle button should be visible on mobile
     await expect(mapUtils.getTimelineButton(page)).toBeVisible();
   });
 });
