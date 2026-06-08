@@ -311,4 +311,93 @@ describe(SyncRequestType.AlbumAssetsV2, () => {
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
+
+  it('should not leak isFavorite for album assets owned by another user (create path)', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user2.id, isFavorite: true });
+    const { album } = await ctx.newAlbum({ ownerId: user2.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Viewer });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    expect(response).toEqual([
+      updateSyncAck,
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({ id: asset.id, isFavorite: false }),
+        type: SyncEntityType.AlbumAssetCreateV2,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+
+  it('should not leak isFavorite for album assets owned by another user (update path)', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user2.id, isFavorite: false });
+    const { album } = await ctx.newAlbum({ ownerId: user2.id });
+    await wait(2);
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Viewer });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    await ctx.syncAckAll(auth, response);
+
+    const assetRepository = ctx.get(AssetRepository);
+    await assetRepository.update({ id: asset.id, isFavorite: true });
+
+    const updateResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    expect(updateResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({ id: asset.id, isFavorite: false }),
+        type: SyncEntityType.AlbumAssetUpdateV2,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+
+  it('should not leak isFavorite for album assets owned by another user (backfill path)', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user2.id, isFavorite: true });
+    const { album } = await ctx.newAlbum({ ownerId: user2.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+    // prime the create checkpoint so backfill runs on next call
+    const primeResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    await ctx.syncAckAll(auth, primeResponse);
+
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Viewer });
+
+    const backfillResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    expect(backfillResponse).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({ id: asset.id, isFavorite: false }),
+          type: SyncEntityType.AlbumAssetBackfillV2,
+        }),
+      ]),
+    );
+  });
+
+  it('should preserve isFavorite for album assets owned by the requesting user', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: auth.user.id, isFavorite: true });
+    const { album } = await ctx.newAlbum({ ownerId: user2.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Viewer });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
+    expect(response).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({ id: asset.id, isFavorite: true }),
+          type: SyncEntityType.AlbumAssetCreateV2,
+        }),
+      ]),
+    );
+  });
 });
