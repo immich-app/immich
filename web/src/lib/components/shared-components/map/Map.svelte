@@ -19,7 +19,7 @@
   import { Icon, modalManager, Theme, themeManager } from '@immich/ui';
   import { mdiCog, mdiMap, mdiMapMarker, mdiImageMultiple } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-  import { debounce, isEqual, omit } from 'lodash-es';
+  import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import {
     GlobeControl,
@@ -66,7 +66,6 @@
     isTimelineOpen?: boolean;
     onToggleTimeline?: () => void;
     sheetHeight?: number;
-    isDraggingSheet?: boolean;
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
   }
@@ -89,7 +88,6 @@
     isTimelineOpen = false,
     onToggleTimeline,
     sheetHeight = 50,
-    isDraggingSheet = false,
     showSimpleControls = true,
     autoFitBounds = true,
   }: Props = $props();
@@ -381,7 +379,7 @@
       {#if onToggleTimeline}
         <Control position="top-right">
           <ControlGroup>
-            <ControlButton onclick={() => onToggleTimeline?.()}>
+            <ControlButton title={$t('timeline')} onclick={() => onToggleTimeline?.()}>
               <Icon
                 title={$t('timeline')}
                 icon={mdiImageMultiple}

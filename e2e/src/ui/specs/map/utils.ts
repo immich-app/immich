@@ -66,8 +66,6 @@ export const mapUtils = {
     return page.getByLabel(/timeline/i);
   },
 
-
-
   /**
    * Verify all standard map controls are visible
    */

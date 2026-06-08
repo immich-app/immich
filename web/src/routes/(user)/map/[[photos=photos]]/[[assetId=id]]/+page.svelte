@@ -44,8 +44,6 @@
     Math.min(Math.max(timelinePanelWidth, DESKTOP_PANEL_MIN_WIDTH), DESKTOP_PANEL_MAX_WIDTH),
   );
 
-
-
   let isResizingPanel = $state(false);
   let resizeStartX = $state(0);
   let resizeStartWidth = $state(0);
@@ -109,8 +107,6 @@
     assetViewerManager.showAssetViewer(false);
     handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
   }
-
-
 </script>
 
 <svelte:window bind:innerWidth onpointermove={handleResizeMove} onpointerup={handleResizeEnd} />
@@ -131,7 +127,6 @@
             isTimelineOpen={isTimelinePanelVisible}
             onToggleTimeline={toggleTimeline}
             {sheetHeight}
-            {isDraggingSheet}
           />
         {/await}
       </div>

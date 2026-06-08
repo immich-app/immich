@@ -20,7 +20,7 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -37,7 +37,6 @@
   import { mdiDotsVertical, mdiImageMultiple } from '@mdi/js';
   import { ceil, floor, clamp } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import { SvelteSet } from 'svelte/reactivity';
   import { fade } from 'svelte/transition';
 
   interface Props {
