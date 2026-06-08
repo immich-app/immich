@@ -238,9 +238,9 @@ describe(AssetController.name, () => {
 
     it('should reject invalid rating', async () => {
       for (const [test, errors] of [
-        [{ rating: 7 }, [{ path: ['rating'], message: 'Must be -1, a number from 1 to 5, or null' }]],
+        [{ rating: 7 }, [{ path: ['rating'], message: 'Too big: expected number to be <=5' }]],
         [{ rating: 3.5 }, [{ path: ['rating'], message: 'Invalid input: expected int, received number' }]],
-        [{ rating: -2 }, [{ path: ['rating'], message: 'Must be -1, a number from 1 to 5, or null' }]],
+        [{ rating: -2 }, [{ path: ['rating'], message: 'Too small: expected number to be >=-1' }]],
       ] as const) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
