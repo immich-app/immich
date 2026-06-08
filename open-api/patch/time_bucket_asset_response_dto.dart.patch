@@ -1,9 +1,0 @@
-@@ -83,7 +83,7 @@
-   List<num> ratio;
- 
-   /// Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)
--  Optional<List<List<String>>?> stack;
-+  Optional<List<List<String>?>?> stack;
- 
-   /// Array of BlurHash strings for generating asset previews (base64 encoded)
-   List<String> thumbhash;
