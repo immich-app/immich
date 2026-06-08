@@ -270,7 +270,7 @@ describe(SyncRequestType.AlbumAssetsV2, () => {
   it('should sync asset updates for an album shared with you', async () => {
     const { auth, ctx } = await setup();
     const { user: user2 } = await ctx.newUser();
-    const { asset } = await ctx.newAsset({ ownerId: user2.id, isFavorite: false });
+    const { asset } = await ctx.newAsset({ ownerId: user2.id, originalFileName: 'before' });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     await wait(2);
     await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
@@ -281,9 +281,7 @@ describe(SyncRequestType.AlbumAssetsV2, () => {
       updateSyncAck,
       {
         ack: expect.any(String),
-        data: expect.objectContaining({
-          id: asset.id,
-        }),
+        data: expect.objectContaining({ id: asset.id, originalFileName: 'before' }),
         type: SyncEntityType.AlbumAssetCreateV2,
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
@@ -291,21 +289,14 @@ describe(SyncRequestType.AlbumAssetsV2, () => {
 
     await ctx.syncAckAll(auth, response);
 
-    // update the asset
     const assetRepository = ctx.get(AssetRepository);
-    await assetRepository.update({
-      id: asset.id,
-      isFavorite: true,
-    });
+    await assetRepository.update({ id: asset.id, originalFileName: 'after' });
 
     const updateResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV2]);
     expect(updateResponse).toEqual([
       {
         ack: expect.any(String),
-        data: expect.objectContaining({
-          id: asset.id,
-          isFavorite: true,
-        }),
+        data: expect.objectContaining({ id: asset.id, originalFileName: 'after' }),
         type: SyncEntityType.AlbumAssetUpdateV2,
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
