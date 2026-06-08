@@ -1,10 +1,4 @@
-import {
-  AssetOrder,
-  AssetOrderBy,
-  getAssetInfo,
-  getTimeBuckets,
-  type AssetResponseDto,
-} from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
