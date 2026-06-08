@@ -17,8 +17,10 @@ import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/utils/album_toast.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class FavoriteBottomSheet extends ConsumerWidget {
@@ -46,24 +48,12 @@ class FavoriteBottomSheet extends ConsumerWidget {
         ImmichToast.show(context: context, msg: context.t.add_to_album_bottom_sheet_some_local_assets);
       }
 
-      // Only report the failure when nothing was added; if some succeeded we show "added".
-      if (result.added > 0) {
-        ImmichToast.show(
-          context: context,
-          msg: context.t.add_to_album_bottom_sheet_added(album: album.name),
-        );
-      } else if (result.failed > 0) {
-        ImmichToast.show(
-          context: context,
-          msg: context.t.assets_cannot_be_added_to_album_count(count: result.failed),
-          toastType: ToastType.error,
-        );
-      } else {
-        ImmichToast.show(
-          context: context,
-          msg: context.t.add_to_album_bottom_sheet_already_exists(album: album.name),
-        );
-      }
+      final (msg, toastType) = resolveAlbumAddToast(
+        ActionResult(count: result.added, failureReasons: result.failureReasons, success: true),
+        album.name,
+        context,
+      );
+      ImmichToast.show(context: context, msg: msg, toastType: toastType);
 
       ref.read(multiSelectProvider.notifier).reset();
     }
