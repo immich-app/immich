@@ -8,7 +8,6 @@ settings:
 overrides:
   canvas: 3.2.3
   sharp: ^0.34.5
-  webpackbar: ^7.0.0
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
