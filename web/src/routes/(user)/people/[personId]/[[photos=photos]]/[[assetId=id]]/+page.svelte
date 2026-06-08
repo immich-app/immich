@@ -249,7 +249,7 @@
         .filter(
           (person: PersonResponseDto) =>
             normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
-            person.id !== personMerge2.id &&
+            person.id !== personMerge2?.id &&
             person.id !== personMerge1?.id &&
             !person.isHidden,
         )
