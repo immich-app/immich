@@ -8,9 +8,6 @@ export interface SelectionBBox {
   north: number;
 }
 
-/**
- * Auto-zoom cluster by calculating bounding box of all leaves.
- */
 export async function autoZoomCluster({
   map,
   mapSource,
@@ -31,7 +28,6 @@ export async function autoZoomCluster({
     return;
   }
 
-  // Calculate the exact bounding box of all items in the cluster
   const [firstLongitude, firstLatitude] = (leaves[0].geometry as Point).coordinates;
   let west = firstLongitude;
   let south = firstLatitude;
@@ -48,9 +44,7 @@ export async function autoZoomCluster({
 
   const bbox: SelectionBBox = { west, south, east, north };
 
-  // Auto-zoom logic
   if (west !== east || south !== north) {
-    // Multiple distinct locations: fit bounds
     map.fitBounds(
       [
         [west, south],
@@ -59,7 +53,6 @@ export async function autoZoomCluster({
       { padding: 100, speed: 1.5, maxZoom: 17 },
     );
   } else {
-    // All assets in the same place: use expansion zoom or fallback
     try {
       const expansionZoom = await mapSource.getClusterExpansionZoom(clusterId);
       map.flyTo({
@@ -68,7 +61,6 @@ export async function autoZoomCluster({
         speed: 1.5,
       });
     } catch {
-      // Fallback if expansion zoom fails
       map.flyTo({
         center: [west, south],
         zoom: map.getZoom() + 2,
@@ -77,7 +69,6 @@ export async function autoZoomCluster({
     }
   }
 
-  // Invoke callback
   if (onClusterSelect) {
     onClusterSelect(ids, bbox);
     return;

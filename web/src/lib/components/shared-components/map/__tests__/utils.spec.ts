@@ -4,9 +4,6 @@ import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { autoZoomCluster } from '../utils';
 
-/**
- * Unit tests for the autoZoomCluster function
- */
 describe('autoZoomCluster', () => {
   let mockMap: Partial<Map>;
   let mockMapSource: Partial<GeoJSONSource>;
@@ -243,7 +240,6 @@ describe('autoZoomCluster', () => {
         east: 30,
         north: 40,
       });
-      // onClusterSelect should be called, not onSelect
       expect(onSelect).not.toHaveBeenCalled();
     });
 
@@ -303,7 +299,6 @@ describe('autoZoomCluster', () => {
         onSelect,
       });
 
-      // Should call with undefined id
       expect(onSelect).toHaveBeenCalledWith([undefined]);
     });
   });
@@ -345,7 +340,6 @@ describe('autoZoomCluster', () => {
         onSelect,
       });
 
-      // Verify getClusterLeaves was called with limit 10000
       expect(mockMapSource.getClusterLeaves).toHaveBeenCalledWith(123, 10_000, 0);
     });
   });

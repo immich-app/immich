@@ -3,9 +3,6 @@ import type { GeoJSONSource, Map } from 'maplibre-gl';
 import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-/**
- * Integration tests for Map component cluster click behavior.
- */
 describe('Map component - Cluster click integration', () => {
   let mockMap: Partial<Map>;
   let mockMapSource: Partial<GeoJSONSource>;
@@ -45,7 +42,6 @@ describe('Map component - Cluster click integration', () => {
       const getSourceMock = vi.fn().mockReturnValue(mockMapSource);
       mockMap.getSource = getSourceMock;
 
-      // Simulating handleClusterClick function
       const extractedSource = (mockMap as Map).getSource('geojson');
 
       expect(getSourceMock).toHaveBeenCalledWith('geojson');
@@ -67,7 +63,6 @@ describe('Map component - Cluster click integration', () => {
       const coords = leaves.map((l) => (l.geometry as Point).coordinates);
       expect(coords).toHaveLength(2);
 
-      // Simulate the callback that would be triggered
       const bboxWest = Math.min(...coords.map((c) => c[0]));
       const bboxSouth = Math.min(...coords.map((c) => c[1]));
       const bboxEast = Math.max(...coords.map((c) => c[0]));
@@ -134,7 +129,6 @@ describe('Map component - Cluster click integration', () => {
       const zoom = (mockMap as Map).getZoom?.();
       expect(zoom).toBe(10);
 
-      // Fallback calculation should work
       const fallbackZoom = (zoom ?? 0) + 2;
       expect(fallbackZoom).toBe(12);
     });
@@ -147,7 +141,6 @@ describe('Map component - Cluster click integration', () => {
       const leaves = await (mockMapSource as GeoJSONSource).getClusterLeaves(123, 10_000, 0);
       expect(leaves.length).toBe(0);
 
-      // Component should return early without calling callbacks
       if (leaves.length === 0) {
         expect(onSelect).not.toHaveBeenCalled();
       }
@@ -163,7 +156,6 @@ describe('Map component - Cluster click integration', () => {
         const expansionZoom = await (mockMapSource as GeoJSONSource).getClusterExpansionZoom(456);
         tries.push(expansionZoom);
       } catch {
-        // Fallback path: use getZoom() + 2
         const currentZoom = (mockMap as Map).getZoom?.() ?? 8;
         tries.push(currentZoom + 2);
       }
@@ -190,7 +182,6 @@ describe('Map component - Cluster click integration', () => {
       const selectedIds = ['uuid-1', 'uuid-2'];
       const selectedBbox = { west: 10, south: 20, east: 30, north: 40 };
 
-      // Panel would filter visible assets by this bbox
       expect(selectedBbox).toHaveProperty('west');
       expect(selectedBbox).toHaveProperty('south');
       expect(selectedBbox).toHaveProperty('east');

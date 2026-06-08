@@ -22,7 +22,6 @@ test.describe('Map - Cluster Auto-Zoom', () => {
     adminUserId = faker.string.uuid();
     testContext.adminId = adminUserId;
 
-    // Generate timeline data with GPS coordinates
     mapTestData = generateTimelineData({
       ...createDefaultTimelineConfig(),
       ownerId: adminUserId,
@@ -46,7 +45,6 @@ test.describe('Map - Cluster Auto-Zoom', () => {
     const firstCluster = mapUtils.getFirstCluster(page);
     await expect(firstCluster).toBeVisible();
 
-    // Click cluster
     await mapUtils.clickCluster(page, firstCluster);
 
     await mapUtils.expectMapVisible(page);

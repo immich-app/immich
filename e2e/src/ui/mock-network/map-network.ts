@@ -8,7 +8,6 @@ export const setupMapMockApiRoutes = async (context: BrowserContext, timelineDat
 
     for (const bucket of timelineData.buckets.values()) {
       for (const asset of bucket) {
-        // Only include assets with GPS coordinates
         if (asset.latitude !== null && asset.longitude !== null) {
           markers.push({
             id: asset.id,
