@@ -14,10 +14,10 @@ class IntegrityReportResponseDto {
   /// Returns a new [IntegrityReportResponseDto] instance.
   IntegrityReportResponseDto({
     this.items = const [],
-    this.nextCursor,
+    this.nextCursor = const Optional.absent(),
   });
 
-  List<IntegrityReportDto> items;
+  List<IntegrityReportResponseDtoItemsInner> items;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -25,7 +25,7 @@ class IntegrityReportResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? nextCursor;
+  Optional<String?> nextCursor;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrityReportResponseDto &&
@@ -44,10 +44,9 @@ class IntegrityReportResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'items'] = this.items;
-    if (this.nextCursor != null) {
-      json[r'nextCursor'] = this.nextCursor;
-    } else {
-    //  json[r'nextCursor'] = null;
+    if (this.nextCursor.isPresent) {
+      final value = this.nextCursor.value;
+      json[r'nextCursor'] = value;
     }
     return json;
   }
@@ -61,8 +60,8 @@ class IntegrityReportResponseDto {
       final json = value.cast<String, dynamic>();
 
       return IntegrityReportResponseDto(
-        items: IntegrityReportDto.listFromJson(json[r'items']),
-        nextCursor: mapValueOfType<String>(json, r'nextCursor'),
+        items: IntegrityReportResponseDtoItemsInner.listFromJson(json[r'items']),
+        nextCursor: json.containsKey(r'nextCursor') ? Optional.present(mapValueOfType<String>(json, r'nextCursor')) : const Optional.absent(),
       );
     }
     return null;

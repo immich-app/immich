@@ -3,7 +3,6 @@ import {
   AssetMediaResponseDto,
   AssetResponseDto,
   AssetVisibility,
-  CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
   JobCreateDto,
@@ -20,7 +19,6 @@ import {
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
   ValidateLibraryDto,
-  checkExistingAssets,
   createAlbum,
   createApiKey,
   createJob,
@@ -92,7 +90,7 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../cli' }).promise;
+  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../packages/cli' }).promise;
 export const dockerExec = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', args.join(' ')]);
 export const immichAdmin = (args: string[]) => dockerExec([`immich-admin ${args.join(' ')}`]);
@@ -177,41 +175,52 @@ export const utils = {
   },
 
   resetDatabase: async (tables?: string[]) => {
-    try {
-      client = await utils.connectDatabase();
+    client = await utils.connectDatabase();
 
-      tables = tables || [
-        // TODO e2e test for deleting a stack, since it is quite complex
-        'stack',
-        'library',
-        'shared_link',
-        'person',
-        'album',
-        'asset',
-        'asset_face',
-        'activity',
-        'api_key',
-        'session',
-        'user',
-        'system_metadata',
-        'tag',
-        'integrity_report',
-      ];
+    tables = tables || [
+      // TODO e2e test for deleting a stack, since it is quite complex
+      'stack',
+      'library',
+      'shared_link',
+      'person',
+      'album',
+      'asset',
+      'asset_face',
+      'activity',
+      'api_key',
+      'session',
+      'user',
+      'system_metadata',
+      'tag',
+      'integrity_report',
+    ];
 
-      const sql: string[] = [];
+    const truncateTables = tables.filter((table) => table !== 'system_metadata');
+    const sql: string[] = [];
 
-      for (const table of tables) {
-        if (table === 'system_metadata') {
-          sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
-        } else {
-          sql.push(`DELETE FROM "${table}" CASCADE;`);
+    if (truncateTables.length > 0) {
+      sql.push(`TRUNCATE "${truncateTables.join('", "')}" CASCADE;`);
+    }
+
+    if (tables.includes('system_metadata')) {
+      sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
+    }
+
+    const query = sql.join('\n');
+    const maxRetries = 3;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await client.query(query);
+        return;
+      } catch (error: any) {
+        if (error?.code === '40P01' && attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+          continue;
         }
+        console.error('Failed to reset database', error);
+        throw error;
       }
-
-      await client.query(sql.join('\n'));
-    } catch (error) {
-      console.error('Failed to reset database', error);
-      throw error;
     }
   },
 
@@ -333,8 +342,6 @@ export const utils = {
     },
   ) => {
     const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
       fileCreatedAt: new Date().toISOString(),
       fileModifiedAt: new Date().toISOString(),
       ...dto,
@@ -355,40 +362,6 @@ export const utils = {
     if (dto?.sidecarData?.bytes) {
       void builder.attach('sidecarData', dto.sidecarData.bytes, dto.sidecarData.filename);
     }
-
-    for (const [key, value] of Object.entries(_dto)) {
-      void builder.field(key, String(value));
-    }
-
-    const { body } = await builder;
-
-    return body as AssetMediaResponseDto;
-  },
-
-  replaceAsset: async (
-    accessToken: string,
-    assetId: string,
-    dto?: Partial<Omit<AssetMediaCreateDto, 'assetData'>> & { assetData?: FileData },
-  ) => {
-    const _dto = {
-      deviceAssetId: 'test-1',
-      deviceId: 'test',
-      fileCreatedAt: new Date().toISOString(),
-      fileModifiedAt: new Date().toISOString(),
-      ...dto,
-    };
-
-    const assetData = dto?.assetData?.bytes || makeRandomImage();
-    const filename = dto?.assetData?.filename || 'example.png';
-
-    if (dto?.assetData?.bytes) {
-      console.log(`Uploading ${filename}`);
-    }
-
-    const builder = request(app)
-      .put(`/assets/${assetId}/original`)
-      .attach('assetData', assetData, filename)
-      .set('Authorization', `Bearer ${accessToken}`);
 
     for (const [key, value] of Object.entries(_dto)) {
       void builder.field(key, String(value));
@@ -439,9 +412,6 @@ export const utils = {
   getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
-
-  checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
-    checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
   searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
@@ -499,6 +469,9 @@ export const utils = {
 
   createStack: (accessToken: string, assetIds: string[]) =>
     createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
+
+  setAssetDuplicateId: (accessToken: string, assetId: string, duplicateId: string | null) =>
+    updateAssets({ assetBulkUpdateDto: { ids: [assetId], duplicateId } }, { headers: asBearerAuth(accessToken) }),
 
   upsertTags: (accessToken: string, tags: string[]) =>
     upsertTags({ tagUpsertDto: { tags } }, { headers: asBearerAuth(accessToken) }),
@@ -639,6 +612,8 @@ export const utils = {
     await utils.createJob(accessToken, {
       name: ManualJobName.BackupDatabase,
     });
+
+    await utils.waitForQueueFinish(accessToken, 'backupDatabase');
 
     return utils.poll(
       () => request(app).get('/admin/database-backups').set('Authorization', `Bearer ${accessToken}`),

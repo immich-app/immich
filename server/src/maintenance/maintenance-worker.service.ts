@@ -12,7 +12,7 @@ import {
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
-import { ServerConfigDto, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { ServerConfigDto, ServerPingResponse, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
@@ -119,6 +119,10 @@ export class MaintenanceWorkerService {
    */
   getVersion() {
     return ServerVersionResponseDto.fromSemVer(serverVersion);
+  }
+
+  ping(): ServerPingResponse {
+    return { res: 'pong' };
   }
 
   /**

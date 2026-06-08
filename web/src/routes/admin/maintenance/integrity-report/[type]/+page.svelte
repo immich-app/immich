@@ -5,7 +5,7 @@
   import { Route } from '$lib/route';
   import { getIntegrityReportActions } from '$lib/services/integrity.service';
   import { asyncTimeout } from '$lib/utils';
-  import { getIntegrityReport, getQueuesLegacy, IntegrityReportType } from '@immich/sdk';
+  import { getIntegrityReport, getQueuesLegacy, IntegrityReport } from '@immich/sdk';
   import { Button, Table, TableBody, TableHeader, TableHeading } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -55,7 +55,7 @@
 
   const { Download, Delete } = $derived(getIntegrityReportActions($t, data.type));
 
-  const onIntegrityReportDeleted = ({ id, type }: { id?: string; type?: IntegrityReportType }) => {
+  const onIntegrityReportDeleted = ({ id, type }: { id?: string; type?: IntegrityReport }) => {
     if (type === data.type) {
       integrityReport.items = [];
       integrityReport.nextCursor = undefined;
@@ -90,7 +90,7 @@
         </TableBody>
 
         {#if integrityReport.nextCursor}
-          <tfoot class="flex justify-center mt-4">
+          <tfoot class="mt-4 flex justify-center">
             <Button size="medium" color="secondary" onclick={() => loadMore()}>{$t('load_more')}</Button>
           </tfoot>
         {/if}

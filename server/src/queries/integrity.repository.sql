@@ -37,14 +37,16 @@ limit
 
 -- IntegrityRepository.getAssetPathsByPaths
 select
-  "originalPath",
-  "encodedVideoPath"
+  "asset"."originalPath",
+  "asset_file"."path" as "encodedVideoPath"
 from
   "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
 where
   (
-    "originalPath" in $1
-    or "encodedVideoPath" in $2
+    "originalPath" in $2
+    or "asset_file"."path" in $3
   )
 
 -- IntegrityRepository.getAssetFilePathsByPaths
@@ -64,9 +66,11 @@ from
 -- IntegrityRepository.streamAllAssetPaths
 select
   "originalPath",
-  "encodedVideoPath"
+  "asset_file"."path" as "encodedVideoPath"
 from
   "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
 
 -- IntegrityRepository.streamAllAssetFilePaths
 select
@@ -92,15 +96,17 @@ from
       "asset"."deletedAt" is null
     union all
     select
-      "asset"."encodedVideoPath" as "path",
+      "asset_file"."path" as "path",
       "asset"."id" as "assetId",
       null::uuid as "fileAssetId"
     from
       "asset"
+      left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+      and "asset_file"."type" = $1
     where
       "asset"."deletedAt" is null
-      and "asset"."encodedVideoPath" is not null
-      and "asset"."encodedVideoPath" != ''
+      and "asset_file"."path" is not null
+      and "asset_file"."path" != ''
     union all
     select
       "path",
@@ -109,7 +115,7 @@ from
     from
       "asset_file"
   ) as "allPaths"
-  left join "integrity_report" on "integrity_report"."type" = $1
+  left join "integrity_report" on "integrity_report"."type" = $2
   and (
     "integrity_report"."assetId" = "allPaths"."assetId"
     or "integrity_report"."fileAssetId" = "allPaths"."fileAssetId"

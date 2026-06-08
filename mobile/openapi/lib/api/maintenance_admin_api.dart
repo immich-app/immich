@@ -25,7 +25,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteIntegrityReportWithHttpInfo(String id,) async {
+  Future<Response> deleteIntegrityReportWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/report/{id}'
       .replaceAll('{id}', id);
@@ -48,6 +48,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +59,8 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteIntegrityReport(String id,) async {
-    final response = await deleteIntegrityReportWithHttpInfo(id,);
+  Future<void> deleteIntegrityReport(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteIntegrityReportWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -70,7 +71,7 @@ class MaintenanceAdminApi {
   /// Collect integrity checks and other heuristics about local data.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> detectPriorInstallWithHttpInfo() async {
+  Future<Response> detectPriorInstallWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/detect-install';
 
@@ -92,14 +93,15 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Detect existing install
   ///
   /// Collect integrity checks and other heuristics about local data.
-  Future<MaintenanceDetectInstallResponseDto?> detectPriorInstall() async {
-    final response = await detectPriorInstallWithHttpInfo();
+  Future<MaintenanceDetectInstallResponseDto?> detectPriorInstall({ Future<void>? abortTrigger, }) async {
+    final response = await detectPriorInstallWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -121,14 +123,14 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [IntegrityReportType] type (required):
+  /// * [IntegrityReport] type (required):
   ///
   /// * [String] cursor:
   ///   Cursor for pagination
   ///
-  /// * [num] limit:
+  /// * [int] limit:
   ///   Number of items per page
-  Future<Response> getIntegrityReportWithHttpInfo(IntegrityReportType type, { String? cursor, num? limit, }) async {
+  Future<Response> getIntegrityReportWithHttpInfo(IntegrityReport type, { String? cursor, int? limit, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/report';
 
@@ -158,6 +160,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -167,15 +170,15 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [IntegrityReportType] type (required):
+  /// * [IntegrityReport] type (required):
   ///
   /// * [String] cursor:
   ///   Cursor for pagination
   ///
-  /// * [num] limit:
+  /// * [int] limit:
   ///   Number of items per page
-  Future<IntegrityReportResponseDto?> getIntegrityReport(IntegrityReportType type, { String? cursor, num? limit, }) async {
-    final response = await getIntegrityReportWithHttpInfo(type,  cursor: cursor, limit: limit, );
+  Future<IntegrityReportResponseDto?> getIntegrityReport(IntegrityReport type, { String? cursor, int? limit, Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportWithHttpInfo(type, cursor: cursor, limit: limit, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -197,8 +200,8 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [IntegrityReportType] type (required):
-  Future<Response> getIntegrityReportCsvWithHttpInfo(IntegrityReportType type,) async {
+  /// * [IntegrityReport] type (required):
+  Future<Response> getIntegrityReportCsvWithHttpInfo(IntegrityReport type, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/report/{type}/csv'
       .replaceAll('{type}', type.toString());
@@ -221,6 +224,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -230,9 +234,9 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [IntegrityReportType] type (required):
-  Future<MultipartFile?> getIntegrityReportCsv(IntegrityReportType type,) async {
-    final response = await getIntegrityReportCsvWithHttpInfo(type,);
+  /// * [IntegrityReport] type (required):
+  Future<MultipartFile?> getIntegrityReportCsv(IntegrityReport type, { Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportCsvWithHttpInfo(type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -255,7 +259,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getIntegrityReportFileWithHttpInfo(String id,) async {
+  Future<Response> getIntegrityReportFileWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/report/{id}/file'
       .replaceAll('{id}', id);
@@ -278,6 +282,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -288,8 +293,8 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<MultipartFile?> getIntegrityReportFile(String id,) async {
-    final response = await getIntegrityReportFileWithHttpInfo(id,);
+  Future<MultipartFile?> getIntegrityReportFile(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportFileWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -308,7 +313,7 @@ class MaintenanceAdminApi {
   /// Get a count of the items flagged in each integrity report
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getIntegrityReportSummaryWithHttpInfo() async {
+  Future<Response> getIntegrityReportSummaryWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/summary';
 
@@ -330,14 +335,15 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Get integrity report summary
   ///
   /// Get a count of the items flagged in each integrity report
-  Future<IntegrityReportSummaryResponseDto?> getIntegrityReportSummary() async {
-    final response = await getIntegrityReportSummaryWithHttpInfo();
+  Future<IntegrityReportSummaryResponseDto?> getIntegrityReportSummary({ Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportSummaryWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -356,7 +362,7 @@ class MaintenanceAdminApi {
   /// Fetch information about the currently running maintenance action.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMaintenanceStatusWithHttpInfo() async {
+  Future<Response> getMaintenanceStatusWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/status';
 
@@ -378,14 +384,15 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Get maintenance mode status
   ///
   /// Fetch information about the currently running maintenance action.
-  Future<MaintenanceStatusResponseDto?> getMaintenanceStatus() async {
-    final response = await getMaintenanceStatusWithHttpInfo();
+  Future<MaintenanceStatusResponseDto?> getMaintenanceStatus({ Future<void>? abortTrigger, }) async {
+    final response = await getMaintenanceStatusWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -408,7 +415,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
-  Future<Response> maintenanceLoginWithHttpInfo(MaintenanceLoginDto maintenanceLoginDto,) async {
+  Future<Response> maintenanceLoginWithHttpInfo(MaintenanceLoginDto maintenanceLoginDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/login';
 
@@ -430,6 +437,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -440,8 +448,8 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
-  Future<MaintenanceAuthDto?> maintenanceLogin(MaintenanceLoginDto maintenanceLoginDto,) async {
-    final response = await maintenanceLoginWithHttpInfo(maintenanceLoginDto,);
+  Future<MaintenanceAuthDto?> maintenanceLogin(MaintenanceLoginDto maintenanceLoginDto, { Future<void>? abortTrigger, }) async {
+    final response = await maintenanceLoginWithHttpInfo(maintenanceLoginDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -464,7 +472,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [SetMaintenanceModeDto] setMaintenanceModeDto (required):
-  Future<Response> setMaintenanceModeWithHttpInfo(SetMaintenanceModeDto setMaintenanceModeDto,) async {
+  Future<Response> setMaintenanceModeWithHttpInfo(SetMaintenanceModeDto setMaintenanceModeDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance';
 
@@ -486,6 +494,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -496,8 +505,8 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [SetMaintenanceModeDto] setMaintenanceModeDto (required):
-  Future<void> setMaintenanceMode(SetMaintenanceModeDto setMaintenanceModeDto,) async {
-    final response = await setMaintenanceModeWithHttpInfo(setMaintenanceModeDto,);
+  Future<void> setMaintenanceMode(SetMaintenanceModeDto setMaintenanceModeDto, { Future<void>? abortTrigger, }) async {
+    final response = await setMaintenanceModeWithHttpInfo(setMaintenanceModeDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -1,14 +1,11 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
+import type { DateTime } from 'luxon';
+import type { SvelteSet } from 'svelte/reactivity';
+import { MediaType } from '$lib/constants';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
-export interface ReleaseEvent {
-  isAvailable: boolean;
-  /** ISO8601 */
-  checkedAt: string;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
-}
+export type LatLng = { lng: number; lat: number };
 
 export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
 
@@ -48,3 +45,59 @@ export type AssetControlContext = {
   getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
   clearSelect: () => void;
 };
+
+export type SearchCameraFilter = {
+  make?: string;
+  model?: string;
+  lensModel?: string;
+};
+
+export type SearchDateFilter = {
+  takenBefore?: DateTime;
+  takenAfter?: DateTime;
+};
+
+export type SearchDisplayFilters = {
+  isNotInAlbum: boolean;
+  isArchive: boolean;
+  isFavorite: boolean;
+};
+
+export type SearchLocationFilter = {
+  country?: string;
+  state?: string;
+  city?: string;
+};
+
+export type SearchFilter = {
+  query: string;
+  ocr?: string;
+  queryType: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
+  personIds: SvelteSet<string>;
+  tagIds: SvelteSet<string> | null;
+  location: SearchLocationFilter;
+  queryAssetId?: string;
+  camera: SearchCameraFilter;
+  date: SearchDateFilter;
+  display: SearchDisplayFilters;
+  mediaType: MediaType;
+  rating?: number | null;
+};
+
+export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
+
+export type JSONSchemaProperty = {
+  type: JSONSchemaType;
+  title?: string;
+  description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default?: any;
+  enum?: string[];
+  array?: boolean;
+  properties?: Record<string, JSONSchemaProperty>;
+  required?: string[];
+  uiHint?: 'AlbumId' | 'AssetId' | 'PersonId';
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SchemaConfig = any;

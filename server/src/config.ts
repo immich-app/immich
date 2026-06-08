@@ -1,4 +1,5 @@
 import { CronExpression } from '@nestjs/schedule';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
@@ -45,6 +46,9 @@ export type SystemConfig = {
     accel: TranscodeHardwareAcceleration;
     accelDecode: boolean;
     tonemap: ToneMapping;
+    realtime: {
+      enabled: boolean;
+    };
   };
   integrityChecks: {
     missingFiles: {
@@ -120,13 +124,16 @@ export type SystemConfig = {
     defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
+    endSessionEndpoint: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    prompt: string;
     scope: string;
     signingAlgorithm: string;
     profileSigningAlgorithm: string;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
     timeout: number;
+    allowInsecureRequests: boolean;
     storageLabelClaim: string;
     storageQuotaClaim: string;
     roleClaim: string;
@@ -148,6 +155,7 @@ export type SystemConfig = {
   };
   newVersionCheck: {
     enabled: boolean;
+    channel: ReleaseChannel;
   };
   nightlyTasks: {
     startTime: string;
@@ -222,7 +230,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.Opus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     targetResolution: '720',
     maxBitrate: '0',
@@ -236,7 +244,10 @@ export const defaults = Object.freeze<SystemConfig>({
     transcode: TranscodePolicy.Required,
     tonemap: ToneMapping.Hable,
     accel: TranscodeHardwareAcceleration.Disabled,
-    accelDecode: false,
+    accelDecode: true,
+    realtime: {
+      enabled: false,
+    },
   },
   integrityChecks: {
     missingFiles: {
@@ -280,7 +291,7 @@ export const defaults = Object.freeze<SystemConfig>({
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
     availabilityChecks: {
       enabled: true,
-      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      timeout: 2000,
       interval: 30_000,
     },
     clip: {
@@ -328,8 +339,10 @@ export const defaults = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    endSessionEndpoint: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
@@ -338,6 +351,7 @@ export const defaults = Object.freeze<SystemConfig>({
     roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
   },
   passwordLogin: {
     enabled: true,
@@ -371,6 +385,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+    channel: ReleaseChannel.Stable,
   },
   nightlyTasks: {
     startTime: '00:00',

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { IntegrityReportType } from 'src/enum';
+import { AssetFileType, IntegrityReport } from 'src/enum';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
 
@@ -47,12 +47,12 @@ export class IntegrityRepository {
       .execute();
 
     return Object.fromEntries(
-      Object.values(IntegrityReportType).map((type) => [type, counts.find((count) => count.type === type)?.count || 0]),
-    ) as Record<IntegrityReportType, number>;
+      Object.values(IntegrityReport).map((type) => [type, counts.find((count) => count.type === type)?.count || 0]),
+    ) as Record<IntegrityReport, number>;
   }
 
   @GenerateSql({ params: [{ cursor: DummyValue.NUMBER, limit: 100 }, DummyValue.STRING] })
-  async getIntegrityReport(pagination: ReportPaginationOptions, type: IntegrityReportType) {
+  async getIntegrityReport(pagination: ReportPaginationOptions, type: IntegrityReport) {
     const items = await this.db
       .selectFrom('integrity_report')
       .select(['id', 'type', 'path', 'assetId', 'fileAssetId', 'createdAt'])
@@ -72,8 +72,11 @@ export class IntegrityRepository {
   getAssetPathsByPaths(paths: string[]) {
     return this.db
       .selectFrom('asset')
-      .select(['originalPath', 'encodedVideoPath'])
-      .where((eb) => eb.or([eb('originalPath', 'in', paths), eb('encodedVideoPath', 'in', paths)]))
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', AssetFileType.EncodedVideo),
+      )
+      .select(['asset.originalPath', 'asset_file.path as encodedVideoPath'])
+      .where((eb) => eb.or([eb('originalPath', 'in', paths), eb('asset_file.path', 'in', paths)]))
       .execute();
   }
 
@@ -92,7 +95,13 @@ export class IntegrityRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamAllAssetPaths() {
-    return this.db.selectFrom('asset').select(['originalPath', 'encodedVideoPath']).stream();
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', AssetFileType.EncodedVideo),
+      )
+      .select(['originalPath', 'asset_file.path as encodedVideoPath'])
+      .stream();
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -116,13 +125,18 @@ export class IntegrityRepository {
             eb
               .selectFrom('asset')
               .where('asset.deletedAt', 'is', null)
+              .leftJoin('asset_file', (join) =>
+                join
+                  .onRef('asset.id', '=', 'asset_file.assetId')
+                  .on('asset_file.type', '=', AssetFileType.EncodedVideo),
+              )
               .select((eb) => [
-                eb.ref('asset.encodedVideoPath').$castTo<string>().as('path'),
+                eb.ref('asset_file.path').$castTo<string>().as('path'),
                 eb.ref('asset.id').$castTo<string | null>().as('assetId'),
                 sql<string | null>`null::uuid`.as('fileAssetId'),
               ])
-              .where('asset.encodedVideoPath', 'is not', null)
-              .where('asset.encodedVideoPath', '!=', sql<string>`''`),
+              .where('asset_file.path', 'is not', null)
+              .where('asset_file.path', '!=', sql<string>`''`),
           )
           .unionAll(
             eb
@@ -137,7 +151,7 @@ export class IntegrityRepository {
       )
       .leftJoin('integrity_report', (join) =>
         join
-          .on('integrity_report.type', '=', IntegrityReportType.UntrackedFile)
+          .on('integrity_report.type', '=', IntegrityReport.UntrackedFile)
           .on((eb) =>
             eb.or([
               eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
@@ -162,7 +176,7 @@ export class IntegrityRepository {
       .leftJoin('integrity_report', (join) =>
         join
           .onRef('integrity_report.assetId', '=', 'asset.id')
-          .on('integrity_report.type', '=', IntegrityReportType.ChecksumFail),
+          .on('integrity_report.type', '=', IntegrityReport.ChecksumFail),
       )
       .select([
         'asset.originalPath',
@@ -178,7 +192,7 @@ export class IntegrityRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING], stream: true })
-  streamIntegrityReports(type: IntegrityReportType) {
+  streamIntegrityReports(type: IntegrityReport) {
     return this.db
       .selectFrom('integrity_report')
       .select(['id', 'type', 'path', 'assetId', 'fileAssetId'])
@@ -188,19 +202,19 @@ export class IntegrityRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING], stream: true })
-  streamIntegrityReportsWithAssetChecksum(type: IntegrityReportType) {
+  streamIntegrityReportsWithAssetChecksum(type: IntegrityReport) {
     return this.db
       .selectFrom('integrity_report')
       .select(['integrity_report.id as reportId', 'integrity_report.path'])
       .where('integrity_report.type', '=', type)
-      .$if(type === IntegrityReportType.ChecksumFail, (eb) =>
+      .$if(type === IntegrityReport.ChecksumFail, (eb) =>
         eb.leftJoin('asset', 'integrity_report.path', 'asset.originalPath').select('asset.checksum'),
       )
       .stream();
   }
 
   @GenerateSql({ params: [DummyValue.STRING], stream: true })
-  streamIntegrityReportsByProperty(property?: 'assetId' | 'fileAssetId', filterType?: IntegrityReportType) {
+  streamIntegrityReportsByProperty(property?: 'assetId' | 'fileAssetId', filterType?: IntegrityReport) {
     return this.db
       .selectFrom('integrity_report')
       .select(['id', 'path', 'assetId', 'fileAssetId'])

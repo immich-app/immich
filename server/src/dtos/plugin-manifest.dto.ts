@@ -1,128 +1,72 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import {
-  ArrayMinSize,
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsSemVer,
-  IsString,
-  Matches,
-  ValidateNested,
-} from 'class-validator';
-import { PluginContext } from 'src/enum';
-import { JSONSchema } from 'src/types/plugin-schema.types';
-import { ValidateEnum } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import { JsonSchemaSchema } from 'src/dtos/json-schema.dto';
+import { WorkflowTriggerSchema, WorkflowTypeSchema } from 'src/enum';
+import z from 'zod';
 
-class PluginManifestWasmDto {
-  @ApiProperty({ description: 'WASM file path' })
-  @IsString()
-  @IsNotEmpty()
-  path!: string;
-}
+const pluginNameRegex = /^[a-z0-9-]+[a-z0-9]$/;
+const semverRegex =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 
-class PluginManifestFilterDto {
-  @ApiProperty({ description: 'Filter method name' })
-  @IsString()
-  @IsNotEmpty()
-  methodName!: string;
+export const PluginManifestMethodSchemaSchema = JsonSchemaSchema.nullable()
+  .optional()
+  .transform((value) => (value && Object.keys(value).length === 0 ? null : value));
 
-  @ApiProperty({ description: 'Filter title' })
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
-
-  @ApiProperty({ description: 'Filter description' })
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
-
-  @ApiProperty({ description: 'Supported contexts', enum: PluginContext, isArray: true })
-  @IsArray()
-  @ArrayMinSize(1)
-  @IsEnum(PluginContext, { each: true })
-  supportedContexts!: PluginContext[];
-
-  @ApiPropertyOptional({ description: 'Filter schema' })
-  @IsObject()
-  @IsOptional()
-  schema?: JSONSchema;
-}
-
-class PluginManifestActionDto {
-  @ApiProperty({ description: 'Action method name' })
-  @IsString()
-  @IsNotEmpty()
-  methodName!: string;
-
-  @ApiProperty({ description: 'Action title' })
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
-
-  @ApiProperty({ description: 'Action description' })
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
-
-  @ArrayMinSize(1)
-  @ValidateEnum({ enum: PluginContext, name: 'PluginContext', each: true, description: 'Supported contexts' })
-  supportedContexts!: PluginContext[];
-
-  @ApiPropertyOptional({ description: 'Action schema' })
-  @IsObject()
-  @IsOptional()
-  schema?: JSONSchema;
-}
-
-export class PluginManifestDto {
-  @ApiProperty({ description: 'Plugin name (lowercase, numbers, hyphens only)' })
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/^[a-z0-9-]+[a-z0-9]$/, {
-    message: 'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
+const PluginManifestMethodSchema = z
+  .object({
+    name: z.string().min(1).describe('Method name'),
+    title: z.string().min(1).describe('Method title'),
+    description: z.string().min(1).describe('Method description'),
+    types: z.array(WorkflowTypeSchema).min(1).describe('Workflow type'),
+    hostFunctions: z.boolean().optional().default(false).describe('Method uses host functions'),
+    schema: PluginManifestMethodSchemaSchema.describe('Schema'),
+    uiHints: z.array(z.string()).optional().describe('Ui hints, for example "filter"'),
   })
-  name!: string;
+  .meta({ id: 'PluginManifestMethodDto' });
 
-  @ApiProperty({ description: 'Plugin version (semver)' })
-  @IsString()
-  @IsNotEmpty()
-  @IsSemVer()
-  version!: string;
+const PluginManifestTemplateStepSchema = z
+  .object({
+    method: z.string().min(1).describe('Step plugin method (pluginName#methodName)'),
+    config: z.record(z.string(), z.unknown()).nullable().optional().describe('Step configuration'),
+    enabled: z.boolean().optional().describe('Whether the step is enabled'),
+  })
+  .meta({ id: 'PluginManifestTemplateStepDto' });
 
-  @ApiProperty({ description: 'Plugin title' })
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
+const PluginManifestTemplateSchema = z
+  .object({
+    name: z.string().min(1).describe('Template name (must be unique within the manifest)'),
+    title: z.string().min(1).describe('Template title'),
+    description: z.string().min(1).describe('Template description'),
+    trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
+    steps: z.array(PluginManifestTemplateStepSchema).describe('Workflow steps'),
+    uiHints: z.array(z.string()).optional().default([]).describe('Ui hints, for example "smart-album"'),
+  })
+  .meta({ id: 'PluginManifestTemplateDto' });
 
-  @ApiProperty({ description: 'Plugin description' })
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
+const PluginManifestSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1)
+      .regex(
+        pluginNameRegex,
+        'Plugin name must contain only lowercase letters, numbers, and hyphens, and cannot end with a hyphen',
+      )
+      .describe('Plugin name (lowercase, numbers, hyphens only)'),
+    version: z.string().regex(semverRegex).describe('Plugin version (semver)'),
+    title: z.string().min(1).describe('Plugin title'),
+    description: z.string().min(1).describe('Plugin description'),
+    wasmPath: z.string().min(1).describe('WASM file path'),
+    author: z.string().min(1).describe('Plugin author'),
+    methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
+    templates: z
+      .array(PluginManifestTemplateSchema)
+      .optional()
+      .default([])
+      .refine((templates) => new Set(templates.map((t) => t.name)).size === templates.length, {
+        error: 'Template names must be unique within the manifest',
+      })
+      .describe('Workflow templates'),
+  })
+  .meta({ id: 'PluginManifestDto' });
 
-  @ApiProperty({ description: 'Plugin author' })
-  @IsString()
-  @IsNotEmpty()
-  author!: string;
-
-  @ApiProperty({ description: 'WASM configuration' })
-  @ValidateNested()
-  @Type(() => PluginManifestWasmDto)
-  wasm!: PluginManifestWasmDto;
-
-  @ApiPropertyOptional({ description: 'Plugin filters' })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PluginManifestFilterDto)
-  @IsOptional()
-  filters?: PluginManifestFilterDto[];
-
-  @ApiPropertyOptional({ description: 'Plugin actions' })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PluginManifestActionDto)
-  @IsOptional()
-  actions?: PluginManifestActionDto[];
-}
+export class PluginManifestDto extends createZodDto(PluginManifestSchema) {}

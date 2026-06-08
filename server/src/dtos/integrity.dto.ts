@@ -1,48 +1,41 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
-import { IntegrityReportType } from 'src/enum';
-import { ValidateEnum } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import { IntegrityReport, IntegrityReportSchema } from 'src/enum';
+import z from 'zod';
 
-export class IntegrityReportSummaryResponseDto {
-  @ApiProperty({ type: 'integer' })
-  [IntegrityReportType.ChecksumFail]!: number;
-  @ApiProperty({ type: 'integer' })
-  [IntegrityReportType.MissingFile]!: number;
-  @ApiProperty({ type: 'integer' })
-  [IntegrityReportType.UntrackedFile]!: number;
-}
+const IntegrityReportSummaryResponseSchema = z
+  .object({
+    [IntegrityReport.ChecksumFail]: z.int().nonnegative(),
+    [IntegrityReport.MissingFile]: z.int().nonnegative(),
+    [IntegrityReport.UntrackedFile]: z.int().nonnegative(),
+  })
+  .meta({ id: 'IntegrityReportSummaryResponseDto' });
 
-export class IntegrityGetReportDto {
-  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
-  type!: IntegrityReportType;
+export class IntegrityReportSummaryResponseDto extends createZodDto(IntegrityReportSummaryResponseSchema) {}
 
-  @ApiPropertyOptional({ description: 'Cursor for pagination', default: 1 })
-  @IsOptional()
-  @IsUUID()
-  cursor?: string;
+const IntegrityGetReportSchema = z
+  .object({
+    type: IntegrityReportSchema,
+    cursor: z.string().optional().describe('Cursor for pagination'),
+    limit: z.int().positive().default(500).optional().describe('Number of items per page'),
+  })
+  .meta({ id: 'IntegrityGetReportDto' });
 
-  @ApiPropertyOptional({ description: 'Number of items per page', default: 500 })
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  @Type(() => Number)
-  limit?: number;
-}
+export class IntegrityGetReportDto extends createZodDto(IntegrityGetReportSchema) {}
 
-export class IntegrityDeleteReportDto {
-  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
-  type!: IntegrityReportType;
-}
+const IntegrityDeleteReportSchema = z.object({ type: IntegrityReport }).meta({ id: 'IntegrityDeleteReportDto' });
 
-class IntegrityReportDto {
-  id!: string;
-  @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
-  type!: IntegrityReportType;
-  path!: string;
-}
+export class IntegrityDeleteReportDto extends createZodDto(IntegrityDeleteReportSchema) {}
 
-export class IntegrityReportResponseDto {
-  items!: IntegrityReportDto[];
-  nextCursor?: string;
-}
+const IntegrityReportResponseItemSchema = z.object({
+  id: z.string().describe('Integrity report item id'),
+  type: IntegrityReportSchema,
+  path: z.string().describe('Integrity report item path'),
+});
+const IntegrityReportResponseSchema = z
+  .object({
+    items: z.array(IntegrityReportResponseItemSchema),
+    nextCursor: z.string().optional(),
+  })
+  .meta({ id: 'IntegrityReportResponseDto' });
+
+export class IntegrityReportResponseDto extends createZodDto(IntegrityReportResponseSchema) {}

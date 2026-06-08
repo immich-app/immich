@@ -21,41 +21,57 @@ class AssetFaceResponseDto {
     required this.imageHeight,
     required this.imageWidth,
     required this.person,
-    this.sourceType,
+    this.sourceType = const Optional.absent(),
   });
 
   /// Bounding box X1 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX1;
 
   /// Bounding box X2 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX2;
 
   /// Bounding box Y1 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY1;
 
   /// Bounding box Y2 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY2;
 
   /// Face ID
   String id;
 
   /// Image height in pixels
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int imageHeight;
 
   /// Image width in pixels
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int imageWidth;
 
-  /// Person associated with face
   PersonResponseDto? person;
 
-  /// Face detection source type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  SourceType? sourceType;
+  Optional<SourceType?> sourceType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceResponseDto &&
@@ -97,12 +113,11 @@ class AssetFaceResponseDto {
     if (this.person != null) {
       json[r'person'] = this.person;
     } else {
-    //  json[r'person'] = null;
+      json[r'person'] = null;
     }
-    if (this.sourceType != null) {
-      json[r'sourceType'] = this.sourceType;
-    } else {
-    //  json[r'sourceType'] = null;
+    if (this.sourceType.isPresent) {
+      final value = this.sourceType.value;
+      json[r'sourceType'] = value;
     }
     return json;
   }
@@ -124,7 +139,7 @@ class AssetFaceResponseDto {
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         person: PersonResponseDto.fromJson(json[r'person']),
-        sourceType: SourceType.fromJson(json[r'sourceType']),
+        sourceType: json.containsKey(r'sourceType') ? Optional.present(SourceType.fromJson(json[r'sourceType'])) : const Optional.absent(),
       );
     }
     return null;

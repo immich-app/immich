@@ -11,6 +11,8 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
+
 class PlatformAsset {
   final String id;
   final String name;
@@ -23,13 +25,15 @@ class PlatformAsset {
   final int? updatedAt;
   final int? width;
   final int? height;
-  final int durationInSeconds;
+  final int durationMs;
   final int orientation;
   final bool isFavorite;
 
   final int? adjustmentTime;
   final double? latitude;
   final double? longitude;
+
+  final PlatformAssetPlaybackStyle playbackStyle;
 
   const PlatformAsset({
     required this.id,
@@ -39,12 +43,13 @@ class PlatformAsset {
     this.updatedAt,
     this.width,
     this.height,
-    this.durationInSeconds = 0,
+    this.durationMs = 0,
     this.orientation = 0,
     this.isFavorite = false,
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    this.playbackStyle = PlatformAssetPlaybackStyle.unknown,
   });
 }
 
@@ -100,25 +105,26 @@ class CloudIdResult {
 
 @HostApi()
 abstract class NativeSyncApi {
+  @async
   bool shouldFullSync();
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   SyncDelta getMediaChanges();
 
   void checkpointSync();
 
   void clearSyncCheckpoint();
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   List<String> getAssetIdsForAlbum(String albumId);
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   List<PlatformAlbum> getAlbums();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int getAssetsCountSince(String albumId, int timestamp);
 
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  @async
   List<PlatformAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
 
   @async
@@ -127,8 +133,13 @@ abstract class NativeSyncApi {
 
   void cancelHashing();
 
+  void cancelSync();
+
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
+
+  @async
+  bool restoreFromTrashById(String mediaId, int type);
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);

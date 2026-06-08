@@ -18,7 +18,7 @@ from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from immich_ml.config import Settings, settings
+from immich_ml.config import MaxBatchSize, Settings, settings
 from immich_ml.main import load, preload_models
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.cache import ModelCache
@@ -26,13 +26,46 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.models.ocr.detection import TextDetector
+from immich_ml.models.ocr.recognition import TextRecognizer
+from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
 
 
+class FakeLock:
+    def __init__(self) -> None:
+        self.enter = mock.Mock()
+        self.exit = mock.Mock()
+
+    def __enter__(self) -> None:
+        self.enter()
+
+    def __exit__(self, *args: object) -> None:
+        self.exit(*args)
+
+
 class TestBase:
+    def test_sets_default_worker_timeout(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.delenv("DEVICE", raising=False)
+        monkeypatch.delenv("MACHINE_LEARNING_WORKER_TIMEOUT", raising=False)
+
+        assert Settings().worker_timeout == 300
+
+    def test_sets_rocm_default_worker_timeout(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("DEVICE", "rocm")
+        monkeypatch.delenv("MACHINE_LEARNING_WORKER_TIMEOUT", raising=False)
+
+        assert Settings().worker_timeout == 900
+
+    def test_worker_timeout_env_override(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("DEVICE", "rocm")
+        monkeypatch.setenv("MACHINE_LEARNING_WORKER_TIMEOUT", "1200")
+
+        assert Settings().worker_timeout == 1200
+
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
@@ -179,7 +212,7 @@ class TestOrtSession:
     OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
-    ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
+    ROCM_EP = ["MIGraphXExecutionProvider", "CPUExecutionProvider"]
     COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
@@ -200,13 +233,6 @@ class TestOrtSession:
         session = OrtSession("ViT-B-32__openai")
 
         assert session.providers == self.OV_EP
-
-    @pytest.mark.ov_device_ids(["CPU"])
-    @pytest.mark.providers(OV_EP)
-    def test_avoids_openvino_if_gpu_not_available(self, providers: list[str], ov_device_ids: list[str]) -> None:
-        session = OrtSession("ViT-B-32__openai")
-
-        assert session.providers == self.CPU_EP
 
     @pytest.mark.providers(CUDA_EP_OUT_OF_ORDER)
     def test_sets_providers_in_correct_order(self, providers: list[str]) -> None:
@@ -253,7 +279,8 @@ class TestOrtSession:
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
-    def test_sets_provider_options_for_openvino(self) -> None:
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_provider_options_for_openvino(self, ov_device_ids: list[str]) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
@@ -267,7 +294,8 @@ class TestOrtSession:
             }
         ]
 
-    def test_sets_openvino_to_fp16_if_enabled(self, mocker: MockerFixture) -> None:
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_openvino_to_fp16_if_enabled(self, ov_device_ids: list[str], mocker: MockerFixture) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
         mocker.patch.object(settings, "openvino_precision", ModelPrecision.FP16)
@@ -282,6 +310,19 @@ class TestOrtSession:
             }
         ]
 
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_provider_options_for_openvino_cpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "CPU",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/openvino",
+            }
+        ]
+
     def test_sets_provider_options_for_cuda(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
@@ -289,12 +330,38 @@ class TestOrtSession:
 
         assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
 
-    def test_sets_provider_options_for_rocm(self) -> None:
+    def test_sets_provider_options_for_rocm(self, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mkdir = mocker.patch("immich_ml.sessions.ort.Path.mkdir")
 
-        session = OrtSession("ViT-B-32__openai", providers=["ROCMExecutionProvider"])
+        session = OrtSession(model_path, providers=["MIGraphXExecutionProvider"])
 
-        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+        assert session.provider_options == [
+            {
+                "device_id": "1",
+                "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx",
+                "migraphx_fp16_enable": "0",
+            }
+        ]
+        mkdir.assert_called_once_with(parents=True, exist_ok=True)
+
+    def test_sets_rocm_to_fp16_if_enabled(self, path: mock.Mock, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mocker.patch.object(settings, "rocm_precision", ModelPrecision.FP16)
+        mkdir = mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+
+        session = OrtSession(model_path, providers=["MIGraphXExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_id": "1",
+                "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx",
+                "migraphx_fp16_enable": "1",
+            }
+        ]
+        mkdir.assert_called_once_with(parents=True, exist_ok=True)
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
@@ -311,6 +378,23 @@ class TestOrtSession:
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert session.sess_options.inter_op_num_threads == 1
         assert session.sess_options.intra_op_num_threads == 2
+
+    @pytest.mark.ov_device_ids(["CPU"])
+    def test_sets_default_sess_options_if_openvino_cpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
+        assert session.sess_options.inter_op_num_threads == 0
+        assert session.sess_options.intra_op_num_threads == 0
+
+    @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
+    def test_sets_default_sess_options_if_openvino_gpu(self, ov_device_ids: list[str]) -> None:
+        model_path = "/cache/ViT-B-32__openai/model.onnx"
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.sess_options.inter_op_num_threads == 0
+        assert session.sess_options.intra_op_num_threads == 0
 
     def test_sets_default_sess_options_does_not_set_threads_if_non_cpu_and_default_threads(self) -> None:
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
@@ -358,6 +442,52 @@ class TestOrtSession:
         )
 
         assert sess_options is session.sess_options
+
+    def test_serializes_rocm_first_run_for_new_input_signature(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        get_model_lock = mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        mocker.patch("immich_ml.sessions.ort._migraphx_compiled_inputs", set())
+        mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+        session.run(None, input_feed)
+
+        lock.enter.assert_called_once()
+        lock.exit.assert_called_once()
+        get_model_lock.assert_called_once()
+        session.session.run.assert_has_calls([mock.call(None, input_feed, None), mock.call(None, input_feed, None)])
+
+    def test_serializes_rocm_run_for_each_new_input_signature(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        mocker.patch("immich_ml.sessions.ort._migraphx_compiled_inputs", set())
+        mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+        new_shape_input_feed = {"input": np.random.rand(2, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+        session.run(None, new_shape_input_feed)
+
+        assert lock.enter.call_count == 2
+        assert lock.exit.call_count == 2
+        session.session.run.assert_has_calls(
+            [mock.call(None, input_feed, None), mock.call(None, new_shape_input_feed, None)]
+        )
+
+    def test_does_not_serialize_non_rocm_run(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        get_model_lock = mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["CPUExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+
+        get_model_lock.assert_not_called()
+        lock.enter.assert_not_called()
+        session.session.run.assert_called_once_with(None, input_feed, None)
 
 
 class TestAnnSession:
@@ -686,6 +816,10 @@ class TestFaceRecognition:
 
     def test_recognition(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
         face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
 
         num_faces = 2
@@ -730,6 +864,10 @@ class TestFaceRecognition:
         )
         mocker.patch("immich_ml.models.base.InferenceModel.download")
         mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
         ort_session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
         ort_session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=(1, 800))]
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
@@ -764,6 +902,10 @@ class TestFaceRecognition:
         )
         mocker.patch("immich_ml.models.base.InferenceModel.download")
         mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
         inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
@@ -828,6 +970,125 @@ class TestFaceRecognition:
         update_dims.assert_not_called()
         onnx.load.assert_not_called()
         onnx.save.assert_not_called()
+
+    def test_recognition_does_not_add_batch_axis_for_migraphx(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
+        update_dims = mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        )
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["MIGraphXExecutionProvider", "CPUExecutionProvider"],
+        )
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        inputs = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
+        outputs = [SimpleNamespace(name="output.1", shape=(1, 800))]
+        ort_session.return_value.get_inputs.return_value = inputs
+        ort_session.return_value.get_outputs.return_value = outputs
+
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path)
+        face_recognizer.load()
+
+        assert face_recognizer.batch_size == 1
+        update_dims.assert_not_called()
+        onnx.load.assert_not_called()
+        onnx.save.assert_not_called()
+
+    def test_set_custom_max_batch_size(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=2))
+
+        recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
+
+        assert recognizer.batch_size == 2
+
+    def test_ignore_other_custom_max_batch_size(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=2))
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
+
+        recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
+
+        assert recognizer.batch_size is None
+
+
+class TestOcr:
+    def test_set_det_min_score(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        text_detector = TextDetector("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+
+        assert text_detector.postprocess.box_thresh == 0.8
+
+    def test_set_rec_min_score(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+
+        assert text_recognizer.min_score == 0.8
+
+    def test_set_rec_set_default_max_batch_size(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(
+              session=ort_session.return_value,
+              rec_batch_num=6,
+              rec_img_shape=(3, 48, 320),
+              model_root_dir=text_recognizer.cache_dir,
+            )
+        )
+
+    def test_set_custom_max_batch_size(self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=4))
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(
+              session=ort_session.return_value,
+              rec_batch_num=4,
+              rec_img_shape=(3, 48, 320),
+              model_root_dir=text_recognizer.cache_dir,
+            )
+        )
+
+    def test_ignore_other_custom_max_batch_size(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=3))
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(
+              session=ort_session.return_value,
+              rec_batch_num=6,
+              rec_img_shape=(3, 48, 320),
+              model_root_dir=text_recognizer.cache_dir,
+            )
+        )
 
 
 @pytest.mark.asyncio
@@ -1070,6 +1331,19 @@ class TestLoad:
             "ARMNN is available, but model 'test_model_name' does not support it.", exc_info=error
         )
         mock_model.model_format = ModelFormat.ONNX
+
+
+@pytest.mark.parametrize("size", [(0, 100), (100, 0), (0, 0)])
+def test_predict_rejects_empty_image(size: tuple[int, int], deployed_app: TestClient) -> None:
+    with mock.patch("immich_ml.main.decode_pil", return_value=Image.new("RGB", size)):
+        response = deployed_app.post(
+            "http://localhost:3003/predict",
+            data={"entries": json.dumps({"clip": {"visual": {"modelName": "ViT-B-32__openai"}}})},
+            files={"image": b"fake image bytes"},
+        )
+
+    assert response.status_code == 400
+    assert "zero" in response.json()["detail"].lower()
 
 
 def test_root_endpoint(deployed_app: TestClient) -> None:

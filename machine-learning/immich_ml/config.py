@@ -6,7 +6,7 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
@@ -32,16 +32,6 @@ class OcrSettings(BaseModel):
 
 
 class PreloadModelData(BaseModel):
-    clip_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
-    facial_recognition_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
-    if clip_fallback is not None:
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = clip_fallback
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = clip_fallback
-        del os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
-    if facial_recognition_fallback is not None:
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = facial_recognition_fallback
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = facial_recognition_fallback
-        del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
     ocr: OcrSettings = OcrSettings()
@@ -49,7 +39,11 @@ class PreloadModelData(BaseModel):
 
 class MaxBatchSize(BaseModel):
     facial_recognition: int | None = None
-    text_recognition: int | None = None
+    ocr: int | None = None
+
+
+def default_worker_timeout() -> int:
+    return 900 if os.environ.get("DEVICE") == "rocm" else 300
 
 
 class Settings(BaseSettings):
@@ -64,7 +58,7 @@ class Settings(BaseSettings):
     model_ttl: int = 300
     model_ttl_poll_s: int = 10
     workers: int = 1
-    worker_timeout: int = 300
+    worker_timeout: int = Field(default_factory=default_worker_timeout)
     http_keepalive_timeout_s: int = 2
     test_full: bool = False
     request_threads: int = os.cpu_count() or 4
@@ -79,6 +73,7 @@ class Settings(BaseSettings):
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
+    rocm_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
     def device_id(self) -> str:

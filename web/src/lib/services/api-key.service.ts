@@ -1,8 +1,3 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
-import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   createApiKey,
   deleteApiKey,
@@ -14,6 +9,11 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
+import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getApiKeysActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -80,7 +80,7 @@ export const handleUpdateApiKey = async (apiKey: { id: string }, dto: ApiKeyUpda
   try {
     const response = await updateApiKey({ id: apiKey.id, apiKeyUpdateDto: dto });
     eventManager.emit('ApiKeyUpdate', response);
-    toastManager.success($t('saved_api_key'));
+    toastManager.primary($t('saved_api_key'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_save_api_key'));
@@ -98,7 +98,7 @@ export const handleDeleteApiKey = async (apiKey: ApiKeyResponseDto) => {
   try {
     await deleteApiKey({ id: apiKey.id });
     eventManager.emit('ApiKeyDelete', apiKey);
-    toastManager.success($t('removed_api_key', { values: { name: apiKey.name } }));
+    toastManager.primary($t('removed_api_key', { values: { name: apiKey.name } }));
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_api_key'));
   }

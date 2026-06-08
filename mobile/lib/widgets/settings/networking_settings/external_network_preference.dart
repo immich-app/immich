@@ -1,13 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
 class ExternalNetworkPreference extends HookConsumerWidget {
@@ -23,11 +21,12 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     saveEndpointList() {
       canSave.value = entries.value.every((e) => e.status == AuxCheckStatus.valid);
 
-      final endpointList = entries.value.where((url) => url.status == AuxCheckStatus.valid).toList();
+      final urls = entries.value
+          .where((e) => e.status == AuxCheckStatus.valid && e.url.isNotEmpty)
+          .map((e) => e.url)
+          .toList();
 
-      final jsonString = jsonEncode(endpointList);
-
-      Store.put(StoreKey.externalEndpointList, jsonString);
+      ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
     }
 
     updateValidationStatus(String url, int index, AuxCheckStatus status) {
@@ -37,10 +36,6 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     }
 
     handleReorder(int oldIndex, int newIndex) {
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
-
       final entry = entries.value.removeAt(oldIndex);
       entries.value.insert(newIndex, entry);
       entries.value = [...entries.value];
@@ -69,14 +64,13 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     }
 
     useEffect(() {
-      final jsonString = Store.tryGet(StoreKey.externalEndpointList);
+      final urls = ref.read(appConfigProvider).network.externalEndpointList;
 
-      if (jsonString == null) {
+      if (urls.isEmpty) {
         return null;
       }
 
-      final List<dynamic> jsonList = jsonDecode(jsonString);
-      entries.value = jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+      entries.value = urls.map((url) => AuxilaryEndpoint(url: url, status: .valid)).toList();
       return null;
     }, const []);
 
@@ -115,7 +109,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: entries.value.length,
-                    onReorder: handleReorder,
+                    onReorderItem: handleReorder,
                     itemBuilder: (context, index) {
                       return EndpointInput(
                         key: Key(index.toString()),

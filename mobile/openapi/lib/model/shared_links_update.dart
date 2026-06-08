@@ -13,8 +13,8 @@ part of openapi.api;
 class SharedLinksUpdate {
   /// Returns a new [SharedLinksUpdate] instance.
   SharedLinksUpdate({
-    this.enabled,
-    this.sidebarWeb,
+    this.enabled = const Optional.absent(),
+    this.sidebarWeb = const Optional.absent(),
   });
 
   /// Whether shared links are enabled
@@ -24,7 +24,7 @@ class SharedLinksUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? enabled;
+  Optional<bool?> enabled;
 
   /// Whether shared links appear in web sidebar
   ///
@@ -33,7 +33,7 @@ class SharedLinksUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? sidebarWeb;
+  Optional<bool?> sidebarWeb;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinksUpdate &&
@@ -51,15 +51,13 @@ class SharedLinksUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.enabled != null) {
-      json[r'enabled'] = this.enabled;
-    } else {
-    //  json[r'enabled'] = null;
+    if (this.enabled.isPresent) {
+      final value = this.enabled.value;
+      json[r'enabled'] = value;
     }
-    if (this.sidebarWeb != null) {
-      json[r'sidebarWeb'] = this.sidebarWeb;
-    } else {
-    //  json[r'sidebarWeb'] = null;
+    if (this.sidebarWeb.isPresent) {
+      final value = this.sidebarWeb.value;
+      json[r'sidebarWeb'] = value;
     }
     return json;
   }
@@ -73,8 +71,8 @@ class SharedLinksUpdate {
       final json = value.cast<String, dynamic>();
 
       return SharedLinksUpdate(
-        enabled: mapValueOfType<bool>(json, r'enabled'),
-        sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb'),
+        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        sidebarWeb: json.containsKey(r'sidebarWeb') ? Optional.present(mapValueOfType<bool>(json, r'sidebarWeb')) : const Optional.absent(),
       );
     }
     return null;

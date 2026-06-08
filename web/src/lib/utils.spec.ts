@@ -1,5 +1,5 @@
-import { getAssetUrl, getReleaseType } from '$lib/utils';
 import { AssetTypeEnum } from '@immich/sdk';
+import { getAssetUrl, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -50,7 +50,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
 
       const url = getAssetUrl({ asset });
@@ -65,12 +65,38 @@ describe('utils', () => {
         originalPath: 'image.webp',
         originalMimeType: 'image/webp',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
 
       const url = getAssetUrl({ asset });
 
       expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return original URL for video assets with forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset, forceOriginal: true });
+
+      expect(url).toContain('/original');
+      expect(url).toContain(asset.id);
+    });
+
+    it('should return thumbnail URL for video assets without forceOriginal', () => {
+      const asset = assetFactory.build({
+        originalPath: 'video.mp4',
+        originalMimeType: 'video/mp4',
+        type: AssetTypeEnum.Video,
+      });
+
+      const url = getAssetUrl({ asset });
+
+      expect(url).toContain('/thumbnail');
       expect(url).toContain(asset.id);
     });
 
@@ -93,7 +119,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
 
@@ -108,7 +134,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ allowDownload: false, assets: [asset] });
 
@@ -124,7 +150,7 @@ describe('utils', () => {
         originalPath: 'image.gif',
         originalMimeType: 'image/gif',
         type: AssetTypeEnum.Image,
-        duration: '2.0',
+        duration: 2000,
       });
       const sharedLink = sharedLinkFactory.build({ showMetadata: false, assets: [asset] });
 
@@ -135,26 +161,13 @@ describe('utils', () => {
       expect(url).toContain(asset.id);
     });
   });
-
-  describe(getReleaseType.name, () => {
-    it('should return "major" for major version changes', () => {
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 2, minor: 0, patch: 0 })).toBe('major');
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 3, minor: 2, patch: 1 })).toBe('major');
+  describe('semverToName', () => {
+    it('should not append release candidate tag if prelease is not set', () => {
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: null })).toEqual('v3.0.0');
     });
 
-    it('should return "minor" for minor version changes', () => {
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 1, minor: 1, patch: 0 })).toBe('minor');
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 1, minor: 2, patch: 1 })).toBe('minor');
-    });
-
-    it('should return "patch" for patch version changes', () => {
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 1, minor: 0, patch: 1 })).toBe('patch');
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 1, minor: 0, patch: 5 })).toBe('patch');
-    });
-
-    it('should return "none" for matching versions', () => {
-      expect(getReleaseType({ major: 1, minor: 0, patch: 0 }, { major: 1, minor: 0, patch: 0 })).toBe('none');
-      expect(getReleaseType({ major: 1, minor: 2, patch: 3 }, { major: 1, minor: 2, patch: 3 })).toBe('none');
+    it('should append release candidate if set', () => {
+      expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
     });
   });
 });

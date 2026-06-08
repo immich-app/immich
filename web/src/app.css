@@ -1,10 +1,40 @@
 @import 'tailwindcss';
 @import '@immich/ui/theme/default.css';
+
 @source "../node_modules/@immich/ui";
-/* @import '/usr/ui/dist/theme/default.css'; */
+/* @import '../../../ui/packages/ui/dist/theme/default.css'; */
+
+@custom-variant dark (&:where(.dark, .dark *):not(.light));
+
+@theme inline {
+  --color-immich-primary: rgb(var(--immich-primary));
+  --color-immich-bg: rgb(var(--immich-bg));
+  --color-immich-fg: rgb(var(--immich-fg));
+  --color-immich-gray: rgb(var(--immich-gray));
+
+  --color-immich-dark-primary: rgb(var(--immich-dark-primary));
+  --color-immich-dark-bg: rgb(var(--immich-dark-bg));
+  --color-immich-dark-fg: rgb(var(--immich-dark-fg));
+  --color-immich-dark-gray: rgb(var(--immich-dark-gray));
+}
+
+@theme {
+  --font-sans: 'GoogleSans', sans-serif;
+  --font-mono: 'GoogleSansCode', monospace;
+
+  --spacing-18: 4.5rem;
+
+  --breakpoint-tall: 800px;
+  --breakpoint-2xl: 1535px;
+  --breakpoint-xl: 1279px;
+  --breakpoint-lg: 1023px;
+  --breakpoint-md: 767px;
+  --breakpoint-sm: 639px;
+  --breakpoint-sidebar: 850px;
+}
 
 @utility immich-form-input {
-  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
+  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-primary focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 dark:focus-within:ring-primary flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
 }
 
 @utility immich-form-label {
@@ -32,34 +62,6 @@
 
 @utility grid-auto-fill-* {
   grid-template-columns: repeat(auto-fill, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
-}
-
-@custom-variant dark (&:where(.dark, .dark *):not(.light));
-
-@theme inline {
-  --color-immich-primary: rgb(var(--immich-primary));
-  --color-immich-bg: rgb(var(--immich-bg));
-  --color-immich-fg: rgb(var(--immich-fg));
-  --color-immich-gray: rgb(var(--immich-gray));
-
-  --color-immich-dark-primary: rgb(var(--immich-dark-primary));
-  --color-immich-dark-bg: rgb(var(--immich-dark-bg));
-  --color-immich-dark-fg: rgb(var(--immich-dark-fg));
-  --color-immich-dark-gray: rgb(var(--immich-dark-gray));
-}
-
-@theme {
-  --font-mono: 'GoogleSansCode', monospace;
-
-  --spacing-18: 4.5rem;
-
-  --breakpoint-tall: 800px;
-  --breakpoint-2xl: 1535px;
-  --breakpoint-xl: 1279px;
-  --breakpoint-lg: 1023px;
-  --breakpoint-md: 767px;
-  --breakpoint-sm: 639px;
-  --breakpoint-sidebar: 850px;
 }
 
 @layer base {
@@ -100,7 +102,7 @@
   }
 
   :root {
-    font-family: 'GoogleSans', sans-serif;
+    font-family: var(--font-sans);
     letter-spacing: 0.1px;
 
     /* Used by layouts to ensure proper spacing between navbar and content */
@@ -127,25 +129,24 @@
 
   /* Track */
   html::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 16px;
+    background-color: var(--immich-ui-light-100);
+    border-radius: 4px;
   }
 
   /* Handle */
   html::-webkit-scrollbar-thumb {
-    background: rgba(85, 86, 87, 0.408);
-    border-radius: 16px;
+    background-color: color-mix(in oklab, var(--immich-ui-light-600) 40%, transparent);
+    border-radius: 4px;
   }
 
   /* Handle on hover */
   html::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
-    border-radius: 16px;
+    background-color: color-mix(in oklab, var(--immich-ui-primary-500) 70%, transparent);
   }
 
   body {
     margin: 0;
-    color: #3a3a3a;
+    color: var(--immich-ui-dark);
   }
 
   body.asset-viewer-open {
@@ -168,7 +169,7 @@
 
 .maplibregl-popup {
   .maplibregl-popup-tip {
-    @apply border-t-subtle! translate-y-[-1px];
+    @apply border-t-subtle! -translate-y-px;
   }
 
   .maplibregl-popup-content {

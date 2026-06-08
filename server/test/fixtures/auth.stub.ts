@@ -41,6 +41,13 @@ export const authStub = {
       id: 'token-id',
     } as AuthSession,
   }),
+  adminWithElevatedPermission: Object.freeze<AuthDto>({
+    user: authUser.admin,
+    session: {
+      id: 'token-id-elevated',
+      hasElevatedPermission: true,
+    } as AuthSession,
+  }),
   adminSharedLink: Object.freeze({
     user: authUser.admin,
     sharedLink: {
@@ -48,6 +55,7 @@ export const authStub = {
       showExif: true,
       allowDownload: true,
       allowUpload: true,
+      albumId: null,
       expiresAt: null,
       password: null,
       userId: '42',

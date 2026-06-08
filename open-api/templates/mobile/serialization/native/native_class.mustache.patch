@@ -1,60 +1,180 @@
---- native_class.mustache	2025-07-01 08:29:23.968133163 +0800
-+++ native_class_temp.mustache	2025-07-01 08:29:44.225850583 +0800
-@@ -91,14 +91,14 @@
-     {{/isDateTime}}
-     {{#isNullable}}
-     } else {
--      json[r'{{{baseName}}}'] = null;
-+    //  json[r'{{{baseName}}}'] = null;
-     }
-     {{/isNullable}}
-     {{^isNullable}}
-       {{^required}}
-         {{^defaultValue}}
-     } else {
--      json[r'{{{baseName}}}'] = null;
-+    //  json[r'{{{baseName}}}'] = null;
-     }
-         {{/defaultValue}}
-       {{/required}}
-@@ -111,20 +111,10 @@
+--- native_class.mustache	2026-06-03 12:23:39
++++ native_class.mustache	2026-06-03 12:21:49
+@@ -154,24 +154,10 @@
    /// [value] if it's a [Map], null otherwise.
    // ignore: prefer_constructors_over_static_methods
    static {{{classname}}}? fromJson(dynamic value) {
 +    upgradeDto(value, "{{{classname}}}");
      if (value is Map) {
        final json = value.cast<String, dynamic>();
-
+ 
 -      // Ensure that the map contains the required keys.
 -      // Note 1: the values aren't checked for validity beyond being non-null.
 -      // Note 2: this code is stripped in release mode!
 -      assert(() {
--        requiredKeys.forEach((key) {
--          assert(json.containsKey(key), 'Required key "{{{classname}}}[$key]" is missing from JSON.');
--          assert(json[key] != null, 'Required key "{{{classname}}}[$key]" has a null value in JSON.');
--        });
+-  {{#vars}}
+-    {{#required}}
+-        assert(json.containsKey(r'{{{baseName}}}'), 'Required key "{{{classname}}}[{{{baseName}}}]" is missing from JSON.');
+-      {{^isNullable}}
+-        assert(json[r'{{{baseName}}}'] != null, 'Required key "{{{classname}}}[{{{baseName}}}]" has a null value in JSON.');
+-      {{/isNullable}}
+-    {{/required}}
+-  {{/vars}}
 -        return true;
 -      }());
 -
        return {{{classname}}}(
    {{#vars}}
      {{#isDateTime}}
-@@ -215,6 +205,10 @@
+@@ -195,48 +181,98 @@
+         {{#complexType}}
+           {{#isArray}}
+             {{#items.isArray}}
++              {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(json[r'{{{baseName}}}'] is List
++          ? (json[r'{{{baseName}}}'] as List).map((e) =>
++              {{#items.complexType}}
++              e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.complexType}}>[]{{/items.isNullable}} : {{items.complexType}}.listFromJson(e){{#uniqueItems}}.toSet(){{/uniqueItems}}
++              {{/items.complexType}}
++              {{^items.complexType}}
++              e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}>[]{{/items.isNullable}} : (e as List).map((value) => value as {{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}).toList(growable: false)
++              {{/items.complexType}}
++            ).toList()
++          :  {{#isNullable}}null{{/isNullable}}{{^isNullable}}const []{{/isNullable}}) : const Optional.absent(),
++              {{/vendorExtensions.x-is-optional}}
++              {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: json[r'{{{baseName}}}'] is List
+           ? (json[r'{{{baseName}}}'] as List).map((e) =>
+               {{#items.complexType}}
+-              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}}
++              e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.complexType}}>[]{{/items.isNullable}} : {{items.complexType}}.listFromJson(e){{#uniqueItems}}.toSet(){{/uniqueItems}}
+               {{/items.complexType}}
+               {{^items.complexType}}
+-              e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const  <{{items.items.dataType}}>[]{{/items.isNullable}} : (e as List).cast<{{items.items.dataType}}>()
++              e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}>[]{{/items.isNullable}} : (e as List).map((value) => value as {{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}).toList(growable: false)
+               {{/items.complexType}}
+             ).toList()
+           :  {{#isNullable}}null{{/isNullable}}{{^isNullable}}const []{{/isNullable}},
++              {{/vendorExtensions.x-is-optional}}
+             {{/items.isArray}}
+             {{^items.isArray}}
++              {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present({{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}}) : const Optional.absent(),
++              {{/vendorExtensions.x-is-optional}}
++              {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: {{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}},
++              {{/vendorExtensions.x-is-optional}}
+             {{/items.isArray}}
+           {{/isArray}}
+           {{^isArray}}
+             {{#isMap}}
+               {{#items.isArray}}
++                {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(json[r'{{{baseName}}}'] == null ? null
++                  {{#items.complexType}}
++            : {{items.complexType}}.mapListFromJson(json[r'{{{baseName}}}'])) : const Optional.absent(),
++                  {{/items.complexType}}
++                  {{^items.complexType}}
++            : (json[r'{{{baseName}}}'] as Map<String, dynamic>).map((k, v) => MapEntry(k, v == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}>[]{{/items.isNullable}} : (v as List).map((value) => value as {{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}).toList(growable: false)))) : const Optional.absent(),
++                  {{/items.complexType}}
++                {{/vendorExtensions.x-is-optional}}
++                {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: json[r'{{{baseName}}}'] == null
+           ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
+-                {{#items.complexType}}
++                  {{#items.complexType}}
+             : {{items.complexType}}.mapListFromJson(json[r'{{{baseName}}}']),
+-                {{/items.complexType}}
+-                {{^items.complexType}}
+-            : (json[r'{{{baseName}}}'] as Map<String, dynamic>).map((k, v) => MapEntry(k, v == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.items.dataType}}>[]{{/items.isNullable}} : (v as List).cast<{{items.items.dataType}}>())),
+-                {{/items.complexType}}
++                  {{/items.complexType}}
++                  {{^items.complexType}}
++            : (json[r'{{{baseName}}}'] as Map<String, dynamic>).map((k, v) => MapEntry(k, v == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const <{{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}>[]{{/items.isNullable}} : (v as List).map((value) => value as {{items.items.dataType}}{{#items.items.isNullable}}?{{/items.items.isNullable}}).toList(growable: false))),
++                  {{/items.complexType}}
++                {{/vendorExtensions.x-is-optional}}
+               {{/items.isArray}}
+               {{^items.isArray}}
+                 {{#items.isMap}}
+                   {{#items.complexType}}
++                    {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present({{items.complexType}}.mapFromJson(json[r'{{{baseName}}}'])) : const Optional.absent(),
++                    {{/vendorExtensions.x-is-optional}}
++                    {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: {{items.complexType}}.mapFromJson(json[r'{{{baseName}}}']),
++                    {{/vendorExtensions.x-is-optional}}
+                   {{/items.complexType}}
+                   {{^items.complexType}}
++                    {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(mapCastOfType<String, dynamic>(json, r'{{{baseName}}}')) : const Optional.absent(),
++                    {{/vendorExtensions.x-is-optional}}
++                    {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: mapCastOfType<String, dynamic>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++                    {{/vendorExtensions.x-is-optional}}
+                   {{/items.complexType}}
+                 {{/items.isMap}}
+                 {{^items.isMap}}
+                   {{#items.complexType}}
++                    {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present({{{items.complexType}}}.mapFromJson(json[r'{{{baseName}}}'])) : const Optional.absent(),
++                    {{/vendorExtensions.x-is-optional}}
++                    {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: {{{items.complexType}}}.mapFromJson(json[r'{{{baseName}}}']),
++                    {{/vendorExtensions.x-is-optional}}
+                   {{/items.complexType}}
+                   {{^items.complexType}}
++                    {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(mapCastOfType<String, {{items.dataType}}>(json, r'{{{baseName}}}')) : const Optional.absent(),
++                    {{/vendorExtensions.x-is-optional}}
++                    {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: mapCastOfType<String, {{items.dataType}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++                    {{/vendorExtensions.x-is-optional}}
+                   {{/items.complexType}}
+                 {{/items.isMap}}
+               {{/items.isArray}}
+@@ -259,23 +295,45 @@
+         {{^complexType}}
+           {{#isArray}}
+             {{#isEnum}}
++              {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present({{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}}) : const Optional.absent(),
++              {{/vendorExtensions.x-is-optional}}
++              {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}},
++              {{/vendorExtensions.x-is-optional}}
+             {{/isEnum}}
+             {{^isEnum}}
++              {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(json[r'{{{baseName}}}'] is Iterable
++            ? (json[r'{{{baseName}}}'] as Iterable).cast<{{{items.datatype}}}>().{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}}
++            : {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}) : const Optional.absent(),
++              {{/vendorExtensions.x-is-optional}}
++              {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: json[r'{{{baseName}}}'] is Iterable
+             ? (json[r'{{{baseName}}}'] as Iterable).cast<{{{items.datatype}}}>().{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}}
+             : {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}},
++              {{/vendorExtensions.x-is-optional}}
+             {{/isEnum}}
+           {{/isArray}}
+           {{^isArray}}
+             {{#isMap}}
++              {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(mapCastOfType<String, {{{items.datatype}}}>(json, r'{{{baseName}}}')) : const Optional.absent(),
++              {{/vendorExtensions.x-is-optional}}
++              {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: mapCastOfType<String, {{{items.datatype}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
++              {{/vendorExtensions.x-is-optional}}
+             {{/isMap}}
+             {{^isMap}}
+               {{#isNumber}}
++                {{#vendorExtensions.x-is-optional}}
++        {{{name}}}: json.containsKey(r'{{{baseName}}}') ? Optional.present(json[r'{{{baseName}}}'] == null ? null : num.parse('${json[r'{{{baseName}}}']}')) : const Optional.absent(),
++                {{/vendorExtensions.x-is-optional}}
++                {{^vendorExtensions.x-is-optional}}
+         {{{name}}}: {{#isNullable}}json[r'{{{baseName}}}'] == null
              ? {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}
              : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
++                {{/vendorExtensions.x-is-optional}}
                {{/isNumber}}
-+              {{#isDouble}}
-+        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}){{#isNullable}}?{{/isNullable}}.toDouble(),
-+              {{/isDouble}}
-+              {{^isDouble}}
                {{^isNumber}}
-                 {{^isEnum}}
-         {{{name}}}: mapValueOfType<{{{datatypeWithEnum}}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
-@@ -223,6 +217,7 @@
-         {{{name}}}: {{{enumName}}}.fromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
-                 {{/isEnum}}
-               {{/isNumber}}
-+              {{/isDouble}}
-             {{/isMap}}
-           {{/isArray}}
-         {{/complexType}}
+                 {{#vendorExtensions.x-original-is-integer}}

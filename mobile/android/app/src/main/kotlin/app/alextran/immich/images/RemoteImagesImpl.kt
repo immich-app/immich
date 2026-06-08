@@ -7,7 +7,6 @@ import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
 import app.alextran.immich.core.HttpClientManager
-import app.alextran.immich.core.USER_AGENT
 import kotlinx.coroutines.*
 import okhttp3.Cache
 import okhttp3.Call
@@ -15,7 +14,6 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
@@ -23,16 +21,9 @@ import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
 
-
-private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
+private const val MAX_PREALLOC_BYTES = 128 * 1024 * 1024
 
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
 
@@ -49,8 +40,8 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 
   override fun requestImage(
     url: String,
-    headers: Map<String, String>,
     requestId: Long,
+    @Suppress("UNUSED_PARAMETER") preferEncoded: Boolean, // always returns encoded; setting has no effect on Android
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -58,7 +49,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 
     ImageFetcherManager.fetch(
       url,
-      headers,
       signal,
       onSuccess = { buffer ->
         requestMap.remove(requestId)
@@ -100,7 +90,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 }
 
 private object ImageFetcherManager {
-  private lateinit var appContext: Context
   private lateinit var cacheDir: File
   private lateinit var fetcher: ImageFetcher
   private var initialized = false
@@ -109,7 +98,6 @@ private object ImageFetcherManager {
     if (initialized) return
     synchronized(this) {
       if (initialized) return
-      appContext = context.applicationContext
       cacheDir = context.cacheDir
       fetcher = build()
       HttpClientManager.addClientChangedListener(::invalidate)
@@ -119,12 +107,11 @@ private object ImageFetcherManager {
 
   fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
   ) {
-    fetcher.fetch(url, headers, signal, onSuccess, onFailure)
+    fetcher.fetch(url, signal, onSuccess, onFailure)
   }
 
   fun clearCache(onCleared: (Result<Long>) -> Unit) {
@@ -143,7 +130,7 @@ private object ImageFetcherManager {
     return if (HttpClientManager.isMtls) {
       OkHttpImageFetcher.create(cacheDir)
     } else {
-      CronetImageFetcher(appContext, cacheDir)
+      CronetImageFetcher()
     }
   }
 }
@@ -151,7 +138,6 @@ private object ImageFetcherManager {
 private sealed interface ImageFetcher {
   fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
@@ -162,23 +148,14 @@ private sealed interface ImageFetcher {
   fun clearCache(onCleared: (Result<Long>) -> Unit)
 }
 
-private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
-  private val ctx = context
-  private var engine: CronetEngine
-  private val executor = Executors.newFixedThreadPool(4)
+private class CronetImageFetcher : ImageFetcher {
   private val stateLock = Any()
   private var activeCount = 0
   private var draining = false
   private var onCacheCleared: ((Result<Long>) -> Unit)? = null
-  private val storageDir = File(cacheDir, "cronet").apply { mkdirs() }
-
-  init {
-    engine = build(context)
-  }
 
   override fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
@@ -192,22 +169,14 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     }
 
     val callback = FetchCallback(onSuccess, onFailure, ::onComplete)
-    val requestBuilder = engine.newUrlRequestBuilder(url, callback, executor)
-    headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
+    val requestBuilder = HttpClientManager.cronetEngine!!
+      .newUrlRequestBuilder(url, callback, HttpClientManager.cronetExecutor)
+    HttpClientManager.getAuthHeaders(url).forEach { (key, value) ->
+      requestBuilder.addHeader(key, value)
+    }
     val request = requestBuilder.build()
     signal.setOnCancelListener(request::cancel)
     request.start()
-  }
-
-  private fun build(ctx: Context): CronetEngine {
-    return CronetEngine.Builder(ctx)
-      .enableHttp2(true)
-      .enableQuic(true)
-      .enableBrotli(true)
-      .setStoragePath(storageDir.absolutePath)
-      .setUserAgent(USER_AGENT)
-      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
-      .build()
   }
 
   private fun onComplete() {
@@ -232,22 +201,16 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
   }
 
   private fun onDrained() {
-    engine.shutdown()
     val onCacheCleared = synchronized(stateLock) {
-      val onCacheCleared = onCacheCleared
+      val onCacheCleared = this.onCacheCleared
       this.onCacheCleared = null
       onCacheCleared
-    }
-    if (onCacheCleared == null) {
-      executor.shutdown()
-    } else {
-      CoroutineScope(Dispatchers.IO).launch {
-        val result = runCatching { deleteFolderAndGetSize(storageDir.toPath()) }
-        // Cronet is very good at self-repair, so it shouldn't fail here regardless of clear result
-        engine = build(ctx)
-        synchronized(stateLock) { draining = false }
-        onCacheCleared(result)
-      }
+    } ?: return
+
+    CoroutineScope(Dispatchers.IO).launch {
+      val result = HttpClientManager.rebuildCronetEngine()
+      synchronized(stateLock) { draining = false }
+      onCacheCleared(result)
     }
   }
 
@@ -267,7 +230,6 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     private val onComplete: () -> Unit,
   ) : UrlRequest.Callback() {
     private var buffer: NativeByteBuffer? = null
-    private var wrapped: ByteBuffer? = null
     private var error: Exception? = null
 
     override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newUrl: String) {
@@ -281,15 +243,16 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       }
 
       try {
+        // Content-Length is a size hint only. With Content-Encoding (gzip/br/...),
+        // Cronet auto-decompresses and writes decompressed bytes to our buffer, which
+        // may exceed the wire/compressed Content-Length. Always use the growable
+        // buffer path so we can't overflow.
         val contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
-        if (contentLength > 0) {
-          buffer = NativeByteBuffer(contentLength + 1)
-          wrapped = NativeBuffer.wrap(buffer!!.pointer, contentLength + 1)
-          request.read(wrapped)
-        } else {
-          buffer = NativeByteBuffer(INITIAL_BUFFER_SIZE)
-          request.read(buffer!!.wrapRemaining())
-        }
+        // Cap the up-front alloc: Content-Length is untrusted and can be huge or near
+        // Int.MAX_VALUE (overflowing `+1`). For larger responses the grow path takes over.
+        val initialSize = if (contentLength in 1..MAX_PREALLOC_BYTES) contentLength + 1 else INITIAL_BUFFER_SIZE
+        buffer = NativeByteBuffer(initialSize)
+        request.read(buffer!!.wrapRemaining())
       } catch (e: Exception) {
         error = e
         return request.cancel()
@@ -302,14 +265,14 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       byteBuffer: ByteBuffer
     ) {
       try {
-        val buf = if (wrapped == null) {
-          buffer!!.run {
-            advance(byteBuffer.position())
-            ensureHeadroom()
-            wrapRemaining()
-          }
-        } else {
-          wrapped
+        // Always pass a fresh wrap so byteBuffer.position() represents only the
+        // bytes Cronet wrote in this iteration. Reusing the caller-supplied
+        // ByteBuffer breaks advance(): Cronet's position keeps accumulating
+        // across reads, which would double-count previous iterations' bytes.
+        val buf = buffer!!.run {
+          advance(byteBuffer.position())
+          ensureHeadroom()
+          wrapRemaining()
         }
         request.read(buf)
       } catch (e: Exception) {
@@ -319,7 +282,6 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     }
 
     override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
-      wrapped?.let { buffer!!.advance(it.position()) }
       onSuccess(buffer!!)
       onComplete()
     }
@@ -337,26 +299,6 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     }
   }
 
-  suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
-    var totalSize = 0L
-
-    Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
-      override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-        totalSize += attrs.size()
-        Files.delete(file)
-        return FileVisitResult.CONTINUE
-      }
-
-      override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
-        if (dir != root) {
-          Files.delete(dir)
-        }
-        return FileVisitResult.CONTINUE
-      }
-    })
-
-    totalSize
-  }
 }
 
 private class OkHttpImageFetcher private constructor(
@@ -371,7 +313,7 @@ private class OkHttpImageFetcher private constructor(
       val dir = File(cacheDir, "okhttp")
 
       val client = HttpClientManager.getClient().newBuilder()
-        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
+        .cache(Cache(File(dir, "thumbnails"), HttpClientManager.MEDIA_CACHE_SIZE_BYTES))
         .build()
 
       return OkHttpImageFetcher(client)
@@ -390,7 +332,6 @@ private class OkHttpImageFetcher private constructor(
 
   override fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
@@ -403,7 +344,6 @@ private class OkHttpImageFetcher private constructor(
     }
 
     val requestBuilder = Request.Builder().url(url)
-    headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
     val call = client.newCall(requestBuilder.build())
     signal.setOnCancelListener(call::cancel)
 

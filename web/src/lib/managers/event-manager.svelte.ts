@@ -1,47 +1,46 @@
-import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { ReleaseEvent } from '$lib/types';
-import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
-import type { TreeNode } from '$lib/utils/tree-utils';
 import type {
   AlbumResponseDto,
   AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
-  IntegrityReportType,
+  IntegrityReport,
   JobCreateDto,
   LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
   QueueResponseDto,
+  ReleaseEventV1,
   SharedLinkResponseDto,
   SystemConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
   WorkflowResponseDto,
 } from '@immich/sdk';
+import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
+import type { TreeNode } from '$lib/utils/tree-utils';
 
 export type Events = {
   AppInit: [];
+  AppNavigate: [];
 
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
   AuthUserLoaded: [UserAdminResponseDto];
 
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
-  ThemeChange: [ThemeSetting];
 
   ApiKeyCreate: [ApiKeyResponseDto];
   ApiKeyUpdate: [ApiKeyResponseDto];
   ApiKeyDelete: [ApiKeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
-  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
   AssetsArchive: [string[]];
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];
   AssetsTag: [string[]];
 
   AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
+  AlbumCreate: [AlbumResponseDto];
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
   AlbumShare: [];
@@ -77,11 +76,12 @@ export type Events = {
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];
+  SessionDelete: [];
 
   SystemConfigUpdate: [SystemConfigDto];
 
-  IntegrityReportDeleteStatus: [{ type?: IntegrityReportType; id?: string; isDeleting: boolean }];
-  IntegrityReportDeleted: [{ type?: IntegrityReportType; id?: string }];
+  IntegrityReportDeleteStatus: [{ type?: IntegrityReport; id?: string; isDeleting: boolean }];
+  IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
 
   JobCreate: [{ dto: JobCreateDto }];
 
@@ -93,7 +93,9 @@ export type Events = {
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 
-  ReleaseEvent: [ReleaseEvent];
+  ReleaseEvent: [ReleaseEventV1];
+
+  WebsocketConnect: [];
 };
 
 export const eventManager = new BaseEventManager<Events>();

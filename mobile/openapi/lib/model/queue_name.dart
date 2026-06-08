@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Queue name
 class QueueName {
   /// Instantiate a new enum with the provided [value].
   const QueueName._(this.value);

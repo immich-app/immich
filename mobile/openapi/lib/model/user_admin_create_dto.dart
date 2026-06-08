@@ -13,20 +13,19 @@ part of openapi.api;
 class UserAdminCreateDto {
   /// Returns a new [UserAdminCreateDto] instance.
   UserAdminCreateDto({
-    this.avatarColor,
+    this.avatarColor = const Optional.absent(),
     required this.email,
-    this.isAdmin,
+    this.isAdmin = const Optional.absent(),
     required this.name,
-    this.notify,
+    this.notify = const Optional.absent(),
     required this.password,
-    this.pinCode,
-    this.quotaSizeInBytes,
-    this.shouldChangePassword,
-    this.storageLabel,
+    this.pinCode = const Optional.absent(),
+    this.quotaSizeInBytes = const Optional.absent(),
+    this.shouldChangePassword = const Optional.absent(),
+    this.storageLabel = const Optional.absent(),
   });
 
-  /// Avatar color
-  UserAvatarColor? avatarColor;
+  Optional<UserAvatarColor?> avatarColor;
 
   /// User email
   String email;
@@ -38,7 +37,7 @@ class UserAdminCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isAdmin;
+  Optional<bool?> isAdmin;
 
   /// User name
   String name;
@@ -50,18 +49,19 @@ class UserAdminCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? notify;
+  Optional<bool?> notify;
 
   /// User password
   String password;
 
   /// PIN code
-  String? pinCode;
+  Optional<String?> pinCode;
 
   /// Storage quota in bytes
   ///
   /// Minimum value: 0
-  int? quotaSizeInBytes;
+  /// Maximum value: 9007199254740991
+  Optional<int?> quotaSizeInBytes;
 
   /// Require password change on next login
   ///
@@ -70,10 +70,10 @@ class UserAdminCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? shouldChangePassword;
+  Optional<bool?> shouldChangePassword;
 
   /// Storage label
-  String? storageLabel;
+  Optional<String?> storageLabel;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminCreateDto &&
@@ -107,43 +107,36 @@ class UserAdminCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
-      json[r'avatarColor'] = this.avatarColor;
-    } else {
-    //  json[r'avatarColor'] = null;
+    if (this.avatarColor.isPresent) {
+      final value = this.avatarColor.value;
+      json[r'avatarColor'] = value;
     }
       json[r'email'] = this.email;
-    if (this.isAdmin != null) {
-      json[r'isAdmin'] = this.isAdmin;
-    } else {
-    //  json[r'isAdmin'] = null;
+    if (this.isAdmin.isPresent) {
+      final value = this.isAdmin.value;
+      json[r'isAdmin'] = value;
     }
       json[r'name'] = this.name;
-    if (this.notify != null) {
-      json[r'notify'] = this.notify;
-    } else {
-    //  json[r'notify'] = null;
+    if (this.notify.isPresent) {
+      final value = this.notify.value;
+      json[r'notify'] = value;
     }
       json[r'password'] = this.password;
-    if (this.pinCode != null) {
-      json[r'pinCode'] = this.pinCode;
-    } else {
-    //  json[r'pinCode'] = null;
+    if (this.pinCode.isPresent) {
+      final value = this.pinCode.value;
+      json[r'pinCode'] = value;
     }
-    if (this.quotaSizeInBytes != null) {
-      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
-    } else {
-    //  json[r'quotaSizeInBytes'] = null;
+    if (this.quotaSizeInBytes.isPresent) {
+      final value = this.quotaSizeInBytes.value;
+      json[r'quotaSizeInBytes'] = value;
     }
-    if (this.shouldChangePassword != null) {
-      json[r'shouldChangePassword'] = this.shouldChangePassword;
-    } else {
-    //  json[r'shouldChangePassword'] = null;
+    if (this.shouldChangePassword.isPresent) {
+      final value = this.shouldChangePassword.value;
+      json[r'shouldChangePassword'] = value;
     }
-    if (this.storageLabel != null) {
-      json[r'storageLabel'] = this.storageLabel;
-    } else {
-    //  json[r'storageLabel'] = null;
+    if (this.storageLabel.isPresent) {
+      final value = this.storageLabel.value;
+      json[r'storageLabel'] = value;
     }
     return json;
   }
@@ -157,16 +150,16 @@ class UserAdminCreateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminCreateDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+        avatarColor: json.containsKey(r'avatarColor') ? Optional.present(UserAvatarColor.fromJson(json[r'avatarColor'])) : const Optional.absent(),
         email: mapValueOfType<String>(json, r'email')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
+        isAdmin: json.containsKey(r'isAdmin') ? Optional.present(mapValueOfType<bool>(json, r'isAdmin')) : const Optional.absent(),
         name: mapValueOfType<String>(json, r'name')!,
-        notify: mapValueOfType<bool>(json, r'notify'),
+        notify: json.containsKey(r'notify') ? Optional.present(mapValueOfType<bool>(json, r'notify')) : const Optional.absent(),
         password: mapValueOfType<String>(json, r'password')!,
-        pinCode: mapValueOfType<String>(json, r'pinCode'),
-        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        pinCode: json.containsKey(r'pinCode') ? Optional.present(mapValueOfType<String>(json, r'pinCode')) : const Optional.absent(),
+        quotaSizeInBytes: json.containsKey(r'quotaSizeInBytes') ? Optional.present(json[r'quotaSizeInBytes'] == null ? null : int.parse('${json[r'quotaSizeInBytes']}')) : const Optional.absent(),
+        shouldChangePassword: json.containsKey(r'shouldChangePassword') ? Optional.present(mapValueOfType<bool>(json, r'shouldChangePassword')) : const Optional.absent(),
+        storageLabel: json.containsKey(r'storageLabel') ? Optional.present(mapValueOfType<String>(json, r'storageLabel')) : const Optional.absent(),
       );
     }
     return null;

@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 
 class RatingDetails extends ConsumerWidget {
-  const RatingDetails({super.key});
+  final ExifInfo? exifInfo;
+
+  const RatingDetails({super.key, this.exifInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,9 +20,9 @@ class RatingDetails extends ConsumerWidget {
         .watch(userMetadataPreferencesProvider)
         .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
-    if (!isRatingEnabled) return const SizedBox.shrink();
-
-    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+    if (!isRatingEnabled) {
+      return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.only(left: 16.0, top: 16.0),
@@ -42,7 +44,7 @@ class RatingDetails extends ConsumerWidget {
               await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
             },
             onClearRating: () async {
-              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
+              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, null);
             },
           ),
         ],

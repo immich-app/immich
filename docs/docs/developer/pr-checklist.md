@@ -8,52 +8,73 @@ When contributing code through a pull request, please check the following:
 
 ## Web Checks
 
-- [ ] `pnpm run lint` (linting via ESLint)
-- [ ] `pnpm run format` (formatting via Prettier)
-- [ ] `pnpm run check:svelte` (Type checking via SvelteKit)
-- [ ] `pnpm run check:typescript` (check typescript)
-- [ ] `pnpm test` (unit tests)
+- [ ] `mise //web:lint` (linting via ESLint)
+- [ ] `mise //web:format` (formatting via Prettier)
+- [ ] `mise //web:check-svelte` (type checking via SvelteKit)
+- [ ] `mise //web:check-typescript` (type checking via `tsc`)
+- [ ] `mise //web:test` (unit tests)
 
 :::tip AIO
-Run all web checks with `pnpm run check:all`
+Run all web checks with `mise //web:checklist`
+:::
+
+:::tip Auto Fix
+Use `mise //web:lint-fix` and `mise //web:format-fix` to automatically correct some issues.
 :::
 
 ## Documentation
 
-- [ ] `pnpm run format` (formatting via Prettier)
+- [ ] `mise //docs:format` (formatting via Prettier)
 - [ ] Update the `_redirects` file if you have renamed a page or removed it from the documentation.
+
+:::tip Auto Fix
+Use `mise //docs:format-fix` to automatically fix formatting.
+:::
 
 ## Server Checks
 
-- [ ] `pnpm run lint` (linting via ESLint)
-- [ ] `pnpm run format` (formatting via Prettier)
-- [ ] `pnpm run check` (Type checking via `tsc`)
-- [ ] `pnpm test` (unit tests)
+- [ ] `mise //server:lint` (linting via ESLint)
+- [ ] `mise //server:format` (formatting via Prettier)
+- [ ] `mise //server:check` (type checking via `tsc`)
+- [ ] `mise //server:test` (unit tests)
 
 :::tip AIO
-Run all server checks with `pnpm run check:all`
+Run all server checks with `mise //server:checklist`
 :::
 
-:::info Auto Fix
-You can use `pnpm run __:fix` to potentially correct some issues automatically for `pnpm run format` and `lint`.
+:::tip Auto Fix
+Use `mise //server:lint-fix` and `mise //server:format-fix` to automatically correct some issues.
 :::
 
-## Mobile Checks
+## Mobile Checklist
 
-The following commands must be executed from within the mobile app directory of the codebase.
+- [ ] `mise //mobile:codegen` (auto-generate files using build_runner)
+- [ ] `mise //mobile:lint` (static analysis via Dart Analyzer and DCM)
+- [ ] `mise //mobile:format` (formatting via Dart Formatter)
+- [ ] `mise //mobile:test` (unit tests)
 
-- [ ] `make build` (auto-generate files using build_runner)
-- [ ] `make analyze` (static analysis via Dart Analyzer and DCM)
-- [ ] `make format` (formatting via Dart Formatter)
-- [ ] `make test` (unit tests)
+:::tip
+Run all these commands at once with `mise //mobile:checklist`
+:::
 
-:::info Auto Fix
-You can use `dart fix --apply` and `dcm fix lib` to potentially correct some issues automatically for `make analyze`.
+:::tip Auto Fix
+You can use `mise //mobile:lint-fix` to potentially correct some issues automatically for `mise //mobile:lint`.
+:::
+
+## Machine Learning Checklist
+
+- [ ] `mise //machine-learning:lint` (linting via ruff)
+- [ ] `mise //machine-learning:format` (formatting via ruff)
+- [ ] `mise //machine-learning:check` (type checking via mypy)
+- [ ] `mise //machine-learning:test` (unit tests via pytest)
+
+:::tip AIO
+Run all machine learning checks with `mise //machine-learning:checklist`
 :::
 
 ## OpenAPI
 
-The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/developer/open-api.md) for more details.
+The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/api.md) for more details.
 
 ## Database Migrations
 

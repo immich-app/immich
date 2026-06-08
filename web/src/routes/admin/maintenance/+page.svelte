@@ -3,9 +3,6 @@
   import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import { QueryParameter } from '$lib/constants';
   import { Route } from '$lib/route';
   import { handleCreateJob } from '$lib/services/job.service';
   import { getMaintenanceAdminActions } from '$lib/services/maintenance.service';
@@ -13,7 +10,7 @@
   import {
     getIntegrityReportSummary,
     getQueuesLegacy,
-    IntegrityReportType,
+    IntegrityReport,
     ManualJobName,
     type IntegrityReportSummaryResponseDto,
     type JobCreateDto,
@@ -24,6 +21,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
 
   type Props = {
     data: PageData;
@@ -35,22 +33,22 @@
   // svelte-ignore state_referenced_locally
   let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
-  const reportTypes: IntegrityReportType[] = [
-    IntegrityReportType.UntrackedFile,
-    IntegrityReportType.MissingFile,
-    IntegrityReportType.ChecksumMismatch,
+  const reportTypes: IntegrityReport[] = [
+    IntegrityReport.UntrackedFile,
+    IntegrityReport.MissingFile,
+    IntegrityReport.ChecksumMismatch,
   ];
 
-  const jobNames: Record<IntegrityReportType, ManualJobName> = {
-    [IntegrityReportType.UntrackedFile]: ManualJobName.IntegrityUntrackedFiles,
-    [IntegrityReportType.MissingFile]: ManualJobName.IntegrityMissingFiles,
-    [IntegrityReportType.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatch,
+  const jobNames: Record<IntegrityReport, ManualJobName> = {
+    [IntegrityReport.UntrackedFile]: ManualJobName.IntegrityUntrackedFiles,
+    [IntegrityReport.MissingFile]: ManualJobName.IntegrityMissingFiles,
+    [IntegrityReport.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatch,
   };
 
-  const refreshJobNames: Record<IntegrityReportType, ManualJobName> = {
-    [IntegrityReportType.UntrackedFile]: ManualJobName.IntegrityUntrackedFilesRefresh,
-    [IntegrityReportType.MissingFile]: ManualJobName.IntegrityMissingFilesRefresh,
-    [IntegrityReportType.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatchRefresh,
+  const refreshJobNames: Record<IntegrityReport, ManualJobName> = {
+    [IntegrityReport.UntrackedFile]: ManualJobName.IntegrityUntrackedFilesRefresh,
+    [IntegrityReport.MissingFile]: ManualJobName.IntegrityMissingFilesRefresh,
+    [IntegrityReport.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatchRefresh,
   };
 
   let jobs: QueuesResponseLegacyDto | undefined = $state();
@@ -99,7 +97,7 @@
               void handleCreateJob({ name });
             }
           }}
-          class="self-end mt-1"
+          class="mt-1 self-end"
           disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('admin.maintenance_integrity_check_all')}</Button
         >
         <Button
@@ -110,16 +108,16 @@
               void handleCreateJob({ name });
             }
           }}
-          class="self-end mt-1"
+          class="mt-1 self-end"
           disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
         ></HStack
       >
 
-      <div class="mt-5 flex justify-between max-lg:flex-wrap gap-4">
+      <div class="mt-5 flex justify-between gap-4 max-lg:flex-wrap">
         {#each reportTypes as reportType (reportType)}
           <ServerStatisticsCard
             title={$t(`admin.maintenance_integrity_${reportType}`)}
-            value={integrityReport[reportType]}
+            valuePromise={{ value: integrityReport[reportType] }}
           >
             {#snippet footer()}
               <HStack gap={1} class="justify-end">
@@ -130,7 +128,7 @@
                     })}
                   size="tiny"
                   variant="ghost"
-                  class="self-end mt-1"
+                  class="mt-1 self-end"
                   disabled={jobs?.integrityCheck.queueStatus.isActive}
                   >{$t('admin.maintenance_integrity_check_all')}</Button
                 >
@@ -141,7 +139,7 @@
                     })}
                   size="tiny"
                   variant="ghost"
-                  class="self-end mt-1"
+                  class="mt-1 self-end"
                   disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
                 >
                 <Button
@@ -149,7 +147,7 @@
                     reportType,
                   })}`}
                   size="tiny"
-                  class="self-end mt-1">{$t('view')}</Button
+                  class="mt-1 self-end">{$t('view')}</Button
                 >
               </HStack>
             {/snippet}
@@ -160,19 +158,17 @@
   </section>
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-4 sm:w-5/6 md:w-212.5">
+    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
       <Text size="small">{$t('admin.maintenance_settings')}</Text>
 
-      <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-        <SettingAccordion
-          title={$t('admin.maintenance_restore_database_backup')}
-          subtitle={$t('admin.maintenance_restore_database_backup_description')}
-          icon={mdiRefresh}
-          key="backups"
-        >
-          <MaintenanceBackupsList backups={data.backups} expectedVersion={data.expectedVersion} />
-        </SettingAccordion>
-      </SettingAccordionState>
+      <SettingAccordion
+        title={$t('admin.maintenance_restore_database_backup')}
+        subtitle={$t('admin.maintenance_restore_database_backup_description')}
+        icon={mdiRefresh}
+        key="backups"
+      >
+        <MaintenanceBackupsList backups={data.backups} expectedVersion={data.expectedVersion} />
+      </SettingAccordion>
     </section>
   </section>
 </AdminPageLayout>

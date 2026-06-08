@@ -1,10 +1,10 @@
+import { getIntegrityReport, IntegrityReport } from '@immich/sdk';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getIntegrityReport, IntegrityReportType } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
-  const type = params.type as IntegrityReportType;
+  const type = params.type as IntegrityReport;
 
   await authenticate(url, { admin: true });
   const integrityReport = await getIntegrityReport({

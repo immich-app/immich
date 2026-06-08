@@ -13,29 +13,45 @@ part of openapi.api;
 class ServerStatsResponseDto {
   /// Returns a new [ServerStatsResponseDto] instance.
   ServerStatsResponseDto({
-    this.photos = 0,
-    this.usage = 0,
+    required this.photos,
+    required this.usage,
     this.usageByUser = const [],
-    this.usagePhotos = 0,
-    this.usageVideos = 0,
-    this.videos = 0,
+    required this.usagePhotos,
+    required this.usageVideos,
+    required this.videos,
   });
 
   /// Total number of photos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int photos;
 
   /// Total storage usage in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usage;
 
+  /// Array of usage for each user
   List<UsageByUserDto> usageByUser;
 
   /// Storage usage for photos in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usagePhotos;
 
   /// Storage usage for videos in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usageVideos;
 
   /// Total number of videos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int videos;
 
   @override

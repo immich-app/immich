@@ -20,7 +20,7 @@ class LicenseKeyDto {
   /// Activation key
   String activationKey;
 
-  /// License key (format: IM(SV|CL)(-XXXX){8})
+  /// License key (format: /^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$/)
   String licenseKey;
 
   @override

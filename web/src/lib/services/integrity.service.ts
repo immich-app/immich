@@ -1,14 +1,13 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
-import { createJob, deleteIntegrityReport, getBaseUrl, IntegrityReportType, ManualJobName } from '@immich/sdk';
+import { createJob, deleteIntegrityReport, getBaseUrl, IntegrityReport, ManualJobName } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
-export const getIntegrityReportActions = ($t: MessageFormatter, reportType: IntegrityReportType) => {
+export const getIntegrityReportActions = ($t: MessageFormatter, reportType: IntegrityReport) => {
   const Download: ActionItem = {
-    type: $t('command'),
     title: $t('admin.download_csv'),
     icon: mdiDownload,
     onAction: () => {
@@ -17,7 +16,6 @@ export const getIntegrityReportActions = ($t: MessageFormatter, reportType: Inte
   };
 
   const Delete: ActionItem = {
-    type: $t('command'),
     title: $t('trash_page_delete_all'),
     icon: mdiTrashCanOutline,
     color: 'danger',
@@ -29,18 +27,14 @@ export const getIntegrityReportActions = ($t: MessageFormatter, reportType: Inte
   return { Download, Delete };
 };
 
-export const getIntegrityReportItemActions = (
-  $t: MessageFormatter,
-  reportId: string,
-  reportType: IntegrityReportType,
-) => {
+export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: string, reportType: IntegrityReport) => {
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
     onAction: () => {
       void handleDownloadIntegrityReportFile(reportId);
     },
-    $if: () => reportType === IntegrityReportType.UntrackedFile || reportType === IntegrityReportType.ChecksumMismatch,
+    $if: () => reportType === IntegrityReport.UntrackedFile || reportType === IntegrityReport.ChecksumMismatch,
   };
 
   const Delete: ActionItem = {
@@ -59,11 +53,11 @@ export const handleDownloadIntegrityReportFile = (reportId: string) => {
   location.href = `${getBaseUrl()}/admin/integrity/report/${reportId}/file`;
 };
 
-export const handleDownloadIntegrityReportCsv = (reportType: IntegrityReportType) => {
+export const handleDownloadIntegrityReportCsv = (reportType: IntegrityReport) => {
   location.href = `${getBaseUrl()}/admin/integrity/report/${reportType}/csv`;
 };
 
-export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityReportType) => {
+export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityReport) => {
   const $t = await getFormatter();
   const confirm = await modalManager.showDialog({
     confirmText: $t('delete'),
@@ -75,15 +69,15 @@ export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityR
 
   let name: ManualJobName;
   switch (reportType) {
-    case IntegrityReportType.UntrackedFile: {
+    case IntegrityReport.UntrackedFile: {
       name = ManualJobName.IntegrityUntrackedFilesDeleteAll;
       break;
     }
-    case IntegrityReportType.MissingFile: {
+    case IntegrityReport.MissingFile: {
       name = ManualJobName.IntegrityMissingFilesDeleteAll;
       break;
     }
-    case IntegrityReportType.ChecksumMismatch: {
+    case IntegrityReport.ChecksumMismatch: {
       name = ManualJobName.IntegrityChecksumMismatchDeleteAll;
       break;
     }

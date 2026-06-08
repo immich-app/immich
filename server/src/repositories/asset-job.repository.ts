@@ -9,7 +9,7 @@ import { DB } from 'src/schema';
 import {
   anyUuid,
   asUuid,
-  toJson,
+  withAudioStream,
   withDefaultVisibility,
   withEdits,
   withExif,
@@ -17,6 +17,8 @@ import {
   withFaces,
   withFilePath,
   withFiles,
+  withVideoFormat,
+  withVideoStream,
 } from 'src/utils/database';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -105,7 +107,7 @@ export class AssetJobRepository {
   getForMigrationJob(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.ownerId', 'asset.encodedVideoPath'])
+      .select(['asset.id', 'asset.ownerId'])
       .select(withFiles)
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -135,6 +137,9 @@ export class AssetJobRepository {
       )
       .select(withEdits)
       .$call(withExifInner)
+      .leftJoin('asset_video', 'asset_video.assetId', 'asset.id')
+      .select((eb) => withVideoStream(eb).as('videoStream'))
+      .select((eb) => withVideoFormat(eb).as('format'))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -269,7 +274,6 @@ export class AssetJobRepository {
         'asset.libraryId',
         'asset.ownerId',
         'asset.livePhotoVideoId',
-        'asset.encodedVideoPath',
         'asset.originalPath',
         'asset.isOffline',
       ])
@@ -296,7 +300,12 @@ export class AssetJobRepository {
             .as('stack_result'),
         (join) => join.onTrue(),
       )
-      .select((eb) => toJson(eb, 'stack_result').as('stack'))
+      .select((eb) =>
+        eb.fn
+          .toJson(eb.table('stack_result'))
+          .$castTo<{ id: string; primaryAssetId: string; assets: { id: string }[] } | null>()
+          .as('stack'),
+      )
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -306,11 +315,21 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
-      .where('asset.type', '=', AssetType.Video)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .$if(!force, (qb) =>
         qb
-          .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
-          .where('asset.visibility', '!=', AssetVisibility.Hidden),
+          .where((eb) =>
+            eb.not(
+              eb.exists(
+                eb
+                  .selectFrom('asset_file')
+                  .select('asset_file.id')
+                  .whereRef('asset_file.assetId', '=', 'asset.id')
+                  .where('asset_file.type', '=', sql.lit(AssetFileType.EncodedVideo)),
+              ),
+            ),
+          )
+          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
@@ -320,9 +339,16 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .innerJoin('asset_video', 'asset_video.assetId', 'asset.id')
+      .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
+      .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
+      .select(withFiles)
+      .select((eb) => withAudioStream(eb).as('audioStream'))
+      .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
+      .select((eb) => withVideoFormat(eb).$notNull().as('format'))
       .where('asset.id', '=', id)
-      .where('asset.type', '=', AssetType.Video)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .executeTakeFirst();
   }
 
@@ -353,6 +379,7 @@ export class AssetJobRepository {
         'asset.checksum',
         'asset.originalPath',
         'asset.isExternal',
+        'asset.visibility',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
         'asset.fileCreatedAt',
@@ -367,13 +394,16 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getForStorageTemplateJob(id: string) {
-    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
+  getForStorageTemplateJob(id: string, options?: { includeHidden?: boolean }) {
+    return this.storageTemplateAssetQuery()
+      .where('asset.id', '=', id)
+      .$if(!options?.includeHidden, (qb) => qb.where('asset.visibility', '!=', AssetVisibility.Hidden))
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().stream();
+    return this.storageTemplateAssetQuery().where('asset.visibility', '!=', AssetVisibility.Hidden).stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })

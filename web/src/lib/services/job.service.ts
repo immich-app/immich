@@ -1,8 +1,8 @@
+import { createJob, type JobCreateDto } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-import { createJob, type JobCreateDto } from '@immich/sdk';
-import { toastManager } from '@immich/ui';
 
 export const handleCreateJob = async (dto: JobCreateDto) => {
   const $t = await getFormatter();
@@ -10,7 +10,7 @@ export const handleCreateJob = async (dto: JobCreateDto) => {
   try {
     await createJob({ jobCreateDto: dto });
     eventManager.emit('JobCreate', { dto });
-    toastManager.success($t('admin.job_created'));
+    toastManager.primary($t('admin.job_created'));
     return true;
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));

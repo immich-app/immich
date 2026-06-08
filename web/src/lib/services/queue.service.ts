@@ -1,12 +1,3 @@
-import { goto } from '$app/navigation';
-import { OpenQueryParam } from '$lib/constants';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queueManager } from '$lib/managers/queue-manager.svelte';
-import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
-import { Route } from '$lib/route';
-import type { HeaderButtonActionItem } from '$lib/types';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   emptyQueue,
   getQueue,
@@ -42,6 +33,15 @@ import {
   mdiVideo,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
+import { OpenQueryParam } from '$lib/constants';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { queueManager } from '$lib/managers/queue-manager.svelte';
+import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
+import { Route } from '$lib/route';
+import type { HeaderButtonActionItem } from '$lib/types';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 type QueueItem = {
   icon: IconLike;
@@ -65,7 +65,6 @@ export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[
   const CreateJob: ActionItem = {
     icon: mdiPlus,
     title: $t('admin.create_job'),
-    type: $t('command'),
     shortcuts: { shift: true, key: 'n' },
     onAction: () => modalManager.show(JobCreateModal, {}),
   };
@@ -74,7 +73,6 @@ export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[
     icon: mdiCog,
     title: $t('admin.manage_concurrency'),
     description: $t('admin.manage_concurrency_description'),
-    type: $t('page'),
     onAction: () => goto(Route.systemSettings({ isOpen: OpenQueryParam.JOB })),
   };
 
@@ -130,7 +128,7 @@ export const handleEmptyQueue = async (queue: QueueResponseDto) => {
     await emptyQueue({ name: queue.name, queueDeleteDto: { failed: false } });
     const response = await getQueue({ name: queue.name });
     eventManager.emit('QueueUpdate', response);
-    toastManager.success($t('admin.cleared_jobs', { values: { job: item.title } }));
+    toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }
@@ -156,7 +154,7 @@ const handleRemoveFailedJobs = async (queue: QueueResponseDto) => {
     await emptyQueue({ name: queue.name, queueDeleteDto: { failed: true } });
     const response = await getQueue({ name: queue.name });
     eventManager.emit('QueueUpdate', response);
-    toastManager.success();
+    toastManager.primary();
   } catch (error) {
     handleError(error, $t('errors.something_went_wrong'));
   }

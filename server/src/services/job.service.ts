@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
-import { AssetType, AssetVisibility, IntegrityReportType, JobName, JobStatus, ManualJobName } from 'src/enum';
+import { AssetType, AssetVisibility, IntegrityReport, JobName, JobStatus, ManualJobName } from 'src/enum';
 import { ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
@@ -59,15 +59,15 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
     }
 
     case ManualJobName.IntegrityMissingFilesDeleteAll: {
-      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.MissingFile } };
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReport.MissingFile } };
     }
 
     case ManualJobName.IntegrityUntrackedFilesDeleteAll: {
-      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.UntrackedFile } };
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReport.UntrackedFile } };
     }
 
     case ManualJobName.IntegrityChecksumFilesDeleteAll: {
-      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReportType.ChecksumFail } };
+      return { name: JobName.IntegrityDeleteReportType, data: { type: IntegrityReport.ChecksumFail } };
     }
 
     default: {
@@ -134,9 +134,10 @@ export class JobService extends BaseService {
 
       case JobName.AssetEditThumbnailGeneration: {
         const asset = await this.assetRepository.getById(item.data.id);
+        const edits = await this.assetEditRepository.getWithSyncInfo(item.data.id);
 
         if (asset) {
-          this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, {
+          this.websocketRepository.clientSend('AssetEditReadyV2', asset.ownerId, {
             asset: {
               id: asset.id,
               ownerId: asset.ownerId,
@@ -145,6 +146,7 @@ export class JobService extends BaseService {
               checksum: hexOrBufferToBase64(asset.checksum),
               fileCreatedAt: asset.fileCreatedAt,
               fileModifiedAt: asset.fileModifiedAt,
+              createdAt: asset.createdAt,
               localDateTime: asset.localDateTime,
               duration: asset.duration,
               type: asset.type,
@@ -158,6 +160,7 @@ export class JobService extends BaseService {
               height: asset.height,
               isEdited: asset.isEdited,
             },
+            edit: edits,
           });
         }
 
@@ -190,7 +193,7 @@ export class JobService extends BaseService {
           this.websocketRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
           if (asset.exifInfo) {
             const exif = asset.exifInfo;
-            this.websocketRepository.clientSend('AssetUploadReadyV1', asset.ownerId, {
+            this.websocketRepository.clientSend('AssetUploadReadyV2', asset.ownerId, {
               // TODO remove `on_upload_success` and then modify the query to select only the required fields)
               asset: {
                 id: asset.id,
@@ -200,6 +203,7 @@ export class JobService extends BaseService {
                 checksum: hexOrBufferToBase64(asset.checksum),
                 fileCreatedAt: asset.fileCreatedAt,
                 fileModifiedAt: asset.fileModifiedAt,
+                createdAt: asset.createdAt,
                 localDateTime: asset.localDateTime,
                 duration: asset.duration,
                 type: asset.type,
@@ -220,8 +224,8 @@ export class JobService extends BaseService {
                 exifImageHeight: exif.exifImageHeight,
                 fileSizeInByte: exif.fileSizeInByte,
                 orientation: exif.orientation,
-                dateTimeOriginal: exif.dateTimeOriginal,
-                modifyDate: exif.modifyDate,
+                dateTimeOriginal: exif.dateTimeOriginal ? new Date(exif.dateTimeOriginal) : null,
+                modifyDate: exif.modifyDate ? new Date(exif.modifyDate) : null,
                 timeZone: exif.timeZone,
                 latitude: exif.latitude,
                 longitude: exif.longitude,

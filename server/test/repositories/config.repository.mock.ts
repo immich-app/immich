@@ -3,7 +3,7 @@ import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
 import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-const envData: EnvData = {
+export const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
   logFormat: LogFormat.Console,
@@ -30,14 +30,21 @@ const envData: EnvData = {
       username: 'postgres',
       password: 'postgres',
     },
-
     skipMigrations: false,
-    vectorExtension: DatabaseExtension.Vectors,
+    vectorExtension: DatabaseExtension.VectorChord,
+  },
+
+  helmet: {
+    config: {},
   },
 
   licensePublicKey: {
     client: 'client-public-key',
     server: 'server-public-key',
+  },
+
+  versionCheck: {
+    url: 'https://version.immich.cloud/version',
   },
 
   network: {
@@ -47,10 +54,6 @@ const envData: EnvData = {
   otel: {
     metrics: {
       hostMetrics: false,
-      apiMetrics: {
-        enable: false,
-        ignoreRoutes: [],
-      },
     },
   },
 
@@ -73,7 +76,7 @@ const envData: EnvData = {
       root: '/build/www',
       indexHtml: '/build/www/index.html',
     },
-    corePlugin: '/build/corePlugin',
+    corePlugin: '/build/plugins/immich-plugin-core',
   },
 
   setup: {

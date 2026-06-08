@@ -1,14 +1,14 @@
 <script lang="ts">
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { getIntegrityReportItemActions } from '$lib/services/integrity.service';
-  import type { IntegrityReportType } from '@immich/sdk';
+  import type { IntegrityReport } from '@immich/sdk';
   import { ContextMenuButton, TableCell, TableRow } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = {
     id: string;
     path: string;
-    reportType: IntegrityReportType;
+    reportType: IntegrityReport;
   };
 
   let { id, path, reportType }: Props = $props();
@@ -22,7 +22,7 @@
     isDeleting,
   }: {
     id?: string;
-    type?: IntegrityReportType;
+    type?: IntegrityReport;
     isDeleting: boolean;
   }) => {
     if (type === reportType || reportId === id) {
@@ -34,8 +34,8 @@
 <OnEvents {onIntegrityReportDeleteStatus} />
 
 <TableRow>
-  <TableCell class="w-7/8 text-left px-4">{path}</TableCell>
-  <TableCell class="w-1/8 flex justify-end">
+  <TableCell class="w-7/8 px-4 text-left">{path}</TableCell>
+  <TableCell class="flex w-1/8 justify-end">
     <ContextMenuButton disabled={deleting} position="top-right" aria-label={$t('open')} items={[Download, Delete]} />
   </TableCell>
 </TableRow>

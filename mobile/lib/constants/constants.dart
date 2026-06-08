@@ -1,9 +1,5 @@
 import 'dart:io';
 
-const int noDbId = -9223372036854775808; // from Isar
-const double downloadCompleted = -1;
-const double downloadFailed = -2;
-
 const String kMobileMetadataKey = "mobile-app";
 
 // Number of log entries to retain on app start
@@ -27,6 +23,7 @@ const String kBackupLivePhotoGroup = 'backup_live_photo_group';
 const String kDownloadGroupImage = 'group_image';
 const String kDownloadGroupVideo = 'group_video';
 const String kDownloadGroupLivePhoto = 'group_livephoto';
+const String kShareDownloadGroup = 'group_share';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;
@@ -34,7 +31,6 @@ const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 
 // Widget keys
-const String appShareGroupId = "group.app.immich.share";
 const String kWidgetAuthToken = "widget_auth_token";
 const String kWidgetServerEndpoint = "widget_server_url";
 const String kWidgetCustomHeaders = "widget_custom_headers";
@@ -46,9 +42,6 @@ const List<(String, String)> kWidgetNames = [
   ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiver'),
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiver'),
 ];
-
-const double kUploadStatusFailed = -1.0;
-const double kUploadStatusCanceled = -2.0;
 
 const int kMinMonthsToEnableScrubberSnap = 12;
 

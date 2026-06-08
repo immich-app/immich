@@ -1,25 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, OrderByDirection, Selectable, sql } from 'kysely';
+import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
+import { anyUuid, searchAssetBuilder, withExifInner } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
-import { isValidInteger } from 'src/validation';
+import z from 'zod';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
-  deviceAssetId?: string;
   id?: string;
 }
 
 export interface SearchUserIdOptions {
-  deviceId?: string;
   libraryId?: string | null;
   userIds?: string[];
 }
@@ -238,20 +234,11 @@ export class SearchRepository {
     ],
   })
   async searchRandom(size: number, options: AssetSearchOptions) {
-    const uuid = randomUUID();
-    const builder = searchAssetBuilder(this.db, options);
-    const lessThan = builder
+    return searchAssetBuilder(this.db, options)
       .selectAll('asset')
-      .where('asset.id', '<', uuid)
       .orderBy(sql`random()`)
-      .limit(size);
-    const greaterThan = builder
-      .selectAll('asset')
-      .where('asset.id', '>', uuid)
-      .orderBy(sql`random()`)
-      .limit(size);
-    const { rows } = await sql<MapAsset>`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
-    return rows;
+      .limit(size)
+      .execute();
   }
 
   @GenerateSql({
@@ -270,7 +257,7 @@ export class SearchRepository {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     return searchAssetBuilder(this.db, options)
       .selectAll('asset')
-      .$call(withExif)
+      .$call(withExifInner)
       .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
       .orderBy('asset_exif.fileSizeInByte', orderDirection)
       .limit(size)
@@ -291,7 +278,7 @@ export class SearchRepository {
     ],
   })
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
-    if (!isValidInteger(pagination.size, { min: 1, max: 1000 })) {
+    if (!z.int().min(1).max(1000).safeParse(pagination.size).success) {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
@@ -326,7 +313,7 @@ export class SearchRepository {
     ],
   })
   searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
-    if (!isValidInteger(numResults, { min: 1, max: 1000 })) {
+    if (!z.int().min(1).max(1000).safeParse(numResults).success) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 
@@ -433,7 +420,7 @@ export class SearchRepository {
       .select((eb) =>
         eb
           .fn('to_jsonb', [eb.table('asset_exif')])
-          .$castTo<Selectable<AssetExifTable>>()
+          .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>>>()
           .as('exifInfo'),
       )
       .orderBy('asset_exif.city')
@@ -502,10 +489,7 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
-  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
-    field: K,
-    userIds: string[],
-  ) {
+  private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
     return this.db
       .selectFrom('asset_exif')
       .select(field)
@@ -514,6 +498,7 @@ export class SearchRepository {
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
-      .where(field, 'is not', null);
+      .where(field, 'is not', null)
+      .where(field, '!=', '');
   }
 }

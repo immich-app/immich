@@ -17,8 +17,10 @@ class SystemConfigIntegrityJob {
     required this.enabled,
   });
 
+  /// Cron expression for when the integrity check should run
   String cronExpression;
 
+  /// Enabled
   bool enabled;
 
   @override

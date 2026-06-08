@@ -1,8 +1,17 @@
-import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
-import { ApiTag, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
+import {
+  ApiTag,
+  AudioCodec,
+  DatabaseExtension,
+  ExifOrientation,
+  TranscodeHardwareAcceleration,
+  VectorIndex,
+  VideoCodec,
+} from 'src/enum';
+
+export const IMMICH_SERVER_START = 'Immich Server is listening';
 
 export const ErrorMessages = {
   InconsistentMediaLocation:
@@ -13,7 +22,6 @@ export const ErrorMessages = {
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
-export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
@@ -23,15 +31,10 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',
   earthdistance: 'earthdistance',
   vector: 'pgvector',
-  vectors: 'pgvecto.rs',
   vchord: 'VectorChord',
 } as const;
 
-export const VECTOR_EXTENSIONS = [
-  DatabaseExtension.VectorChord,
-  DatabaseExtension.Vectors,
-  DatabaseExtension.Vector,
-] as const;
+export const VECTOR_EXTENSIONS = [DatabaseExtension.VectorChord, DatabaseExtension.Vector] as const;
 
 export const VECTOR_INDEX_TABLES = {
   [VectorIndex.Clip]: 'smart_search',
@@ -41,6 +44,8 @@ export const VECTOR_INDEX_TABLES = {
 export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 
 export const SALT_ROUNDS = 10;
+// Syntactically valid bcrypt hash used in login() preventing timing-based user enumeration.
+export const LOGIN_DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZabcde';
 
 export const IWorker = 'IWorker';
 
@@ -49,9 +54,6 @@ const basePath = dirname(__filename);
 const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
-
-export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
-export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;
@@ -202,3 +204,39 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Workflows]:
     'A workflow is a set of actions that run whenever a triggering event occurs. Workflows also can include filters to further limit execution.',
 };
+
+export const AUDIO_ENCODER: Record<AudioCodec, string> = {
+  [AudioCodec.Aac]: 'aac',
+  [AudioCodec.Mp3]: 'mp3',
+  [AudioCodec.Opus]: 'libopus',
+  [AudioCodec.PcmS16le]: 'pcm_s16le',
+};
+
+export const SUPPORTED_HWA_CODECS: Record<TranscodeHardwareAcceleration, VideoCodec[]> = {
+  [TranscodeHardwareAcceleration.Nvenc]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Av1],
+  [TranscodeHardwareAcceleration.Qsv]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1],
+  [TranscodeHardwareAcceleration.Vaapi]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1],
+  [TranscodeHardwareAcceleration.Rkmpp]: [VideoCodec.H264, VideoCodec.Hevc],
+  [TranscodeHardwareAcceleration.Disabled]: [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1],
+};
+
+export const HLS_BACKPRESSURE_PAUSE_SEGMENTS = 30;
+export const HLS_BACKPRESSURE_RESUME_SEGMENTS = 15;
+export const HLS_CLEANUP_INTERVAL_MS = 60 * 1000;
+export const HLS_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
+export const HLS_LEASE_DURATION_MS = 30 * 60 * 1000;
+export const HLS_PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
+export const HLS_SEGMENT_DURATION = 2;
+export const HLS_SEGMENT_FILENAME_REGEX = /^seg_(\d+)\.m4s$/;
+export const HLS_VARIANTS = [
+  { resolution: 480, codec: VideoCodec.Av1, bitrate: 1_000_000, codecString: 'av01.0.04M.08' },
+  { resolution: 480, codec: VideoCodec.Hevc, bitrate: 1_200_000, codecString: 'hvc1.1.6.L90.B0' },
+  { resolution: 480, codec: VideoCodec.H264, bitrate: 2_500_000, codecString: 'avc1.64001e' },
+  { resolution: 720, codec: VideoCodec.Av1, bitrate: 2_000_000, codecString: 'av01.0.08M.08' },
+  { resolution: 720, codec: VideoCodec.Hevc, bitrate: 2_500_000, codecString: 'hvc1.1.6.L93.B0' },
+  { resolution: 720, codec: VideoCodec.H264, bitrate: 5_000_000, codecString: 'avc1.64001f' },
+  { resolution: 1080, codec: VideoCodec.Av1, bitrate: 4_000_000, codecString: 'av01.0.09M.08' },
+  { resolution: 1080, codec: VideoCodec.Hevc, bitrate: 4_500_000, codecString: 'hvc1.1.6.L120.B0' },
+  { resolution: 1080, codec: VideoCodec.H264, bitrate: 8_000_000, codecString: 'avc1.640028' },
+];
+export const HLS_VERSION = 7;

@@ -19,13 +19,23 @@ class SystemConfigIntegrityChecksumJob {
     required this.timeLimit,
   });
 
+  /// Cron expression for when the integrity check should run
   String cronExpression;
 
+  /// Enabled
   bool enabled;
 
-  num percentageLimit;
+  /// Percentage limit of the integrity checksum job
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int percentageLimit;
 
-  num timeLimit;
+  /// How long the integrity checksum job may run for
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int timeLimit;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigIntegrityChecksumJob &&
@@ -65,8 +75,8 @@ class SystemConfigIntegrityChecksumJob {
       return SystemConfigIntegrityChecksumJob(
         cronExpression: mapValueOfType<String>(json, r'cronExpression')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        percentageLimit: num.parse('${json[r'percentageLimit']}'),
-        timeLimit: num.parse('${json[r'timeLimit']}'),
+        percentageLimit: mapValueOfType<int>(json, r'percentageLimit')!,
+        timeLimit: mapValueOfType<int>(json, r'timeLimit')!,
       );
     }
     return null;

@@ -13,17 +13,16 @@ part of openapi.api;
 class AlbumsUpdate {
   /// Returns a new [AlbumsUpdate] instance.
   AlbumsUpdate({
-    this.defaultAssetOrder,
+    this.defaultAssetOrder = const Optional.absent(),
   });
 
-  /// Default asset order for albums
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  AssetOrder? defaultAssetOrder;
+  Optional<AssetOrder?> defaultAssetOrder;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumsUpdate &&
@@ -39,10 +38,9 @@ class AlbumsUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.defaultAssetOrder != null) {
-      json[r'defaultAssetOrder'] = this.defaultAssetOrder;
-    } else {
-    //  json[r'defaultAssetOrder'] = null;
+    if (this.defaultAssetOrder.isPresent) {
+      final value = this.defaultAssetOrder.value;
+      json[r'defaultAssetOrder'] = value;
     }
     return json;
   }
@@ -56,7 +54,7 @@ class AlbumsUpdate {
       final json = value.cast<String, dynamic>();
 
       return AlbumsUpdate(
-        defaultAssetOrder: AssetOrder.fromJson(json[r'defaultAssetOrder']),
+        defaultAssetOrder: json.containsKey(r'defaultAssetOrder') ? Optional.present(AssetOrder.fromJson(json[r'defaultAssetOrder'])) : const Optional.absent(),
       );
     }
     return null;

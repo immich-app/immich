@@ -1,9 +1,8 @@
 import 'package:flutter/widgets.dart';
-
-import '../photo_view.dart';
-import 'core/photo_view_core.dart';
-import 'photo_view_default_widgets.dart';
-import 'utils/photo_view_utils.dart';
+import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
+import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_core.dart';
+import 'package:immich_mobile/widgets/photo_view/src/photo_view_default_widgets.dart';
+import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_utils.dart';
 
 class ImageWrapper extends StatefulWidget {
   const ImageWrapper({
@@ -146,7 +145,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _lastStack = null;
 
         _didLoadSynchronously = synchronousCall;
-        widget.controller.scaleBoundaries = scaleBoundaries;
       }
 
       synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);

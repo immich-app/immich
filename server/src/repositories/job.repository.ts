@@ -2,7 +2,6 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
-import { ClassConstructor } from 'class-transformer';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
 import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto';
@@ -34,7 +33,7 @@ export class JobRepository {
     this.logger.setContext(JobRepository.name);
   }
 
-  setup(services: ClassConstructor<unknown>[]) {
+  setup(services: (new (...args: any[]) => unknown)[]) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
 
     // discovery
@@ -172,8 +171,8 @@ export class JobRepository {
         options: this.getJobOptions(item) || undefined,
       } as JobItem & { data: any; options: JobsOptions | undefined };
 
-      if (job.options?.jobId) {
-        // need to use add() instead of addBulk() for jobId deduplication
+      if (job.options?.jobId || job.options?.deduplication) {
+        // need to use add() instead of addBulk() for jobId/deduplication to take effect
         promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
       } else {
         itemsByQueue[queueName] = itemsByQueue[queueName] || [];
@@ -231,7 +230,13 @@ export class JobRepository {
         return { priority: 1 };
       }
       case JobName.FacialRecognitionQueueAll: {
-        return { jobId: JobName.FacialRecognitionQueueAll };
+        return { deduplication: { id: JobName.FacialRecognitionQueueAll } };
+      }
+      case JobName.VersionCheck: {
+        return { deduplication: { id: JobName.VersionCheck } };
+      }
+      case JobName.DatabaseBackup: {
+        return { deduplication: { id: JobName.DatabaseBackup } };
       }
       default: {
         return null;

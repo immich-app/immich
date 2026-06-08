@@ -16,7 +16,7 @@ import {
   CacheControl,
   DatabaseLock,
   ImmichWorker,
-  IntegrityReportType,
+  IntegrityReport,
   JobName,
   JobStatus,
   QueueName,
@@ -142,7 +142,7 @@ export class IntegrityService extends BaseService {
     return this.integrityRepository.getIntegrityReport({ cursor: dto.cursor, limit: dto.limit || 100 }, dto.type);
   }
 
-  getIntegrityReportCsv(type: IntegrityReportType): Readable {
+  getIntegrityReportCsv(type: IntegrityReport): Readable {
     const items = this.integrityRepository.streamIntegrityReports(type);
 
     // very rudimentary csv serialiser
@@ -196,7 +196,7 @@ export class IntegrityService extends BaseService {
   private async queueRefreshAllUntrackedFiles() {
     this.logger.log(`Checking for out of date untracked file reports...`);
 
-    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.UntrackedFile);
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.UntrackedFile);
 
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -290,7 +290,7 @@ export class IntegrityService extends BaseService {
     if (untrackedFiles.size > 0) {
       await this.integrityRepository.create(
         [...untrackedFiles].map((path) => ({
-          type: IntegrityReportType.UntrackedFile,
+          type: IntegrityReport.UntrackedFile,
           path,
         })),
       );
@@ -326,7 +326,7 @@ export class IntegrityService extends BaseService {
   private async queueRefreshAllMissingFiles() {
     this.logger.log(`Checking for out of date missing file reports...`);
 
-    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.MissingFile);
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.MissingFile);
 
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -396,7 +396,7 @@ export class IntegrityService extends BaseService {
     if (missingFiles.length > 0) {
       await this.integrityRepository.create(
         missingFiles.map(({ path, assetId, fileAssetId }) => ({
-          type: IntegrityReportType.MissingFile,
+          type: IntegrityReport.MissingFile,
           path,
           assetId,
           fileAssetId,
@@ -434,7 +434,7 @@ export class IntegrityService extends BaseService {
   private async queueRefreshAllChecksumFiles() {
     this.logger.log(`Checking for out of date checksum file reports...`);
 
-    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.ChecksumFail);
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.ChecksumFail);
 
     let total = 0;
     for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -495,7 +495,7 @@ export class IntegrityService extends BaseService {
       this.logger.warn('Failed to process a file: ' + error);
       await this.integrityRepository.create({
         path: originalPath,
-        type: IntegrityReportType.ChecksumFail,
+        type: IntegrityReport.ChecksumFail,
         assetId,
       });
     }
@@ -630,15 +630,15 @@ export class IntegrityService extends BaseService {
 
     let properties;
     switch (type) {
-      case IntegrityReportType.ChecksumFail: {
+      case IntegrityReport.ChecksumFail: {
         properties = ['assetId'] as const;
         break;
       }
-      case IntegrityReportType.MissingFile: {
+      case IntegrityReport.MissingFile: {
         properties = ['assetId', 'fileAssetId'] as const;
         break;
       }
-      case IntegrityReportType.UntrackedFile: {
+      case IntegrityReport.UntrackedFile: {
         properties = [void 0] as const;
         break;
       }

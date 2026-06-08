@@ -18,10 +18,16 @@ class IntegrityReportSummaryResponseDto {
     required this.untrackedFile,
   });
 
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int checksumMismatch;
 
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int missingFile;
 
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int untrackedFile;
 
   @override

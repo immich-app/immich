@@ -12,14 +12,16 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 // used to allow performing archive action from different sources  (without duplicating code)
 Future<void> performArchiveAction(BuildContext context, WidgetRef ref, {required ActionSource source}) async {
-  if (!context.mounted) return;
-
-  final result = await ref.read(actionProvider.notifier).archive(source);
-  ref.read(multiSelectProvider.notifier).reset();
+  if (!context.mounted) {
+    return;
+  }
 
   if (source == ActionSource.viewer) {
     EventStream.shared.emit(const ViewerReloadAssetEvent());
   }
+
+  final result = await ref.read(actionProvider.notifier).archive(source);
+  ref.read(multiSelectProvider.notifier).reset();
 
   final successMessage = 'archive_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 

@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/asset_grid/permanent_delete_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 /// This delete action has the following behavior:
@@ -17,20 +18,38 @@ class DeletePermanentActionButton extends ConsumerWidget {
   final ActionSource source;
   final bool iconOnly;
   final bool menuItem;
+  final bool useShortLabel;
 
-  const DeletePermanentActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
+  const DeletePermanentActionButton({
+    super.key,
+    required this.source,
+    this.iconOnly = false,
+    this.menuItem = false,
+    this.useShortLabel = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
-    ref.read(multiSelectProvider.notifier).reset();
+    final count = source == ActionSource.viewer ? 1 : ref.read(multiSelectProvider).selectedAssets.length;
+    final confirm =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => PermanentDeleteDialog(count: count),
+        ) ??
+        false;
+    if (!confirm) {
+      return;
+    }
 
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
+
+    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
+    ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'delete_permanently_action_prompt'.t(
       context: context,
@@ -52,7 +71,7 @@ class DeletePermanentActionButton extends ConsumerWidget {
     return BaseActionButton(
       maxWidth: 110.0,
       iconData: Icons.delete_forever,
-      label: "delete_permanently".t(context: context),
+      label: useShortLabel ? "delete".t(context: context) : "delete_permanently".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
