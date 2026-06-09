@@ -50,6 +50,8 @@ export interface SearchDateOptions {
   createdAfter?: Date;
   takenBefore?: Date;
   takenAfter?: Date;
+  dayOfWeek?: number;
+  hour?: number;
   trashedBefore?: Date;
   trashedAfter?: Date;
   updatedBefore?: Date;

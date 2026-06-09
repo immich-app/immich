@@ -9893,6 +9893,37 @@
             }
           },
           {
+            "name": "dayOfWeek",
+            "required": false,
+            "in": "query",
+            "description": "Filter by weekday (0=Sunday, 6=Saturday)",
+            "schema": {
+              "minimum": 0,
+              "maximum": 6,
+              "type": "number"
+            }
+          },
+          {
+            "name": "deviceId",
+            "required": false,
+            "in": "query",
+            "description": "Device ID to filter by",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hour",
+            "required": false,
+            "in": "query",
+            "description": "Filter by hour of day (0-23)",
+            "schema": {
+              "minimum": 0,
+              "maximum": 23,
+              "type": "number"
+            }
+          },
+          {
             "name": "isEncoded",
             "required": false,
             "in": "query",
@@ -15152,6 +15183,47 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/users/me/statistics": {
+      "get": {
+        "description": "Retrieve aggregated monthly, camera, and storage statistics for the authenticated user.",
+        "operationId": "getMyStatistics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get personal statistics",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "user.read"
+      }
+    },
     "/users/profile-image": {
       "delete": {
         "description": "Delete the profile image of the current user.",
@@ -17972,6 +18044,30 @@
         ],
         "type": "string"
       },
+      "CameraStatDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets taken with this camera",
+            "type": "number"
+          },
+          "make": {
+            "description": "Camera manufacturer/make",
+            "nullable": true,
+            "type": "string"
+          },
+          "model": {
+            "description": "Camera model",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "make",
+          "model"
+        ],
+        "type": "object"
+      },
       "CastResponse": {
         "properties": {
           "gCastEnabled": {
@@ -18018,6 +18114,60 @@
         ],
         "type": "object"
       },
+      "CheckExistingAssetsDto": {
+        "properties": {
+          "deviceAssetIds": {
+            "description": "Device asset IDs to check",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "deviceId": {
+            "description": "Device ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceAssetIds",
+          "deviceId"
+        ],
+        "type": "object"
+      },
+      "CheckExistingAssetsResponseDto": {
+        "properties": {
+          "existingIds": {
+            "description": "Existing asset IDs",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "existingIds"
+        ],
+        "type": "object"
+      },
+      "CityStatDto": {
+        "properties": {
+          "city": {
+            "description": "City name",
+            "nullable": true,
+            "type": "string"
+          },
+          "count": {
+            "description": "Number of assets taken in this city",
+            "type": "number"
+          }
+        },
+        "required": [
+          "city",
+          "count"
+        ],
+        "type": "object"
+      },
       "Colorspace": {
         "description": "Colorspace",
         "enum": [
@@ -18042,6 +18192,24 @@
         "required": [
           "assetCount",
           "userId"
+        ],
+        "type": "object"
+      },
+      "CountryStatDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets taken in this country",
+            "type": "number"
+          },
+          "country": {
+            "description": "Country name",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "country"
         ],
         "type": "object"
       },
@@ -18872,6 +19040,24 @@
         ],
         "type": "object"
       },
+      "LensStatDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets taken with this lens",
+            "type": "number"
+          },
+          "lensModel": {
+            "description": "Lens model",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "lensModel"
+        ],
+        "type": "object"
+      },
       "LibraryResponseDto": {
         "properties": {
           "assetCount": {
@@ -19610,6 +19796,12 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
+          "dayOfWeek": {
+            "description": "Filter by weekday (0=Sunday, 6=Saturday)",
+            "maximum": 6,
+            "minimum": 0,
+            "type": "number"
+          },
           "description": {
             "description": "Filter by description text",
             "type": "string"
@@ -19617,6 +19809,12 @@
           "encodedVideoPath": {
             "description": "Filter by encoded video file path",
             "type": "string"
+          },
+          "hour": {
+            "description": "Filter by hour of day (0-23)",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "number"
           },
           "id": {
             "description": "Filter by asset ID",
@@ -19838,6 +20036,28 @@
         },
         "required": [
           "axis"
+        ],
+        "type": "object"
+      },
+      "MonthlyStatDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets taken in this month",
+            "type": "number"
+          },
+          "month": {
+            "description": "Month (1-12)",
+            "type": "number"
+          },
+          "year": {
+            "description": "Year (YYYY)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "month",
+          "year"
         ],
         "type": "object"
       },
@@ -20656,6 +20876,91 @@
         ],
         "type": "object"
       },
+      "PersonStatDto": {
+        "properties": {
+          "birthDate": {
+            "description": "Person date of birth",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "description": "Person color (hex)",
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1.126.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
+          "count": {
+            "description": "Number of assets containing this person",
+            "type": "number"
+          },
+          "id": {
+            "description": "Person ID",
+            "type": "string"
+          },
+          "isFavorite": {
+            "description": "Is favorite",
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1.126.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
+          "isHidden": {
+            "description": "Is hidden",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Person name",
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "description": "Thumbnail path",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "format": "date-time",
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1.107.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          }
+        },
+        "required": [
+          "birthDate",
+          "count",
+          "id",
+          "isHidden",
+          "name",
+          "thumbnailPath"
+        ],
+        "type": "object"
+      },
       "PersonStatisticsResponseDto": {
         "properties": {
           "assets": {
@@ -21324,6 +21629,22 @@
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
+          },
+          "dayOfWeek": {
+            "description": "Filter by weekday (0=Sunday, 6=Saturday)",
+            "maximum": 6,
+            "minimum": 0,
+            "type": "number"
+          },
+          "deviceId": {
+            "description": "Device ID to filter by",
+            "type": "string"
+          },
+          "hour": {
+            "description": "Filter by hour of day (0-23)",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "number"
           },
           "isEncoded": {
             "description": "Filter by encoded status",
@@ -22774,6 +23095,22 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
+          "dayOfWeek": {
+            "description": "Filter by weekday (0=Sunday, 6=Saturday)",
+            "maximum": 6,
+            "minimum": 0,
+            "type": "number"
+          },
+          "deviceId": {
+            "description": "Device ID to filter by",
+            "type": "string"
+          },
+          "hour": {
+            "description": "Filter by hour of day (0-23)",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "number"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
@@ -23020,6 +23357,93 @@
         },
         "type": "object"
       },
+      "StatisticsResponseDto": {
+        "properties": {
+          "monthly": {
+            "description": "Monthly asset counts",
+            "items": {
+              "$ref": "#/components/schemas/MonthlyStatDto"
+            },
+            "type": "array"
+          },
+          "storage": {
+            "description": "Storage breakdown by type (IMAGE/VIDEO)",
+            "items": {
+              "$ref": "#/components/schemas/StorageStatDto"
+            },
+            "type": "array"
+          },
+          "temporalMatrix": {
+            "description": "Asset counts by weekday and hour",
+            "items": {
+              "$ref": "#/components/schemas/TemporalStatDto"
+            },
+            "type": "array"
+          },
+          "topCameras": {
+            "description": "Top most used cameras",
+            "items": {
+              "$ref": "#/components/schemas/CameraStatDto"
+            },
+            "type": "array"
+          },
+          "topCities": {
+            "description": "Top most used cities",
+            "items": {
+              "$ref": "#/components/schemas/CityStatDto"
+            },
+            "type": "array"
+          },
+          "topCountries": {
+            "description": "Top most used countries",
+            "items": {
+              "$ref": "#/components/schemas/CountryStatDto"
+            },
+            "type": "array"
+          },
+          "topLenses": {
+            "description": "Top most used lenses",
+            "items": {
+              "$ref": "#/components/schemas/LensStatDto"
+            },
+            "type": "array"
+          },
+          "topPeople": {
+            "description": "Top people by asset count",
+            "items": {
+              "$ref": "#/components/schemas/PersonStatDto"
+            },
+            "type": "array"
+          },
+          "total": {
+            "description": "Aggregate totals",
+            "properties": {
+              "photos": {
+                "type": "number"
+              },
+              "storage": {
+                "type": "number"
+              },
+              "videos": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "monthly",
+          "storage",
+          "temporalMatrix",
+          "topCameras",
+          "topCities",
+          "topCountries",
+          "topLenses",
+          "topPeople",
+          "total"
+        ],
+        "type": "object"
+      },
       "StatisticsSearchDto": {
         "properties": {
           "albumIds": {
@@ -23055,9 +23479,25 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
+          "dayOfWeek": {
+            "description": "Filter by weekday (0=Sunday, 6=Saturday)",
+            "maximum": 6,
+            "minimum": 0,
+            "type": "number"
+          },
           "description": {
             "description": "Filter by description text",
             "type": "string"
+          },
+          "deviceId": {
+            "description": "Device ID to filter by",
+            "type": "string"
+          },
+          "hour": {
+            "description": "Filter by hour of day (0-23)",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "number"
           },
           "isEncoded": {
             "description": "Filter by encoded status",
@@ -23219,6 +23659,32 @@
           "backups"
         ],
         "type": "string"
+      },
+      "StorageStatDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets of this type",
+            "type": "number"
+          },
+          "size": {
+            "description": "Total size in bytes",
+            "type": "number"
+          },
+          "type": {
+            "description": "Asset type",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "size",
+          "type"
+        ],
+        "type": "object"
       },
       "SyncAckDeleteDto": {
         "properties": {
@@ -26107,6 +26573,28 @@
         "required": [
           "html",
           "name"
+        ],
+        "type": "object"
+      },
+      "TemporalStatDto": {
+        "properties": {
+          "count": {
+            "description": "Number of assets taken in this hour on this day",
+            "type": "number"
+          },
+          "dayOfWeek": {
+            "description": "Day of week (0=Sunday, 6=Saturday)",
+            "type": "number"
+          },
+          "hour": {
+            "description": "Hour of day (0-23)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "dayOfWeek",
+          "hour"
         ],
         "type": "object"
       },

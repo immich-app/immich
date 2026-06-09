@@ -37,6 +37,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
+import { StatisticsRepository } from 'src/repositories/statistics.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -90,6 +91,7 @@ export const repositories = [
   ServerInfoRepository,
   SharedLinkRepository,
   SharedLinkAssetRepository,
+  StatisticsRepository,
   StackRepository,
   StorageRepository,
   SyncRepository,

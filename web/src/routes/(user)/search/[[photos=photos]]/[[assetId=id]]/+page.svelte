@@ -18,14 +18,15 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { QueryParameter } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { lang, locale } from '$lib/stores/preferences.store';
+  import type { SearchTemporalFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
@@ -61,11 +62,14 @@
   let scrollY = $state(0);
   let scrollYHistory = 0;
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
+  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'> & SearchTemporalFilter;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
   let searchTermKeys = $derived(getObjectKeys(terms));
+
+  const weekdayFormatter = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
+  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -188,6 +192,8 @@
       originalPath: $t('full_path_or_folder'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      dayOfWeek: $t('day'),
+      hour: $t('hour'),
       ocr: $t('ocr'),
     };
     return keyMap[key] || key;
@@ -265,6 +271,10 @@
             <span class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg">
               {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
                 {getHumanReadableDate(value)}
+              {:else if searchKey === 'dayOfWeek' && typeof value === 'number'}
+                {weekdayFormatter.format(new Date(Date.UTC(2024, 0, 7 + value, 12)))}
+              {:else if searchKey === 'hour' && typeof value === 'number'}
+                {formatHour(value)}
               {:else if searchKey === 'personIds' && Array.isArray(value)}
                 {#await getPersonName(value) then personName}
                   {personName}

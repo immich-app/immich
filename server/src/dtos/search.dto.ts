@@ -29,6 +29,8 @@ const BaseSearchSchema = z.object({
   make: z.string().nullable().optional().describe('Filter by camera make'),
   model: z.string().nullable().optional().describe('Filter by camera model'),
   lensModel: z.string().nullable().optional().describe('Filter by lens model'),
+  dayOfWeek: z.int().min(0).max(6).optional().describe('Filter by weekday (0=Sunday, 6=Saturday)'),
+  hour: z.int().min(0).max(23).optional().describe('Filter by hour of day (0-23)'),
   isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album'),
   personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs'),
   tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),

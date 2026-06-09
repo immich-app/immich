@@ -393,6 +393,12 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.trashedAfter, (qb) => qb.where('asset.deletedAt', '>=', options.trashedAfter!))
     .$if(!!options.takenBefore, (qb) => qb.where('asset.fileCreatedAt', '<=', options.takenBefore!))
     .$if(!!options.takenAfter, (qb) => qb.where('asset.fileCreatedAt', '>=', options.takenAfter!))
+    .$if(options.dayOfWeek !== undefined, (qb) =>
+      qb.where(sql`EXTRACT(DOW FROM asset."fileCreatedAt")`, '=', options.dayOfWeek!),
+    )
+    .$if(options.hour !== undefined, (qb) =>
+      qb.where(sql`EXTRACT(HOUR FROM asset."fileCreatedAt")`, '=', options.hour!),
+    )
     .$if(options.city !== undefined, (qb) =>
       qb
         .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')

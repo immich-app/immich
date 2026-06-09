@@ -57,6 +57,11 @@ export type SearchDateFilter = {
   takenAfter?: DateTime;
 };
 
+export type SearchTemporalFilter = {
+  dayOfWeek?: number;
+  hour?: number;
+};
+
 export type SearchDisplayFilters = {
   isNotInAlbum: boolean;
   isArchive: boolean;

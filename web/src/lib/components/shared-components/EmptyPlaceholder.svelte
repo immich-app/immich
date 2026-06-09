@@ -14,9 +14,9 @@
 
   let width = $derived(fullWidth ? 'w-full' : 'w-1/2');
 
-  const hoverClasses = onClick
-    ? `border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25`
-    : '';
+  const hoverClasses = $derived(
+    onClick ? 'border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25' : '',
+  );
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->

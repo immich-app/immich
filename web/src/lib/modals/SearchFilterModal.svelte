@@ -99,26 +99,32 @@
     };
   };
 
-  let filter: SearchFilter = $state(asFilter(searchQuery));
+  const createEmptyFilter = (): SearchFilter => ({
+    query: '',
+    ocr: undefined,
+    queryType: defaultQueryType(), // retain from localStorage or default
+    personIds: new SvelteSet(),
+    tagIds: new SvelteSet(),
+    location: {},
+    camera: {},
+    date: {},
+    display: {
+      isArchive: false,
+      isFavorite: false,
+      isNotInAlbum: false,
+    },
+    mediaType: MediaType.All,
+    rating: undefined,
+  });
+
+  let filter: SearchFilter = $derived(asFilter(searchQuery));
+
+  $effect.pre(() => {
+    filter = asFilter(searchQuery);
+  });
 
   const resetForm = () => {
-    filter = {
-      query: '',
-      ocr: undefined,
-      queryType: defaultQueryType(), // retain from localStorage or default
-      personIds: new SvelteSet(),
-      tagIds: new SvelteSet(),
-      location: {},
-      camera: {},
-      date: {},
-      display: {
-        isArchive: false,
-        isFavorite: false,
-        isNotInAlbum: false,
-      },
-      mediaType: MediaType.All,
-      rating: undefined,
-    };
+    filter = createEmptyFilter();
   };
 
   const search = () => {
