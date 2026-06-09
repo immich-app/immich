@@ -57,6 +57,14 @@ from
 where
   "path" in $1
 
+-- IntegrityRepository.getPersonThumbnailPathsByPaths
+select
+  "person"."thumbnailPath"
+from
+  "person"
+where
+  "person"."thumbnailPath" in $1
+
 -- IntegrityRepository.getAssetCount
 select
   count(*) as "count"
@@ -96,26 +104,13 @@ from
       "asset"."deletedAt" is null
     union all
     select
-      "asset_file"."path" as "path",
-      "asset"."id" as "assetId",
-      null::uuid as "fileAssetId"
-    from
-      "asset"
-      left join "asset_file" on "asset"."id" = "asset_file"."assetId"
-      and "asset_file"."type" = $1
-    where
-      "asset"."deletedAt" is null
-      and "asset_file"."path" is not null
-      and "asset_file"."path" != ''
-    union all
-    select
       "path",
       null::uuid as "assetId",
       "asset_file"."id" as "fileAssetId"
     from
       "asset_file"
   ) as "allPaths"
-  left join "integrity_report" on "integrity_report"."type" = $2
+  left join "integrity_report" on "integrity_report"."type" = $1
   and (
     "integrity_report"."assetId" = "allPaths"."assetId"
     or "integrity_report"."fileAssetId" = "allPaths"."fileAssetId"

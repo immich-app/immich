@@ -82,7 +82,16 @@ export class IntegrityRepository {
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getAssetFilePathsByPaths(paths: string[]) {
-    return this.db.selectFrom('asset_file').select(['path']).where('path', 'in', paths).execute();
+    return this.db.selectFrom('asset_file').select('path').where('path', 'in', paths).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getPersonThumbnailPathsByPaths(paths: string[]) {
+    return this.db
+      .selectFrom('person')
+      .select('person.thumbnailPath')
+      .where('person.thumbnailPath', 'in', paths)
+      .execute();
   }
 
   @GenerateSql({ params: [] })
@@ -116,28 +125,11 @@ export class IntegrityRepository {
         eb
           .selectFrom('asset')
           .where('asset.deletedAt', 'is', null)
-          .select(['asset.originalPath as path'])
+          .select('asset.originalPath as path')
           .select((eb) => [
             eb.ref('asset.id').$castTo<string | null>().as('assetId'),
             sql<string | null>`null::uuid`.as('fileAssetId'),
           ])
-          .unionAll(
-            eb
-              .selectFrom('asset')
-              .where('asset.deletedAt', 'is', null)
-              .leftJoin('asset_file', (join) =>
-                join
-                  .onRef('asset.id', '=', 'asset_file.assetId')
-                  .on('asset_file.type', '=', AssetFileType.EncodedVideo),
-              )
-              .select((eb) => [
-                eb.ref('asset_file.path').$castTo<string>().as('path'),
-                eb.ref('asset.id').$castTo<string | null>().as('assetId'),
-                sql<string | null>`null::uuid`.as('fileAssetId'),
-              ])
-              .where('asset_file.path', 'is not', null)
-              .where('asset_file.path', '!=', sql<string>`''`),
-          )
           .unionAll(
             eb
               .selectFrom('asset_file')
