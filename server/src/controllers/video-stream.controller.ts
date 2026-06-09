@@ -1,11 +1,16 @@
 import { Controller, Delete, Get, Header, Headers, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { HLS_PLAYLIST_CONTENT_TYPE, HLS_TARGET_SEGMENT_HEADER } from 'src/constants';
+import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { HlsSegmentParamDto, HlsSessionParamDto, HlsVariantParamDto } from 'src/dtos/streaming.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
+import {
+  HlsSegmentHeaderDto,
+  HlsSegmentParamDto,
+  HlsSessionParamDto,
+  HlsVariantParamDto,
+} from 'src/dtos/streaming.dto';
+import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { HlsService } from 'src/services/hls.service';
@@ -59,21 +64,14 @@ export class VideoStreamController {
   async getSegment(
     @Auth() auth: AuthDto,
     @Param() { id, sessionId, variantIndex, filename }: HlsSegmentParamDto,
-    // Allows the client to hint at which segment will be loaded after init.mp4
-    @Headers(HLS_TARGET_SEGMENT_HEADER) targetSegment: string | undefined,
+    @Headers() { [ImmichHeader.HlsTargetSegment]: targetSegment }: HlsSegmentHeaderDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    const target = targetSegment === undefined ? undefined : Number.parseInt(targetSegment);
-    if (target !== undefined && (!Number.isFinite(target) || target < 0)) {
-      res.status(HttpStatus.BAD_REQUEST).send('Invalid target segment');
-      return;
-    }
-
     await sendFile(
       res,
       next,
-      () => this.service.getSegment(auth, id, sessionId, variantIndex, filename, target),
+      () => this.service.getSegment(auth, id, sessionId, variantIndex, filename, targetSegment),
       this.logger,
     );
   }

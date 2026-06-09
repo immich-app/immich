@@ -4734,6 +4734,16 @@
               "maximum": 9007199254740991,
               "type": "integer"
             }
+          },
+          {
+            "name": "x-immich-hls-msn",
+            "required": false,
+            "in": "header",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
           }
         ],
         "responses": {
