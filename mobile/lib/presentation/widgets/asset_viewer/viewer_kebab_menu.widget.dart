@@ -31,6 +31,7 @@ class ViewerKebabMenu extends ConsumerWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
+    final serverVersion = ref.watch(serverInfoProvider.select((state) => state.serverVersion));
     final isInLockedView = ref.watch(inLockedViewProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
@@ -48,6 +49,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       source: ActionSource.viewer,
       isCasting: isCasting,
       timelineOrigin: timelineOrigin,
+      serverVersion: serverVersion,
     );
 
     final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context);

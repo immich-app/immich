@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 LocalAsset createLocalAsset({
   String? remoteId,
@@ -1236,6 +1237,440 @@ void main() {
 
       expect(archivedWidgets, isNotEmpty);
       expect(nonArchivedWidgets, isNotEmpty);
+    });
+  });
+
+  group('ActionButtonBuilder.getViewerBottomBarTypes', () {
+    test('should return correct button types for shared album with activity', () {
+      final remoteAsset = createRemoteAsset();
+      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: album,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.addTo,
+        ActionButtonType.openActivity,
+        ActionButtonType.likeActivity,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+
+      expect(bottomBarTypes, expectedTypes);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('should return correct button types for local only asset', () {
+      final localAsset = createLocalAsset();
+      final context = ActionButtonContext(
+        asset: localAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: const SemVer(major: 2, minor: 6, patch: 0),
+      );
+
+      const expectedTypes = [ActionButtonType.share, ActionButtonType.upload, ActionButtonType.deleteLocal];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+
+      expect(bottomBarTypes, expectedTypes);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('should return correct button types for locked view', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: false,
+        isInLockedView: true,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.removeFromLockFolder,
+        ActionButtonType.deletePermanent,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+
+      expect(bottomBarTypes, expectedTypes);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('should return correct button types for remote only asset', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: SemVer(major: 2, minor: 6, patch: 0),
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.editImage,
+        ActionButtonType.addTo,
+        ActionButtonType.delete,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+
+      expect(bottomBarTypes, expectedTypes);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('trashed asset (no album) keeps restore and permanent delete in bottom bar', () {
+      final remoteAsset = createRemoteAsset(deletedAt: DateTime.now());
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        timelineOrigin: TimelineOrigin.trash,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.addTo,
+        ActionButtonType.restoreTrash,
+        ActionButtonType.deletePermanent,
+      ];
+
+      expect(ActionButtonBuilder.getViewerBottomBarTypes(context), expectedTypes);
+    });
+
+    test('trashed asset in shared activity album still surfaces restore and permanent delete', () {
+      final remoteAsset = createRemoteAsset(deletedAt: DateTime.now());
+      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: album,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        timelineOrigin: TimelineOrigin.trash,
+      );
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+
+      expect(bottomBarTypes, contains(ActionButtonType.restoreTrash));
+      expect(bottomBarTypes, contains(ActionButtonType.deletePermanent));
+      expect(bottomBarTypes, isNot(contains(ActionButtonType.openActivity)));
+      expect(bottomBarTypes, isNot(contains(ActionButtonType.likeActivity)));
+    });
+
+    test('5th bottom-bar candidate overflows into the kebab', () {
+      final remoteAsset = createRemoteAsset();
+      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: album,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: const SemVer(major: 2, minor: 6, patch: 0),
+      );
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+
+      expect(bottomBarTypes.length, 4);
+      expect(bottomBarTypes, isNot(contains(ActionButtonType.delete)));
+      expect(kebabTypes, contains(ActionButtonType.delete));
+    });
+  });
+
+  group('ActionButtonType.shouldShow editImage button', () {
+    final editableRemote = createRemoteAsset();
+
+    test('should show for editable remote asset on a recent server', () {
+      final context = ActionButtonContext(
+        asset: editableRemote,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: const SemVer(major: 2, minor: 6, patch: 0),
+      );
+
+      expect(ActionButtonType.editImage.shouldShow(context), isTrue);
+    });
+
+    test('should not show when local-only (LocalAsset is not editable)', () {
+      final context = ActionButtonContext(
+        asset: createLocalAsset(),
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: const SemVer(major: 2, minor: 6, patch: 0),
+      );
+
+      expect(ActionButtonType.editImage.shouldShow(context), isFalse);
+    });
+
+    test('should not show when server version is below 2.6', () {
+      final context = ActionButtonContext(
+        asset: editableRemote,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: const SemVer(major: 2, minor: 5, patch: 9),
+      );
+
+      expect(ActionButtonType.editImage.shouldShow(context), isFalse);
+    });
+
+    test('should not show in locked view', () {
+      final context = ActionButtonContext(
+        asset: editableRemote,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: true,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        serverVersion: const SemVer(major: 2, minor: 6, patch: 0),
+      );
+
+      expect(ActionButtonType.editImage.shouldShow(context), isFalse);
+    });
+  });
+
+  group('ActionButtonType.shouldShow addTo button', () {
+    test('should show when not locked and asset has remote', () {
+      final context = ActionButtonContext(
+        asset: createRemoteAsset(),
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.addTo.shouldShow(context), isTrue);
+    });
+
+    test('should not show in locked view', () {
+      final context = ActionButtonContext(
+        asset: createRemoteAsset(),
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: true,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.addTo.shouldShow(context), isFalse);
+    });
+
+    test('should not show for local-only asset', () {
+      final context = ActionButtonContext(
+        asset: createLocalAsset(),
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.addTo.shouldShow(context), isFalse);
+    });
+  });
+
+  group('ActionButtonType.shouldShow openActivity button', () {
+    final asset = createRemoteAsset();
+
+    test('should show in a shared activity-enabled album', () {
+      final context = ActionButtonContext(
+        asset: asset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: createRemoteAlbum(isActivityEnabled: true, isShared: true),
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.openActivity.shouldShow(context), isTrue);
+    });
+
+    test('should not show when no album', () {
+      final context = ActionButtonContext(
+        asset: asset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.openActivity.shouldShow(context), isFalse);
+    });
+
+    test('should not show when album not shared', () {
+      final context = ActionButtonContext(
+        asset: asset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: createRemoteAlbum(isActivityEnabled: true, isShared: false),
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.openActivity.shouldShow(context), isFalse);
+    });
+
+    test('should not show when activity disabled', () {
+      final context = ActionButtonContext(
+        asset: asset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: createRemoteAlbum(isActivityEnabled: false, isShared: true),
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.openActivity.shouldShow(context), isFalse);
+    });
+
+    test('should not show in locked view', () {
+      final context = ActionButtonContext(
+        asset: asset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: true,
+        currentAlbum: createRemoteAlbum(isActivityEnabled: true, isShared: true),
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+
+      expect(ActionButtonType.openActivity.shouldShow(context), isFalse);
+    });
+  });
+
+  group('ActionButtonType.showsAt', () {
+    ActionButtonContext ctx({RemoteAlbum? album, TimelineOrigin origin = TimelineOrigin.main}) => ActionButtonContext(
+      asset: createRemoteAsset(),
+      isOwner: true,
+      isArchived: false,
+      isTrashEnabled: true,
+      isInLockedView: false,
+      currentAlbum: album,
+      advancedTroubleshooting: false,
+      isStacked: false,
+      source: ActionSource.viewer,
+      timelineOrigin: origin,
+    );
+
+    group('editImage', () {
+      test('hidden from bottom bar when album is shared', () {
+        final context = ctx(album: createRemoteAlbum(isShared: true));
+        expect(ActionButtonType.editImage.showsAt(ButtonPosition.bottomBar, context), isFalse);
+      });
+
+      test('shown in bottom bar when album is not shared', () {
+        final context = ctx(album: createRemoteAlbum(isShared: false));
+        expect(ActionButtonType.editImage.showsAt(ButtonPosition.bottomBar, context), isTrue);
+      });
+
+      test('shown in bottom bar when there is no album', () {
+        expect(ActionButtonType.editImage.showsAt(ButtonPosition.bottomBar, ctx()), isTrue);
+      });
+    });
+
+    group('openActivity / likeActivity', () {
+      test('hidden from bottom bar when viewing from trash', () {
+        final context = ctx(origin: TimelineOrigin.trash);
+        expect(ActionButtonType.openActivity.showsAt(ButtonPosition.bottomBar, context), isFalse);
+        expect(ActionButtonType.likeActivity.showsAt(ButtonPosition.bottomBar, context), isFalse);
+      });
+
+      test('shown in bottom bar outside trash', () {
+        expect(ActionButtonType.openActivity.showsAt(ButtonPosition.bottomBar, ctx()), isTrue);
+        expect(ActionButtonType.likeActivity.showsAt(ButtonPosition.bottomBar, ctx()), isTrue);
+      });
     });
   });
 }
