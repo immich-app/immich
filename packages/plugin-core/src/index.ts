@@ -50,6 +50,44 @@ export const assetMissingTimeZoneFilter = () => {
   });
 };
 
+export const assetLocationFilter = () => {
+  return wrapper<
+    WorkflowType.AssetV1,
+    {
+      region?: { country?: string; state?: string; city?: string };
+      coordinate?: { latitude?: string; longitude?: string; radius?: number };
+    }
+  >(({ config, data }) => {
+    const country = config.region?.country === undefined || config.region.country === data.asset.exifInfo?.country;
+    const state = config.region?.state === undefined || config.region.state === data.asset.exifInfo?.state;
+    const city = config.region?.city === undefined || config.region.city === data.asset.exifInfo?.city;
+
+    const assetLat = data.asset.exifInfo?.latitude;
+    const assetLon = data.asset.exifInfo?.longitude;
+    const configLat = parseFloat(config.coordinate?.latitude ?? '');
+    const configLon = parseFloat(config.coordinate?.longitude ?? '');
+
+    let coordinate = Number.isNaN(configLat) || Number.isNaN(configLat);
+
+    if (!coordinate && assetLat !== undefined && assetLat !== null && assetLon !== undefined && assetLon !== null) {
+      const earthDiameter = 12742;
+      const deg = Math.PI / 180;
+      const delta = Math.asin(
+        Math.sqrt(
+          Math.pow(Math.sin((assetLat * deg - configLat * deg) / 2), 2) +
+            Math.cos(assetLat * deg) *
+              Math.cos(configLat * deg) *
+              Math.pow(Math.sin((assetLon * deg - configLon * deg) / 2), 2),
+        ),
+      );
+
+      coordinate = earthDiameter * delta <= (config.coordinate?.radius ?? 0);
+    }
+
+    return { workflow: { continue: country && state && city && coordinate } };
+  });
+};
+
 export const assetFavorite = () => {
   return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
     const target = config.inverse ? false : true;
