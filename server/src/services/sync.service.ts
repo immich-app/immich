@@ -545,6 +545,7 @@ export class SyncService extends BaseService {
         const backfill = this.syncRepository.albumAsset.getBackfill(
           { ...options, afterUpdateId: startId, beforeUpdateId: endId },
           album.id,
+          options.userId,
         );
 
         for await (const { updateId, ...data } of backfill) {

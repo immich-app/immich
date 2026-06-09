@@ -211,6 +211,7 @@ export class BaseService {
       ctx.duplicateRepository,
       ctx.emailRepository,
       ctx.eventRepository,
+      ctx.integrityRepository,
       ctx.jobRepository,
       ctx.libraryRepository,
       ctx.machineLearningRepository,
