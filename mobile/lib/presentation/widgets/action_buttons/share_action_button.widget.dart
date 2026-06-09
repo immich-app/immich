@@ -54,7 +54,7 @@ class _ShareFileTypeDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('share'.t(context: context)),
+      title: Text('select_quality'.t(context: context)),
       contentPadding: const EdgeInsets.symmetric(vertical: 8),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -71,7 +71,12 @@ class _ShareFileTypeDialog extends StatelessWidget {
           ),
         ],
       ),
-      actions: [TextButton(onPressed: () => context.pop(), child: Text('cancel'.t(context: context)))],
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: Text('cancel'.t(context: context)),
+        ),
+      ],
     );
   }
 }
@@ -93,6 +98,7 @@ class ShareActionButton extends ConsumerWidget {
       builder: (_) => const _ShareFileTypeDialog(),
       useRootNavigator: false,
     );
+
     if (fileType == null || !context.mounted) {
       return;
     }
