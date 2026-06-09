@@ -4,6 +4,7 @@ import {
   AssetTypeEnum,
   AssetVisibility,
   getAssetInfo,
+  getStack,
   runAssetJobs,
   updateAsset,
   type AssetJobsDto,
@@ -58,8 +59,21 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () =>
-      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+    onAction: async () => {
+      const selectedAssets = assetMultiSelectManager.assets;
+      const ids = new Set(selectedAssets.map(({ id }) => id));
+      for (const asset of selectedAssets) {
+        if (asset.stack) {
+          try {
+            const { assets } = await getStack({ id: asset.stack.id });
+            assets.forEach(({ id }) => ids.add(id));
+          } catch {
+            // ignore failed stack fetches
+          }
+        }
+      }
+      modalManager.show(AssetAddToAlbumModal, { assetIds: [...ids] });
+    },
   };
 
   const RefreshFacesJob: ActionItem = {
