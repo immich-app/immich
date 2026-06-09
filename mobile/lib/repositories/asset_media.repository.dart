@@ -142,12 +142,7 @@ class AssetMediaRepository {
   }
 
   AssetEntity _buildAssetEntity(BaseAsset asset, String localId) {
-    return AssetEntity(
-      id: localId,
-      width: asset.width ?? 1,
-      height: asset.height ?? 1,
-      typeInt: asset.type.index,
-    );
+    return AssetEntity(id: localId, width: asset.width ?? 1, height: asset.height ?? 1, typeInt: asset.type.index);
   }
 
   bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
@@ -183,11 +178,11 @@ class AssetMediaRepository {
     String localId, {
     Completer<void>? cancelCompleter,
   }) async {
-    final data = await _buildAssetEntity(asset, localId).thumbnailDataWithSize(
-      _getLocalPreviewSize(asset),
-      format: ThumbnailFormat.jpeg,
-      quality: _localPreviewQuality,
-    );
+    final data = await _buildAssetEntity(
+      asset,
+      localId,
+    ).thumbnailDataWithSize(_getLocalPreviewSize(asset), format: ThumbnailFormat.jpeg, quality: _localPreviewQuality);
+
     if (data == null) {
       _log.warning("Local preview file not found for sharing: $asset");
       return null;
