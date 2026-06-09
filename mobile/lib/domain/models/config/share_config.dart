@@ -1,11 +1,11 @@
 import 'package:immich_mobile/constants/enums.dart';
 
 class ShareConfig {
-  final ShareAssetFileType fileType;
+  final ShareAssetType fileType;
 
-  const ShareConfig({this.fileType = ShareAssetFileType.original});
+  const ShareConfig({this.fileType = ShareAssetType.original});
 
-  ShareConfig copyWith({ShareAssetFileType? fileType}) => ShareConfig(fileType: fileType ?? this.fileType);
+  ShareConfig copyWith({ShareAssetType? fileType}) => ShareConfig(fileType: fileType ?? this.fileType);
 
   @override
   bool operator ==(Object other) => identical(this, other) || (other is ShareConfig && other.fileType == fileType);

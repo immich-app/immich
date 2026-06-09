@@ -10,28 +10,30 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
 typedef _ShareFile = ({File file, bool cleanup, String displayName});
 
-final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(nativeSyncApiProvider)));
+final assetMediaRepositoryProvider = Provider(
+  (ref) => AssetMediaRepository(ref.watch(nativeSyncApiProvider), ref.watch(storageRepositoryProvider)),
+);
 
 class AssetMediaRepository {
   final NativeSyncApi _nativeSyncApi;
+  final StorageRepository _storageRepository;
   static final Logger _log = Logger("AssetMediaRepository");
-  static const int _localPreviewMaxDimension = 1440;
-  static const int _localPreviewQuality = 90;
 
-  const AssetMediaRepository(this._nativeSyncApi);
+  const AssetMediaRepository(this._nativeSyncApi, this._storageRepository);
 
   Future<bool> _androidSupportsTrash() async {
     if (Platform.isAndroid) {
@@ -113,23 +115,6 @@ class AssetMediaRepository {
     );
   }
 
-  String? _getLocalId(BaseAsset asset) {
-    if (asset is LocalAsset) {
-      return asset.id;
-    }
-    if (asset is RemoteAsset) {
-      return asset.localId;
-    }
-    return null;
-  }
-
-  String? _getRemoteId(BaseAsset asset) {
-    if (asset is RemoteAsset) {
-      return asset.id;
-    }
-    return asset.remoteId;
-  }
-
   String _sanitizeFilename(String filename) {
     return filename.replaceAll(RegExp(r'[\\/]'), '_');
   }
@@ -141,62 +126,16 @@ class AssetMediaRepository {
     return '${baseName.isEmpty ? fallbackName : baseName}-preview.jpg';
   }
 
-  AssetEntity _buildAssetEntity(BaseAsset asset, String localId) {
-    return AssetEntity(id: localId, width: asset.width ?? 1, height: asset.height ?? 1, typeInt: asset.type.index);
-  }
-
   bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
 
-  ThumbnailSize _getLocalPreviewSize(BaseAsset asset) {
-    final width = asset.width;
-    final height = asset.height;
-    if (width == null || height == null || width <= 0 || height <= 0) {
-      return const ThumbnailSize.square(_localPreviewMaxDimension);
-    }
-
-    if (width >= height) {
-      final scaledHeight = (height * _localPreviewMaxDimension / width).round();
-      return ThumbnailSize(_localPreviewMaxDimension, scaledHeight < 1 ? 1 : scaledHeight);
-    }
-
-    final scaledWidth = (width * _localPreviewMaxDimension / height).round();
-    return ThumbnailSize(scaledWidth < 1 ? 1 : scaledWidth, _localPreviewMaxDimension);
-  }
-
   Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId) async {
-    final file = await _buildAssetEntity(asset, localId).originFile;
+    final file = await _storageRepository.getFileForAsset(localId);
     if (file == null) {
       _log.warning("Local original file not found for sharing: $asset");
       return null;
     }
 
     return (file: file, cleanup: CurrentPlatform.isIOS, displayName: _sanitizeFilename(asset.name));
-  }
-
-  Future<_ShareFile?> _getLocalPreviewShareFile(
-    BaseAsset asset,
-    String localId, {
-    Completer<void>? cancelCompleter,
-  }) async {
-    final data = await _buildAssetEntity(
-      asset,
-      localId,
-    ).thumbnailDataWithSize(_getLocalPreviewSize(asset), format: ThumbnailFormat.jpeg, quality: _localPreviewQuality);
-
-    if (data == null) {
-      _log.warning("Local preview file not found for sharing: $asset");
-      return null;
-    }
-
-    if (_isCancelled(cancelCompleter)) {
-      return null;
-    }
-
-    final displayName = _getPreviewFilename(asset);
-    final tempDirectory = await getTemporaryDirectory();
-    final file = File(p.join(tempDirectory.path, 'immich-share-${DateTime.now().microsecondsSinceEpoch}-$displayName'));
-    await file.writeAsBytes(data, flush: true);
-    return (file: file, cleanup: true, displayName: displayName);
   }
 
   Future<_ShareFile?> _downloadRemoteShareFile({
@@ -274,12 +213,12 @@ class AssetMediaRepository {
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
-    final localId = _getLocalId(asset);
+    final localId = asset.localId;
     if (localId != null && !asset.isEdited) {
       return _getLocalOriginalShareFile(asset, localId);
     }
 
-    final remoteId = _getRemoteId(asset);
+    final remoteId = asset.remoteId;
     if (remoteId == null) {
       _log.warning("Asset has no remote ID for sharing: $asset");
       return Future.value(null);
@@ -293,7 +232,7 @@ class AssetMediaRepository {
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) async {
-    final remoteId = _getRemoteId(asset);
+    final remoteId = asset.remoteId;
     if (remoteId != null) {
       final remotePreview = await _getRemotePreviewShareFile(
         asset,
@@ -306,9 +245,9 @@ class AssetMediaRepository {
       }
     }
 
-    final localId = _getLocalId(asset);
+    final localId = asset.localId;
     if (localId != null) {
-      return _getLocalPreviewShareFile(asset, localId, cancelCompleter: cancelCompleter);
+      return _getLocalOriginalShareFile(asset, localId);
     }
 
     _log.warning("Asset has no local or remote ID for preview sharing: $asset");
@@ -318,7 +257,7 @@ class AssetMediaRepository {
   Future<int> shareAssets(
     List<BaseAsset> assets,
     BuildContext context, {
-    ShareAssetFileType fileType = ShareAssetFileType.original,
+    ShareAssetType fileType = ShareAssetType.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) async {
@@ -347,12 +286,12 @@ class AssetMediaRepository {
       }
 
       final shareFile = switch (fileType) {
-        ShareAssetFileType.original => await _getOriginalShareFile(
+        ShareAssetType.original => await _getOriginalShareFile(
           asset,
           cancelCompleter: cancelCompleter,
           onProgress: updateProgress,
         ),
-        ShareAssetFileType.preview => await _getPreviewShareFile(
+        ShareAssetType.preview => await _getPreviewShareFile(
           asset,
           cancelCompleter: cancelCompleter,
           onProgress: updateProgress,

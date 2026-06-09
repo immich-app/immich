@@ -272,7 +272,7 @@ class ActionService {
   Future<int> shareAssets(
     List<BaseAsset> assets,
     BuildContext context, {
-    ShareAssetFileType fileType = ShareAssetFileType.original,
+    ShareAssetType fileType = ShareAssetType.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) {

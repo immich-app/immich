@@ -193,7 +193,7 @@ class AppConfig {
       .cleanupKeepAlbumIds => copyWith(cleanup: cleanup.copyWith(keepAlbumIds: value as List<String>)),
       .cleanupCutoffDaysAgo => copyWith(cleanup: cleanup.copyWith(cutoffDaysAgo: value as int)),
       .cleanupDefaultsInitialized => copyWith(cleanup: cleanup.copyWith(defaultsInitialized: value as bool)),
-      .shareFileType => copyWith(share: share.copyWith(fileType: value as ShareAssetFileType)),
+      .shareFileType => copyWith(share: share.copyWith(fileType: value as ShareAssetType)),
       .slideshowTransition => copyWith(slideshow: slideshow.copyWith(transition: value as bool)),
       .slideshowRepeat => copyWith(slideshow: slideshow.copyWith(repeat: value as bool)),
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),

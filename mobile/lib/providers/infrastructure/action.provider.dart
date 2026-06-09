@@ -514,7 +514,7 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult> shareAssets(
     ActionSource source,
     BuildContext context, {
-    ShareAssetFileType fileType = ShareAssetFileType.original,
+    ShareAssetType fileType = ShareAssetType.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) async {
