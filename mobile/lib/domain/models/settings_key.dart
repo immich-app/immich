@@ -66,6 +66,9 @@ enum SettingsKey<T extends Object> {
   cleanupCutoffDaysAgo<int>(),
   cleanupDefaultsInitialized<bool>(),
 
+  // Share
+  shareFileType<ShareAssetFileType>(codec: _EnumCodec(ShareAssetFileType.values)),
+
   // Slideshow
   slideshowTransition<bool>(),
   slideshowRepeat<bool>(),

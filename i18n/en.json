@@ -915,6 +915,8 @@
   "deduplicate_all": "Deduplicate All",
   "default_locale": "Default Locale",
   "default_locale_description": "Format dates and numbers based on your browser locale",
+  "default_quality_subtitle": "Quality used when tapping share. Long press the share button to choose each time.",
+  "default_share_quality": "Default share quality",
   "delete": "Delete",
   "delete_action_confirmation_message": "Are you sure you want to delete this asset? This action will move the asset to the server's trash and will prompt if you want to delete it locally",
   "delete_action_prompt": "{count} deleted",
