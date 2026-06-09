@@ -16,7 +16,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -49,20 +48,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
-      if (album != null && album.isActivityEnabled && album.isShared)
-        IconButton(
-          icon: const Icon(Icons.chat_outlined),
-          onPressed: () {
-            context.router.push(
-              DriftActivitiesRoute(
-                album: album,
-                assetId: asset is RemoteAsset ? asset.id : null,
-                assetName: asset.name,
-              ),
-            );
-          },
-        ),
-
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)

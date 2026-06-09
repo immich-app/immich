@@ -15,7 +15,10 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class EditImageActionButton extends ConsumerWidget {
-  const EditImageActionButton({super.key});
+  final bool iconOnly;
+  final bool menuItem;
+
+  const EditImageActionButton({super.key, this.iconOnly = false, this.menuItem = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,6 +57,8 @@ class EditImageActionButton extends ConsumerWidget {
       iconData: Icons.tune,
       label: "edit".t(context: context),
       onPressed: onPress,
+      iconOnly: iconOnly,
+      menuItem: menuItem,
     );
   }
 }

@@ -15,6 +15,8 @@ enum ActionSource { timeline, viewer }
 
 enum ShareAssetType { original, preview }
 
+enum ButtonPosition { bottomBar, kebabMenu }
+
 enum CleanupStep { selectDate, scan, delete }
 
 enum AssetKeepType { none, photosOnly, videosOnly }
