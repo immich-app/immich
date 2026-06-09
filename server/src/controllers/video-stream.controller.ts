@@ -71,8 +71,8 @@ export class VideoStreamController {
   ) {
     try {
       headers = HlsSegmentHeaderDto.create(headers);
-    } catch (err) {
-      throw new ZodValidationException(err);
+    } catch (error) {
+      throw new ZodValidationException(error);
     }
     await sendFile(
       res,
