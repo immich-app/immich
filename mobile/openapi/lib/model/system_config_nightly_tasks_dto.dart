@@ -76,9 +76,27 @@ class SystemConfigNightlyTasksDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigNightlyTasksDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigNightlyTasksDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'clusterNewFaces'), 'Required key "SystemConfigNightlyTasksDto[clusterNewFaces]" is missing from JSON.');
+        assert(json[r'clusterNewFaces'] != null, 'Required key "SystemConfigNightlyTasksDto[clusterNewFaces]" has a null value in JSON.');
+        assert(json.containsKey(r'databaseCleanup'), 'Required key "SystemConfigNightlyTasksDto[databaseCleanup]" is missing from JSON.');
+        assert(json[r'databaseCleanup'] != null, 'Required key "SystemConfigNightlyTasksDto[databaseCleanup]" has a null value in JSON.');
+        assert(json.containsKey(r'generateMemories'), 'Required key "SystemConfigNightlyTasksDto[generateMemories]" is missing from JSON.');
+        assert(json[r'generateMemories'] != null, 'Required key "SystemConfigNightlyTasksDto[generateMemories]" has a null value in JSON.');
+        assert(json.containsKey(r'missingThumbnails'), 'Required key "SystemConfigNightlyTasksDto[missingThumbnails]" is missing from JSON.');
+        assert(json[r'missingThumbnails'] != null, 'Required key "SystemConfigNightlyTasksDto[missingThumbnails]" has a null value in JSON.');
+        assert(json.containsKey(r'startTime'), 'Required key "SystemConfigNightlyTasksDto[startTime]" is missing from JSON.');
+        assert(json[r'startTime'] != null, 'Required key "SystemConfigNightlyTasksDto[startTime]" has a null value in JSON.');
+        assert(json.containsKey(r'syncQuotaUsage'), 'Required key "SystemConfigNightlyTasksDto[syncQuotaUsage]" is missing from JSON.');
+        assert(json[r'syncQuotaUsage'] != null, 'Required key "SystemConfigNightlyTasksDto[syncQuotaUsage]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigNightlyTasksDto(
         clusterNewFaces: mapValueOfType<bool>(json, r'clusterNewFaces')!,

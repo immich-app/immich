@@ -55,9 +55,21 @@ class SyncAssetMetadataV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAssetMetadataV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetMetadataV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetId'), 'Required key "SyncAssetMetadataV1[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "SyncAssetMetadataV1[assetId]" has a null value in JSON.');
+        assert(json.containsKey(r'key'), 'Required key "SyncAssetMetadataV1[key]" is missing from JSON.');
+        assert(json[r'key'] != null, 'Required key "SyncAssetMetadataV1[key]" has a null value in JSON.');
+        assert(json.containsKey(r'value'), 'Required key "SyncAssetMetadataV1[value]" is missing from JSON.');
+        assert(json[r'value'] != null, 'Required key "SyncAssetMetadataV1[value]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAssetMetadataV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,

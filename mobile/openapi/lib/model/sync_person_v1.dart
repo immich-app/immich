@@ -47,7 +47,7 @@ class SyncPersonV1 {
   bool isHidden;
 
   /// Person name
-  String name;
+  String? name;
 
   /// Owner ID
   String ownerId;
@@ -78,7 +78,7 @@ class SyncPersonV1 {
     (id.hashCode) +
     (isFavorite.hashCode) +
     (isHidden.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (ownerId.hashCode) +
     (updatedAt.hashCode);
 
@@ -110,7 +110,11 @@ class SyncPersonV1 {
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
       json[r'isHidden'] = this.isHidden;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
       json[r'ownerId'] = this.ownerId;
       json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.updatedAt.millisecondsSinceEpoch
@@ -122,9 +126,31 @@ class SyncPersonV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncPersonV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncPersonV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'birthDate'), 'Required key "SyncPersonV1[birthDate]" is missing from JSON.');
+        assert(json.containsKey(r'color'), 'Required key "SyncPersonV1[color]" is missing from JSON.');
+        assert(json.containsKey(r'createdAt'), 'Required key "SyncPersonV1[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "SyncPersonV1[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'faceAssetId'), 'Required key "SyncPersonV1[faceAssetId]" is missing from JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncPersonV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncPersonV1[id]" has a null value in JSON.');
+        assert(json.containsKey(r'isFavorite'), 'Required key "SyncPersonV1[isFavorite]" is missing from JSON.');
+        assert(json[r'isFavorite'] != null, 'Required key "SyncPersonV1[isFavorite]" has a null value in JSON.');
+        assert(json.containsKey(r'isHidden'), 'Required key "SyncPersonV1[isHidden]" is missing from JSON.');
+        assert(json[r'isHidden'] != null, 'Required key "SyncPersonV1[isHidden]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "SyncPersonV1[name]" is missing from JSON.');
+        assert(json.containsKey(r'ownerId'), 'Required key "SyncPersonV1[ownerId]" is missing from JSON.');
+        assert(json[r'ownerId'] != null, 'Required key "SyncPersonV1[ownerId]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "SyncPersonV1[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "SyncPersonV1[updatedAt]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncPersonV1(
         birthDate: mapDateTime(json, r'birthDate', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
@@ -134,7 +160,7 @@ class SyncPersonV1 {
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
       );

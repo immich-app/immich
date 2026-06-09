@@ -13,7 +13,7 @@ part of openapi.api;
 class AssetBulkDeleteDto {
   /// Returns a new [AssetBulkDeleteDto] instance.
   AssetBulkDeleteDto({
-    this.force = const Optional.absent(),
+    this.force,
     this.ids = const [],
   });
 
@@ -24,7 +24,7 @@ class AssetBulkDeleteDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> force;
+  bool? force;
 
   /// IDs to process
   List<String> ids;
@@ -45,9 +45,10 @@ class AssetBulkDeleteDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.force.isPresent) {
-      final value = this.force.value;
-      json[r'force'] = value;
+    if (this.force != null) {
+      json[r'force'] = this.force;
+    } else {
+      json[r'force'] = null;
     }
       json[r'ids'] = this.ids;
     return json;
@@ -57,12 +58,20 @@ class AssetBulkDeleteDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetBulkDeleteDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetBulkDeleteDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'ids'), 'Required key "AssetBulkDeleteDto[ids]" is missing from JSON.');
+        assert(json[r'ids'] != null, 'Required key "AssetBulkDeleteDto[ids]" has a null value in JSON.');
+        return true;
+      }());
+
       return AssetBulkDeleteDto(
-        force: json.containsKey(r'force') ? Optional.present(mapValueOfType<bool>(json, r'force')) : const Optional.absent(),
+        force: mapValueOfType<bool>(json, r'force'),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],

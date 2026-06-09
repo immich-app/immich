@@ -30,13 +30,13 @@ class UserResponseDto {
   String id;
 
   /// User name
-  String name;
+  String? name;
 
   /// Profile change date
   DateTime profileChangedAt;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
@@ -53,9 +53,9 @@ class UserResponseDto {
     (avatarColor.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode);
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode);
 
   @override
   String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
@@ -65,9 +65,17 @@ class UserResponseDto {
       json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
       json[r'id'] = this.id;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
     return json;
   }
 
@@ -75,17 +83,33 @@ class UserResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "UserResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'avatarColor'), 'Required key "UserResponseDto[avatarColor]" is missing from JSON.');
+        assert(json[r'avatarColor'] != null, 'Required key "UserResponseDto[avatarColor]" has a null value in JSON.');
+        assert(json.containsKey(r'email'), 'Required key "UserResponseDto[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "UserResponseDto[email]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "UserResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "UserResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "UserResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'profileChangedAt'), 'Required key "UserResponseDto[profileChangedAt]" is missing from JSON.');
+        assert(json[r'profileChangedAt'] != null, 'Required key "UserResponseDto[profileChangedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'profileImagePath'), 'Required key "UserResponseDto[profileImagePath]" is missing from JSON.');
+        return true;
+      }());
 
       return UserResponseDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
       );
     }
     return null;

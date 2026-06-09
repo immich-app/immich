@@ -13,7 +13,7 @@ part of openapi.api;
 class UserAdminDeleteDto {
   /// Returns a new [UserAdminDeleteDto] instance.
   UserAdminDeleteDto({
-    this.force = const Optional.absent(),
+    this.force,
   });
 
   /// Force delete even if user has assets
@@ -23,7 +23,7 @@ class UserAdminDeleteDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> force;
+  bool? force;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminDeleteDto &&
@@ -39,9 +39,10 @@ class UserAdminDeleteDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.force.isPresent) {
-      final value = this.force.value;
-      json[r'force'] = value;
+    if (this.force != null) {
+      json[r'force'] = this.force;
+    } else {
+      json[r'force'] = null;
     }
     return json;
   }
@@ -50,12 +51,18 @@ class UserAdminDeleteDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserAdminDeleteDto? fromJson(dynamic value) {
-    upgradeDto(value, "UserAdminDeleteDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return UserAdminDeleteDto(
-        force: json.containsKey(r'force') ? Optional.present(mapValueOfType<bool>(json, r'force')) : const Optional.absent(),
+        force: mapValueOfType<bool>(json, r'force'),
       );
     }
     return null;

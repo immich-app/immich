@@ -26,9 +26,9 @@ class UsersApi {
   ///
   /// * [MultipartFile] file (required):
   ///   Profile image file
-  Future<Response> createProfileImageWithHttpInfo(MultipartFile file, { Future<void>? abortTrigger, }) async {
+  Future<Response> createProfileImageWithHttpInfo(MultipartFile file,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/profile-image';
+    final path = r'/users/profile-image';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -40,7 +40,7 @@ class UsersApi {
     const contentTypes = <String>['multipart/form-data'];
 
     bool hasFields = false;
-    final mp = MultipartRequest('POST', Uri.parse(apiPath));
+    final mp = MultipartRequest('POST', Uri.parse(path));
     if (file != null) {
       hasFields = true;
       mp.fields[r'file'] = file.field;
@@ -51,14 +51,13 @@ class UsersApi {
     }
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -70,8 +69,8 @@ class UsersApi {
   ///
   /// * [MultipartFile] file (required):
   ///   Profile image file
-  Future<CreateProfileImageResponseDto?> createProfileImage(MultipartFile file, { Future<void>? abortTrigger, }) async {
-    final response = await createProfileImageWithHttpInfo(file, abortTrigger: abortTrigger,);
+  Future<CreateProfileImageResponseDto?> createProfileImage(MultipartFile file,) async {
+    final response = await createProfileImageWithHttpInfo(file,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -90,9 +89,9 @@ class UsersApi {
   /// Delete the profile image of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> deleteProfileImageWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> deleteProfileImageWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/profile-image';
+    final path = r'/users/profile-image';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -105,22 +104,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Delete user profile image
   ///
   /// Delete the profile image of the current user.
-  Future<void> deleteProfileImage({ Future<void>? abortTrigger, }) async {
-    final response = await deleteProfileImageWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<void> deleteProfileImage() async {
+    final response = await deleteProfileImageWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -131,9 +129,9 @@ class UsersApi {
   /// Delete the registered product key for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> deleteUserLicenseWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> deleteUserLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/license';
+    final path = r'/users/me/license';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -146,22 +144,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Delete user product key
   ///
   /// Delete the registered product key for the current user.
-  Future<void> deleteUserLicense({ Future<void>? abortTrigger, }) async {
-    final response = await deleteUserLicenseWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<void> deleteUserLicense() async {
+    final response = await deleteUserLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -172,9 +169,9 @@ class UsersApi {
   /// Delete the onboarding status of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> deleteUserOnboardingWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> deleteUserOnboardingWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/onboarding';
+    final path = r'/users/me/onboarding';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -187,22 +184,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Delete user onboarding
   ///
   /// Delete the onboarding status of the current user.
-  Future<void> deleteUserOnboarding({ Future<void>? abortTrigger, }) async {
-    final response = await deleteUserOnboardingWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<void> deleteUserOnboarding() async {
+    final response = await deleteUserOnboardingWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -223,9 +219,9 @@ class UsersApi {
   ///   End date in UTC
   ///
   /// * [CalendarHeatmapType] type:
-  Future<Response> getMyCalendarHeatmapWithHttpInfo({ DateTime? from, DateTime? to, CalendarHeatmapType? type, Future<void>? abortTrigger, }) async {
+  Future<Response> getMyCalendarHeatmapWithHttpInfo({ DateTime? from, DateTime? to, CalendarHeatmapType? type, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/calendar-heatmap';
+    final path = r'/users/me/calendar-heatmap';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -248,14 +244,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -272,8 +267,8 @@ class UsersApi {
   ///   End date in UTC
   ///
   /// * [CalendarHeatmapType] type:
-  Future<CalendarHeatmapResponseDto?> getMyCalendarHeatmap({ DateTime? from, DateTime? to, CalendarHeatmapType? type, Future<void>? abortTrigger, }) async {
-    final response = await getMyCalendarHeatmapWithHttpInfo(from: from, to: to, type: type, abortTrigger: abortTrigger,);
+  Future<CalendarHeatmapResponseDto?> getMyCalendarHeatmap({ DateTime? from, DateTime? to, CalendarHeatmapType? type, }) async {
+    final response = await getMyCalendarHeatmapWithHttpInfo( from: from, to: to, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -292,9 +287,9 @@ class UsersApi {
   /// Retrieve the preferences for the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMyPreferencesWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getMyPreferencesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/preferences';
+    final path = r'/users/me/preferences';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -307,22 +302,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Get my preferences
   ///
   /// Retrieve the preferences for the current user.
-  Future<UserPreferencesResponseDto?> getMyPreferences({ Future<void>? abortTrigger, }) async {
-    final response = await getMyPreferencesWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<UserPreferencesResponseDto?> getMyPreferences() async {
+    final response = await getMyPreferencesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -341,9 +335,9 @@ class UsersApi {
   /// Retrieve information about the user making the API request.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMyUserWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getMyUserWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me';
+    final path = r'/users/me';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -356,22 +350,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Get current user
   ///
   /// Retrieve information about the user making the API request.
-  Future<UserAdminResponseDto?> getMyUser({ Future<void>? abortTrigger, }) async {
-    final response = await getMyUserWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> getMyUser() async {
+    final response = await getMyUserWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -394,9 +387,9 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getProfileImageWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getProfileImageWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/{id}/profile-image'
+    final path = r'/users/{id}/profile-image'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -410,14 +403,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -428,8 +420,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<MultipartFile?> getProfileImage(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getProfileImageWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<MultipartFile?> getProfileImage(String id,) async {
+    final response = await getProfileImageWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -452,9 +444,9 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getUserWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getUserWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/{id}'
+    final path = r'/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -468,14 +460,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -486,8 +477,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserResponseDto?> getUser(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getUserWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<UserResponseDto?> getUser(String id,) async {
+    final response = await getUserWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -506,9 +497,9 @@ class UsersApi {
   /// Retrieve information about whether the current user has a registered product key.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getUserLicenseWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getUserLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/license';
+    final path = r'/users/me/license';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -521,22 +512,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve user product key
   ///
   /// Retrieve information about whether the current user has a registered product key.
-  Future<UserLicense?> getUserLicense({ Future<void>? abortTrigger, }) async {
-    final response = await getUserLicenseWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<UserLicense?> getUserLicense() async {
+    final response = await getUserLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -555,9 +545,9 @@ class UsersApi {
   /// Retrieve the onboarding status of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getUserOnboardingWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getUserOnboardingWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/onboarding';
+    final path = r'/users/me/onboarding';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -570,22 +560,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve user onboarding
   ///
   /// Retrieve the onboarding status of the current user.
-  Future<OnboardingResponseDto?> getUserOnboarding({ Future<void>? abortTrigger, }) async {
-    final response = await getUserOnboardingWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<OnboardingResponseDto?> getUserOnboarding() async {
+    final response = await getUserOnboardingWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -604,9 +593,9 @@ class UsersApi {
   /// Retrieve a list of all users on the server.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> searchUsersWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> searchUsersWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users';
+    final path = r'/users';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -619,22 +608,21 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Get all users
   ///
   /// Retrieve a list of all users on the server.
-  Future<List<UserResponseDto>?> searchUsers({ Future<void>? abortTrigger, }) async {
-    final response = await searchUsersWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<List<UserResponseDto>?> searchUsers() async {
+    final response = await searchUsersWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -660,9 +648,9 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<Response> setUserLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> setUserLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/license';
+    final path = r'/users/me/license';
 
     // ignore: prefer_final_locals
     Object? postBody = licenseKeyDto;
@@ -675,14 +663,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -693,8 +680,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<UserLicense?> setUserLicense(LicenseKeyDto licenseKeyDto, { Future<void>? abortTrigger, }) async {
-    final response = await setUserLicenseWithHttpInfo(licenseKeyDto, abortTrigger: abortTrigger,);
+  Future<UserLicense?> setUserLicense(LicenseKeyDto licenseKeyDto,) async {
+    final response = await setUserLicenseWithHttpInfo(licenseKeyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -717,9 +704,9 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [OnboardingDto] onboardingDto (required):
-  Future<Response> setUserOnboardingWithHttpInfo(OnboardingDto onboardingDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> setUserOnboardingWithHttpInfo(OnboardingDto onboardingDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/onboarding';
+    final path = r'/users/me/onboarding';
 
     // ignore: prefer_final_locals
     Object? postBody = onboardingDto;
@@ -732,14 +719,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -750,8 +736,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [OnboardingDto] onboardingDto (required):
-  Future<OnboardingResponseDto?> setUserOnboarding(OnboardingDto onboardingDto, { Future<void>? abortTrigger, }) async {
-    final response = await setUserOnboardingWithHttpInfo(onboardingDto, abortTrigger: abortTrigger,);
+  Future<OnboardingResponseDto?> setUserOnboarding(OnboardingDto onboardingDto,) async {
+    final response = await setUserOnboardingWithHttpInfo(onboardingDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -774,9 +760,9 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  Future<Response> updateMyPreferencesWithHttpInfo(UserPreferencesUpdateDto userPreferencesUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateMyPreferencesWithHttpInfo(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me/preferences';
+    final path = r'/users/me/preferences';
 
     // ignore: prefer_final_locals
     Object? postBody = userPreferencesUpdateDto;
@@ -789,14 +775,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -807,8 +792,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  Future<UserPreferencesResponseDto?> updateMyPreferences(UserPreferencesUpdateDto userPreferencesUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateMyPreferencesWithHttpInfo(userPreferencesUpdateDto, abortTrigger: abortTrigger,);
+  Future<UserPreferencesResponseDto?> updateMyPreferences(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
+    final response = await updateMyPreferencesWithHttpInfo(userPreferencesUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -831,9 +816,9 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserUpdateMeDto] userUpdateMeDto (required):
-  Future<Response> updateMyUserWithHttpInfo(UserUpdateMeDto userUpdateMeDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateMyUserWithHttpInfo(UserUpdateMeDto userUpdateMeDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/users/me';
+    final path = r'/users/me';
 
     // ignore: prefer_final_locals
     Object? postBody = userUpdateMeDto;
@@ -846,14 +831,13 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -864,8 +848,8 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserUpdateMeDto] userUpdateMeDto (required):
-  Future<UserAdminResponseDto?> updateMyUser(UserUpdateMeDto userUpdateMeDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateMyUserWithHttpInfo(userUpdateMeDto, abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> updateMyUser(UserUpdateMeDto userUpdateMeDto,) async {
+    final response = await updateMyUserWithHttpInfo(userUpdateMeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

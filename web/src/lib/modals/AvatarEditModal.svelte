@@ -16,7 +16,7 @@
 
   const onSave = async (color: UserAvatarColor) => {
     try {
-      if (authManager.user.profileImagePath !== '') {
+      if (authManager.user.profileImagePath) {
         await deleteProfileImage();
       }
 

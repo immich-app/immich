@@ -55,9 +55,21 @@ class EmailNotificationsResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static EmailNotificationsResponse? fromJson(dynamic value) {
-    upgradeDto(value, "EmailNotificationsResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albumInvite'), 'Required key "EmailNotificationsResponse[albumInvite]" is missing from JSON.');
+        assert(json[r'albumInvite'] != null, 'Required key "EmailNotificationsResponse[albumInvite]" has a null value in JSON.');
+        assert(json.containsKey(r'albumUpdate'), 'Required key "EmailNotificationsResponse[albumUpdate]" is missing from JSON.');
+        assert(json[r'albumUpdate'] != null, 'Required key "EmailNotificationsResponse[albumUpdate]" has a null value in JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "EmailNotificationsResponse[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "EmailNotificationsResponse[enabled]" has a null value in JSON.');
+        return true;
+      }());
 
       return EmailNotificationsResponse(
         albumInvite: mapValueOfType<bool>(json, r'albumInvite')!,

@@ -47,9 +47,19 @@ class ApiKeyCreateResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ApiKeyCreateResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ApiKeyCreateResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'apiKey'), 'Required key "ApiKeyCreateResponseDto[apiKey]" is missing from JSON.');
+        assert(json[r'apiKey'] != null, 'Required key "ApiKeyCreateResponseDto[apiKey]" has a null value in JSON.');
+        assert(json.containsKey(r'secret'), 'Required key "ApiKeyCreateResponseDto[secret]" is missing from JSON.');
+        assert(json[r'secret'] != null, 'Required key "ApiKeyCreateResponseDto[secret]" has a null value in JSON.');
+        return true;
+      }());
 
       return ApiKeyCreateResponseDto(
         apiKey: ApiKeyResponseDto.fromJson(json[r'apiKey'])!,

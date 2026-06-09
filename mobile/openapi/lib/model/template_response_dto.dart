@@ -48,9 +48,19 @@ class TemplateResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TemplateResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "TemplateResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'html'), 'Required key "TemplateResponseDto[html]" is missing from JSON.');
+        assert(json[r'html'] != null, 'Required key "TemplateResponseDto[html]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "TemplateResponseDto[name]" is missing from JSON.');
+        assert(json[r'name'] != null, 'Required key "TemplateResponseDto[name]" has a null value in JSON.');
+        return true;
+      }());
 
       return TemplateResponseDto(
         html: mapValueOfType<String>(json, r'html')!,

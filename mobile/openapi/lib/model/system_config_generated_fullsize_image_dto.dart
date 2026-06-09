@@ -15,7 +15,7 @@ class SystemConfigGeneratedFullsizeImageDto {
   SystemConfigGeneratedFullsizeImageDto({
     required this.enabled,
     required this.format,
-    this.progressive = const Optional.absent(),
+    this.progressive,
     required this.quality,
   });
 
@@ -31,7 +31,7 @@ class SystemConfigGeneratedFullsizeImageDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> progressive;
+  bool? progressive;
 
   /// Quality
   ///
@@ -61,9 +61,10 @@ class SystemConfigGeneratedFullsizeImageDto {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
       json[r'format'] = this.format;
-    if (this.progressive.isPresent) {
-      final value = this.progressive.value;
-      json[r'progressive'] = value;
+    if (this.progressive != null) {
+      json[r'progressive'] = this.progressive;
+    } else {
+      json[r'progressive'] = null;
     }
       json[r'quality'] = this.quality;
     return json;
@@ -73,14 +74,26 @@ class SystemConfigGeneratedFullsizeImageDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigGeneratedFullsizeImageDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigGeneratedFullsizeImageDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "SystemConfigGeneratedFullsizeImageDto[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "SystemConfigGeneratedFullsizeImageDto[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'format'), 'Required key "SystemConfigGeneratedFullsizeImageDto[format]" is missing from JSON.');
+        assert(json[r'format'] != null, 'Required key "SystemConfigGeneratedFullsizeImageDto[format]" has a null value in JSON.');
+        assert(json.containsKey(r'quality'), 'Required key "SystemConfigGeneratedFullsizeImageDto[quality]" is missing from JSON.');
+        assert(json[r'quality'] != null, 'Required key "SystemConfigGeneratedFullsizeImageDto[quality]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigGeneratedFullsizeImageDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         format: ImageFormat.fromJson(json[r'format'])!,
-        progressive: json.containsKey(r'progressive') ? Optional.present(mapValueOfType<bool>(json, r'progressive')) : const Optional.absent(),
+        progressive: mapValueOfType<bool>(json, r'progressive'),
         quality: mapValueOfType<int>(json, r'quality')!,
       );
     }

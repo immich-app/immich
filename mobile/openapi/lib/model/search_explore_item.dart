@@ -47,9 +47,19 @@ class SearchExploreItem {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchExploreItem? fromJson(dynamic value) {
-    upgradeDto(value, "SearchExploreItem");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'data'), 'Required key "SearchExploreItem[data]" is missing from JSON.');
+        assert(json[r'data'] != null, 'Required key "SearchExploreItem[data]" has a null value in JSON.');
+        assert(json.containsKey(r'value'), 'Required key "SearchExploreItem[value]" is missing from JSON.');
+        assert(json[r'value'] != null, 'Required key "SearchExploreItem[value]" has a null value in JSON.');
+        return true;
+      }());
 
       return SearchExploreItem(
         data: AssetResponseDto.fromJson(json[r'data'])!,

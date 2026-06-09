@@ -35,8 +35,8 @@ enum AvatarColor {
 // TODO: Rename to User once Isar is removed
 class UserDto {
   final String id;
-  final String email;
-  final String name;
+  final String? email;
+  final String? name;
   final bool isAdmin;
   final DateTime? updatedAt;
 
@@ -58,8 +58,8 @@ class UserDto {
 
   const UserDto({
     required this.id,
-    required this.email,
-    required this.name,
+    this.email,
+    this.name,
     this.isAdmin = false,
     this.updatedAt,
     required this.profileChangedAt,
@@ -166,16 +166,16 @@ profileChangedAt: $profileChangedAt
 
 class PartnerUserDto {
   final String id;
-  final String email;
-  final String name;
+  final String? email;
+  final String? name;
   final bool inTimeline;
 
   final String? profileImagePath;
 
   const PartnerUserDto({
     required this.id,
-    required this.email,
-    required this.name,
+    this.email,
+    this.name,
     required this.inTimeline,
     this.profileImagePath,
   });
@@ -203,8 +203,8 @@ class PartnerUserDto {
   factory PartnerUserDto.fromMap(Map<String, dynamic> map) {
     return PartnerUserDto(
       id: map['id'] as String,
-      email: map['email'] as String,
-      name: map['name'] as String,
+      email: map['email'] as String?,
+      name: map['name'] as String?,
       inTimeline: map['inTimeline'] as bool,
       profileImagePath: map['profileImagePath'] != null ? map['profileImagePath'] as String : null,
     );

@@ -25,9 +25,9 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
-  Future<Response> createUserAdminWithHttpInfo(UserAdminCreateDto userAdminCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createUserAdminWithHttpInfo(UserAdminCreateDto userAdminCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users';
+    final path = r'/admin/users';
 
     // ignore: prefer_final_locals
     Object? postBody = userAdminCreateDto;
@@ -40,14 +40,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
-  Future<UserAdminResponseDto?> createUserAdmin(UserAdminCreateDto userAdminCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createUserAdminWithHttpInfo(userAdminCreateDto, abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> createUserAdmin(UserAdminCreateDto userAdminCreateDto,) async {
+    final response = await createUserAdminWithHttpInfo(userAdminCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -84,9 +83,9 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
-  Future<Response> deleteUserAdminWithHttpInfo(String id, UserAdminDeleteDto userAdminDeleteDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteUserAdminWithHttpInfo(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}'
+    final path = r'/admin/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -100,14 +99,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -120,8 +118,8 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
-  Future<UserAdminResponseDto?> deleteUserAdmin(String id, UserAdminDeleteDto userAdminDeleteDto, { Future<void>? abortTrigger, }) async {
-    final response = await deleteUserAdminWithHttpInfo(id, userAdminDeleteDto, abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> deleteUserAdmin(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
+    final response = await deleteUserAdminWithHttpInfo(id, userAdminDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -144,9 +142,9 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getUserAdminWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getUserAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}'
+    final path = r'/admin/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -160,14 +158,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -178,8 +175,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserAdminResponseDto?> getUserAdmin(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getUserAdminWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> getUserAdmin(String id,) async {
+    final response = await getUserAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -210,9 +207,9 @@ class UsersAdminApi {
   ///   End date in UTC
   ///
   /// * [CalendarHeatmapType] type:
-  Future<Response> getUserCalendarHeatmapAdminWithHttpInfo(String id, { DateTime? from, DateTime? to, CalendarHeatmapType? type, Future<void>? abortTrigger, }) async {
+  Future<Response> getUserCalendarHeatmapAdminWithHttpInfo(String id, { DateTime? from, DateTime? to, CalendarHeatmapType? type, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/calendar-heatmap'
+    final path = r'/admin/users/{id}/calendar-heatmap'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -236,14 +233,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -262,8 +258,8 @@ class UsersAdminApi {
   ///   End date in UTC
   ///
   /// * [CalendarHeatmapType] type:
-  Future<CalendarHeatmapResponseDto?> getUserCalendarHeatmapAdmin(String id, { DateTime? from, DateTime? to, CalendarHeatmapType? type, Future<void>? abortTrigger, }) async {
-    final response = await getUserCalendarHeatmapAdminWithHttpInfo(id, from: from, to: to, type: type, abortTrigger: abortTrigger,);
+  Future<CalendarHeatmapResponseDto?> getUserCalendarHeatmapAdmin(String id, { DateTime? from, DateTime? to, CalendarHeatmapType? type, }) async {
+    final response = await getUserCalendarHeatmapAdminWithHttpInfo(id,  from: from, to: to, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -286,9 +282,9 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getUserPreferencesAdminWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getUserPreferencesAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/preferences'
+    final path = r'/admin/users/{id}/preferences'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -302,14 +298,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -320,8 +315,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserPreferencesResponseDto?> getUserPreferencesAdmin(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getUserPreferencesAdminWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<UserPreferencesResponseDto?> getUserPreferencesAdmin(String id,) async {
+    final response = await getUserPreferencesAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -344,9 +339,9 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getUserSessionsAdminWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getUserSessionsAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/sessions'
+    final path = r'/admin/users/{id}/sessions'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -360,14 +355,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -378,8 +372,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<List<SessionResponseDto>?> getUserSessionsAdmin(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getUserSessionsAdminWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<List<SessionResponseDto>?> getUserSessionsAdmin(String id,) async {
+    final response = await getUserSessionsAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -413,9 +407,9 @@ class UsersAdminApi {
   ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
-  Future<Response> getUserStatisticsAdminWithHttpInfo(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, Future<void>? abortTrigger, }) async {
+  Future<Response> getUserStatisticsAdminWithHttpInfo(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/statistics'
+    final path = r'/admin/users/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -439,14 +433,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -465,8 +458,8 @@ class UsersAdminApi {
   ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
-  Future<AssetStatsResponseDto?> getUserStatisticsAdmin(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, Future<void>? abortTrigger, }) async {
-    final response = await getUserStatisticsAdminWithHttpInfo(id, isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, abortTrigger: abortTrigger,);
+  Future<AssetStatsResponseDto?> getUserStatisticsAdmin(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
+    final response = await getUserStatisticsAdminWithHttpInfo(id,  isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -489,9 +482,9 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> restoreUserAdminWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> restoreUserAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/restore'
+    final path = r'/admin/users/{id}/restore'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -505,14 +498,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -523,8 +515,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserAdminResponseDto?> restoreUserAdmin(String id, { Future<void>? abortTrigger, }) async {
-    final response = await restoreUserAdminWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> restoreUserAdmin(String id,) async {
+    final response = await restoreUserAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -551,9 +543,9 @@ class UsersAdminApi {
   ///
   /// * [bool] withDeleted:
   ///   Include deleted users
-  Future<Response> searchUsersAdminWithHttpInfo({ String? id, bool? withDeleted, Future<void>? abortTrigger, }) async {
+  Future<Response> searchUsersAdminWithHttpInfo({ String? id, bool? withDeleted, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users';
+    final path = r'/admin/users';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -573,14 +565,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -595,8 +586,8 @@ class UsersAdminApi {
   ///
   /// * [bool] withDeleted:
   ///   Include deleted users
-  Future<List<UserAdminResponseDto>?> searchUsersAdmin({ String? id, bool? withDeleted, Future<void>? abortTrigger, }) async {
-    final response = await searchUsersAdminWithHttpInfo(id: id, withDeleted: withDeleted, abortTrigger: abortTrigger,);
+  Future<List<UserAdminResponseDto>?> searchUsersAdmin({ String? id, bool? withDeleted, }) async {
+    final response = await searchUsersAdminWithHttpInfo( id: id, withDeleted: withDeleted, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -624,9 +615,9 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
-  Future<Response> updateUserAdminWithHttpInfo(String id, UserAdminUpdateDto userAdminUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateUserAdminWithHttpInfo(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}'
+    final path = r'/admin/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -640,14 +631,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -660,8 +650,8 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
-  Future<UserAdminResponseDto?> updateUserAdmin(String id, UserAdminUpdateDto userAdminUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateUserAdminWithHttpInfo(id, userAdminUpdateDto, abortTrigger: abortTrigger,);
+  Future<UserAdminResponseDto?> updateUserAdmin(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
+    final response = await updateUserAdminWithHttpInfo(id, userAdminUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -686,9 +676,9 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  Future<Response> updateUserPreferencesAdminWithHttpInfo(String id, UserPreferencesUpdateDto userPreferencesUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateUserPreferencesAdminWithHttpInfo(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/users/{id}/preferences'
+    final path = r'/admin/users/{id}/preferences'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -702,14 +692,13 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -722,8 +711,8 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  Future<UserPreferencesResponseDto?> updateUserPreferencesAdmin(String id, UserPreferencesUpdateDto userPreferencesUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateUserPreferencesAdminWithHttpInfo(id, userPreferencesUpdateDto, abortTrigger: abortTrigger,);
+  Future<UserPreferencesResponseDto?> updateUserPreferencesAdmin(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
+    final response = await updateUserPreferencesAdminWithHttpInfo(id, userPreferencesUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

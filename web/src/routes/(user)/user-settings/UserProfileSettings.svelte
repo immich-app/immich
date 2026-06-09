@@ -15,8 +15,8 @@
     try {
       const data = await updateMyUser({
         userUpdateMeDto: {
-          email: editedUser.email,
-          name: editedUser.name,
+          email: editedUser.email || null,
+          name: editedUser.name || null,
         },
       });
 

@@ -13,19 +13,19 @@ part of openapi.api;
 class TagCreateDto {
   /// Returns a new [TagCreateDto] instance.
   TagCreateDto({
-    this.color = const Optional.absent(),
+    this.color,
     required this.name,
-    this.parentId = const Optional.absent(),
+    this.parentId,
   });
 
   /// Tag color (hex)
-  Optional<String?> color;
+  String? color;
 
   /// Tag name
   String name;
 
   /// Parent tag ID
-  Optional<String?> parentId;
+  String? parentId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
@@ -45,14 +45,16 @@ class TagCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color.isPresent) {
-      final value = this.color.value;
-      json[r'color'] = value;
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+      json[r'color'] = null;
     }
       json[r'name'] = this.name;
-    if (this.parentId.isPresent) {
-      final value = this.parentId.value;
-      json[r'parentId'] = value;
+    if (this.parentId != null) {
+      json[r'parentId'] = this.parentId;
+    } else {
+      json[r'parentId'] = null;
     }
     return json;
   }
@@ -61,14 +63,22 @@ class TagCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TagCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "TagCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'name'), 'Required key "TagCreateDto[name]" is missing from JSON.');
+        assert(json[r'name'] != null, 'Required key "TagCreateDto[name]" has a null value in JSON.');
+        return true;
+      }());
+
       return TagCreateDto(
-        color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
+        color: mapValueOfType<String>(json, r'color'),
         name: mapValueOfType<String>(json, r'name')!,
-        parentId: json.containsKey(r'parentId') ? Optional.present(mapValueOfType<String>(json, r'parentId')) : const Optional.absent(),
+        parentId: mapValueOfType<String>(json, r'parentId'),
       );
     }
     return null;

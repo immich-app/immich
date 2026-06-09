@@ -100,9 +100,37 @@ class UserPreferencesResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserPreferencesResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "UserPreferencesResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albums'), 'Required key "UserPreferencesResponseDto[albums]" is missing from JSON.');
+        assert(json[r'albums'] != null, 'Required key "UserPreferencesResponseDto[albums]" has a null value in JSON.');
+        assert(json.containsKey(r'cast'), 'Required key "UserPreferencesResponseDto[cast]" is missing from JSON.');
+        assert(json[r'cast'] != null, 'Required key "UserPreferencesResponseDto[cast]" has a null value in JSON.');
+        assert(json.containsKey(r'download'), 'Required key "UserPreferencesResponseDto[download]" is missing from JSON.');
+        assert(json[r'download'] != null, 'Required key "UserPreferencesResponseDto[download]" has a null value in JSON.');
+        assert(json.containsKey(r'emailNotifications'), 'Required key "UserPreferencesResponseDto[emailNotifications]" is missing from JSON.');
+        assert(json[r'emailNotifications'] != null, 'Required key "UserPreferencesResponseDto[emailNotifications]" has a null value in JSON.');
+        assert(json.containsKey(r'folders'), 'Required key "UserPreferencesResponseDto[folders]" is missing from JSON.');
+        assert(json[r'folders'] != null, 'Required key "UserPreferencesResponseDto[folders]" has a null value in JSON.');
+        assert(json.containsKey(r'memories'), 'Required key "UserPreferencesResponseDto[memories]" is missing from JSON.');
+        assert(json[r'memories'] != null, 'Required key "UserPreferencesResponseDto[memories]" has a null value in JSON.');
+        assert(json.containsKey(r'people'), 'Required key "UserPreferencesResponseDto[people]" is missing from JSON.');
+        assert(json[r'people'] != null, 'Required key "UserPreferencesResponseDto[people]" has a null value in JSON.');
+        assert(json.containsKey(r'purchase'), 'Required key "UserPreferencesResponseDto[purchase]" is missing from JSON.');
+        assert(json[r'purchase'] != null, 'Required key "UserPreferencesResponseDto[purchase]" has a null value in JSON.');
+        assert(json.containsKey(r'ratings'), 'Required key "UserPreferencesResponseDto[ratings]" is missing from JSON.');
+        assert(json[r'ratings'] != null, 'Required key "UserPreferencesResponseDto[ratings]" has a null value in JSON.');
+        assert(json.containsKey(r'sharedLinks'), 'Required key "UserPreferencesResponseDto[sharedLinks]" is missing from JSON.');
+        assert(json[r'sharedLinks'] != null, 'Required key "UserPreferencesResponseDto[sharedLinks]" has a null value in JSON.');
+        assert(json.containsKey(r'tags'), 'Required key "UserPreferencesResponseDto[tags]" is missing from JSON.');
+        assert(json[r'tags'] != null, 'Required key "UserPreferencesResponseDto[tags]" has a null value in JSON.');
+        return true;
+      }());
 
       return UserPreferencesResponseDto(
         albums: AlbumsResponse.fromJson(json[r'albums'])!,

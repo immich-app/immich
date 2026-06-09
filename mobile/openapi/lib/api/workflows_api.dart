@@ -25,9 +25,9 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [WorkflowCreateDto] workflowCreateDto (required):
-  Future<Response> createWorkflowWithHttpInfo(WorkflowCreateDto workflowCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createWorkflowWithHttpInfo(WorkflowCreateDto workflowCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows';
+    final path = r'/workflows';
 
     // ignore: prefer_final_locals
     Object? postBody = workflowCreateDto;
@@ -40,14 +40,13 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [WorkflowCreateDto] workflowCreateDto (required):
-  Future<WorkflowResponseDto?> createWorkflow(WorkflowCreateDto workflowCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createWorkflowWithHttpInfo(workflowCreateDto, abortTrigger: abortTrigger,);
+  Future<WorkflowResponseDto?> createWorkflow(WorkflowCreateDto workflowCreateDto,) async {
+    final response = await createWorkflowWithHttpInfo(workflowCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -82,9 +81,9 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteWorkflowWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteWorkflowWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}'
+    final path = r'/workflows/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -98,14 +97,13 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -116,8 +114,8 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteWorkflow(String id, { Future<void>? abortTrigger, }) async {
-    final response = await deleteWorkflowWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<void> deleteWorkflow(String id,) async {
+    final response = await deleteWorkflowWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -132,9 +130,9 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getWorkflowWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getWorkflowWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}'
+    final path = r'/workflows/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -148,14 +146,13 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -166,8 +163,8 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<WorkflowResponseDto?> getWorkflow(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getWorkflowWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<WorkflowResponseDto?> getWorkflow(String id,) async {
+    final response = await getWorkflowWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -190,9 +187,9 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getWorkflowForShareWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getWorkflowForShareWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}/share'
+    final path = r'/workflows/{id}/share'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -206,14 +203,13 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -224,8 +220,8 @@ class WorkflowsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<WorkflowShareResponseDto?> getWorkflowForShare(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getWorkflowForShareWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<WorkflowShareResponseDto?> getWorkflowForShare(String id,) async {
+    final response = await getWorkflowForShareWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -244,9 +240,9 @@ class WorkflowsApi {
   /// Retrieve a list of all available workflow triggers.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getWorkflowTriggersWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getWorkflowTriggersWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/triggers';
+    final path = r'/workflows/triggers';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -259,22 +255,21 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// List all workflow triggers
   ///
   /// Retrieve a list of all available workflow triggers.
-  Future<List<WorkflowTriggerResponseDto>?> getWorkflowTriggers({ Future<void>? abortTrigger, }) async {
-    final response = await getWorkflowTriggersWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<List<WorkflowTriggerResponseDto>?> getWorkflowTriggers() async {
+    final response = await getWorkflowTriggersWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -313,9 +308,9 @@ class WorkflowsApi {
   ///
   /// * [WorkflowTrigger] trigger:
   ///   Workflow trigger type
-  Future<Response> searchWorkflowsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, Future<void>? abortTrigger, }) async {
+  Future<Response> searchWorkflowsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows';
+    final path = r'/workflows';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -344,14 +339,13 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -375,8 +369,8 @@ class WorkflowsApi {
   ///
   /// * [WorkflowTrigger] trigger:
   ///   Workflow trigger type
-  Future<List<WorkflowResponseDto>?> searchWorkflows({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, Future<void>? abortTrigger, }) async {
-    final response = await searchWorkflowsWithHttpInfo(description: description, enabled: enabled, id: id, name: name, trigger: trigger, abortTrigger: abortTrigger,);
+  Future<List<WorkflowResponseDto>?> searchWorkflows({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, }) async {
+    final response = await searchWorkflowsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, trigger: trigger, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -404,9 +398,9 @@ class WorkflowsApi {
   /// * [String] id (required):
   ///
   /// * [WorkflowUpdateDto] workflowUpdateDto (required):
-  Future<Response> updateWorkflowWithHttpInfo(String id, WorkflowUpdateDto workflowUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateWorkflowWithHttpInfo(String id, WorkflowUpdateDto workflowUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/workflows/{id}'
+    final path = r'/workflows/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -420,14 +414,13 @@ class WorkflowsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -440,8 +433,8 @@ class WorkflowsApi {
   /// * [String] id (required):
   ///
   /// * [WorkflowUpdateDto] workflowUpdateDto (required):
-  Future<WorkflowResponseDto?> updateWorkflow(String id, WorkflowUpdateDto workflowUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateWorkflowWithHttpInfo(id, workflowUpdateDto, abortTrigger: abortTrigger,);
+  Future<WorkflowResponseDto?> updateWorkflow(String id, WorkflowUpdateDto workflowUpdateDto,) async {
+    final response = await updateWorkflowWithHttpInfo(id, workflowUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

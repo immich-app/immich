@@ -25,9 +25,9 @@ class ViewsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
-  Future<Response> getAssetsByOriginalPathWithHttpInfo(String path, { Future<void>? abortTrigger, }) async {
+  Future<Response> getAssetsByOriginalPathWithHttpInfo(String path,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/view/folder';
+    final path = r'/view/folder';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -42,14 +42,13 @@ class ViewsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -60,8 +59,8 @@ class ViewsApi {
   /// Parameters:
   ///
   /// * [String] path (required):
-  Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path, { Future<void>? abortTrigger, }) async {
-    final response = await getAssetsByOriginalPathWithHttpInfo(path, abortTrigger: abortTrigger,);
+  Future<List<AssetResponseDto>?> getAssetsByOriginalPath(String path,) async {
+    final response = await getAssetsByOriginalPathWithHttpInfo(path,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -83,9 +82,9 @@ class ViewsApi {
   /// Retrieve a list of unique folder paths from asset original paths.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getUniqueOriginalPathsWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getUniqueOriginalPathsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/view/folder/unique-paths';
+    final path = r'/view/folder/unique-paths';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -98,22 +97,21 @@ class ViewsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve unique paths
   ///
   /// Retrieve a list of unique folder paths from asset original paths.
-  Future<List<String>?> getUniqueOriginalPaths({ Future<void>? abortTrigger, }) async {
-    final response = await getUniqueOriginalPathsWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<List<String>?> getUniqueOriginalPaths() async {
+    final response = await getUniqueOriginalPathsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

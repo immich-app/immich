@@ -25,9 +25,9 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [NotificationCreateDto] notificationCreateDto (required):
-  Future<Response> createNotificationWithHttpInfo(NotificationCreateDto notificationCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createNotificationWithHttpInfo(NotificationCreateDto notificationCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/notifications';
+    final path = r'/admin/notifications';
 
     // ignore: prefer_final_locals
     Object? postBody = notificationCreateDto;
@@ -40,14 +40,13 @@ class NotificationsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [NotificationCreateDto] notificationCreateDto (required):
-  Future<NotificationDto?> createNotification(NotificationCreateDto notificationCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createNotificationWithHttpInfo(notificationCreateDto, abortTrigger: abortTrigger,);
+  Future<NotificationDto?> createNotification(NotificationCreateDto notificationCreateDto,) async {
+    final response = await createNotificationWithHttpInfo(notificationCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -84,9 +83,9 @@ class NotificationsAdminApi {
   /// * [String] name (required):
   ///
   /// * [TemplateDto] templateDto (required):
-  Future<Response> getNotificationTemplateAdminWithHttpInfo(String name, TemplateDto templateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> getNotificationTemplateAdminWithHttpInfo(String name, TemplateDto templateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/notifications/templates/{name}'
+    final path = r'/admin/notifications/templates/{name}'
       .replaceAll('{name}', name);
 
     // ignore: prefer_final_locals
@@ -100,14 +99,13 @@ class NotificationsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -120,8 +118,8 @@ class NotificationsAdminApi {
   /// * [String] name (required):
   ///
   /// * [TemplateDto] templateDto (required):
-  Future<TemplateResponseDto?> getNotificationTemplateAdmin(String name, TemplateDto templateDto, { Future<void>? abortTrigger, }) async {
-    final response = await getNotificationTemplateAdminWithHttpInfo(name, templateDto, abortTrigger: abortTrigger,);
+  Future<TemplateResponseDto?> getNotificationTemplateAdmin(String name, TemplateDto templateDto,) async {
+    final response = await getNotificationTemplateAdminWithHttpInfo(name, templateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -144,9 +142,9 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
-  Future<Response> sendTestEmailAdminWithHttpInfo(SystemConfigSmtpDto systemConfigSmtpDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> sendTestEmailAdminWithHttpInfo(SystemConfigSmtpDto systemConfigSmtpDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/notifications/test-email';
+    final path = r'/admin/notifications/test-email';
 
     // ignore: prefer_final_locals
     Object? postBody = systemConfigSmtpDto;
@@ -159,14 +157,13 @@ class NotificationsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -177,8 +174,8 @@ class NotificationsAdminApi {
   /// Parameters:
   ///
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
-  Future<TestEmailResponseDto?> sendTestEmailAdmin(SystemConfigSmtpDto systemConfigSmtpDto, { Future<void>? abortTrigger, }) async {
-    final response = await sendTestEmailAdminWithHttpInfo(systemConfigSmtpDto, abortTrigger: abortTrigger,);
+  Future<TestEmailResponseDto?> sendTestEmailAdmin(SystemConfigSmtpDto systemConfigSmtpDto,) async {
+    final response = await sendTestEmailAdminWithHttpInfo(systemConfigSmtpDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -65,9 +65,25 @@ class SystemConfigImageDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigImageDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigImageDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'colorspace'), 'Required key "SystemConfigImageDto[colorspace]" is missing from JSON.');
+        assert(json[r'colorspace'] != null, 'Required key "SystemConfigImageDto[colorspace]" has a null value in JSON.');
+        assert(json.containsKey(r'extractEmbedded'), 'Required key "SystemConfigImageDto[extractEmbedded]" is missing from JSON.');
+        assert(json[r'extractEmbedded'] != null, 'Required key "SystemConfigImageDto[extractEmbedded]" has a null value in JSON.');
+        assert(json.containsKey(r'fullsize'), 'Required key "SystemConfigImageDto[fullsize]" is missing from JSON.');
+        assert(json[r'fullsize'] != null, 'Required key "SystemConfigImageDto[fullsize]" has a null value in JSON.');
+        assert(json.containsKey(r'preview'), 'Required key "SystemConfigImageDto[preview]" is missing from JSON.');
+        assert(json[r'preview'] != null, 'Required key "SystemConfigImageDto[preview]" has a null value in JSON.');
+        assert(json.containsKey(r'thumbnail'), 'Required key "SystemConfigImageDto[thumbnail]" is missing from JSON.');
+        assert(json[r'thumbnail'] != null, 'Required key "SystemConfigImageDto[thumbnail]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigImageDto(
         colorspace: Colorspace.fromJson(json[r'colorspace'])!,

@@ -142,9 +142,51 @@ class QueuesResponseLegacyDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static QueuesResponseLegacyDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueuesResponseLegacyDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'backgroundTask'), 'Required key "QueuesResponseLegacyDto[backgroundTask]" is missing from JSON.');
+        assert(json[r'backgroundTask'] != null, 'Required key "QueuesResponseLegacyDto[backgroundTask]" has a null value in JSON.');
+        assert(json.containsKey(r'backupDatabase'), 'Required key "QueuesResponseLegacyDto[backupDatabase]" is missing from JSON.');
+        assert(json[r'backupDatabase'] != null, 'Required key "QueuesResponseLegacyDto[backupDatabase]" has a null value in JSON.');
+        assert(json.containsKey(r'duplicateDetection'), 'Required key "QueuesResponseLegacyDto[duplicateDetection]" is missing from JSON.');
+        assert(json[r'duplicateDetection'] != null, 'Required key "QueuesResponseLegacyDto[duplicateDetection]" has a null value in JSON.');
+        assert(json.containsKey(r'editor'), 'Required key "QueuesResponseLegacyDto[editor]" is missing from JSON.');
+        assert(json[r'editor'] != null, 'Required key "QueuesResponseLegacyDto[editor]" has a null value in JSON.');
+        assert(json.containsKey(r'faceDetection'), 'Required key "QueuesResponseLegacyDto[faceDetection]" is missing from JSON.');
+        assert(json[r'faceDetection'] != null, 'Required key "QueuesResponseLegacyDto[faceDetection]" has a null value in JSON.');
+        assert(json.containsKey(r'facialRecognition'), 'Required key "QueuesResponseLegacyDto[facialRecognition]" is missing from JSON.');
+        assert(json[r'facialRecognition'] != null, 'Required key "QueuesResponseLegacyDto[facialRecognition]" has a null value in JSON.');
+        assert(json.containsKey(r'library'), 'Required key "QueuesResponseLegacyDto[library]" is missing from JSON.');
+        assert(json[r'library'] != null, 'Required key "QueuesResponseLegacyDto[library]" has a null value in JSON.');
+        assert(json.containsKey(r'metadataExtraction'), 'Required key "QueuesResponseLegacyDto[metadataExtraction]" is missing from JSON.');
+        assert(json[r'metadataExtraction'] != null, 'Required key "QueuesResponseLegacyDto[metadataExtraction]" has a null value in JSON.');
+        assert(json.containsKey(r'migration'), 'Required key "QueuesResponseLegacyDto[migration]" is missing from JSON.');
+        assert(json[r'migration'] != null, 'Required key "QueuesResponseLegacyDto[migration]" has a null value in JSON.');
+        assert(json.containsKey(r'notifications'), 'Required key "QueuesResponseLegacyDto[notifications]" is missing from JSON.');
+        assert(json[r'notifications'] != null, 'Required key "QueuesResponseLegacyDto[notifications]" has a null value in JSON.');
+        assert(json.containsKey(r'ocr'), 'Required key "QueuesResponseLegacyDto[ocr]" is missing from JSON.');
+        assert(json[r'ocr'] != null, 'Required key "QueuesResponseLegacyDto[ocr]" has a null value in JSON.');
+        assert(json.containsKey(r'search'), 'Required key "QueuesResponseLegacyDto[search]" is missing from JSON.');
+        assert(json[r'search'] != null, 'Required key "QueuesResponseLegacyDto[search]" has a null value in JSON.');
+        assert(json.containsKey(r'sidecar'), 'Required key "QueuesResponseLegacyDto[sidecar]" is missing from JSON.');
+        assert(json[r'sidecar'] != null, 'Required key "QueuesResponseLegacyDto[sidecar]" has a null value in JSON.');
+        assert(json.containsKey(r'smartSearch'), 'Required key "QueuesResponseLegacyDto[smartSearch]" is missing from JSON.');
+        assert(json[r'smartSearch'] != null, 'Required key "QueuesResponseLegacyDto[smartSearch]" has a null value in JSON.');
+        assert(json.containsKey(r'storageTemplateMigration'), 'Required key "QueuesResponseLegacyDto[storageTemplateMigration]" is missing from JSON.');
+        assert(json[r'storageTemplateMigration'] != null, 'Required key "QueuesResponseLegacyDto[storageTemplateMigration]" has a null value in JSON.');
+        assert(json.containsKey(r'thumbnailGeneration'), 'Required key "QueuesResponseLegacyDto[thumbnailGeneration]" is missing from JSON.');
+        assert(json[r'thumbnailGeneration'] != null, 'Required key "QueuesResponseLegacyDto[thumbnailGeneration]" has a null value in JSON.');
+        assert(json.containsKey(r'videoConversion'), 'Required key "QueuesResponseLegacyDto[videoConversion]" is missing from JSON.');
+        assert(json[r'videoConversion'] != null, 'Required key "QueuesResponseLegacyDto[videoConversion]" has a null value in JSON.');
+        assert(json.containsKey(r'workflow'), 'Required key "QueuesResponseLegacyDto[workflow]" is missing from JSON.');
+        assert(json[r'workflow'] != null, 'Required key "QueuesResponseLegacyDto[workflow]" has a null value in JSON.');
+        return true;
+      }());
 
       return QueuesResponseLegacyDto(
         backgroundTask: QueueResponseLegacyDto.fromJson(json[r'backgroundTask'])!,

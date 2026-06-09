@@ -25,9 +25,9 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [DatabaseBackupDeleteDto] databaseBackupDeleteDto (required):
-  Future<Response> deleteDatabaseBackupWithHttpInfo(DatabaseBackupDeleteDto databaseBackupDeleteDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteDatabaseBackupWithHttpInfo(DatabaseBackupDeleteDto databaseBackupDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/database-backups';
+    final path = r'/admin/database-backups';
 
     // ignore: prefer_final_locals
     Object? postBody = databaseBackupDeleteDto;
@@ -40,14 +40,13 @@ class DatabaseBackupsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [DatabaseBackupDeleteDto] databaseBackupDeleteDto (required):
-  Future<void> deleteDatabaseBackup(DatabaseBackupDeleteDto databaseBackupDeleteDto, { Future<void>? abortTrigger, }) async {
-    final response = await deleteDatabaseBackupWithHttpInfo(databaseBackupDeleteDto, abortTrigger: abortTrigger,);
+  Future<void> deleteDatabaseBackup(DatabaseBackupDeleteDto databaseBackupDeleteDto,) async {
+    final response = await deleteDatabaseBackupWithHttpInfo(databaseBackupDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -74,9 +73,9 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [String] filename (required):
-  Future<Response> downloadDatabaseBackupWithHttpInfo(String filename, { Future<void>? abortTrigger, }) async {
+  Future<Response> downloadDatabaseBackupWithHttpInfo(String filename,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/database-backups/{filename}'
+    final path = r'/admin/database-backups/{filename}'
       .replaceAll('{filename}', filename);
 
     // ignore: prefer_final_locals
@@ -90,14 +89,13 @@ class DatabaseBackupsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -108,8 +106,8 @@ class DatabaseBackupsAdminApi {
   /// Parameters:
   ///
   /// * [String] filename (required):
-  Future<MultipartFile?> downloadDatabaseBackup(String filename, { Future<void>? abortTrigger, }) async {
-    final response = await downloadDatabaseBackupWithHttpInfo(filename, abortTrigger: abortTrigger,);
+  Future<MultipartFile?> downloadDatabaseBackup(String filename,) async {
+    final response = await downloadDatabaseBackupWithHttpInfo(filename,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -128,9 +126,9 @@ class DatabaseBackupsAdminApi {
   /// Get the list of the successful and failed backups
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> listDatabaseBackupsWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> listDatabaseBackupsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/database-backups';
+    final path = r'/admin/database-backups';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -143,22 +141,21 @@ class DatabaseBackupsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// List database backups
   ///
   /// Get the list of the successful and failed backups
-  Future<DatabaseBackupListResponseDto?> listDatabaseBackups({ Future<void>? abortTrigger, }) async {
-    final response = await listDatabaseBackupsWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<DatabaseBackupListResponseDto?> listDatabaseBackups() async {
+    final response = await listDatabaseBackupsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -177,9 +174,9 @@ class DatabaseBackupsAdminApi {
   /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> startDatabaseRestoreFlowWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> startDatabaseRestoreFlowWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/database-backups/start-restore';
+    final path = r'/admin/database-backups/start-restore';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -192,22 +189,21 @@ class DatabaseBackupsAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Start database backup restore flow
   ///
   /// Put Immich into maintenance mode to restore a backup (Immich must not be configured)
-  Future<void> startDatabaseRestoreFlow({ Future<void>? abortTrigger, }) async {
-    final response = await startDatabaseRestoreFlowWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<void> startDatabaseRestoreFlow() async {
+    final response = await startDatabaseRestoreFlowWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -223,9 +219,9 @@ class DatabaseBackupsAdminApi {
   ///
   /// * [MultipartFile] file:
   ///   Database backup file
-  Future<Response> uploadDatabaseBackupWithHttpInfo({ MultipartFile? file, Future<void>? abortTrigger, }) async {
+  Future<Response> uploadDatabaseBackupWithHttpInfo({ MultipartFile? file, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/database-backups/upload';
+    final path = r'/admin/database-backups/upload';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -237,7 +233,7 @@ class DatabaseBackupsAdminApi {
     const contentTypes = <String>['multipart/form-data'];
 
     bool hasFields = false;
-    final mp = MultipartRequest('POST', Uri.parse(apiPath));
+    final mp = MultipartRequest('POST', Uri.parse(path));
     if (file != null) {
       hasFields = true;
       mp.fields[r'file'] = file.field;
@@ -248,14 +244,13 @@ class DatabaseBackupsAdminApi {
     }
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -267,8 +262,8 @@ class DatabaseBackupsAdminApi {
   ///
   /// * [MultipartFile] file:
   ///   Database backup file
-  Future<void> uploadDatabaseBackup({ MultipartFile? file, Future<void>? abortTrigger, }) async {
-    final response = await uploadDatabaseBackupWithHttpInfo(file: file, abortTrigger: abortTrigger,);
+  Future<void> uploadDatabaseBackup({ MultipartFile? file, }) async {
+    final response = await uploadDatabaseBackupWithHttpInfo( file: file, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

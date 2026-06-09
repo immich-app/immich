@@ -79,9 +79,27 @@ class SystemConfigSmtpTransportDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigSmtpTransportDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigSmtpTransportDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'host'), 'Required key "SystemConfigSmtpTransportDto[host]" is missing from JSON.');
+        assert(json[r'host'] != null, 'Required key "SystemConfigSmtpTransportDto[host]" has a null value in JSON.');
+        assert(json.containsKey(r'ignoreCert'), 'Required key "SystemConfigSmtpTransportDto[ignoreCert]" is missing from JSON.');
+        assert(json[r'ignoreCert'] != null, 'Required key "SystemConfigSmtpTransportDto[ignoreCert]" has a null value in JSON.');
+        assert(json.containsKey(r'password'), 'Required key "SystemConfigSmtpTransportDto[password]" is missing from JSON.');
+        assert(json[r'password'] != null, 'Required key "SystemConfigSmtpTransportDto[password]" has a null value in JSON.');
+        assert(json.containsKey(r'port'), 'Required key "SystemConfigSmtpTransportDto[port]" is missing from JSON.');
+        assert(json[r'port'] != null, 'Required key "SystemConfigSmtpTransportDto[port]" has a null value in JSON.');
+        assert(json.containsKey(r'secure'), 'Required key "SystemConfigSmtpTransportDto[secure]" is missing from JSON.');
+        assert(json[r'secure'] != null, 'Required key "SystemConfigSmtpTransportDto[secure]" has a null value in JSON.');
+        assert(json.containsKey(r'username'), 'Required key "SystemConfigSmtpTransportDto[username]" is missing from JSON.');
+        assert(json[r'username'] != null, 'Required key "SystemConfigSmtpTransportDto[username]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigSmtpTransportDto(
         host: mapValueOfType<String>(json, r'host')!,

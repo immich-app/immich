@@ -14,8 +14,8 @@ class ActivityCreateDto {
   /// Returns a new [ActivityCreateDto] instance.
   ActivityCreateDto({
     required this.albumId,
-    this.assetId = const Optional.absent(),
-    this.comment = const Optional.absent(),
+    this.assetId,
+    this.comment,
     required this.type,
   });
 
@@ -29,7 +29,7 @@ class ActivityCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> assetId;
+  String? assetId;
 
   /// Comment text (required if type is comment)
   ///
@@ -38,7 +38,7 @@ class ActivityCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> comment;
+  String? comment;
 
   ReactionType type;
 
@@ -63,13 +63,15 @@ class ActivityCreateDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
-    if (this.assetId.isPresent) {
-      final value = this.assetId.value;
-      json[r'assetId'] = value;
+    if (this.assetId != null) {
+      json[r'assetId'] = this.assetId;
+    } else {
+      json[r'assetId'] = null;
     }
-    if (this.comment.isPresent) {
-      final value = this.comment.value;
-      json[r'comment'] = value;
+    if (this.comment != null) {
+      json[r'comment'] = this.comment;
+    } else {
+      json[r'comment'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -79,14 +81,24 @@ class ActivityCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ActivityCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "ActivityCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albumId'), 'Required key "ActivityCreateDto[albumId]" is missing from JSON.');
+        assert(json[r'albumId'] != null, 'Required key "ActivityCreateDto[albumId]" has a null value in JSON.');
+        assert(json.containsKey(r'type'), 'Required key "ActivityCreateDto[type]" is missing from JSON.');
+        assert(json[r'type'] != null, 'Required key "ActivityCreateDto[type]" has a null value in JSON.');
+        return true;
+      }());
+
       return ActivityCreateDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
-        assetId: json.containsKey(r'assetId') ? Optional.present(mapValueOfType<String>(json, r'assetId')) : const Optional.absent(),
-        comment: json.containsKey(r'comment') ? Optional.present(mapValueOfType<String>(json, r'comment')) : const Optional.absent(),
+        assetId: mapValueOfType<String>(json, r'assetId'),
+        comment: mapValueOfType<String>(json, r'comment'),
         type: ReactionType.fromJson(json[r'type'])!,
       );
     }

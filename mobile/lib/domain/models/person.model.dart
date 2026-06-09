@@ -6,16 +6,16 @@ class PersonDto {
     required this.id,
     this.birthDate,
     required this.isHidden,
-    required this.name,
-    required this.thumbnailPath,
+    this.name,
+    this.thumbnailPath,
     this.updatedAt,
   });
 
   final String id;
   final DateTime? birthDate;
   final bool isHidden;
-  final String name;
-  final String thumbnailPath;
+  final String? name;
+  final String? thumbnailPath;
   final DateTime? updatedAt;
 
   @override
@@ -57,8 +57,8 @@ class PersonDto {
       id: map['id'] as String,
       birthDate: map['birthDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['birthDate'] as int) : null,
       isHidden: map['isHidden'] as bool,
-      name: map['name'] as String,
-      thumbnailPath: map['thumbnailPath'] as String,
+      name: map['name'] as String?,
+      thumbnailPath: map['thumbnailPath'] as String?,
       updatedAt: map['updatedAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int) : null,
     );
   }
@@ -98,7 +98,7 @@ class DriftPerson {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String ownerId;
-  final String name;
+  final String? name;
   final String? faceAssetId;
   final bool isFavorite;
   final bool isHidden;
@@ -110,7 +110,7 @@ class DriftPerson {
     required this.createdAt,
     required this.updatedAt,
     required this.ownerId,
-    required this.name,
+    this.name,
     this.faceAssetId,
     required this.isFavorite,
     required this.isHidden,

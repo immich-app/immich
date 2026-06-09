@@ -97,9 +97,33 @@ class PluginResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PluginResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PluginResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'author'), 'Required key "PluginResponseDto[author]" is missing from JSON.');
+        assert(json[r'author'] != null, 'Required key "PluginResponseDto[author]" has a null value in JSON.');
+        assert(json.containsKey(r'createdAt'), 'Required key "PluginResponseDto[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "PluginResponseDto[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'description'), 'Required key "PluginResponseDto[description]" is missing from JSON.');
+        assert(json[r'description'] != null, 'Required key "PluginResponseDto[description]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "PluginResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "PluginResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'methods'), 'Required key "PluginResponseDto[methods]" is missing from JSON.');
+        assert(json[r'methods'] != null, 'Required key "PluginResponseDto[methods]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "PluginResponseDto[name]" is missing from JSON.');
+        assert(json[r'name'] != null, 'Required key "PluginResponseDto[name]" has a null value in JSON.');
+        assert(json.containsKey(r'title'), 'Required key "PluginResponseDto[title]" is missing from JSON.');
+        assert(json[r'title'] != null, 'Required key "PluginResponseDto[title]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "PluginResponseDto[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "PluginResponseDto[updatedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'version'), 'Required key "PluginResponseDto[version]" is missing from JSON.');
+        assert(json[r'version'] != null, 'Required key "PluginResponseDto[version]" has a null value in JSON.');
+        return true;
+      }());
 
       return PluginResponseDto(
         author: mapValueOfType<String>(json, r'author')!,

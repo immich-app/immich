@@ -90,9 +90,31 @@ class SystemConfigTemplateStorageOptionDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigTemplateStorageOptionDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigTemplateStorageOptionDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'dayOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[dayOptions]" is missing from JSON.');
+        assert(json[r'dayOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[dayOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'hourOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[hourOptions]" is missing from JSON.');
+        assert(json[r'hourOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[hourOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'minuteOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[minuteOptions]" is missing from JSON.');
+        assert(json[r'minuteOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[minuteOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'monthOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[monthOptions]" is missing from JSON.');
+        assert(json[r'monthOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[monthOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'presetOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[presetOptions]" is missing from JSON.');
+        assert(json[r'presetOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[presetOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'secondOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[secondOptions]" is missing from JSON.');
+        assert(json[r'secondOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[secondOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'weekOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[weekOptions]" is missing from JSON.');
+        assert(json[r'weekOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[weekOptions]" has a null value in JSON.');
+        assert(json.containsKey(r'yearOptions'), 'Required key "SystemConfigTemplateStorageOptionDto[yearOptions]" is missing from JSON.');
+        assert(json[r'yearOptions'] != null, 'Required key "SystemConfigTemplateStorageOptionDto[yearOptions]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigTemplateStorageOptionDto(
         dayOptions: json[r'dayOptions'] is Iterable

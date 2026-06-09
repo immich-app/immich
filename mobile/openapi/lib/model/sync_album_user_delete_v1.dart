@@ -48,9 +48,19 @@ class SyncAlbumUserDeleteV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAlbumUserDeleteV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAlbumUserDeleteV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albumId'), 'Required key "SyncAlbumUserDeleteV1[albumId]" is missing from JSON.');
+        assert(json[r'albumId'] != null, 'Required key "SyncAlbumUserDeleteV1[albumId]" has a null value in JSON.');
+        assert(json.containsKey(r'userId'), 'Required key "SyncAlbumUserDeleteV1[userId]" is missing from JSON.');
+        assert(json[r'userId'] != null, 'Required key "SyncAlbumUserDeleteV1[userId]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAlbumUserDeleteV1(
         albumId: mapValueOfType<String>(json, r'albumId')!,

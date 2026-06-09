@@ -48,9 +48,19 @@ class AlbumsAddAssetsDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumsAddAssetsDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumsAddAssetsDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albumIds'), 'Required key "AlbumsAddAssetsDto[albumIds]" is missing from JSON.');
+        assert(json[r'albumIds'] != null, 'Required key "AlbumsAddAssetsDto[albumIds]" has a null value in JSON.');
+        assert(json.containsKey(r'assetIds'), 'Required key "AlbumsAddAssetsDto[assetIds]" is missing from JSON.');
+        assert(json[r'assetIds'] != null, 'Required key "AlbumsAddAssetsDto[assetIds]" has a null value in JSON.');
+        return true;
+      }());
 
       return AlbumsAddAssetsDto(
         albumIds: json[r'albumIds'] is Iterable

@@ -117,7 +117,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
                     duration: const Duration(milliseconds: 200),
                     child: scrollProgress > 0.95
                         ? Text(
-                            widget.person.name,
+                            widget.person.name ?? '',
                             style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
                           )
                         : null,
@@ -246,9 +246,9 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                           width: double.infinity,
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            child: widget.person.name.isNotEmpty
+                            child: (widget.person.name?.isNotEmpty ?? false)
                                 ? Text(
-                                    widget.person.name,
+                                    widget.person.name!,
                                     maxLines: 1,
                                     style: const TextStyle(
                                       color: Colors.white,

@@ -14,10 +14,10 @@ class AssetBulkUploadCheckResult {
   /// Returns a new [AssetBulkUploadCheckResult] instance.
   AssetBulkUploadCheckResult({
     required this.action,
-    this.assetId = const Optional.absent(),
+    this.assetId,
     required this.id,
-    this.isTrashed = const Optional.absent(),
-    this.reason = const Optional.absent(),
+    this.isTrashed,
+    this.reason,
   });
 
   AssetUploadAction action;
@@ -29,7 +29,7 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> assetId;
+  String? assetId;
 
   /// Asset ID
   String id;
@@ -41,7 +41,7 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> isTrashed;
+  bool? isTrashed;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -49,7 +49,7 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<AssetRejectReason?> reason;
+  AssetRejectReason? reason;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
@@ -74,18 +74,21 @@ class AssetBulkUploadCheckResult {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
-    if (this.assetId.isPresent) {
-      final value = this.assetId.value;
-      json[r'assetId'] = value;
+    if (this.assetId != null) {
+      json[r'assetId'] = this.assetId;
+    } else {
+      json[r'assetId'] = null;
     }
       json[r'id'] = this.id;
-    if (this.isTrashed.isPresent) {
-      final value = this.isTrashed.value;
-      json[r'isTrashed'] = value;
+    if (this.isTrashed != null) {
+      json[r'isTrashed'] = this.isTrashed;
+    } else {
+      json[r'isTrashed'] = null;
     }
-    if (this.reason.isPresent) {
-      final value = this.reason.value;
-      json[r'reason'] = value;
+    if (this.reason != null) {
+      json[r'reason'] = this.reason;
+    } else {
+      json[r'reason'] = null;
     }
     return json;
   }
@@ -94,16 +97,26 @@ class AssetBulkUploadCheckResult {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetBulkUploadCheckResult? fromJson(dynamic value) {
-    upgradeDto(value, "AssetBulkUploadCheckResult");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'action'), 'Required key "AssetBulkUploadCheckResult[action]" is missing from JSON.');
+        assert(json[r'action'] != null, 'Required key "AssetBulkUploadCheckResult[action]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "AssetBulkUploadCheckResult[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "AssetBulkUploadCheckResult[id]" has a null value in JSON.');
+        return true;
+      }());
+
       return AssetBulkUploadCheckResult(
         action: AssetUploadAction.fromJson(json[r'action'])!,
-        assetId: json.containsKey(r'assetId') ? Optional.present(mapValueOfType<String>(json, r'assetId')) : const Optional.absent(),
+        assetId: mapValueOfType<String>(json, r'assetId'),
         id: mapValueOfType<String>(json, r'id')!,
-        isTrashed: json.containsKey(r'isTrashed') ? Optional.present(mapValueOfType<bool>(json, r'isTrashed')) : const Optional.absent(),
-        reason: json.containsKey(r'reason') ? Optional.present(AssetRejectReason.fromJson(json[r'reason'])) : const Optional.absent(),
+        isTrashed: mapValueOfType<bool>(json, r'isTrashed'),
+        reason: AssetRejectReason.fromJson(json[r'reason']),
       );
     }
     return null;

@@ -25,9 +25,9 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
-  Future<Response> createFaceWithHttpInfo(AssetFaceCreateDto assetFaceCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createFaceWithHttpInfo(AssetFaceCreateDto assetFaceCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/faces';
+    final path = r'/faces';
 
     // ignore: prefer_final_locals
     Object? postBody = assetFaceCreateDto;
@@ -40,14 +40,13 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
-  Future<void> createFace(AssetFaceCreateDto assetFaceCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createFaceWithHttpInfo(assetFaceCreateDto, abortTrigger: abortTrigger,);
+  Future<void> createFace(AssetFaceCreateDto assetFaceCreateDto,) async {
+    final response = await createFaceWithHttpInfo(assetFaceCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -76,9 +75,9 @@ class FacesApi {
   /// * [String] id (required):
   ///
   /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
-  Future<Response> deleteFaceWithHttpInfo(String id, AssetFaceDeleteDto assetFaceDeleteDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteFaceWithHttpInfo(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/faces/{id}'
+    final path = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -92,14 +91,13 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -112,8 +110,8 @@ class FacesApi {
   /// * [String] id (required):
   ///
   /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
-  Future<void> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto, { Future<void>? abortTrigger, }) async {
-    final response = await deleteFaceWithHttpInfo(id, assetFaceDeleteDto, abortTrigger: abortTrigger,);
+  Future<void> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
+    final response = await deleteFaceWithHttpInfo(id, assetFaceDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -129,9 +127,9 @@ class FacesApi {
   ///
   /// * [String] id (required):
   ///   Face ID
-  Future<Response> getFacesWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getFacesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/faces';
+    final path = r'/faces';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -146,14 +144,13 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -165,8 +162,8 @@ class FacesApi {
   ///
   /// * [String] id (required):
   ///   Face ID
-  Future<List<AssetFaceResponseDto>?> getFaces(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getFacesWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<List<AssetFaceResponseDto>?> getFaces(String id,) async {
+    final response = await getFacesWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -194,9 +191,9 @@ class FacesApi {
   /// * [String] id (required):
   ///
   /// * [FaceDto] faceDto (required):
-  Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/faces/{id}'
+    final path = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -210,14 +207,13 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -230,8 +226,8 @@ class FacesApi {
   /// * [String] id (required):
   ///
   /// * [FaceDto] faceDto (required):
-  Future<PersonResponseDto?> reassignFacesById(String id, FaceDto faceDto, { Future<void>? abortTrigger, }) async {
-    final response = await reassignFacesByIdWithHttpInfo(id, faceDto, abortTrigger: abortTrigger,);
+  Future<PersonResponseDto?> reassignFacesById(String id, FaceDto faceDto,) async {
+    final response = await reassignFacesByIdWithHttpInfo(id, faceDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

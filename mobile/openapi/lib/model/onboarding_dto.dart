@@ -41,9 +41,17 @@ class OnboardingDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static OnboardingDto? fromJson(dynamic value) {
-    upgradeDto(value, "OnboardingDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'isOnboarded'), 'Required key "OnboardingDto[isOnboarded]" is missing from JSON.');
+        assert(json[r'isOnboarded'] != null, 'Required key "OnboardingDto[isOnboarded]" has a null value in JSON.');
+        return true;
+      }());
 
       return OnboardingDto(
         isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,

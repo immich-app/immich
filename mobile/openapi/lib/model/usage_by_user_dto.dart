@@ -112,9 +112,30 @@ class UsageByUserDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UsageByUserDto? fromJson(dynamic value) {
-    upgradeDto(value, "UsageByUserDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'photos'), 'Required key "UsageByUserDto[photos]" is missing from JSON.');
+        assert(json[r'photos'] != null, 'Required key "UsageByUserDto[photos]" has a null value in JSON.');
+        assert(json.containsKey(r'quotaSizeInBytes'), 'Required key "UsageByUserDto[quotaSizeInBytes]" is missing from JSON.');
+        assert(json.containsKey(r'usage'), 'Required key "UsageByUserDto[usage]" is missing from JSON.');
+        assert(json[r'usage'] != null, 'Required key "UsageByUserDto[usage]" has a null value in JSON.');
+        assert(json.containsKey(r'usagePhotos'), 'Required key "UsageByUserDto[usagePhotos]" is missing from JSON.');
+        assert(json[r'usagePhotos'] != null, 'Required key "UsageByUserDto[usagePhotos]" has a null value in JSON.');
+        assert(json.containsKey(r'usageVideos'), 'Required key "UsageByUserDto[usageVideos]" is missing from JSON.');
+        assert(json[r'usageVideos'] != null, 'Required key "UsageByUserDto[usageVideos]" has a null value in JSON.');
+        assert(json.containsKey(r'userId'), 'Required key "UsageByUserDto[userId]" is missing from JSON.');
+        assert(json[r'userId'] != null, 'Required key "UsageByUserDto[userId]" has a null value in JSON.');
+        assert(json.containsKey(r'userName'), 'Required key "UsageByUserDto[userName]" is missing from JSON.');
+        assert(json[r'userName'] != null, 'Required key "UsageByUserDto[userName]" has a null value in JSON.');
+        assert(json.containsKey(r'videos'), 'Required key "UsageByUserDto[videos]" is missing from JSON.');
+        assert(json[r'videos'] != null, 'Required key "UsageByUserDto[videos]" has a null value in JSON.');
+        return true;
+      }());
 
       return UsageByUserDto(
         photos: mapValueOfType<int>(json, r'photos')!,

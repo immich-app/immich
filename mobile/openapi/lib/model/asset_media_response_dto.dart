@@ -47,9 +47,19 @@ class AssetMediaResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetMediaResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetMediaResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'id'), 'Required key "AssetMediaResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "AssetMediaResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'status'), 'Required key "AssetMediaResponseDto[status]" is missing from JSON.');
+        assert(json[r'status'] != null, 'Required key "AssetMediaResponseDto[status]" has a null value in JSON.');
+        return true;
+      }());
 
       return AssetMediaResponseDto(
         id: mapValueOfType<String>(json, r'id')!,

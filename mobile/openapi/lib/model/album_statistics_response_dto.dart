@@ -64,9 +64,21 @@ class AlbumStatisticsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumStatisticsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumStatisticsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'notShared'), 'Required key "AlbumStatisticsResponseDto[notShared]" is missing from JSON.');
+        assert(json[r'notShared'] != null, 'Required key "AlbumStatisticsResponseDto[notShared]" has a null value in JSON.');
+        assert(json.containsKey(r'owned'), 'Required key "AlbumStatisticsResponseDto[owned]" is missing from JSON.');
+        assert(json[r'owned'] != null, 'Required key "AlbumStatisticsResponseDto[owned]" has a null value in JSON.');
+        assert(json.containsKey(r'shared'), 'Required key "AlbumStatisticsResponseDto[shared]" is missing from JSON.');
+        assert(json[r'shared'] != null, 'Required key "AlbumStatisticsResponseDto[shared]" has a null value in JSON.');
+        return true;
+      }());
 
       return AlbumStatisticsResponseDto(
         notShared: mapValueOfType<int>(json, r'notShared')!,

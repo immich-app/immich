@@ -41,9 +41,17 @@ class DatabaseBackupDeleteDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DatabaseBackupDeleteDto? fromJson(dynamic value) {
-    upgradeDto(value, "DatabaseBackupDeleteDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'backups'), 'Required key "DatabaseBackupDeleteDto[backups]" is missing from JSON.');
+        assert(json[r'backups'] != null, 'Required key "DatabaseBackupDeleteDto[backups]" has a null value in JSON.');
+        return true;
+      }());
 
       return DatabaseBackupDeleteDto(
         backups: json[r'backups'] is Iterable

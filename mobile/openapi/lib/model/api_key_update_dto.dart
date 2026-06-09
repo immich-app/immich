@@ -13,8 +13,8 @@ part of openapi.api;
 class ApiKeyUpdateDto {
   /// Returns a new [ApiKeyUpdateDto] instance.
   ApiKeyUpdateDto({
-    this.name = const Optional.absent(),
-    this.permissions = const Optional.present(const []),
+    this.name,
+    this.permissions = const [],
   });
 
   /// API key name
@@ -24,10 +24,10 @@ class ApiKeyUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> name;
+  String? name;
 
   /// List of permissions
-  Optional<List<Permission>?> permissions;
+  List<Permission> permissions;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ApiKeyUpdateDto &&
@@ -45,14 +45,12 @@ class ApiKeyUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.name.isPresent) {
-      final value = this.name.value;
-      json[r'name'] = value;
+    if (this.name != null) {
+      json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
     }
-    if (this.permissions.isPresent) {
-      final value = this.permissions.value;
-      json[r'permissions'] = value;
-    }
+      json[r'permissions'] = this.permissions;
     return json;
   }
 
@@ -60,13 +58,19 @@ class ApiKeyUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ApiKeyUpdateDto? fromJson(dynamic value) {
-    upgradeDto(value, "ApiKeyUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return ApiKeyUpdateDto(
-        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
-        permissions: json.containsKey(r'permissions') ? Optional.present(Permission.listFromJson(json[r'permissions'])) : const Optional.absent(),
+        name: mapValueOfType<String>(json, r'name'),
+        permissions: Permission.listFromJson(json[r'permissions']),
       );
     }
     return null;

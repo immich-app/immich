@@ -16,7 +16,7 @@ class RemoteAlbum {
   final String id;
   final String name;
   final String ownerId;
-  final String description;
+  final String? description;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? thumbnailAssetId;
@@ -30,7 +30,7 @@ class RemoteAlbum {
     required this.id,
     required this.name,
     required this.ownerId,
-    required this.description,
+    this.description,
     required this.createdAt,
     required this.updatedAt,
     this.thumbnailAssetId,

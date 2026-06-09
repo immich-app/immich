@@ -44,10 +44,10 @@
     isCreatingUser = true;
 
     const user = await handleCreateUserAdmin({
-      email,
-      password,
+      email: email || null,
+      password: password || null,
       shouldChangePassword,
-      name,
+      name: name || null,
       quotaSizeInBytes,
       notify,
       isAdmin,

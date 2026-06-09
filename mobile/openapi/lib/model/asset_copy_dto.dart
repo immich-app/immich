@@ -13,32 +13,32 @@ part of openapi.api;
 class AssetCopyDto {
   /// Returns a new [AssetCopyDto] instance.
   AssetCopyDto({
-    this.albums = const Optional.present(true),
-    this.favorite = const Optional.present(true),
-    this.sharedLinks = const Optional.present(true),
-    this.sidecar = const Optional.present(true),
+    this.albums = true,
+    this.favorite = true,
+    this.sharedLinks = true,
+    this.sidecar = true,
     required this.sourceId,
-    this.stack = const Optional.present(true),
+    this.stack = true,
     required this.targetId,
   });
 
   /// Copy album associations
-  Optional<bool?> albums;
+  bool albums;
 
   /// Copy favorite status
-  Optional<bool?> favorite;
+  bool favorite;
 
   /// Copy shared links
-  Optional<bool?> sharedLinks;
+  bool sharedLinks;
 
   /// Copy sidecar file
-  Optional<bool?> sidecar;
+  bool sidecar;
 
   /// Source asset ID
   String sourceId;
 
   /// Copy stack association
-  Optional<bool?> stack;
+  bool stack;
 
   /// Target asset ID
   String targetId;
@@ -69,27 +69,12 @@ class AssetCopyDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albums.isPresent) {
-      final value = this.albums.value;
-      json[r'albums'] = value;
-    }
-    if (this.favorite.isPresent) {
-      final value = this.favorite.value;
-      json[r'favorite'] = value;
-    }
-    if (this.sharedLinks.isPresent) {
-      final value = this.sharedLinks.value;
-      json[r'sharedLinks'] = value;
-    }
-    if (this.sidecar.isPresent) {
-      final value = this.sidecar.value;
-      json[r'sidecar'] = value;
-    }
+      json[r'albums'] = this.albums;
+      json[r'favorite'] = this.favorite;
+      json[r'sharedLinks'] = this.sharedLinks;
+      json[r'sidecar'] = this.sidecar;
       json[r'sourceId'] = this.sourceId;
-    if (this.stack.isPresent) {
-      final value = this.stack.value;
-      json[r'stack'] = value;
-    }
+      json[r'stack'] = this.stack;
       json[r'targetId'] = this.targetId;
     return json;
   }
@@ -98,17 +83,27 @@ class AssetCopyDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetCopyDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetCopyDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'sourceId'), 'Required key "AssetCopyDto[sourceId]" is missing from JSON.');
+        assert(json[r'sourceId'] != null, 'Required key "AssetCopyDto[sourceId]" has a null value in JSON.');
+        assert(json.containsKey(r'targetId'), 'Required key "AssetCopyDto[targetId]" is missing from JSON.');
+        assert(json[r'targetId'] != null, 'Required key "AssetCopyDto[targetId]" has a null value in JSON.');
+        return true;
+      }());
+
       return AssetCopyDto(
-        albums: json.containsKey(r'albums') ? Optional.present(mapValueOfType<bool>(json, r'albums')) : const Optional.absent(),
-        favorite: json.containsKey(r'favorite') ? Optional.present(mapValueOfType<bool>(json, r'favorite')) : const Optional.absent(),
-        sharedLinks: json.containsKey(r'sharedLinks') ? Optional.present(mapValueOfType<bool>(json, r'sharedLinks')) : const Optional.absent(),
-        sidecar: json.containsKey(r'sidecar') ? Optional.present(mapValueOfType<bool>(json, r'sidecar')) : const Optional.absent(),
+        albums: mapValueOfType<bool>(json, r'albums') ?? true,
+        favorite: mapValueOfType<bool>(json, r'favorite') ?? true,
+        sharedLinks: mapValueOfType<bool>(json, r'sharedLinks') ?? true,
+        sidecar: mapValueOfType<bool>(json, r'sidecar') ?? true,
         sourceId: mapValueOfType<String>(json, r'sourceId')!,
-        stack: json.containsKey(r'stack') ? Optional.present(mapValueOfType<bool>(json, r'stack')) : const Optional.absent(),
+        stack: mapValueOfType<bool>(json, r'stack') ?? true,
         targetId: mapValueOfType<String>(json, r'targetId')!,
       );
     }

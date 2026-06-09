@@ -41,9 +41,17 @@ class PartnerCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PartnerCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "PartnerCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'sharedWithId'), 'Required key "PartnerCreateDto[sharedWithId]" is missing from JSON.');
+        assert(json[r'sharedWithId'] != null, 'Required key "PartnerCreateDto[sharedWithId]" has a null value in JSON.');
+        return true;
+      }());
 
       return PartnerCreateDto(
         sharedWithId: mapValueOfType<String>(json, r'sharedWithId')!,

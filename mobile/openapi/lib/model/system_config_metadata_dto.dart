@@ -40,9 +40,17 @@ class SystemConfigMetadataDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigMetadataDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigMetadataDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'faces'), 'Required key "SystemConfigMetadataDto[faces]" is missing from JSON.');
+        assert(json[r'faces'] != null, 'Required key "SystemConfigMetadataDto[faces]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigMetadataDto(
         faces: SystemConfigFacesDto.fromJson(json[r'faces'])!,

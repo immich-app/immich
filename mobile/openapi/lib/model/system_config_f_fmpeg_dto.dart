@@ -196,9 +196,59 @@ class SystemConfigFFmpegDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigFFmpegDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigFFmpegDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'accel'), 'Required key "SystemConfigFFmpegDto[accel]" is missing from JSON.');
+        assert(json[r'accel'] != null, 'Required key "SystemConfigFFmpegDto[accel]" has a null value in JSON.');
+        assert(json.containsKey(r'accelDecode'), 'Required key "SystemConfigFFmpegDto[accelDecode]" is missing from JSON.');
+        assert(json[r'accelDecode'] != null, 'Required key "SystemConfigFFmpegDto[accelDecode]" has a null value in JSON.');
+        assert(json.containsKey(r'acceptedAudioCodecs'), 'Required key "SystemConfigFFmpegDto[acceptedAudioCodecs]" is missing from JSON.');
+        assert(json[r'acceptedAudioCodecs'] != null, 'Required key "SystemConfigFFmpegDto[acceptedAudioCodecs]" has a null value in JSON.');
+        assert(json.containsKey(r'acceptedContainers'), 'Required key "SystemConfigFFmpegDto[acceptedContainers]" is missing from JSON.');
+        assert(json[r'acceptedContainers'] != null, 'Required key "SystemConfigFFmpegDto[acceptedContainers]" has a null value in JSON.');
+        assert(json.containsKey(r'acceptedVideoCodecs'), 'Required key "SystemConfigFFmpegDto[acceptedVideoCodecs]" is missing from JSON.');
+        assert(json[r'acceptedVideoCodecs'] != null, 'Required key "SystemConfigFFmpegDto[acceptedVideoCodecs]" has a null value in JSON.');
+        assert(json.containsKey(r'bframes'), 'Required key "SystemConfigFFmpegDto[bframes]" is missing from JSON.');
+        assert(json[r'bframes'] != null, 'Required key "SystemConfigFFmpegDto[bframes]" has a null value in JSON.');
+        assert(json.containsKey(r'cqMode'), 'Required key "SystemConfigFFmpegDto[cqMode]" is missing from JSON.');
+        assert(json[r'cqMode'] != null, 'Required key "SystemConfigFFmpegDto[cqMode]" has a null value in JSON.');
+        assert(json.containsKey(r'crf'), 'Required key "SystemConfigFFmpegDto[crf]" is missing from JSON.');
+        assert(json[r'crf'] != null, 'Required key "SystemConfigFFmpegDto[crf]" has a null value in JSON.');
+        assert(json.containsKey(r'gopSize'), 'Required key "SystemConfigFFmpegDto[gopSize]" is missing from JSON.');
+        assert(json[r'gopSize'] != null, 'Required key "SystemConfigFFmpegDto[gopSize]" has a null value in JSON.');
+        assert(json.containsKey(r'maxBitrate'), 'Required key "SystemConfigFFmpegDto[maxBitrate]" is missing from JSON.');
+        assert(json[r'maxBitrate'] != null, 'Required key "SystemConfigFFmpegDto[maxBitrate]" has a null value in JSON.');
+        assert(json.containsKey(r'preferredHwDevice'), 'Required key "SystemConfigFFmpegDto[preferredHwDevice]" is missing from JSON.');
+        assert(json[r'preferredHwDevice'] != null, 'Required key "SystemConfigFFmpegDto[preferredHwDevice]" has a null value in JSON.');
+        assert(json.containsKey(r'preset'), 'Required key "SystemConfigFFmpegDto[preset]" is missing from JSON.');
+        assert(json[r'preset'] != null, 'Required key "SystemConfigFFmpegDto[preset]" has a null value in JSON.');
+        assert(json.containsKey(r'realtime'), 'Required key "SystemConfigFFmpegDto[realtime]" is missing from JSON.');
+        assert(json[r'realtime'] != null, 'Required key "SystemConfigFFmpegDto[realtime]" has a null value in JSON.');
+        assert(json.containsKey(r'refs'), 'Required key "SystemConfigFFmpegDto[refs]" is missing from JSON.');
+        assert(json[r'refs'] != null, 'Required key "SystemConfigFFmpegDto[refs]" has a null value in JSON.');
+        assert(json.containsKey(r'targetAudioCodec'), 'Required key "SystemConfigFFmpegDto[targetAudioCodec]" is missing from JSON.');
+        assert(json[r'targetAudioCodec'] != null, 'Required key "SystemConfigFFmpegDto[targetAudioCodec]" has a null value in JSON.');
+        assert(json.containsKey(r'targetResolution'), 'Required key "SystemConfigFFmpegDto[targetResolution]" is missing from JSON.');
+        assert(json[r'targetResolution'] != null, 'Required key "SystemConfigFFmpegDto[targetResolution]" has a null value in JSON.');
+        assert(json.containsKey(r'targetVideoCodec'), 'Required key "SystemConfigFFmpegDto[targetVideoCodec]" is missing from JSON.');
+        assert(json[r'targetVideoCodec'] != null, 'Required key "SystemConfigFFmpegDto[targetVideoCodec]" has a null value in JSON.');
+        assert(json.containsKey(r'temporalAQ'), 'Required key "SystemConfigFFmpegDto[temporalAQ]" is missing from JSON.');
+        assert(json[r'temporalAQ'] != null, 'Required key "SystemConfigFFmpegDto[temporalAQ]" has a null value in JSON.');
+        assert(json.containsKey(r'threads'), 'Required key "SystemConfigFFmpegDto[threads]" is missing from JSON.');
+        assert(json[r'threads'] != null, 'Required key "SystemConfigFFmpegDto[threads]" has a null value in JSON.');
+        assert(json.containsKey(r'tonemap'), 'Required key "SystemConfigFFmpegDto[tonemap]" is missing from JSON.');
+        assert(json[r'tonemap'] != null, 'Required key "SystemConfigFFmpegDto[tonemap]" has a null value in JSON.');
+        assert(json.containsKey(r'transcode'), 'Required key "SystemConfigFFmpegDto[transcode]" is missing from JSON.');
+        assert(json[r'transcode'] != null, 'Required key "SystemConfigFFmpegDto[transcode]" has a null value in JSON.');
+        assert(json.containsKey(r'twoPass'), 'Required key "SystemConfigFFmpegDto[twoPass]" is missing from JSON.');
+        assert(json[r'twoPass'] != null, 'Required key "SystemConfigFFmpegDto[twoPass]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigFFmpegDto(
         accel: TranscodeHWAccel.fromJson(json[r'accel'])!,

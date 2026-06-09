@@ -41,9 +41,17 @@ class FaceDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static FaceDto? fromJson(dynamic value) {
-    upgradeDto(value, "FaceDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'id'), 'Required key "FaceDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "FaceDto[id]" has a null value in JSON.');
+        return true;
+      }());
 
       return FaceDto(
         id: mapValueOfType<String>(json, r'id')!,

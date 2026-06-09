@@ -209,7 +209,7 @@
     }
 
     try {
-      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
+      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName || null } });
       toastManager.primary($t('change_name_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));

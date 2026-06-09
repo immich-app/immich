@@ -87,9 +87,27 @@ class AssetEditActionItemDtoParameters {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetEditActionItemDtoParameters? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionItemDtoParameters");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'height'), 'Required key "AssetEditActionItemDtoParameters[height]" is missing from JSON.');
+        assert(json[r'height'] != null, 'Required key "AssetEditActionItemDtoParameters[height]" has a null value in JSON.');
+        assert(json.containsKey(r'width'), 'Required key "AssetEditActionItemDtoParameters[width]" is missing from JSON.');
+        assert(json[r'width'] != null, 'Required key "AssetEditActionItemDtoParameters[width]" has a null value in JSON.');
+        assert(json.containsKey(r'x'), 'Required key "AssetEditActionItemDtoParameters[x]" is missing from JSON.');
+        assert(json[r'x'] != null, 'Required key "AssetEditActionItemDtoParameters[x]" has a null value in JSON.');
+        assert(json.containsKey(r'y'), 'Required key "AssetEditActionItemDtoParameters[y]" is missing from JSON.');
+        assert(json[r'y'] != null, 'Required key "AssetEditActionItemDtoParameters[y]" has a null value in JSON.');
+        assert(json.containsKey(r'angle'), 'Required key "AssetEditActionItemDtoParameters[angle]" is missing from JSON.');
+        assert(json[r'angle'] != null, 'Required key "AssetEditActionItemDtoParameters[angle]" has a null value in JSON.');
+        assert(json.containsKey(r'axis'), 'Required key "AssetEditActionItemDtoParameters[axis]" is missing from JSON.');
+        assert(json[r'axis'] != null, 'Required key "AssetEditActionItemDtoParameters[axis]" has a null value in JSON.');
+        return true;
+      }());
 
       return AssetEditActionItemDtoParameters(
         height: mapValueOfType<int>(json, r'height')!,

@@ -145,7 +145,7 @@
        *
        */
       try {
-        await updatePerson({ id: personToBeMergedInto.id, personUpdateDto: { name: newName } });
+        await updatePerson({ id: personToBeMergedInto.id, personUpdateDto: { name: newName || null } });
 
         for (const person of people) {
           if (person.id === personToBeMergedInto.id) {
@@ -261,7 +261,7 @@
   const updateName = async (id: string, name: string) => {
     await updatePerson({
       id,
-      personUpdateDto: { name },
+      personUpdateDto: { name: name || null },
     });
 
     newName = '';

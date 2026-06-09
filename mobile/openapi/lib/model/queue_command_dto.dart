@@ -14,7 +14,7 @@ class QueueCommandDto {
   /// Returns a new [QueueCommandDto] instance.
   QueueCommandDto({
     required this.command,
-    this.force = const Optional.absent(),
+    this.force,
   });
 
   QueueCommand command;
@@ -26,7 +26,7 @@ class QueueCommandDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> force;
+  bool? force;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueCommandDto &&
@@ -45,9 +45,10 @@ class QueueCommandDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'command'] = this.command;
-    if (this.force.isPresent) {
-      final value = this.force.value;
-      json[r'force'] = value;
+    if (this.force != null) {
+      json[r'force'] = this.force;
+    } else {
+      json[r'force'] = null;
     }
     return json;
   }
@@ -56,13 +57,21 @@ class QueueCommandDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static QueueCommandDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueueCommandDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'command'), 'Required key "QueueCommandDto[command]" is missing from JSON.');
+        assert(json[r'command'] != null, 'Required key "QueueCommandDto[command]" has a null value in JSON.');
+        return true;
+      }());
+
       return QueueCommandDto(
         command: QueueCommand.fromJson(json[r'command'])!,
-        force: json.containsKey(r'force') ? Optional.present(mapValueOfType<bool>(json, r'force')) : const Optional.absent(),
+        force: mapValueOfType<bool>(json, r'force'),
       );
     }
     return null;

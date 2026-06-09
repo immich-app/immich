@@ -15,7 +15,7 @@ class ValidateLibraryImportPathResponseDto {
   ValidateLibraryImportPathResponseDto({
     required this.importPath,
     required this.isValid,
-    this.message = const Optional.absent(),
+    this.message,
   });
 
   /// Import path
@@ -31,7 +31,7 @@ class ValidateLibraryImportPathResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> message;
+  String? message;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryImportPathResponseDto &&
@@ -53,9 +53,10 @@ class ValidateLibraryImportPathResponseDto {
     final json = <String, dynamic>{};
       json[r'importPath'] = this.importPath;
       json[r'isValid'] = this.isValid;
-    if (this.message.isPresent) {
-      final value = this.message.value;
-      json[r'message'] = value;
+    if (this.message != null) {
+      json[r'message'] = this.message;
+    } else {
+      json[r'message'] = null;
     }
     return json;
   }
@@ -64,14 +65,24 @@ class ValidateLibraryImportPathResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ValidateLibraryImportPathResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ValidateLibraryImportPathResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'importPath'), 'Required key "ValidateLibraryImportPathResponseDto[importPath]" is missing from JSON.');
+        assert(json[r'importPath'] != null, 'Required key "ValidateLibraryImportPathResponseDto[importPath]" has a null value in JSON.');
+        assert(json.containsKey(r'isValid'), 'Required key "ValidateLibraryImportPathResponseDto[isValid]" is missing from JSON.');
+        assert(json[r'isValid'] != null, 'Required key "ValidateLibraryImportPathResponseDto[isValid]" has a null value in JSON.');
+        return true;
+      }());
 
       return ValidateLibraryImportPathResponseDto(
         importPath: mapValueOfType<String>(json, r'importPath')!,
         isValid: mapValueOfType<bool>(json, r'isValid')!,
-        message: json.containsKey(r'message') ? Optional.present(mapValueOfType<String>(json, r'message')) : const Optional.absent(),
+        message: mapValueOfType<String>(json, r'message'),
       );
     }
     return null;

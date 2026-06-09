@@ -66,9 +66,25 @@ class ReleaseEventV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ReleaseEventV1? fromJson(dynamic value) {
-    upgradeDto(value, "ReleaseEventV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'checkedAt'), 'Required key "ReleaseEventV1[checkedAt]" is missing from JSON.');
+        assert(json[r'checkedAt'] != null, 'Required key "ReleaseEventV1[checkedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'isAvailable'), 'Required key "ReleaseEventV1[isAvailable]" is missing from JSON.');
+        assert(json[r'isAvailable'] != null, 'Required key "ReleaseEventV1[isAvailable]" has a null value in JSON.');
+        assert(json.containsKey(r'releaseVersion'), 'Required key "ReleaseEventV1[releaseVersion]" is missing from JSON.');
+        assert(json[r'releaseVersion'] != null, 'Required key "ReleaseEventV1[releaseVersion]" has a null value in JSON.');
+        assert(json.containsKey(r'serverVersion'), 'Required key "ReleaseEventV1[serverVersion]" is missing from JSON.');
+        assert(json[r'serverVersion'] != null, 'Required key "ReleaseEventV1[serverVersion]" has a null value in JSON.');
+        assert(json.containsKey(r'type'), 'Required key "ReleaseEventV1[type]" is missing from JSON.');
+        assert(json[r'type'] != null, 'Required key "ReleaseEventV1[type]" has a null value in JSON.');
+        return true;
+      }());
 
       return ReleaseEventV1(
         checkedAt: mapValueOfType<String>(json, r'checkedAt')!,

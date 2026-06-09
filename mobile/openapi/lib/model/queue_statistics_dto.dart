@@ -94,9 +94,27 @@ class QueueStatisticsDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static QueueStatisticsDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueueStatisticsDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'active'), 'Required key "QueueStatisticsDto[active]" is missing from JSON.');
+        assert(json[r'active'] != null, 'Required key "QueueStatisticsDto[active]" has a null value in JSON.');
+        assert(json.containsKey(r'completed'), 'Required key "QueueStatisticsDto[completed]" is missing from JSON.');
+        assert(json[r'completed'] != null, 'Required key "QueueStatisticsDto[completed]" has a null value in JSON.');
+        assert(json.containsKey(r'delayed'), 'Required key "QueueStatisticsDto[delayed]" is missing from JSON.');
+        assert(json[r'delayed'] != null, 'Required key "QueueStatisticsDto[delayed]" has a null value in JSON.');
+        assert(json.containsKey(r'failed'), 'Required key "QueueStatisticsDto[failed]" is missing from JSON.');
+        assert(json[r'failed'] != null, 'Required key "QueueStatisticsDto[failed]" has a null value in JSON.');
+        assert(json.containsKey(r'paused'), 'Required key "QueueStatisticsDto[paused]" is missing from JSON.');
+        assert(json[r'paused'] != null, 'Required key "QueueStatisticsDto[paused]" has a null value in JSON.');
+        assert(json.containsKey(r'waiting'), 'Required key "QueueStatisticsDto[waiting]" is missing from JSON.');
+        assert(json[r'waiting'] != null, 'Required key "QueueStatisticsDto[waiting]" has a null value in JSON.');
+        return true;
+      }());
 
       return QueueStatisticsDto(
         active: mapValueOfType<int>(json, r'active')!,

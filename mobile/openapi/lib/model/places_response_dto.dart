@@ -13,8 +13,8 @@ part of openapi.api;
 class PlacesResponseDto {
   /// Returns a new [PlacesResponseDto] instance.
   PlacesResponseDto({
-    this.admin1name = const Optional.absent(),
-    this.admin2name = const Optional.absent(),
+    this.admin1name,
+    this.admin2name,
     required this.latitude,
     required this.longitude,
     required this.name,
@@ -27,7 +27,7 @@ class PlacesResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> admin1name;
+  String? admin1name;
 
   /// Administrative level 2 name (county/district)
   ///
@@ -36,7 +36,7 @@ class PlacesResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> admin2name;
+  String? admin2name;
 
   /// Latitude coordinate
   num latitude;
@@ -69,13 +69,15 @@ class PlacesResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.admin1name.isPresent) {
-      final value = this.admin1name.value;
-      json[r'admin1name'] = value;
+    if (this.admin1name != null) {
+      json[r'admin1name'] = this.admin1name;
+    } else {
+      json[r'admin1name'] = null;
     }
-    if (this.admin2name.isPresent) {
-      final value = this.admin2name.value;
-      json[r'admin2name'] = value;
+    if (this.admin2name != null) {
+      json[r'admin2name'] = this.admin2name;
+    } else {
+      json[r'admin2name'] = null;
     }
       json[r'latitude'] = this.latitude;
       json[r'longitude'] = this.longitude;
@@ -87,13 +89,25 @@ class PlacesResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PlacesResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PlacesResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'latitude'), 'Required key "PlacesResponseDto[latitude]" is missing from JSON.');
+        assert(json[r'latitude'] != null, 'Required key "PlacesResponseDto[latitude]" has a null value in JSON.');
+        assert(json.containsKey(r'longitude'), 'Required key "PlacesResponseDto[longitude]" is missing from JSON.');
+        assert(json[r'longitude'] != null, 'Required key "PlacesResponseDto[longitude]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "PlacesResponseDto[name]" is missing from JSON.');
+        assert(json[r'name'] != null, 'Required key "PlacesResponseDto[name]" has a null value in JSON.');
+        return true;
+      }());
+
       return PlacesResponseDto(
-        admin1name: json.containsKey(r'admin1name') ? Optional.present(mapValueOfType<String>(json, r'admin1name')) : const Optional.absent(),
-        admin2name: json.containsKey(r'admin2name') ? Optional.present(mapValueOfType<String>(json, r'admin2name')) : const Optional.absent(),
+        admin1name: mapValueOfType<String>(json, r'admin1name'),
+        admin2name: mapValueOfType<String>(json, r'admin2name'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
         name: mapValueOfType<String>(json, r'name')!,

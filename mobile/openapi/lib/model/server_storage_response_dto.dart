@@ -92,9 +92,29 @@ class ServerStorageResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerStorageResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerStorageResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'diskAvailable'), 'Required key "ServerStorageResponseDto[diskAvailable]" is missing from JSON.');
+        assert(json[r'diskAvailable'] != null, 'Required key "ServerStorageResponseDto[diskAvailable]" has a null value in JSON.');
+        assert(json.containsKey(r'diskAvailableRaw'), 'Required key "ServerStorageResponseDto[diskAvailableRaw]" is missing from JSON.');
+        assert(json[r'diskAvailableRaw'] != null, 'Required key "ServerStorageResponseDto[diskAvailableRaw]" has a null value in JSON.');
+        assert(json.containsKey(r'diskSize'), 'Required key "ServerStorageResponseDto[diskSize]" is missing from JSON.');
+        assert(json[r'diskSize'] != null, 'Required key "ServerStorageResponseDto[diskSize]" has a null value in JSON.');
+        assert(json.containsKey(r'diskSizeRaw'), 'Required key "ServerStorageResponseDto[diskSizeRaw]" is missing from JSON.');
+        assert(json[r'diskSizeRaw'] != null, 'Required key "ServerStorageResponseDto[diskSizeRaw]" has a null value in JSON.');
+        assert(json.containsKey(r'diskUsagePercentage'), 'Required key "ServerStorageResponseDto[diskUsagePercentage]" is missing from JSON.');
+        assert(json[r'diskUsagePercentage'] != null, 'Required key "ServerStorageResponseDto[diskUsagePercentage]" has a null value in JSON.');
+        assert(json.containsKey(r'diskUse'), 'Required key "ServerStorageResponseDto[diskUse]" is missing from JSON.');
+        assert(json[r'diskUse'] != null, 'Required key "ServerStorageResponseDto[diskUse]" has a null value in JSON.');
+        assert(json.containsKey(r'diskUseRaw'), 'Required key "ServerStorageResponseDto[diskUseRaw]" is missing from JSON.');
+        assert(json[r'diskUseRaw'] != null, 'Required key "ServerStorageResponseDto[diskUseRaw]" has a null value in JSON.');
+        return true;
+      }());
 
       return ServerStorageResponseDto(
         diskAvailable: mapValueOfType<String>(json, r'diskAvailable')!,

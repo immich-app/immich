@@ -57,9 +57,21 @@ class MachineLearningAvailabilityChecksDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MachineLearningAvailabilityChecksDto? fromJson(dynamic value) {
-    upgradeDto(value, "MachineLearningAvailabilityChecksDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "MachineLearningAvailabilityChecksDto[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "MachineLearningAvailabilityChecksDto[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'interval'), 'Required key "MachineLearningAvailabilityChecksDto[interval]" is missing from JSON.');
+        assert(json[r'interval'] != null, 'Required key "MachineLearningAvailabilityChecksDto[interval]" has a null value in JSON.');
+        assert(json.containsKey(r'timeout'), 'Required key "MachineLearningAvailabilityChecksDto[timeout]" is missing from JSON.');
+        assert(json[r'timeout'] != null, 'Required key "MachineLearningAvailabilityChecksDto[timeout]" has a null value in JSON.');
+        return true;
+      }());
 
       return MachineLearningAvailabilityChecksDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

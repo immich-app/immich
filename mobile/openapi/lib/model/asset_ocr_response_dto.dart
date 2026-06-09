@@ -123,9 +123,41 @@ class AssetOcrResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetOcrResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetOcrResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetId'), 'Required key "AssetOcrResponseDto[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "AssetOcrResponseDto[assetId]" has a null value in JSON.');
+        assert(json.containsKey(r'boxScore'), 'Required key "AssetOcrResponseDto[boxScore]" is missing from JSON.');
+        assert(json[r'boxScore'] != null, 'Required key "AssetOcrResponseDto[boxScore]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "AssetOcrResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "AssetOcrResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'text'), 'Required key "AssetOcrResponseDto[text]" is missing from JSON.');
+        assert(json[r'text'] != null, 'Required key "AssetOcrResponseDto[text]" has a null value in JSON.');
+        assert(json.containsKey(r'textScore'), 'Required key "AssetOcrResponseDto[textScore]" is missing from JSON.');
+        assert(json[r'textScore'] != null, 'Required key "AssetOcrResponseDto[textScore]" has a null value in JSON.');
+        assert(json.containsKey(r'x1'), 'Required key "AssetOcrResponseDto[x1]" is missing from JSON.');
+        assert(json[r'x1'] != null, 'Required key "AssetOcrResponseDto[x1]" has a null value in JSON.');
+        assert(json.containsKey(r'x2'), 'Required key "AssetOcrResponseDto[x2]" is missing from JSON.');
+        assert(json[r'x2'] != null, 'Required key "AssetOcrResponseDto[x2]" has a null value in JSON.');
+        assert(json.containsKey(r'x3'), 'Required key "AssetOcrResponseDto[x3]" is missing from JSON.');
+        assert(json[r'x3'] != null, 'Required key "AssetOcrResponseDto[x3]" has a null value in JSON.');
+        assert(json.containsKey(r'x4'), 'Required key "AssetOcrResponseDto[x4]" is missing from JSON.');
+        assert(json[r'x4'] != null, 'Required key "AssetOcrResponseDto[x4]" has a null value in JSON.');
+        assert(json.containsKey(r'y1'), 'Required key "AssetOcrResponseDto[y1]" is missing from JSON.');
+        assert(json[r'y1'] != null, 'Required key "AssetOcrResponseDto[y1]" has a null value in JSON.');
+        assert(json.containsKey(r'y2'), 'Required key "AssetOcrResponseDto[y2]" is missing from JSON.');
+        assert(json[r'y2'] != null, 'Required key "AssetOcrResponseDto[y2]" has a null value in JSON.');
+        assert(json.containsKey(r'y3'), 'Required key "AssetOcrResponseDto[y3]" is missing from JSON.');
+        assert(json[r'y3'] != null, 'Required key "AssetOcrResponseDto[y3]" has a null value in JSON.');
+        assert(json.containsKey(r'y4'), 'Required key "AssetOcrResponseDto[y4]" is missing from JSON.');
+        assert(json[r'y4'] != null, 'Required key "AssetOcrResponseDto[y4]" has a null value in JSON.');
+        return true;
+      }());
 
       return AssetOcrResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,

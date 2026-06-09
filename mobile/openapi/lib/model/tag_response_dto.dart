@@ -13,11 +13,11 @@ part of openapi.api;
 class TagResponseDto {
   /// Returns a new [TagResponseDto] instance.
   TagResponseDto({
-    this.color = const Optional.absent(),
+    this.color,
     required this.createdAt,
     required this.id,
     required this.name,
-    this.parentId = const Optional.absent(),
+    this.parentId,
     required this.updatedAt,
     required this.value,
   });
@@ -29,7 +29,7 @@ class TagResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> color;
+  String? color;
 
   /// Creation date
   DateTime createdAt;
@@ -47,7 +47,7 @@ class TagResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> parentId;
+  String? parentId;
 
   /// Last update date
   DateTime updatedAt;
@@ -81,16 +81,18 @@ class TagResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color.isPresent) {
-      final value = this.color.value;
-      json[r'color'] = value;
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+      json[r'color'] = null;
     }
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-    if (this.parentId.isPresent) {
-      final value = this.parentId.value;
-      json[r'parentId'] = value;
+    if (this.parentId != null) {
+      json[r'parentId'] = this.parentId;
+    } else {
+      json[r'parentId'] = null;
     }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'value'] = this.value;
@@ -101,16 +103,32 @@ class TagResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TagResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "TagResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'createdAt'), 'Required key "TagResponseDto[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "TagResponseDto[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "TagResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "TagResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "TagResponseDto[name]" is missing from JSON.');
+        assert(json[r'name'] != null, 'Required key "TagResponseDto[name]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "TagResponseDto[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "TagResponseDto[updatedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'value'), 'Required key "TagResponseDto[value]" is missing from JSON.');
+        assert(json[r'value'] != null, 'Required key "TagResponseDto[value]" has a null value in JSON.');
+        return true;
+      }());
+
       return TagResponseDto(
-        color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
+        color: mapValueOfType<String>(json, r'color'),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        parentId: json.containsKey(r'parentId') ? Optional.present(mapValueOfType<String>(json, r'parentId')) : const Optional.absent(),
+        parentId: mapValueOfType<String>(json, r'parentId'),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         value: mapValueOfType<String>(json, r'value')!,
       );

@@ -32,13 +32,13 @@
 
   const onSubmit = async () => {
     const success = await handleUpdateSharedLink(sharedLink, {
-      description,
-      password: password ?? null,
+      description: description || null,
+      password: password || null,
       expiresAt,
       allowUpload,
       allowDownload,
       showMetadata,
-      slug: slug.trim() ?? null,
+      slug: slug.trim() || null,
     });
     if (success) {
       await onClose();

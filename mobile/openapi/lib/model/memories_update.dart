@@ -13,8 +13,8 @@ part of openapi.api;
 class MemoriesUpdate {
   /// Returns a new [MemoriesUpdate] instance.
   MemoriesUpdate({
-    this.duration = const Optional.absent(),
-    this.enabled = const Optional.absent(),
+    this.duration,
+    this.enabled,
   });
 
   /// Memory duration in seconds
@@ -27,7 +27,7 @@ class MemoriesUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<int?> duration;
+  int? duration;
 
   /// Whether memories are enabled
   ///
@@ -36,7 +36,7 @@ class MemoriesUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> enabled;
+  bool? enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoriesUpdate &&
@@ -54,13 +54,15 @@ class MemoriesUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.duration.isPresent) {
-      final value = this.duration.value;
-      json[r'duration'] = value;
+    if (this.duration != null) {
+      json[r'duration'] = this.duration;
+    } else {
+      json[r'duration'] = null;
     }
-    if (this.enabled.isPresent) {
-      final value = this.enabled.value;
-      json[r'enabled'] = value;
+    if (this.enabled != null) {
+      json[r'enabled'] = this.enabled;
+    } else {
+      json[r'enabled'] = null;
     }
     return json;
   }
@@ -69,13 +71,19 @@ class MemoriesUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MemoriesUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "MemoriesUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return MemoriesUpdate(
-        duration: json.containsKey(r'duration') ? Optional.present(json[r'duration'] == null ? null : int.parse('${json[r'duration']}')) : const Optional.absent(),
-        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        duration: mapValueOfType<int>(json, r'duration'),
+        enabled: mapValueOfType<bool>(json, r'enabled'),
       );
     }
     return null;

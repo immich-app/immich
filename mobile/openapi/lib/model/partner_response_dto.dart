@@ -16,7 +16,7 @@ class PartnerResponseDto {
     required this.avatarColor,
     required this.email,
     required this.id,
-    this.inTimeline = const Optional.absent(),
+    this.inTimeline,
     required this.name,
     required this.profileChangedAt,
     required this.profileImagePath,
@@ -37,16 +37,16 @@ class PartnerResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> inTimeline;
+  bool? inTimeline;
 
   /// User name
-  String name;
+  String? name;
 
   /// Profile change date
   DateTime profileChangedAt;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PartnerResponseDto &&
@@ -65,9 +65,9 @@ class PartnerResponseDto {
     (email.hashCode) +
     (id.hashCode) +
     (inTimeline == null ? 0 : inTimeline!.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode);
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode);
 
   @override
   String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
@@ -77,13 +77,22 @@ class PartnerResponseDto {
       json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
       json[r'id'] = this.id;
-    if (this.inTimeline.isPresent) {
-      final value = this.inTimeline.value;
-      json[r'inTimeline'] = value;
+    if (this.inTimeline != null) {
+      json[r'inTimeline'] = this.inTimeline;
+    } else {
+      json[r'inTimeline'] = null;
     }
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
     return json;
   }
 
@@ -91,18 +100,34 @@ class PartnerResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PartnerResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PartnerResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'avatarColor'), 'Required key "PartnerResponseDto[avatarColor]" is missing from JSON.');
+        assert(json[r'avatarColor'] != null, 'Required key "PartnerResponseDto[avatarColor]" has a null value in JSON.');
+        assert(json.containsKey(r'email'), 'Required key "PartnerResponseDto[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "PartnerResponseDto[email]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "PartnerResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "PartnerResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "PartnerResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'profileChangedAt'), 'Required key "PartnerResponseDto[profileChangedAt]" is missing from JSON.');
+        assert(json[r'profileChangedAt'] != null, 'Required key "PartnerResponseDto[profileChangedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'profileImagePath'), 'Required key "PartnerResponseDto[profileImagePath]" is missing from JSON.');
+        return true;
+      }());
 
       return PartnerResponseDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
-        inTimeline: json.containsKey(r'inTimeline') ? Optional.present(mapValueOfType<bool>(json, r'inTimeline')) : const Optional.absent(),
-        name: mapValueOfType<String>(json, r'name')!,
+        inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
+        name: mapValueOfType<String>(json, r'name'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
       );
     }
     return null;

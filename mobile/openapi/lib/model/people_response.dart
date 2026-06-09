@@ -14,7 +14,7 @@ class PeopleResponse {
   /// Returns a new [PeopleResponse] instance.
   PeopleResponse({
     required this.enabled,
-    this.minimumFaces = const Optional.absent(),
+    this.minimumFaces,
     required this.sidebarWeb,
   });
 
@@ -31,7 +31,7 @@ class PeopleResponse {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<int?> minimumFaces;
+  int? minimumFaces;
 
   /// Whether people appear in web sidebar
   bool sidebarWeb;
@@ -55,9 +55,10 @@ class PeopleResponse {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
-    if (this.minimumFaces.isPresent) {
-      final value = this.minimumFaces.value;
-      json[r'minimumFaces'] = value;
+    if (this.minimumFaces != null) {
+      json[r'minimumFaces'] = this.minimumFaces;
+    } else {
+      json[r'minimumFaces'] = null;
     }
       json[r'sidebarWeb'] = this.sidebarWeb;
     return json;
@@ -67,13 +68,23 @@ class PeopleResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PeopleResponse? fromJson(dynamic value) {
-    upgradeDto(value, "PeopleResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "PeopleResponse[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "PeopleResponse[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'sidebarWeb'), 'Required key "PeopleResponse[sidebarWeb]" is missing from JSON.');
+        assert(json[r'sidebarWeb'] != null, 'Required key "PeopleResponse[sidebarWeb]" has a null value in JSON.');
+        return true;
+      }());
+
       return PeopleResponse(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        minimumFaces: json.containsKey(r'minimumFaces') ? Optional.present(json[r'minimumFaces'] == null ? null : int.parse('${json[r'minimumFaces']}')) : const Optional.absent(),
+        minimumFaces: mapValueOfType<int>(json, r'minimumFaces'),
         sidebarWeb: mapValueOfType<bool>(json, r'sidebarWeb')!,
       );
     }

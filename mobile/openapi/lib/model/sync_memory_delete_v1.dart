@@ -41,9 +41,17 @@ class SyncMemoryDeleteV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncMemoryDeleteV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncMemoryDeleteV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'memoryId'), 'Required key "SyncMemoryDeleteV1[memoryId]" is missing from JSON.');
+        assert(json[r'memoryId'] != null, 'Required key "SyncMemoryDeleteV1[memoryId]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncMemoryDeleteV1(
         memoryId: mapValueOfType<String>(json, r'memoryId')!,

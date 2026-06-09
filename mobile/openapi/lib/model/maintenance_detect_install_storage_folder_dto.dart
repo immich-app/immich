@@ -64,9 +64,23 @@ class MaintenanceDetectInstallStorageFolderDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MaintenanceDetectInstallStorageFolderDto? fromJson(dynamic value) {
-    upgradeDto(value, "MaintenanceDetectInstallStorageFolderDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'files'), 'Required key "MaintenanceDetectInstallStorageFolderDto[files]" is missing from JSON.');
+        assert(json[r'files'] != null, 'Required key "MaintenanceDetectInstallStorageFolderDto[files]" has a null value in JSON.');
+        assert(json.containsKey(r'folder'), 'Required key "MaintenanceDetectInstallStorageFolderDto[folder]" is missing from JSON.');
+        assert(json[r'folder'] != null, 'Required key "MaintenanceDetectInstallStorageFolderDto[folder]" has a null value in JSON.');
+        assert(json.containsKey(r'readable'), 'Required key "MaintenanceDetectInstallStorageFolderDto[readable]" is missing from JSON.');
+        assert(json[r'readable'] != null, 'Required key "MaintenanceDetectInstallStorageFolderDto[readable]" has a null value in JSON.');
+        assert(json.containsKey(r'writable'), 'Required key "MaintenanceDetectInstallStorageFolderDto[writable]" is missing from JSON.');
+        assert(json[r'writable'] != null, 'Required key "MaintenanceDetectInstallStorageFolderDto[writable]" has a null value in JSON.');
+        return true;
+      }());
 
       return MaintenanceDetectInstallStorageFolderDto(
         files: mapValueOfType<int>(json, r'files')!,

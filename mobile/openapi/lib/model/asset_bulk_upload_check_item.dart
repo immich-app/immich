@@ -48,9 +48,19 @@ class AssetBulkUploadCheckItem {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetBulkUploadCheckItem? fromJson(dynamic value) {
-    upgradeDto(value, "AssetBulkUploadCheckItem");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'checksum'), 'Required key "AssetBulkUploadCheckItem[checksum]" is missing from JSON.');
+        assert(json[r'checksum'] != null, 'Required key "AssetBulkUploadCheckItem[checksum]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "AssetBulkUploadCheckItem[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "AssetBulkUploadCheckItem[id]" has a null value in JSON.');
+        return true;
+      }());
 
       return AssetBulkUploadCheckItem(
         checksum: mapValueOfType<String>(json, r'checksum')!,

@@ -13,11 +13,11 @@ part of openapi.api;
 class AuthStatusResponseDto {
   /// Returns a new [AuthStatusResponseDto] instance.
   AuthStatusResponseDto({
-    this.expiresAt = const Optional.absent(),
+    this.expiresAt,
     required this.isElevated,
     required this.password,
     required this.pinCode,
-    this.pinExpiresAt = const Optional.absent(),
+    this.pinExpiresAt,
   });
 
   /// Session expiration date
@@ -27,7 +27,7 @@ class AuthStatusResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> expiresAt;
+  String? expiresAt;
 
   /// Is elevated session
   bool isElevated;
@@ -45,7 +45,7 @@ class AuthStatusResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> pinExpiresAt;
+  String? pinExpiresAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuthStatusResponseDto &&
@@ -69,16 +69,18 @@ class AuthStatusResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.expiresAt.isPresent) {
-      final value = this.expiresAt.value;
-      json[r'expiresAt'] = value;
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt;
+    } else {
+      json[r'expiresAt'] = null;
     }
       json[r'isElevated'] = this.isElevated;
       json[r'password'] = this.password;
       json[r'pinCode'] = this.pinCode;
-    if (this.pinExpiresAt.isPresent) {
-      final value = this.pinExpiresAt.value;
-      json[r'pinExpiresAt'] = value;
+    if (this.pinExpiresAt != null) {
+      json[r'pinExpiresAt'] = this.pinExpiresAt;
+    } else {
+      json[r'pinExpiresAt'] = null;
     }
     return json;
   }
@@ -87,16 +89,28 @@ class AuthStatusResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AuthStatusResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AuthStatusResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'isElevated'), 'Required key "AuthStatusResponseDto[isElevated]" is missing from JSON.');
+        assert(json[r'isElevated'] != null, 'Required key "AuthStatusResponseDto[isElevated]" has a null value in JSON.');
+        assert(json.containsKey(r'password'), 'Required key "AuthStatusResponseDto[password]" is missing from JSON.');
+        assert(json[r'password'] != null, 'Required key "AuthStatusResponseDto[password]" has a null value in JSON.');
+        assert(json.containsKey(r'pinCode'), 'Required key "AuthStatusResponseDto[pinCode]" is missing from JSON.');
+        assert(json[r'pinCode'] != null, 'Required key "AuthStatusResponseDto[pinCode]" has a null value in JSON.');
+        return true;
+      }());
+
       return AuthStatusResponseDto(
-        expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapValueOfType<String>(json, r'expiresAt')) : const Optional.absent(),
+        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         isElevated: mapValueOfType<bool>(json, r'isElevated')!,
         password: mapValueOfType<bool>(json, r'password')!,
         pinCode: mapValueOfType<bool>(json, r'pinCode')!,
-        pinExpiresAt: json.containsKey(r'pinExpiresAt') ? Optional.present(mapValueOfType<String>(json, r'pinExpiresAt')) : const Optional.absent(),
+        pinExpiresAt: mapValueOfType<String>(json, r'pinExpiresAt'),
       );
     }
     return null;

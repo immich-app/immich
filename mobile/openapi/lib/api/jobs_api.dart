@@ -25,9 +25,9 @@ class JobsApi {
   /// Parameters:
   ///
   /// * [JobCreateDto] jobCreateDto (required):
-  Future<Response> createJobWithHttpInfo(JobCreateDto jobCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createJobWithHttpInfo(JobCreateDto jobCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/jobs';
+    final path = r'/jobs';
 
     // ignore: prefer_final_locals
     Object? postBody = jobCreateDto;
@@ -40,14 +40,13 @@ class JobsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class JobsApi {
   /// Parameters:
   ///
   /// * [JobCreateDto] jobCreateDto (required):
-  Future<void> createJob(JobCreateDto jobCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createJobWithHttpInfo(jobCreateDto, abortTrigger: abortTrigger,);
+  Future<void> createJob(JobCreateDto jobCreateDto,) async {
+    final response = await createJobWithHttpInfo(jobCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -70,9 +69,9 @@ class JobsApi {
   /// Retrieve the counts of the current queue, as well as the current status.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getQueuesLegacyWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getQueuesLegacyWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/jobs';
+    final path = r'/jobs';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -85,22 +84,21 @@ class JobsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve queue counts and status
   ///
   /// Retrieve the counts of the current queue, as well as the current status.
-  Future<QueuesResponseLegacyDto?> getQueuesLegacy({ Future<void>? abortTrigger, }) async {
-    final response = await getQueuesLegacyWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<QueuesResponseLegacyDto?> getQueuesLegacy() async {
+    final response = await getQueuesLegacyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -125,9 +123,9 @@ class JobsApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/jobs/{name}'
+    final path = r'/jobs/{name}'
       .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
@@ -141,14 +139,13 @@ class JobsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -161,8 +158,8 @@ class JobsApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto, { Future<void>? abortTrigger, }) async {
-    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto, abortTrigger: abortTrigger,);
+  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
+    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

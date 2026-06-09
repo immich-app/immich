@@ -55,9 +55,21 @@ class ServerMediaTypesResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerMediaTypesResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerMediaTypesResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'image'), 'Required key "ServerMediaTypesResponseDto[image]" is missing from JSON.');
+        assert(json[r'image'] != null, 'Required key "ServerMediaTypesResponseDto[image]" has a null value in JSON.');
+        assert(json.containsKey(r'sidecar'), 'Required key "ServerMediaTypesResponseDto[sidecar]" is missing from JSON.');
+        assert(json[r'sidecar'] != null, 'Required key "ServerMediaTypesResponseDto[sidecar]" has a null value in JSON.');
+        assert(json.containsKey(r'video'), 'Required key "ServerMediaTypesResponseDto[video]" is missing from JSON.');
+        assert(json[r'video'] != null, 'Required key "ServerMediaTypesResponseDto[video]" has a null value in JSON.');
+        return true;
+      }());
 
       return ServerMediaTypesResponseDto(
         image: json[r'image'] is Iterable

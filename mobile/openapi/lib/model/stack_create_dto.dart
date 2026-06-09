@@ -41,9 +41,17 @@ class StackCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static StackCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "StackCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetIds'), 'Required key "StackCreateDto[assetIds]" is missing from JSON.');
+        assert(json[r'assetIds'] != null, 'Required key "StackCreateDto[assetIds]" has a null value in JSON.');
+        return true;
+      }());
 
       return StackCreateDto(
         assetIds: json[r'assetIds'] is Iterable

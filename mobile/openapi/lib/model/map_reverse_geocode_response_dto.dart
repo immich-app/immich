@@ -67,9 +67,18 @@ class MapReverseGeocodeResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MapReverseGeocodeResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "MapReverseGeocodeResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'city'), 'Required key "MapReverseGeocodeResponseDto[city]" is missing from JSON.');
+        assert(json.containsKey(r'country'), 'Required key "MapReverseGeocodeResponseDto[country]" is missing from JSON.');
+        assert(json.containsKey(r'state'), 'Required key "MapReverseGeocodeResponseDto[state]" is missing from JSON.');
+        return true;
+      }());
 
       return MapReverseGeocodeResponseDto(
         city: mapValueOfType<String>(json, r'city'),

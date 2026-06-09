@@ -41,9 +41,17 @@ class RatingsResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static RatingsResponse? fromJson(dynamic value) {
-    upgradeDto(value, "RatingsResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "RatingsResponse[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "RatingsResponse[enabled]" has a null value in JSON.');
+        return true;
+      }());
 
       return RatingsResponse(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

@@ -26,7 +26,7 @@ class DriftAlbumApiRepository extends ApiRepository {
       _api.createAlbum(
         CreateAlbumDto(
           albumName: name,
-          description: description == null ? const Optional.absent() : Optional.present(description),
+          description: description == null ? const Optional.absent() : Optional.present(description.isEmpty ? null : description),
           assetIds: Optional.present(assetIds.toList()),
         ),
       ),

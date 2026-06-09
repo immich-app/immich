@@ -13,8 +13,8 @@ part of openapi.api;
 class PurchaseUpdate {
   /// Returns a new [PurchaseUpdate] instance.
   PurchaseUpdate({
-    this.hideBuyButtonUntil = const Optional.absent(),
-    this.showSupportBadge = const Optional.absent(),
+    this.hideBuyButtonUntil,
+    this.showSupportBadge,
   });
 
   /// Date until which to hide buy button
@@ -24,7 +24,7 @@ class PurchaseUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> hideBuyButtonUntil;
+  String? hideBuyButtonUntil;
 
   /// Whether to show support badge
   ///
@@ -33,7 +33,7 @@ class PurchaseUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> showSupportBadge;
+  bool? showSupportBadge;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PurchaseUpdate &&
@@ -51,13 +51,15 @@ class PurchaseUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hideBuyButtonUntil.isPresent) {
-      final value = this.hideBuyButtonUntil.value;
-      json[r'hideBuyButtonUntil'] = value;
+    if (this.hideBuyButtonUntil != null) {
+      json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
+    } else {
+      json[r'hideBuyButtonUntil'] = null;
     }
-    if (this.showSupportBadge.isPresent) {
-      final value = this.showSupportBadge.value;
-      json[r'showSupportBadge'] = value;
+    if (this.showSupportBadge != null) {
+      json[r'showSupportBadge'] = this.showSupportBadge;
+    } else {
+      json[r'showSupportBadge'] = null;
     }
     return json;
   }
@@ -66,13 +68,19 @@ class PurchaseUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PurchaseUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "PurchaseUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return PurchaseUpdate(
-        hideBuyButtonUntil: json.containsKey(r'hideBuyButtonUntil') ? Optional.present(mapValueOfType<String>(json, r'hideBuyButtonUntil')) : const Optional.absent(),
-        showSupportBadge: json.containsKey(r'showSupportBadge') ? Optional.present(mapValueOfType<bool>(json, r'showSupportBadge')) : const Optional.absent(),
+        hideBuyButtonUntil: mapValueOfType<String>(json, r'hideBuyButtonUntil'),
+        showSupportBadge: mapValueOfType<bool>(json, r'showSupportBadge'),
       );
     }
     return null;

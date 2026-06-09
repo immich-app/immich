@@ -47,9 +47,19 @@ class SearchExploreResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchExploreResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SearchExploreResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'fieldName'), 'Required key "SearchExploreResponseDto[fieldName]" is missing from JSON.');
+        assert(json[r'fieldName'] != null, 'Required key "SearchExploreResponseDto[fieldName]" has a null value in JSON.');
+        assert(json.containsKey(r'items'), 'Required key "SearchExploreResponseDto[items]" is missing from JSON.');
+        assert(json[r'items'] != null, 'Required key "SearchExploreResponseDto[items]" has a null value in JSON.');
+        return true;
+      }());
 
       return SearchExploreResponseDto(
         fieldName: mapValueOfType<String>(json, r'fieldName')!,

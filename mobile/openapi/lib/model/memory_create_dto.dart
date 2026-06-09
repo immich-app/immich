@@ -13,18 +13,18 @@ part of openapi.api;
 class MemoryCreateDto {
   /// Returns a new [MemoryCreateDto] instance.
   MemoryCreateDto({
-    this.assetIds = const Optional.present(const []),
+    this.assetIds = const [],
     required this.data,
-    this.hideAt = const Optional.absent(),
-    this.isSaved = const Optional.absent(),
+    this.hideAt,
+    this.isSaved,
     required this.memoryAt,
-    this.seenAt = const Optional.absent(),
-    this.showAt = const Optional.absent(),
+    this.seenAt,
+    this.showAt,
     required this.type,
   });
 
   /// Asset IDs to associate with memory
-  Optional<List<String>?> assetIds;
+  List<String> assetIds;
 
   OnThisDayDto data;
 
@@ -35,7 +35,7 @@ class MemoryCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> hideAt;
+  DateTime? hideAt;
 
   /// Is memory saved
   ///
@@ -44,7 +44,7 @@ class MemoryCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> isSaved;
+  bool? isSaved;
 
   /// Memory date
   DateTime memoryAt;
@@ -56,7 +56,7 @@ class MemoryCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> seenAt;
+  DateTime? seenAt;
 
   /// Date when memory should be shown
   ///
@@ -65,7 +65,7 @@ class MemoryCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> showAt;
+  DateTime? showAt;
 
   MemoryType type;
 
@@ -97,35 +97,36 @@ class MemoryCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.assetIds.isPresent) {
-      final value = this.assetIds.value;
-      json[r'assetIds'] = value;
-    }
+      json[r'assetIds'] = this.assetIds;
       json[r'data'] = this.data;
-    if (this.hideAt.isPresent) {
-      final value = this.hideAt.value;
-      json[r'hideAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? value.millisecondsSinceEpoch
-        : value.toUtc().toIso8601String());
+    if (this.hideAt != null) {
+      json[r'hideAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.hideAt!.millisecondsSinceEpoch
+        : this.hideAt!.toUtc().toIso8601String();
+    } else {
+      json[r'hideAt'] = null;
     }
-    if (this.isSaved.isPresent) {
-      final value = this.isSaved.value;
-      json[r'isSaved'] = value;
+    if (this.isSaved != null) {
+      json[r'isSaved'] = this.isSaved;
+    } else {
+      json[r'isSaved'] = null;
     }
       json[r'memoryAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.memoryAt.millisecondsSinceEpoch
         : this.memoryAt.toUtc().toIso8601String();
-    if (this.seenAt.isPresent) {
-      final value = this.seenAt.value;
-      json[r'seenAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? value.millisecondsSinceEpoch
-        : value.toUtc().toIso8601String());
+    if (this.seenAt != null) {
+      json[r'seenAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.seenAt!.millisecondsSinceEpoch
+        : this.seenAt!.toUtc().toIso8601String();
+    } else {
+      json[r'seenAt'] = null;
     }
-    if (this.showAt.isPresent) {
-      final value = this.showAt.value;
-      json[r'showAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? value.millisecondsSinceEpoch
-        : value.toUtc().toIso8601String());
+    if (this.showAt != null) {
+      json[r'showAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.showAt!.millisecondsSinceEpoch
+        : this.showAt!.toUtc().toIso8601String();
+    } else {
+      json[r'showAt'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -135,20 +136,32 @@ class MemoryCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MemoryCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "MemoryCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'data'), 'Required key "MemoryCreateDto[data]" is missing from JSON.');
+        assert(json[r'data'] != null, 'Required key "MemoryCreateDto[data]" has a null value in JSON.');
+        assert(json.containsKey(r'memoryAt'), 'Required key "MemoryCreateDto[memoryAt]" is missing from JSON.');
+        assert(json[r'memoryAt'] != null, 'Required key "MemoryCreateDto[memoryAt]" has a null value in JSON.');
+        assert(json.containsKey(r'type'), 'Required key "MemoryCreateDto[type]" is missing from JSON.');
+        assert(json[r'type'] != null, 'Required key "MemoryCreateDto[type]" has a null value in JSON.');
+        return true;
+      }());
+
       return MemoryCreateDto(
-        assetIds: json.containsKey(r'assetIds') ? Optional.present(json[r'assetIds'] is Iterable
+        assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
-            : const []) : const Optional.absent(),
+            : const [],
         data: OnThisDayDto.fromJson(json[r'data'])!,
-        hideAt: json.containsKey(r'hideAt') ? Optional.present(mapDateTime(json, r'hideAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
-        isSaved: json.containsKey(r'isSaved') ? Optional.present(mapValueOfType<bool>(json, r'isSaved')) : const Optional.absent(),
+        hideAt: mapDateTime(json, r'hideAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        isSaved: mapValueOfType<bool>(json, r'isSaved'),
         memoryAt: mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        seenAt: json.containsKey(r'seenAt') ? Optional.present(mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
-        showAt: json.containsKey(r'showAt') ? Optional.present(mapDateTime(json, r'showAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
+        seenAt: mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        showAt: mapDateTime(json, r'showAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         type: MemoryType.fromJson(json[r'type'])!,
       );
     }

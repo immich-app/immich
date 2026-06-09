@@ -41,9 +41,17 @@ class PinCodeSetupDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PinCodeSetupDto? fromJson(dynamic value) {
-    upgradeDto(value, "PinCodeSetupDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'pinCode'), 'Required key "PinCodeSetupDto[pinCode]" is missing from JSON.');
+        assert(json[r'pinCode'] != null, 'Required key "PinCodeSetupDto[pinCode]" has a null value in JSON.');
+        return true;
+      }());
 
       return PinCodeSetupDto(
         pinCode: mapValueOfType<String>(json, r'pinCode')!,

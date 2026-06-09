@@ -13,8 +13,8 @@ part of openapi.api;
 class BulkIdResponseDto {
   /// Returns a new [BulkIdResponseDto] instance.
   BulkIdResponseDto({
-    this.error = const Optional.absent(),
-    this.errorMessage = const Optional.absent(),
+    this.error,
+    this.errorMessage,
     required this.id,
     required this.success,
   });
@@ -25,7 +25,7 @@ class BulkIdResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<BulkIdErrorReason?> error;
+  BulkIdErrorReason? error;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -33,7 +33,7 @@ class BulkIdResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> errorMessage;
+  String? errorMessage;
 
   /// ID
   String id;
@@ -61,13 +61,15 @@ class BulkIdResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.error.isPresent) {
-      final value = this.error.value;
-      json[r'error'] = value;
+    if (this.error != null) {
+      json[r'error'] = this.error;
+    } else {
+      json[r'error'] = null;
     }
-    if (this.errorMessage.isPresent) {
-      final value = this.errorMessage.value;
-      json[r'errorMessage'] = value;
+    if (this.errorMessage != null) {
+      json[r'errorMessage'] = this.errorMessage;
+    } else {
+      json[r'errorMessage'] = null;
     }
       json[r'id'] = this.id;
       json[r'success'] = this.success;
@@ -78,13 +80,23 @@ class BulkIdResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static BulkIdResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "BulkIdResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'id'), 'Required key "BulkIdResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "BulkIdResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'success'), 'Required key "BulkIdResponseDto[success]" is missing from JSON.');
+        assert(json[r'success'] != null, 'Required key "BulkIdResponseDto[success]" has a null value in JSON.');
+        return true;
+      }());
+
       return BulkIdResponseDto(
-        error: json.containsKey(r'error') ? Optional.present(BulkIdErrorReason.fromJson(json[r'error'])) : const Optional.absent(),
-        errorMessage: json.containsKey(r'errorMessage') ? Optional.present(mapValueOfType<String>(json, r'errorMessage')) : const Optional.absent(),
+        error: BulkIdErrorReason.fromJson(json[r'error']),
+        errorMessage: mapValueOfType<String>(json, r'errorMessage'),
         id: mapValueOfType<String>(json, r'id')!,
         success: mapValueOfType<bool>(json, r'success')!,
       );

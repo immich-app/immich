@@ -62,9 +62,23 @@ class ServerApkLinksDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerApkLinksDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerApkLinksDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'arm64v8a'), 'Required key "ServerApkLinksDto[arm64v8a]" is missing from JSON.');
+        assert(json[r'arm64v8a'] != null, 'Required key "ServerApkLinksDto[arm64v8a]" has a null value in JSON.');
+        assert(json.containsKey(r'armeabiv7a'), 'Required key "ServerApkLinksDto[armeabiv7a]" is missing from JSON.');
+        assert(json[r'armeabiv7a'] != null, 'Required key "ServerApkLinksDto[armeabiv7a]" has a null value in JSON.');
+        assert(json.containsKey(r'universal'), 'Required key "ServerApkLinksDto[universal]" is missing from JSON.');
+        assert(json[r'universal'] != null, 'Required key "ServerApkLinksDto[universal]" has a null value in JSON.');
+        assert(json.containsKey(r'x86_64'), 'Required key "ServerApkLinksDto[x86_64]" is missing from JSON.');
+        assert(json[r'x86_64'] != null, 'Required key "ServerApkLinksDto[x86_64]" has a null value in JSON.');
+        return true;
+      }());
 
       return ServerApkLinksDto(
         arm64v8a: mapValueOfType<String>(json, r'arm64v8a')!,

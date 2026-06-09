@@ -78,9 +78,29 @@ class SystemConfigMachineLearningDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigMachineLearningDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigMachineLearningDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'availabilityChecks'), 'Required key "SystemConfigMachineLearningDto[availabilityChecks]" is missing from JSON.');
+        assert(json[r'availabilityChecks'] != null, 'Required key "SystemConfigMachineLearningDto[availabilityChecks]" has a null value in JSON.');
+        assert(json.containsKey(r'clip'), 'Required key "SystemConfigMachineLearningDto[clip]" is missing from JSON.');
+        assert(json[r'clip'] != null, 'Required key "SystemConfigMachineLearningDto[clip]" has a null value in JSON.');
+        assert(json.containsKey(r'duplicateDetection'), 'Required key "SystemConfigMachineLearningDto[duplicateDetection]" is missing from JSON.');
+        assert(json[r'duplicateDetection'] != null, 'Required key "SystemConfigMachineLearningDto[duplicateDetection]" has a null value in JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "SystemConfigMachineLearningDto[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "SystemConfigMachineLearningDto[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'facialRecognition'), 'Required key "SystemConfigMachineLearningDto[facialRecognition]" is missing from JSON.');
+        assert(json[r'facialRecognition'] != null, 'Required key "SystemConfigMachineLearningDto[facialRecognition]" has a null value in JSON.');
+        assert(json.containsKey(r'ocr'), 'Required key "SystemConfigMachineLearningDto[ocr]" is missing from JSON.');
+        assert(json[r'ocr'] != null, 'Required key "SystemConfigMachineLearningDto[ocr]" has a null value in JSON.');
+        assert(json.containsKey(r'urls'), 'Required key "SystemConfigMachineLearningDto[urls]" is missing from JSON.');
+        assert(json[r'urls'] != null, 'Required key "SystemConfigMachineLearningDto[urls]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigMachineLearningDto(
         availabilityChecks: MachineLearningAvailabilityChecksDto.fromJson(json[r'availabilityChecks'])!,

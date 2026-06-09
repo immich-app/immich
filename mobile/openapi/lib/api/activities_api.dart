@@ -25,9 +25,9 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
-  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/activities';
+    final path = r'/activities';
 
     // ignore: prefer_final_locals
     Object? postBody = activityCreateDto;
@@ -40,14 +40,13 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
-  Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createActivityWithHttpInfo(activityCreateDto, abortTrigger: abortTrigger,);
+  Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto,) async {
+    final response = await createActivityWithHttpInfo(activityCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -82,9 +81,9 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteActivityWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/activities/{id}'
+    final path = r'/activities/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -98,14 +97,13 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -116,8 +114,8 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteActivity(String id, { Future<void>? abortTrigger, }) async {
-    final response = await deleteActivityWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<void> deleteActivity(String id,) async {
+    final response = await deleteActivityWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -143,9 +141,9 @@ class ActivitiesApi {
   ///
   /// * [String] userId:
   ///   Filter by user ID
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, Future<void>? abortTrigger, }) async {
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/activities';
+    final path = r'/activities';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -172,14 +170,13 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -201,8 +198,8 @@ class ActivitiesApi {
   ///
   /// * [String] userId:
   ///   Filter by user ID
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, Future<void>? abortTrigger, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId, assetId: assetId, level: level, type: type, userId: userId, abortTrigger: abortTrigger,);
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, level: level, type: type, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -232,9 +229,9 @@ class ActivitiesApi {
   ///
   /// * [String] assetId:
   ///   Asset ID (if activity is for an asset)
-  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, Future<void>? abortTrigger, }) async {
+  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/activities/statistics';
+    final path = r'/activities/statistics';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -252,14 +249,13 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -274,8 +270,8 @@ class ActivitiesApi {
   ///
   /// * [String] assetId:
   ///   Asset ID (if activity is for an asset)
-  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, Future<void>? abortTrigger, }) async {
-    final response = await getActivityStatisticsWithHttpInfo(albumId, assetId: assetId, abortTrigger: abortTrigger,);
+  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, }) async {
+    final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

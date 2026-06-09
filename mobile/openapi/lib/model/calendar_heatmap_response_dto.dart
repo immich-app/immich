@@ -64,9 +64,23 @@ class CalendarHeatmapResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static CalendarHeatmapResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "CalendarHeatmapResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'from'), 'Required key "CalendarHeatmapResponseDto[from]" is missing from JSON.');
+        assert(json[r'from'] != null, 'Required key "CalendarHeatmapResponseDto[from]" has a null value in JSON.');
+        assert(json.containsKey(r'series'), 'Required key "CalendarHeatmapResponseDto[series]" is missing from JSON.');
+        assert(json[r'series'] != null, 'Required key "CalendarHeatmapResponseDto[series]" has a null value in JSON.');
+        assert(json.containsKey(r'to'), 'Required key "CalendarHeatmapResponseDto[to]" is missing from JSON.');
+        assert(json[r'to'] != null, 'Required key "CalendarHeatmapResponseDto[to]" has a null value in JSON.');
+        assert(json.containsKey(r'totalCount'), 'Required key "CalendarHeatmapResponseDto[totalCount]" is missing from JSON.');
+        assert(json[r'totalCount'] != null, 'Required key "CalendarHeatmapResponseDto[totalCount]" has a null value in JSON.');
+        return true;
+      }());
 
       return CalendarHeatmapResponseDto(
         from: mapValueOfType<String>(json, r'from')!,

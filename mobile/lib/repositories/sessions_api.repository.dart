@@ -17,8 +17,8 @@ class SessionsAPIRepository extends ApiRepository {
     final dto = await checkNull(
       _api.createSession(
         SessionCreateDto(
-          deviceType: Optional.present(deviceType),
-          deviceOS: Optional.present(deviceOS),
+          deviceType: Optional.present(deviceType.isEmpty ? null : deviceType),
+          deviceOS: Optional.present(deviceOS.isEmpty ? null : deviceOS),
           duration: duration == null ? const Optional.absent() : Optional.present(duration),
         ),
       ),

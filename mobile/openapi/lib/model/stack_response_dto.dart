@@ -54,9 +54,21 @@ class StackResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static StackResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "StackResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assets'), 'Required key "StackResponseDto[assets]" is missing from JSON.');
+        assert(json[r'assets'] != null, 'Required key "StackResponseDto[assets]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "StackResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "StackResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'primaryAssetId'), 'Required key "StackResponseDto[primaryAssetId]" is missing from JSON.');
+        assert(json[r'primaryAssetId'] != null, 'Required key "StackResponseDto[primaryAssetId]" has a null value in JSON.');
+        return true;
+      }());
 
       return StackResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),

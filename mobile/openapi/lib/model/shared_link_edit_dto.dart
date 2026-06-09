@@ -13,13 +13,13 @@ part of openapi.api;
 class SharedLinkEditDto {
   /// Returns a new [SharedLinkEditDto] instance.
   SharedLinkEditDto({
-    this.allowDownload = const Optional.absent(),
-    this.allowUpload = const Optional.absent(),
-    this.description = const Optional.absent(),
-    this.expiresAt = const Optional.absent(),
-    this.password = const Optional.absent(),
-    this.showMetadata = const Optional.absent(),
-    this.slug = const Optional.absent(),
+    this.allowDownload,
+    this.allowUpload,
+    this.description,
+    this.expiresAt,
+    this.password,
+    this.showMetadata,
+    this.slug,
   });
 
   /// Allow downloads
@@ -29,7 +29,7 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> allowDownload;
+  bool? allowDownload;
 
   /// Allow uploads
   ///
@@ -38,16 +38,16 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> allowUpload;
+  bool? allowUpload;
 
   /// Link description
-  Optional<String?> description;
+  String? description;
 
   /// Expiration date
-  Optional<DateTime?> expiresAt;
+  DateTime? expiresAt;
 
   /// Link password
-  Optional<String?> password;
+  String? password;
 
   /// Show metadata
   ///
@@ -56,10 +56,10 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> showMetadata;
+  bool? showMetadata;
 
   /// Custom URL slug
-  Optional<String?> slug;
+  String? slug;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
@@ -87,35 +87,42 @@ class SharedLinkEditDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.allowDownload.isPresent) {
-      final value = this.allowDownload.value;
-      json[r'allowDownload'] = value;
+    if (this.allowDownload != null) {
+      json[r'allowDownload'] = this.allowDownload;
+    } else {
+      json[r'allowDownload'] = null;
     }
-    if (this.allowUpload.isPresent) {
-      final value = this.allowUpload.value;
-      json[r'allowUpload'] = value;
+    if (this.allowUpload != null) {
+      json[r'allowUpload'] = this.allowUpload;
+    } else {
+      json[r'allowUpload'] = null;
     }
-    if (this.description.isPresent) {
-      final value = this.description.value;
-      json[r'description'] = value;
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+      json[r'description'] = null;
     }
-    if (this.expiresAt.isPresent) {
-      final value = this.expiresAt.value;
-      json[r'expiresAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? value.millisecondsSinceEpoch
-        : value.toUtc().toIso8601String());
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.expiresAt!.millisecondsSinceEpoch
+        : this.expiresAt!.toUtc().toIso8601String();
+    } else {
+      json[r'expiresAt'] = null;
     }
-    if (this.password.isPresent) {
-      final value = this.password.value;
-      json[r'password'] = value;
+    if (this.password != null) {
+      json[r'password'] = this.password;
+    } else {
+      json[r'password'] = null;
     }
-    if (this.showMetadata.isPresent) {
-      final value = this.showMetadata.value;
-      json[r'showMetadata'] = value;
+    if (this.showMetadata != null) {
+      json[r'showMetadata'] = this.showMetadata;
+    } else {
+      json[r'showMetadata'] = null;
     }
-    if (this.slug.isPresent) {
-      final value = this.slug.value;
-      json[r'slug'] = value;
+    if (this.slug != null) {
+      json[r'slug'] = this.slug;
+    } else {
+      json[r'slug'] = null;
     }
     return json;
   }
@@ -124,18 +131,24 @@ class SharedLinkEditDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SharedLinkEditDto? fromJson(dynamic value) {
-    upgradeDto(value, "SharedLinkEditDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return SharedLinkEditDto(
-        allowDownload: json.containsKey(r'allowDownload') ? Optional.present(mapValueOfType<bool>(json, r'allowDownload')) : const Optional.absent(),
-        allowUpload: json.containsKey(r'allowUpload') ? Optional.present(mapValueOfType<bool>(json, r'allowUpload')) : const Optional.absent(),
-        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
-        expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
-        password: json.containsKey(r'password') ? Optional.present(mapValueOfType<String>(json, r'password')) : const Optional.absent(),
-        showMetadata: json.containsKey(r'showMetadata') ? Optional.present(mapValueOfType<bool>(json, r'showMetadata')) : const Optional.absent(),
-        slug: json.containsKey(r'slug') ? Optional.present(mapValueOfType<String>(json, r'slug')) : const Optional.absent(),
+        allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
+        description: mapValueOfType<String>(json, r'description'),
+        expiresAt: mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        password: mapValueOfType<String>(json, r'password'),
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
+        slug: mapValueOfType<String>(json, r'slug'),
       );
     }
     return null;
