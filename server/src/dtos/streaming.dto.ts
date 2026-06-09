@@ -28,7 +28,7 @@ export class HlsSegmentParamDto extends createZodDto(HlsSegmentParamSchema) {}
 
 const HlsSegmentHeaderSchema = z.object({
   // Lets the client hint at which segment will be loaded after init.mp4.
-  [ImmichHeader.HlsTargetSegment]: z.coerce.number().int().min(0).optional(),
+  [ImmichHeader.HlsInitSegment]: z.coerce.number().int().min(0).optional(),
 });
 
 export class HlsSegmentHeaderDto extends createZodDto(HlsSegmentHeaderSchema) {}
