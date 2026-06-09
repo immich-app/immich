@@ -157,8 +157,6 @@ class _OcrBoxes extends StatelessWidget {
     final cx = viewportWidth / 2 + position.dx;
     final cy = viewportHeight / 2 + position.dy;
 
-    // Absolute viewport-space quads for each box, used to cut the dark scrim
-    // so the text underneath stays at full brightness.
     final quads = <List<Offset>>[];
     final boxes = <Widget>[];
 
@@ -218,7 +216,9 @@ class _OcrBoxes extends StatelessWidget {
             SizedBox(width: viewportWidth, height: viewportHeight),
             // Dark scrim with the text boxes punched out
             Positioned.fill(
-              child: IgnorePointer(child: CustomPaint(painter: _OcrScrimPainter(quads: quads))),
+              child: IgnorePointer(
+                child: CustomPaint(painter: _OcrScrimPainter(quads: quads)),
+              ),
             ),
             ...boxes,
           ],
