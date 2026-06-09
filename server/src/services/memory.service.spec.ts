@@ -134,6 +134,27 @@ describe(MemoryService.name, () => {
       );
     });
 
+    it('should not link a partner asset', async () => {
+      const [assetId, userId] = newUuids();
+      const memory = MemoryFactory.create({ ownerId: userId });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.memory.create.mockResolvedValue(getForMemory(memory));
+
+      await expect(
+        sut.create(factory.auth({ user: { id: userId } }), {
+          type: memory.type,
+          data: memory.data as OnThisDayData,
+          memoryAt: memory.memoryAt,
+          assetIds: [assetId],
+        }),
+      ).resolves.toMatchObject({ assets: [] });
+
+      expect(mocks.memory.create).toHaveBeenCalledWith(expect.objectContaining({ ownerId: userId }), new Set());
+      expect(mocks.access.asset.checkPartnerAccess).not.toHaveBeenCalled();
+    });
+
     it('should create a memory without assets', async () => {
       const memory = MemoryFactory.create();
 
@@ -228,6 +249,24 @@ describe(MemoryService.name, () => {
       ]);
 
       expect(mocks.memory.addAssetIds).not.toHaveBeenCalled();
+    });
+
+    it('should not link a partner asset', async () => {
+      const assetId = newUuid();
+      const memory = MemoryFactory.create();
+
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.memory.get.mockResolvedValue(getForMemory(memory));
+      mocks.memory.getAssetIds.mockResolvedValue(new Set());
+
+      await expect(sut.addAssets(factory.auth(), memory.id, { ids: [assetId] })).resolves.toEqual([
+        { error: 'no_permission', id: assetId, success: false },
+      ]);
+
+      expect(mocks.memory.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.access.asset.checkPartnerAccess).not.toHaveBeenCalled();
     });
 
     it('should add assets', async () => {
