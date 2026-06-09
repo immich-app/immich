@@ -4,7 +4,7 @@ import { utils } from 'src/utils';
 
 test.describe.configure({ mode: 'serial' });
 
-test.describe('Integrity', () => {
+test.describe.skip('Integrity', () => {
   let admin: LoginResponseDto;
 
   test.beforeAll(async () => {

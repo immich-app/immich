@@ -1,8 +1,10 @@
-import { createJob, deleteIntegrityReport, getBaseUrl, IntegrityReport, ManualJobName } from '@immich/sdk';
+import { createJob, deleteIntegrityReport, IntegrityReport, ManualJobName } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiDownload, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 
@@ -10,18 +12,14 @@ export const getIntegrityReportActions = ($t: MessageFormatter, reportType: Inte
   const Download: ActionItem = {
     title: $t('admin.download_csv'),
     icon: mdiDownload,
-    onAction: () => {
-      handleDownloadIntegrityReportCsv(reportType);
-    },
+    onAction: () => goto(Route.integrityReportCsv(reportType)),
   };
 
   const Delete: ActionItem = {
     title: $t('trash_page_delete_all'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction: () => {
-      void handleRemoveAllIntegrityReportItems(reportType);
-    },
+    onAction: () => handleRemoveAllIntegrityReportItems(reportType),
   };
 
   return { Download, Delete };
@@ -31,9 +29,7 @@ export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: st
   const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
-    onAction: () => {
-      void handleDownloadIntegrityReportFile(reportId);
-    },
+    onAction: () => goto(Route.integrityReportFile(reportId)),
     $if: () => reportType === IntegrityReport.UntrackedFile || reportType === IntegrityReport.ChecksumMismatch,
   };
 
@@ -41,20 +37,10 @@ export const getIntegrityReportItemActions = ($t: MessageFormatter, reportId: st
     title: $t('delete'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction: () => {
-      void handleRemoveIntegrityReportItem(reportId);
-    },
+    onAction: () => handleRemoveIntegrityReportItem(reportId),
   };
 
   return { Download, Delete };
-};
-
-export const handleDownloadIntegrityReportFile = (reportId: string) => {
-  location.href = `${getBaseUrl()}/admin/integrity/report/${reportId}/file`;
-};
-
-export const handleDownloadIntegrityReportCsv = (reportType: IntegrityReport) => {
-  location.href = `${getBaseUrl()}/admin/integrity/report/${reportType}/csv`;
 };
 
 export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityReport) => {

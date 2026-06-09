@@ -3,10 +3,10 @@
   import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { Route } from '$lib/route';
   import { handleCreateJob } from '$lib/services/job.service';
   import { getMaintenanceAdminActions } from '$lib/services/maintenance.service';
-  import { asyncTimeout } from '$lib/utils';
   import {
     getIntegrityReportSummary,
     getQueuesLegacy,
@@ -18,10 +18,9 @@
   } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiRefresh } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
+  import { onMount } from 'svelte';
+  import { t, type Translations } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
 
   type Props = {
     data: PageData;
@@ -30,7 +29,6 @@
   const { data }: Props = $props();
   const { StartMaintenance } = $derived(getMaintenanceAdminActions($t));
 
-  // svelte-ignore state_referenced_locally
   let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
   const reportTypes: IntegrityReport[] = [
@@ -54,24 +52,34 @@
   let jobs: QueuesResponseLegacyDto | undefined = $state();
   let expectingUpdate: boolean = $state(false);
 
-  let running = true;
-
-  onMount(async () => {
-    while (running) {
-      jobs = await getQueuesLegacy();
-      if (jobs.integrityCheck.queueStatus.isActive) {
-        expectingUpdate = true;
-      } else if (expectingUpdate) {
-        integrityReport = await getIntegrityReportSummary();
-        expectingUpdate = false;
+  const getReportTypeTranslation = (report: IntegrityReport): Translations => {
+    switch (report) {
+      case IntegrityReport.UntrackedFile: {
+        return 'admin.maintenance_integrity_untracked_file';
       }
-
-      await asyncTimeout(2000);
+      case IntegrityReport.MissingFile: {
+        return 'admin.maintenance_integrity_missing_file';
+      }
+      case IntegrityReport.ChecksumMismatch: {
+        return 'admin.maintenance_integrity_checksum_mismatch';
+      }
     }
-  });
+  };
 
-  onDestroy(() => {
-    running = false;
+  const updateReports = async () => {
+    jobs = await getQueuesLegacy();
+    if (jobs.integrityCheck.queueStatus.isActive) {
+      expectingUpdate = true;
+    } else if (expectingUpdate) {
+      integrityReport = await getIntegrityReportSummary();
+      expectingUpdate = false;
+    }
+  };
+
+  onMount(() => {
+    const interval = setInterval(() => void updateReports(), 2000);
+
+    return () => clearInterval(interval);
   });
 
   const onJobCreate = ({ dto }: { dto: JobCreateDto }) => {
@@ -98,7 +106,7 @@
             }
           }}
           class="mt-1 self-end"
-          disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('admin.maintenance_integrity_check_all')}</Button
+          disabled={expectingUpdate}>{$t('admin.maintenance_integrity_check_all')}</Button
         >
         <Button
           size="tiny"
@@ -109,14 +117,14 @@
             }
           }}
           class="mt-1 self-end"
-          disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
+          disabled={expectingUpdate}>{$t('refresh')}</Button
         ></HStack
       >
 
       <div class="mt-5 flex justify-between gap-4 max-lg:flex-wrap">
         {#each reportTypes as reportType (reportType)}
           <ServerStatisticsCard
-            title={$t(`admin.maintenance_integrity_${reportType}`)}
+            title={$t(getReportTypeTranslation(reportType))}
             valuePromise={{ value: integrityReport[reportType] }}
           >
             {#snippet footer()}
@@ -129,8 +137,7 @@
                   size="tiny"
                   variant="ghost"
                   class="mt-1 self-end"
-                  disabled={jobs?.integrityCheck.queueStatus.isActive}
-                  >{$t('admin.maintenance_integrity_check_all')}</Button
+                  disabled={expectingUpdate}>{$t('admin.maintenance_integrity_check_all')}</Button
                 >
                 <Button
                   onclick={() =>
@@ -140,7 +147,7 @@
                   size="tiny"
                   variant="ghost"
                   class="mt-1 self-end"
-                  disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
+                  disabled={expectingUpdate}>{$t('refresh')}</Button
                 >
                 <Button
                   href={`${Route.systemMaintenanceIntegrityReport({
