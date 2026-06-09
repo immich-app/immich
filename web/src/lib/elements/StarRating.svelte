@@ -33,6 +33,7 @@
       return;
     }
 
+    ratingSelection = newRating;
     onRating(newRating);
   };
 
