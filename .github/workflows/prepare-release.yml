@@ -10,9 +10,13 @@ on:
         type: choice
         options:
           - 'false'
-          - major
           - minor
           - patch
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+          - release
       mobileBump:
         description: 'Bump mobile build number'
         required: false
@@ -74,7 +78,7 @@ jobs:
         env:
           SERVER_BUMP: ${{ inputs.serverBump }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+        run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - id: output
         run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
