@@ -33,14 +33,14 @@ export const getAssetFiles = (files: AssetFile[]) => ({
 export const addAssets = async (
   auth: AuthDto,
   repositories: { access: AccessRepository; bulk: IBulkAsset },
-  dto: { parentId: string; assetIds: string[] },
+  dto: { parentId: string; assetIds: string[]; permission: Permission },
 ) => {
   const { access, bulk } = repositories;
   const existingAssetIds = await bulk.getAssetIds(dto.parentId, dto.assetIds);
   const notPresentAssetIds = dto.assetIds.filter((id) => !existingAssetIds.has(id));
   const allowedAssetIds = await checkAccess(access, {
     auth,
-    permission: Permission.AssetShare,
+    permission: dto.permission,
     ids: notPresentAssetIds,
   });
 

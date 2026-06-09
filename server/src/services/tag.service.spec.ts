@@ -275,6 +275,19 @@ describe(TagService.name, () => {
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2']);
     });
+
+    it('should not tag a partner asset', async () => {
+      mocks.tag.getAssetIds.mockResolvedValue(new Set());
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await expect(sut.addAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
+        { id: 'asset-1', success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
+
+      expect(mocks.tag.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.access.asset.checkPartnerAccess).not.toHaveBeenCalled();
+    });
   });
 
   describe('removeAssets', () => {

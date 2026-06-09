@@ -175,7 +175,7 @@ export class AlbumService extends BaseService {
     const results = await addAssets(
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
-      { parentId: id, assetIds: dto.ids },
+      { parentId: id, assetIds: dto.ids, permission: Permission.AssetShare },
     );
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
