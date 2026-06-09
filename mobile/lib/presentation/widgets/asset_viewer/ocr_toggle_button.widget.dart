@@ -5,35 +5,19 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/ocr.provider.dart';
 
-class OcrToggleButton extends ConsumerStatefulWidget {
+class OcrToggleButton extends ConsumerWidget {
   final BaseAsset asset;
-
   const OcrToggleButton({super.key, required this.asset});
 
   @override
-  ConsumerState<OcrToggleButton> createState() => _OcrToggleButtonState();
-}
-
-class _OcrToggleButtonState extends ConsumerState<OcrToggleButton> {
-  bool _hasOcr = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final asset = widget.asset;
-    if (asset is RemoteAsset) {
-      final ocr = ref.watch(ocrAssetProvider(asset.id));
-      if (ocr.hasValue) {
-        _hasOcr = ocr.value?.isNotEmpty == true;
-      }
-    } else {
-      _hasOcr = false;
-    }
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
+    final hasOcr = asset is RemoteAsset && ref.watch(ocrAssetProvider(asset.id)).valueOrNull?.isNotEmpty == true;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     return AnimatedSwitcher(
       duration: Durations.short4,
-      child: !_hasOcr
+      child: !hasOcr
           ? const SizedBox.shrink()
           : Align(
               alignment: Alignment.centerRight,
