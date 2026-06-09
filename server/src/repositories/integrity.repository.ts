@@ -64,7 +64,7 @@ export class IntegrityRepository {
 
     return {
       items: items.slice(0, pagination.limit),
-      nextCursor: items[pagination.limit]?.id as string | undefined,
+      nextCursor: items.at(pagination.limit)?.id,
     };
   }
 

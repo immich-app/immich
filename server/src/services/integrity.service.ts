@@ -72,37 +72,39 @@ export class IntegrityService extends BaseService {
     },
   }: ArgOf<'ConfigInit'>) {
     this.integrityLock = await this.databaseRepository.tryLock(DatabaseLock.IntegrityCheck);
-    if (this.integrityLock) {
-      this.cronRepository.create({
-        name: 'integrityUntrackedFiles',
-        expression: untrackedFiles.cronExpression,
-        onTick: () =>
-          handlePromiseError(
-            this.jobRepository.queue({ name: JobName.IntegrityUntrackedFilesQueueAll, data: {} }),
-            this.logger,
-          ),
-        start: untrackedFiles.enabled,
-      });
-
-      this.cronRepository.create({
-        name: 'integrityMissingFiles',
-        expression: missingFiles.cronExpression,
-        onTick: () =>
-          handlePromiseError(
-            this.jobRepository.queue({ name: JobName.IntegrityMissingFilesQueueAll, data: {} }),
-            this.logger,
-          ),
-        start: missingFiles.enabled,
-      });
-
-      this.cronRepository.create({
-        name: 'integrityChecksumFiles',
-        expression: checksumFiles.cronExpression,
-        onTick: () =>
-          handlePromiseError(this.jobRepository.queue({ name: JobName.IntegrityChecksumFiles, data: {} }), this.logger),
-        start: checksumFiles.enabled,
-      });
+    if (!this.integrityLock) {
+      return;
     }
+
+    this.cronRepository.create({
+      name: 'integrityUntrackedFiles',
+      expression: untrackedFiles.cronExpression,
+      onTick: () =>
+        handlePromiseError(
+          this.jobRepository.queue({ name: JobName.IntegrityUntrackedFilesQueueAll, data: {} }),
+          this.logger,
+        ),
+      start: untrackedFiles.enabled,
+    });
+
+    this.cronRepository.create({
+      name: 'integrityMissingFiles',
+      expression: missingFiles.cronExpression,
+      onTick: () =>
+        handlePromiseError(
+          this.jobRepository.queue({ name: JobName.IntegrityMissingFilesQueueAll, data: {} }),
+          this.logger,
+        ),
+      start: missingFiles.enabled,
+    });
+
+    this.cronRepository.create({
+      name: 'integrityChecksumFiles',
+      expression: checksumFiles.cronExpression,
+      onTick: () =>
+        handlePromiseError(this.jobRepository.queue({ name: JobName.IntegrityChecksumFiles, data: {} }), this.logger),
+      start: checksumFiles.enabled,
+    });
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
@@ -139,7 +141,7 @@ export class IntegrityService extends BaseService {
   }
 
   getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
-    return this.integrityRepository.getIntegrityReport({ cursor: dto.cursor, limit: dto.limit || 100 }, dto.type);
+    return this.integrityRepository.getIntegrityReport({ cursor: dto.cursor, limit: dto.limit ?? 100 }, dto.type);
   }
 
   getIntegrityReportCsv(type: IntegrityReport): Readable {
