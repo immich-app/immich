@@ -4472,13 +4472,14 @@ export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
 /**
  * Get HLS segment or init file
  */
-export function getSegment({ filename, id, key, sessionId, slug, variantIndex }: {
+export function getSegment({ filename, id, key, sessionId, slug, variantIndex, xImmichHlsMsn }: {
     filename: string;
     id: string;
     key?: string;
     sessionId: string;
     slug?: string;
     variantIndex: number;
+    xImmichHlsMsn?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4487,7 +4488,10 @@ export function getSegment({ filename, id, key, sessionId, slug, variantIndex }:
         key,
         slug
     }))}`, {
-        ...opts
+        ...opts,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-hls-msn": xImmichHlsMsn
+        })
     }));
 }
 /**

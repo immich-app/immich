@@ -24,6 +24,7 @@ export enum ImmichHeader {
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
   CorrelationId = 'X-Correlation-ID',
+  HlsInitSegment = 'x-immich-hls-msn',
 }
 
 export enum ImmichQuery {
