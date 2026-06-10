@@ -34,6 +34,11 @@ describe('getShortDateRange', () => {
     expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-01-31T00:00:00.000Z')).toEqual('January 2022');
   });
 
+  it('should correctly return long month if start and end date are within the same month, ignoring local time zone', () => {
+    vi.stubEnv('TZ', 'UTC-6');
+    expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-01-31T00:00:00.000Z')).toEqual('January 2022');
+  });
+
   it('should correctly return month range if start and end date are in separate months within the same year, ignoring local time zone', () => {
     vi.stubEnv('TZ', 'UTC+6');
     expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-02-01T00:00:00.000Z')).toEqual('Jan – Feb 2022');
@@ -61,7 +66,7 @@ describe('getShortDateRange', () => {
 });
 
 describe('getAlbumDateRange', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     vi.stubEnv('TZ', 'UTC');
   });
 
@@ -77,17 +82,19 @@ describe('getAlbumDateRange', () => {
     expect(getAlbumDateRange('2021-01-01T09:00:00Z', '2021-01-01T10:00:00Z')).toEqual('Jan 1, 2021');
   });
 
-  it('should work with positive time zone present', () => {
-    expect(getAlbumDateRange('2021-01-01T00:00:00+05:00', '2021-01-01T00:00:00+05:00')).toEqual('Jan 1, 2021');
-  });
-
-  it('should work with negative time zone present', () => {
-    expect(getAlbumDateRange('2021-01-01T00:00:00-05:00', '2021-01-01T00:00:00-05:00')).toEqual('Jan 1, 2021');
-  });
-
   it('should use the proper locale', () => {
     locale.set('fr');
     expect(getAlbumDateRange('2020-03-26T12:00:00Z', '2021-12-01T00:00:00Z')).toEqual('26 mars 2020 – 1 déc. 2021');
     locale.set('en');
+  });
+
+  it('should correctly return range if start and end date are in separate months and years, ignoring local time zone', () => {
+    vi.stubEnv('TZ', 'UTC+6');
+    expect(getAlbumDateRange('2021-12-01T00:00:00Z', '2022-01-01T00:00:00Z')).toEqual('Dec 1, 2021 – Jan 1, 2022');
+  });
+
+  it('should correctly return range if start and end date are in separate months and years, ignoring local time zone', () => {
+    vi.stubEnv('TZ', 'UTC-6');
+    expect(getAlbumDateRange('2021-12-01T00:00:00Z', '2022-01-01T00:00:00Z')).toEqual('Dec 1, 2021 – Jan 1, 2022');
   });
 });

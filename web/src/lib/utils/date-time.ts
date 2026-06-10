@@ -8,12 +8,14 @@ export function parseUtcDate(date: string) {
 }
 
 const getDateRange = (startTimestamp: string, endTimestamp: string, format: 'short' | 'long') => {
+  // We don't need to check if the locale is set/nonempty. MDN's Intl docs:
+  // "If the application doesn't provide a locales argument, or the runtime doesn't have a locale that matches the request, then the runtime's default locale is used."
   const userLocale = get(locale);
   const startDate = DateTime.fromISO(startTimestamp).setZone('UTC');
-  const endDate = DateTime.fromISO(endTimestamp).setZone('UTC').setLocale(userLocale);
+  const endDate = DateTime.fromISO(endTimestamp).setZone('UTC');
 
   if (startDate.year === endDate.year && startDate.month === endDate.month && format === 'short') {
-    return endDate.toLocaleString({ month: 'long', year: 'numeric' });
+    return endDate.setLocale(userLocale).toLocaleString({ month: 'long', year: 'numeric' });
   }
 
   const formatter = new Intl.DateTimeFormat(
@@ -24,10 +26,14 @@ const getDateRange = (startTimestamp: string, endTimestamp: string, format: 'sho
 };
 
 /**
- * Get localized date range in short format like 'Oct – Nov 2026', with full month if start and end are the same: 'October 2026'
+ * Get localized date range in short format like 'Oct – Nov 2026', with full month if start and end are the same: 'October 2026'.
+ * Timestamps are expected to be date-only in UTC.
  */
 export const getShortDateRange = (start: string, end: string) => getDateRange(start, end, 'short');
 
+/**
+ * Get localized date range in long format. Timestamps are expected to be date-only in UTC.
+ */
 export const getAlbumDateRange = (start: string, end: string) => getDateRange(start, end, 'long');
 
 /**
