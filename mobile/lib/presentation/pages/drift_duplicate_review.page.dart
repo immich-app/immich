@@ -4,20 +4,24 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/duplicates.provider.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:openapi/api.dart';
+import 'package:octo_image/octo_image.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 @RoutePage()
 class DriftDuplicateReviewPage extends ConsumerStatefulWidget {
   const DriftDuplicateReviewPage({super.key});
 
   @override
-  ConsumerState<DriftDuplicateReviewPage> createState() => _DriftDuplicateReviewPageState();
+  ConsumerState<DriftDuplicateReviewPage> createState() =>
+      _DriftDuplicateReviewPageState();
 }
 
-class _DriftDuplicateReviewPageState extends ConsumerState<DriftDuplicateReviewPage> {
-  final Map<String, Set<String>> _selectedToDelete = {};
-  final Map<String, Set<String>> _selectedToKeep = {};
+class _DriftDuplicateReviewPageState
+    extends ConsumerState<DriftDuplicateReviewPage> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -37,22 +41,63 @@ class _DriftDuplicateReviewPageState extends ConsumerState<DriftDuplicateReviewP
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: duplicates.length,
-            itemBuilder: (context, index) {
-              return _DuplicateGroupCard(
-                index: index,
-                duplicate: duplicates[index],
-                selectedToDelete: _selectedToDelete,
-                selectedToKeep: _selectedToKeep,
-                onResolve: (keepIds, deleteIds) => _resolveDuplicate(
-                  duplicates[index].duplicateId,
-                  keepIds,
-                  deleteIds,
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: _DuplicateGroupCard(
+                      duplicate: duplicates[_currentIndex],
+                      onResolve: (keepIds, deleteIds) =>
+                          _resolveDuplicate(
+                            duplicates[_currentIndex].duplicateId,
+                            keepIds,
+                            deleteIds,
+                            duplicates,
+                          ),
+                    ),
+                  ),
                 ),
-              );
-            },
+              ),
+              // Navigation controls
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _currentIndex > 0
+                          ? () => setState(() => _currentIndex--)
+                          : null,
+                      icon: const Icon(Icons.navigate_before),
+                      label: Text('previous'.t(context: context)),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: context.colorScheme.outline),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${_currentIndex + 1} / ${duplicates.length}',
+                        style: context.textTheme.labelLarge,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _currentIndex < duplicates.length - 1
+                          ? () => setState(() => _currentIndex++)
+                          : null,
+                      icon: const Icon(Icons.navigate_next),
+                      label: Text('next'.t(context: context)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -63,7 +108,12 @@ class _DriftDuplicateReviewPageState extends ConsumerState<DriftDuplicateReviewP
     );
   }
 
-  Future<void> _resolveDuplicate(String duplicateId, List<String> keepIds, List<String> deleteIds) async {
+  Future<void> _resolveDuplicate(
+      String duplicateId,
+      List<String> keepIds,
+      List<String> deleteIds,
+      List<DuplicateResponseDto> duplicates,
+      ) async {
     try {
       final repository = ref.read(duplicatesRepositoryProvider);
       final resolveGroup = DuplicateResolveGroupDto(
@@ -80,23 +130,21 @@ class _DriftDuplicateReviewPageState extends ConsumerState<DriftDuplicateReviewP
 
       ImmichToast.show(context: context, msg: 'Duplicates resolved');
     } catch (e) {
-      ImmichToast.show(context: context, msg: 'Error: $e', toastType: ToastType.error);
+      ImmichToast.show(
+        context: context,
+        msg: 'Error: $e',
+        toastType: ToastType.error,
+      );
     }
   }
 }
 
 class _DuplicateGroupCard extends StatefulWidget {
-  final int index;
   final DuplicateResponseDto duplicate;
-  final Map<String, Set<String>> selectedToDelete;
-  final Map<String, Set<String>> selectedToKeep;
   final Function(List<String>, List<String>) onResolve;
 
   const _DuplicateGroupCard({
-    required this.index,
     required this.duplicate,
-    required this.selectedToDelete,
-    required this.selectedToKeep,
     required this.onResolve,
   });
 
@@ -105,74 +153,103 @@ class _DuplicateGroupCard extends StatefulWidget {
 }
 
 class _DuplicateGroupCardState extends State<_DuplicateGroupCard> {
-  late Set<String> _toDelete;
-  late Set<String> _toKeep;
+  late Set<String> _selectedToKeep;
+  late Set<String> _selectedToDelete;
 
   @override
   void initState() {
     super.initState();
-    _toDelete = widget.selectedToDelete.putIfAbsent(widget.duplicate.duplicateId, () => {});
-    _toKeep = widget.selectedToKeep.putIfAbsent(widget.duplicate.duplicateId, () => {});
+    _selectedToKeep = Set.from(widget.duplicate.suggestedKeepAssetIds);
+    _selectedToDelete = {};
   }
 
   @override
   Widget build(BuildContext context) {
+    final assets = widget.duplicate.assets;
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title
             Text(
-              'Duplicate Group ${widget.index + 1}',
-              style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              'Duplicate Group',
+              style: context.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            ...widget.duplicate.assets.map((asset) {
-              final isSuggested = widget.duplicate.suggestedKeepAssetIds.contains(asset.id);
-              return _AssetTile(
-                asset: asset,
-                isSuggested: isSuggested,
-                isSelectedToKeep: _toKeep.contains(asset.id),
-                isSelectedToDelete: _toDelete.contains(asset.id),
-                onKeepToggle: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _toKeep.add(asset.id);
-                      _toDelete.remove(asset.id);
-                    } else {
-                      _toKeep.remove(asset.id);
-                    }
-                  });
-                },
-                onDeleteToggle: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _toDelete.add(asset.id);
-                      _toKeep.remove(asset.id);
-                    } else {
-                      _toDelete.remove(asset.id);
-                    }
-                  });
-                },
-              );
-            }),
-            const SizedBox(height: 16),
+
+            // Assets side by side (horizontally scrollable)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: assets
+                    .map(
+                      (asset) => _DuplicateAssetCard(
+                    asset: asset,
+                    isSuggested:
+                    widget.duplicate.suggestedKeepAssetIds
+                        .contains(asset.id),
+                    isSelectedToKeep:
+                    _selectedToKeep.contains(asset.id),
+                    isSelectedToDelete:
+                    _selectedToDelete.contains(asset.id),
+                    onKeepToggle: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedToKeep.add(asset.id);
+                          _selectedToDelete.remove(asset.id);
+                        } else {
+                          _selectedToKeep.remove(asset.id);
+                        }
+                      });
+                    },
+                    onDeleteToggle: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedToDelete.add(asset.id);
+                          _selectedToKeep.remove(asset.id);
+                        } else {
+                          _selectedToDelete.remove(asset.id);
+                        }
+                      });
+                    },
+                  ),
+                )
+                    .toList(),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Action buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: _toKeep.isNotEmpty && _toDelete.isNotEmpty
-                      ? () => widget.onResolve(_toKeep.toList(), _toDelete.toList())
+                ElevatedButton.icon(
+                  onPressed:
+                  _selectedToKeep.isNotEmpty && _selectedToDelete.isNotEmpty
+                      ? () => widget.onResolve(
+                    _selectedToKeep.toList(),
+                    _selectedToDelete.toList(),
+                  )
                       : null,
-                  child: Text('keep'.t(context: context)),
+                  icon: const Icon(Icons.check),
+                  label: Text('keep'.t(context: context)),
                 ),
-                OutlinedButton(
+                OutlinedButton.icon(
                   onPressed: () {
-                    // Dismiss duplicates without resolving
+                    // Dismiss without action
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('keep_all'.t(context: context)),
+                      ),
+                    );
                   },
-                  child: Text('dismiss_duplicates'.t(context: context)),
+                  icon: const Icon(Icons.close),
+                  label: Text('keep_all'.t(context: context)),
                 ),
               ],
             ),
@@ -183,7 +260,7 @@ class _DuplicateGroupCardState extends State<_DuplicateGroupCard> {
   }
 }
 
-class _AssetTile extends StatelessWidget {
+class _DuplicateAssetCard extends StatelessWidget {
   final AssetResponseDto asset;
   final bool isSuggested;
   final bool isSelectedToKeep;
@@ -191,7 +268,7 @@ class _AssetTile extends StatelessWidget {
   final Function(bool) onKeepToggle;
   final Function(bool) onDeleteToggle;
 
-  const _AssetTile({
+  const _DuplicateAssetCard({
     required this.asset,
     required this.isSuggested,
     required this.isSelectedToKeep,
@@ -202,73 +279,263 @@ class _AssetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = isSelectedToKeep
+        ? Colors.green
+        : isSelectedToDelete
+        ? Colors.red
+        : Colors.grey.withAlpha(76);
+
+    final exifInfo = asset.exifInfo.isPresent ? asset.exifInfo.value : null;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      width: 300,
+      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: isSelectedToKeep
-              ? Colors.green
-              : isSelectedToDelete
-              ? Colors.red
-              : Colors.grey.withAlpha(30),
-        ),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor, width: 2),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Row(
+          // Thumbnail
+          Stack(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      asset.originalFileName,
-                      style: context.textTheme.bodyMedium?.copyWith(
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                ),
+                child: _AssetThumbnail(asset: asset),
+              ),
+              // Status chip
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelectedToKeep
+                        ? Colors.green.withAlpha(230)
+                        : Colors.red.withAlpha(204),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isSelectedToKeep
+                        ? 'keep'.t(context: context)
+                        : 'to_trash'.t(context: context),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              // Suggested chip
+              if (isSuggested)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withAlpha(230),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'suggested_primary'.t(context: context),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${asset.width}x${asset.height}',
-                      style: context.textTheme.bodySmall,
+                  ),
+                ),
+            ],
+          ),
+          // Metadata
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _MetadataRow(
+                      label: 'file_name_text'.t(context: context),
+                      value: asset.originalFileName,
                     ),
-                    if (isSuggested)
-                      Text(
-                        'suggested_primary'.t(context: context),
-                        style: context.textTheme.labelSmall?.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
+                    const SizedBox(height: 8),
+                    _MetadataRow(
+                      label: 'resolution'.t(context: context),
+                      value: '${asset.width}x${asset.height}',
+                    ),
+                    const SizedBox(height: 8),
+                    _MetadataRow(
+                      label: 'file_size'.t(context: context),
+                      value: _formatFileSize(
+                        exifInfo?.fileSizeInByte.isPresent == true
+                            ? exifInfo!.fileSizeInByte.value ?? 0
+                            : 0,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _MetadataRow(
+                      label: 'created_at'.t(context: context),
+                      value: asset.fileCreatedAt.toString().split('.').first,
+                    ),
+                    if (exifInfo != null &&
+                        exifInfo.make.isPresent &&
+                        exifInfo.make.value != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: _MetadataRow(
+                          label: 'make'.t(context: context),
+                          value: exifInfo.make.value ?? 'N/A',
                         ),
                       ),
                   ],
                 ),
               ),
-              Checkbox(
-                value: isSelectedToKeep,
-                onChanged: (val) => onKeepToggle(val ?? false),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton.icon(
-                onPressed: () => onKeepToggle(!isSelectedToKeep),
-                icon: const Icon(Icons.check),
-                label: Text('keep'.t(context: context)),
-              ),
-              TextButton.icon(
-                onPressed: () => onDeleteToggle(!isSelectedToDelete),
-                icon: const Icon(Icons.delete),
-                label: Text('delete'.t(context: context)),
-              ),
-            ],
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => onKeepToggle(!isSelectedToKeep),
+                    icon: const Icon(Icons.check, size: 18),
+                    label: Text(
+                      'keep'.t(context: context),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => onDeleteToggle(!isSelectedToDelete),
+                    icon: const Icon(Icons.delete, size: 18),
+                    label: Text(
+                      'delete'.t(context: context),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+  }
+}
+
+class _AssetThumbnail extends ConsumerWidget {
+  final AssetResponseDto asset;
+
+  const _AssetThumbnail({required this.asset});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final thumbnailProvider = RemoteImageProvider.thumbnail(
+      assetId: asset.id,
+      thumbhash: asset.thumbhash ?? '',
+    );
+
+    return OctoImage(
+      fadeInDuration: const Duration(milliseconds: 0),
+      fadeOutDuration: const Duration(milliseconds: 100),
+      image: thumbnailProvider,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        thumbnailProvider.evict();
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.image_not_supported, size: 40),
+              const SizedBox(height: 8),
+              Text(
+                'Failed to load image',
+                style: context.textTheme.labelSmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      },
+      placeholderBuilder: (context) => Container(
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
+  }
+}
+
+class _MetadataRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MetadataRow({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: context.textTheme.labelSmall?.copyWith(
+            color: Colors.grey,
+            fontSize: 10,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: context.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }
