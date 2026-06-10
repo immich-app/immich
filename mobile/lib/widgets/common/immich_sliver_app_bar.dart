@@ -141,7 +141,7 @@ class _ProfileIndicator extends ConsumerWidget {
             color: serverInfoState.versionStatus == VersionStatus.error
                 ? context.colorScheme.error
                 : context.primaryColor,
-            size: widgetSize / 2,
+            size: widgetSize / 2 - 3,
             semanticLabel: 'new_version_available'.tr(),
           ),
         ),

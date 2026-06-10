@@ -10,9 +10,13 @@ on:
         type: choice
         options:
           - 'false'
-          - major
           - minor
           - patch
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+          - release
       mobileBump:
         description: 'Bump mobile build number'
         required: false
@@ -55,7 +59,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true
@@ -68,13 +72,13 @@ jobs:
 
       # TODO move to mise
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
       - name: Bump version
         env:
           SERVER_BUMP: ${{ inputs.serverBump }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+        run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - id: output
         run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
@@ -125,7 +129,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
