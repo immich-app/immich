@@ -24,12 +24,10 @@ class WorkflowType {
   String toJson() => value;
 
   static const assetV1 = WorkflowType._(r'AssetV1');
-  static const assetPersonV1 = WorkflowType._(r'AssetPersonV1');
 
   /// List of all possible values in this [enum][WorkflowType].
   static const values = <WorkflowType>[
     assetV1,
-    assetPersonV1,
   ];
 
   static WorkflowType? fromJson(dynamic value) => WorkflowTypeTypeTransformer().decode(value);
@@ -69,7 +67,6 @@ class WorkflowTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'AssetV1': return WorkflowType.assetV1;
-        case r'AssetPersonV1': return WorkflowType.assetPersonV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
