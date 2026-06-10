@@ -341,6 +341,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
+  IntegrityChecksumCheckpoint = 'integrity-checksum-checkpoint',
 }
 
 export enum UserMetadataKey {
@@ -398,6 +399,17 @@ export enum SourceType {
 
 export const SourceTypeSchema = z.enum(SourceType).describe('Face detection source type').meta({ id: 'SourceType' });
 
+export enum IntegrityReport {
+  UntrackedFile = 'untracked_file',
+  MissingFile = 'missing_file',
+  ChecksumFail = 'checksum_mismatch',
+}
+
+export const IntegrityReportSchema = z
+  .enum(IntegrityReport)
+  .describe('Integrity report type')
+  .meta({ id: 'IntegrityReport' });
+
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
   TagCleanup = 'tag-cleanup',
@@ -405,6 +417,15 @@ export enum ManualJobName {
   MemoryCleanup = 'memory-cleanup',
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
+  IntegrityMissingFiles = `integrity-missing-files`,
+  IntegrityUntrackedFiles = `integrity-untracked-files`,
+  IntegrityChecksumFiles = `integrity-checksum-mismatch`,
+  IntegrityMissingFilesRefresh = `integrity-missing-files-refresh`,
+  IntegrityUntrackedFilesRefresh = `integrity-untracked-files-refresh`,
+  IntegrityChecksumFilesRefresh = `integrity-checksum-mismatch-refresh`,
+  IntegrityMissingFilesDeleteAll = `integrity-missing-files-delete-all`,
+  IntegrityUntrackedFilesDeleteAll = `integrity-untracked-files-delete-all`,
+  IntegrityChecksumFilesDeleteAll = `integrity-checksum-mismatch-delete-all`,
 }
 
 export const ManualJobNameSchema = z.enum(ManualJobName).describe('Manual job name').meta({ id: 'ManualJobName' });
@@ -771,6 +792,7 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
 }
 
@@ -866,6 +888,18 @@ export enum JobName {
 
   // Workflow
   WorkflowAssetTrigger = 'WorkflowAssetTrigger',
+
+  // Integrity
+  IntegrityUntrackedFilesQueueAll = 'IntegrityUntrackedFilesQueueAll',
+  IntegrityUntrackedFiles = 'IntegrityUntrackedFiles',
+  IntegrityUntrackedFilesRefresh = 'IntegrityUntrackedRefresh',
+  IntegrityMissingFilesQueueAll = 'IntegrityMissingFilesQueueAll',
+  IntegrityMissingFiles = 'IntegrityMissingFiles',
+  IntegrityMissingFilesRefresh = 'IntegrityMissingFilesRefresh',
+  IntegrityChecksumFiles = 'IntegrityChecksumFiles',
+  IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
+  IntegrityDeleteReportType = 'IntegrityDeleteReportType',
+  IntegrityDeleteReports = 'IntegrityDeleteReports',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
@@ -917,6 +951,7 @@ export enum DatabaseLock {
   BackupDatabase = 42,
   MaintenanceOperation = 621,
   MemoryCreation = 777,
+  IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
 }
@@ -1131,6 +1166,7 @@ export enum ApiTag {
   Download = 'Download',
   Duplicates = 'Duplicates',
   Faces = 'Faces',
+  Integrity = 'Integrity (admin)',
   Jobs = 'Jobs',
   Libraries = 'Libraries',
   Maintenance = 'Maintenance (admin)',
