@@ -1636,7 +1636,7 @@ packages:
     source: hosted
     version: "3.3.2"
   sqlite3_connection_pool:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3_connection_pool
       sha256: "9d2b3b398b03c96743fd071521fc665be73c33c9cd5c56d87196baff8d8b4398"
