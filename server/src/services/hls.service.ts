@@ -58,7 +58,7 @@ export class HlsService extends BaseService {
 
     const asset = await this.videoStreamRepository.getForMainPlaylist(assetId);
     if (!asset) {
-      throw new NotFoundException('Asset is not yet ready for streaming');
+      throw new NotFoundException('Asset metadata is not yet ready for streaming');
     }
 
     // Sharing the sessionId allows only one microservices worker to successfully insert to the session table.
@@ -76,7 +76,7 @@ export class HlsService extends BaseService {
 
     const asset = await this.videoStreamRepository.getForMediaPlaylist(assetId, sessionId);
     if (!asset) {
-      throw new NotFoundException('Asset not found or not yet ready for streaming');
+      throw new NotFoundException('Asset not found or metadata not yet ready for streaming');
     }
 
     return this.generateMediaPlaylist(asset);
