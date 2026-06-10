@@ -1194,6 +1194,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing user.",
         "operationId": "updateUserAdmin",
         "parameters": [
@@ -1243,7 +1244,8 @@
         ],
         "summary": "Update a user",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1258,10 +1260,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/calendar-heatmap": {
@@ -1416,6 +1423,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of a specific user.",
         "operationId": "updateUserPreferencesAdmin",
         "parameters": [
@@ -1465,7 +1473,8 @@
         ],
         "summary": "Update user preferences",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1480,10 +1489,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserPreferencesAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/restore": {
@@ -2863,6 +2877,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
         "operationId": "updateApiKey",
         "parameters": [
@@ -2912,7 +2927,8 @@
         ],
         "summary": "Update an API key",
         "tags": [
-          "API keys"
+          "API keys",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -2926,10 +2942,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateApiKey"
           }
         ],
         "x-immich-permission": "apiKey.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets": {
@@ -3080,6 +3101,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates multiple assets at the same time.",
         "operationId": "updateAssets",
         "parameters": [],
@@ -3111,7 +3133,8 @@
         ],
         "summary": "Update assets",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3125,10 +3148,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAssets"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/bulk-upload-check": {
@@ -3557,6 +3585,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update information of a specific asset.",
         "operationId": "updateAsset",
         "parameters": [
@@ -3606,7 +3635,8 @@
         ],
         "summary": "Update an asset",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3620,10 +3650,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAsset"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/{id}/edits": {
@@ -6329,6 +6364,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing external library.",
         "operationId": "updateLibrary",
         "parameters": [
@@ -6378,7 +6414,8 @@
         ],
         "summary": "Update a library",
         "tags": [
-          "Libraries"
+          "Libraries",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -6393,10 +6430,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateLibrary"
           }
         ],
         "x-immich-permission": "library.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/libraries/{id}/scan": {
@@ -7165,6 +7207,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing memory by its ID.",
         "operationId": "updateMemory",
         "parameters": [
@@ -7214,7 +7257,8 @@
         ],
         "summary": "Update a memory",
         "tags": [
-          "Memories"
+          "Memories",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -7228,10 +7272,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMemory"
           }
         ],
         "x-immich-permission": "memory.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/memories/{id}/assets": {
@@ -8711,6 +8760,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an individual person.",
         "operationId": "updatePerson",
         "parameters": [
@@ -8760,7 +8810,8 @@
         ],
         "summary": "Update person",
         "tags": [
-          "People"
+          "People",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -8774,10 +8825,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updatePerson"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/people/{id}/merge": {
@@ -11529,6 +11585,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update a specific session identified by id.",
         "operationId": "updateSession",
         "parameters": [
@@ -11578,7 +11635,8 @@
         ],
         "summary": "Update a session",
         "tags": [
-          "Sessions"
+          "Sessions",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -11592,10 +11650,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateSession"
           }
         ],
         "x-immich-permission": "session.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/sessions/{id}/lock": {
@@ -12545,6 +12608,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing stack by its ID.",
         "operationId": "updateStack",
         "parameters": [
@@ -12594,7 +12658,8 @@
         ],
         "summary": "Update a stack",
         "tags": [
-          "Stacks"
+          "Stacks",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -12608,10 +12673,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateStack"
           }
         ],
         "x-immich-permission": "stack.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -13648,6 +13718,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing tag identified by its ID.",
         "operationId": "updateTag",
         "parameters": [
@@ -13697,7 +13768,8 @@
         ],
         "summary": "Update a tag",
         "tags": [
-          "Tags"
+          "Tags",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -13711,10 +13783,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateTag"
           }
         ],
         "x-immich-permission": "tag.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/tags/{id}/assets": {
@@ -14517,6 +14594,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
@@ -14555,7 +14633,8 @@
         ],
         "summary": "Update current user",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -14569,10 +14648,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyUser"
           }
         ],
         "x-immich-permission": "user.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/me/calendar-heatmap": {
@@ -15003,6 +15087,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of the current user.",
         "operationId": "updateMyPreferences",
         "parameters": [],
@@ -15041,7 +15126,8 @@
         ],
         "summary": "Update my preferences",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -15055,10 +15141,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyPreferences"
           }
         ],
         "x-immich-permission": "userPreference.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/profile-image": {
@@ -15680,6 +15771,7 @@
         "x-immich-permission": "workflow.read"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
         "operationId": "updateWorkflow",
         "parameters": [
@@ -15729,15 +15821,22 @@
         ],
         "summary": "Update a workflow",
         "tags": [
-          "Workflows"
+          "Workflows",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
             "version": "v3.0.0",
             "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateWorkflow"
           }
         ],
-        "x-immich-permission": "workflow.update"
+        "x-immich-permission": "workflow.update",
+        "x-immich-state": "Deprecated"
       }
     },
     "/workflows/{id}/share": {
@@ -16503,9 +16602,9 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], or null for unrated",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
-            "minimum": 1,
+            "minimum": -1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -16518,14 +16617,9 @@
                 "state": "Stable"
               },
               {
-                "version": "v2.6.0",
-                "state": "Updated",
-                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
-              },
-              {
                 "version": "v3",
                 "state": "Updated",
-                "description": "Using -1 as a rating is no longer valid."
+                "description": "Using 0 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -26331,9 +26425,9 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], or null for unrated",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
-            "minimum": 1,
+            "minimum": -1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -26346,14 +26440,9 @@
                 "state": "Stable"
               },
               {
-                "version": "v2.6.0",
-                "state": "Updated",
-                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
-              },
-              {
                 "version": "v3",
                 "state": "Updated",
-                "description": "Using -1 as a rating is no longer valid."
+                "description": "Using 0 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"

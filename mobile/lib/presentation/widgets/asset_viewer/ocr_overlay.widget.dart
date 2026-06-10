@@ -157,6 +157,55 @@ class _OcrBoxes extends StatelessWidget {
     final cx = viewportWidth / 2 + position.dx;
     final cy = viewportHeight / 2 + position.dy;
 
+    final quads = <List<Offset>>[];
+    final boxes = <Widget>[];
+
+    for (final entry in ocrData.asMap().entries) {
+      final index = entry.key;
+      final ocr = entry.value;
+
+      // Map normalized image coords (0–1) to viewport space
+      final x1 = cx + (ocr.x1 - 0.5) * imageWidth * scale;
+      final y1 = cy + (ocr.y1 - 0.5) * imageHeight * scale;
+      final x2 = cx + (ocr.x2 - 0.5) * imageWidth * scale;
+      final y2 = cy + (ocr.y2 - 0.5) * imageHeight * scale;
+      final x3 = cx + (ocr.x3 - 0.5) * imageWidth * scale;
+      final y3 = cy + (ocr.y3 - 0.5) * imageHeight * scale;
+      final x4 = cx + (ocr.x4 - 0.5) * imageWidth * scale;
+      final y4 = cy + (ocr.y4 - 0.5) * imageHeight * scale;
+
+      // Bounding rectangle for hit testing and Positioned placement
+      final minX = [x1, x2, x3, x4].reduce((a, b) => a < b ? a : b);
+      final maxX = [x1, x2, x3, x4].reduce((a, b) => a > b ? a : b);
+      final minY = [y1, y2, y3, y4].reduce((a, b) => a < b ? a : b);
+      final maxY = [y1, y2, y3, y4].reduce((a, b) => a > b ? a : b);
+
+      quads.add([Offset(x1, y1), Offset(x2, y2), Offset(x3, y3), Offset(x4, y4)]);
+
+      boxes.add(
+        _OcrBoxItem(
+          key: ValueKey(index),
+          ocr: ocr,
+          index: index,
+          isSelected: selectedBoxIndex == index,
+          points: [
+            Offset(x1 - minX, y1 - minY),
+            Offset(x2 - minX, y2 - minY),
+            Offset(x3 - minX, y3 - minY),
+            Offset(x4 - minX, y4 - minY),
+          ],
+          left: minX,
+          top: minY,
+          width: maxX - minX,
+          height: maxY - minY,
+          angle: math.atan2(y2 - y1, x2 - x1),
+          labelDx: (minX + maxX) / 2 - minX,
+          labelDy: (minY + maxY) / 2 - minY,
+          onSelectionChanged: onSelectionChanged,
+        ),
+      );
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => onSelectionChanged(null),
@@ -165,47 +214,13 @@ class _OcrBoxes extends StatelessWidget {
           children: [
             // Fills the viewport so taps outside boxes deselect
             SizedBox(width: viewportWidth, height: viewportHeight),
-            ...ocrData.asMap().entries.map((entry) {
-              final index = entry.key;
-              final ocr = entry.value;
-
-              // Map normalized image coords (0–1) to viewport space
-              final x1 = cx + (ocr.x1 - 0.5) * imageWidth * scale;
-              final y1 = cy + (ocr.y1 - 0.5) * imageHeight * scale;
-              final x2 = cx + (ocr.x2 - 0.5) * imageWidth * scale;
-              final y2 = cy + (ocr.y2 - 0.5) * imageHeight * scale;
-              final x3 = cx + (ocr.x3 - 0.5) * imageWidth * scale;
-              final y3 = cy + (ocr.y3 - 0.5) * imageHeight * scale;
-              final x4 = cx + (ocr.x4 - 0.5) * imageWidth * scale;
-              final y4 = cy + (ocr.y4 - 0.5) * imageHeight * scale;
-
-              // Bounding rectangle for hit testing and Positioned placement
-              final minX = [x1, x2, x3, x4].reduce((a, b) => a < b ? a : b);
-              final maxX = [x1, x2, x3, x4].reduce((a, b) => a > b ? a : b);
-              final minY = [y1, y2, y3, y4].reduce((a, b) => a < b ? a : b);
-              final maxY = [y1, y2, y3, y4].reduce((a, b) => a > b ? a : b);
-
-              return _OcrBoxItem(
-                key: ValueKey(index),
-                ocr: ocr,
-                index: index,
-                isSelected: selectedBoxIndex == index,
-                points: [
-                  Offset(x1 - minX, y1 - minY),
-                  Offset(x2 - minX, y2 - minY),
-                  Offset(x3 - minX, y3 - minY),
-                  Offset(x4 - minX, y4 - minY),
-                ],
-                left: minX,
-                top: minY,
-                width: maxX - minX,
-                height: maxY - minY,
-                angle: math.atan2(y2 - y1, x2 - x1),
-                labelDx: (minX + maxX) / 2 - minX,
-                labelDy: (minY + maxY) / 2 - minY,
-                onSelectionChanged: onSelectionChanged,
-              );
-            }),
+            // Dark scrim with the text boxes punched out
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _OcrScrimPainter(quads: quads)),
+              ),
+            ),
+            ...boxes,
           ],
         ),
       ),
@@ -307,6 +322,35 @@ class _OcrBoxItem extends StatelessWidget {
   }
 }
 
+class _OcrScrimPainter extends CustomPainter {
+  final List<List<Offset>> quads;
+
+  const _OcrScrimPainter({required this.quads});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Fill the whole viewport, then subtract each text quad using the even-odd
+    // rule so the original image shows through the boxes.
+    final path = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(Offset.zero & size);
+
+    for (final quad in quads) {
+      path
+        ..moveTo(quad[0].dx, quad[0].dy)
+        ..lineTo(quad[1].dx, quad[1].dy)
+        ..lineTo(quad[2].dx, quad[2].dy)
+        ..lineTo(quad[3].dx, quad[3].dy)
+        ..close();
+    }
+
+    canvas.drawPath(path, Paint()..color = Colors.black54);
+  }
+
+  @override
+  bool shouldRepaint(_OcrScrimPainter oldDelegate) => true;
+}
+
 class _OcrBoxPainter extends CustomPainter {
   final List<Offset> points;
   final bool isSelected;
@@ -322,7 +366,7 @@ class _OcrBoxPainter extends CustomPainter {
       ..strokeWidth = 2.0;
 
     final fillPaint = Paint()
-      ..color = (isSelected ? colorScheme.primary : colorScheme.secondary).withValues(alpha: 0.1)
+      ..color = isSelected ? colorScheme.primary.withValues(alpha: 0.45) : Colors.transparent
       ..style = PaintingStyle.fill;
 
     final path = Path()
