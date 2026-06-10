@@ -13,15 +13,15 @@ part of openapi.api;
 class ValidateLibraryDto {
   /// Returns a new [ValidateLibraryDto] instance.
   ValidateLibraryDto({
-    this.exclusionPatterns = const Optional.present(const []),
-    this.importPaths = const Optional.present(const []),
+    this.exclusionPatterns = const [],
+    this.importPaths = const [],
   });
 
   /// Exclusion patterns (max 128)
-  Optional<List<String>?> exclusionPatterns;
+  List<String> exclusionPatterns;
 
   /// Import paths to validate (max 128)
-  Optional<List<String>?> importPaths;
+  List<String> importPaths;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryDto &&
@@ -39,14 +39,8 @@ class ValidateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.exclusionPatterns.isPresent) {
-      final value = this.exclusionPatterns.value;
-      json[r'exclusionPatterns'] = value;
-    }
-    if (this.importPaths.isPresent) {
-      final value = this.importPaths.value;
-      json[r'importPaths'] = value;
-    }
+      json[r'exclusionPatterns'] = this.exclusionPatterns;
+      json[r'importPaths'] = this.importPaths;
     return json;
   }
 
@@ -54,17 +48,23 @@ class ValidateLibraryDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ValidateLibraryDto? fromJson(dynamic value) {
-    upgradeDto(value, "ValidateLibraryDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return ValidateLibraryDto(
-        exclusionPatterns: json.containsKey(r'exclusionPatterns') ? Optional.present(json[r'exclusionPatterns'] is Iterable
+        exclusionPatterns: json[r'exclusionPatterns'] is Iterable
             ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
-            : const []) : const Optional.absent(),
-        importPaths: json.containsKey(r'importPaths') ? Optional.present(json[r'importPaths'] is Iterable
+            : const [],
+        importPaths: json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
-            : const []) : const Optional.absent(),
+            : const [],
       );
     }
     return null;

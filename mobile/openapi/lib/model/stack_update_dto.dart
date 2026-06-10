@@ -13,7 +13,7 @@ part of openapi.api;
 class StackUpdateDto {
   /// Returns a new [StackUpdateDto] instance.
   StackUpdateDto({
-    this.primaryAssetId = const Optional.absent(),
+    this.primaryAssetId,
   });
 
   /// Primary asset ID
@@ -23,7 +23,7 @@ class StackUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> primaryAssetId;
+  String? primaryAssetId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is StackUpdateDto &&
@@ -39,9 +39,10 @@ class StackUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.primaryAssetId.isPresent) {
-      final value = this.primaryAssetId.value;
-      json[r'primaryAssetId'] = value;
+    if (this.primaryAssetId != null) {
+      json[r'primaryAssetId'] = this.primaryAssetId;
+    } else {
+      json[r'primaryAssetId'] = null;
     }
     return json;
   }
@@ -50,12 +51,18 @@ class StackUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static StackUpdateDto? fromJson(dynamic value) {
-    upgradeDto(value, "StackUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return StackUpdateDto(
-        primaryAssetId: json.containsKey(r'primaryAssetId') ? Optional.present(mapValueOfType<String>(json, r'primaryAssetId')) : const Optional.absent(),
+        primaryAssetId: mapValueOfType<String>(json, r'primaryAssetId'),
       );
     }
     return null;

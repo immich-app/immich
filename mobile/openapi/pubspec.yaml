@@ -13,5 +13,5 @@ dependencies:
   http: '>=0.13.0 <2.0.0'
   intl: any
   meta: '>=1.1.8 <2.0.0'
-  immich_mobile:
-    path: ../
+dev_dependencies:
+  test: '>=1.21.6 <1.22.0'

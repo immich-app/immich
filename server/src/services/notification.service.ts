@@ -253,7 +253,7 @@ export class NotificationService extends BaseService {
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name || '',
       },
       customTemplate: tempTemplate!,
     });
@@ -282,7 +282,7 @@ export class NotificationService extends BaseService {
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name || '',
         username: user.email,
         password,
       },
@@ -332,7 +332,7 @@ export class NotificationService extends BaseService {
         albumId: album.id,
         albumName: album.albumName,
         senderName,
-        recipientName: recipient.name,
+        recipientName: recipient.name || '',
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumInviteTemplate,
@@ -388,7 +388,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
         albumName: album.albumName,
-        recipientName: user.name,
+        recipientName: user.name || '',
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumUpdateTemplate,
@@ -459,7 +459,7 @@ export class NotificationService extends BaseService {
     album: MapAlbumDto,
     userId: string,
     type: NotificationType.AlbumInvite | NotificationType.AlbumUpdate,
-    senderName?: string,
+    senderName?: string | null,
   ) {
     const isInvite = type === NotificationType.AlbumInvite;
     const item = await this.notificationRepository.create({
@@ -468,7 +468,7 @@ export class NotificationService extends BaseService {
       level: isInvite ? NotificationLevel.Success : NotificationLevel.Info,
       title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
       description: isInvite
-        ? `${senderName} shared an album (${album.albumName}) with you`
+        ? `${senderName || 'Someone'} shared an album (${album.albumName}) with you`
         : `New media has been added to the album (${album.albumName})`,
       data: JSON.stringify({ albumId: album.id }),
     });

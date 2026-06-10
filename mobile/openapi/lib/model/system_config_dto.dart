@@ -160,9 +160,57 @@ class SystemConfigDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'backup'), 'Required key "SystemConfigDto[backup]" is missing from JSON.');
+        assert(json[r'backup'] != null, 'Required key "SystemConfigDto[backup]" has a null value in JSON.');
+        assert(json.containsKey(r'ffmpeg'), 'Required key "SystemConfigDto[ffmpeg]" is missing from JSON.');
+        assert(json[r'ffmpeg'] != null, 'Required key "SystemConfigDto[ffmpeg]" has a null value in JSON.');
+        assert(json.containsKey(r'image'), 'Required key "SystemConfigDto[image]" is missing from JSON.');
+        assert(json[r'image'] != null, 'Required key "SystemConfigDto[image]" has a null value in JSON.');
+        assert(json.containsKey(r'job'), 'Required key "SystemConfigDto[job]" is missing from JSON.');
+        assert(json[r'job'] != null, 'Required key "SystemConfigDto[job]" has a null value in JSON.');
+        assert(json.containsKey(r'library'), 'Required key "SystemConfigDto[library]" is missing from JSON.');
+        assert(json[r'library'] != null, 'Required key "SystemConfigDto[library]" has a null value in JSON.');
+        assert(json.containsKey(r'logging'), 'Required key "SystemConfigDto[logging]" is missing from JSON.');
+        assert(json[r'logging'] != null, 'Required key "SystemConfigDto[logging]" has a null value in JSON.');
+        assert(json.containsKey(r'machineLearning'), 'Required key "SystemConfigDto[machineLearning]" is missing from JSON.');
+        assert(json[r'machineLearning'] != null, 'Required key "SystemConfigDto[machineLearning]" has a null value in JSON.');
+        assert(json.containsKey(r'map'), 'Required key "SystemConfigDto[map]" is missing from JSON.');
+        assert(json[r'map'] != null, 'Required key "SystemConfigDto[map]" has a null value in JSON.');
+        assert(json.containsKey(r'metadata'), 'Required key "SystemConfigDto[metadata]" is missing from JSON.');
+        assert(json[r'metadata'] != null, 'Required key "SystemConfigDto[metadata]" has a null value in JSON.');
+        assert(json.containsKey(r'newVersionCheck'), 'Required key "SystemConfigDto[newVersionCheck]" is missing from JSON.');
+        assert(json[r'newVersionCheck'] != null, 'Required key "SystemConfigDto[newVersionCheck]" has a null value in JSON.');
+        assert(json.containsKey(r'nightlyTasks'), 'Required key "SystemConfigDto[nightlyTasks]" is missing from JSON.');
+        assert(json[r'nightlyTasks'] != null, 'Required key "SystemConfigDto[nightlyTasks]" has a null value in JSON.');
+        assert(json.containsKey(r'notifications'), 'Required key "SystemConfigDto[notifications]" is missing from JSON.');
+        assert(json[r'notifications'] != null, 'Required key "SystemConfigDto[notifications]" has a null value in JSON.');
+        assert(json.containsKey(r'oauth'), 'Required key "SystemConfigDto[oauth]" is missing from JSON.');
+        assert(json[r'oauth'] != null, 'Required key "SystemConfigDto[oauth]" has a null value in JSON.');
+        assert(json.containsKey(r'passwordLogin'), 'Required key "SystemConfigDto[passwordLogin]" is missing from JSON.');
+        assert(json[r'passwordLogin'] != null, 'Required key "SystemConfigDto[passwordLogin]" has a null value in JSON.');
+        assert(json.containsKey(r'reverseGeocoding'), 'Required key "SystemConfigDto[reverseGeocoding]" is missing from JSON.');
+        assert(json[r'reverseGeocoding'] != null, 'Required key "SystemConfigDto[reverseGeocoding]" has a null value in JSON.');
+        assert(json.containsKey(r'server'), 'Required key "SystemConfigDto[server]" is missing from JSON.');
+        assert(json[r'server'] != null, 'Required key "SystemConfigDto[server]" has a null value in JSON.');
+        assert(json.containsKey(r'storageTemplate'), 'Required key "SystemConfigDto[storageTemplate]" is missing from JSON.');
+        assert(json[r'storageTemplate'] != null, 'Required key "SystemConfigDto[storageTemplate]" has a null value in JSON.');
+        assert(json.containsKey(r'templates'), 'Required key "SystemConfigDto[templates]" is missing from JSON.');
+        assert(json[r'templates'] != null, 'Required key "SystemConfigDto[templates]" has a null value in JSON.');
+        assert(json.containsKey(r'theme'), 'Required key "SystemConfigDto[theme]" is missing from JSON.');
+        assert(json[r'theme'] != null, 'Required key "SystemConfigDto[theme]" has a null value in JSON.');
+        assert(json.containsKey(r'trash'), 'Required key "SystemConfigDto[trash]" is missing from JSON.');
+        assert(json[r'trash'] != null, 'Required key "SystemConfigDto[trash]" has a null value in JSON.');
+        assert(json.containsKey(r'user'), 'Required key "SystemConfigDto[user]" is missing from JSON.');
+        assert(json[r'user'] != null, 'Required key "SystemConfigDto[user]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigDto(
         backup: SystemConfigBackupsDto.fromJson(json[r'backup'])!,

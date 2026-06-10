@@ -13,7 +13,7 @@ part of openapi.api;
 class SyncStreamDto {
   /// Returns a new [SyncStreamDto] instance.
   SyncStreamDto({
-    this.reset = const Optional.absent(),
+    this.reset,
     this.types = const [],
   });
 
@@ -24,7 +24,7 @@ class SyncStreamDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> reset;
+  bool? reset;
 
   /// Sync request types
   List<SyncRequestType> types;
@@ -45,9 +45,10 @@ class SyncStreamDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.reset.isPresent) {
-      final value = this.reset.value;
-      json[r'reset'] = value;
+    if (this.reset != null) {
+      json[r'reset'] = this.reset;
+    } else {
+      json[r'reset'] = null;
     }
       json[r'types'] = this.types;
     return json;
@@ -57,12 +58,20 @@ class SyncStreamDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncStreamDto? fromJson(dynamic value) {
-    upgradeDto(value, "SyncStreamDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'types'), 'Required key "SyncStreamDto[types]" is missing from JSON.');
+        assert(json[r'types'] != null, 'Required key "SyncStreamDto[types]" has a null value in JSON.');
+        return true;
+      }());
+
       return SyncStreamDto(
-        reset: json.containsKey(r'reset') ? Optional.present(mapValueOfType<bool>(json, r'reset')) : const Optional.absent(),
+        reset: mapValueOfType<bool>(json, r'reset'),
         types: SyncRequestType.listFromJson(json[r'types']),
       );
     }

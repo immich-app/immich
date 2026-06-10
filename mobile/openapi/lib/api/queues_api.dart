@@ -27,9 +27,9 @@ class QueuesApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
-  Future<Response> emptyQueueWithHttpInfo(QueueName name, QueueDeleteDto queueDeleteDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> emptyQueueWithHttpInfo(QueueName name, QueueDeleteDto queueDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}/jobs'
+    final path = r'/queues/{name}/jobs'
       .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
@@ -43,14 +43,13 @@ class QueuesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -63,8 +62,8 @@ class QueuesApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
-  Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto, { Future<void>? abortTrigger, }) async {
-    final response = await emptyQueueWithHttpInfo(name, queueDeleteDto, abortTrigger: abortTrigger,);
+  Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto,) async {
+    final response = await emptyQueueWithHttpInfo(name, queueDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -79,9 +78,9 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  Future<Response> getQueueWithHttpInfo(QueueName name, { Future<void>? abortTrigger, }) async {
+  Future<Response> getQueueWithHttpInfo(QueueName name,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}'
+    final path = r'/queues/{name}'
       .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
@@ -95,14 +94,13 @@ class QueuesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -113,8 +111,8 @@ class QueuesApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  Future<QueueResponseDto?> getQueue(QueueName name, { Future<void>? abortTrigger, }) async {
-    final response = await getQueueWithHttpInfo(name, abortTrigger: abortTrigger,);
+  Future<QueueResponseDto?> getQueue(QueueName name,) async {
+    final response = await getQueueWithHttpInfo(name,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -140,9 +138,9 @@ class QueuesApi {
   ///
   /// * [List<QueueJobStatus>] status:
   ///   Filter jobs by status
-  Future<Response> getQueueJobsWithHttpInfo(QueueName name, { List<QueueJobStatus>? status, Future<void>? abortTrigger, }) async {
+  Future<Response> getQueueJobsWithHttpInfo(QueueName name, { List<QueueJobStatus>? status, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}/jobs'
+    final path = r'/queues/{name}/jobs'
       .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
@@ -160,14 +158,13 @@ class QueuesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -181,8 +178,8 @@ class QueuesApi {
   ///
   /// * [List<QueueJobStatus>] status:
   ///   Filter jobs by status
-  Future<List<QueueJobResponseDto>?> getQueueJobs(QueueName name, { List<QueueJobStatus>? status, Future<void>? abortTrigger, }) async {
-    final response = await getQueueJobsWithHttpInfo(name, status: status, abortTrigger: abortTrigger,);
+  Future<List<QueueJobResponseDto>?> getQueueJobs(QueueName name, { List<QueueJobStatus>? status, }) async {
+    final response = await getQueueJobsWithHttpInfo(name,  status: status, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -204,9 +201,9 @@ class QueuesApi {
   /// Retrieves a list of queues.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getQueuesWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getQueuesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/queues';
+    final path = r'/queues';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -219,22 +216,21 @@ class QueuesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// List all queues
   ///
   /// Retrieves a list of queues.
-  Future<List<QueueResponseDto>?> getQueues({ Future<void>? abortTrigger, }) async {
-    final response = await getQueuesWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<List<QueueResponseDto>?> getQueues() async {
+    final response = await getQueuesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -262,9 +258,9 @@ class QueuesApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
-  Future<Response> updateQueueWithHttpInfo(QueueName name, QueueUpdateDto queueUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateQueueWithHttpInfo(QueueName name, QueueUpdateDto queueUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/queues/{name}'
+    final path = r'/queues/{name}'
       .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
@@ -278,14 +274,13 @@ class QueuesApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -298,8 +293,8 @@ class QueuesApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
-  Future<QueueResponseDto?> updateQueue(QueueName name, QueueUpdateDto queueUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateQueueWithHttpInfo(name, queueUpdateDto, abortTrigger: abortTrigger,);
+  Future<QueueResponseDto?> updateQueue(QueueName name, QueueUpdateDto queueUpdateDto,) async {
+    final response = await updateQueueWithHttpInfo(name, queueUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

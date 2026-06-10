@@ -14,7 +14,7 @@ class DownloadArchiveDto {
   /// Returns a new [DownloadArchiveDto] instance.
   DownloadArchiveDto({
     this.assetIds = const [],
-    this.edited = const Optional.absent(),
+    this.edited,
   });
 
   /// Asset IDs
@@ -27,7 +27,7 @@ class DownloadArchiveDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> edited;
+  bool? edited;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadArchiveDto &&
@@ -46,9 +46,10 @@ class DownloadArchiveDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetIds'] = this.assetIds;
-    if (this.edited.isPresent) {
-      final value = this.edited.value;
-      json[r'edited'] = value;
+    if (this.edited != null) {
+      json[r'edited'] = this.edited;
+    } else {
+      json[r'edited'] = null;
     }
     return json;
   }
@@ -57,15 +58,23 @@ class DownloadArchiveDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DownloadArchiveDto? fromJson(dynamic value) {
-    upgradeDto(value, "DownloadArchiveDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetIds'), 'Required key "DownloadArchiveDto[assetIds]" is missing from JSON.');
+        assert(json[r'assetIds'] != null, 'Required key "DownloadArchiveDto[assetIds]" has a null value in JSON.');
+        return true;
+      }());
 
       return DownloadArchiveDto(
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        edited: json.containsKey(r'edited') ? Optional.present(mapValueOfType<bool>(json, r'edited')) : const Optional.absent(),
+        edited: mapValueOfType<bool>(json, r'edited'),
       );
     }
     return null;

@@ -51,9 +51,19 @@ class TimeBucketsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TimeBucketsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "TimeBucketsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'count'), 'Required key "TimeBucketsResponseDto[count]" is missing from JSON.');
+        assert(json[r'count'] != null, 'Required key "TimeBucketsResponseDto[count]" has a null value in JSON.');
+        assert(json.containsKey(r'timeBucket'), 'Required key "TimeBucketsResponseDto[timeBucket]" is missing from JSON.');
+        assert(json[r'timeBucket'] != null, 'Required key "TimeBucketsResponseDto[timeBucket]" has a null value in JSON.');
+        return true;
+      }());
 
       return TimeBucketsResponseDto(
         count: mapValueOfType<int>(json, r'count')!,

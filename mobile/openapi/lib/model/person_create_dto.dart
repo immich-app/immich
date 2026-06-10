@@ -13,18 +13,18 @@ part of openapi.api;
 class PersonCreateDto {
   /// Returns a new [PersonCreateDto] instance.
   PersonCreateDto({
-    this.birthDate = const Optional.absent(),
-    this.color = const Optional.absent(),
-    this.isFavorite = const Optional.absent(),
-    this.isHidden = const Optional.absent(),
-    this.name = const Optional.absent(),
+    this.birthDate,
+    this.color,
+    this.isFavorite,
+    this.isHidden,
+    this.name,
   });
 
   /// Person date of birth
-  Optional<DateTime?> birthDate;
+  DateTime? birthDate;
 
   /// Person color (hex)
-  Optional<String?> color;
+  String? color;
 
   /// Mark as favorite
   ///
@@ -33,7 +33,7 @@ class PersonCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> isFavorite;
+  bool? isFavorite;
 
   /// Person visibility (hidden)
   ///
@@ -42,16 +42,10 @@ class PersonCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> isHidden;
+  bool? isHidden;
 
   /// Person name
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  Optional<String?> name;
+  String? name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonCreateDto &&
@@ -75,25 +69,30 @@ class PersonCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate.isPresent) {
-      final value = this.birthDate.value;
-      json[r'birthDate'] = value == null ? null : _dateFormatter.format(value.toUtc());
+    if (this.birthDate != null) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    } else {
+      json[r'birthDate'] = null;
     }
-    if (this.color.isPresent) {
-      final value = this.color.value;
-      json[r'color'] = value;
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+      json[r'color'] = null;
     }
-    if (this.isFavorite.isPresent) {
-      final value = this.isFavorite.value;
-      json[r'isFavorite'] = value;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+      json[r'isFavorite'] = null;
     }
-    if (this.isHidden.isPresent) {
-      final value = this.isHidden.value;
-      json[r'isHidden'] = value;
+    if (this.isHidden != null) {
+      json[r'isHidden'] = this.isHidden;
+    } else {
+      json[r'isHidden'] = null;
     }
-    if (this.name.isPresent) {
-      final value = this.name.value;
-      json[r'name'] = value;
+    if (this.name != null) {
+      json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
     }
     return json;
   }
@@ -102,16 +101,22 @@ class PersonCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PersonCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "PersonCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return PersonCreateDto(
-        birthDate: json.containsKey(r'birthDate') ? Optional.present(mapDateTime(json, r'birthDate', r'')) : const Optional.absent(),
-        color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
-        isFavorite: json.containsKey(r'isFavorite') ? Optional.present(mapValueOfType<bool>(json, r'isFavorite')) : const Optional.absent(),
-        isHidden: json.containsKey(r'isHidden') ? Optional.present(mapValueOfType<bool>(json, r'isHidden')) : const Optional.absent(),
-        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
+        birthDate: mapDateTime(json, r'birthDate', r''),
+        color: mapValueOfType<String>(json, r'color'),
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        isHidden: mapValueOfType<bool>(json, r'isHidden'),
+        name: mapValueOfType<String>(json, r'name'),
       );
     }
     return null;

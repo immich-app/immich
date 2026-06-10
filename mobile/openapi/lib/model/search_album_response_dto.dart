@@ -66,9 +66,23 @@ class SearchAlbumResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchAlbumResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "SearchAlbumResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'count'), 'Required key "SearchAlbumResponseDto[count]" is missing from JSON.');
+        assert(json[r'count'] != null, 'Required key "SearchAlbumResponseDto[count]" has a null value in JSON.');
+        assert(json.containsKey(r'facets'), 'Required key "SearchAlbumResponseDto[facets]" is missing from JSON.');
+        assert(json[r'facets'] != null, 'Required key "SearchAlbumResponseDto[facets]" has a null value in JSON.');
+        assert(json.containsKey(r'items'), 'Required key "SearchAlbumResponseDto[items]" is missing from JSON.');
+        assert(json[r'items'] != null, 'Required key "SearchAlbumResponseDto[items]" has a null value in JSON.');
+        assert(json.containsKey(r'total'), 'Required key "SearchAlbumResponseDto[total]" is missing from JSON.');
+        assert(json[r'total'] != null, 'Required key "SearchAlbumResponseDto[total]" has a null value in JSON.');
+        return true;
+      }());
 
       return SearchAlbumResponseDto(
         count: mapValueOfType<int>(json, r'count')!,

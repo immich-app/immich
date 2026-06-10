@@ -13,7 +13,7 @@ part of openapi.api;
 class AlbumsAddAssetsResponseDto {
   /// Returns a new [AlbumsAddAssetsResponseDto] instance.
   AlbumsAddAssetsResponseDto({
-    this.error = const Optional.absent(),
+    this.error,
     required this.success,
   });
 
@@ -23,7 +23,7 @@ class AlbumsAddAssetsResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<BulkIdErrorReason?> error;
+  BulkIdErrorReason? error;
 
   /// Operation success
   bool success;
@@ -44,9 +44,10 @@ class AlbumsAddAssetsResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.error.isPresent) {
-      final value = this.error.value;
-      json[r'error'] = value;
+    if (this.error != null) {
+      json[r'error'] = this.error;
+    } else {
+      json[r'error'] = null;
     }
       json[r'success'] = this.success;
     return json;
@@ -56,12 +57,20 @@ class AlbumsAddAssetsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumsAddAssetsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumsAddAssetsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'success'), 'Required key "AlbumsAddAssetsResponseDto[success]" is missing from JSON.');
+        assert(json[r'success'] != null, 'Required key "AlbumsAddAssetsResponseDto[success]" has a null value in JSON.');
+        return true;
+      }());
+
       return AlbumsAddAssetsResponseDto(
-        error: json.containsKey(r'error') ? Optional.present(BulkIdErrorReason.fromJson(json[r'error'])) : const Optional.absent(),
+        error: BulkIdErrorReason.fromJson(json[r'error']),
         success: mapValueOfType<bool>(json, r'success')!,
       );
     }

@@ -10,7 +10,7 @@ abstract final class UserConverter {
     name: dto.name,
     isAdmin: false,
     updatedAt: DateTime.now(),
-    hasProfileImage: dto.profileImagePath.isNotEmpty,
+    hasProfileImage: dto.profileImagePath.orElse('').isNotEmpty,
     profileChangedAt: dto.profileChangedAt,
     avatarColor: dto.avatarColor.toAvatarColor(),
   );
@@ -27,7 +27,7 @@ abstract final class UserConverter {
     isPartnerSharedBy: false,
     isPartnerSharedWith: false,
     profileChangedAt: adminDto.profileChangedAt,
-    hasProfileImage: adminDto.profileImagePath.isNotEmpty,
+    hasProfileImage: adminDto.profileImagePath.orElse('').isNotEmpty,
     quotaSizeInBytes: adminDto.quotaSizeInBytes ?? 0,
     quotaUsageInBytes: adminDto.quotaUsageInBytes ?? 0,
   );
@@ -44,7 +44,7 @@ abstract final class UserConverter {
     isPartnerSharedBy: false,
     isPartnerSharedWith: false,
     profileChangedAt: dto.profileChangedAt,
-    hasProfileImage: dto.profileImagePath.isNotEmpty,
+    hasProfileImage: dto.profileImagePath.orElse('').isNotEmpty,
   );
 }
 

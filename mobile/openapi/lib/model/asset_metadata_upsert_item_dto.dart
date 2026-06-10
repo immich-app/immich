@@ -48,9 +48,19 @@ class AssetMetadataUpsertItemDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetMetadataUpsertItemDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetMetadataUpsertItemDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'key'), 'Required key "AssetMetadataUpsertItemDto[key]" is missing from JSON.');
+        assert(json[r'key'] != null, 'Required key "AssetMetadataUpsertItemDto[key]" has a null value in JSON.');
+        assert(json.containsKey(r'value'), 'Required key "AssetMetadataUpsertItemDto[value]" is missing from JSON.');
+        assert(json[r'value'] != null, 'Required key "AssetMetadataUpsertItemDto[value]" has a null value in JSON.');
+        return true;
+      }());
 
       return AssetMetadataUpsertItemDto(
         key: mapValueOfType<String>(json, r'key')!,

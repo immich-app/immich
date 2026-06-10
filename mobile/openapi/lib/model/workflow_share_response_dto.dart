@@ -69,9 +69,21 @@ class WorkflowShareResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static WorkflowShareResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "WorkflowShareResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'description'), 'Required key "WorkflowShareResponseDto[description]" is missing from JSON.');
+        assert(json.containsKey(r'name'), 'Required key "WorkflowShareResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'steps'), 'Required key "WorkflowShareResponseDto[steps]" is missing from JSON.');
+        assert(json[r'steps'] != null, 'Required key "WorkflowShareResponseDto[steps]" has a null value in JSON.');
+        assert(json.containsKey(r'trigger'), 'Required key "WorkflowShareResponseDto[trigger]" is missing from JSON.');
+        assert(json[r'trigger'] != null, 'Required key "WorkflowShareResponseDto[trigger]" has a null value in JSON.');
+        return true;
+      }());
 
       return WorkflowShareResponseDto(
         description: mapValueOfType<String>(json, r'description'),

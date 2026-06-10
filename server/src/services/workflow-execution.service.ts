@@ -299,7 +299,7 @@ export class WorkflowExecutionService extends BaseService {
                 authUserId: asset.ownerId,
               };
             },
-            write: async (auth, changes) => {
+            write: async (auth, changes: any) => {
               const asset = changes.asset;
               if (!asset) {
                 return;
@@ -369,7 +369,7 @@ export class WorkflowExecutionService extends BaseService {
       const readResult = await read(type);
       let data = readResult.data;
       for (const step of workflow.steps) {
-        const payload: WorkflowEventPayload = {
+        const payload: WorkflowEventPayload<T> = {
           trigger: workflow.trigger,
           type,
           config: step.config ?? {},

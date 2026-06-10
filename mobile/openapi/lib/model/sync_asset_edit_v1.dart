@@ -71,9 +71,25 @@ class SyncAssetEditV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAssetEditV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetEditV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'action'), 'Required key "SyncAssetEditV1[action]" is missing from JSON.');
+        assert(json[r'action'] != null, 'Required key "SyncAssetEditV1[action]" has a null value in JSON.');
+        assert(json.containsKey(r'assetId'), 'Required key "SyncAssetEditV1[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "SyncAssetEditV1[assetId]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncAssetEditV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncAssetEditV1[id]" has a null value in JSON.');
+        assert(json.containsKey(r'parameters'), 'Required key "SyncAssetEditV1[parameters]" is missing from JSON.');
+        assert(json[r'parameters'] != null, 'Required key "SyncAssetEditV1[parameters]" has a null value in JSON.');
+        assert(json.containsKey(r'sequence'), 'Required key "SyncAssetEditV1[sequence]" is missing from JSON.');
+        assert(json[r'sequence'] != null, 'Required key "SyncAssetEditV1[sequence]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAssetEditV1(
         action: AssetEditAction.fromJson(json[r'action'])!,

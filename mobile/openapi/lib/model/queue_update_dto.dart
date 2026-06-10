@@ -13,7 +13,7 @@ part of openapi.api;
 class QueueUpdateDto {
   /// Returns a new [QueueUpdateDto] instance.
   QueueUpdateDto({
-    this.isPaused = const Optional.absent(),
+    this.isPaused,
   });
 
   /// Whether to pause the queue
@@ -23,7 +23,7 @@ class QueueUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> isPaused;
+  bool? isPaused;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueUpdateDto &&
@@ -39,9 +39,10 @@ class QueueUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.isPaused.isPresent) {
-      final value = this.isPaused.value;
-      json[r'isPaused'] = value;
+    if (this.isPaused != null) {
+      json[r'isPaused'] = this.isPaused;
+    } else {
+      json[r'isPaused'] = null;
     }
     return json;
   }
@@ -50,12 +51,18 @@ class QueueUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static QueueUpdateDto? fromJson(dynamic value) {
-    upgradeDto(value, "QueueUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return QueueUpdateDto(
-        isPaused: json.containsKey(r'isPaused') ? Optional.present(mapValueOfType<bool>(json, r'isPaused')) : const Optional.absent(),
+        isPaused: mapValueOfType<bool>(json, r'isPaused'),
       );
     }
     return null;

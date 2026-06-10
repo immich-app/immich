@@ -13,9 +13,9 @@ part of openapi.api;
 class EmailNotificationsUpdate {
   /// Returns a new [EmailNotificationsUpdate] instance.
   EmailNotificationsUpdate({
-    this.albumInvite = const Optional.absent(),
-    this.albumUpdate = const Optional.absent(),
-    this.enabled = const Optional.absent(),
+    this.albumInvite,
+    this.albumUpdate,
+    this.enabled,
   });
 
   /// Whether to receive email notifications for album invites
@@ -25,7 +25,7 @@ class EmailNotificationsUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> albumInvite;
+  bool? albumInvite;
 
   /// Whether to receive email notifications for album updates
   ///
@@ -34,7 +34,7 @@ class EmailNotificationsUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> albumUpdate;
+  bool? albumUpdate;
 
   /// Whether email notifications are enabled
   ///
@@ -43,7 +43,7 @@ class EmailNotificationsUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> enabled;
+  bool? enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is EmailNotificationsUpdate &&
@@ -63,17 +63,20 @@ class EmailNotificationsUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albumInvite.isPresent) {
-      final value = this.albumInvite.value;
-      json[r'albumInvite'] = value;
+    if (this.albumInvite != null) {
+      json[r'albumInvite'] = this.albumInvite;
+    } else {
+      json[r'albumInvite'] = null;
     }
-    if (this.albumUpdate.isPresent) {
-      final value = this.albumUpdate.value;
-      json[r'albumUpdate'] = value;
+    if (this.albumUpdate != null) {
+      json[r'albumUpdate'] = this.albumUpdate;
+    } else {
+      json[r'albumUpdate'] = null;
     }
-    if (this.enabled.isPresent) {
-      final value = this.enabled.value;
-      json[r'enabled'] = value;
+    if (this.enabled != null) {
+      json[r'enabled'] = this.enabled;
+    } else {
+      json[r'enabled'] = null;
     }
     return json;
   }
@@ -82,14 +85,20 @@ class EmailNotificationsUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static EmailNotificationsUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "EmailNotificationsUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return EmailNotificationsUpdate(
-        albumInvite: json.containsKey(r'albumInvite') ? Optional.present(mapValueOfType<bool>(json, r'albumInvite')) : const Optional.absent(),
-        albumUpdate: json.containsKey(r'albumUpdate') ? Optional.present(mapValueOfType<bool>(json, r'albumUpdate')) : const Optional.absent(),
-        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        albumInvite: mapValueOfType<bool>(json, r'albumInvite'),
+        albumUpdate: mapValueOfType<bool>(json, r'albumUpdate'),
+        enabled: mapValueOfType<bool>(json, r'enabled'),
       );
     }
     return null;

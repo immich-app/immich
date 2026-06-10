@@ -13,7 +13,7 @@ part of openapi.api;
 class SyncAuthUserV1 {
   /// Returns a new [SyncAuthUserV1] instance.
   SyncAuthUserV1({
-    this.avatarColor = const Optional.absent(),
+    this.avatarColor,
     required this.deletedAt,
     required this.email,
     required this.hasProfileImage,
@@ -28,7 +28,7 @@ class SyncAuthUserV1 {
     required this.storageLabel,
   });
 
-  Optional<UserAvatarColor?> avatarColor;
+  UserAvatarColor? avatarColor;
 
   /// User deleted at
   DateTime? deletedAt;
@@ -46,10 +46,10 @@ class SyncAuthUserV1 {
   bool isAdmin;
 
   /// User name
-  String name;
+  String? name;
 
   /// User OAuth ID
-  String oauthId;
+  String? oauthId;
 
   /// User pin code
   String? pinCode;
@@ -97,8 +97,8 @@ class SyncAuthUserV1 {
     (hasProfileImage.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (oauthId == null ? 0 : oauthId!.hashCode) +
     (pinCode == null ? 0 : pinCode!.hashCode) +
     (profileChangedAt.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
@@ -110,9 +110,10 @@ class SyncAuthUserV1 {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor.isPresent) {
-      final value = this.avatarColor.value;
-      json[r'avatarColor'] = value;
+    if (this.avatarColor != null) {
+      json[r'avatarColor'] = this.avatarColor;
+    } else {
+      json[r'avatarColor'] = null;
     }
     if (this.deletedAt != null) {
       json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
@@ -125,8 +126,16 @@ class SyncAuthUserV1 {
       json[r'hasProfileImage'] = this.hasProfileImage;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.oauthId != null) {
       json[r'oauthId'] = this.oauthId;
+    } else {
+      json[r'oauthId'] = null;
+    }
     if (this.pinCode != null) {
       json[r'pinCode'] = this.pinCode;
     } else {
@@ -153,19 +162,43 @@ class SyncAuthUserV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAuthUserV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAuthUserV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'deletedAt'), 'Required key "SyncAuthUserV1[deletedAt]" is missing from JSON.');
+        assert(json.containsKey(r'email'), 'Required key "SyncAuthUserV1[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "SyncAuthUserV1[email]" has a null value in JSON.');
+        assert(json.containsKey(r'hasProfileImage'), 'Required key "SyncAuthUserV1[hasProfileImage]" is missing from JSON.');
+        assert(json[r'hasProfileImage'] != null, 'Required key "SyncAuthUserV1[hasProfileImage]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncAuthUserV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncAuthUserV1[id]" has a null value in JSON.');
+        assert(json.containsKey(r'isAdmin'), 'Required key "SyncAuthUserV1[isAdmin]" is missing from JSON.');
+        assert(json[r'isAdmin'] != null, 'Required key "SyncAuthUserV1[isAdmin]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "SyncAuthUserV1[name]" is missing from JSON.');
+        assert(json.containsKey(r'oauthId'), 'Required key "SyncAuthUserV1[oauthId]" is missing from JSON.');
+        assert(json.containsKey(r'pinCode'), 'Required key "SyncAuthUserV1[pinCode]" is missing from JSON.');
+        assert(json.containsKey(r'profileChangedAt'), 'Required key "SyncAuthUserV1[profileChangedAt]" is missing from JSON.');
+        assert(json[r'profileChangedAt'] != null, 'Required key "SyncAuthUserV1[profileChangedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'quotaSizeInBytes'), 'Required key "SyncAuthUserV1[quotaSizeInBytes]" is missing from JSON.');
+        assert(json.containsKey(r'quotaUsageInBytes'), 'Required key "SyncAuthUserV1[quotaUsageInBytes]" is missing from JSON.');
+        assert(json[r'quotaUsageInBytes'] != null, 'Required key "SyncAuthUserV1[quotaUsageInBytes]" has a null value in JSON.');
+        assert(json.containsKey(r'storageLabel'), 'Required key "SyncAuthUserV1[storageLabel]" is missing from JSON.');
+        return true;
+      }());
+
       return SyncAuthUserV1(
-        avatarColor: json.containsKey(r'avatarColor') ? Optional.present(UserAvatarColor.fromJson(json[r'avatarColor'])) : const Optional.absent(),
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         email: mapValueOfType<String>(json, r'email')!,
         hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        name: mapValueOfType<String>(json, r'name'),
+        oauthId: mapValueOfType<String>(json, r'oauthId'),
         pinCode: mapValueOfType<String>(json, r'pinCode'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),

@@ -29,9 +29,9 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadArchiveWithHttpInfo(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+  Future<Response> downloadArchiveWithHttpInfo(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/download/archive';
+    final path = r'/download/archive';
 
     // ignore: prefer_final_locals
     Object? postBody = downloadArchiveDto;
@@ -51,14 +51,13 @@ class DownloadApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -73,8 +72,8 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadArchive(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
-    final response = await downloadArchiveWithHttpInfo(downloadArchiveDto, key: key, slug: slug, abortTrigger: abortTrigger,);
+  Future<MultipartFile?> downloadArchive(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, }) async {
+    final response = await downloadArchiveWithHttpInfo(downloadArchiveDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -101,9 +100,9 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/download/info';
+    final path = r'/download/info';
 
     // ignore: prefer_final_locals
     Object? postBody = downloadInfoDto;
@@ -123,14 +122,13 @@ class DownloadApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -145,8 +143,8 @@ class DownloadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
-    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto, key: key, slug: slug, abortTrigger: abortTrigger,);
+  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
+    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

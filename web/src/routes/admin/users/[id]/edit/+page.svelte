@@ -42,9 +42,9 @@
     event.preventDefault();
 
     const success = await handleUpdateUserAdmin(user, {
-      email,
-      name,
-      storageLabel,
+      email: email || null,
+      name: name || null,
+      storageLabel: storageLabel || null,
       quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
       isAdmin,
     });

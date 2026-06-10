@@ -41,9 +41,17 @@ class SyncUserDeleteV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncUserDeleteV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncUserDeleteV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'userId'), 'Required key "SyncUserDeleteV1[userId]" is missing from JSON.');
+        assert(json[r'userId'] != null, 'Required key "SyncUserDeleteV1[userId]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncUserDeleteV1(
         userId: mapValueOfType<String>(json, r'userId')!,

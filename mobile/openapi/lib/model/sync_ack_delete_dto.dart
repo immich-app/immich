@@ -13,11 +13,11 @@ part of openapi.api;
 class SyncAckDeleteDto {
   /// Returns a new [SyncAckDeleteDto] instance.
   SyncAckDeleteDto({
-    this.types = const Optional.present(const []),
+    this.types = const [],
   });
 
   /// Sync entity types to delete acks for
-  Optional<List<SyncEntityType>?> types;
+  List<SyncEntityType> types;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAckDeleteDto &&
@@ -33,10 +33,7 @@ class SyncAckDeleteDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.types.isPresent) {
-      final value = this.types.value;
-      json[r'types'] = value;
-    }
+      json[r'types'] = this.types;
     return json;
   }
 
@@ -44,12 +41,18 @@ class SyncAckDeleteDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAckDeleteDto? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAckDeleteDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return SyncAckDeleteDto(
-        types: json.containsKey(r'types') ? Optional.present(SyncEntityType.listFromJson(json[r'types'])) : const Optional.absent(),
+        types: SyncEntityType.listFromJson(json[r'types']),
       );
     }
     return null;

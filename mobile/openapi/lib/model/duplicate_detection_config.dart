@@ -51,9 +51,19 @@ class DuplicateDetectionConfig {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DuplicateDetectionConfig? fromJson(dynamic value) {
-    upgradeDto(value, "DuplicateDetectionConfig");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "DuplicateDetectionConfig[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "DuplicateDetectionConfig[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'maxDistance'), 'Required key "DuplicateDetectionConfig[maxDistance]" is missing from JSON.');
+        assert(json[r'maxDistance'] != null, 'Required key "DuplicateDetectionConfig[maxDistance]" has a null value in JSON.');
+        return true;
+      }());
 
       return DuplicateDetectionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

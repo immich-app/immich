@@ -13,8 +13,8 @@ part of openapi.api;
 class OAuthCallbackDto {
   /// Returns a new [OAuthCallbackDto] instance.
   OAuthCallbackDto({
-    this.codeVerifier = const Optional.absent(),
-    this.state = const Optional.absent(),
+    this.codeVerifier,
+    this.state,
     required this.url,
   });
 
@@ -25,7 +25,7 @@ class OAuthCallbackDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> codeVerifier;
+  String? codeVerifier;
 
   /// OAuth state parameter
   ///
@@ -34,7 +34,7 @@ class OAuthCallbackDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> state;
+  String? state;
 
   /// OAuth callback URL
   String url;
@@ -57,13 +57,15 @@ class OAuthCallbackDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.codeVerifier.isPresent) {
-      final value = this.codeVerifier.value;
-      json[r'codeVerifier'] = value;
+    if (this.codeVerifier != null) {
+      json[r'codeVerifier'] = this.codeVerifier;
+    } else {
+      json[r'codeVerifier'] = null;
     }
-    if (this.state.isPresent) {
-      final value = this.state.value;
-      json[r'state'] = value;
+    if (this.state != null) {
+      json[r'state'] = this.state;
+    } else {
+      json[r'state'] = null;
     }
       json[r'url'] = this.url;
     return json;
@@ -73,13 +75,21 @@ class OAuthCallbackDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static OAuthCallbackDto? fromJson(dynamic value) {
-    upgradeDto(value, "OAuthCallbackDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'url'), 'Required key "OAuthCallbackDto[url]" is missing from JSON.');
+        assert(json[r'url'] != null, 'Required key "OAuthCallbackDto[url]" has a null value in JSON.');
+        return true;
+      }());
+
       return OAuthCallbackDto(
-        codeVerifier: json.containsKey(r'codeVerifier') ? Optional.present(mapValueOfType<String>(json, r'codeVerifier')) : const Optional.absent(),
-        state: json.containsKey(r'state') ? Optional.present(mapValueOfType<String>(json, r'state')) : const Optional.absent(),
+        codeVerifier: mapValueOfType<String>(json, r'codeVerifier'),
+        state: mapValueOfType<String>(json, r'state'),
         url: mapValueOfType<String>(json, r'url')!,
       );
     }

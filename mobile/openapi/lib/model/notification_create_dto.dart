@@ -13,20 +13,20 @@ part of openapi.api;
 class NotificationCreateDto {
   /// Returns a new [NotificationCreateDto] instance.
   NotificationCreateDto({
-    this.data = const Optional.present(const {}),
-    this.description = const Optional.absent(),
-    this.level = const Optional.absent(),
-    this.readAt = const Optional.absent(),
+    this.data = const {},
+    this.description,
+    this.level,
+    this.readAt,
     required this.title,
-    this.type = const Optional.absent(),
+    this.type,
     required this.userId,
   });
 
   /// Additional notification data
-  Optional<Map<String, Object>?> data;
+  Map<String, Object> data;
 
   /// Notification description
-  Optional<String?> description;
+  String? description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -34,10 +34,10 @@ class NotificationCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<NotificationLevel?> level;
+  NotificationLevel? level;
 
   /// Date when notification was read
-  Optional<DateTime?> readAt;
+  DateTime? readAt;
 
   /// Notification title
   String title;
@@ -48,7 +48,7 @@ class NotificationCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<NotificationType?> type;
+  NotificationType? type;
 
   /// User ID to send notification to
   String userId;
@@ -79,28 +79,29 @@ class NotificationCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.data.isPresent) {
-      final value = this.data.value;
-      json[r'data'] = value;
+      json[r'data'] = this.data;
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+      json[r'description'] = null;
     }
-    if (this.description.isPresent) {
-      final value = this.description.value;
-      json[r'description'] = value;
+    if (this.level != null) {
+      json[r'level'] = this.level;
+    } else {
+      json[r'level'] = null;
     }
-    if (this.level.isPresent) {
-      final value = this.level.value;
-      json[r'level'] = value;
-    }
-    if (this.readAt.isPresent) {
-      final value = this.readAt.value;
-      json[r'readAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? value.millisecondsSinceEpoch
-        : value.toUtc().toIso8601String());
+    if (this.readAt != null) {
+      json[r'readAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.readAt!.millisecondsSinceEpoch
+        : this.readAt!.toUtc().toIso8601String();
+    } else {
+      json[r'readAt'] = null;
     }
       json[r'title'] = this.title;
-    if (this.type.isPresent) {
-      final value = this.type.value;
-      json[r'type'] = value;
+    if (this.type != null) {
+      json[r'type'] = this.type;
+    } else {
+      json[r'type'] = null;
     }
       json[r'userId'] = this.userId;
     return json;
@@ -110,17 +111,27 @@ class NotificationCreateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static NotificationCreateDto? fromJson(dynamic value) {
-    upgradeDto(value, "NotificationCreateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'title'), 'Required key "NotificationCreateDto[title]" is missing from JSON.');
+        assert(json[r'title'] != null, 'Required key "NotificationCreateDto[title]" has a null value in JSON.');
+        assert(json.containsKey(r'userId'), 'Required key "NotificationCreateDto[userId]" is missing from JSON.');
+        assert(json[r'userId'] != null, 'Required key "NotificationCreateDto[userId]" has a null value in JSON.');
+        return true;
+      }());
+
       return NotificationCreateDto(
-        data: json.containsKey(r'data') ? Optional.present(mapCastOfType<String, Object>(json, r'data')) : const Optional.absent(),
-        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
-        level: json.containsKey(r'level') ? Optional.present(NotificationLevel.fromJson(json[r'level'])) : const Optional.absent(),
-        readAt: json.containsKey(r'readAt') ? Optional.present(mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
+        data: mapCastOfType<String, Object>(json, r'data') ?? const {},
+        description: mapValueOfType<String>(json, r'description'),
+        level: NotificationLevel.fromJson(json[r'level']),
+        readAt: mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         title: mapValueOfType<String>(json, r'title')!,
-        type: json.containsKey(r'type') ? Optional.present(NotificationType.fromJson(json[r'type'])) : const Optional.absent(),
+        type: NotificationType.fromJson(json[r'type']),
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

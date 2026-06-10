@@ -25,9 +25,9 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerCreateDto] partnerCreateDto (required):
-  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createPartnerWithHttpInfo(PartnerCreateDto partnerCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners';
+    final path = r'/partners';
 
     // ignore: prefer_final_locals
     Object? postBody = partnerCreateDto;
@@ -40,14 +40,13 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerCreateDto] partnerCreateDto (required):
-  Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createPartnerWithHttpInfo(partnerCreateDto, abortTrigger: abortTrigger,);
+  Future<PartnerResponseDto?> createPartner(PartnerCreateDto partnerCreateDto,) async {
+    final response = await createPartnerWithHttpInfo(partnerCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -82,9 +81,9 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> createPartnerDeprecatedWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -98,14 +97,13 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -116,8 +114,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartnerDeprecated(String id, { Future<void>? abortTrigger, }) async {
-    final response = await createPartnerDeprecatedWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -140,9 +138,9 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
-  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction, { Future<void>? abortTrigger, }) async {
+  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners';
+    final path = r'/partners';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -157,14 +155,13 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -175,8 +172,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
-  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction, { Future<void>? abortTrigger, }) async {
-    final response = await getPartnersWithHttpInfo(direction, abortTrigger: abortTrigger,);
+  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
+    final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -202,9 +199,9 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> removePartnerWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> removePartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -218,14 +215,13 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -236,8 +232,8 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> removePartner(String id, { Future<void>? abortTrigger, }) async {
-    final response = await removePartnerWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<void> removePartner(String id,) async {
+    final response = await removePartnerWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -254,9 +250,9 @@ class PartnersApi {
   /// * [String] id (required):
   ///
   /// * [PartnerUpdateDto] partnerUpdateDto (required):
-  Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updatePartnerWithHttpInfo(String id, PartnerUpdateDto partnerUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -270,14 +266,13 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -290,8 +285,8 @@ class PartnersApi {
   /// * [String] id (required):
   ///
   /// * [PartnerUpdateDto] partnerUpdateDto (required):
-  Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto, abortTrigger: abortTrigger,);
+  Future<PartnerResponseDto?> updatePartner(String id, PartnerUpdateDto partnerUpdateDto,) async {
+    final response = await updatePartnerWithHttpInfo(id, partnerUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

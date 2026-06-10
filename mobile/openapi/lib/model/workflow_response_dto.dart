@@ -97,9 +97,29 @@ class WorkflowResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static WorkflowResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "WorkflowResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'createdAt'), 'Required key "WorkflowResponseDto[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "WorkflowResponseDto[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'description'), 'Required key "WorkflowResponseDto[description]" is missing from JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "WorkflowResponseDto[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "WorkflowResponseDto[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "WorkflowResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "WorkflowResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "WorkflowResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'steps'), 'Required key "WorkflowResponseDto[steps]" is missing from JSON.');
+        assert(json[r'steps'] != null, 'Required key "WorkflowResponseDto[steps]" has a null value in JSON.');
+        assert(json.containsKey(r'trigger'), 'Required key "WorkflowResponseDto[trigger]" is missing from JSON.');
+        assert(json[r'trigger'] != null, 'Required key "WorkflowResponseDto[trigger]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "WorkflowResponseDto[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "WorkflowResponseDto[updatedAt]" has a null value in JSON.');
+        return true;
+      }());
 
       return WorkflowResponseDto(
         createdAt: mapValueOfType<String>(json, r'createdAt')!,

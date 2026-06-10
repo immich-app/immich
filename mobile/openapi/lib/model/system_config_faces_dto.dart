@@ -41,9 +41,17 @@ class SystemConfigFacesDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigFacesDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigFacesDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'import'), 'Required key "SystemConfigFacesDto[import]" is missing from JSON.');
+        assert(json[r'import'] != null, 'Required key "SystemConfigFacesDto[import]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigFacesDto(
         import_: mapValueOfType<bool>(json, r'import')!,

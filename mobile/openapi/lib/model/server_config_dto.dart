@@ -127,9 +127,39 @@ class ServerConfigDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerConfigDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerConfigDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'externalDomain'), 'Required key "ServerConfigDto[externalDomain]" is missing from JSON.');
+        assert(json[r'externalDomain'] != null, 'Required key "ServerConfigDto[externalDomain]" has a null value in JSON.');
+        assert(json.containsKey(r'isInitialized'), 'Required key "ServerConfigDto[isInitialized]" is missing from JSON.');
+        assert(json[r'isInitialized'] != null, 'Required key "ServerConfigDto[isInitialized]" has a null value in JSON.');
+        assert(json.containsKey(r'isOnboarded'), 'Required key "ServerConfigDto[isOnboarded]" is missing from JSON.');
+        assert(json[r'isOnboarded'] != null, 'Required key "ServerConfigDto[isOnboarded]" has a null value in JSON.');
+        assert(json.containsKey(r'loginPageMessage'), 'Required key "ServerConfigDto[loginPageMessage]" is missing from JSON.');
+        assert(json[r'loginPageMessage'] != null, 'Required key "ServerConfigDto[loginPageMessage]" has a null value in JSON.');
+        assert(json.containsKey(r'maintenanceMode'), 'Required key "ServerConfigDto[maintenanceMode]" is missing from JSON.');
+        assert(json[r'maintenanceMode'] != null, 'Required key "ServerConfigDto[maintenanceMode]" has a null value in JSON.');
+        assert(json.containsKey(r'mapDarkStyleUrl'), 'Required key "ServerConfigDto[mapDarkStyleUrl]" is missing from JSON.');
+        assert(json[r'mapDarkStyleUrl'] != null, 'Required key "ServerConfigDto[mapDarkStyleUrl]" has a null value in JSON.');
+        assert(json.containsKey(r'mapLightStyleUrl'), 'Required key "ServerConfigDto[mapLightStyleUrl]" is missing from JSON.');
+        assert(json[r'mapLightStyleUrl'] != null, 'Required key "ServerConfigDto[mapLightStyleUrl]" has a null value in JSON.');
+        assert(json.containsKey(r'minFaces'), 'Required key "ServerConfigDto[minFaces]" is missing from JSON.');
+        assert(json[r'minFaces'] != null, 'Required key "ServerConfigDto[minFaces]" has a null value in JSON.');
+        assert(json.containsKey(r'oauthButtonText'), 'Required key "ServerConfigDto[oauthButtonText]" is missing from JSON.');
+        assert(json[r'oauthButtonText'] != null, 'Required key "ServerConfigDto[oauthButtonText]" has a null value in JSON.');
+        assert(json.containsKey(r'publicUsers'), 'Required key "ServerConfigDto[publicUsers]" is missing from JSON.');
+        assert(json[r'publicUsers'] != null, 'Required key "ServerConfigDto[publicUsers]" has a null value in JSON.');
+        assert(json.containsKey(r'trashDays'), 'Required key "ServerConfigDto[trashDays]" is missing from JSON.');
+        assert(json[r'trashDays'] != null, 'Required key "ServerConfigDto[trashDays]" has a null value in JSON.');
+        assert(json.containsKey(r'userDeleteDelay'), 'Required key "ServerConfigDto[userDeleteDelay]" is missing from JSON.');
+        assert(json[r'userDeleteDelay'] != null, 'Required key "ServerConfigDto[userDeleteDelay]" has a null value in JSON.');
+        return true;
+      }());
 
       return ServerConfigDto(
         externalDomain: mapValueOfType<String>(json, r'externalDomain')!,

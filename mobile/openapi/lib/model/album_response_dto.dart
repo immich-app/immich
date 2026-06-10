@@ -17,17 +17,17 @@ class AlbumResponseDto {
     required this.albumThumbnailAssetId,
     this.albumUsers = const [],
     required this.assetCount,
-    this.contributorCounts = const Optional.present(const []),
+    this.contributorCounts = const [],
     required this.createdAt,
-    required this.description,
-    this.endDate = const Optional.absent(),
+    this.description,
+    this.endDate,
     required this.hasSharedLink,
     required this.id,
     required this.isActivityEnabled,
-    this.lastModifiedAssetTimestamp = const Optional.absent(),
-    this.order = const Optional.absent(),
+    this.lastModifiedAssetTimestamp,
+    this.order,
     required this.shared,
-    this.startDate = const Optional.absent(),
+    this.startDate,
     required this.updatedAt,
   });
 
@@ -46,13 +46,13 @@ class AlbumResponseDto {
   /// Maximum value: 9007199254740991
   int assetCount;
 
-  Optional<List<ContributorCountResponseDto>?> contributorCounts;
+  List<ContributorCountResponseDto> contributorCounts;
 
   /// Creation date
   DateTime createdAt;
 
   /// Album description
-  String description;
+  String? description;
 
   /// End date (latest asset)
   ///
@@ -61,7 +61,7 @@ class AlbumResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> endDate;
+  DateTime? endDate;
 
   /// Has shared link
   bool hasSharedLink;
@@ -79,7 +79,7 @@ class AlbumResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> lastModifiedAssetTimestamp;
+  DateTime? lastModifiedAssetTimestamp;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -87,7 +87,7 @@ class AlbumResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<AssetOrder?> order;
+  AssetOrder? order;
 
   /// Is shared album
   bool shared;
@@ -99,7 +99,7 @@ class AlbumResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> startDate;
+  DateTime? startDate;
 
   /// Last update date
   DateTime updatedAt;
@@ -132,7 +132,7 @@ class AlbumResponseDto {
     (assetCount.hashCode) +
     (contributorCounts.hashCode) +
     (createdAt.hashCode) +
-    (description.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (endDate == null ? 0 : endDate!.hashCode) +
     (hasSharedLink.hashCode) +
     (id.hashCode) +
@@ -156,31 +156,36 @@ class AlbumResponseDto {
     }
       json[r'albumUsers'] = this.albumUsers;
       json[r'assetCount'] = this.assetCount;
-    if (this.contributorCounts.isPresent) {
-      final value = this.contributorCounts.value;
-      json[r'contributorCounts'] = value;
-    }
+      json[r'contributorCounts'] = this.contributorCounts;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    if (this.description != null) {
       json[r'description'] = this.description;
-    if (this.endDate.isPresent) {
-      final value = this.endDate.value;
-      json[r'endDate'] = value == null ? null : value.toUtc().toIso8601String();
+    } else {
+      json[r'description'] = null;
+    }
+    if (this.endDate != null) {
+      json[r'endDate'] = this.endDate!.toUtc().toIso8601String();
+    } else {
+      json[r'endDate'] = null;
     }
       json[r'hasSharedLink'] = this.hasSharedLink;
       json[r'id'] = this.id;
       json[r'isActivityEnabled'] = this.isActivityEnabled;
-    if (this.lastModifiedAssetTimestamp.isPresent) {
-      final value = this.lastModifiedAssetTimestamp.value;
-      json[r'lastModifiedAssetTimestamp'] = value == null ? null : value.toUtc().toIso8601String();
+    if (this.lastModifiedAssetTimestamp != null) {
+      json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
+    } else {
+      json[r'lastModifiedAssetTimestamp'] = null;
     }
-    if (this.order.isPresent) {
-      final value = this.order.value;
-      json[r'order'] = value;
+    if (this.order != null) {
+      json[r'order'] = this.order;
+    } else {
+      json[r'order'] = null;
     }
       json[r'shared'] = this.shared;
-    if (this.startDate.isPresent) {
-      final value = this.startDate.value;
-      json[r'startDate'] = value == null ? null : value.toUtc().toIso8601String();
+    if (this.startDate != null) {
+      json[r'startDate'] = this.startDate!.toUtc().toIso8601String();
+    } else {
+      json[r'startDate'] = null;
     }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
@@ -190,26 +195,51 @@ class AlbumResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albumName'), 'Required key "AlbumResponseDto[albumName]" is missing from JSON.');
+        assert(json[r'albumName'] != null, 'Required key "AlbumResponseDto[albumName]" has a null value in JSON.');
+        assert(json.containsKey(r'albumThumbnailAssetId'), 'Required key "AlbumResponseDto[albumThumbnailAssetId]" is missing from JSON.');
+        assert(json.containsKey(r'albumUsers'), 'Required key "AlbumResponseDto[albumUsers]" is missing from JSON.');
+        assert(json[r'albumUsers'] != null, 'Required key "AlbumResponseDto[albumUsers]" has a null value in JSON.');
+        assert(json.containsKey(r'assetCount'), 'Required key "AlbumResponseDto[assetCount]" is missing from JSON.');
+        assert(json[r'assetCount'] != null, 'Required key "AlbumResponseDto[assetCount]" has a null value in JSON.');
+        assert(json.containsKey(r'createdAt'), 'Required key "AlbumResponseDto[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "AlbumResponseDto[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'hasSharedLink'), 'Required key "AlbumResponseDto[hasSharedLink]" is missing from JSON.');
+        assert(json[r'hasSharedLink'] != null, 'Required key "AlbumResponseDto[hasSharedLink]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "AlbumResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "AlbumResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'isActivityEnabled'), 'Required key "AlbumResponseDto[isActivityEnabled]" is missing from JSON.');
+        assert(json[r'isActivityEnabled'] != null, 'Required key "AlbumResponseDto[isActivityEnabled]" has a null value in JSON.');
+        assert(json.containsKey(r'shared'), 'Required key "AlbumResponseDto[shared]" is missing from JSON.');
+        assert(json[r'shared'] != null, 'Required key "AlbumResponseDto[shared]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "AlbumResponseDto[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "AlbumResponseDto[updatedAt]" has a null value in JSON.');
+        return true;
+      }());
 
       return AlbumResponseDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         albumUsers: AlbumUserResponseDto.listFromJson(json[r'albumUsers']),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
-        contributorCounts: json.containsKey(r'contributorCounts') ? Optional.present(ContributorCountResponseDto.listFromJson(json[r'contributorCounts'])) : const Optional.absent(),
+        contributorCounts: ContributorCountResponseDto.listFromJson(json[r'contributorCounts']),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        description: mapValueOfType<String>(json, r'description')!,
-        endDate: json.containsKey(r'endDate') ? Optional.present(mapDateTime(json, r'endDate', r'')) : const Optional.absent(),
+        description: mapValueOfType<String>(json, r'description'),
+        endDate: mapDateTime(json, r'endDate', r''),
         hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
         id: mapValueOfType<String>(json, r'id')!,
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
-        lastModifiedAssetTimestamp: json.containsKey(r'lastModifiedAssetTimestamp') ? Optional.present(mapDateTime(json, r'lastModifiedAssetTimestamp', r'')) : const Optional.absent(),
-        order: json.containsKey(r'order') ? Optional.present(AssetOrder.fromJson(json[r'order'])) : const Optional.absent(),
+        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
+        order: AssetOrder.fromJson(json[r'order']),
         shared: mapValueOfType<bool>(json, r'shared')!,
-        startDate: json.containsKey(r'startDate') ? Optional.present(mapDateTime(json, r'startDate', r'')) : const Optional.absent(),
+        startDate: mapDateTime(json, r'startDate', r''),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
@@ -263,7 +293,6 @@ class AlbumResponseDto {
     'albumUsers',
     'assetCount',
     'createdAt',
-    'description',
     'hasSharedLink',
     'id',
     'isActivityEnabled',

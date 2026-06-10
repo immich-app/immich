@@ -190,9 +190,56 @@ class SystemConfigOAuthDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigOAuthDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigOAuthDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'allowInsecureRequests'), 'Required key "SystemConfigOAuthDto[allowInsecureRequests]" is missing from JSON.');
+        assert(json[r'allowInsecureRequests'] != null, 'Required key "SystemConfigOAuthDto[allowInsecureRequests]" has a null value in JSON.');
+        assert(json.containsKey(r'autoLaunch'), 'Required key "SystemConfigOAuthDto[autoLaunch]" is missing from JSON.');
+        assert(json[r'autoLaunch'] != null, 'Required key "SystemConfigOAuthDto[autoLaunch]" has a null value in JSON.');
+        assert(json.containsKey(r'autoRegister'), 'Required key "SystemConfigOAuthDto[autoRegister]" is missing from JSON.');
+        assert(json[r'autoRegister'] != null, 'Required key "SystemConfigOAuthDto[autoRegister]" has a null value in JSON.');
+        assert(json.containsKey(r'buttonText'), 'Required key "SystemConfigOAuthDto[buttonText]" is missing from JSON.');
+        assert(json[r'buttonText'] != null, 'Required key "SystemConfigOAuthDto[buttonText]" has a null value in JSON.');
+        assert(json.containsKey(r'clientId'), 'Required key "SystemConfigOAuthDto[clientId]" is missing from JSON.');
+        assert(json[r'clientId'] != null, 'Required key "SystemConfigOAuthDto[clientId]" has a null value in JSON.');
+        assert(json.containsKey(r'clientSecret'), 'Required key "SystemConfigOAuthDto[clientSecret]" is missing from JSON.');
+        assert(json[r'clientSecret'] != null, 'Required key "SystemConfigOAuthDto[clientSecret]" has a null value in JSON.');
+        assert(json.containsKey(r'defaultStorageQuota'), 'Required key "SystemConfigOAuthDto[defaultStorageQuota]" is missing from JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "SystemConfigOAuthDto[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "SystemConfigOAuthDto[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'endSessionEndpoint'), 'Required key "SystemConfigOAuthDto[endSessionEndpoint]" is missing from JSON.');
+        assert(json[r'endSessionEndpoint'] != null, 'Required key "SystemConfigOAuthDto[endSessionEndpoint]" has a null value in JSON.');
+        assert(json.containsKey(r'issuerUrl'), 'Required key "SystemConfigOAuthDto[issuerUrl]" is missing from JSON.');
+        assert(json[r'issuerUrl'] != null, 'Required key "SystemConfigOAuthDto[issuerUrl]" has a null value in JSON.');
+        assert(json.containsKey(r'mobileOverrideEnabled'), 'Required key "SystemConfigOAuthDto[mobileOverrideEnabled]" is missing from JSON.');
+        assert(json[r'mobileOverrideEnabled'] != null, 'Required key "SystemConfigOAuthDto[mobileOverrideEnabled]" has a null value in JSON.');
+        assert(json.containsKey(r'mobileRedirectUri'), 'Required key "SystemConfigOAuthDto[mobileRedirectUri]" is missing from JSON.');
+        assert(json[r'mobileRedirectUri'] != null, 'Required key "SystemConfigOAuthDto[mobileRedirectUri]" has a null value in JSON.');
+        assert(json.containsKey(r'profileSigningAlgorithm'), 'Required key "SystemConfigOAuthDto[profileSigningAlgorithm]" is missing from JSON.');
+        assert(json[r'profileSigningAlgorithm'] != null, 'Required key "SystemConfigOAuthDto[profileSigningAlgorithm]" has a null value in JSON.');
+        assert(json.containsKey(r'prompt'), 'Required key "SystemConfigOAuthDto[prompt]" is missing from JSON.');
+        assert(json[r'prompt'] != null, 'Required key "SystemConfigOAuthDto[prompt]" has a null value in JSON.');
+        assert(json.containsKey(r'roleClaim'), 'Required key "SystemConfigOAuthDto[roleClaim]" is missing from JSON.');
+        assert(json[r'roleClaim'] != null, 'Required key "SystemConfigOAuthDto[roleClaim]" has a null value in JSON.');
+        assert(json.containsKey(r'scope'), 'Required key "SystemConfigOAuthDto[scope]" is missing from JSON.');
+        assert(json[r'scope'] != null, 'Required key "SystemConfigOAuthDto[scope]" has a null value in JSON.');
+        assert(json.containsKey(r'signingAlgorithm'), 'Required key "SystemConfigOAuthDto[signingAlgorithm]" is missing from JSON.');
+        assert(json[r'signingAlgorithm'] != null, 'Required key "SystemConfigOAuthDto[signingAlgorithm]" has a null value in JSON.');
+        assert(json.containsKey(r'storageLabelClaim'), 'Required key "SystemConfigOAuthDto[storageLabelClaim]" is missing from JSON.');
+        assert(json[r'storageLabelClaim'] != null, 'Required key "SystemConfigOAuthDto[storageLabelClaim]" has a null value in JSON.');
+        assert(json.containsKey(r'storageQuotaClaim'), 'Required key "SystemConfigOAuthDto[storageQuotaClaim]" is missing from JSON.');
+        assert(json[r'storageQuotaClaim'] != null, 'Required key "SystemConfigOAuthDto[storageQuotaClaim]" has a null value in JSON.');
+        assert(json.containsKey(r'timeout'), 'Required key "SystemConfigOAuthDto[timeout]" is missing from JSON.');
+        assert(json[r'timeout'] != null, 'Required key "SystemConfigOAuthDto[timeout]" has a null value in JSON.');
+        assert(json.containsKey(r'tokenEndpointAuthMethod'), 'Required key "SystemConfigOAuthDto[tokenEndpointAuthMethod]" is missing from JSON.');
+        assert(json[r'tokenEndpointAuthMethod'] != null, 'Required key "SystemConfigOAuthDto[tokenEndpointAuthMethod]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigOAuthDto(
         allowInsecureRequests: mapValueOfType<bool>(json, r'allowInsecureRequests')!,

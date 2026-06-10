@@ -48,9 +48,19 @@ class CLIPConfig {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static CLIPConfig? fromJson(dynamic value) {
-    upgradeDto(value, "CLIPConfig");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "CLIPConfig[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "CLIPConfig[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'modelName'), 'Required key "CLIPConfig[modelName]" is missing from JSON.');
+        assert(json[r'modelName'] != null, 'Required key "CLIPConfig[modelName]" has a null value in JSON.');
+        return true;
+      }());
 
       return CLIPConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

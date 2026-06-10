@@ -14,7 +14,7 @@ class SetMaintenanceModeDto {
   /// Returns a new [SetMaintenanceModeDto] instance.
   SetMaintenanceModeDto({
     required this.action,
-    this.restoreBackupFilename = const Optional.absent(),
+    this.restoreBackupFilename,
   });
 
   MaintenanceAction action;
@@ -26,7 +26,7 @@ class SetMaintenanceModeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> restoreBackupFilename;
+  String? restoreBackupFilename;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SetMaintenanceModeDto &&
@@ -45,9 +45,10 @@ class SetMaintenanceModeDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
-    if (this.restoreBackupFilename.isPresent) {
-      final value = this.restoreBackupFilename.value;
-      json[r'restoreBackupFilename'] = value;
+    if (this.restoreBackupFilename != null) {
+      json[r'restoreBackupFilename'] = this.restoreBackupFilename;
+    } else {
+      json[r'restoreBackupFilename'] = null;
     }
     return json;
   }
@@ -56,13 +57,21 @@ class SetMaintenanceModeDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SetMaintenanceModeDto? fromJson(dynamic value) {
-    upgradeDto(value, "SetMaintenanceModeDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'action'), 'Required key "SetMaintenanceModeDto[action]" is missing from JSON.');
+        assert(json[r'action'] != null, 'Required key "SetMaintenanceModeDto[action]" has a null value in JSON.');
+        return true;
+      }());
+
       return SetMaintenanceModeDto(
         action: MaintenanceAction.fromJson(json[r'action'])!,
-        restoreBackupFilename: json.containsKey(r'restoreBackupFilename') ? Optional.present(mapValueOfType<String>(json, r'restoreBackupFilename')) : const Optional.absent(),
+        restoreBackupFilename: mapValueOfType<String>(json, r'restoreBackupFilename'),
       );
     }
     return null;

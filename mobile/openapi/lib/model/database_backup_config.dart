@@ -58,9 +58,21 @@ class DatabaseBackupConfig {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DatabaseBackupConfig? fromJson(dynamic value) {
-    upgradeDto(value, "DatabaseBackupConfig");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'cronExpression'), 'Required key "DatabaseBackupConfig[cronExpression]" is missing from JSON.');
+        assert(json[r'cronExpression'] != null, 'Required key "DatabaseBackupConfig[cronExpression]" has a null value in JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "DatabaseBackupConfig[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "DatabaseBackupConfig[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'keepLastAmount'), 'Required key "DatabaseBackupConfig[keepLastAmount]" is missing from JSON.');
+        assert(json[r'keepLastAmount'] != null, 'Required key "DatabaseBackupConfig[keepLastAmount]" has a null value in JSON.');
+        return true;
+      }());
 
       return DatabaseBackupConfig(
         cronExpression: mapValueOfType<String>(json, r'cronExpression')!,

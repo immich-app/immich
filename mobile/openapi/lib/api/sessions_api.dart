@@ -25,9 +25,9 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  Future<Response> createSessionWithHttpInfo(SessionCreateDto sessionCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createSessionWithHttpInfo(SessionCreateDto sessionCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions';
+    final path = r'/sessions';
 
     // ignore: prefer_final_locals
     Object? postBody = sessionCreateDto;
@@ -40,14 +40,13 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  Future<SessionCreateResponseDto?> createSession(SessionCreateDto sessionCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createSessionWithHttpInfo(sessionCreateDto, abortTrigger: abortTrigger,);
+  Future<SessionCreateResponseDto?> createSession(SessionCreateDto sessionCreateDto,) async {
+    final response = await createSessionWithHttpInfo(sessionCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -78,9 +77,9 @@ class SessionsApi {
   /// Delete all sessions for the user. This will not delete the current session.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> deleteAllSessionsWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> deleteAllSessionsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions';
+    final path = r'/sessions';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -93,22 +92,21 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Delete all sessions
   ///
   /// Delete all sessions for the user. This will not delete the current session.
-  Future<void> deleteAllSessions({ Future<void>? abortTrigger, }) async {
-    final response = await deleteAllSessionsWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<void> deleteAllSessions() async {
+    final response = await deleteAllSessionsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -123,9 +121,9 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteSessionWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteSessionWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions/{id}'
+    final path = r'/sessions/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -139,14 +137,13 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -157,8 +154,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteSession(String id, { Future<void>? abortTrigger, }) async {
-    final response = await deleteSessionWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<void> deleteSession(String id,) async {
+    final response = await deleteSessionWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -169,9 +166,9 @@ class SessionsApi {
   /// Retrieve a list of sessions for the user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getSessionsWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getSessionsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions';
+    final path = r'/sessions';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -184,22 +181,21 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve sessions
   ///
   /// Retrieve a list of sessions for the user.
-  Future<List<SessionResponseDto>?> getSessions({ Future<void>? abortTrigger, }) async {
-    final response = await getSessionsWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<List<SessionResponseDto>?> getSessions() async {
+    final response = await getSessionsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -225,9 +221,9 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> lockSessionWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> lockSessionWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions/{id}/lock'
+    final path = r'/sessions/{id}/lock'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -241,14 +237,13 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -259,8 +254,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> lockSession(String id, { Future<void>? abortTrigger, }) async {
-    final response = await lockSessionWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<void> lockSession(String id,) async {
+    final response = await lockSessionWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -277,9 +272,9 @@ class SessionsApi {
   /// * [String] id (required):
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  Future<Response> updateSessionWithHttpInfo(String id, SessionUpdateDto sessionUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateSessionWithHttpInfo(String id, SessionUpdateDto sessionUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions/{id}'
+    final path = r'/sessions/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -293,14 +288,13 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -313,8 +307,8 @@ class SessionsApi {
   /// * [String] id (required):
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  Future<SessionResponseDto?> updateSession(String id, SessionUpdateDto sessionUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateSessionWithHttpInfo(id, sessionUpdateDto, abortTrigger: abortTrigger,);
+  Future<SessionResponseDto?> updateSession(String id, SessionUpdateDto sessionUpdateDto,) async {
+    final response = await updateSessionWithHttpInfo(id, sessionUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

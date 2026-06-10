@@ -51,9 +51,19 @@ class DownloadResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DownloadResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "DownloadResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'archives'), 'Required key "DownloadResponseDto[archives]" is missing from JSON.');
+        assert(json[r'archives'] != null, 'Required key "DownloadResponseDto[archives]" has a null value in JSON.');
+        assert(json.containsKey(r'totalSize'), 'Required key "DownloadResponseDto[totalSize]" is missing from JSON.');
+        assert(json[r'totalSize'] != null, 'Required key "DownloadResponseDto[totalSize]" has a null value in JSON.');
+        return true;
+      }());
 
       return DownloadResponseDto(
         archives: DownloadArchiveInfo.listFromJson(json[r'archives']),

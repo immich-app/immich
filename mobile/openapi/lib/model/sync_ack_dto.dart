@@ -47,9 +47,19 @@ class SyncAckDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAckDto? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAckDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'ack'), 'Required key "SyncAckDto[ack]" is missing from JSON.');
+        assert(json[r'ack'] != null, 'Required key "SyncAckDto[ack]" has a null value in JSON.');
+        assert(json.containsKey(r'type'), 'Required key "SyncAckDto[type]" is missing from JSON.');
+        assert(json[r'type'] != null, 'Required key "SyncAckDto[type]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAckDto(
         ack: mapValueOfType<String>(json, r'ack')!,

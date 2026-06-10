@@ -251,8 +251,12 @@ export class PersonService extends BaseService {
   }
 
   @Chunked()
-  private async removeAllPeople(people: { id: string; thumbnailPath: string }[]) {
-    await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
+  private async removeAllPeople(people: { id: string; thumbnailPath: string | null }[]) {
+    await Promise.all(
+      people
+        .filter((person) => person.thumbnailPath)
+        .map((person) => this.storageRepository.unlink(person.thumbnailPath as string)),
+    );
     await this.personRepository.delete(people.map((person) => person.id));
     this.logger.debug(`Deleted ${people.length} people`);
   }

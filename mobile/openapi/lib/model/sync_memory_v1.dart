@@ -147,9 +147,35 @@ class SyncMemoryV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncMemoryV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncMemoryV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'createdAt'), 'Required key "SyncMemoryV1[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "SyncMemoryV1[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'data'), 'Required key "SyncMemoryV1[data]" is missing from JSON.');
+        assert(json[r'data'] != null, 'Required key "SyncMemoryV1[data]" has a null value in JSON.');
+        assert(json.containsKey(r'deletedAt'), 'Required key "SyncMemoryV1[deletedAt]" is missing from JSON.');
+        assert(json.containsKey(r'hideAt'), 'Required key "SyncMemoryV1[hideAt]" is missing from JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncMemoryV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncMemoryV1[id]" has a null value in JSON.');
+        assert(json.containsKey(r'isSaved'), 'Required key "SyncMemoryV1[isSaved]" is missing from JSON.');
+        assert(json[r'isSaved'] != null, 'Required key "SyncMemoryV1[isSaved]" has a null value in JSON.');
+        assert(json.containsKey(r'memoryAt'), 'Required key "SyncMemoryV1[memoryAt]" is missing from JSON.');
+        assert(json[r'memoryAt'] != null, 'Required key "SyncMemoryV1[memoryAt]" has a null value in JSON.');
+        assert(json.containsKey(r'ownerId'), 'Required key "SyncMemoryV1[ownerId]" is missing from JSON.');
+        assert(json[r'ownerId'] != null, 'Required key "SyncMemoryV1[ownerId]" has a null value in JSON.');
+        assert(json.containsKey(r'seenAt'), 'Required key "SyncMemoryV1[seenAt]" is missing from JSON.');
+        assert(json.containsKey(r'showAt'), 'Required key "SyncMemoryV1[showAt]" is missing from JSON.');
+        assert(json.containsKey(r'type'), 'Required key "SyncMemoryV1[type]" is missing from JSON.');
+        assert(json[r'type'] != null, 'Required key "SyncMemoryV1[type]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "SyncMemoryV1[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "SyncMemoryV1[updatedAt]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncMemoryV1(
         createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,

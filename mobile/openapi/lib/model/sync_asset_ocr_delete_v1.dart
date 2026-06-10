@@ -57,9 +57,21 @@ class SyncAssetOcrDeleteV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAssetOcrDeleteV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetOcrDeleteV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetId'), 'Required key "SyncAssetOcrDeleteV1[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "SyncAssetOcrDeleteV1[assetId]" has a null value in JSON.');
+        assert(json.containsKey(r'deletedAt'), 'Required key "SyncAssetOcrDeleteV1[deletedAt]" is missing from JSON.');
+        assert(json[r'deletedAt'] != null, 'Required key "SyncAssetOcrDeleteV1[deletedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncAssetOcrDeleteV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncAssetOcrDeleteV1[id]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAssetOcrDeleteV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,

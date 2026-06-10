@@ -15,8 +15,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/utils/openapi_patching.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
@@ -29,7 +27,6 @@ part 'auth/api_key_auth.dart';
 part 'auth/oauth.dart';
 part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
-part 'optional.dart';
 
 part 'api/api_keys_api.dart';
 part 'api/activities_api.dart';

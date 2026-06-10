@@ -91,9 +91,27 @@ class ServerStatsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerStatsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerStatsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'photos'), 'Required key "ServerStatsResponseDto[photos]" is missing from JSON.');
+        assert(json[r'photos'] != null, 'Required key "ServerStatsResponseDto[photos]" has a null value in JSON.');
+        assert(json.containsKey(r'usage'), 'Required key "ServerStatsResponseDto[usage]" is missing from JSON.');
+        assert(json[r'usage'] != null, 'Required key "ServerStatsResponseDto[usage]" has a null value in JSON.');
+        assert(json.containsKey(r'usageByUser'), 'Required key "ServerStatsResponseDto[usageByUser]" is missing from JSON.');
+        assert(json[r'usageByUser'] != null, 'Required key "ServerStatsResponseDto[usageByUser]" has a null value in JSON.');
+        assert(json.containsKey(r'usagePhotos'), 'Required key "ServerStatsResponseDto[usagePhotos]" is missing from JSON.');
+        assert(json[r'usagePhotos'] != null, 'Required key "ServerStatsResponseDto[usagePhotos]" has a null value in JSON.');
+        assert(json.containsKey(r'usageVideos'), 'Required key "ServerStatsResponseDto[usageVideos]" is missing from JSON.');
+        assert(json[r'usageVideos'] != null, 'Required key "ServerStatsResponseDto[usageVideos]" has a null value in JSON.');
+        assert(json.containsKey(r'videos'), 'Required key "ServerStatsResponseDto[videos]" is missing from JSON.');
+        assert(json[r'videos'] != null, 'Required key "ServerStatsResponseDto[videos]" has a null value in JSON.');
+        return true;
+      }());
 
       return ServerStatsResponseDto(
         photos: mapValueOfType<int>(json, r'photos')!,

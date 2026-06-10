@@ -13,7 +13,7 @@ part of openapi.api;
 class AvatarUpdate {
   /// Returns a new [AvatarUpdate] instance.
   AvatarUpdate({
-    this.color = const Optional.absent(),
+    this.color,
   });
 
   ///
@@ -22,7 +22,7 @@ class AvatarUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<UserAvatarColor?> color;
+  UserAvatarColor? color;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AvatarUpdate &&
@@ -38,9 +38,10 @@ class AvatarUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.color.isPresent) {
-      final value = this.color.value;
-      json[r'color'] = value;
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+      json[r'color'] = null;
     }
     return json;
   }
@@ -49,12 +50,18 @@ class AvatarUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AvatarUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "AvatarUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return AvatarUpdate(
-        color: json.containsKey(r'color') ? Optional.present(UserAvatarColor.fromJson(json[r'color'])) : const Optional.absent(),
+        color: UserAvatarColor.fromJson(json[r'color']),
       );
     }
     return null;

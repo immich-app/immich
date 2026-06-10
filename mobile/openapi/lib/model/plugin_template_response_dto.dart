@@ -75,9 +75,27 @@ class PluginTemplateResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PluginTemplateResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PluginTemplateResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'description'), 'Required key "PluginTemplateResponseDto[description]" is missing from JSON.');
+        assert(json[r'description'] != null, 'Required key "PluginTemplateResponseDto[description]" has a null value in JSON.');
+        assert(json.containsKey(r'key'), 'Required key "PluginTemplateResponseDto[key]" is missing from JSON.');
+        assert(json[r'key'] != null, 'Required key "PluginTemplateResponseDto[key]" has a null value in JSON.');
+        assert(json.containsKey(r'steps'), 'Required key "PluginTemplateResponseDto[steps]" is missing from JSON.');
+        assert(json[r'steps'] != null, 'Required key "PluginTemplateResponseDto[steps]" has a null value in JSON.');
+        assert(json.containsKey(r'title'), 'Required key "PluginTemplateResponseDto[title]" is missing from JSON.');
+        assert(json[r'title'] != null, 'Required key "PluginTemplateResponseDto[title]" has a null value in JSON.');
+        assert(json.containsKey(r'trigger'), 'Required key "PluginTemplateResponseDto[trigger]" is missing from JSON.');
+        assert(json[r'trigger'] != null, 'Required key "PluginTemplateResponseDto[trigger]" has a null value in JSON.');
+        assert(json.containsKey(r'uiHints'), 'Required key "PluginTemplateResponseDto[uiHints]" is missing from JSON.');
+        assert(json[r'uiHints'] != null, 'Required key "PluginTemplateResponseDto[uiHints]" has a null value in JSON.');
+        return true;
+      }());
 
       return PluginTemplateResponseDto(
         description: mapValueOfType<String>(json, r'description')!,

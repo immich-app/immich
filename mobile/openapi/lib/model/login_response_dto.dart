@@ -33,10 +33,10 @@ class LoginResponseDto {
   bool isOnboarded;
 
   /// User name
-  String name;
+  String? name;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   /// Should change password
   bool shouldChangePassword;
@@ -64,8 +64,8 @@ class LoginResponseDto {
     (accessToken.hashCode) +
     (isAdmin.hashCode) +
     (isOnboarded.hashCode) +
-    (name.hashCode) +
-    (profileImagePath.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (shouldChangePassword.hashCode) +
     (userEmail.hashCode) +
     (userId.hashCode);
@@ -78,8 +78,16 @@ class LoginResponseDto {
       json[r'accessToken'] = this.accessToken;
       json[r'isAdmin'] = this.isAdmin;
       json[r'isOnboarded'] = this.isOnboarded;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'userEmail'] = this.userEmail;
       json[r'userId'] = this.userId;
@@ -90,16 +98,36 @@ class LoginResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static LoginResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "LoginResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'accessToken'), 'Required key "LoginResponseDto[accessToken]" is missing from JSON.');
+        assert(json[r'accessToken'] != null, 'Required key "LoginResponseDto[accessToken]" has a null value in JSON.');
+        assert(json.containsKey(r'isAdmin'), 'Required key "LoginResponseDto[isAdmin]" is missing from JSON.');
+        assert(json[r'isAdmin'] != null, 'Required key "LoginResponseDto[isAdmin]" has a null value in JSON.');
+        assert(json.containsKey(r'isOnboarded'), 'Required key "LoginResponseDto[isOnboarded]" is missing from JSON.');
+        assert(json[r'isOnboarded'] != null, 'Required key "LoginResponseDto[isOnboarded]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "LoginResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'profileImagePath'), 'Required key "LoginResponseDto[profileImagePath]" is missing from JSON.');
+        assert(json.containsKey(r'shouldChangePassword'), 'Required key "LoginResponseDto[shouldChangePassword]" is missing from JSON.');
+        assert(json[r'shouldChangePassword'] != null, 'Required key "LoginResponseDto[shouldChangePassword]" has a null value in JSON.');
+        assert(json.containsKey(r'userEmail'), 'Required key "LoginResponseDto[userEmail]" is missing from JSON.');
+        assert(json[r'userEmail'] != null, 'Required key "LoginResponseDto[userEmail]" has a null value in JSON.');
+        assert(json.containsKey(r'userId'), 'Required key "LoginResponseDto[userId]" is missing from JSON.');
+        assert(json[r'userId'] != null, 'Required key "LoginResponseDto[userId]" has a null value in JSON.');
+        return true;
+      }());
 
       return LoginResponseDto(
         accessToken: mapValueOfType<String>(json, r'accessToken')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        name: mapValueOfType<String>(json, r'name'),
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         userEmail: mapValueOfType<String>(json, r'userEmail')!,
         userId: mapValueOfType<String>(json, r'userId')!,

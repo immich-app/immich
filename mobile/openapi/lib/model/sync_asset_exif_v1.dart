@@ -324,9 +324,41 @@ class SyncAssetExifV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAssetExifV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetExifV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetId'), 'Required key "SyncAssetExifV1[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "SyncAssetExifV1[assetId]" has a null value in JSON.');
+        assert(json.containsKey(r'city'), 'Required key "SyncAssetExifV1[city]" is missing from JSON.');
+        assert(json.containsKey(r'country'), 'Required key "SyncAssetExifV1[country]" is missing from JSON.');
+        assert(json.containsKey(r'dateTimeOriginal'), 'Required key "SyncAssetExifV1[dateTimeOriginal]" is missing from JSON.');
+        assert(json.containsKey(r'description'), 'Required key "SyncAssetExifV1[description]" is missing from JSON.');
+        assert(json.containsKey(r'exifImageHeight'), 'Required key "SyncAssetExifV1[exifImageHeight]" is missing from JSON.');
+        assert(json.containsKey(r'exifImageWidth'), 'Required key "SyncAssetExifV1[exifImageWidth]" is missing from JSON.');
+        assert(json.containsKey(r'exposureTime'), 'Required key "SyncAssetExifV1[exposureTime]" is missing from JSON.');
+        assert(json.containsKey(r'fNumber'), 'Required key "SyncAssetExifV1[fNumber]" is missing from JSON.');
+        assert(json.containsKey(r'fileSizeInByte'), 'Required key "SyncAssetExifV1[fileSizeInByte]" is missing from JSON.');
+        assert(json.containsKey(r'focalLength'), 'Required key "SyncAssetExifV1[focalLength]" is missing from JSON.');
+        assert(json.containsKey(r'fps'), 'Required key "SyncAssetExifV1[fps]" is missing from JSON.');
+        assert(json.containsKey(r'iso'), 'Required key "SyncAssetExifV1[iso]" is missing from JSON.');
+        assert(json.containsKey(r'latitude'), 'Required key "SyncAssetExifV1[latitude]" is missing from JSON.');
+        assert(json.containsKey(r'lensModel'), 'Required key "SyncAssetExifV1[lensModel]" is missing from JSON.');
+        assert(json.containsKey(r'longitude'), 'Required key "SyncAssetExifV1[longitude]" is missing from JSON.');
+        assert(json.containsKey(r'make'), 'Required key "SyncAssetExifV1[make]" is missing from JSON.');
+        assert(json.containsKey(r'model'), 'Required key "SyncAssetExifV1[model]" is missing from JSON.');
+        assert(json.containsKey(r'modifyDate'), 'Required key "SyncAssetExifV1[modifyDate]" is missing from JSON.');
+        assert(json.containsKey(r'orientation'), 'Required key "SyncAssetExifV1[orientation]" is missing from JSON.');
+        assert(json.containsKey(r'profileDescription'), 'Required key "SyncAssetExifV1[profileDescription]" is missing from JSON.');
+        assert(json.containsKey(r'projectionType'), 'Required key "SyncAssetExifV1[projectionType]" is missing from JSON.');
+        assert(json.containsKey(r'rating'), 'Required key "SyncAssetExifV1[rating]" is missing from JSON.');
+        assert(json.containsKey(r'state'), 'Required key "SyncAssetExifV1[state]" is missing from JSON.');
+        assert(json.containsKey(r'timeZone'), 'Required key "SyncAssetExifV1[timeZone]" is missing from JSON.');
+        return true;
+      }());
 
       return SyncAssetExifV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,

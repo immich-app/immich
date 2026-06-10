@@ -48,9 +48,19 @@ class SharedLinksResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SharedLinksResponse? fromJson(dynamic value) {
-    upgradeDto(value, "SharedLinksResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "SharedLinksResponse[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "SharedLinksResponse[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'sidebarWeb'), 'Required key "SharedLinksResponse[sidebarWeb]" is missing from JSON.');
+        assert(json[r'sidebarWeb'] != null, 'Required key "SharedLinksResponse[sidebarWeb]" has a null value in JSON.');
+        return true;
+      }());
 
       return SharedLinksResponse(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

@@ -118,9 +118,43 @@ class SystemConfigJobDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigJobDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigJobDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'backgroundTask'), 'Required key "SystemConfigJobDto[backgroundTask]" is missing from JSON.');
+        assert(json[r'backgroundTask'] != null, 'Required key "SystemConfigJobDto[backgroundTask]" has a null value in JSON.');
+        assert(json.containsKey(r'editor'), 'Required key "SystemConfigJobDto[editor]" is missing from JSON.');
+        assert(json[r'editor'] != null, 'Required key "SystemConfigJobDto[editor]" has a null value in JSON.');
+        assert(json.containsKey(r'faceDetection'), 'Required key "SystemConfigJobDto[faceDetection]" is missing from JSON.');
+        assert(json[r'faceDetection'] != null, 'Required key "SystemConfigJobDto[faceDetection]" has a null value in JSON.');
+        assert(json.containsKey(r'library'), 'Required key "SystemConfigJobDto[library]" is missing from JSON.');
+        assert(json[r'library'] != null, 'Required key "SystemConfigJobDto[library]" has a null value in JSON.');
+        assert(json.containsKey(r'metadataExtraction'), 'Required key "SystemConfigJobDto[metadataExtraction]" is missing from JSON.');
+        assert(json[r'metadataExtraction'] != null, 'Required key "SystemConfigJobDto[metadataExtraction]" has a null value in JSON.');
+        assert(json.containsKey(r'migration'), 'Required key "SystemConfigJobDto[migration]" is missing from JSON.');
+        assert(json[r'migration'] != null, 'Required key "SystemConfigJobDto[migration]" has a null value in JSON.');
+        assert(json.containsKey(r'notifications'), 'Required key "SystemConfigJobDto[notifications]" is missing from JSON.');
+        assert(json[r'notifications'] != null, 'Required key "SystemConfigJobDto[notifications]" has a null value in JSON.');
+        assert(json.containsKey(r'ocr'), 'Required key "SystemConfigJobDto[ocr]" is missing from JSON.');
+        assert(json[r'ocr'] != null, 'Required key "SystemConfigJobDto[ocr]" has a null value in JSON.');
+        assert(json.containsKey(r'search'), 'Required key "SystemConfigJobDto[search]" is missing from JSON.');
+        assert(json[r'search'] != null, 'Required key "SystemConfigJobDto[search]" has a null value in JSON.');
+        assert(json.containsKey(r'sidecar'), 'Required key "SystemConfigJobDto[sidecar]" is missing from JSON.');
+        assert(json[r'sidecar'] != null, 'Required key "SystemConfigJobDto[sidecar]" has a null value in JSON.');
+        assert(json.containsKey(r'smartSearch'), 'Required key "SystemConfigJobDto[smartSearch]" is missing from JSON.');
+        assert(json[r'smartSearch'] != null, 'Required key "SystemConfigJobDto[smartSearch]" has a null value in JSON.');
+        assert(json.containsKey(r'thumbnailGeneration'), 'Required key "SystemConfigJobDto[thumbnailGeneration]" is missing from JSON.');
+        assert(json[r'thumbnailGeneration'] != null, 'Required key "SystemConfigJobDto[thumbnailGeneration]" has a null value in JSON.');
+        assert(json.containsKey(r'videoConversion'), 'Required key "SystemConfigJobDto[videoConversion]" is missing from JSON.');
+        assert(json[r'videoConversion'] != null, 'Required key "SystemConfigJobDto[videoConversion]" has a null value in JSON.');
+        assert(json.containsKey(r'workflow'), 'Required key "SystemConfigJobDto[workflow]" is missing from JSON.');
+        assert(json[r'workflow'] != null, 'Required key "SystemConfigJobDto[workflow]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigJobDto(
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,

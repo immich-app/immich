@@ -19,7 +19,7 @@ class AssetEditActionItemDto {
 
   AssetEditAction action;
 
-  Map<String, dynamic> parameters;
+  AssetEditActionItemDtoParameters parameters;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemDto &&
@@ -46,13 +46,23 @@ class AssetEditActionItemDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetEditActionItemDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionItemDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'action'), 'Required key "AssetEditActionItemDto[action]" is missing from JSON.');
+        assert(json[r'action'] != null, 'Required key "AssetEditActionItemDto[action]" has a null value in JSON.');
+        assert(json.containsKey(r'parameters'), 'Required key "AssetEditActionItemDto[parameters]" is missing from JSON.');
+        assert(json[r'parameters'] != null, 'Required key "AssetEditActionItemDto[parameters]" has a null value in JSON.');
+        return true;
+      }());
+
       return AssetEditActionItemDto(
         action: AssetEditAction.fromJson(json[r'action'])!,
-        parameters: json[r'parameters'],
+        parameters: AssetEditActionItemDtoParameters.fromJson(json[r'parameters'])!,
       );
     }
     return null;

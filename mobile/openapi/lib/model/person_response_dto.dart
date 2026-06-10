@@ -14,13 +14,13 @@ class PersonResponseDto {
   /// Returns a new [PersonResponseDto] instance.
   PersonResponseDto({
     required this.birthDate,
-    this.color = const Optional.absent(),
+    this.color,
     required this.id,
-    this.isFavorite = const Optional.absent(),
+    this.isFavorite,
     required this.isHidden,
     required this.name,
     required this.thumbnailPath,
-    this.updatedAt = const Optional.absent(),
+    this.updatedAt,
   });
 
   /// Person date of birth
@@ -33,7 +33,7 @@ class PersonResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> color;
+  String? color;
 
   /// Person ID
   String id;
@@ -45,16 +45,16 @@ class PersonResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> isFavorite;
+  bool? isFavorite;
 
   /// Is hidden
   bool isHidden;
 
   /// Person name
-  String name;
+  String? name;
 
   /// Thumbnail path
-  String thumbnailPath;
+  String? thumbnailPath;
 
   /// Last update date
   ///
@@ -63,7 +63,7 @@ class PersonResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> updatedAt;
+  DateTime? updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
@@ -84,8 +84,8 @@ class PersonResponseDto {
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
-    (name.hashCode) +
-    (thumbnailPath.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
@@ -98,21 +98,32 @@ class PersonResponseDto {
     } else {
       json[r'birthDate'] = null;
     }
-    if (this.color.isPresent) {
-      final value = this.color.value;
-      json[r'color'] = value;
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+      json[r'color'] = null;
     }
       json[r'id'] = this.id;
-    if (this.isFavorite.isPresent) {
-      final value = this.isFavorite.value;
-      json[r'isFavorite'] = value;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+      json[r'isFavorite'] = null;
     }
       json[r'isHidden'] = this.isHidden;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.thumbnailPath != null) {
       json[r'thumbnailPath'] = this.thumbnailPath;
-    if (this.updatedAt.isPresent) {
-      final value = this.updatedAt.value;
-      json[r'updatedAt'] = value == null ? null : value.toUtc().toIso8601String();
+    } else {
+      json[r'thumbnailPath'] = null;
+    }
+    if (this.updatedAt != null) {
+      json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
+    } else {
+      json[r'updatedAt'] = null;
     }
     return json;
   }
@@ -121,19 +132,32 @@ class PersonResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PersonResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PersonResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'birthDate'), 'Required key "PersonResponseDto[birthDate]" is missing from JSON.');
+        assert(json.containsKey(r'id'), 'Required key "PersonResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "PersonResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'isHidden'), 'Required key "PersonResponseDto[isHidden]" is missing from JSON.');
+        assert(json[r'isHidden'] != null, 'Required key "PersonResponseDto[isHidden]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "PersonResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'thumbnailPath'), 'Required key "PersonResponseDto[thumbnailPath]" is missing from JSON.');
+        return true;
+      }());
+
       return PersonResponseDto(
         birthDate: mapDateTime(json, r'birthDate', r''),
-        color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
+        color: mapValueOfType<String>(json, r'color'),
         id: mapValueOfType<String>(json, r'id')!,
-        isFavorite: json.containsKey(r'isFavorite') ? Optional.present(mapValueOfType<bool>(json, r'isFavorite')) : const Optional.absent(),
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
-        updatedAt: json.containsKey(r'updatedAt') ? Optional.present(mapDateTime(json, r'updatedAt', r'')) : const Optional.absent(),
+        name: mapValueOfType<String>(json, r'name'),
+        thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),
+        updatedAt: mapDateTime(json, r'updatedAt', r''),
       );
     }
     return null;

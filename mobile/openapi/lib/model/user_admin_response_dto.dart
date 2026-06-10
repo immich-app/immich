@@ -21,7 +21,7 @@ class UserAdminResponseDto {
     required this.isAdmin,
     required this.license,
     required this.name,
-    required this.oauthId,
+    this.oauthId,
     required this.profileChangedAt,
     required this.profileImagePath,
     required this.quotaSizeInBytes,
@@ -52,16 +52,16 @@ class UserAdminResponseDto {
   UserLicense? license;
 
   /// User name
-  String name;
+  String? name;
 
   /// OAuth ID
-  String oauthId;
+  String? oauthId;
 
   /// Profile change date
   DateTime profileChangedAt;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   /// Storage quota in bytes
   ///
@@ -116,10 +116,10 @@ class UserAdminResponseDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (license == null ? 0 : license!.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (oauthId == null ? 0 : oauthId!.hashCode) +
     (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode) +
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -151,10 +151,22 @@ class UserAdminResponseDto {
     } else {
       json[r'license'] = null;
     }
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.oauthId != null) {
       json[r'oauthId'] = this.oauthId;
+    } else {
+      json[r'oauthId'] = null;
+    }
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
@@ -182,9 +194,40 @@ class UserAdminResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserAdminResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "UserAdminResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'avatarColor'), 'Required key "UserAdminResponseDto[avatarColor]" is missing from JSON.');
+        assert(json[r'avatarColor'] != null, 'Required key "UserAdminResponseDto[avatarColor]" has a null value in JSON.');
+        assert(json.containsKey(r'createdAt'), 'Required key "UserAdminResponseDto[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "UserAdminResponseDto[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'deletedAt'), 'Required key "UserAdminResponseDto[deletedAt]" is missing from JSON.');
+        assert(json.containsKey(r'email'), 'Required key "UserAdminResponseDto[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "UserAdminResponseDto[email]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "UserAdminResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "UserAdminResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'isAdmin'), 'Required key "UserAdminResponseDto[isAdmin]" is missing from JSON.');
+        assert(json[r'isAdmin'] != null, 'Required key "UserAdminResponseDto[isAdmin]" has a null value in JSON.');
+        assert(json.containsKey(r'license'), 'Required key "UserAdminResponseDto[license]" is missing from JSON.');
+        assert(json.containsKey(r'name'), 'Required key "UserAdminResponseDto[name]" is missing from JSON.');
+        assert(json.containsKey(r'profileChangedAt'), 'Required key "UserAdminResponseDto[profileChangedAt]" is missing from JSON.');
+        assert(json[r'profileChangedAt'] != null, 'Required key "UserAdminResponseDto[profileChangedAt]" has a null value in JSON.');
+        assert(json.containsKey(r'profileImagePath'), 'Required key "UserAdminResponseDto[profileImagePath]" is missing from JSON.');
+        assert(json.containsKey(r'quotaSizeInBytes'), 'Required key "UserAdminResponseDto[quotaSizeInBytes]" is missing from JSON.');
+        assert(json.containsKey(r'quotaUsageInBytes'), 'Required key "UserAdminResponseDto[quotaUsageInBytes]" is missing from JSON.');
+        assert(json.containsKey(r'shouldChangePassword'), 'Required key "UserAdminResponseDto[shouldChangePassword]" is missing from JSON.');
+        assert(json[r'shouldChangePassword'] != null, 'Required key "UserAdminResponseDto[shouldChangePassword]" has a null value in JSON.');
+        assert(json.containsKey(r'status'), 'Required key "UserAdminResponseDto[status]" is missing from JSON.');
+        assert(json[r'status'] != null, 'Required key "UserAdminResponseDto[status]" has a null value in JSON.');
+        assert(json.containsKey(r'storageLabel'), 'Required key "UserAdminResponseDto[storageLabel]" is missing from JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "UserAdminResponseDto[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "UserAdminResponseDto[updatedAt]" has a null value in JSON.');
+        return true;
+      }());
 
       return UserAdminResponseDto(
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
@@ -194,10 +237,10 @@ class UserAdminResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         license: UserLicense.fromJson(json[r'license']),
-        name: mapValueOfType<String>(json, r'name')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        name: mapValueOfType<String>(json, r'name'),
+        oauthId: mapValueOfType<String>(json, r'oauthId'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
@@ -259,7 +302,6 @@ class UserAdminResponseDto {
     'isAdmin',
     'license',
     'name',
-    'oauthId',
     'profileChangedAt',
     'profileImagePath',
     'quotaSizeInBytes',

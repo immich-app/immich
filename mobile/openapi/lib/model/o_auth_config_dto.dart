@@ -13,9 +13,9 @@ part of openapi.api;
 class OAuthConfigDto {
   /// Returns a new [OAuthConfigDto] instance.
   OAuthConfigDto({
-    this.codeChallenge = const Optional.absent(),
+    this.codeChallenge,
     required this.redirectUri,
-    this.state = const Optional.absent(),
+    this.state,
   });
 
   /// OAuth code challenge (PKCE)
@@ -25,7 +25,7 @@ class OAuthConfigDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> codeChallenge;
+  String? codeChallenge;
 
   /// OAuth redirect URI
   String redirectUri;
@@ -37,7 +37,7 @@ class OAuthConfigDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> state;
+  String? state;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OAuthConfigDto &&
@@ -57,14 +57,16 @@ class OAuthConfigDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.codeChallenge.isPresent) {
-      final value = this.codeChallenge.value;
-      json[r'codeChallenge'] = value;
+    if (this.codeChallenge != null) {
+      json[r'codeChallenge'] = this.codeChallenge;
+    } else {
+      json[r'codeChallenge'] = null;
     }
       json[r'redirectUri'] = this.redirectUri;
-    if (this.state.isPresent) {
-      final value = this.state.value;
-      json[r'state'] = value;
+    if (this.state != null) {
+      json[r'state'] = this.state;
+    } else {
+      json[r'state'] = null;
     }
     return json;
   }
@@ -73,14 +75,22 @@ class OAuthConfigDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static OAuthConfigDto? fromJson(dynamic value) {
-    upgradeDto(value, "OAuthConfigDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'redirectUri'), 'Required key "OAuthConfigDto[redirectUri]" is missing from JSON.');
+        assert(json[r'redirectUri'] != null, 'Required key "OAuthConfigDto[redirectUri]" has a null value in JSON.');
+        return true;
+      }());
+
       return OAuthConfigDto(
-        codeChallenge: json.containsKey(r'codeChallenge') ? Optional.present(mapValueOfType<String>(json, r'codeChallenge')) : const Optional.absent(),
+        codeChallenge: mapValueOfType<String>(json, r'codeChallenge'),
         redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
-        state: json.containsKey(r'state') ? Optional.present(mapValueOfType<String>(json, r'state')) : const Optional.absent(),
+        state: mapValueOfType<String>(json, r'state'),
       );
     }
     return null;

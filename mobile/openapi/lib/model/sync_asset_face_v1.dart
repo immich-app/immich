@@ -126,9 +126,34 @@ class SyncAssetFaceV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAssetFaceV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAssetFaceV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetId'), 'Required key "SyncAssetFaceV1[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "SyncAssetFaceV1[assetId]" has a null value in JSON.');
+        assert(json.containsKey(r'boundingBoxX1'), 'Required key "SyncAssetFaceV1[boundingBoxX1]" is missing from JSON.');
+        assert(json[r'boundingBoxX1'] != null, 'Required key "SyncAssetFaceV1[boundingBoxX1]" has a null value in JSON.');
+        assert(json.containsKey(r'boundingBoxX2'), 'Required key "SyncAssetFaceV1[boundingBoxX2]" is missing from JSON.');
+        assert(json[r'boundingBoxX2'] != null, 'Required key "SyncAssetFaceV1[boundingBoxX2]" has a null value in JSON.');
+        assert(json.containsKey(r'boundingBoxY1'), 'Required key "SyncAssetFaceV1[boundingBoxY1]" is missing from JSON.');
+        assert(json[r'boundingBoxY1'] != null, 'Required key "SyncAssetFaceV1[boundingBoxY1]" has a null value in JSON.');
+        assert(json.containsKey(r'boundingBoxY2'), 'Required key "SyncAssetFaceV1[boundingBoxY2]" is missing from JSON.');
+        assert(json[r'boundingBoxY2'] != null, 'Required key "SyncAssetFaceV1[boundingBoxY2]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncAssetFaceV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncAssetFaceV1[id]" has a null value in JSON.');
+        assert(json.containsKey(r'imageHeight'), 'Required key "SyncAssetFaceV1[imageHeight]" is missing from JSON.');
+        assert(json[r'imageHeight'] != null, 'Required key "SyncAssetFaceV1[imageHeight]" has a null value in JSON.');
+        assert(json.containsKey(r'imageWidth'), 'Required key "SyncAssetFaceV1[imageWidth]" is missing from JSON.');
+        assert(json[r'imageWidth'] != null, 'Required key "SyncAssetFaceV1[imageWidth]" has a null value in JSON.');
+        assert(json.containsKey(r'personId'), 'Required key "SyncAssetFaceV1[personId]" is missing from JSON.');
+        assert(json.containsKey(r'sourceType'), 'Required key "SyncAssetFaceV1[sourceType]" is missing from JSON.');
+        assert(json[r'sourceType'] != null, 'Required key "SyncAssetFaceV1[sourceType]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAssetFaceV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,

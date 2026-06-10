@@ -48,9 +48,19 @@ class SystemConfigLibraryScanDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigLibraryScanDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigLibraryScanDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'cronExpression'), 'Required key "SystemConfigLibraryScanDto[cronExpression]" is missing from JSON.');
+        assert(json[r'cronExpression'] != null, 'Required key "SystemConfigLibraryScanDto[cronExpression]" has a null value in JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "SystemConfigLibraryScanDto[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "SystemConfigLibraryScanDto[enabled]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigLibraryScanDto(
         cronExpression: mapValueOfType<String>(json, r'cronExpression')!,

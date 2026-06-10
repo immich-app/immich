@@ -74,9 +74,23 @@ class CropParameters {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static CropParameters? fromJson(dynamic value) {
-    upgradeDto(value, "CropParameters");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'height'), 'Required key "CropParameters[height]" is missing from JSON.');
+        assert(json[r'height'] != null, 'Required key "CropParameters[height]" has a null value in JSON.');
+        assert(json.containsKey(r'width'), 'Required key "CropParameters[width]" is missing from JSON.');
+        assert(json[r'width'] != null, 'Required key "CropParameters[width]" has a null value in JSON.');
+        assert(json.containsKey(r'x'), 'Required key "CropParameters[x]" is missing from JSON.');
+        assert(json[r'x'] != null, 'Required key "CropParameters[x]" has a null value in JSON.');
+        assert(json.containsKey(r'y'), 'Required key "CropParameters[y]" is missing from JSON.');
+        assert(json[r'y'] != null, 'Required key "CropParameters[y]" has a null value in JSON.');
+        return true;
+      }());
 
       return CropParameters(
         height: mapValueOfType<int>(json, r'height')!,

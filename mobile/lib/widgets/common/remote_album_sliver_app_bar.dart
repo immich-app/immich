@@ -264,14 +264,14 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                         _DynamicText(text: currentAlbum.name, maxWidth: constraints.maxWidth),
                   ),
                 ),
-                if (currentAlbum.description.isNotEmpty)
+                if (currentAlbum.description?.isNotEmpty ?? false)
                   GestureDetector(
                     onTap: widget.onEditTitle,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 80),
                       child: SingleChildScrollView(
                         child: Text(
-                          currentAlbum.description,
+                          currentAlbum.description!,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,

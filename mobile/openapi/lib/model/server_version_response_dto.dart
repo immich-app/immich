@@ -78,9 +78,22 @@ class ServerVersionResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerVersionResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerVersionResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'major'), 'Required key "ServerVersionResponseDto[major]" is missing from JSON.');
+        assert(json[r'major'] != null, 'Required key "ServerVersionResponseDto[major]" has a null value in JSON.');
+        assert(json.containsKey(r'minor'), 'Required key "ServerVersionResponseDto[minor]" is missing from JSON.');
+        assert(json[r'minor'] != null, 'Required key "ServerVersionResponseDto[minor]" has a null value in JSON.');
+        assert(json.containsKey(r'patch'), 'Required key "ServerVersionResponseDto[patch]" is missing from JSON.');
+        assert(json[r'patch'] != null, 'Required key "ServerVersionResponseDto[patch]" has a null value in JSON.');
+        assert(json.containsKey(r'prerelease'), 'Required key "ServerVersionResponseDto[prerelease]" is missing from JSON.');
+        return true;
+      }());
 
       return ServerVersionResponseDto(
         major: mapValueOfType<int>(json, r'major')!,

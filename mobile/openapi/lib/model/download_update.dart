@@ -13,8 +13,8 @@ part of openapi.api;
 class DownloadUpdate {
   /// Returns a new [DownloadUpdate] instance.
   DownloadUpdate({
-    this.archiveSize = const Optional.absent(),
-    this.includeEmbeddedVideos = const Optional.absent(),
+    this.archiveSize,
+    this.includeEmbeddedVideos,
   });
 
   /// Maximum archive size in bytes
@@ -27,7 +27,7 @@ class DownloadUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<int?> archiveSize;
+  int? archiveSize;
 
   /// Whether to include embedded videos in downloads
   ///
@@ -36,7 +36,7 @@ class DownloadUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> includeEmbeddedVideos;
+  bool? includeEmbeddedVideos;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadUpdate &&
@@ -54,13 +54,15 @@ class DownloadUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.archiveSize.isPresent) {
-      final value = this.archiveSize.value;
-      json[r'archiveSize'] = value;
+    if (this.archiveSize != null) {
+      json[r'archiveSize'] = this.archiveSize;
+    } else {
+      json[r'archiveSize'] = null;
     }
-    if (this.includeEmbeddedVideos.isPresent) {
-      final value = this.includeEmbeddedVideos.value;
-      json[r'includeEmbeddedVideos'] = value;
+    if (this.includeEmbeddedVideos != null) {
+      json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
+    } else {
+      json[r'includeEmbeddedVideos'] = null;
     }
     return json;
   }
@@ -69,13 +71,19 @@ class DownloadUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DownloadUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "DownloadUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return DownloadUpdate(
-        archiveSize: json.containsKey(r'archiveSize') ? Optional.present(json[r'archiveSize'] == null ? null : int.parse('${json[r'archiveSize']}')) : const Optional.absent(),
-        includeEmbeddedVideos: json.containsKey(r'includeEmbeddedVideos') ? Optional.present(mapValueOfType<bool>(json, r'includeEmbeddedVideos')) : const Optional.absent(),
+        archiveSize: mapValueOfType<int>(json, r'archiveSize'),
+        includeEmbeddedVideos: mapValueOfType<bool>(json, r'includeEmbeddedVideos'),
       );
     }
     return null;

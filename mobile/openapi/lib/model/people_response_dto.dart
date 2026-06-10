@@ -13,7 +13,7 @@ part of openapi.api;
 class PeopleResponseDto {
   /// Returns a new [PeopleResponseDto] instance.
   PeopleResponseDto({
-    this.hasNextPage = const Optional.absent(),
+    this.hasNextPage,
     required this.hidden,
     this.people = const [],
     required this.total,
@@ -26,7 +26,7 @@ class PeopleResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> hasNextPage;
+  bool? hasNextPage;
 
   /// Number of hidden people
   ///
@@ -62,9 +62,10 @@ class PeopleResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hasNextPage.isPresent) {
-      final value = this.hasNextPage.value;
-      json[r'hasNextPage'] = value;
+    if (this.hasNextPage != null) {
+      json[r'hasNextPage'] = this.hasNextPage;
+    } else {
+      json[r'hasNextPage'] = null;
     }
       json[r'hidden'] = this.hidden;
       json[r'people'] = this.people;
@@ -76,12 +77,24 @@ class PeopleResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PeopleResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "PeopleResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'hidden'), 'Required key "PeopleResponseDto[hidden]" is missing from JSON.');
+        assert(json[r'hidden'] != null, 'Required key "PeopleResponseDto[hidden]" has a null value in JSON.');
+        assert(json.containsKey(r'people'), 'Required key "PeopleResponseDto[people]" is missing from JSON.');
+        assert(json[r'people'] != null, 'Required key "PeopleResponseDto[people]" has a null value in JSON.');
+        assert(json.containsKey(r'total'), 'Required key "PeopleResponseDto[total]" is missing from JSON.');
+        assert(json[r'total'] != null, 'Required key "PeopleResponseDto[total]" has a null value in JSON.');
+        return true;
+      }());
+
       return PeopleResponseDto(
-        hasNextPage: json.containsKey(r'hasNextPage') ? Optional.present(mapValueOfType<bool>(json, r'hasNextPage')) : const Optional.absent(),
+        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage'),
         hidden: mapValueOfType<int>(json, r'hidden')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
         total: mapValueOfType<int>(json, r'total')!,

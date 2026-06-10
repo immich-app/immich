@@ -7,7 +7,7 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 
 Widget userAvatar(BuildContext context, UserDto u, {double? radius}) {
   final url = "${Store.get(StoreKey.serverEndpoint)}/users/${u.id}/profile-image";
-  final nameFirstLetter = u.name.isNotEmpty ? u.name[0] : "";
+  final nameFirstLetter = (u.name?.isNotEmpty ?? false) ? u.name![0] : "";
   return CircleAvatar(
     radius: radius,
     backgroundColor: context.primaryColor.withAlpha(50),

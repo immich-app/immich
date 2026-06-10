@@ -8,12 +8,12 @@ class PartnerUserAvatar extends StatelessWidget {
   const PartnerUserAvatar({super.key, required this.userId, required this.name});
 
   final String userId;
-  final String name;
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
     final url = "${Store.get(StoreKey.serverEndpoint)}/users/$userId/profile-image";
-    final nameFirstLetter = name.isNotEmpty ? name[0] : "";
+    final nameFirstLetter = (name?.isNotEmpty ?? false) ? name![0] : "";
     return CircleAvatar(
       radius: 16,
       backgroundColor: context.primaryColor.withAlpha(50),

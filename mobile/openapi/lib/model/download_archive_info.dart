@@ -51,9 +51,19 @@ class DownloadArchiveInfo {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static DownloadArchiveInfo? fromJson(dynamic value) {
-    upgradeDto(value, "DownloadArchiveInfo");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'assetIds'), 'Required key "DownloadArchiveInfo[assetIds]" is missing from JSON.');
+        assert(json[r'assetIds'] != null, 'Required key "DownloadArchiveInfo[assetIds]" has a null value in JSON.');
+        assert(json.containsKey(r'size'), 'Required key "DownloadArchiveInfo[size]" is missing from JSON.');
+        assert(json[r'size'] != null, 'Required key "DownloadArchiveInfo[size]" has a null value in JSON.');
+        return true;
+      }());
 
       return DownloadArchiveInfo(
         assetIds: json[r'assetIds'] is Iterable

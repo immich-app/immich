@@ -41,9 +41,9 @@ class MapApi {
   ///
   /// * [bool] withSharedAlbums:
   ///   Include shared album assets
-  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, Future<void>? abortTrigger, }) async {
+  Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/map/markers';
+    final path = r'/map/markers';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -75,14 +75,13 @@ class MapApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -109,8 +108,8 @@ class MapApi {
   ///
   /// * [bool] withSharedAlbums:
   ///   Include shared album assets
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, Future<void>? abortTrigger, }) async {
-    final response = await getMapMarkersWithHttpInfo(fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, withSharedAlbums: withSharedAlbums, abortTrigger: abortTrigger,);
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
+    final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, withSharedAlbums: withSharedAlbums, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -140,9 +139,9 @@ class MapApi {
   ///
   /// * [double] lon (required):
   ///   Longitude (-180 to 180)
-  Future<Response> reverseGeocodeWithHttpInfo(double lat, double lon, { Future<void>? abortTrigger, }) async {
+  Future<Response> reverseGeocodeWithHttpInfo(double lat, double lon,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/map/reverse-geocode';
+    final path = r'/map/reverse-geocode';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -158,14 +157,13 @@ class MapApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -180,8 +178,8 @@ class MapApi {
   ///
   /// * [double] lon (required):
   ///   Longitude (-180 to 180)
-  Future<List<MapReverseGeocodeResponseDto>?> reverseGeocode(double lat, double lon, { Future<void>? abortTrigger, }) async {
-    final response = await reverseGeocodeWithHttpInfo(lat, lon, abortTrigger: abortTrigger,);
+  Future<List<MapReverseGeocodeResponseDto>?> reverseGeocode(double lat, double lon,) async {
+    final response = await reverseGeocodeWithHttpInfo(lat, lon,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

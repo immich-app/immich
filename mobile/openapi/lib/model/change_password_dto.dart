@@ -13,13 +13,13 @@ part of openapi.api;
 class ChangePasswordDto {
   /// Returns a new [ChangePasswordDto] instance.
   ChangePasswordDto({
-    this.invalidateSessions = const Optional.present(false),
+    this.invalidateSessions = false,
     required this.newPassword,
     required this.password,
   });
 
   /// Invalidate all other sessions
-  Optional<bool?> invalidateSessions;
+  bool invalidateSessions;
 
   /// New password (min 8 characters)
   String newPassword;
@@ -45,10 +45,7 @@ class ChangePasswordDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.invalidateSessions.isPresent) {
-      final value = this.invalidateSessions.value;
-      json[r'invalidateSessions'] = value;
-    }
+      json[r'invalidateSessions'] = this.invalidateSessions;
       json[r'newPassword'] = this.newPassword;
       json[r'password'] = this.password;
     return json;
@@ -58,12 +55,22 @@ class ChangePasswordDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ChangePasswordDto? fromJson(dynamic value) {
-    upgradeDto(value, "ChangePasswordDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'newPassword'), 'Required key "ChangePasswordDto[newPassword]" is missing from JSON.');
+        assert(json[r'newPassword'] != null, 'Required key "ChangePasswordDto[newPassword]" has a null value in JSON.');
+        assert(json.containsKey(r'password'), 'Required key "ChangePasswordDto[password]" is missing from JSON.');
+        assert(json[r'password'] != null, 'Required key "ChangePasswordDto[password]" has a null value in JSON.');
+        return true;
+      }());
+
       return ChangePasswordDto(
-        invalidateSessions: json.containsKey(r'invalidateSessions') ? Optional.present(mapValueOfType<bool>(json, r'invalidateSessions')) : const Optional.absent(),
+        invalidateSessions: mapValueOfType<bool>(json, r'invalidateSessions') ?? false,
         newPassword: mapValueOfType<String>(json, r'newPassword')!,
         password: mapValueOfType<String>(json, r'password')!,
       );

@@ -13,16 +13,16 @@ part of openapi.api;
 class UpdateLibraryDto {
   /// Returns a new [UpdateLibraryDto] instance.
   UpdateLibraryDto({
-    this.exclusionPatterns = const Optional.present(const []),
-    this.importPaths = const Optional.present(const []),
-    this.name = const Optional.absent(),
+    this.exclusionPatterns = const [],
+    this.importPaths = const [],
+    this.name,
   });
 
   /// Exclusion patterns (max 128)
-  Optional<List<String>?> exclusionPatterns;
+  List<String> exclusionPatterns;
 
   /// Import paths (max 128)
-  Optional<List<String>?> importPaths;
+  List<String> importPaths;
 
   /// Library name
   ///
@@ -31,7 +31,7 @@ class UpdateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> name;
+  String? name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateLibraryDto &&
@@ -51,17 +51,12 @@ class UpdateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.exclusionPatterns.isPresent) {
-      final value = this.exclusionPatterns.value;
-      json[r'exclusionPatterns'] = value;
-    }
-    if (this.importPaths.isPresent) {
-      final value = this.importPaths.value;
-      json[r'importPaths'] = value;
-    }
-    if (this.name.isPresent) {
-      final value = this.name.value;
-      json[r'name'] = value;
+      json[r'exclusionPatterns'] = this.exclusionPatterns;
+      json[r'importPaths'] = this.importPaths;
+    if (this.name != null) {
+      json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
     }
     return json;
   }
@@ -70,18 +65,24 @@ class UpdateLibraryDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UpdateLibraryDto? fromJson(dynamic value) {
-    upgradeDto(value, "UpdateLibraryDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return UpdateLibraryDto(
-        exclusionPatterns: json.containsKey(r'exclusionPatterns') ? Optional.present(json[r'exclusionPatterns'] is Iterable
+        exclusionPatterns: json[r'exclusionPatterns'] is Iterable
             ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
-            : const []) : const Optional.absent(),
-        importPaths: json.containsKey(r'importPaths') ? Optional.present(json[r'importPaths'] is Iterable
+            : const [],
+        importPaths: json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
-            : const []) : const Optional.absent(),
-        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
+            : const [],
+        name: mapValueOfType<String>(json, r'name'),
       );
     }
     return null;

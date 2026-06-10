@@ -48,9 +48,19 @@ class TagsResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TagsResponse? fromJson(dynamic value) {
-    upgradeDto(value, "TagsResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "TagsResponse[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "TagsResponse[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'sidebarWeb'), 'Required key "TagsResponse[sidebarWeb]" is missing from JSON.');
+        assert(json[r'sidebarWeb'] != null, 'Required key "TagsResponse[sidebarWeb]" has a null value in JSON.');
+        return true;
+      }());
 
       return TagsResponse(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

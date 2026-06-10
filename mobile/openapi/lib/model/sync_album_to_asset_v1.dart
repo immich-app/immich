@@ -48,9 +48,19 @@ class SyncAlbumToAssetV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncAlbumToAssetV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncAlbumToAssetV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'albumId'), 'Required key "SyncAlbumToAssetV1[albumId]" is missing from JSON.');
+        assert(json[r'albumId'] != null, 'Required key "SyncAlbumToAssetV1[albumId]" has a null value in JSON.');
+        assert(json.containsKey(r'assetId'), 'Required key "SyncAlbumToAssetV1[assetId]" is missing from JSON.');
+        assert(json[r'assetId'] != null, 'Required key "SyncAlbumToAssetV1[assetId]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncAlbumToAssetV1(
         albumId: mapValueOfType<String>(json, r'albumId')!,

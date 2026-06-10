@@ -73,9 +73,25 @@ class SyncStackV1 {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SyncStackV1? fromJson(dynamic value) {
-    upgradeDto(value, "SyncStackV1");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'createdAt'), 'Required key "SyncStackV1[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "SyncStackV1[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "SyncStackV1[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "SyncStackV1[id]" has a null value in JSON.');
+        assert(json.containsKey(r'ownerId'), 'Required key "SyncStackV1[ownerId]" is missing from JSON.');
+        assert(json[r'ownerId'] != null, 'Required key "SyncStackV1[ownerId]" has a null value in JSON.');
+        assert(json.containsKey(r'primaryAssetId'), 'Required key "SyncStackV1[primaryAssetId]" is missing from JSON.');
+        assert(json[r'primaryAssetId'] != null, 'Required key "SyncStackV1[primaryAssetId]" has a null value in JSON.');
+        assert(json.containsKey(r'updatedAt'), 'Required key "SyncStackV1[updatedAt]" is missing from JSON.');
+        assert(json[r'updatedAt'] != null, 'Required key "SyncStackV1[updatedAt]" has a null value in JSON.');
+        return true;
+      }());
 
       return SyncStackV1(
         createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,

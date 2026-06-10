@@ -21,9 +21,9 @@ class AuthenticationAdminApi {
   /// Unlinks all OAuth accounts associated with user accounts in the system.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> unlinkAllOAuthAccountsAdminWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> unlinkAllOAuthAccountsAdminWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/admin/auth/unlink-all';
+    final path = r'/admin/auth/unlink-all';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -36,22 +36,21 @@ class AuthenticationAdminApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Unlink all OAuth accounts
   ///
   /// Unlinks all OAuth accounts associated with user accounts in the system.
-  Future<void> unlinkAllOAuthAccountsAdmin({ Future<void>? abortTrigger, }) async {
-    final response = await unlinkAllOAuthAccountsAdminWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<void> unlinkAllOAuthAccountsAdmin() async {
+    final response = await unlinkAllOAuthAccountsAdminWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

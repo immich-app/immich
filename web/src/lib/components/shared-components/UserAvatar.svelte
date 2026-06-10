@@ -9,9 +9,9 @@
 
   interface User {
     id: string;
-    name: string;
-    email: string;
-    profileImagePath: string;
+    name: string | null;
+    email: string | null;
+    profileImagePath: string | null;
     avatarColor: UserAvatarColor;
     profileChangedAt: string;
   }
@@ -100,7 +100,7 @@
       class:text-2xl={size === 'xxl'}
       class:text-3xl={size === 'xxxl'}
     >
-      {user.name[0] || ''}
+      {user.name?.[0] || ''}
     </span>
   {/if}
 </figure>

@@ -13,7 +13,7 @@ part of openapi.api;
 class RatingsUpdate {
   /// Returns a new [RatingsUpdate] instance.
   RatingsUpdate({
-    this.enabled = const Optional.absent(),
+    this.enabled,
   });
 
   /// Whether ratings are enabled
@@ -23,7 +23,7 @@ class RatingsUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> enabled;
+  bool? enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RatingsUpdate &&
@@ -39,9 +39,10 @@ class RatingsUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.enabled.isPresent) {
-      final value = this.enabled.value;
-      json[r'enabled'] = value;
+    if (this.enabled != null) {
+      json[r'enabled'] = this.enabled;
+    } else {
+      json[r'enabled'] = null;
     }
     return json;
   }
@@ -50,12 +51,18 @@ class RatingsUpdate {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static RatingsUpdate? fromJson(dynamic value) {
-    upgradeDto(value, "RatingsUpdate");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        return true;
+      }());
+
       return RatingsUpdate(
-        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        enabled: mapValueOfType<bool>(json, r'enabled'),
       );
     }
     return null;

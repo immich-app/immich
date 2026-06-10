@@ -74,9 +74,23 @@ class LibraryStatsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static LibraryStatsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "LibraryStatsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'photos'), 'Required key "LibraryStatsResponseDto[photos]" is missing from JSON.');
+        assert(json[r'photos'] != null, 'Required key "LibraryStatsResponseDto[photos]" has a null value in JSON.');
+        assert(json.containsKey(r'total'), 'Required key "LibraryStatsResponseDto[total]" is missing from JSON.');
+        assert(json[r'total'] != null, 'Required key "LibraryStatsResponseDto[total]" has a null value in JSON.');
+        assert(json.containsKey(r'usage'), 'Required key "LibraryStatsResponseDto[usage]" is missing from JSON.');
+        assert(json[r'usage'] != null, 'Required key "LibraryStatsResponseDto[usage]" has a null value in JSON.');
+        assert(json.containsKey(r'videos'), 'Required key "LibraryStatsResponseDto[videos]" is missing from JSON.');
+        assert(json[r'videos'] != null, 'Required key "LibraryStatsResponseDto[videos]" has a null value in JSON.');
+        return true;
+      }());
 
       return LibraryStatsResponseDto(
         photos: mapValueOfType<int>(json, r'photos')!,

@@ -14,7 +14,7 @@ class WorkflowStepDto {
   /// Returns a new [WorkflowStepDto] instance.
   WorkflowStepDto({
     this.config = const {},
-    this.enabled = const Optional.absent(),
+    this.enabled,
     required this.method,
   });
 
@@ -28,7 +28,7 @@ class WorkflowStepDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<bool?> enabled;
+  bool? enabled;
 
   /// Step plugin method
   String method;
@@ -56,9 +56,10 @@ class WorkflowStepDto {
     } else {
       json[r'config'] = null;
     }
-    if (this.enabled.isPresent) {
-      final value = this.enabled.value;
-      json[r'enabled'] = value;
+    if (this.enabled != null) {
+      json[r'enabled'] = this.enabled;
+    } else {
+      json[r'enabled'] = null;
     }
       json[r'method'] = this.method;
     return json;
@@ -68,13 +69,22 @@ class WorkflowStepDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static WorkflowStepDto? fromJson(dynamic value) {
-    upgradeDto(value, "WorkflowStepDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'config'), 'Required key "WorkflowStepDto[config]" is missing from JSON.');
+        assert(json.containsKey(r'method'), 'Required key "WorkflowStepDto[method]" is missing from JSON.');
+        assert(json[r'method'] != null, 'Required key "WorkflowStepDto[method]" has a null value in JSON.');
+        return true;
+      }());
+
       return WorkflowStepDto(
         config: mapCastOfType<String, Object>(json, r'config'),
-        enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        enabled: mapValueOfType<bool>(json, r'enabled'),
         method: mapValueOfType<String>(json, r'method')!,
       );
     }

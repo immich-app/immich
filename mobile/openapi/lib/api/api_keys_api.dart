@@ -25,9 +25,9 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [ApiKeyCreateDto] apiKeyCreateDto (required):
-  Future<Response> createApiKeyWithHttpInfo(ApiKeyCreateDto apiKeyCreateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> createApiKeyWithHttpInfo(ApiKeyCreateDto apiKeyCreateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/api-keys';
+    final path = r'/api-keys';
 
     // ignore: prefer_final_locals
     Object? postBody = apiKeyCreateDto;
@@ -40,14 +40,13 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +57,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [ApiKeyCreateDto] apiKeyCreateDto (required):
-  Future<ApiKeyCreateResponseDto?> createApiKey(ApiKeyCreateDto apiKeyCreateDto, { Future<void>? abortTrigger, }) async {
-    final response = await createApiKeyWithHttpInfo(apiKeyCreateDto, abortTrigger: abortTrigger,);
+  Future<ApiKeyCreateResponseDto?> createApiKey(ApiKeyCreateDto apiKeyCreateDto,) async {
+    final response = await createApiKeyWithHttpInfo(apiKeyCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -82,9 +81,9 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteApiKeyWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> deleteApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/api-keys/{id}'
+    final path = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -98,14 +97,13 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'DELETE',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -116,8 +114,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteApiKey(String id, { Future<void>? abortTrigger, }) async {
-    final response = await deleteApiKeyWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<void> deleteApiKey(String id,) async {
+    final response = await deleteApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -132,9 +130,9 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getApiKeyWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> getApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/api-keys/{id}'
+    final path = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -148,14 +146,13 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -166,8 +163,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<ApiKeyResponseDto?> getApiKey(String id, { Future<void>? abortTrigger, }) async {
-    final response = await getApiKeyWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<ApiKeyResponseDto?> getApiKey(String id,) async {
+    final response = await getApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -186,9 +183,9 @@ class APIKeysApi {
   /// Retrieve all API keys of the current user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getApiKeysWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getApiKeysWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/api-keys';
+    final path = r'/api-keys';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -201,22 +198,21 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// List all API keys
   ///
   /// Retrieve all API keys of the current user.
-  Future<List<ApiKeyResponseDto>?> getApiKeys({ Future<void>? abortTrigger, }) async {
-    final response = await getApiKeysWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<List<ApiKeyResponseDto>?> getApiKeys() async {
+    final response = await getApiKeysWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -238,9 +234,9 @@ class APIKeysApi {
   /// Retrieve the API key that is used to access this endpoint.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMyApiKeyWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getMyApiKeyWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/api-keys/me';
+    final path = r'/api-keys/me';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -253,22 +249,21 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve the current API key
   ///
   /// Retrieve the API key that is used to access this endpoint.
-  Future<ApiKeyResponseDto?> getMyApiKey({ Future<void>? abortTrigger, }) async {
-    final response = await getMyApiKeyWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<ApiKeyResponseDto?> getMyApiKey() async {
+    final response = await getMyApiKeyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -293,9 +288,9 @@ class APIKeysApi {
   /// * [String] id (required):
   ///
   /// * [ApiKeyUpdateDto] apiKeyUpdateDto (required):
-  Future<Response> updateApiKeyWithHttpInfo(String id, ApiKeyUpdateDto apiKeyUpdateDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> updateApiKeyWithHttpInfo(String id, ApiKeyUpdateDto apiKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/api-keys/{id}'
+    final path = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -309,14 +304,13 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -329,8 +323,8 @@ class APIKeysApi {
   /// * [String] id (required):
   ///
   /// * [ApiKeyUpdateDto] apiKeyUpdateDto (required):
-  Future<ApiKeyResponseDto?> updateApiKey(String id, ApiKeyUpdateDto apiKeyUpdateDto, { Future<void>? abortTrigger, }) async {
-    final response = await updateApiKeyWithHttpInfo(id, apiKeyUpdateDto, abortTrigger: abortTrigger,);
+  Future<ApiKeyResponseDto?> updateApiKey(String id, ApiKeyUpdateDto apiKeyUpdateDto,) async {
+    final response = await updateApiKeyWithHttpInfo(id, apiKeyUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

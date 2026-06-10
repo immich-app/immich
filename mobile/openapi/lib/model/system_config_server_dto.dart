@@ -55,9 +55,21 @@ class SystemConfigServerDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigServerDto? fromJson(dynamic value) {
-    upgradeDto(value, "SystemConfigServerDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'externalDomain'), 'Required key "SystemConfigServerDto[externalDomain]" is missing from JSON.');
+        assert(json[r'externalDomain'] != null, 'Required key "SystemConfigServerDto[externalDomain]" has a null value in JSON.');
+        assert(json.containsKey(r'loginPageMessage'), 'Required key "SystemConfigServerDto[loginPageMessage]" is missing from JSON.');
+        assert(json[r'loginPageMessage'] != null, 'Required key "SystemConfigServerDto[loginPageMessage]" has a null value in JSON.');
+        assert(json.containsKey(r'publicUsers'), 'Required key "SystemConfigServerDto[publicUsers]" is missing from JSON.');
+        assert(json[r'publicUsers'] != null, 'Required key "SystemConfigServerDto[publicUsers]" has a null value in JSON.');
+        return true;
+      }());
 
       return SystemConfigServerDto(
         externalDomain: mapValueOfType<String>(json, r'externalDomain')!,

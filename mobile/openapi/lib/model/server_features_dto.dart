@@ -146,9 +146,47 @@ class ServerFeaturesDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerFeaturesDto? fromJson(dynamic value) {
-    upgradeDto(value, "ServerFeaturesDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'configFile'), 'Required key "ServerFeaturesDto[configFile]" is missing from JSON.');
+        assert(json[r'configFile'] != null, 'Required key "ServerFeaturesDto[configFile]" has a null value in JSON.');
+        assert(json.containsKey(r'duplicateDetection'), 'Required key "ServerFeaturesDto[duplicateDetection]" is missing from JSON.');
+        assert(json[r'duplicateDetection'] != null, 'Required key "ServerFeaturesDto[duplicateDetection]" has a null value in JSON.');
+        assert(json.containsKey(r'email'), 'Required key "ServerFeaturesDto[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "ServerFeaturesDto[email]" has a null value in JSON.');
+        assert(json.containsKey(r'facialRecognition'), 'Required key "ServerFeaturesDto[facialRecognition]" is missing from JSON.');
+        assert(json[r'facialRecognition'] != null, 'Required key "ServerFeaturesDto[facialRecognition]" has a null value in JSON.');
+        assert(json.containsKey(r'importFaces'), 'Required key "ServerFeaturesDto[importFaces]" is missing from JSON.');
+        assert(json[r'importFaces'] != null, 'Required key "ServerFeaturesDto[importFaces]" has a null value in JSON.');
+        assert(json.containsKey(r'map'), 'Required key "ServerFeaturesDto[map]" is missing from JSON.');
+        assert(json[r'map'] != null, 'Required key "ServerFeaturesDto[map]" has a null value in JSON.');
+        assert(json.containsKey(r'oauth'), 'Required key "ServerFeaturesDto[oauth]" is missing from JSON.');
+        assert(json[r'oauth'] != null, 'Required key "ServerFeaturesDto[oauth]" has a null value in JSON.');
+        assert(json.containsKey(r'oauthAutoLaunch'), 'Required key "ServerFeaturesDto[oauthAutoLaunch]" is missing from JSON.');
+        assert(json[r'oauthAutoLaunch'] != null, 'Required key "ServerFeaturesDto[oauthAutoLaunch]" has a null value in JSON.');
+        assert(json.containsKey(r'ocr'), 'Required key "ServerFeaturesDto[ocr]" is missing from JSON.');
+        assert(json[r'ocr'] != null, 'Required key "ServerFeaturesDto[ocr]" has a null value in JSON.');
+        assert(json.containsKey(r'passwordLogin'), 'Required key "ServerFeaturesDto[passwordLogin]" is missing from JSON.');
+        assert(json[r'passwordLogin'] != null, 'Required key "ServerFeaturesDto[passwordLogin]" has a null value in JSON.');
+        assert(json.containsKey(r'realtimeTranscoding'), 'Required key "ServerFeaturesDto[realtimeTranscoding]" is missing from JSON.');
+        assert(json[r'realtimeTranscoding'] != null, 'Required key "ServerFeaturesDto[realtimeTranscoding]" has a null value in JSON.');
+        assert(json.containsKey(r'reverseGeocoding'), 'Required key "ServerFeaturesDto[reverseGeocoding]" is missing from JSON.');
+        assert(json[r'reverseGeocoding'] != null, 'Required key "ServerFeaturesDto[reverseGeocoding]" has a null value in JSON.');
+        assert(json.containsKey(r'search'), 'Required key "ServerFeaturesDto[search]" is missing from JSON.');
+        assert(json[r'search'] != null, 'Required key "ServerFeaturesDto[search]" has a null value in JSON.');
+        assert(json.containsKey(r'sidecar'), 'Required key "ServerFeaturesDto[sidecar]" is missing from JSON.');
+        assert(json[r'sidecar'] != null, 'Required key "ServerFeaturesDto[sidecar]" has a null value in JSON.');
+        assert(json.containsKey(r'smartSearch'), 'Required key "ServerFeaturesDto[smartSearch]" is missing from JSON.');
+        assert(json[r'smartSearch'] != null, 'Required key "ServerFeaturesDto[smartSearch]" has a null value in JSON.');
+        assert(json.containsKey(r'trash'), 'Required key "ServerFeaturesDto[trash]" is missing from JSON.');
+        assert(json[r'trash'] != null, 'Required key "ServerFeaturesDto[trash]" has a null value in JSON.');
+        return true;
+      }());
 
       return ServerFeaturesDto(
         configFile: mapValueOfType<bool>(json, r'configFile')!,

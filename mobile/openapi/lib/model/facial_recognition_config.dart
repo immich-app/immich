@@ -78,9 +78,25 @@ class FacialRecognitionConfig {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static FacialRecognitionConfig? fromJson(dynamic value) {
-    upgradeDto(value, "FacialRecognitionConfig");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'enabled'), 'Required key "FacialRecognitionConfig[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "FacialRecognitionConfig[enabled]" has a null value in JSON.');
+        assert(json.containsKey(r'maxDistance'), 'Required key "FacialRecognitionConfig[maxDistance]" is missing from JSON.');
+        assert(json[r'maxDistance'] != null, 'Required key "FacialRecognitionConfig[maxDistance]" has a null value in JSON.');
+        assert(json.containsKey(r'minFaces'), 'Required key "FacialRecognitionConfig[minFaces]" is missing from JSON.');
+        assert(json[r'minFaces'] != null, 'Required key "FacialRecognitionConfig[minFaces]" has a null value in JSON.');
+        assert(json.containsKey(r'minScore'), 'Required key "FacialRecognitionConfig[minScore]" is missing from JSON.');
+        assert(json[r'minScore'] != null, 'Required key "FacialRecognitionConfig[minScore]" has a null value in JSON.');
+        assert(json.containsKey(r'modelName'), 'Required key "FacialRecognitionConfig[modelName]" is missing from JSON.');
+        assert(json[r'modelName'] != null, 'Required key "FacialRecognitionConfig[modelName]" has a null value in JSON.');
+        return true;
+      }());
 
       return FacialRecognitionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

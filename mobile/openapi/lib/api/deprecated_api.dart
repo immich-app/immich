@@ -25,9 +25,9 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> createPartnerDeprecatedWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
+    final path = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -41,14 +41,13 @@ class DeprecatedApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'POST',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -59,8 +58,8 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartnerDeprecated(String id, { Future<void>? abortTrigger, }) async {
-    final response = await createPartnerDeprecatedWithHttpInfo(id, abortTrigger: abortTrigger,);
+  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -79,9 +78,9 @@ class DeprecatedApi {
   /// Retrieve the counts of the current queue, as well as the current status.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getQueuesLegacyWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  Future<Response> getQueuesLegacyWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/jobs';
+    final path = r'/jobs';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -94,22 +93,21 @@ class DeprecatedApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'GET',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve queue counts and status
   ///
   /// Retrieve the counts of the current queue, as well as the current status.
-  Future<QueuesResponseLegacyDto?> getQueuesLegacy({ Future<void>? abortTrigger, }) async {
-    final response = await getQueuesLegacyWithHttpInfo(abortTrigger: abortTrigger,);
+  Future<QueuesResponseLegacyDto?> getQueuesLegacy() async {
+    final response = await getQueuesLegacyWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -134,9 +132,9 @@ class DeprecatedApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto, { Future<void>? abortTrigger, }) async {
+  Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/jobs/{name}'
+    final path = r'/jobs/{name}'
       .replaceAll('{name}', name.toString());
 
     // ignore: prefer_final_locals
@@ -150,14 +148,13 @@ class DeprecatedApi {
 
 
     return apiClient.invokeAPI(
-      apiPath,
+      path,
       'PUT',
       queryParams,
       postBody,
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
     );
   }
 
@@ -170,8 +167,8 @@ class DeprecatedApi {
   /// * [QueueName] name (required):
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto, { Future<void>? abortTrigger, }) async {
-    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto, abortTrigger: abortTrigger,);
+  Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
+    final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

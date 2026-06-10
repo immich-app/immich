@@ -14,11 +14,11 @@ class NotificationDto {
   /// Returns a new [NotificationDto] instance.
   NotificationDto({
     required this.createdAt,
-    this.data = const Optional.present(const {}),
-    this.description = const Optional.absent(),
+    this.data = const {},
+    this.description,
     required this.id,
     required this.level,
-    this.readAt = const Optional.absent(),
+    this.readAt,
     required this.title,
     required this.type,
   });
@@ -27,7 +27,7 @@ class NotificationDto {
   DateTime createdAt;
 
   /// Additional notification data
-  Optional<Map<String, Object>?> data;
+  Map<String, Object> data;
 
   /// Notification description
   ///
@@ -36,7 +36,7 @@ class NotificationDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<String?> description;
+  String? description;
 
   /// Notification ID
   String id;
@@ -50,7 +50,7 @@ class NotificationDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<DateTime?> readAt;
+  DateTime? readAt;
 
   /// Notification title
   String title;
@@ -88,21 +88,20 @@ class NotificationDto {
       json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
         ? this.createdAt.millisecondsSinceEpoch
         : this.createdAt.toUtc().toIso8601String();
-    if (this.data.isPresent) {
-      final value = this.data.value;
-      json[r'data'] = value;
-    }
-    if (this.description.isPresent) {
-      final value = this.description.value;
-      json[r'description'] = value;
+      json[r'data'] = this.data;
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+      json[r'description'] = null;
     }
       json[r'id'] = this.id;
       json[r'level'] = this.level;
-    if (this.readAt.isPresent) {
-      final value = this.readAt.value;
-      json[r'readAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? value.millisecondsSinceEpoch
-        : value.toUtc().toIso8601String());
+    if (this.readAt != null) {
+      json[r'readAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.readAt!.millisecondsSinceEpoch
+        : this.readAt!.toUtc().toIso8601String();
+    } else {
+      json[r'readAt'] = null;
     }
       json[r'title'] = this.title;
       json[r'type'] = this.type;
@@ -113,17 +112,33 @@ class NotificationDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static NotificationDto? fromJson(dynamic value) {
-    upgradeDto(value, "NotificationDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'createdAt'), 'Required key "NotificationDto[createdAt]" is missing from JSON.');
+        assert(json[r'createdAt'] != null, 'Required key "NotificationDto[createdAt]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "NotificationDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "NotificationDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'level'), 'Required key "NotificationDto[level]" is missing from JSON.');
+        assert(json[r'level'] != null, 'Required key "NotificationDto[level]" has a null value in JSON.');
+        assert(json.containsKey(r'title'), 'Required key "NotificationDto[title]" is missing from JSON.');
+        assert(json[r'title'] != null, 'Required key "NotificationDto[title]" has a null value in JSON.');
+        assert(json.containsKey(r'type'), 'Required key "NotificationDto[type]" is missing from JSON.');
+        assert(json[r'type'] != null, 'Required key "NotificationDto[type]" has a null value in JSON.');
+        return true;
+      }());
+
       return NotificationDto(
         createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
-        data: json.containsKey(r'data') ? Optional.present(mapCastOfType<String, Object>(json, r'data')) : const Optional.absent(),
-        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        data: mapCastOfType<String, Object>(json, r'data') ?? const {},
+        description: mapValueOfType<String>(json, r'description'),
         id: mapValueOfType<String>(json, r'id')!,
         level: NotificationLevel.fromJson(json[r'level'])!,
-        readAt: json.containsKey(r'readAt') ? Optional.present(mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')) : const Optional.absent(),
+        readAt: mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         title: mapValueOfType<String>(json, r'title')!,
         type: NotificationType.fromJson(json[r'type'])!,
       );

@@ -13,7 +13,7 @@ part of openapi.api;
 class AlbumUserAddDto {
   /// Returns a new [AlbumUserAddDto] instance.
   AlbumUserAddDto({
-    this.role = const Optional.absent(),
+    this.role,
     required this.userId,
   });
 
@@ -23,7 +23,7 @@ class AlbumUserAddDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Optional<AlbumUserRole?> role;
+  AlbumUserRole? role;
 
   /// User ID
   String userId;
@@ -44,9 +44,10 @@ class AlbumUserAddDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.role.isPresent) {
-      final value = this.role.value;
-      json[r'role'] = value;
+    if (this.role != null) {
+      json[r'role'] = this.role;
+    } else {
+      json[r'role'] = null;
     }
       json[r'userId'] = this.userId;
     return json;
@@ -56,12 +57,20 @@ class AlbumUserAddDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumUserAddDto? fromJson(dynamic value) {
-    upgradeDto(value, "AlbumUserAddDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'userId'), 'Required key "AlbumUserAddDto[userId]" is missing from JSON.');
+        assert(json[r'userId'] != null, 'Required key "AlbumUserAddDto[userId]" has a null value in JSON.');
+        return true;
+      }());
+
       return AlbumUserAddDto(
-        role: json.containsKey(r'role') ? Optional.present(AlbumUserRole.fromJson(json[r'role'])) : const Optional.absent(),
+        role: AlbumUserRole.fromJson(json[r'role']),
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

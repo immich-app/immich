@@ -51,9 +51,19 @@ class MemoriesResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MemoriesResponse? fromJson(dynamic value) {
-    upgradeDto(value, "MemoriesResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'duration'), 'Required key "MemoriesResponse[duration]" is missing from JSON.');
+        assert(json[r'duration'] != null, 'Required key "MemoriesResponse[duration]" has a null value in JSON.');
+        assert(json.containsKey(r'enabled'), 'Required key "MemoriesResponse[enabled]" is missing from JSON.');
+        assert(json[r'enabled'] != null, 'Required key "MemoriesResponse[enabled]" has a null value in JSON.');
+        return true;
+      }());
 
       return MemoriesResponse(
         duration: mapValueOfType<int>(json, r'duration')!,

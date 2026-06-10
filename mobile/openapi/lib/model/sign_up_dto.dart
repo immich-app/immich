@@ -55,9 +55,21 @@ class SignUpDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SignUpDto? fromJson(dynamic value) {
-    upgradeDto(value, "SignUpDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'email'), 'Required key "SignUpDto[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "SignUpDto[email]" has a null value in JSON.');
+        assert(json.containsKey(r'name'), 'Required key "SignUpDto[name]" is missing from JSON.');
+        assert(json[r'name'] != null, 'Required key "SignUpDto[name]" has a null value in JSON.');
+        assert(json.containsKey(r'password'), 'Required key "SignUpDto[password]" is missing from JSON.');
+        assert(json[r'password'] != null, 'Required key "SignUpDto[password]" has a null value in JSON.');
+        return true;
+      }());
 
       return SignUpDto(
         email: mapValueOfType<String>(json, r'email')!,

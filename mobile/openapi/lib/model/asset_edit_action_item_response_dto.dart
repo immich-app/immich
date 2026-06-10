@@ -53,9 +53,21 @@ class AssetEditActionItemResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetEditActionItemResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionItemResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'action'), 'Required key "AssetEditActionItemResponseDto[action]" is missing from JSON.');
+        assert(json[r'action'] != null, 'Required key "AssetEditActionItemResponseDto[action]" has a null value in JSON.');
+        assert(json.containsKey(r'id'), 'Required key "AssetEditActionItemResponseDto[id]" is missing from JSON.');
+        assert(json[r'id'] != null, 'Required key "AssetEditActionItemResponseDto[id]" has a null value in JSON.');
+        assert(json.containsKey(r'parameters'), 'Required key "AssetEditActionItemResponseDto[parameters]" is missing from JSON.');
+        assert(json[r'parameters'] != null, 'Required key "AssetEditActionItemResponseDto[parameters]" has a null value in JSON.');
+        return true;
+      }());
 
       return AssetEditActionItemResponseDto(
         action: AssetEditAction.fromJson(json[r'action'])!,

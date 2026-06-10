@@ -44,9 +44,17 @@ class TagBulkAssetsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TagBulkAssetsResponseDto? fromJson(dynamic value) {
-    upgradeDto(value, "TagBulkAssetsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
+
+      // Ensure that the map contains the required keys.
+      // Note 1: the values aren't checked for validity beyond being non-null.
+      // Note 2: this code is stripped in release mode!
+      assert(() {
+        assert(json.containsKey(r'count'), 'Required key "TagBulkAssetsResponseDto[count]" is missing from JSON.');
+        assert(json[r'count'] != null, 'Required key "TagBulkAssetsResponseDto[count]" has a null value in JSON.');
+        return true;
+      }());
 
       return TagBulkAssetsResponseDto(
         count: mapValueOfType<int>(json, r'count')!,
