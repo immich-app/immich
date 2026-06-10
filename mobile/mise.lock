@@ -11,6 +11,7 @@ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linu
 url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.1-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-x64"]
+checksum = "blake3:b7e0d033044e5a670baf083ea9ef66f76a32a89abe3791f2b0908f114c725a8f"
 url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.1-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-x64-musl"]
