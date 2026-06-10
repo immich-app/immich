@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -48,6 +50,34 @@ class _SharePreparingDialog extends StatelessWidget {
   }
 }
 
+class _ShareFileTypeDialog extends StatelessWidget {
+  const _ShareFileTypeDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.t.select_quality),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.high_quality_rounded),
+            title: Text(context.t.share_original),
+            onTap: () => context.pop(ShareAssetType.original),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_size_select_large_rounded),
+            title: Text(context.t.share_preview),
+            onTap: () => context.pop(ShareAssetType.preview),
+          ),
+        ],
+      ),
+      actions: [TextButton(onPressed: () => context.pop(), child: Text(context.t.cancel))],
+    );
+  }
+}
+
 class ShareActionButton extends ConsumerWidget {
   final ActionSource source;
   final bool iconOnly;
@@ -60,6 +90,35 @@ class ShareActionButton extends ConsumerWidget {
       return;
     }
 
+    final fileType = ref.read(appConfigProvider).share.fileType;
+    await _share(context, ref, fileType);
+  }
+
+  void _onLongPress(BuildContext context, WidgetRef ref) async {
+    if (!context.mounted) {
+      return;
+    }
+
+    final fileType = await showDialog<ShareAssetType>(
+      context: context,
+      builder: (_) => const _ShareFileTypeDialog(),
+      useRootNavigator: false,
+    );
+
+    if (fileType == null || !context.mounted) {
+      return;
+    }
+
+    await ref.read(settingsProvider).write(SettingsKey.shareFileType, fileType);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    await _share(context, ref, fileType);
+  }
+
+  Future<void> _share(BuildContext context, WidgetRef ref, ShareAssetType fileType) async {
     final cancelCompleter = Completer<void>();
     final progress = ValueNotifier<double?>(null);
     final preparingDialog = _SharePreparingDialog(progress: progress);
@@ -71,6 +130,7 @@ class ShareActionButton extends ConsumerWidget {
             .shareAssets(
               source,
               context,
+              fileType: fileType,
               cancelCompleter: cancelCompleter,
               onAssetDownloadProgress: (value) => progress.value = value,
             )
@@ -84,7 +144,7 @@ class ShareActionButton extends ConsumerWidget {
               if (!result.success) {
                 ImmichToast.show(
                   context: context,
-                  msg: 'scaffold_body_error_occurred'.t(context: context),
+                  msg: context.t.scaffold_body_error_occurred,
                   gravity: ToastGravity.BOTTOM,
                   toastType: ToastType.error,
                 );
@@ -110,10 +170,11 @@ class ShareActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       iconData: Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
-      label: 'share'.t(context: context),
+      label: context.t.share,
       iconOnly: iconOnly,
       menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
+      onLongPressed: () => _onLongPress(context, ref),
     );
   }
 }

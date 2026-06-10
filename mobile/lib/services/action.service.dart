@@ -272,12 +272,14 @@ class ActionService {
   Future<int> shareAssets(
     List<BaseAsset> assets,
     BuildContext context, {
+    ShareAssetType fileType = ShareAssetType.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) {
     return _assetMediaRepository.shareAssets(
       assets,
       context,
+      fileType: fileType,
       cancelCompleter: cancelCompleter,
       onAssetDownloadProgress: onAssetDownloadProgress,
     );
