@@ -1,8 +1,11 @@
---- api.mustache	2025-01-22 05:50:25
-+++ api.mustache.modified	2025-01-22 05:52:23
-@@ -51,7 +51,7 @@
+--- api.mustache
++++ api.mustache.modified
+@@ -49,9 +49,9 @@
+   ///
+     {{/-last}}
    {{/allParams}}
-   Future<Response> {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+-  Future<Response> {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
++  Future<Response> {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}}, {{/required}}{{/allParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}}, {{/required}}{{/allParams}}Future<void>? abortTrigger, }) async {
      // ignore: prefer_const_declarations
 -    final path = r'{{{path}}}'{{#pathParams}}
 +    final apiPath = r'{{{path}}}'{{#pathParams}}
@@ -18,7 +21,7 @@
      {{#formParams}}
      {{^isFile}}
      if ({{{paramName}}} != null) {
-@@ -121,7 +121,7 @@
+@@ -121,13 +121,14 @@
      {{/isMultipart}}
  
      return apiClient.invokeAPI(
@@ -27,3 +30,21 @@
        '{{{httpMethod}}}',
        queryParams,
        postBody,
+       headerParams,
+       formParams,
+       contentTypes.isEmpty ? null : contentTypes.first,
++      abortTrigger: abortTrigger,
+     );
+   }
+ 
+@@ -161,8 +162,8 @@
+   ///
+     {{/-last}}
+   {{/allParams}}
+-  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+-    final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}} {{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} {{/hasOptionalParams}});
++  Future<{{#returnType}}{{{.}}}?{{/returnType}}{{^returnType}}void{{/returnType}}> {{{nickname}}}({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}}, {{/required}}{{/allParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}}, {{/required}}{{/allParams}}Future<void>? abortTrigger, }) async {
++    final response = await {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{paramName}}}, {{/required}}{{/allParams}}{{#allParams}}{{^required}}{{{paramName}}}: {{{paramName}}}, {{/required}}{{/allParams}}abortTrigger: abortTrigger,);
+     if (response.statusCode >= HttpStatus.badRequest) {
+       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+     }

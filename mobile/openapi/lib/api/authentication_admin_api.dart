@@ -21,7 +21,7 @@ class AuthenticationAdminApi {
   /// Unlinks all OAuth accounts associated with user accounts in the system.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> unlinkAllOAuthAccountsAdminWithHttpInfo() async {
+  Future<Response> unlinkAllOAuthAccountsAdminWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/auth/unlink-all';
 
@@ -43,14 +43,15 @@ class AuthenticationAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Unlink all OAuth accounts
   ///
   /// Unlinks all OAuth accounts associated with user accounts in the system.
-  Future<void> unlinkAllOAuthAccountsAdmin() async {
-    final response = await unlinkAllOAuthAccountsAdminWithHttpInfo();
+  Future<void> unlinkAllOAuthAccountsAdmin({ Future<void>? abortTrigger, }) async {
+    final response = await unlinkAllOAuthAccountsAdminWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

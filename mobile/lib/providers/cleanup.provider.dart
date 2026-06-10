@@ -1,8 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 
@@ -54,21 +54,21 @@ final cleanupProvider = StateNotifierProvider<CleanupNotifier, CleanupState>((re
   return CleanupNotifier(
     ref.watch(cleanupServiceProvider),
     ref.watch(currentUserProvider)?.id,
-    ref.watch(metadataProvider),
+    ref.watch(settingsProvider),
   );
 });
 
 class CleanupNotifier extends StateNotifier<CleanupState> {
   final CleanupService _cleanupService;
   final String? _userId;
-  final MetadataRepository _metadataRepository;
+  final SettingsRepository _settingsRepository;
 
-  CleanupNotifier(this._cleanupService, this._userId, this._metadataRepository) : super(const CleanupState()) {
+  CleanupNotifier(this._cleanupService, this._userId, this._settingsRepository) : super(const CleanupState()) {
     _loadPersistedSettings();
   }
 
   void _loadPersistedSettings() {
-    final cleanup = _metadataRepository.appConfig.cleanup;
+    final cleanup = _settingsRepository.appConfig.cleanup;
     final keepFavorites = cleanup.keepFavorites;
     final keepMediaType = cleanup.keepMediaType;
     final keepAlbumIds = cleanup.keepAlbumIds.toSet();
@@ -87,18 +87,18 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     state = state.copyWith(selectedDate: date, assetsToDelete: []);
     if (date != null) {
       final daysAgo = DateTime.now().difference(date).inDays;
-      _metadataRepository.write(.cleanupCutoffDaysAgo, daysAgo);
+      _settingsRepository.write(.cleanupCutoffDaysAgo, daysAgo);
     }
   }
 
   void setKeepMediaType(AssetKeepType keepMediaType) {
     state = state.copyWith(keepMediaType: keepMediaType, assetsToDelete: []);
-    _metadataRepository.write(.cleanupKeepMediaType, keepMediaType);
+    _settingsRepository.write(.cleanupKeepMediaType, keepMediaType);
   }
 
   void setKeepFavorites(bool keepFavorites) {
     state = state.copyWith(keepFavorites: keepFavorites, assetsToDelete: []);
-    _metadataRepository.write(.cleanupKeepFavorites, keepFavorites);
+    _settingsRepository.write(.cleanupKeepFavorites, keepFavorites);
   }
 
   void toggleKeepAlbum(String albumId) {
@@ -118,7 +118,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   }
 
   void _persistExcludedAlbumIds(Set<String> albumIds) {
-    _metadataRepository.write(.cleanupKeepAlbumIds, albumIds.toList());
+    _settingsRepository.write(.cleanupKeepAlbumIds, albumIds.toList());
   }
 
   void cleanupStaleAlbumIds(Set<String> existingAlbumIds) {
@@ -131,7 +131,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   }
 
   void applyDefaultAlbumSelections(List<(String id, String name)> albums) {
-    final isInitialized = _metadataRepository.appConfig.cleanup.defaultsInitialized;
+    final isInitialized = _settingsRepository.appConfig.cleanup.defaultsInitialized;
     if (isInitialized) {
       return;
     }
@@ -144,7 +144,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
       _persistExcludedAlbumIds(keepAlbumIds);
     }
 
-    _metadataRepository.write(.cleanupDefaultsInitialized, true);
+    _settingsRepository.write(.cleanupDefaultsInitialized, true);
   }
 
   Future<void> scanAssets() async {

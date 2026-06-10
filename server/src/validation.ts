@@ -125,11 +125,6 @@ const FilenameParamSchema = z.object({
 
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
-export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
-  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
-  return Number.isInteger(value) && value >= min && value <= max;
-};
-
 /**
  * Unified email validation
  * Converts email strings to lowercase and validates against HTML5 email regex
@@ -171,7 +166,12 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => date.toISOString().slice(0, 10),
+      encode: (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      },
     },
   )
   .meta({ example: '2024-01-01' });
@@ -250,17 +250,5 @@ export const hexColor = z
   .string()
   .regex(hexColorRegex)
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
-
-/**
- * Transform empty strings to null. Inner schema passed to this function must accept null.
- * @docs https://zod.dev/api?id=preprocess
- * @example emptyStringToNull(z.string().nullable()).optional() // [encouraged] final schema is optional
- * @example emptyStringToNull(z.string().nullable()) // [encouraged] same as the one above, but final schema is not optional
- * @example emptyStringToNull(z.string().nullish()) // [discouraged] same as the one above, might be confusing
- * @example emptyStringToNull(z.string().optional()) // fails: string schema rejects null
- * @example emptyStringToNull(z.string().nullable()).nullish() // [discouraged] passes, null is duplicated. use the first example instead
- */
-export const emptyStringToNull = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess((val) => (val === '' ? null : val), schema);
 
 export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));

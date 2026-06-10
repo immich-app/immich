@@ -214,6 +214,11 @@ export class TimelineManager extends VirtualScrollManager {
 
     for (const month of this.months) {
       updateTimelineMonthViewportProximity(this, month);
+      if (month.isInOrNearViewport && month.isLoaded) {
+        for (const day of month.timelineDays) {
+          day.updateAssetBoundaries();
+        }
+      }
     }
 
     const month = this.months.find((month) => month.isInViewport);
