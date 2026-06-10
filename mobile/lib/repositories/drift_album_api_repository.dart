@@ -3,7 +3,6 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
-import 'package:immich_mobile/utils/option.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart' hide AlbumUserRole;
 
@@ -72,7 +71,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     String albumId,
     UserDto owner, {
     String? name,
-    Option<String?> description = const Option.none(),
+    String? description,
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
@@ -87,7 +86,7 @@ class DriftAlbumApiRepository extends ApiRepository {
         albumId,
         UpdateAlbumDto(
           albumName: name == null ? const Optional.absent() : Optional.present(name),
-          description: description.toOptional(),
+          description: description == null ? const Optional.absent() : Optional.present(description),
           albumThumbnailAssetId: thumbnailAssetId == null
               ? const Optional.absent()
               : Optional.present(thumbnailAssetId),

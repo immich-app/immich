@@ -687,7 +687,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating in range [1-5], or null for unrated */
+    /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
     rating?: number | null;
     /** Time zone (IANA timezone) */
     timeZone?: string;
@@ -934,7 +934,7 @@ export type UpdateAssetDto = {
     livePhotoVideoId?: string | null;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating in range [1-5], or null for unrated */
+    /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
     rating?: number | null;
     visibility?: AssetVisibility;
 };
