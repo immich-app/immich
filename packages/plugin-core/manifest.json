@@ -55,6 +55,26 @@
         }
       ],
       "uiHints": ["SmartAlbum"]
+    },
+    {
+      "name": "location-smart-album",
+      "title": "Location-based album",
+      "description": "Automatically add assets taken in a specific location to an album",
+      "trigger": "AssetMetadataExtraction",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetLocationFilter",
+          "config": { "region": { "city": "Vancouver", "state": "British Columbia", "country": "Canada" } }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumName": "Vancouver photos & videos",
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
     }
   ],
   "methods": [
