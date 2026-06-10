@@ -329,9 +329,9 @@
 
       await assetViewerManager.setAssetId(assetId);
       faceManager.clear();
+      onClose();
     } catch (error) {
       handleError(error, 'Error tagging face');
-    } finally {
       onClose();
     }
   };
