@@ -148,6 +148,20 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
+*DeprecatedApi* | [**updateApiKey**](doc//DeprecatedApi.md#updateapikey) | **PUT** /api-keys/{id} | Update an API key
+*DeprecatedApi* | [**updateAsset**](doc//DeprecatedApi.md#updateasset) | **PUT** /assets/{id} | Update an asset
+*DeprecatedApi* | [**updateAssets**](doc//DeprecatedApi.md#updateassets) | **PUT** /assets | Update assets
+*DeprecatedApi* | [**updateLibrary**](doc//DeprecatedApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
+*DeprecatedApi* | [**updateMemory**](doc//DeprecatedApi.md#updatememory) | **PUT** /memories/{id} | Update a memory
+*DeprecatedApi* | [**updateMyPreferences**](doc//DeprecatedApi.md#updatemypreferences) | **PUT** /users/me/preferences | Update my preferences
+*DeprecatedApi* | [**updateMyUser**](doc//DeprecatedApi.md#updatemyuser) | **PUT** /users/me | Update current user
+*DeprecatedApi* | [**updatePerson**](doc//DeprecatedApi.md#updateperson) | **PUT** /people/{id} | Update person
+*DeprecatedApi* | [**updateSession**](doc//DeprecatedApi.md#updatesession) | **PUT** /sessions/{id} | Update a session
+*DeprecatedApi* | [**updateStack**](doc//DeprecatedApi.md#updatestack) | **PUT** /stacks/{id} | Update a stack
+*DeprecatedApi* | [**updateTag**](doc//DeprecatedApi.md#updatetag) | **PUT** /tags/{id} | Update a tag
+*DeprecatedApi* | [**updateUserAdmin**](doc//DeprecatedApi.md#updateuseradmin) | **PUT** /admin/users/{id} | Update a user
+*DeprecatedApi* | [**updateUserPreferencesAdmin**](doc//DeprecatedApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
+*DeprecatedApi* | [**updateWorkflow**](doc//DeprecatedApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Dismiss a duplicate group
@@ -293,6 +307,7 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**deleteProfileImage**](doc//UsersApi.md#deleteprofileimage) | **DELETE** /users/profile-image | Delete user profile image
 *UsersApi* | [**deleteUserLicense**](doc//UsersApi.md#deleteuserlicense) | **DELETE** /users/me/license | Delete user product key
 *UsersApi* | [**deleteUserOnboarding**](doc//UsersApi.md#deleteuseronboarding) | **DELETE** /users/me/onboarding | Delete user onboarding
+*UsersApi* | [**getMyCalendarHeatmap**](doc//UsersApi.md#getmycalendarheatmap) | **GET** /users/me/calendar-heatmap | Retrieve calendar heatmap activity
 *UsersApi* | [**getMyPreferences**](doc//UsersApi.md#getmypreferences) | **GET** /users/me/preferences | Get my preferences
 *UsersApi* | [**getMyUser**](doc//UsersApi.md#getmyuser) | **GET** /users/me | Get current user
 *UsersApi* | [**getProfileImage**](doc//UsersApi.md#getprofileimage) | **GET** /users/{id}/profile-image | Retrieve user profile image
@@ -307,6 +322,7 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**createUserAdmin**](doc//UsersAdminApi.md#createuseradmin) | **POST** /admin/users | Create a user
 *UsersAdminApi* | [**deleteUserAdmin**](doc//UsersAdminApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | Delete a user
 *UsersAdminApi* | [**getUserAdmin**](doc//UsersAdminApi.md#getuseradmin) | **GET** /admin/users/{id} | Retrieve a user
+*UsersAdminApi* | [**getUserCalendarHeatmapAdmin**](doc//UsersAdminApi.md#getusercalendarheatmapadmin) | **GET** /admin/users/{id}/calendar-heatmap | Retrieve calendar heatmap activity
 *UsersAdminApi* | [**getUserPreferencesAdmin**](doc//UsersAdminApi.md#getuserpreferencesadmin) | **GET** /admin/users/{id}/preferences | Retrieve user preferences
 *UsersAdminApi* | [**getUserSessionsAdmin**](doc//UsersAdminApi.md#getusersessionsadmin) | **GET** /admin/users/{id}/sessions | Retrieve user sessions
 *UsersAdminApi* | [**getUserStatisticsAdmin**](doc//UsersAdminApi.md#getuserstatisticsadmin) | **GET** /admin/users/{id}/statistics | Retrieve user statistics
@@ -398,6 +414,9 @@ Class | Method | HTTP request | Description
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)
  - [CQMode](doc//CQMode.md)
+ - [CalendarHeatmapResponseDto](doc//CalendarHeatmapResponseDto.md)
+ - [CalendarHeatmapResponseDtoSeriesInner](doc//CalendarHeatmapResponseDtoSeriesInner.md)
+ - [CalendarHeatmapType](doc//CalendarHeatmapType.md)
  - [CastResponse](doc//CastResponse.md)
  - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
@@ -581,6 +600,8 @@ Class | Method | HTTP request | Description
  - [SyncAssetFaceV2](doc//SyncAssetFaceV2.md)
  - [SyncAssetMetadataDeleteV1](doc//SyncAssetMetadataDeleteV1.md)
  - [SyncAssetMetadataV1](doc//SyncAssetMetadataV1.md)
+ - [SyncAssetOcrDeleteV1](doc//SyncAssetOcrDeleteV1.md)
+ - [SyncAssetOcrV1](doc//SyncAssetOcrV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
  - [SyncAssetV2](doc//SyncAssetV2.md)
  - [SyncAuthUserV1](doc//SyncAuthUserV1.md)

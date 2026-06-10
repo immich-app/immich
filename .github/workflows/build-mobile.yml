@@ -84,7 +84,7 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
@@ -211,7 +211,7 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false

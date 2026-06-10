@@ -28,6 +28,10 @@ jobs:
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
+            root:
+              - 'misc/**'
+              - 'pnpm-lock.yaml'
+              - 'mise.toml'
             i18n:
               - 'i18n/**'
               - 'mise.toml'
@@ -62,6 +66,34 @@ jobs:
             - '.github/workflows/test.yml'
           force-events: 'workflow_dispatch'
 
+  root-unit-tests:
+    name: Test the root workspace
+    needs: pre-job
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).root == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@9db058b2e6eec20e07760b0e17a0505c78ec3191 # create-workflow-token-action-v2.0.1
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Run unit tests
+        run: pnpm test
+
   server-unit-tests:
     name: Test & Lint Server
     needs: pre-job
@@ -77,7 +109,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -108,7 +140,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -139,7 +171,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -183,7 +215,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -221,7 +253,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -249,7 +281,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -299,7 +331,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -331,7 +363,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           submodules: 'recursive'
@@ -367,7 +399,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           submodules: 'recursive'
@@ -444,7 +476,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           submodules: 'recursive'
@@ -551,7 +583,7 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -589,7 +621,7 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -620,7 +652,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -649,7 +681,7 @@ jobs:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -671,7 +703,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -729,7 +761,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}

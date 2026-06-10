@@ -231,7 +231,7 @@ class ActionService {
     return true;
   }
 
-  Future<bool> updateRating(String assetId, int rating) async {
+  Future<bool> updateRating(String assetId, int? rating) async {
     // update remote first, then local to ensure consistency
     await _assetApiRepository.updateRating(assetId, rating);
     await _remoteAssetRepository.updateRating(assetId, rating);

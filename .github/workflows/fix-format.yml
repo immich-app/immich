@@ -21,7 +21,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           persist-credentials: true
@@ -45,7 +45,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: always()
         with:
-          github-token: ${{ steps.generate-token.outputs.token }}
+          github-token: ${{ steps.token.outputs.token }}
           script: |
             github.rest.issues.removeLabel({
               issue_number: context.payload.pull_request.number,

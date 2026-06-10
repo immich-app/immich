@@ -1194,6 +1194,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing user.",
         "operationId": "updateUserAdmin",
         "parameters": [
@@ -1243,7 +1244,8 @@
         ],
         "summary": "Update a user",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1258,9 +1260,104 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
+        "x-immich-state": "Deprecated"
+      }
+    },
+    "/admin/users/{id}/calendar-heatmap": {
+      "get": {
+        "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
+        "operationId": "getUserCalendarHeatmapAdmin",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "Upload",
+              "$ref": "#/components/schemas/CalendarHeatmapType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarHeatmapResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve calendar heatmap activity",
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
         "x-immich-state": "Stable"
       }
     },
@@ -1326,6 +1423,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of a specific user.",
         "operationId": "updateUserPreferencesAdmin",
         "parameters": [
@@ -1375,7 +1473,8 @@
         ],
         "summary": "Update user preferences",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1390,10 +1489,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserPreferencesAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/restore": {
@@ -2773,6 +2877,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
         "operationId": "updateApiKey",
         "parameters": [
@@ -2822,7 +2927,8 @@
         ],
         "summary": "Update an API key",
         "tags": [
-          "API keys"
+          "API keys",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -2836,10 +2942,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateApiKey"
           }
         ],
         "x-immich-permission": "apiKey.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets": {
@@ -2990,6 +3101,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates multiple assets at the same time.",
         "operationId": "updateAssets",
         "parameters": [],
@@ -3021,7 +3133,8 @@
         ],
         "summary": "Update assets",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3035,10 +3148,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAssets"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/bulk-upload-check": {
@@ -3467,6 +3585,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update information of a specific asset.",
         "operationId": "updateAsset",
         "parameters": [
@@ -3516,7 +3635,8 @@
         ],
         "summary": "Update an asset",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3530,10 +3650,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAsset"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/{id}/edits": {
@@ -6239,6 +6364,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing external library.",
         "operationId": "updateLibrary",
         "parameters": [
@@ -6288,7 +6414,8 @@
         ],
         "summary": "Update a library",
         "tags": [
-          "Libraries"
+          "Libraries",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -6303,10 +6430,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateLibrary"
           }
         ],
         "x-immich-permission": "library.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/libraries/{id}/scan": {
@@ -7075,6 +7207,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing memory by its ID.",
         "operationId": "updateMemory",
         "parameters": [
@@ -7124,7 +7257,8 @@
         ],
         "summary": "Update a memory",
         "tags": [
-          "Memories"
+          "Memories",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -7138,10 +7272,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMemory"
           }
         ],
         "x-immich-permission": "memory.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/memories/{id}/assets": {
@@ -8621,6 +8760,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an individual person.",
         "operationId": "updatePerson",
         "parameters": [
@@ -8670,7 +8810,8 @@
         ],
         "summary": "Update person",
         "tags": [
-          "People"
+          "People",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -8684,10 +8825,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updatePerson"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/people/{id}/merge": {
@@ -9885,12 +10031,17 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable",
             "schema": {
               "type": "integer",
-              "minimum": -1,
+              "minimum": 1,
               "maximum": 5,
               "nullable": true
             }
@@ -11434,6 +11585,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update a specific session identified by id.",
         "operationId": "updateSession",
         "parameters": [
@@ -11483,7 +11635,8 @@
         ],
         "summary": "Update a session",
         "tags": [
-          "Sessions"
+          "Sessions",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -11497,10 +11650,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateSession"
           }
         ],
         "x-immich-permission": "session.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/sessions/{id}/lock": {
@@ -12450,6 +12608,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing stack by its ID.",
         "operationId": "updateStack",
         "parameters": [
@@ -12499,7 +12658,8 @@
         ],
         "summary": "Update a stack",
         "tags": [
-          "Stacks"
+          "Stacks",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -12513,10 +12673,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateStack"
           }
         ],
         "x-immich-permission": "stack.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -13553,6 +13718,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing tag identified by its ID.",
         "operationId": "updateTag",
         "parameters": [
@@ -13602,7 +13768,8 @@
         ],
         "summary": "Update a tag",
         "tags": [
-          "Tags"
+          "Tags",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -13616,10 +13783,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateTag"
           }
         ],
         "x-immich-permission": "tag.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/tags/{id}/assets": {
@@ -14422,6 +14594,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
@@ -14460,7 +14633,8 @@
         ],
         "summary": "Update current user",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -14474,9 +14648,94 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyUser"
           }
         ],
         "x-immich-permission": "user.update",
+        "x-immich-state": "Deprecated"
+      }
+    },
+    "/users/me/calendar-heatmap": {
+      "get": {
+        "description": "Retrieve activity counts for a specified period, in a calendar heatmap format.",
+        "operationId": "getMyCalendarHeatmap",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End date in UTC",
+            "schema": {
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "Upload",
+              "$ref": "#/components/schemas/CalendarHeatmapType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarHeatmapResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve calendar heatmap activity",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
         "x-immich-state": "Stable"
       }
     },
@@ -14828,6 +15087,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of the current user.",
         "operationId": "updateMyPreferences",
         "parameters": [],
@@ -14866,7 +15126,8 @@
         ],
         "summary": "Update my preferences",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -14880,10 +15141,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyPreferences"
           }
         ],
         "x-immich-permission": "userPreference.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/profile-image": {
@@ -15505,6 +15771,7 @@
         "x-immich-permission": "workflow.read"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
         "operationId": "updateWorkflow",
         "parameters": [
@@ -15554,15 +15821,22 @@
         ],
         "summary": "Update a workflow",
         "tags": [
-          "Workflows"
+          "Workflows",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
             "version": "v3.0.0",
             "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateWorkflow"
           }
         ],
-        "x-immich-permission": "workflow.update"
+        "x-immich-permission": "workflow.update",
+        "x-immich-state": "Deprecated"
       }
     },
     "/workflows/{id}/share": {
@@ -16328,7 +16602,7 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], or null for unrated",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
@@ -16343,9 +16617,9 @@
                 "state": "Stable"
               },
               {
-                "version": "v2.6.0",
+                "version": "v3",
                 "state": "Updated",
-                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+                "description": "Using 0 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -17635,6 +17909,64 @@
         ],
         "type": "string"
       },
+      "CalendarHeatmapResponseDto": {
+        "properties": {
+          "from": {
+            "description": "Start date in UTC",
+            "example": "2024-01-01",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "properties": {
+                "count": {
+                  "description": "Activity count",
+                  "maximum": 9007199254740991,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "date": {
+                  "description": "Date in UTC",
+                  "example": "2024-01-01",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "date",
+                "count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "to": {
+            "description": "End date in UTC",
+            "example": "2024-12-31",
+            "type": "string"
+          },
+          "totalCount": {
+            "description": "Total activity count over the period",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from",
+          "series",
+          "to",
+          "totalCount"
+        ],
+        "type": "object"
+      },
+      "CalendarHeatmapType": {
+        "description": "Type of calendar heatmap",
+        "enum": [
+          "Upload",
+          "Taken"
+        ],
+        "type": "string"
+      },
       "CastResponse": {
         "properties": {
           "gCastEnabled": {
@@ -18336,8 +18668,8 @@
           "rating": {
             "default": null,
             "description": "Rating",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "maximum": 5,
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -19368,7 +19700,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -19384,6 +19716,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -21041,7 +21378,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -21057,6 +21394,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -22505,7 +22847,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22521,6 +22863,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -22765,7 +23112,7 @@
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
-            "minimum": -1,
+            "minimum": 1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -22781,6 +23128,11 @@
                 "version": "v2.6.0",
                 "state": "Updated",
                 "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Using -1 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -23547,6 +23899,118 @@
         ],
         "type": "object"
       },
+      "SyncAssetOcrDeleteV1": {
+        "properties": {
+          "assetId": {
+            "description": "Original asset ID of the deleted OCR entry",
+            "type": "string"
+          },
+          "deletedAt": {
+            "description": "Timestamp when the OCR entry was deleted",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Audit row ID of the deleted OCR entry",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "deletedAt",
+          "id"
+        ],
+        "type": "object"
+      },
+      "SyncAssetOcrV1": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "boxScore": {
+            "description": "Confidence score of the bounding box",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "description": "OCR entry ID",
+            "type": "string"
+          },
+          "isVisible": {
+            "description": "Whether the OCR entry is visible",
+            "type": "boolean"
+          },
+          "text": {
+            "description": "Recognized text content",
+            "type": "string"
+          },
+          "textScore": {
+            "description": "Confidence score of the recognized text",
+            "format": "double",
+            "type": "number"
+          },
+          "x1": {
+            "description": "Top-left X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x2": {
+            "description": "Top-right X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x3": {
+            "description": "Bottom-right X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x4": {
+            "description": "Bottom-left X coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y1": {
+            "description": "Top-left Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y2": {
+            "description": "Top-right Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y3": {
+            "description": "Bottom-right Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y4": {
+            "description": "Bottom-left Y coordinate (normalized 0–1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "boxScore",
+          "id",
+          "isVisible",
+          "text",
+          "textScore",
+          "x1",
+          "x2",
+          "x3",
+          "x4",
+          "y1",
+          "y2",
+          "y3",
+          "y4"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -23928,6 +24392,8 @@
           "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
+          "AssetOcrV1",
+          "AssetOcrDeleteV1",
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
@@ -24250,6 +24716,7 @@
           "AssetExifsV1",
           "AssetEditsV1",
           "AssetMetadataV1",
+          "AssetOcrV1",
           "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",
@@ -25958,7 +26425,7 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], or null for unrated",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
@@ -25973,9 +26440,9 @@
                 "state": "Stable"
               },
               {
-                "version": "v2.6.0",
+                "version": "v3",
                 "state": "Updated",
-                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+                "description": "Using 0 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"

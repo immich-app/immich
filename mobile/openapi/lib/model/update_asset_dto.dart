@@ -77,7 +77,7 @@ class UpdateAssetDto {
   ///
   Optional<num?> longitude;
 
-  /// Rating in range [1-5], or null for unrated
+  /// Rating in range [1-5] (starred), -1 (rejected), or null (unrated)
   ///
   /// Minimum value: -1
   /// Maximum value: 5

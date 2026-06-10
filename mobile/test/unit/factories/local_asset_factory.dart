@@ -14,7 +14,7 @@ class LocalAssetFactory {
       type: AssetType.image,
       createdAt: TestUtils.yesterday(),
       updatedAt: TestUtils.now(),
-      playbackStyle: AssetPlaybackStyle.image,
+      playbackStyle: .image,
       isEdited: false,
     );
   }
