@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -68,7 +67,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     if (authenticationState.isAuthenticated) {
       try {
-        final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
+        final endpoint = Uri.parse(_ref.read(sessionProvider).serverEndpoint!);
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(

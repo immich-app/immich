@@ -40,7 +40,7 @@ void main() {
   tearDown(() async {
     await workerManagerPatch.dispose();
     await server.close();
-    await Store.delete(StoreKey.serverEndpoint);
+    await Store.delete(StoreKey.legacyServerEndpoint);
     await Store.delete(StoreKey.syncMigrationStatus);
   });
 
@@ -119,7 +119,9 @@ void main() {
     final releaseTxn = Completer<void>();
     final txnHeld = Completer<void>();
     final txn = drift.transaction(() async {
-      await drift.into(drift.userEntity).insert(
+      await drift
+          .into(drift.userEntity)
+          .insert(
             UserEntityCompanion.insert(
               id: 'holder',
               name: 'holder',

@@ -1,5 +1,4 @@
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:punycode/punycode.dart';
 
 String sanitizeUrl(String url) {
@@ -11,7 +10,7 @@ String sanitizeUrl(String url) {
 }
 
 String? getServerUrl() {
-  final serverUrl = punycodeDecodeUrl(Store.tryGet(StoreKey.serverEndpoint));
+  final serverUrl = punycodeDecodeUrl(SessionRepository.instance.session.serverEndpoint);
   final serverUri = serverUrl != null ? Uri.tryParse(serverUrl) : null;
   if (serverUri == null) {
     return null;
