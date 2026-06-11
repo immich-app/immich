@@ -266,7 +266,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // A view intent can update currentAsset before the previous viewer route is
   // disposed. Do not let the old viewer's timeline reload restore its previous asset.
   bool _shouldIgnoreMissingAssetOnTimelineReload(BaseAsset currentAsset, TimelineService timelineService) {
-    if (timelineService.origin == TimelineOrigin.deepLink) {
+    if (timelineService.origin.isDeepLink) {
       return true;
     }
 

@@ -30,6 +30,7 @@ class OpenInBrowserActionButton extends ConsumerWidget {
         originPath = '/favorites';
         break;
       case TimelineOrigin.trash:
+      case TimelineOrigin.deepLinkTrash:
         originPath = '/trash';
         break;
       case TimelineOrigin.archive:

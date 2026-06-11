@@ -1,13 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class RestoreActionButton extends ConsumerWidget {
@@ -22,11 +30,18 @@ class RestoreActionButton extends ConsumerWidget {
       return;
     }
 
+    final currentAsset = ref.read(assetViewerProvider).currentAsset;
+    final shouldReopenAsViewIntent = _isViewIntentTrashViewer(ref);
     final result = await ref.read(actionProvider.notifier).restoreTrash(source);
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {
-      EventStream.shared.emit(const ViewerReloadAssetEvent());
+      final handled = result.success && shouldReopenAsViewIntent && currentAsset is RemoteAsset
+          ? await _reopenRestoredViewIntentAsset(context, ref, currentAsset.id)
+          : false;
+      if (!handled) {
+        EventStream.shared.emit(const ViewerReloadAssetEvent());
+      }
     }
 
     final successMessage = 'assets_restored_count'.t(context: context, args: {'count': result.count.toString()});
@@ -51,5 +66,43 @@ class RestoreActionButton extends ConsumerWidget {
       onPressed: () => _onTap(context, ref),
       maxWidth: 100.0,
     );
+  }
+
+  bool _isViewIntentTrashViewer(WidgetRef ref) {
+    final timelineService = ref.read(timelineServiceProvider);
+
+    return timelineService.origin == TimelineOrigin.deepLinkTrash;
+  }
+
+  Future<bool> _reopenRestoredViewIntentAsset(BuildContext context, WidgetRef ref, String remoteAssetId) async {
+    final restoredAsset = await ref.read(assetServiceProvider).getRemoteAsset(remoteAssetId);
+    if (restoredAsset == null) {
+      return false;
+    }
+
+    final timelineService = ref.read(timelineFactoryProvider).fromAssets([restoredAsset], TimelineOrigin.deepLink);
+    final notifier = ref.read(assetViewerProvider.notifier);
+    notifier.reset();
+    if (restoredAsset.isVideo) {
+      notifier.setControls(false);
+    }
+    notifier.setAsset(restoredAsset);
+
+    if (!context.mounted) {
+      return true;
+    }
+
+    final router = ref.read(appRouterProvider);
+    router.popUntilRoot();
+    unawaited(
+      router.push(
+        AssetViewerRoute(
+          key: ValueKey('restored-view-intent-$remoteAssetId'),
+          initialIndex: 0,
+          timelineService: timelineService,
+        ),
+      ),
+    );
+    return true;
   }
 }

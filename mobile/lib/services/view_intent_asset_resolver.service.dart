@@ -71,7 +71,8 @@ class ViewIntentAssetResolver {
   }
 
   TimelineService timelineFor(BaseAsset asset) {
-    return _timelineFactory.fromAssets([asset], TimelineOrigin.deepLink);
+    final origin = asset is RemoteAsset && asset.isTrashed ? TimelineOrigin.deepLinkTrash : TimelineOrigin.deepLink;
+    return _timelineFactory.fromAssets([asset], origin);
   }
 
   Future<({LocalAsset? asset, String? checksum})> _resolveLocalAsset(String localAssetId) async {

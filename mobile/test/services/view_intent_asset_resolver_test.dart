@@ -46,12 +46,8 @@ void main() {
     when(() => nativeSyncApi.hashAssets(any())).thenAnswer((_) async => const []);
     when(() => mockLocalAssetRepository.updateHashes(any())).thenAnswer((_) async {});
 
-    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenAnswer((invocation) {
-      final assets = List<BaseAsset>.from(invocation.positionalArguments[0] as List<BaseAsset>);
-      final timelineService = _timelineServiceFromAssets(assets, TimelineOrigin.deepLink);
-      createdTimelineServices.add(timelineService);
-      return timelineService;
-    });
+    _mockTimelineFactoryOrigin(timelineFactory, createdTimelineServices, TimelineOrigin.deepLink);
+    _mockTimelineFactoryOrigin(timelineFactory, createdTimelineServices, TimelineOrigin.deepLinkTrash);
 
     container = ProviderContainer(
       overrides: [
@@ -94,6 +90,20 @@ void main() {
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
     expect(result.viewIntentFilePath, isNull);
     verifyNever(() => nativeSyncApi.hashAssets(any()));
+  });
+
+  test('returns remote trashed asset in a 1-element deep-link trash timeline', () async {
+    final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
+    final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1', deletedAt: DateTime(2026, 4, 21));
+    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
+    when(() => assetService.getRemoteAssetByChecksum('checksum-1')).thenAnswer((_) async => remoteAsset);
+
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
+
+    expect(result.asset, isA<RemoteAsset>());
+    expect((result.asset as RemoteAsset).localId, 'local-1');
+    expect(result.timelineService.origin, TimelineOrigin.deepLinkTrash);
+    expect(result.viewIntentFilePath, isNull);
   });
 
   test('hashes local asset without checksum and returns remote merged asset', () async {
@@ -166,7 +176,7 @@ LocalAsset _localAsset({required String id, String? checksum}) {
   );
 }
 
-RemoteAsset _remoteAsset({required String id, String? localId, required String checksum}) {
+RemoteAsset _remoteAsset({required String id, String? localId, required String checksum, DateTime? deletedAt}) {
   return RemoteAsset(
     id: id,
     localId: localId,
@@ -177,7 +187,21 @@ RemoteAsset _remoteAsset({required String id, String? localId, required String c
     createdAt: DateTime(2026, 4, 20),
     updatedAt: DateTime(2026, 4, 20),
     isEdited: false,
+    deletedAt: deletedAt,
   );
+}
+
+void _mockTimelineFactoryOrigin(
+  MockTimelineFactory timelineFactory,
+  List<TimelineService> createdTimelineServices,
+  TimelineOrigin origin,
+) {
+  when(() => timelineFactory.fromAssets(any(), origin)).thenAnswer((invocation) {
+    final assets = List<BaseAsset>.from(invocation.positionalArguments[0] as List<BaseAsset>);
+    final timelineService = _timelineServiceFromAssets(assets, origin);
+    createdTimelineServices.add(timelineService);
+    return timelineService;
+  });
 }
 
 TimelineService _timelineServiceFromAssets(List<BaseAsset> assets, TimelineOrigin origin) {
