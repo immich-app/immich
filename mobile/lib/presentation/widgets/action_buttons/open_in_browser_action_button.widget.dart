@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,7 +21,7 @@ class OpenInBrowserActionButton extends ConsumerWidget {
   });
 
   void _onTap() async {
-    final serverEndpoint = Store.get(StoreKey.serverEndpoint).replaceFirst('/api', '');
+    final serverEndpoint = SessionRepository.instance.session.serverEndpoint!.replaceFirst('/api', '');
 
     String originPath = '';
     switch (origin) {

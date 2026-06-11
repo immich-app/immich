@@ -21,6 +21,7 @@ abstract class CachedKeyValueRepository<K extends Enum, S> {
 
   Future<void> refresh() async => _snapshot = _build(await selectable().get());
 
+  @protected
   Stream<S> watchSnapshot() => selectable().watch().map((rows) => _snapshot = _build(rows));
 
   S _build(List<({String key, String? value})> rows) => buildSnapshot(

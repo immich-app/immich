@@ -13,6 +13,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -389,7 +390,7 @@ class BackgroundUploadService {
     String? latitude,
     String? longitude,
   }) async {
-    final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+    final serverEndpoint = SessionRepository.instance.session.serverEndpoint!;
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
