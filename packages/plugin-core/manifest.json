@@ -55,6 +55,26 @@
         }
       ],
       "uiHints": ["SmartAlbum"]
+    },
+    {
+      "name": "location-smart-album",
+      "title": "Location-based album",
+      "description": "Automatically add assets taken in a specific location to an album",
+      "trigger": "AssetMetadataExtraction",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetLocationFilter",
+          "config": { "region": { "city": "Vancouver", "state": "British Columbia", "country": "Canada" } }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumName": "Vancouver photos & videos",
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
     }
   ],
   "methods": [
@@ -108,6 +128,62 @@
       "uiHints": ["Filter"]
     },
     {
+      "name": "assetLocationFilter",
+      "title": "Filter assets by geolocation",
+      "description": "Filter assets by where they were taken",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": "object",
+            "title": "Region",
+            "description": "Filter by region name",
+            "properties": {
+              "country": {
+                "type": "string",
+                "title": "Country",
+                "description": "Exact name of the country the asset must be taken in"
+              },
+              "state": {
+                "type": "string",
+                "title": "State/province",
+                "description": "Exact name of the state/province the asset must be taken in"
+              },
+              "city": {
+                "type": "string",
+                "title": "City",
+                "description": "Exact name of the city the asset must be taken in"
+              }
+            }
+          },
+          "coordinate": {
+            "type": "object",
+            "title": "Coordinate",
+            "description": "Filter by distance to a coordinate",
+            "properties": {
+              "latitude": {
+                "type": "string",
+                "title": "Latitude",
+                "description": "GPS latitude of a coordinate which the asset must be close to"
+              },
+              "longitude": {
+                "type": "string",
+                "title": "Longitude",
+                "description": "GPS longitude of a coordinate which the asset must be close to"
+              },
+              "radius": {
+                "type": "number",
+                "title": "Maximum distance",
+                "description": "How close in kilometres the asset must be to the given point"
+              }
+            }
+          }
+        }
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "filterFileType",
       "title": "Filter by file type",
       "description": "Filter assets by file type",
@@ -124,31 +200,6 @@
           }
         },
         "required": ["fileTypes"]
-      },
-      "uiHints": ["Filter"]
-    },
-    {
-      "name": "filterPerson",
-      "title": "Filter by person",
-      "description": "Filter by detected person",
-      "types": ["AssetV1"],
-      "schema": {
-        "properties": {
-          "personIds": {
-            "type": "string",
-            "array": true,
-            "title": "Person IDs",
-            "description": "List of person to match",
-            "uiHint": "personId"
-          },
-          "matchAny": {
-            "type": "boolean",
-            "title": "Match any",
-            "default": true,
-            "description": "Match any name (true) or require all names (false)"
-          }
-        },
-        "required": ["personIds"]
       },
       "uiHints": ["Filter"]
     },

@@ -278,4 +278,21 @@ describe(SyncRequestType.PartnerAssetsV2, () => {
     await ctx.syncAckAll(auth, newResponse);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.PartnerAssetsV2]);
   });
+
+  it('should hide isFavorite for partner assets', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user2.id, isFavorite: true });
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetsV2]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({ id: asset.id, isFavorite: false }),
+        type: SyncEntityType.PartnerAssetV2,
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
 });

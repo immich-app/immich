@@ -20,8 +20,8 @@ RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter immich --frozen-lockfile build && \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true  pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter immich build && \
+  SHARP_FORCE_GLOBAL_LIBVIPS=true  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
 
 FROM builder AS web
 
@@ -37,7 +37,7 @@ RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web install --frozen-lockfile --force && \
   pnpm --filter @immich/sdk --filter immich-web build
 
 FROM builder AS cli
@@ -48,7 +48,7 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && \
+  pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && \
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 

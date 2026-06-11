@@ -36,6 +36,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -236,8 +237,10 @@
 
     const result = await searchPerson({ name: personName, withHidden: true });
 
+    const normalizedPersonName = normalizeSearchString(personName);
     const existingPerson = result.find(
-      ({ name, id }: PersonResponseDto) => name.toLowerCase() === personName.toLowerCase() && id !== person.id && name,
+      ({ name, id }: PersonResponseDto) =>
+        normalizeSearchString(name) === normalizedPersonName && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
@@ -245,8 +248,8 @@
       potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
-            personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
-            person.id !== personMerge2.id &&
+            normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+            person.id !== personMerge2?.id &&
             person.id !== personMerge1?.id &&
             !person.isHidden,
         )
