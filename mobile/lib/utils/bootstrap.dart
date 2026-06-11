@@ -57,6 +57,8 @@ abstract final class Bootstrap {
 
     await SessionRepository.ensureInitialized(drift);
 
+
+    await SessionRepository.ensureInitialized(drift);
     final settingsRepo = await SettingsRepository.ensureInitialized(drift);
     final logDb = await _initLogger(settingsRepository: settingsRepo, shouldBufferLogs: shouldBufferLogs);
 
