@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
@@ -15,6 +16,7 @@ class MapState {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
+  final TimeRange timeRange;
 
   const MapState({
     this.themeMode = ThemeMode.system,
@@ -23,6 +25,7 @@ class MapState {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
+    this.timeRange = const TimeRange(),
   });
 
   @override
@@ -40,6 +43,7 @@ class MapState {
     bool? includeArchived,
     bool? withPartners,
     int? relativeDays,
+    TimeRange? timeRange,
   }) {
     return MapState(
       bounds: bounds ?? this.bounds,
@@ -48,6 +52,7 @@ class MapState {
       includeArchived: includeArchived ?? this.includeArchived,
       withPartners: withPartners ?? this.withPartners,
       relativeDays: relativeDays ?? this.relativeDays,
+      timeRange: timeRange ?? this.timeRange,
     );
   }
 
@@ -57,6 +62,7 @@ class MapState {
     includeArchived: includeArchived,
     withPartners: withPartners,
     relativeDays: relativeDays,
+    timeRange: timeRange,
   );
 }
 
@@ -103,6 +109,13 @@ class MapStateNotifier extends Notifier<MapState> {
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
+  void setTimeRange(TimeRange range) {
+    ref.read(settingsProvider).write(.mapCustomFrom, range.from);
+    ref.read(settingsProvider).write(.mapCustomTo, range.to);
+    state = state.copyWith(timeRange: range);
+    EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
   @override
   MapState build() {
     final mapConfig = ref.read(appConfigProvider.select((config) => config.map));
@@ -111,8 +124,9 @@ class MapStateNotifier extends Notifier<MapState> {
       onlyFavorites: mapConfig.favoritesOnly,
       includeArchived: mapConfig.includeArchived,
       withPartners: mapConfig.withPartners,
-      relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
+      relativeDays: mapConfig.relativeDays,
+      timeRange: TimeRange(from: mapConfig.customFrom, to: mapConfig.customTo),
     );
   }
 }

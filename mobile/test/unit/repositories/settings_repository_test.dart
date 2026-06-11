@@ -17,4 +17,14 @@ void main() {
       });
     }
   });
+
+  group('AppConfig.fromEntries', () {
+    for (final key in SettingsKey.values) {
+      test('routes the default value for $key through write/read', () {
+        final value = defaultConfig.read(key);
+        final config = AppConfig.fromEntries({key: value});
+        expect(config.read(key), value, reason: 'write/read mismatch for ${key.name}');
+      });
+    }
+  });
 }
