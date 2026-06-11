@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 
 import '../test_utils.dart';
@@ -25,7 +26,8 @@ class PresentationContext {
     if (_db == null) {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
       await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
-      await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
+      await SessionRepository.ensureInitialized(db);
+      await SessionRepository.instance.write(SessionKey.serverEndpoint, serverEndpoint);
       _db = db;
     }
     return const PresentationContext._();

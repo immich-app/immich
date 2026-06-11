@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
@@ -39,6 +40,7 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
   AppConfig buildSnapshot(Map<SettingsKey, Object?> overrides) => AppConfig.fromEntries(overrides);
 
   @override
+  @protected
   Selectable<({String key, String? value})> selectable() =>
       _db.select(_db.settingsEntity).map((row) => (key: row.key, value: row.value));
 
@@ -81,5 +83,5 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
     snapshot = snapshot.write(key, value);
   }
 
-  Stream<AppConfig> watchConfig() => watchSnapshot();
+  Stream<AppConfig> watch() => watchSnapshot();
 }
