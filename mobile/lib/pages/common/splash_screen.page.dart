@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -301,10 +302,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     log.info("Resuming session at $endpoint");
   }
 
-  Future<void> resumeSession() async {
-    final serverUrl = Store.tryGet(StoreKey.serverUrl);
-    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
-    final accessToken = Store.tryGet(StoreKey.accessToken);
+  void resumeSession() async {
+    final session = ref.read(sessionProvider);
+    final serverUrl = session.serverUrl;
+    final endpoint = session.serverEndpoint;
+    final accessToken = session.accessToken;
 
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);

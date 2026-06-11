@@ -6,9 +6,10 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
+import 'package:logging/logging.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
@@ -97,7 +98,7 @@ class UploadRepository {
     required String logContext,
     Client? httpClient,
   }) async {
-    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    final String savedEndpoint = SessionRepository.instance.session.serverEndpoint!;
 
     ProgressMultipartRequest buildRequest() {
       final request = ProgressMultipartRequest(

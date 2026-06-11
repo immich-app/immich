@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 
 class UserCircleAvatar extends StatelessWidget {
   final UserDto user;
@@ -16,7 +16,7 @@ class UserCircleAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final userAvatarColor = user.avatarColor.toColor().withValues(alpha: opacity);
     final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
+        '${ref.read(sessionProvider).serverEndpoint}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
 
     final textColor = (user.avatarColor.toColor().computeLuminance() > 0.5 ? Colors.black : Colors.white).withValues(
       alpha: opacity,
