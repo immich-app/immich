@@ -6,7 +6,7 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
+import { asDateTimeString } from 'src/utils/date';
 import { stringToBool } from 'src/validation';
 import z from 'zod';
 
@@ -65,6 +65,8 @@ const UpdateAlbumSchema = z
 
 const GetAlbumsSchema = z
   .object({
+    id: z.uuidv4().optional().describe('Album ID'),
+    name: z.string().optional().describe('Album name (exact match)'),
     isOwned: stringToBool
       .optional()
       .describe('Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter'),
@@ -193,14 +195,14 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     albumName: entity.albumName,
     description: entity.description,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
-    createdAt: asDateString(entity.createdAt),
-    updatedAt: asDateString(entity.updatedAt),
+    createdAt: asDateTimeString(entity.createdAt),
+    updatedAt: asDateTimeString(entity.updatedAt),
     id: entity.id,
     albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
-    startDate: asDateString(startDate),
-    endDate: asDateString(endDate),
+    startDate: asDateTimeString(startDate),
+    endDate: asDateTimeString(endDate),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,

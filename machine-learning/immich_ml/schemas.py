@@ -3,7 +3,14 @@ from typing import Any, Literal, Protocol, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
+import orjson
+from fastapi.responses import JSONResponse
 from typing_extensions import TypedDict
+
+
+class ORJSONResponse(JSONResponse):
+    def render(self, content: Any) -> bytes:
+        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
 
 
 class StrEnum(str, Enum):

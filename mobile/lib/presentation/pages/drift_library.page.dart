@@ -7,12 +7,13 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
@@ -327,12 +328,23 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
   }
 }
 
+@visibleForTesting
+final sharedWithPartnerProvider = StreamProvider.autoDispose<Iterable<Partner>>((ref) {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null) {
+    // TODO: Refactor with a route guard to avoid this check in every provider
+    return const .empty();
+  }
+
+  return ref.watch(partnerServiceProvider).search(currentUser.id, .sharedWith);
+});
+
 class _QuickAccessButtonList extends ConsumerWidget {
   const _QuickAccessButtonList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final partnerSharedWithAsync = ref.watch(driftSharedWithPartnerProvider);
+    final partnerSharedWithAsync = ref.watch(sharedWithPartnerProvider);
     final partners = partnerSharedWithAsync.valueOrNull ?? [];
 
     return SliverPadding(
@@ -387,9 +399,9 @@ class _QuickAccessButtonList extends ConsumerWidget {
                   'partners'.t(context: context),
                   style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                 ),
-                onTap: () => context.pushRoute(const DriftPartnerRoute()),
+                onTap: () => context.pushRoute(const PartnerRoute()),
               ),
-              _PartnerList(partners: partners),
+              _PartnerList(partners: partners.toList()),
             ],
           ),
         ),
@@ -401,7 +413,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
 class _PartnerList extends StatelessWidget {
   const _PartnerList({required this.partners});
 
-  final List<PartnerUserDto> partners;
+  final List<Partner> partners;
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +433,7 @@ class _PartnerList extends StatelessWidget {
             ),
           ),
           contentPadding: const EdgeInsets.only(left: 12.0, right: 18.0),
-          leading: PartnerUserAvatar(partner: partner),
+          leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
           title: const Text(
             "partner_list_user_photos",
             style: TextStyle(fontWeight: FontWeight.w500),

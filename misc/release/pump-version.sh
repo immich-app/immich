@@ -3,12 +3,14 @@
 #
 # Pump one or both of the server/mobile versions in appropriate files
 #
-# usage: './scripts/pump-version.sh -s <major|minor|patch> <-m> <true|false>
+# usage: './scripts/pump-version.sh -s <minor|patch|premajor|preminor|prepatch|prerelease> <-m> <true|false>
 #
 # examples:
-#    ./scripts/pump-version.sh -s major         # 1.0.0+50 => 2.0.0+50
-#    ./scripts/pump-version.sh -s minor -m true # 1.0.0+50 => 1.1.0+51
-#    ./scripts/pump-version.sh -m true          # 1.0.0+50 => 1.0.0+51
+#    ./scripts/pump-version.sh -s major            # 1.0.0+50 => 2.0.0+50
+#    ./scripts/pump-version.sh -s minor -m true    # 1.0.0+50 => 1.1.0+51
+#    ./scripts/pump-version.sh -s premajor         # 1.0.0+50 => 2.0.0-rc.0+50
+#    ./scripts/pump-version.sh -s prerelease       # 2.0.0-rc.0+50 => 2.0.0-rc.1+50
+#    ./scripts/pump-version.sh -m true             # 1.0.0+50 => 1.0.0+51
 #
 
 SERVER_PUMP="false"
@@ -25,31 +27,15 @@ while getopts 's:m:' flag; do
   esac
 done
 
-CURRENT_SERVER=$(jq -r '.version' server/package.json)
-MAJOR=$(echo "$CURRENT_SERVER" | cut -d '.' -f1)
-MINOR=$(echo "$CURRENT_SERVER" | cut -d '.' -f2)
-PATCH=$(echo "$CURRENT_SERVER" | cut -d '.' -f3)
-
-if [[ $SERVER_PUMP == "major" ]]; then
-  MAJOR=$((MAJOR + 1))
-  MINOR=0
-  PATCH=0
-elif [[ $SERVER_PUMP == "minor" ]]; then
-  MINOR=$((MINOR + 1))
-  PATCH=0
-elif [[ $SERVER_PUMP == "patch" ]]; then
-  PATCH=$((PATCH + 1))
-elif [[ $SERVER_PUMP == "false" ]]; then
-  echo 'Skipping Server Pump'
-else
-  echo 'Expected <major|minor|patch|false> for the server argument'
+CURRENT_SERVER=$(jq -r '.version' package.json)
+if ! NEXT_SERVER=$(pnpm --silent pump "$CURRENT_SERVER" "$SERVER_PUMP"); then
+  echo "Fatal: failed to pump server version: $NEXT_SERVER" >&2
   exit 1
 fi
 
-NEXT_SERVER=$MAJOR.$MINOR.$PATCH
-
 CURRENT_MOBILE=$(grep "^version: .*+[0-9]\+$" mobile/pubspec.yaml | cut -d "+" -f2)
 NEXT_MOBILE=$CURRENT_MOBILE
+
 if [[ $MOBILE_PUMP == "true" ]]; then
   set $((NEXT_MOBILE++))
 elif [[ $MOBILE_PUMP == "false" ]]; then
@@ -59,15 +45,17 @@ else
   exit 1
 fi
 
+
+
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
 
-  pnpm version "$NEXT_SERVER" --no-git-tag-version
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix server
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/cli
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix web
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix e2e
-  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix packages/sdk
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --no-git-checks
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --no-git-checks --prefix server
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --no-git-checks --prefix packages/cli
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --no-git-checks --prefix web
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --no-git-checks --prefix e2e
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --no-git-checks --prefix packages/sdk
 
   # copy version to open-api spec
   mise run //:open-api

@@ -10,8 +10,15 @@ class ImmichFormController extends ChangeNotifier {
   FutureOr<void> Function()? onSubmit;
   final formKey = GlobalKey<FormState>();
 
+  bool _isDisposed = false;
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 
   Future<void> submit() async {
     if (_isLoading) {
@@ -27,7 +34,9 @@ class ImmichFormController extends ChangeNotifier {
       await onSubmit?.call();
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_isDisposed) {
+        notifyListeners();
+      }
     }
   }
 }
@@ -38,13 +47,7 @@ class ImmichForm extends StatefulWidget {
   final String? submitText;
   final IconData? submitIcon;
 
-  const ImmichForm({
-    super.key,
-    this.onSubmit,
-    this.submitText,
-    this.submitIcon,
-    required this.builder,
-  });
+  const ImmichForm({super.key, this.onSubmit, this.submitText, this.submitIcon, required this.builder});
 
   @override
   State<ImmichForm> createState() => _ImmichFormState();

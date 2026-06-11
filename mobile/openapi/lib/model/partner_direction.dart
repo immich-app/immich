@@ -23,13 +23,13 @@ class PartnerDirection {
 
   String toJson() => value;
 
-  static const by = PartnerDirection._(r'shared-by');
-  static const with_ = PartnerDirection._(r'shared-with');
+  static const sharedBy = PartnerDirection._(r'shared-by');
+  static const sharedWith = PartnerDirection._(r'shared-with');
 
   /// List of all possible values in this [enum][PartnerDirection].
   static const values = <PartnerDirection>[
-    by,
-    with_,
+    sharedBy,
+    sharedWith,
   ];
 
   static PartnerDirection? fromJson(dynamic value) => PartnerDirectionTypeTransformer().decode(value);
@@ -68,8 +68,8 @@ class PartnerDirectionTypeTransformer {
   PartnerDirection? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'shared-by': return PartnerDirection.by;
-        case r'shared-with': return PartnerDirection.with_;
+        case r'shared-by': return PartnerDirection.sharedBy;
+        case r'shared-with': return PartnerDirection.sharedWith;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

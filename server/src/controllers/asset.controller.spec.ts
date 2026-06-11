@@ -241,6 +241,15 @@ describe(AssetController.name, () => {
         [{ rating: 7 }, [{ path: ['rating'], message: 'Too big: expected number to be <=5' }]],
         [{ rating: 3.5 }, [{ path: ['rating'], message: 'Invalid input: expected int, received number' }]],
         [{ rating: -2 }, [{ path: ['rating'], message: 'Too small: expected number to be >=-1' }]],
+        [
+          { rating: 0 },
+          [
+            {
+              path: ['rating'],
+              message: 'Rating must be -1 (rejected), 1–5 (starred), or null (unrated); 0 is not valid',
+            },
+          ],
+        ],
       ] as const) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
@@ -248,16 +257,9 @@ describe(AssetController.name, () => {
       }
     });
 
-    it('should convert rating 0 to null', async () => {
-      const assetId = factory.uuid();
-      const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}`).send({ rating: 0 });
-      expect(service.update).toHaveBeenCalledWith(undefined, assetId, { rating: null });
-      expect(status).toBe(200);
-    });
-
     it('should leave correct ratings as-is', async () => {
       const assetId = factory.uuid();
-      for (const test of [{ rating: -1 }, { rating: 1 }, { rating: 5 }]) {
+      for (const test of [{ rating: 1 }, { rating: 5 }]) {
         const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}`).send(test);
         expect(service.update).toHaveBeenCalledWith(undefined, assetId, test);
         expect(status).toBe(200);

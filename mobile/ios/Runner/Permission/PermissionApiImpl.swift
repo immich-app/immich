@@ -1,6 +1,10 @@
 import Foundation
 
 class PermissionApiImpl: PermissionApi {
+  func isIgnoringBatteryOptimizations() throws -> PermissionStatus {
+    return PermissionStatus.granted;
+  }
+  
   func hasManageMediaPermission() throws -> Bool {
     return false
   }

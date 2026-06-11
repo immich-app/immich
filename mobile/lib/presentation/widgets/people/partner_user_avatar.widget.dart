@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 class PartnerUserAvatar extends StatelessWidget {
-  const PartnerUserAvatar({super.key, required this.partner});
+  const PartnerUserAvatar({super.key, required this.userId, required this.name});
 
-  final PartnerUserDto partner;
+  final String userId;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
-    final url = "${Store.get(StoreKey.serverEndpoint)}/users/${partner.id}/profile-image";
-    final nameFirstLetter = partner.name.isNotEmpty ? partner.name[0] : "";
+    final url = "${Store.get(StoreKey.serverEndpoint)}/users/$userId/profile-image";
+    final nameFirstLetter = name.isNotEmpty ? name[0] : "";
     return CircleAvatar(
       radius: 16,
       backgroundColor: context.primaryColor.withAlpha(50),
