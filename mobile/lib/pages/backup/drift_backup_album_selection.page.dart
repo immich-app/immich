@@ -30,6 +30,7 @@ class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
 class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbumSelectionPage> {
   String _searchQuery = '';
   bool _isSearchMode = false;
+  bool _isLoading = true;
   int _initialTotalAssetCount = 0;
   late ValueNotifier<bool> _enableSyncUploadAlbum;
   late TextEditingController _searchController;
@@ -44,7 +45,11 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _searchFocusNode = FocusNode();
 
     _enableSyncUploadAlbum.value = ref.read(appConfigProvider).backup.syncAlbums;
-    ref.read(backupAlbumProvider.notifier).getAll();
+    ref.read(backupAlbumProvider.notifier).getAll().whenComplete(() {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    });
 
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
@@ -249,9 +254,17 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                 SliverLayoutBuilder(
                   builder: (context, constraints) {
                     if (constraints.crossAxisExtent > 600) {
-                      return _AlbumSelectionGrid(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
+                      return _AlbumSelectionGrid(
+                        filteredAlbums: filteredAlbums,
+                        searchQuery: _searchQuery,
+                        isLoading: _isLoading,
+                      );
                     } else {
-                      return _AlbumSelectionList(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
+                      return _AlbumSelectionList(
+                        filteredAlbums: filteredAlbums,
+                        searchQuery: _searchQuery,
+                        isLoading: _isLoading,
+                      );
                     }
                   },
                 ),
@@ -292,8 +305,9 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
 class _AlbumSelectionList extends StatelessWidget {
   final List<LocalAlbum> filteredAlbums;
   final String searchQuery;
+  final bool isLoading;
 
-  const _AlbumSelectionList({required this.filteredAlbums, required this.searchQuery});
+  const _AlbumSelectionList({required this.filteredAlbums, required this.searchQuery, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +323,18 @@ class _AlbumSelectionList extends StatelessWidget {
     }
 
     if (filteredAlbums.isEmpty) {
-      return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+      if (isLoading) {
+        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+      }
+
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text('no_albums_found'.t(context: context)),
+          ),
+        ),
+      );
     }
 
     return SliverPadding(
@@ -326,8 +351,9 @@ class _AlbumSelectionList extends StatelessWidget {
 class _AlbumSelectionGrid extends StatelessWidget {
   final List<LocalAlbum> filteredAlbums;
   final String searchQuery;
+  final bool isLoading;
 
-  const _AlbumSelectionGrid({required this.filteredAlbums, required this.searchQuery});
+  const _AlbumSelectionGrid({required this.filteredAlbums, required this.searchQuery, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
@@ -343,7 +369,18 @@ class _AlbumSelectionGrid extends StatelessWidget {
     }
 
     if (filteredAlbums.isEmpty) {
-      return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+      if (isLoading) {
+        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+      }
+
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text('no_albums_found'.t(context: context)),
+          ),
+        ),
+      );
     }
 
     return SliverPadding(
