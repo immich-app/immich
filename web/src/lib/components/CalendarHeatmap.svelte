@@ -56,15 +56,15 @@
     </div> -->
 
     <div class="grid grid-flow-col grid-rows-7 gap-0.5">
-      <div class="grid grid-rows-subgrid row-span-7">
+      <div class="row-span-7 grid grid-rows-subgrid">
         {#if Info.getStartOfWeek({ locale: $locale }) === 7}
           <div></div>
         {/if}
-        <div class="row-span-2 -mt-1"><Text size="tiny">{weekdays[0]}</Text></div>
-        <div class="row-span-2 -mt-1"><Text size="tiny">{weekdays[1]}</Text></div>
-        <div class="row-span-2 -mt-1"><Text size="tiny">{weekdays[2]}</Text></div>
+        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[0]}</Text></div>
+        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[1]}</Text></div>
+        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[2]}</Text></div>
         {#if Info.getStartOfWeek({ locale: $locale }) === 1}
-          <div class="-my-1"><Text size="tiny">{weekdays[3]}</Text></div>
+          <div class="-my-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[3]}</Text></div>
         {/if}
       </div>
 
