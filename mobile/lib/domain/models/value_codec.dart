@@ -1,20 +1,28 @@
 import 'dart:convert';
 
-sealed class ValueCodec<T extends Object> {
+sealed class ValueCodec<T> {
   const ValueCodec();
 
   String encode(T value);
   T decode(String raw);
 
-  static const Map<Type, ValueCodec<Object>> _primitives = {
-    int: PrimitiveCodec.integer,
-    double: PrimitiveCodec.real,
-    bool: PrimitiveCodec.boolean,
-    String: PrimitiveCodec.string,
-    DateTime: DateTimeCodec(),
+  static final Map<Type, ValueCodec<Object>> _primitives = {
+    ..._register<int>(PrimitiveCodec.integer),
+    ..._register<double>(PrimitiveCodec.real),
+    ..._register<bool>(PrimitiveCodec.boolean),
+    ..._register<String>(PrimitiveCodec.string),
+    ..._register<DateTime>(const DateTimeCodec()),
   };
 
-  static ValueCodec<T> forType<T extends Object>(Type runtimeType) {
+  static Map<Type, ValueCodec<Object>> _register<T>(ValueCodec<Object> codec) => {
+    T: codec,
+    // Reifies the nullable type T so it can be used as a key in the _primitives map
+    _typeOf<T?>(): codec,
+  };
+
+  static Type _typeOf<T>() => T;
+
+  static ValueCodec<T> forType<T>(Type runtimeType) {
     final codec = _primitives[runtimeType];
     if (codec == null) {
       throw StateError('No primitive codec for $runtimeType. Provide an explicit codec when defining the key.');
