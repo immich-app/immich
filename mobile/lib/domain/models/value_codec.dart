@@ -78,7 +78,7 @@ final class MapCodec<K extends Object, V extends Object> extends ValueCodec<Map<
         final rawKey = entry.key;
         final rawValue = entry.value;
         if (rawKey is! String || rawValue is! String) {
-          return {};
+          continue;
         }
         final k = _keyCodec.decode(rawKey);
         final v = _valueCodec.decode(rawValue);
