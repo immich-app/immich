@@ -101,7 +101,7 @@ class AppConfig {
   String toString() =>
       'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
 
-  T read<T extends Object>(SettingsKey<T> key) =>
+  T read<T>(SettingsKey<T> key) =>
       (switch (key) {
             .logLevel => logLevel,
             .themePrimaryColor => theme.primaryColor,
@@ -150,10 +150,10 @@ class AppConfig {
           })
           as T;
 
-  factory AppConfig.fromEntries(Map<SettingsKey<Object>, Object> overrides) =>
+  factory AppConfig.fromEntries(Map<SettingsKey, Object?> overrides) =>
       overrides.entries.fold(const AppConfig(), (config, entry) => config.write(entry.key, entry.value));
 
-  AppConfig write<T extends Object>(SettingsKey<T> key, T value) {
+  AppConfig write<T, U extends T>(SettingsKey<T> key, U value) {
     return switch (key) {
       .logLevel => copyWith(logLevel: value as LogLevel),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),
@@ -167,8 +167,10 @@ class AppConfig {
       .viewerAutoPlayVideo => copyWith(viewer: viewer.copyWith(autoPlayVideo: value as bool)),
       .viewerTapToNavigate => copyWith(viewer: viewer.copyWith(tapToNavigate: value as bool)),
       .networkAutoEndpointSwitching => copyWith(network: network.copyWith(autoEndpointSwitching: value as bool)),
-      .networkPreferredWifiName => copyWith(network: network.copyWith(preferredWifiName: (value as String))),
-      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: (value as String))),
+      .networkPreferredWifiName => copyWith(
+        network: network.copyWith(preferredWifiName: .fromNullable((value as String?))),
+      ),
+      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable((value as String?)))),
       .networkExternalEndpointList => copyWith(network: network.copyWith(externalEndpointList: value as List<String>)),
       .networkCustomHeaders => copyWith(network: network.copyWith(customHeaders: value as Map<String, String>)),
       .albumSortMode => copyWith(album: album.copyWith(sortMode: value as AlbumSortMode)),
