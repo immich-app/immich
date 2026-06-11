@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart' show remoteAlbumDateRangeProvider;
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -431,6 +432,9 @@ class ActionNotifier extends Notifier<void> {
     final ids = _getRemoteIdsForSource(source);
     try {
       final removedCount = await _service.removeFromAlbum(ids, albumId);
+      if (removedCount > 0) {
+        ref.invalidate(remoteAlbumDateRangeProvider(albumId));
+      }
       return ActionResult(count: removedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from album', error, stack);
