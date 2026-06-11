@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:immich_mobile/utils/semver.dart';
+
 sealed class ValueCodec<T> {
   const ValueCodec();
 
@@ -53,6 +55,16 @@ final class DateTimeCodec extends ValueCodec<DateTime> {
   DateTime decode(String raw) => DateTime.parse(raw);
 }
 
+final class SemVerCodec extends ValueCodec<SemVer> {
+  const SemVerCodec();
+
+  @override
+  String encode(SemVer value) => value.toString();
+
+  @override
+  SemVer decode(String raw) => SemVer.fromString(raw);
+}
+
 final class MapCodec<K extends Object, V extends Object> extends ValueCodec<Map<K, V>> {
   final ValueCodec<K> _keyCodec;
   final ValueCodec<V> _valueCodec;
@@ -78,7 +90,7 @@ final class MapCodec<K extends Object, V extends Object> extends ValueCodec<Map<
         final rawKey = entry.key;
         final rawValue = entry.value;
         if (rawKey is! String || rawValue is! String) {
-          return {};
+          continue;
         }
         final k = _keyCodec.decode(rawKey);
         final v = _valueCodec.decode(rawValue);
