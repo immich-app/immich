@@ -1333,7 +1333,7 @@ void main() {
         advancedTroubleshooting: false,
         isStacked: false,
         source: ActionSource.viewer,
-        serverVersion: SemVer(major: 2, minor: 6, patch: 0),
+        serverVersion: const SemVer(major: 2, minor: 6, patch: 0),
       );
 
       const expectedTypes = [

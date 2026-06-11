@@ -17,7 +17,9 @@ class OpenActivityActionButton extends ConsumerWidget {
   void _onTap(BuildContext context, WidgetRef ref) {
     final album = ref.read(currentRemoteAlbumProvider);
     final asset = ref.read(assetViewerProvider).currentAsset;
-    if (album == null || asset == null) return;
+    if (album == null || asset == null) {
+      return;
+    }
     context.router.push(
       DriftActivitiesRoute(album: album, assetId: asset is RemoteAsset ? asset.id : null, assetName: asset.name),
     );
