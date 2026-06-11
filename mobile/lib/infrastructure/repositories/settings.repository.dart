@@ -1,4 +1,4 @@
-import 'package:collection/collection.dart';
+import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
@@ -36,10 +36,10 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
   Object decodeValue(SettingsKey key, String raw) => key.decode(raw);
 
   @override
-  AppConfig buildSnapshot(Map<SettingsKey, Object> overrides) => AppConfig.fromEntries(overrides);
+  AppConfig buildSnapshot(Map<SettingsKey, Object?> overrides) => AppConfig.fromEntries(overrides);
 
   @override
-  Selectable<({String key, String value})> selectable() =>
+  Selectable<({String key, String? value})> selectable() =>
       _db.select(_db.settingsEntity).map((row) => (key: row.key, value: row.value));
 
   AppConfig get appConfig => snapshot;
@@ -59,7 +59,7 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
     snapshot = config;
   }
 
-  Future<void> write<T extends Object, U extends T>(SettingsKey<T> key, U value) async {
+  Future<void> write<T, U extends T>(SettingsKey<T> key, U value) async {
     if (value == snapshot.read(key)) {
       return;
     }
