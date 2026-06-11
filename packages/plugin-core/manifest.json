@@ -184,6 +184,69 @@
       "uiHints": ["Filter"]
     },
     {
+      "name": "assetDateFilter",
+      "title": "Filter by date",
+      "description": "Filter assets by date taken",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "object",
+            "title": "Start date",
+            "description": "Earliest date of assets to include",
+            "properties": {
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match"
+              },
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match"
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match"
+              }
+            }
+          },
+          "endDate": {
+            "type": "object",
+            "title": "End date",
+            "description": "Latest date of assets to include",
+            "properties": {
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match"
+              },
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match"
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match"
+              }
+            }
+          },
+          "recurring": {
+            "type": "boolean",
+            "default": false,
+            "title": "Match recurring dates",
+            "description": "Allow any assets with matching months/days regardless of the year"
+          }
+        },
+        "required": ["recurring", "startDate", "endDate"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "filterFileType",
       "title": "Filter by file type",
       "description": "Filter assets by file type",
