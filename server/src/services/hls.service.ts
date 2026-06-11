@@ -58,7 +58,7 @@ export class HlsService extends BaseService {
 
     const asset = await this.videoStreamRepository.getForMainPlaylist(assetId);
     if (!asset) {
-      throw new NotFoundException('Asset is not yet ready for streaming');
+      throw new NotFoundException('Asset metadata is not yet ready for streaming');
     }
 
     // Sharing the sessionId allows only one microservices worker to successfully insert to the session table.
@@ -76,13 +76,20 @@ export class HlsService extends BaseService {
 
     const asset = await this.videoStreamRepository.getForMediaPlaylist(assetId, sessionId);
     if (!asset) {
-      throw new NotFoundException('Asset not found or not yet ready for streaming');
+      throw new NotFoundException('Asset not found or metadata not yet ready for streaming');
     }
 
     return this.generateMediaPlaylist(asset);
   }
 
-  async getSegment(auth: AuthDto, assetId: string, sessionId: string, variantIndex: number, filename: string) {
+  async getSegment(
+    auth: AuthDto,
+    assetId: string,
+    sessionId: string,
+    variantIndex: number,
+    filename: string,
+    initSegment?: number,
+  ) {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [assetId] });
 
     const session = await this.videoStreamRepository.getSession(sessionId);
@@ -99,7 +106,7 @@ export class HlsService extends BaseService {
     });
 
     const apiSession = this.trackSession(sessionId, variantIndex);
-    const segmentIndex = this.getSegmentIndex(apiSession, filename);
+    const segmentIndex = this.getSegmentIndex(apiSession, filename, initSegment);
     this.websocketRepository.serverSend('HlsHeartbeat', { sessionId, variantIndex, segmentIndex });
 
     if (await this.storageRepository.checkFileExists(path, constants.R_OK)) {
@@ -172,9 +179,13 @@ export class HlsService extends BaseService {
     return `${sessionId}:${variantIndex}:${segmentIndex}`;
   }
 
-  private getSegmentIndex(session: ApiSession, filename: string) {
+  private getSegmentIndex(session: ApiSession, filename: string, initSegment?: number) {
     if (filename.endsWith('.mp4')) {
-      return (session.lastRequestedSegment ?? -1) + 1;
+      // We need to know where to start transcoding, but the init.mp4 has no segment number in its name.
+      // We can infer this from the last requested segment, but this can be inaccurate given the client
+      // can load cached segments without reaching out to the server. `initSegment` acts as a hint to
+      // remove ambiguity when possible.
+      return initSegment ?? (session.lastRequestedSegment ?? -1) + 1;
     }
     const segmentIndex = Number.parseInt(HLS_SEGMENT_FILENAME_REGEX.exec(filename)![1]);
     session.lastRequestedSegment = segmentIndex;

@@ -24,7 +24,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
     super.initState();
     final mapState = ref.read(mapStateProvider);
     final timeRange = mapState.timeRange;
-    useCustomRange = timeRange.from.isSome || timeRange.to.isSome;
+    useCustomRange = timeRange.from != null || timeRange.to != null;
   }
 
   @override
