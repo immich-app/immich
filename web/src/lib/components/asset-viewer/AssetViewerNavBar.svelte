@@ -27,7 +27,7 @@
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
-  import type { OnUndoArchive, OnUndoDelete } from '$lib/utils/actions';
+  import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -58,7 +58,6 @@
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onUndoArchive?: OnUndoArchive;
     onPlaySlideshow: () => void;
     onClose?: () => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
@@ -75,7 +74,6 @@
     preAction,
     onAction,
     onUndoDelete = undefined,
-    onUndoArchive = undefined,
     onPlaySlideshow,
     onClose,
     onRemoveFromAlbum,
@@ -190,7 +188,7 @@
 
         {#if !isLocked}
           {#if isOwner}
-            <ArchiveAction {asset} {onAction} {preAction} {onUndoArchive} />
+            <ArchiveAction {asset} {onAction} {preAction} />
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
