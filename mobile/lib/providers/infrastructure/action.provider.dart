@@ -353,6 +353,10 @@ class ActionNotifier extends Notifier<void> {
         return null;
       }
 
+      if (source == ActionSource.viewer) {
+        ref.invalidate(assetExifProvider);
+      }
+
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit date and time for assets', error, stack);

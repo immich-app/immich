@@ -96,6 +96,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     switch (event) {
       case ViewerShowDetailsEvent():
         _showDetails();
+      case TimelineReloadEvent():
+        final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+        if (asset != _asset) {
+          setState(() => _asset = asset);
+        }
       default:
     }
   }
