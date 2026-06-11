@@ -2,7 +2,19 @@
   import SchemaAlbumPicker from '$lib/components/SchemaAlbumPicker.svelte';
   import Self from '$lib/components/SchemaConfiguration.svelte';
   import type { JSONSchemaProperty, SchemaConfig } from '$lib/types';
-  import { CodeBlock, Field, Input, Label, MultiSelect, NumberInput, Select, Switch, Text } from '@immich/ui';
+  import {
+    CodeBlock,
+    Field,
+    HelperText,
+    Input,
+    Label,
+    MultiSelect,
+    NumberInput,
+    Select,
+    Switch,
+    Text,
+  } from '@immich/ui';
+  import { t } from 'svelte-i18n';
 
   type Props = {
     schema: JSONSchemaProperty;
@@ -75,12 +87,11 @@
     <Select options={schema.enum} bind:value={getString, setValue} />
   </Field>
 {:else if schema.array}
-  <!-- {@const values = getValue<string[]>([])}
+  {@const values = getValue<string[]>([])}
   <Field {label} {description}>
-    {#each values as value, i (i)}
-      <Input bind:value={() => getValue<string>(), setValue} />
-    {/each}
-  </Field> -->
+    <Input value={values.join(',')} disabled />
+    <HelperText>{$t('unsupported_field_type')}</HelperText>
+  </Field>
 {:else if schema.type === 'boolean'}
   <Field {label} {description}>
     <Switch bind:checked={() => getBoolean(schema.default ?? false), setValue} />
