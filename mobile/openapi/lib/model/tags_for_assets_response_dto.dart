@@ -13,12 +13,12 @@ part of openapi.api;
 class TagsForAssetsResponseDto {
   /// Returns a new [TagsForAssetsResponseDto] instance.
   TagsForAssetsResponseDto({
-    this.assetIds = const [],
+    this.assetIds = const Optional.present(const []),
     required this.tagId,
   });
 
   /// Asset IDs associated with the tag
-  List<String> assetIds;
+  Optional<List<String>?> assetIds;
 
   /// Tag ID
   String tagId;
@@ -39,7 +39,10 @@ class TagsForAssetsResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetIds'] = this.assetIds;
+    if (this.assetIds.isPresent) {
+      final value = this.assetIds.value;
+      json[r'assetIds'] = value;
+    }
       json[r'tagId'] = this.tagId;
     return json;
   }
@@ -53,9 +56,9 @@ class TagsForAssetsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return TagsForAssetsResponseDto(
-        assetIds: json[r'assetIds'] is Iterable
+        assetIds: json.containsKey(r'assetIds') ? Optional.present(json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            : const []) : const Optional.absent(),
         tagId: mapValueOfType<String>(json, r'tagId')!,
       );
     }
