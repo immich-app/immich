@@ -50,7 +50,14 @@ class BackgroundSyncManager {
   });
 
   Future<void> cancel() async {
-    final tasks = [_syncTask, _syncWebsocketTask, _cloudIdSyncTask, _linkedAlbumSyncTask];
+    final tasks = [
+      _syncTask,
+      _syncWebsocketTask,
+      _cloudIdSyncTask,
+      _linkedAlbumSyncTask,
+      _deviceAlbumSyncTask,
+      _hashTask,
+    ];
     final futures = [
       for (final task in tasks)
         if (task != null) task.future,
@@ -62,30 +69,8 @@ class BackgroundSyncManager {
     _syncWebsocketTask = null;
     _cloudIdSyncTask = null;
     _linkedAlbumSyncTask = null;
-
-    try {
-      await Future.wait(futures);
-    } on CanceledError {
-      // Ignore cancellation errors
-    }
-
-    await cancelLocal();
-  }
-
-  Future<void> cancelLocal() async {
-    final futures = <Future>[];
-
-    if (_hashTask != null) {
-      futures.add(_hashTask!.future);
-    }
-    _hashTask?.cancel();
-    _hashTask = null;
-
-    if (_deviceAlbumSyncTask != null) {
-      futures.add(_deviceAlbumSyncTask!.future);
-    }
-    _deviceAlbumSyncTask?.cancel();
     _deviceAlbumSyncTask = null;
+    _hashTask = null;
 
     try {
       await Future.wait(futures);

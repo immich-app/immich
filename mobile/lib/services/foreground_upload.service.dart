@@ -273,10 +273,14 @@ class ForegroundUploadService {
 
       // A reverted iOS edit flips the stack back to the original and skips the upload.
       // Works for live photos too — getEditState reads the adjustment plist, which is
-      // media-agnostic.
-      if (CurrentPlatform.isIOS && asset.priorRemoteId != null && await _editRevertService.tryHandleRevert(asset)) {
-        callbacks.onSuccess?.call(asset.localId!, asset.priorRemoteId!);
-        return;
+      // media-agnostic. Report the flipped-to base, not the pre-flip prior (the edit
+      // being reverted away) — album-add consumers link whatever id this reports.
+      if (CurrentPlatform.isIOS && asset.priorRemoteId != null) {
+        final revertedTo = await _editRevertService.tryHandleRevert(asset);
+        if (revertedTo != null) {
+          callbacks.onSuccess?.call(asset.localId!, revertedTo);
+          return;
+        }
       }
 
       final deviceId = Store.get(StoreKey.deviceId);

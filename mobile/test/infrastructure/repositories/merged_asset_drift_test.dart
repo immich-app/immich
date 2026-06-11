@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
@@ -106,15 +107,18 @@ void main() {
     expect(buckets.single.bucketDate, isNotEmpty);
   });
 
-  // Reproduces the on-server shape of an edited live photo: 2 timeline stills +
-  // 2 hidden motion videos (no stack rows seeded). The hidden videos must never
-  // become timeline tiles; both stills stay visible.
-  test('edited live photo: hidden motion videos excluded, stack shows once', () async {
+  // Reproduces the on-server shape of an edited live photo: 2 stills stacked
+  // (primary = the edit) + 2 hidden motion videos. The hidden videos must never
+  // become timeline tiles, and the stack collapses to its primary still.
+  test('edited live photo: hidden motion videos excluded, stack collapses to its primary', () async {
     const userId = 'user-1';
     final t = DateTime(2026, 6, 8, 9);
     await insertUser(userId);
+    await db
+        .into(db.stackEntity)
+        .insert(StackEntityCompanion.insert(id: 'stack-1', ownerId: userId, primaryAssetId: 'edit-still'));
 
-    Future<void> ins(String id, AssetType type, AssetVisibility vis, {String? lpv}) => db
+    Future<void> ins(String id, AssetType type, AssetVisibility vis, {String? lpv, String? stackId}) => db
         .into(db.remoteAssetEntity)
         .insert(
           RemoteAssetEntityCompanion.insert(
@@ -128,11 +132,12 @@ void main() {
             updatedAt: Value(t),
             uploadedAt: Value(t),
             livePhotoVideoId: Value(lpv),
+            stackId: Value(stackId),
           ),
         );
 
-    await ins('orig-still', AssetType.image, AssetVisibility.timeline, lpv: 'orig-video');
-    await ins('edit-still', AssetType.image, AssetVisibility.timeline, lpv: 'edit-video');
+    await ins('orig-still', AssetType.image, AssetVisibility.timeline, lpv: 'orig-video', stackId: 'stack-1');
+    await ins('edit-still', AssetType.image, AssetVisibility.timeline, lpv: 'edit-video', stackId: 'stack-1');
     await ins('orig-video', AssetType.video, AssetVisibility.hidden);
     await ins('edit-video', AssetType.video, AssetVisibility.hidden);
 
@@ -141,7 +146,8 @@ void main() {
 
     expect(ids, isNot(contains('edit-video')), reason: 'hidden edit motion video must not be a timeline tile');
     expect(ids, isNot(contains('orig-video')), reason: 'hidden orig motion video must not be a timeline tile');
-    expect(ids, containsAll(['orig-still', 'edit-still']), reason: 'both stills are timeline-visible');
+    expect(ids, isNot(contains('orig-still')), reason: 'non-primary stack member collapses behind the primary');
+    expect(ids, ['edit-still'], reason: 'the stack shows exactly once, as its primary');
   });
 
   test('local tile hidden when prior_remote_id points at a live remote', () async {

@@ -49,68 +49,75 @@ void main() {
   });
 
   group('tryHandleRevert', () {
-    test('returns false when the asset was never uploaded as an edit', () async {
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: null)), isFalse);
+    test('returns null when the asset was never uploaded as an edit', () async {
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: null)), isNull);
       verifyNever(() => mocks.nativeApi.getEditState(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')));
     });
 
-    test('returns false (lets the pair flow run) when there is still a live edit', () async {
+    test('returns null (lets the pair flow run) when there is still a live edit', () async {
       when(
         () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
       ).thenAnswer((_) async => EditState.edited);
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       verifyNever(() => mocks.stack.findStackIdByRemoteId(any()));
     });
 
-    test('returns false when the edit state cannot be read (offloaded to iCloud)', () async {
+    test('returns null when the edit state cannot be read (offloaded to iCloud)', () async {
       when(
         () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
       ).thenAnswer((_) async => EditState.unknown);
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       verifyNever(() => mocks.stack.findStackIdByRemoteId(any()));
     });
 
-    test('returns false when the edit-state probe hangs past 30s', () {
+    test('returns null when the edit-state probe hangs past 30s', () {
       fakeAsync((time) {
         when(
           () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
         ).thenAnswer((_) => Completer<EditState>().future);
 
-        bool? handled;
-        unawaited(sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')).then((r) => handled = r));
+        String? handled;
+        var completed = false;
+        unawaited(
+          sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')).then((r) {
+            handled = r;
+            completed = true;
+          }),
+        );
         time.elapse(const Duration(seconds: 30));
 
-        expect(handled, isFalse);
+        expect(completed, isTrue);
+        expect(handled, isNull);
         verifyNever(() => mocks.stack.findStackIdByRemoteId(any()));
       });
     });
 
-    test('returns false when the edit-state probe throws', () async {
+    test('returns null when the edit-state probe throws', () async {
       when(
         () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
       ).thenThrow(Exception('plist read failed'));
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       verifyNever(() => mocks.stack.findStackIdByRemoteId(any()));
     });
 
-    test('returns false when the stack lookup throws', () async {
+    test('returns null when the stack lookup throws', () async {
       when(
         () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
       ).thenAnswer((_) async => EditState.notEdited);
       when(() => mocks.stack.findStackIdByRemoteId('remote-edit')).thenThrow(Exception('db error'));
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       verifyNever(() => mocks.assetApi.setStackPrimary(any(), any()));
     });
 
-    test('returns false when the server primary flip throws', () async {
+    test('returns null when the server primary flip throws', () async {
       stubRevertLookups();
       when(() => mocks.assetApi.setStackPrimary('stack-1', 'remote-base')).thenThrow(Exception('500'));
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       // No local writes when the server never flipped.
       verifyNever(() => mocks.stack.setPrimary(any(), any()));
       verifyNever(
@@ -122,13 +129,13 @@ void main() {
       );
     });
 
-    test('returns true when the server flip succeeds but the local writes throw', () async {
+    test('returns the base id when the server flip succeeds but the local writes throw', () async {
       stubRevertLookups();
       when(() => mocks.assetApi.setStackPrimary('stack-1', 'remote-base')).thenAnswer((_) async {});
       when(() => mocks.stack.setPrimary('stack-1', 'remote-base')).thenThrow(Exception('db locked'));
 
       // The server flip is what handles the revert; local state heals on next sync.
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isTrue);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), 'remote-base');
 
       verify(() => mocks.assetApi.setStackPrimary('stack-1', 'remote-base')).called(1);
       verifyNever(
@@ -140,24 +147,24 @@ void main() {
       );
     });
 
-    test('returns false when the prior remote is not in a stack', () async {
+    test('returns null when the prior remote is not in a stack', () async {
       when(
         () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
       ).thenAnswer((_) async => EditState.notEdited);
       when(() => mocks.stack.findStackIdByRemoteId('remote-edit')).thenAnswer((_) async => null);
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       verifyNever(() => mocks.assetApi.setStackPrimary(any(), any()));
     });
 
-    test('returns false when the stack has no base member to flip back to', () async {
+    test('returns null when the stack has no base member to flip back to', () async {
       when(
         () => mocks.nativeApi.getEditState('local-1', allowNetworkAccess: any(named: 'allowNetworkAccess')),
       ).thenAnswer((_) async => EditState.notEdited);
       when(() => mocks.stack.findStackIdByRemoteId('remote-edit')).thenAnswer((_) async => 'stack-1');
       when(() => mocks.stack.findStackBaseId('stack-1', excludeId: 'remote-edit')).thenAnswer((_) async => null);
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isFalse);
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isNull);
       verifyNever(() => mocks.assetApi.setStackPrimary(any(), any()));
     });
 
@@ -169,7 +176,8 @@ void main() {
         () => mocks.localAsset.markSynced('local-1', priorRemoteId: 'remote-base', syncedChecksum: 'reverted-sha1'),
       ).thenAnswer((_) async {});
 
-      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), isTrue);
+      // Success reports the base the cover flipped back to.
+      expect(await sut.tryHandleRevert(asset(priorRemoteId: 'remote-edit')), 'remote-base');
 
       verify(() => mocks.assetApi.setStackPrimary('stack-1', 'remote-base')).called(1);
       verify(() => mocks.stack.setPrimary('stack-1', 'remote-base')).called(1);
@@ -203,7 +211,7 @@ void main() {
         () => mocks.localAsset.markSynced('local-1', priorRemoteId: 'remote-base', syncedChecksum: 'reverted-sha1'),
       ).thenAnswer((_) async {});
 
-      expect(await sut.tryHandleRevert(live), isTrue);
+      expect(await sut.tryHandleRevert(live), 'remote-base');
 
       verify(
         () => mocks.localAsset.markSynced('local-1', priorRemoteId: 'remote-base', syncedChecksum: 'reverted-sha1'),

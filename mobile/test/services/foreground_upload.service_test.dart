@@ -111,11 +111,11 @@ void main() {
     when(() => mockAssetMedia.getOriginalFilename(any())).thenAnswer((_) async => 'edited-1.jpg');
 
     // Not a revert; prior is alive; the edit gate fires with a real base file.
-    when(() => mockEditRevert.tryHandleRevert(any())).thenAnswer((_) async => false);
+    when(() => mockEditRevert.tryHandleRevert(any())).thenAnswer((_) async => null);
     when(() => mockStack.priorState(any())).thenAnswer((_) async => PriorState.live);
-    when(() => mockNativeApi.getBaseResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess'))).thenAnswer(
-      (_) async => BaseResource(path: baseFile.path, sha1: 'base-sha1'),
-    );
+    when(
+      () => mockNativeApi.getBaseResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+    ).thenAnswer((_) async => BaseResource(path: baseFile.path, sha1: 'base-sha1'));
     when(
       () => mockLocalAsset.markSynced(
         any(),
@@ -129,6 +129,40 @@ void main() {
     if (tmp.existsSync()) {
       tmp.deleteSync(recursive: true);
     }
+  });
+
+  group('revert short-circuit', () {
+    test('reports the flipped-to base id and skips the upload', () async {
+      final reverted = edited.copyWith(priorRemoteId: 'prior-1', syncedChecksum: 'old-sha1');
+      // The service flipped the cover to a base that isn't the stale pre-flip prior.
+      when(() => mockEditRevert.tryHandleRevert(any())).thenAnswer((_) async => 'base-flip-1');
+
+      final successes = <String>[];
+      await sut.uploadManual([
+        reverted,
+      ], callbacks: UploadCallbacks(onSuccess: (_, remoteId) => successes.add(remoteId)));
+
+      // onSuccess carries the id the service flipped to, not asset.priorRemoteId.
+      expect(successes, ['base-flip-1']);
+      verifyNever(
+        () => mockUpload.uploadFile(
+          file: any(named: 'file'),
+          originalFileName: any(named: 'originalFileName'),
+          fields: any(named: 'fields'),
+          cancelToken: any(named: 'cancelToken'),
+          onProgress: any(named: 'onProgress'),
+          logContext: any(named: 'logContext'),
+        ),
+      );
+      // The revert service does its own bookkeeping; the upload path stamps nothing.
+      verifyNever(
+        () => mockLocalAsset.markSynced(
+          any(),
+          priorRemoteId: any(named: 'priorRemoteId'),
+          syncedChecksum: any(named: 'syncedChecksum'),
+        ),
+      );
+    });
   });
 
   group('edit pair base failure', () {
@@ -342,10 +376,7 @@ void main() {
       ).thenAnswer(
         (_) async => BaseLivePhoto(
           still: BaseResource(path: baseStillFile.path, sha1: 'original-sha1'),
-          video: BaseResource(
-            path: baseVideoFile.path,
-            sha1: 'original-video-sha1',
-          ),
+          video: BaseResource(path: baseVideoFile.path, sha1: 'original-video-sha1'),
         ),
       );
     });

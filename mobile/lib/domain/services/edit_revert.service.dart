@@ -25,11 +25,12 @@ class EditRevertService {
     required this._assetApiRepository,
   });
 
-  /// Returns true if the asset was a revert and was handled (caller skips the
-  /// upload); false to fall through to the normal upload path.
-  Future<bool> tryHandleRevert(LocalAsset asset) async {
+  /// Returns the remote id the stack cover was flipped back to when the asset
+  /// was a revert and was handled (caller skips the upload and can report that
+  /// id); null to fall through to the normal upload path.
+  Future<String?> tryHandleRevert(LocalAsset asset) async {
     if (asset.priorRemoteId == null) {
-      return false;
+      return null;
     }
 
     // Only "not edited" is a revert. `edited` is a fresh edit, so let the pair flow
@@ -41,11 +42,11 @@ class EditRevertService {
           .getEditState(asset.id, allowNetworkAccess: false)
           .timeout(const Duration(seconds: 30));
       if (editState != EditState.notEdited) {
-        return false;
+        return null;
       }
     } catch (error, stack) {
       _log.warning("edit-state probe failed for ${asset.id}", error, stack);
-      return false;
+      return null;
     }
 
     // It's a revert. Styled photos hit this path because iOS re-encodes the revert to
@@ -59,28 +60,28 @@ class EditRevertService {
     try {
       final foundStack = await _stackRepository.findStackIdByRemoteId(asset.priorRemoteId!);
       if (foundStack == null) {
-        return false;
+        return null;
       }
       final base = await _stackRepository.findStackBaseId(foundStack, excludeId: asset.priorRemoteId!);
       if (base == null) {
-        return false;
+        return null;
       }
       stackId = foundStack;
       baseId = base;
     } catch (error, stack) {
       _log.warning("revert stack lookup failed for ${asset.id}", error, stack);
-      return false;
+      return null;
     }
 
     try {
       await _assetApiRepository.setStackPrimary(stackId, baseId);
     } catch (error, stack) {
       _log.warning("revert primary flip failed for ${asset.id}", error, stack);
-      return false;
+      return null;
     }
 
     // The server flip is what makes the revert handled. If the local writes fail,
-    // returning false would upload the reverted render as a brand-new edit — the
+    // falling through would upload the reverted render as a brand-new edit — the
     // opposite of the user's action — so log and let checkpoint sync heal local state.
     try {
       await _stackRepository.setPrimary(stackId, baseId);
@@ -89,6 +90,6 @@ class EditRevertService {
       _log.warning("revert local reconcile failed for ${asset.id}", error, stack);
     }
 
-    return true;
+    return baseId;
   }
 }

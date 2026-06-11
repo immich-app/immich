@@ -32,6 +32,11 @@ void main() {
       expect(await sut.priorState('trashed'), PriorState.trashed);
     });
 
+    test('trashed for a locked remote (server refuses to stack onto it)', () async {
+      await ctx.newRemoteAsset(id: 'locked', ownerId: userId, visibility: AssetVisibility.locked);
+      expect(await sut.priorState('locked'), PriorState.trashed);
+    });
+
     test('missing for a remote that was never synced', () async {
       expect(await sut.priorState('missing'), PriorState.missing);
     });
@@ -49,6 +54,20 @@ void main() {
 
     test('returns trashed with the id for a trashed owned remote', () async {
       await ctx.newRemoteAsset(id: 'remote-1', ownerId: userId, checksum: 'base-sum', deletedAt: DateTime(2025, 6));
+
+      final dup = await sut.remoteByChecksum('base-sum', userId);
+
+      expect(dup.state, PriorState.trashed);
+      expect(dup.remoteId, 'remote-1');
+    });
+
+    test('returns trashed with the id for a locked owned remote', () async {
+      await ctx.newRemoteAsset(
+        id: 'remote-1',
+        ownerId: userId,
+        checksum: 'base-sum',
+        visibility: AssetVisibility.locked,
+      );
 
       final dup = await sut.remoteByChecksum('base-sum', userId);
 

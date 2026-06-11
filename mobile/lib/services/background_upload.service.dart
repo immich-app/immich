@@ -357,9 +357,22 @@ class BackgroundUploadService {
 
       // Edited since the video task was built (redelivered completion): uploading
       // the still now would ship the edit standalone and stamp it synced. Drop —
-      // the asset is a candidate and the edit chain handles it.
+      // the asset is a candidate and the edit chain handles it. The row itself
+      // can be stale in the same window (local sync hasn't seen the edit yet),
+      // so also confirm with the offline adjustment read; un-edited photos have
+      // no adjustment plist, making this a cheap resources lookup.
       if (metadata.checksum != null && metadata.checksum != localAsset.checksum) {
         return;
+      }
+      try {
+        final state = await _nativeSyncApi
+            .getEditState(localAsset.id, allowNetworkAccess: false)
+            .timeout(const Duration(seconds: 30));
+        if (state == EditState.edited) {
+          return;
+        }
+      } catch (_) {
+        // No positive edit evidence; proceed like before.
       }
 
       final uploadTask = await getLivePhotoUploadTask(localAsset, remoteId);
@@ -401,12 +414,13 @@ class BackgroundUploadService {
         return;
       }
 
-      // Finished-chain replays drop here; gated on stalePriorId because a REBUILD
-      // chain starts while the row still carries the previous terminal stamps
-      // (synced == checksum) and only the base-still hop clears them.
-      if (metadata.stalePriorId.isEmpty &&
-          localAsset.checksum != null &&
-          localAsset.syncedChecksum == localAsset.checksum) {
+      // Finished-chain replays drop here. Rebuild AND absorb chains can start
+      // while the row still carries the previous terminal stamps (synced ==
+      // checksum) — those hops carry the dead prior as stalePriorId, so the
+      // drop only fires once the prior advanced past it (chain re-stamped and
+      // finished). Plain chains carry no marker and drop as before.
+      final hasFinishedStamps = localAsset.checksum != null && localAsset.syncedChecksum == localAsset.checksum;
+      if (hasFinishedStamps && (metadata.stalePriorId.isEmpty || localAsset.priorRemoteId != metadata.stalePriorId)) {
         return;
       }
 
@@ -447,6 +461,7 @@ class BackgroundUploadService {
             localAsset,
             editVideoId: remoteId,
             stackParentId: metadata.pendingStackParentId,
+            stalePriorId: metadata.stalePriorId,
           );
           if (next != null) {
             await _enqueueChainTask(next);
@@ -516,6 +531,9 @@ class BackgroundUploadService {
   }
 
   Future<bool> _enqueueChainTask(UploadTask task) async {
+    if (shouldAbortQueuingTasks) {
+      return false;
+    }
     try {
       final results = await enqueueTasks([task]);
       if (results.every((enqueued) => enqueued)) {
@@ -555,12 +573,15 @@ class BackgroundUploadService {
       if (remoteId == null) {
         return;
       }
-      final syncedChecksum =
-          metadata.checksum ?? (await _localAssetRepository.getById(metadata.localAssetId))?.checksum;
+      // metadata.checksum is what actually uploaded (captured at build time). A
+      // legacy task without it must NOT fall back to the current row checksum:
+      // the photo may have been edited while the task sat in the queue, and
+      // stamping the new checksum would suppress that edit forever. null keeps
+      // the asset re-resolvable.
       await _localAssetRepository.markSynced(
         metadata.localAssetId,
         priorRemoteId: remoteId,
-        syncedChecksum: syncedChecksum,
+        syncedChecksum: metadata.checksum,
       );
     } catch (error, stackTrace) {
       dPrint(() => "Error recording priorRemoteId: $error $stackTrace");
@@ -694,7 +715,11 @@ class BackgroundUploadService {
     );
   }
 
-  Future<UploadTask?> _buildEditVideoTask(LocalAsset asset, {required String stackParentId}) async {
+  Future<UploadTask?> _buildEditVideoTask(
+    LocalAsset asset, {
+    required String stackParentId,
+    String stalePriorId = '',
+  }) async {
     final motion = await _storageRepository.getMotionFileForAsset(asset);
     if (motion == null) {
       _logger.warning("Failed to get motion file for live edit ${asset.id} - ${asset.name}");
@@ -707,6 +732,7 @@ class BackgroundUploadService {
       basePath: motion.path,
       pendingStackParentId: stackParentId,
       checksum: asset.checksum,
+      stalePriorId: stalePriorId,
     ).toJson();
 
     return buildUploadTask(
@@ -730,6 +756,7 @@ class BackgroundUploadService {
     LocalAsset asset, {
     required String? editVideoId,
     required String stackParentId,
+    String stalePriorId = '',
   }) async {
     final file = await _storageRepository.getFileForAsset(asset.id);
     if (file == null) {
@@ -742,6 +769,7 @@ class BackgroundUploadService {
       liveEditPhase: LiveEditPhase.editStill,
       basePath: file.path,
       checksum: asset.checksum,
+      stalePriorId: stalePriorId,
     ).toJson();
 
     return buildUploadTask(
@@ -784,7 +812,7 @@ class BackgroundUploadService {
     // state and decides whether to reuse a prior upload or upload the original first.
     if (CurrentPlatform.isIOS) {
       // A reverted edit flips the stack back to the original and skips the upload.
-      if (asset.priorRemoteId != null && await _editRevertService.tryHandleRevert(asset)) {
+      if (asset.priorRemoteId != null && await _editRevertService.tryHandleRevert(asset) != null) {
         return null;
       }
       final plan = await resolveEditPair(
@@ -808,10 +836,18 @@ class BackgroundUploadService {
           return _buildLiveEntryTask(asset, still, video, stalePriorId: asset.priorRemoteId ?? '');
         case AbsorbIntoPrior(:final parentId):
           // Re-editing an already-stacked live photo uploads its new video then still so
-          // the edit keeps its motion; a plain photo just stacks the still.
+          // the edit keeps its motion; a plain photo just stacks the still. The current
+          // prior rides along as stalePriorId: an absorb can start while the row still
+          // carries finished-chain stamps (prior hard-deleted, base re-found by checksum),
+          // and the junctions must not mistake its hops for finished-chain replays.
           return entity.isLivePhoto
-              ? _buildEditVideoTask(asset, stackParentId: parentId)
-              : _buildEditStillTask(asset, editVideoId: null, stackParentId: parentId);
+              ? _buildEditVideoTask(asset, stackParentId: parentId, stalePriorId: asset.priorRemoteId ?? '')
+              : _buildEditStillTask(
+                  asset,
+                  editVideoId: null,
+                  stackParentId: parentId,
+                  stalePriorId: asset.priorRemoteId ?? '',
+                );
         case NoEditPair():
           break;
         case DeferEditPair():

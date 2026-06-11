@@ -83,11 +83,14 @@ class DriftStackRepository extends DriftDatabaseRepository {
   // What the synced remote table knows about a stamped prior. missing is
   // ambiguous: either just uploaded and not synced back yet, or hard-deleted on
   // the server — the caller tells them apart via syncedChecksum (null = a chain
-  // is still mid-flight, so the row simply hasn't synced yet).
+  // is still mid-flight, so the row simply hasn't synced yet). A locked-folder
+  // row counts as trashed: the server refuses to stack onto it (and with a
+  // message the dead-parent belt doesn't match), so defer until it's unlocked.
   Future<PriorState> priorState(String remoteId) async {
     final row = await _db
         .customSelect(
-          'SELECT deleted_at IS NOT NULL AS trashed FROM remote_asset_entity WHERE id = ? LIMIT 1',
+          // 3 = locked
+          'SELECT (deleted_at IS NOT NULL OR visibility = 3) AS blocked FROM remote_asset_entity WHERE id = ? LIMIT 1',
           variables: [Variable<String>(remoteId)],
           readsFrom: {_db.remoteAssetEntity},
         )
@@ -95,15 +98,17 @@ class DriftStackRepository extends DriftDatabaseRepository {
     if (row == null) {
       return PriorState.missing;
     }
-    return row.read<bool>('trashed') ? PriorState.trashed : PriorState.live;
+    return row.read<bool>('blocked') ? PriorState.trashed : PriorState.live;
   }
 
   // The synced remote owned by [ownerId] with these exact bytes, if any. The
   // server keys assets by (owner, checksum), so at most one row matches.
+  // Locked rows count as trashed here too, same reasoning as [priorState].
   Future<({PriorState state, String? remoteId})> remoteByChecksum(String checksum, String ownerId) async {
     final row = await _db
         .customSelect(
-          'SELECT id, deleted_at IS NOT NULL AS trashed FROM remote_asset_entity WHERE checksum = ? AND owner_id = ? LIMIT 1',
+          // 3 = locked
+          'SELECT id, (deleted_at IS NOT NULL OR visibility = 3) AS blocked FROM remote_asset_entity WHERE checksum = ? AND owner_id = ? LIMIT 1',
           variables: [Variable<String>(checksum), Variable<String>(ownerId)],
           readsFrom: {_db.remoteAssetEntity},
         )
@@ -111,7 +116,7 @@ class DriftStackRepository extends DriftDatabaseRepository {
     if (row == null) {
       return (state: PriorState.missing, remoteId: null);
     }
-    return (state: row.read<bool>('trashed') ? PriorState.trashed : PriorState.live, remoteId: row.read<String>('id'));
+    return (state: row.read<bool>('blocked') ? PriorState.trashed : PriorState.live, remoteId: row.read<String>('id'));
   }
 
   // The stack a remote asset belongs to, if any. Used by the revert path to find

@@ -694,6 +694,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     // ProRAW) never sits fully in memory on the upload thread.
     FileManager.default.createFile(atPath: tempUrl.path, contents: nil)
     guard let handle = try? FileHandle(forWritingTo: tempUrl) else {
+      try? FileManager.default.removeItem(at: tempUrl)
       throw PigeonError(
         code: "baseResourceWriteFailed",
         message: "Failed to open temp file for base resource \(localId)",

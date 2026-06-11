@@ -81,7 +81,7 @@ void main() {
     ).thenAnswer((_) async => null);
 
     // Default: not a revert, so getUploadTask proceeds with the normal flow.
-    when(() => mockEditRevertService.tryHandleRevert(any())).thenAnswer((_) async => false);
+    when(() => mockEditRevertService.tryHandleRevert(any())).thenAnswer((_) async => null);
 
     // Default: prior remotes are alive, so absorb is allowed.
     when(() => mockStackRepository.priorState(any())).thenAnswer((_) async => PriorState.live);
@@ -191,9 +191,7 @@ void main() {
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
       when(
         () => mockNativeSyncApi.getBaseResource(asset.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
-      ).thenAnswer(
-        (_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'original-sha1'),
-      );
+      ).thenAnswer((_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'original-sha1'));
 
       final task = await sut.getUploadTask(asset);
 
@@ -218,9 +216,7 @@ void main() {
       when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'photo.jpg');
       when(
         () => mockNativeSyncApi.getBaseResource(asset.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
-      ).thenAnswer(
-        (_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'same-sha1'),
-      );
+      ).thenAnswer((_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'same-sha1'));
 
       final task = await sut.getUploadTask(asset);
 
@@ -274,7 +270,7 @@ void main() {
       final mockEntity = MockAssetEntity();
       when(() => mockEntity.isLivePhoto).thenReturn(false);
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
-      when(() => mockEditRevertService.tryHandleRevert(asset)).thenAnswer((_) async => true);
+      when(() => mockEditRevertService.tryHandleRevert(asset)).thenAnswer((_) async => 'base-remote-1');
 
       final task = await sut.getUploadTask(asset);
 
@@ -303,9 +299,7 @@ void main() {
       when(() => mockStackRepository.priorState('dead-prior-1')).thenAnswer((_) async => PriorState.missing);
       when(
         () => mockNativeSyncApi.getBaseResource(asset.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
-      ).thenAnswer(
-        (_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'original-sha1'),
-      );
+      ).thenAnswer((_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'original-sha1'));
 
       final task = await sut.getUploadTask(asset);
 
@@ -336,9 +330,7 @@ void main() {
       ).thenAnswer((_) async => (state: PriorState.missing, remoteId: null));
       when(
         () => mockNativeSyncApi.getBaseResource(asset.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
-      ).thenAnswer(
-        (_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'original-sha1'),
-      );
+      ).thenAnswer((_) async => BaseResource(path: '/tmp/base.jpg', sha1: 'original-sha1'));
 
       final task = await sut.getUploadTask(asset, ownerId: 'owner-1');
 
@@ -577,8 +569,8 @@ void main() {
       verifyNever(() => mockUploadRepository.enqueueBackgroundAll(any()));
     });
 
-    test('recordPriorRemoteIdOnSuccess: marks the local synced with the uploaded id', () async {
-      final asset = LocalAssetStub.image1;
+    test('recordPriorRemoteIdOnSuccess: legacy metadata without a checksum stamps a null syncedChecksum', () async {
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'row-sha1');
       final metadata = UploadTaskMetadata(localAssetId: asset.id);
       final update = TaskStatusUpdate(
         UploadTask(url: 'http://test-server.com', filename: 'photo.jpg'),
@@ -586,7 +578,6 @@ void main() {
         null,
         '{"id":"remote-1"}',
       );
-      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
       when(
         () => mockLocalAssetRepository.markSynced(
           any(),
@@ -597,9 +588,13 @@ void main() {
 
       await sut.recordPriorRemoteIdOnSuccess(update, metadata);
 
+      // The photo may have been edited while the legacy task sat in the queue;
+      // falling back to the row checksum would suppress that edit forever. null
+      // keeps the asset re-resolvable, and the row is never even read.
       verify(
-        () => mockLocalAssetRepository.markSynced(asset.id, priorRemoteId: 'remote-1', syncedChecksum: asset.checksum),
+        () => mockLocalAssetRepository.markSynced(asset.id, priorRemoteId: 'remote-1', syncedChecksum: null),
       ).called(1);
+      verifyNever(() => mockLocalAssetRepository.getById(any()));
     });
 
     test('recordPriorRemoteIdOnSuccess: uses the checksum captured at task build time', () async {
@@ -701,8 +696,7 @@ void main() {
       syncedChecksum: syncedChecksum,
     );
 
-    BaseResource res(String path, String sha1) =>
-        BaseResource(path: path, sha1: sha1);
+    BaseResource res(String path, String sha1) => BaseResource(path: path, sha1: sha1);
 
     setUp(() {
       when(() => mockUploadRepository.enqueueBackgroundAll(any())).thenAnswer((_) async => [true]);
@@ -1017,6 +1011,116 @@ void main() {
       verifyNever(() => mockUploadRepository.enqueueBackgroundAll(any()));
     });
 
+    test('absorb over stale stamps: the edit video carries the dead prior as stalePriorId', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      // Finished-chain stamps (synced == checksum) but the prior was hard-deleted;
+      // the base bytes still live on the server under another id, so the plan
+      // absorbs onto that copy while the row keeps the stale terminal stamps.
+      final asset = editedLive(priorRemoteId: 'dead-prior-1', syncedChecksum: 'edited-sha1');
+      final mockEntity = MockAssetEntity();
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStackRepository.priorState('dead-prior-1')).thenAnswer((_) async => PriorState.missing);
+      when(
+        () => mockNativeSyncApi.getBaseLivePhoto(asset.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer(
+        (_) async => BaseLivePhoto(still: res('/tmp/base.heic', 'original-sha1'), video: res('/tmp/base.mov', 'v')),
+      );
+      when(
+        () => mockStackRepository.remoteByChecksum('original-sha1', 'owner-1'),
+      ).thenAnswer((_) async => (state: PriorState.live, remoteId: 'live-base-1'));
+      when(() => mockStorageRepository.getMotionFileForAsset(asset)).thenAnswer((_) async => File('/tmp/edit.mov'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG.HEIC');
+
+      final task = await sut.getUploadTask(asset, ownerId: 'owner-1');
+
+      expect(task, isNotNull);
+      expect(task!.taskId, '${asset.id}_ev');
+      final meta = UploadTaskMetadata.fromJson(task.metaData);
+      expect(meta.liveEditPhase, LiveEditPhase.editVideo);
+      expect(meta.pendingStackParentId, 'live-base-1');
+      // the dead prior rides along so the junctions don't mistake this chain's
+      // completions for finished-chain replays
+      expect(meta.stalePriorId, 'dead-prior-1');
+    });
+
+    test('absorb over stale stamps: the edit video completion proceeds while the prior is unchanged', () async {
+      final asset = editedLive(priorRemoteId: 'dead-prior-1', syncedChecksum: 'edited-sha1');
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => File('/tmp/edit.heic'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG.HEIC');
+      final meta = UploadTaskMetadata(
+        localAssetId: asset.id,
+        liveEditPhase: LiveEditPhase.editVideo,
+        pendingStackParentId: 'live-base-1',
+        checksum: 'edited-sha1',
+        stalePriorId: 'dead-prior-1',
+      );
+
+      await sut.handleLiveEditChain(completed('editvid-1'), meta);
+
+      final next = enqueuedTask();
+      expect(next.taskId, asset.id);
+      expect(next.fields['livePhotoVideoId'], 'editvid-1');
+      expect(next.fields['stackParentId'], 'live-base-1');
+      final nextMeta = UploadTaskMetadata.fromJson(next.metaData);
+      expect(nextMeta.liveEditPhase, LiveEditPhase.editStill);
+      // forwarded so the edit still junction can tell this chain from a replay too
+      expect(nextMeta.stalePriorId, 'dead-prior-1');
+    });
+
+    test('absorb over stale stamps: the edit still completion re-stamps the terminal state', () async {
+      final asset = editedLive(priorRemoteId: 'dead-prior-1', syncedChecksum: 'edited-sha1');
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      final meta = UploadTaskMetadata(
+        localAssetId: asset.id,
+        liveEditPhase: LiveEditPhase.editStill,
+        checksum: 'edited-sha1',
+        stalePriorId: 'dead-prior-1',
+      );
+
+      await sut.handleLiveEditChain(completed('editstill-1'), meta);
+
+      verify(
+        () =>
+            mockLocalAssetRepository.markSynced(asset.id, priorRemoteId: 'editstill-1', syncedChecksum: 'edited-sha1'),
+      ).called(1);
+    });
+
+    test('absorb over stale stamps: replays drop once the prior advanced past the dead id', () async {
+      // The terminal hop re-stamped the prior; the same completions delivered
+      // again must not fork a second chain or re-mark anything.
+      final asset = editedLive(priorRemoteId: 'editstill-1', syncedChecksum: 'edited-sha1');
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      final videoMeta = UploadTaskMetadata(
+        localAssetId: asset.id,
+        liveEditPhase: LiveEditPhase.editVideo,
+        pendingStackParentId: 'live-base-1',
+        checksum: 'edited-sha1',
+        stalePriorId: 'dead-prior-1',
+      );
+      final stillMeta = UploadTaskMetadata(
+        localAssetId: asset.id,
+        liveEditPhase: LiveEditPhase.editStill,
+        checksum: 'edited-sha1',
+        stalePriorId: 'dead-prior-1',
+      );
+
+      await sut.handleLiveEditChain(completed('editvid-1'), videoMeta);
+      await sut.handleLiveEditChain(completed('editstill-1'), stillMeta);
+
+      verifyNever(() => mockUploadRepository.enqueueBackgroundAll(any()));
+      verifyNever(
+        () => mockLocalAssetRepository.markSynced(
+          any(),
+          priorRemoteId: any(named: 'priorRemoteId'),
+          syncedChecksum: any(named: 'syncedChecksum'),
+        ),
+      );
+    });
+
     test('base video complete: a pre-stamp replay skips while the base still task is active', () async {
       final asset = editedLive();
       when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
@@ -1055,6 +1159,30 @@ void main() {
 
       await sut.handleLiveEditChain(completed('basevid-1'), meta);
 
+      expect(await baseStill.exists(), isFalse);
+    });
+
+    test('base video complete: an abort mid-cancel skips the enqueue and drops the carried temp', () async {
+      final asset = editedLive();
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      final tempDir = await Directory.systemTemp.createTemp('bg_upload_abort');
+      addTearDown(() async {
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+      final baseStill = await File('${tempDir.path}/base.heic').create();
+      final meta = UploadTaskMetadata(
+        localAssetId: asset.id,
+        liveEditPhase: LiveEditPhase.baseVideo,
+        basePath: '/tmp/base.mov',
+        baseStillPath: baseStill.path,
+      );
+      sut.shouldAbortQueuingTasks = true;
+
+      await sut.handleLiveEditChain(completed('basevid-1'), meta);
+
+      verifyNever(() => mockUploadRepository.enqueueBackgroundAll(any()));
       expect(await baseStill.exists(), isFalse);
     });
 
@@ -1362,6 +1490,15 @@ void main() {
     UploadTask videoTask(UploadTaskMetadata metadata) =>
         UploadTask(url: 'http://test-server.com', filename: 'live.mov', metaData: metadata.toJson());
 
+    setUp(() {
+      // The suite default reads "edited" (for the chain drift tests); the legacy
+      // live path probes the edit state too and would silently drop every still
+      // here, so reset to notEdited for this group.
+      when(
+        () => mockNativeSyncApi.getEditState(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer((_) async => EditState.notEdited);
+    });
+
     test('a redelivered completion after a re-edit does not upload the still', () async {
       // The motion video finished, but the photo was re-edited before the
       // completion landed — uploading the still now would ship the edit
@@ -1385,6 +1522,50 @@ void main() {
       final mockEntity = MockAssetEntity();
       when(() => mockEntity.isLivePhoto).thenReturn(true);
       when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => File('/path/to/live.heic'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.HEIC');
+      when(() => mockUploadRepository.enqueueBackgroundAll(any())).thenAnswer((_) async => [true]);
+      final update = TaskStatusUpdate(videoTask(metadata), TaskStatus.complete, null, '{"id":"video-remote-1"}');
+
+      mockUploadRepository.onUploadStatus!(update);
+
+      await untilCalled(() => mockUploadRepository.enqueueBackgroundAll(any()));
+      final enqueued =
+          verify(() => mockUploadRepository.enqueueBackgroundAll(captureAny())).captured.single as List<UploadTask>;
+      expect(enqueued.single.taskId, asset.id);
+      expect(enqueued.single.fields['livePhotoVideoId'], 'video-remote-1');
+    });
+
+    test('probe: a positive edited read drops the still even when the row checksum matches', () async {
+      // The row can be stale in the same window (local sync hasn't seen the
+      // edit yet), so the offline adjustment read is the second gate.
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'live-sha1');
+      final metadata = UploadTaskMetadata(localAssetId: asset.id, isLivePhotos: true, checksum: 'live-sha1');
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      when(
+        () => mockNativeSyncApi.getEditState(asset.id, allowNetworkAccess: false),
+      ).thenAnswer((_) async => EditState.edited);
+      final update = TaskStatusUpdate(videoTask(metadata), TaskStatus.complete, null, '{"id":"video-remote-1"}');
+
+      mockUploadRepository.onUploadStatus!(update);
+
+      await pumpEventQueue();
+      verify(() => mockNativeSyncApi.getEditState(asset.id, allowNetworkAccess: false)).called(1);
+      verifyNever(() => mockStorageRepository.getAssetEntityForAsset(any()));
+      verifyNever(() => mockStorageRepository.getFileForAsset(any()));
+      verifyNever(() => mockUploadRepository.enqueueBackgroundAll(any()));
+    });
+
+    test('probe: a failed edit-state read still enqueues the still (no positive evidence)', () async {
+      final asset = LocalAssetStub.image1.copyWith(checksum: 'live-sha1');
+      final metadata = UploadTaskMetadata(localAssetId: asset.id, isLivePhotos: true, checksum: 'live-sha1');
+      final mockEntity = MockAssetEntity();
+      when(() => mockEntity.isLivePhoto).thenReturn(true);
+      when(() => mockLocalAssetRepository.getById(asset.id)).thenAnswer((_) async => asset);
+      when(
+        () => mockNativeSyncApi.getEditState(asset.id, allowNetworkAccess: false),
+      ).thenThrow(PlatformException(code: 'unknownEditState'));
       when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
       when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => File('/path/to/live.heic'));
       when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'live.HEIC');

@@ -346,6 +346,28 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    it('should emit AssetCreate exactly once and keep the file for a plain upload', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file });
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+    });
+
     it('should handle a duplicate', async () => {
       const file = {
         uuid: 'random-uuid',
@@ -489,6 +511,31 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.stack.linkAsset).toHaveBeenCalledWith(authStub.user1.user.id, 'dup-id', parent.id);
+    });
+
+    it('should not link a duplicate that resolves to the stack parent itself', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+      const parent = AssetFactory.create();
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([parent.id]));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(parent));
+      mocks.asset.create.mockRejectedValue(error);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(parent.id);
+
+      await expect(sut.uploadAsset(authStub.user1, { ...createDto, stackParentId: parent.id }, file)).resolves.toEqual({
+        id: parent.id,
+        status: AssetMediaStatus.DUPLICATE,
+      });
+
+      expect(mocks.stack.linkAsset).not.toHaveBeenCalled();
     });
 
     it('should keep the created asset when stack linking fails after create', async () => {
