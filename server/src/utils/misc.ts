@@ -15,7 +15,7 @@ import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
-import { extraSyncModels } from 'src/dtos/sync.dto';
+import { extraModels } from 'src/decorators';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -289,7 +289,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
-    extraModels: extraSyncModels,
+    extraModels,
     ignoreGlobalPrefix: true,
   };
 

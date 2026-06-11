@@ -11,7 +11,7 @@ import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -151,7 +151,7 @@ class ForegroundUploadService {
     List<File> files, {
     Completer<void>? cancelToken,
     void Function(String fileId, int bytes, int totalBytes)? onProgress,
-    void Function(String fileId)? onSuccess,
+    void Function(String fileId, String remoteAssetId)? onSuccess,
     void Function(String fileId, String errorMessage)? onError,
   }) async {
     if (files.isEmpty) {
@@ -171,7 +171,7 @@ class ForegroundUploadService {
         );
 
         if (result.isSuccess) {
-          onSuccess?.call(fileId);
+          onSuccess?.call(fileId, result.remoteAssetId!);
         } else if (!result.isCancelled && result.errorMessage != null) {
           onError?.call(fileId, result.errorMessage!);
         }
@@ -451,7 +451,7 @@ class ForegroundUploadService {
   }
 
   bool _shouldRequireWiFi(LocalAsset asset) {
-    final backup = MetadataRepository.instance.appConfig.backup;
+    final backup = SettingsRepository.instance.appConfig.backup;
     if (asset.isVideo && backup.useCellularForVideos) {
       return false;
     }

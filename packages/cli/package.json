@@ -29,7 +29,7 @@
     "@vitest/coverage-v8": "^4.0.0",
     "byte-size": "^9.0.0",
     "cli-progress": "^3.12.0",
-    "commander": "^12.0.0",
+    "commander": "^15.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",

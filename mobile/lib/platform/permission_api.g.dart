@@ -26,6 +26,8 @@ Object? _extractReplyValueOrThrow(List<Object?>? replyList, String channelName, 
   return replyList.firstOrNull;
 }
 
+enum PermissionStatus { granted, denied, permanentlyDenied }
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -33,6 +35,9 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
+    } else if (value is PermissionStatus) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.index);
     } else {
       super.writeValue(buffer, value);
     }
@@ -41,6 +46,9 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
+      case 129:
+        final value = readValue(buffer) as int?;
+        return value == null ? null : PermissionStatus.values[value];
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -59,6 +67,25 @@ class PermissionApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
+
+  Future<PermissionStatus> isIgnoringBatteryOptimizations() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.PermissionApi.isIgnoringBatteryOptimizations$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as PermissionStatus;
+  }
 
   Future<bool> hasManageMediaPermission() async {
     final pigeonVar_channelName =

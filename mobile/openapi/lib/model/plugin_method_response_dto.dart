@@ -17,7 +17,7 @@ class PluginMethodResponseDto {
     required this.hostFunctions,
     required this.key,
     required this.name,
-    this.schema,
+    this.schema = const Optional.absent(),
     required this.title,
     this.types = const [],
     this.uiHints = const [],
@@ -40,7 +40,7 @@ class PluginMethodResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  Object? schema;
+  Optional<Object?> schema;
 
   /// Title
   String title;
@@ -83,10 +83,9 @@ class PluginMethodResponseDto {
       json[r'hostFunctions'] = this.hostFunctions;
       json[r'key'] = this.key;
       json[r'name'] = this.name;
-    if (this.schema != null) {
-      json[r'schema'] = this.schema;
-    } else {
-    //  json[r'schema'] = null;
+    if (this.schema.isPresent) {
+      final value = this.schema.value;
+      json[r'schema'] = value;
     }
       json[r'title'] = this.title;
       json[r'types'] = this.types;
@@ -107,7 +106,7 @@ class PluginMethodResponseDto {
         hostFunctions: mapValueOfType<bool>(json, r'hostFunctions')!,
         key: mapValueOfType<String>(json, r'key')!,
         name: mapValueOfType<String>(json, r'name')!,
-        schema: mapValueOfType<Object>(json, r'schema'),
+        schema: json.containsKey(r'schema') ? Optional.present(mapValueOfType<Object>(json, r'schema')) : const Optional.absent(),
         title: mapValueOfType<String>(json, r'title')!,
         types: WorkflowType.listFromJson(json[r'types']),
         uiHints: json[r'uiHints'] is Iterable
