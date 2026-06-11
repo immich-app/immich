@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
@@ -69,6 +70,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
     _wasPaused = false;
 
+    _ref.invalidate(driftMemoryFutureProvider);
+
     final isAuthenticated = _ref.read(authProvider).isAuthenticated;
 
     // Needs to be logged in
@@ -82,6 +85,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     _ref.read(websocketProvider.notifier).connect();
     await _handleBetaTimelineResume();
+    _ref.invalidate(driftMemoryFutureProvider);
 
     await _ref.read(notificationPermissionProvider.notifier).getNotificationPermission();
 
