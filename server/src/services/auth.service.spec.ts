@@ -896,7 +896,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
 
-    it('should ignore a negative quota', async () => {
+    it('should ignore an invalid negative quota', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
         profile: OAuthProfileFactory.create({ immich_quota: -5 }),
@@ -913,6 +913,25 @@ describe(AuthService.name, () => {
       );
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
+    });
+
+    it('should set unlimited quota for -1', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_quota: -1 }),
+      });
+      mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: null }));
     });
 
     it('should set quota for 0 quota', async () => {
@@ -1094,6 +1113,181 @@ describe(AuthService.name, () => {
       );
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ isAdmin: true }));
+    });
+
+    it('should sync the storage quota on subsequent logins when the claim is present', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', quotaSizeInBytes: 1_073_741_824 });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_quota: 5 }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, quotaSizeInBytes: 5_368_709_120 });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.syncUsage).toHaveBeenCalledWith(user.id);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        quotaSizeInBytes: 5_368_709_120,
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('should sync unlimited quota on subsequent logins when the claim is -1', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', quotaSizeInBytes: 1_073_741_824 });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_quota: -1 }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, quotaSizeInBytes: null });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.syncUsage).not.toHaveBeenCalled();
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        quotaSizeInBytes: null,
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('should not sync the storage label on subsequent logins with the default claim', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', storageLabel: 'custom-label' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, preferred_username: 'idp-username' }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.user.getByStorageLabel).not.toHaveBeenCalled();
+    });
+
+    it('should sync the storage label on subsequent logins when a custom claim is configured', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', storageLabel: 'custom-label' });
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { ...systemConfigStub.oauthWithAutoRegister.oauth, storageLabelClaim: 'immich_label' },
+      });
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_label: 'synced-label' }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.getByStorageLabel.mockResolvedValue(void 0);
+      mocks.user.update.mockResolvedValue({ ...user, storageLabel: 'synced-label' });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
+        storageLabel: 'synced-label',
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('should sync the admin role on subsequent logins when the claim is present', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', isAdmin: false });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: 'admin' }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, isAdmin: true });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      const response = await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { isAdmin: true, updatedAt: expect.any(Date) });
+      expect(response.isAdmin).toBe(true);
+    });
+
+    it('should demote an admin on subsequent logins when the role claim is user', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', isAdmin: true });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: 'user' }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, isAdmin: false });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      const response = await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { isAdmin: false, updatedAt: expect.any(Date) });
+      expect(response.isAdmin).toBe(false);
+    });
+
+    it('should not update claims on subsequent logins when they are absent from the profile', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', isAdmin: true, quotaSizeInBytes: 1_073_741_824 });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.user.syncUsage).not.toHaveBeenCalled();
+    });
+
+    it('should ignore an invalid role claim on subsequent logins', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id', isAdmin: true });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: 'foo' }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
   });
 
