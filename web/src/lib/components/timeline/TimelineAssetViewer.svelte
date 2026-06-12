@@ -15,7 +15,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -81,9 +81,8 @@
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
-    if (asset) {
-      untrack(() => handlePromiseError(loadCloseAssets(asset)));
-    }
+    if (asset) handlePromiseError(loadCloseAssets(asset));
+  
   });
 
   const handleRandom = async () => {
