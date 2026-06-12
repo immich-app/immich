@@ -197,7 +197,7 @@ class FolderContent extends HookConsumerWidget {
                           style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          "${asset.exifInfo.fileSize != null ? formatBytes(asset.exifInfo.fileSize ?? 0) : ""} • ${DateFormat.yMMMd().format(asset.createdAt)}",
+                          "${asset.exifInfo.fileSize != null ? "${formatBytes(asset.exifInfo.fileSize ?? 0)} • " : ""}${DateFormat.yMMMd().format(asset.createdAt.toLocal())}",
                           style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                         ),
                       ),

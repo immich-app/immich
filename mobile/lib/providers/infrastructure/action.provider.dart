@@ -5,15 +5,19 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -21,6 +25,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -31,11 +36,12 @@ class ActionResult {
   final int count;
   final bool success;
   final String? error;
+  final List<String> remoteAssetIds;
 
-  const ActionResult({required this.count, required this.success, this.error});
+  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error)';
+  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -347,6 +353,10 @@ class ActionNotifier extends Notifier<void> {
         return null;
       }
 
+      if (source == ActionSource.viewer) {
+        ref.invalidate(assetExifProvider);
+      }
+
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit date and time for assets', error, stack);
@@ -369,6 +379,52 @@ class ActionNotifier extends Notifier<void> {
       ref.invalidate(tagProvider);
       return ActionResult(count: ids.length, success: false, error: error.toString());
     }
+  }
+
+  Future<ActionResult> addToAlbum(ActionSource source, RemoteAlbum album) async {
+    final selected = _getAssets(source).toList(growable: false);
+    if (selected.isEmpty) {
+      return const ActionResult(count: 0, success: true);
+    }
+
+    final candidates = RemoteAlbumService.categorizeCandidates(selected);
+    final remoteIds = candidates.remoteAssetIds;
+    final localAssets = candidates.localAssetsToUpload;
+    final albumNotifier = ref.read(remoteAlbumProvider.notifier);
+
+    int addedRemote = 0;
+    if (remoteIds.isNotEmpty) {
+      try {
+        addedRemote = await albumNotifier.addAssets(album.id, remoteIds);
+      } catch (error, stack) {
+        _logger.severe('Failed to add assets to album ${album.id}', error, stack);
+        return ActionResult(count: 0, success: false, error: error.toString());
+      }
+    }
+
+    // Keep the selection available for retry if the remote add fails. Once the
+    // album mutation succeeds, clear timeline selection so upload overlays can render.
+    if (source == ActionSource.timeline) {
+      ref.read(multiSelectProvider.notifier).reset();
+    }
+
+    if (localAssets.isEmpty) {
+      return ActionResult(count: addedRemote, success: true);
+    }
+
+    final uploadResult = await upload(
+      source,
+      assets: localAssets,
+      onAssetUploaded: (asset, remoteId) async {
+        await albumNotifier.linkUploadedAssetToAlbum(album.id, asset, remoteId);
+      },
+    );
+
+    return ActionResult(
+      count: addedRemote + uploadResult.count,
+      success: uploadResult.success,
+      error: uploadResult.error,
+    );
   }
 
   Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
@@ -414,7 +470,7 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> updateRating(ActionSource source, int rating) async {
+  Future<ActionResult> updateRating(ActionSource source, int? rating) async {
     final ids = _getRemoteIdsForSource(source);
     if (ids.length != 1) {
       _logger.warning('updateRating called with multiple assets, expected single asset');
@@ -462,13 +518,21 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult> shareAssets(
     ActionSource source,
     BuildContext context, {
+    ShareAssetType fileType = ShareAssetType.original,
     Completer<void>? cancelCompleter,
+    void Function(double progress)? onAssetDownloadProgress,
   }) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(ids, context, cancelCompleter: cancelCompleter);
-      return ActionResult(count: ids.length, success: true);
+      final count = await _service.shareAssets(
+        ids,
+        context,
+        fileType: fileType,
+        cancelCompleter: cancelCompleter,
+        onAssetDownloadProgress: onAssetDownloadProgress,
+      );
+      return ActionResult(count: count, success: count > 0 || ids.isEmpty);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());
@@ -487,12 +551,24 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> upload(ActionSource source, {List<LocalAsset>? assets}) async {
+  Future<ActionResult> upload(
+    ActionSource source, {
+    List<LocalAsset>? assets,
+    FutureOr<void> Function(LocalAsset asset, String remoteId)? onAssetUploaded,
+  }) async {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
+    final assetById = {for (final a in assetsToUpload) a.id: a};
+    final uploadedAssetIds = <String>{};
+    final failedAssetIds = <String>{};
+    final postUploadTasks = <Future<void>>[];
+    if (assetsToUpload.isEmpty) {
+      return const ActionResult(count: 0, success: false, error: 'No assets to upload');
+    }
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
     final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+    final remoteAssetIds = <String>[];
 
     // Initialize progress for all assets
     for (final asset in assetsToUpload) {
@@ -509,17 +585,45 @@ class ActionNotifier extends Notifier<void> {
             progressNotifier.setProgress(localAssetId, progress);
           },
           onSuccess: (localAssetId, remoteAssetId) {
+            remoteAssetIds.add(remoteAssetId);
             progressNotifier.remove(localAssetId);
+            uploadedAssetIds.add(localAssetId);
+            final asset = assetById[localAssetId];
+            final callback = onAssetUploaded;
+            if (asset != null && callback != null) {
+              postUploadTasks.add(
+                Future.sync(() => callback(asset, remoteAssetId)).catchError((Object error, StackTrace stack) {
+                  failedAssetIds.add(localAssetId);
+                  progressNotifier.setError(localAssetId);
+                  _logger.warning('Post-upload callback failed for $localAssetId', error, stack);
+                }),
+              );
+            }
           },
           onError: (localAssetId, errorMessage) {
+            failedAssetIds.add(localAssetId);
             progressNotifier.setError(localAssetId);
           },
         ),
       );
-      return ActionResult(count: assetsToUpload.length, success: true);
+
+      await Future.wait(postUploadTasks);
+      final successCount = uploadedAssetIds.difference(failedAssetIds).length;
+      final isSuccess = successCount == assetsToUpload.length && failedAssetIds.isEmpty;
+
+      return ActionResult(
+        count: successCount,
+        success: isSuccess,
+        error: isSuccess ? null : 'Failed to upload ${assetsToUpload.length - successCount} assets',
+      );
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
-      return ActionResult(count: assetsToUpload.length, success: false, error: error.toString());
+
+      return ActionResult(
+        count: uploadedAssetIds.difference(failedAssetIds).length,
+        success: false,
+        error: error.toString(),
+      );
     } finally {
       ref.read(manualUploadCancelTokenProvider.notifier).state = null;
       Future.delayed(const Duration(seconds: 2), () {
@@ -536,14 +640,22 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: false, error: 'Expected single asset for applying edits');
     }
 
-    final completer = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
-      final eventAsset = SyncAssetV1.fromJson(data["asset"]);
-      return eventAsset?.id == ids.first;
-    }, const Duration(seconds: 10));
+    Future<void> editReady;
+    if (ref.read(serverInfoProvider).serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) {
+      editReady = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV2", (dynamic data) {
+        final eventAsset = SyncAssetV2.fromJson(data["asset"]);
+        return eventAsset?.id == ids.first;
+      }, const Duration(seconds: 10));
+    } else {
+      editReady = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
+        final eventAsset = SyncAssetV1.fromJson(data["asset"]);
+        return eventAsset?.id == ids.first;
+      }, const Duration(seconds: 10));
+    }
 
     try {
       await _service.applyEdits(ids.first, edits);
-      await completer;
+      await editReady;
       return const ActionResult(count: 1, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to apply edits to assets', error, stack);

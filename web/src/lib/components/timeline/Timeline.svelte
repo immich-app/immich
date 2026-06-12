@@ -261,6 +261,7 @@
     if (!enableRouting) {
       invisible = false;
     }
+    scrollableElement?.focus({ preventScroll: true });
   });
 
   const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, timelineMonthScrollPercent: number) => {

@@ -13,32 +13,32 @@ part of openapi.api;
 class AssetCopyDto {
   /// Returns a new [AssetCopyDto] instance.
   AssetCopyDto({
-    this.albums = true,
-    this.favorite = true,
-    this.sharedLinks = true,
-    this.sidecar = true,
+    this.albums = const Optional.present(true),
+    this.favorite = const Optional.present(true),
+    this.sharedLinks = const Optional.present(true),
+    this.sidecar = const Optional.present(true),
     required this.sourceId,
-    this.stack = true,
+    this.stack = const Optional.present(true),
     required this.targetId,
   });
 
   /// Copy album associations
-  bool albums;
+  Optional<bool?> albums;
 
   /// Copy favorite status
-  bool favorite;
+  Optional<bool?> favorite;
 
   /// Copy shared links
-  bool sharedLinks;
+  Optional<bool?> sharedLinks;
 
   /// Copy sidecar file
-  bool sidecar;
+  Optional<bool?> sidecar;
 
   /// Source asset ID
   String sourceId;
 
   /// Copy stack association
-  bool stack;
+  Optional<bool?> stack;
 
   /// Target asset ID
   String targetId;
@@ -69,12 +69,27 @@ class AssetCopyDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albums'] = this.albums;
-      json[r'favorite'] = this.favorite;
-      json[r'sharedLinks'] = this.sharedLinks;
-      json[r'sidecar'] = this.sidecar;
+    if (this.albums.isPresent) {
+      final value = this.albums.value;
+      json[r'albums'] = value;
+    }
+    if (this.favorite.isPresent) {
+      final value = this.favorite.value;
+      json[r'favorite'] = value;
+    }
+    if (this.sharedLinks.isPresent) {
+      final value = this.sharedLinks.value;
+      json[r'sharedLinks'] = value;
+    }
+    if (this.sidecar.isPresent) {
+      final value = this.sidecar.value;
+      json[r'sidecar'] = value;
+    }
       json[r'sourceId'] = this.sourceId;
-      json[r'stack'] = this.stack;
+    if (this.stack.isPresent) {
+      final value = this.stack.value;
+      json[r'stack'] = value;
+    }
       json[r'targetId'] = this.targetId;
     return json;
   }
@@ -88,12 +103,12 @@ class AssetCopyDto {
       final json = value.cast<String, dynamic>();
 
       return AssetCopyDto(
-        albums: mapValueOfType<bool>(json, r'albums') ?? true,
-        favorite: mapValueOfType<bool>(json, r'favorite') ?? true,
-        sharedLinks: mapValueOfType<bool>(json, r'sharedLinks') ?? true,
-        sidecar: mapValueOfType<bool>(json, r'sidecar') ?? true,
+        albums: json.containsKey(r'albums') ? Optional.present(mapValueOfType<bool>(json, r'albums')) : const Optional.absent(),
+        favorite: json.containsKey(r'favorite') ? Optional.present(mapValueOfType<bool>(json, r'favorite')) : const Optional.absent(),
+        sharedLinks: json.containsKey(r'sharedLinks') ? Optional.present(mapValueOfType<bool>(json, r'sharedLinks')) : const Optional.absent(),
+        sidecar: json.containsKey(r'sidecar') ? Optional.present(mapValueOfType<bool>(json, r'sidecar')) : const Optional.absent(),
         sourceId: mapValueOfType<String>(json, r'sourceId')!,
-        stack: mapValueOfType<bool>(json, r'stack') ?? true,
+        stack: json.containsKey(r'stack') ? Optional.present(mapValueOfType<bool>(json, r'stack')) : const Optional.absent(),
         targetId: mapValueOfType<String>(json, r'targetId')!,
       );
     }

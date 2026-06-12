@@ -1,9 +1,11 @@
-import { WorkflowTrigger, WorkflowType } from 'src/enum';
+import { WorkflowTrigger } from '@immich/plugin-sdk';
+import { WorkflowType } from 'src/enum';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 
 export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
   [WorkflowTrigger.AssetCreate]: [WorkflowType.AssetV1],
-  [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
+  // [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
+  [WorkflowTrigger.AssetMetadataExtraction]: [WorkflowType.AssetV1],
 };
 
 export const getWorkflowTriggers = () =>
@@ -12,7 +14,7 @@ export const getWorkflowTriggers = () =>
 /** some types extend other types and have implied compatibility */
 const inferredMap: Record<WorkflowType, WorkflowType[]> = {
   [WorkflowType.AssetV1]: [],
-  [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
+  // [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
 };
 
 const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
@@ -50,8 +52,8 @@ export const resolveMethod = (methods: PluginMethodSearchResponse[], method: str
   return methods.find((method) => method.pluginName === pluginName && method.name === methodName);
 };
 
-export const asMethodString = (method: { pluginName: string; methodName: string }) => {
-  return `${method.pluginName}#${method.methodName}`;
+export const asPluginKey = (method: { pluginName: string; name: string }) => {
+  return `${method.pluginName}#${method.name}`;
 };
 
 const METHOD_REGEX = /^(?<name>[^@#\s]+)(?:@(?<version>[^#\s]*))?#(?<method>[^@#\s]+)$/;

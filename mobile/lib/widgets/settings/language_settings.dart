@@ -1,12 +1,13 @@
 import 'dart:async';
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/services/localization.service.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class LanguageSettings extends HookConsumerWidget {
@@ -84,7 +85,7 @@ class LanguageSettings extends HookConsumerWidget {
                     padding: const EdgeInsets.all(8),
                     itemCount: filteredLocaleEntries.value.length,
                     itemExtent: 64.0,
-                    cacheExtent: 100,
+                    scrollCacheExtent: const .pixels(100),
                     itemBuilder: (context, index) {
                       final countryName = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;

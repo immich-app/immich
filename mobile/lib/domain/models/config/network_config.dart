@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/utils/option.dart';
 
 class NetworkConfig {
   final bool autoEndpointSwitching;
@@ -17,14 +18,14 @@ class NetworkConfig {
 
   NetworkConfig copyWith({
     bool? autoEndpointSwitching,
-    String? preferredWifiName,
-    String? localEndpoint,
+    Option<String>? preferredWifiName,
+    Option<String>? localEndpoint,
     List<String>? externalEndpointList,
     Map<String, String>? customHeaders,
   }) => NetworkConfig(
     autoEndpointSwitching: autoEndpointSwitching ?? this.autoEndpointSwitching,
-    preferredWifiName: preferredWifiName ?? this.preferredWifiName,
-    localEndpoint: localEndpoint ?? this.localEndpoint,
+    preferredWifiName: preferredWifiName.patch(this.preferredWifiName),
+    localEndpoint: localEndpoint.patch(this.localEndpoint),
     externalEndpointList: externalEndpointList ?? this.externalEndpointList,
     customHeaders: customHeaders ?? this.customHeaders,
   );

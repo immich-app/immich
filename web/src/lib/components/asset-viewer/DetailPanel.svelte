@@ -33,6 +33,7 @@
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
   import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -97,6 +98,8 @@
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
     assetViewerManager.closeEditFacesPanel();
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {

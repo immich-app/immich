@@ -6,6 +6,7 @@ import {
   PluginMethodSearchDto,
   PluginResponseDto,
   PluginSearchDto,
+  PluginTemplateResponseDto,
 } from 'src/dtos/plugin.dto';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
@@ -37,6 +38,17 @@ export class PluginController {
   })
   searchPluginMethods(@Query() dto: PluginMethodSearchDto): Promise<PluginMethodResponseDto[]> {
     return this.service.searchMethods(dto);
+  }
+
+  @Get('templates')
+  @Authenticated({ permission: Permission.PluginRead })
+  @Endpoint({
+    summary: 'Retrieve workflow templates',
+    description: 'Retrieve workflow templates provided by installed plugins',
+    history: HistoryBuilder.v3(),
+  })
+  searchPluginTemplates(): Promise<PluginTemplateResponseDto[]> {
+    return this.service.searchTemplates();
   }
 
   @Get(':id')

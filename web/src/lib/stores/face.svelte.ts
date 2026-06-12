@@ -1,5 +1,5 @@
 import type { AssetFaceResponseDto, PersonResponseDto } from '@immich/sdk';
-import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { SvelteMap } from 'svelte/reactivity';
 import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
@@ -24,15 +24,15 @@ class FaceManager {
   });
 
   readonly people = $derived.by(() => {
-    const people = new SvelteSet<PersonResponseDto>();
+    const people = new SvelteMap<string, PersonResponseDto>();
 
     for (const face of this.data) {
       if (face.person) {
-        people.add(face.person);
+        people.set(face.person.id, face.person);
       }
     }
 
-    return people;
+    return people.values();
   });
 
   readonly facesByPersonId = $derived.by(() => {
@@ -67,6 +67,7 @@ class FaceManager {
 
   clear() {
     this.#cleared = true;
+    assetCacheManager.clearFaceCache();
     this.#data = [];
   }
 }
