@@ -140,6 +140,7 @@
 
         break;
       }
+      // no default
     }
   };
   const handleAction = (action: Action) => {
@@ -195,6 +196,7 @@
         });
         break;
       }
+      // no default
     }
   };
   const handleUndoDelete = async (assets: TimelineAsset[]) => {

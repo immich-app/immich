@@ -1,11 +1,17 @@
-import { Controller, Delete, Get, Header, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
+import { Controller, Delete, Get, Header, Headers, HttpCode, HttpStatus, Next, Param, Res } from '@nestjs/common';
 import { ApiProduces, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
+import { ZodValidationException } from 'nestjs-zod';
 import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { HlsSegmentParamDto, HlsSessionParamDto, HlsVariantParamDto } from 'src/dtos/streaming.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
+import {
+  HlsSegmentHeaderDto,
+  HlsSegmentParamDto,
+  HlsSessionParamDto,
+  HlsVariantParamDto,
+} from 'src/dtos/streaming.dto';
+import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { HlsService } from 'src/services/hls.service';
@@ -59,10 +65,21 @@ export class VideoStreamController {
   async getSegment(
     @Auth() auth: AuthDto,
     @Param() { id, sessionId, variantIndex, filename }: HlsSegmentParamDto,
+    @Headers() headers: HlsSegmentHeaderDto,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.getSegment(auth, id, sessionId, variantIndex, filename), this.logger);
+    try {
+      headers = HlsSegmentHeaderDto.create(headers);
+    } catch (error) {
+      throw new ZodValidationException(error);
+    }
+    await sendFile(
+      res,
+      next,
+      () => this.service.getSegment(auth, id, sessionId, variantIndex, filename, headers[ImmichHeader.HlsInitSegment]),
+      this.logger,
+    );
   }
 
   @Delete(':id/video/stream/:sessionId')

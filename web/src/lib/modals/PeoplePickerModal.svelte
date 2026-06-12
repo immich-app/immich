@@ -3,6 +3,7 @@
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { onMount } from 'svelte';
@@ -24,7 +25,9 @@
   const filteredPeople = $derived(
     people
       .filter((person) => !excludedIds.includes(person.id))
-      .filter((person) => !searchName || person.name.toLowerCase().includes(searchName.toLowerCase())),
+      .filter(
+        (person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName)),
+      ),
   );
 
   onMount(async () => {

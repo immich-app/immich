@@ -25,13 +25,11 @@ class WorkflowTrigger {
 
   static const assetCreate = WorkflowTrigger._(r'AssetCreate');
   static const assetMetadataExtraction = WorkflowTrigger._(r'AssetMetadataExtraction');
-  static const personRecognized = WorkflowTrigger._(r'PersonRecognized');
 
   /// List of all possible values in this [enum][WorkflowTrigger].
   static const values = <WorkflowTrigger>[
     assetCreate,
     assetMetadataExtraction,
-    personRecognized,
   ];
 
   static WorkflowTrigger? fromJson(dynamic value) => WorkflowTriggerTypeTransformer().decode(value);
@@ -72,7 +70,6 @@ class WorkflowTriggerTypeTransformer {
       switch (data) {
         case r'AssetCreate': return WorkflowTrigger.assetCreate;
         case r'AssetMetadataExtraction': return WorkflowTrigger.assetMetadataExtraction;
-        case r'PersonRecognized': return WorkflowTrigger.personRecognized;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
