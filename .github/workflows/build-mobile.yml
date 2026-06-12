@@ -12,6 +12,10 @@ on:
         default: 'development'
         type: string
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID:
+        required: true
+      PUSH_O_MATIC_APP_KEY:
+        required: true
       KEY_JKS:
         required: true
       ALIAS:
