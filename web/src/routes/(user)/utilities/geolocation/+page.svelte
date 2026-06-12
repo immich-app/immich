@@ -118,7 +118,12 @@
       groupTitle: string,
       asset: TimelineAsset,
     ) => void,
+    event?: MouseEvent,
   ) => {
+    if (event?.shiftKey) {
+      onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
+      return;
+    }
     if (hasGps(asset)) {
       locationUpdated = true;
       setTimeout(() => {

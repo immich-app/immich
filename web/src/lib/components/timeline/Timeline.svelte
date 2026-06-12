@@ -59,6 +59,7 @@
         groupTitle: string,
         asset: TimelineAsset,
       ) => void,
+      event?: MouseEvent,
     ) => void;
   }
 
@@ -685,9 +686,9 @@
                 {asset}
                 {albumUsers}
                 {groupIndex}
-                onClick={(asset) => {
+                onClick={(asset, event) => {
                   if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
+                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick, event);
                   } else {
                     _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
                   }
