@@ -1,3 +1,4 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +10,6 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { WorkflowTrigger } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('workflow')

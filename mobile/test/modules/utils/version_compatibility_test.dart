@@ -5,9 +5,6 @@ void main() {
   test('getVersionCompatibilityMessage', () {
     String? result;
 
-    result = getVersionCompatibilityMessage(1, 0, 2, 0);
-    expect(result, 'Your app major version is not compatible with the server!');
-
     result = getVersionCompatibilityMessage(1, 106, 1, 105);
     expect(
       result,

@@ -46,8 +46,57 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
+
+enum PermissionStatus: Int {
+  case granted = 0
+  case denied = 1
+  case permanentlyDenied = 2
+}
+
+private class PermissionApiPigeonCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case 129:
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return PermissionStatus(rawValue: enumResultAsInt)
+      }
+      return nil
+    default:
+      return super.readValue(ofType: type)
+    }
+  }
+}
+
+private class PermissionApiPigeonCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? PermissionStatus {
+      super.writeByte(129)
+      super.writeValue(value.rawValue)
+    } else {
+      super.writeValue(value)
+    }
+  }
+}
+
+private class PermissionApiPigeonCodecReaderWriter: FlutterStandardReaderWriter {
+  override func reader(with data: Data) -> FlutterStandardReader {
+    return PermissionApiPigeonCodecReader(data: data)
+  }
+
+  override func writer(with data: NSMutableData) -> FlutterStandardWriter {
+    return PermissionApiPigeonCodecWriter(data: data)
+  }
+}
+
+class PermissionApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
+  static let shared = PermissionApiPigeonCodec(readerWriter: PermissionApiPigeonCodecReaderWriter())
+}
+
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol PermissionApi {
+  func isIgnoringBatteryOptimizations() throws -> PermissionStatus
   func hasManageMediaPermission() throws -> Bool
   func requestManageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void)
   func manageMediaPermission(completion: @escaping (Result<Bool, Error>) -> Void)
@@ -55,10 +104,23 @@ protocol PermissionApi {
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
 class PermissionApiSetup {
-  static var codec: FlutterStandardMessageCodec { FlutterStandardMessageCodec.sharedInstance() }
+  static var codec: FlutterStandardMessageCodec { PermissionApiPigeonCodec.shared }
   /// Sets up an instance of `PermissionApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: PermissionApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let isIgnoringBatteryOptimizationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.PermissionApi.isIgnoringBatteryOptimizations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      isIgnoringBatteryOptimizationsChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.isIgnoringBatteryOptimizations()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      isIgnoringBatteryOptimizationsChannel.setMessageHandler(nil)
+    }
     let hasManageMediaPermissionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.PermissionApi.hasManageMediaPermission\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       hasManageMediaPermissionChannel.setMessageHandler { _, reply in

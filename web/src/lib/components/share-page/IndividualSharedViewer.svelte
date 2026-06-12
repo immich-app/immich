@@ -18,7 +18,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
-  import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/GalleryViewer.svelte';
@@ -69,6 +69,7 @@
         await goto(Route.photos());
         break;
       }
+      // no default
     }
   };
 </script>
@@ -97,7 +98,7 @@
         {/if}
       </AssetSelectControlBar>
     {:else}
-      <ControlAppBar onClose={() => goto(Route.photos())} backIcon={mdiArrowLeft} showBackButton={false}>
+      <ControlAppBar>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
             <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />
