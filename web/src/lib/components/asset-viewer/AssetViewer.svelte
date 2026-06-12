@@ -628,11 +628,11 @@
 
   {#if stack && withStacked && !assetViewerManager.isShowEditor}
     {@const stackedAssets = stack.assets}
-    <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-full">
+    <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
-            class={['pointer-events-auto relative inline-block px-1 pb-2 transition-all']}
+            class={['relative inline-block px-1 pb-2 transition-all']}
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
