@@ -16,6 +16,7 @@ import {
   ToneMappingSchema,
   TranscodeHardwareAccelerationSchema,
   TranscodePolicySchema,
+  VideoCodec,
   VideoCodecSchema,
   VideoContainerSchema,
 } from 'src/enum';
@@ -108,6 +109,9 @@ const SystemConfigFFmpegSchema = z
         enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
       })
       .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
+  })
+  .refine((ffmpeg) => (ffmpeg.targetVideoCodec === VideoCodec.Av1 ? ffmpeg.threads <= 6 : true), {
+    error: 'AV1 threads/parallelism must be 0 or 1–6',
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 
