@@ -36,8 +36,8 @@ describe('/map', () => {
       await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
       return id;
     };
-    [, , adminArchivedAssetId, partnerArchivedAssetId] = await Promise.all([
-      ...adminFiles.map((f) => uploadFile(admin.accessToken, f)),
+    await Promise.all(adminFiles.map((f) => uploadFile(admin.accessToken, f)));
+    [adminArchivedAssetId, partnerArchivedAssetId] = await Promise.all([
       uploadFile(admin.accessToken, adminArchivedFile),
       uploadFile(partner.accessToken, partnerFile),
     ]);
