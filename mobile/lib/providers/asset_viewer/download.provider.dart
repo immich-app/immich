@@ -9,6 +9,11 @@ import 'package:immich_mobile/services/download.service.dart';
 class DownloadStateNotifier extends StateNotifier<DownloadState> {
   final DownloadService _downloadService;
 
+  // Tasks that already finished. background_downloader can deliver a progress
+  // update after the task completed (and was removed from state); without this
+  // we'd re-add it as running and the progress bar would never go away.
+  final Set<String> _finishedTaskIds = {};
+
   DownloadStateNotifier(this._downloadService)
     : super(
         const DownloadState(
@@ -28,12 +33,17 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
       return;
     }
 
+    if (status != TaskStatus.complete) {
+      // A fresh attempt for this task (e.g. re-download), clear any finished mark.
+      _finishedTaskIds.remove(taskId);
+    }
+
     state = state.copyWith(
       taskProgress: <String, DownloadInfo>{}
         ..addAll(state.taskProgress)
         ..addAll({
           taskId: DownloadInfo(
-            progress: state.taskProgress[taskId]?.progress ?? 0,
+            progress: status == TaskStatus.complete ? 1.0 : (state.taskProgress[taskId]?.progress ?? 0),
             fileName: state.taskProgress[taskId]?.fileName ?? '',
             status: status,
           ),
@@ -96,6 +106,12 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
       return;
     }
 
+    // Ignore a late progress update for a task that already finished, otherwise it
+    // gets re-added as running and the progress bar never goes away.
+    if (_finishedTaskIds.contains(update.task.taskId)) {
+      return;
+    }
+
     state = state.copyWith(
       showProgress: true,
       taskProgress: <String, DownloadInfo>{}
@@ -108,9 +124,17 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           ),
         }),
     );
+
+    // Some downloads only ever deliver progress and never a terminal status
+    // callback. Once we hit 100%, schedule the cleanup ourselves so the bar
+    // can't stay stuck on a task that already finished.
+    if (update.progress >= 1.0) {
+      _onDownloadComplete(update.task.taskId);
+    }
   }
 
   void _onDownloadComplete(String id) {
+    _finishedTaskIds.add(id);
     Future.delayed(const Duration(seconds: 2), () {
       state = state.copyWith(
         taskProgress: <String, DownloadInfo>{}
