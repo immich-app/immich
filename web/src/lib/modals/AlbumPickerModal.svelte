@@ -105,6 +105,7 @@
         }
         break;
       }
+      // no default
     }
 
     selectedRowIndex = -1;
