@@ -19,6 +19,11 @@ import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:logging/logging.dart';
 
+final backupAlbumCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  await ref.read(backupAlbumProvider.notifier).getAll();
+  return ref.read(backupAlbumProvider).length;
+});
+
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
   const DriftBackupAlbumSelectionPage({super.key});
@@ -30,7 +35,6 @@ class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
 class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbumSelectionPage> {
   String _searchQuery = '';
   bool _isSearchMode = false;
-  bool _isLoading = true;
   int _initialTotalAssetCount = 0;
   late ValueNotifier<bool> _enableSyncUploadAlbum;
   late TextEditingController _searchController;
@@ -45,11 +49,6 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _searchFocusNode = FocusNode();
 
     _enableSyncUploadAlbum.value = ref.read(appConfigProvider).backup.syncAlbums;
-    ref.read(backupAlbumProvider.notifier).getAll().whenComplete(() {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    });
 
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
@@ -84,6 +83,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(backupAlbumCountProvider).isLoading;
     final albums = ref.watch(backupAlbumProvider);
     final albumCount = albums.length;
     // Filter albums based on search query
@@ -257,13 +257,13 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                       return _AlbumSelectionGrid(
                         filteredAlbums: filteredAlbums,
                         searchQuery: _searchQuery,
-                        isLoading: _isLoading,
+                        isLoading: isLoading,
                       );
                     } else {
                       return _AlbumSelectionList(
                         filteredAlbums: filteredAlbums,
                         searchQuery: _searchQuery,
-                        isLoading: _isLoading,
+                        isLoading: isLoading,
                       );
                     }
                   },
