@@ -252,6 +252,9 @@ const getEnv = (): EnvData => {
       vectorExtension = DatabaseExtension.VectorChord;
       break;
     }
+    case undefined: {
+      break;
+    }
   }
 
   return {
