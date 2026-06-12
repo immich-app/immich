@@ -351,6 +351,7 @@
         closeViewer();
         break;
       }
+      // no default
     }
 
     onAction?.(action);
