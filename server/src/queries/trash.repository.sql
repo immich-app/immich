@@ -15,7 +15,8 @@ set
   "status" = $1
 where
   "ownerId" = $2
-  and "status" = $3
+  and "deletedAt" is not null
+  and "status" != $3
 
 -- TrashRepository.restoreAll
 update "asset"
