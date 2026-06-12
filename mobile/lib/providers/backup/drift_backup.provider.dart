@@ -334,7 +334,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupSuccess(String localAssetId, String remoteAssetId) {
-    state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
+    if (!mounted) {
+      return;
+    }
+    final remainder = state.remainderCount > 0 ? state.remainderCount - 1 : 0;
+    state = state.copyWith(remainderCount: remainder, backupCount: state.totalCount - remainder);
     _uploadSpeedManager.removeTask(localAssetId);
 
     Future.delayed(const Duration(milliseconds: 1000), () {

@@ -578,7 +578,7 @@ class _PreparingStatusState extends ConsumerState {
     final syncStatus = ref.watch(syncStatusProvider);
     final remainderCount = ref.watch(driftBackupProvider.select((p) => p.remainderCount));
     final processingCount = ref.watch(driftBackupProvider.select((p) => p.processingCount));
-    final readyForUploadCount = remainderCount - processingCount;
+    final readyForUploadCount = (remainderCount - processingCount).clamp(0, remainderCount);
 
     ref.listen<int>(driftBackupProvider.select((p) => p.processingCount), (previous, next) {
       if (next > 0 && _pollingTimer == null) {
