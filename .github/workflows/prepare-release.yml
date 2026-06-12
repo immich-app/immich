@@ -50,6 +50,7 @@ jobs:
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
       version: ${{ steps.output.outputs.version }}
+      rc: ${{ steps.output.outputs.rc }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - id: token
@@ -59,7 +60,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true
@@ -72,7 +73,7 @@ jobs:
 
       # TODO move to mise
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
       - name: Bump version
         env:
@@ -81,7 +82,13 @@ jobs:
         run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - id: output
-        run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+        run: |
+          echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$IMMICH_VERSION" =~ -rc\.[0-9]+$ ]]; then
+            echo "rc=true" >> $GITHUB_OUTPUT
+          else
+            echo "rc=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and tag
         id: push-tag
@@ -97,6 +104,7 @@ jobs:
     needs: bump_version
     permissions:
       contents: read
+      pull-requests: write
     secrets:
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
@@ -129,7 +137,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
@@ -144,6 +152,7 @@ jobs:
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           draft: true
+          prerelease: ${{ needs.bump_version.outputs.rc }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true

@@ -267,31 +267,6 @@
       "uiHints": ["Filter"]
     },
     {
-      "name": "filterPerson",
-      "title": "Filter by person",
-      "description": "Filter by detected person",
-      "types": ["AssetV1"],
-      "schema": {
-        "properties": {
-          "personIds": {
-            "type": "string",
-            "array": true,
-            "title": "Person IDs",
-            "description": "List of person to match",
-            "uiHint": "personId"
-          },
-          "matchAny": {
-            "type": "boolean",
-            "title": "Match any",
-            "default": true,
-            "description": "Match any name (true) or require all names (false)"
-          }
-        },
-        "required": ["personIds"]
-      },
-      "uiHints": ["Filter"]
-    },
-    {
       "name": "assetArchive",
       "title": "Archive asset",
       "description": "Change asset visibility to archive",

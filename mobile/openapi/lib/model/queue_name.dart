@@ -40,6 +40,7 @@ class QueueName {
   static const backupDatabase = QueueName._(r'backupDatabase');
   static const ocr = QueueName._(r'ocr');
   static const workflow = QueueName._(r'workflow');
+  static const integrityCheck = QueueName._(r'integrityCheck');
   static const editor = QueueName._(r'editor');
 
   /// List of all possible values in this [enum][QueueName].
@@ -61,6 +62,7 @@ class QueueName {
     backupDatabase,
     ocr,
     workflow,
+    integrityCheck,
     editor,
   ];
 
@@ -117,6 +119,7 @@ class QueueNameTypeTransformer {
         case r'backupDatabase': return QueueName.backupDatabase;
         case r'ocr': return QueueName.ocr;
         case r'workflow': return QueueName.workflow;
+        case r'integrityCheck': return QueueName.integrityCheck;
         case r'editor': return QueueName.editor;
         default:
           if (!allowNull) {

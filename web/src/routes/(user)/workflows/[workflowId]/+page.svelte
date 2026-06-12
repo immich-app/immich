@@ -63,9 +63,9 @@
 
   let { data }: Props = $props();
 
-  let { id, enabled, name, description, trigger } = $derived(data.workflow);
+  let { id, enabled, name, description, trigger } = $state(data.workflow);
   let steps = $state(data.workflow.steps.map((step) => ({ ...step, id: generateId() })));
-  let savedWorkflow = $state(cloneDeep(data.workflow));
+  let savedWorkflow = $derived(cloneDeep(data.workflow));
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
