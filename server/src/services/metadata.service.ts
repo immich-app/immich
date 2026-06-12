@@ -862,10 +862,10 @@ export class MetadataService extends BaseService {
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((Number(region.Area.X) - Number(region.Area.W) / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Number(region.Area.Y) - Number(region.Area.H) / 2) * imageHeight),
+        boundingBoxX2: Math.floor((Number(region.Area.X) + Number(region.Area.W) / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Number(region.Area.Y) + Number(region.Area.H) / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
