@@ -11,7 +11,7 @@
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
   import { preferences } from '$lib/stores/user.store';
   import type { SearchFilter } from '$lib/types';
-  import { parseUtcDate } from '$lib/utils/date-time';
+  import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
@@ -139,8 +139,8 @@
       make: filter.camera.make,
       model: filter.camera.model,
       lensModel: filter.camera.lensModel,
-      takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
-      takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
+      takenAfter: filter.date.takenAfter ? asLocalTimeISO(filter.date.takenAfter.startOf('day')) : undefined,
+      takenBefore: filter.date.takenBefore ? asLocalTimeISO(filter.date.takenBefore.endOf('day')) : undefined,
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
