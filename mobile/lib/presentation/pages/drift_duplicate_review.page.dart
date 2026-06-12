@@ -244,12 +244,12 @@ class _DuplicateGroupCardState extends State<_DuplicateGroupCard> {
                     // Dismiss without action
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('keep_all'.t(context: context)),
+                        content: Text('select_keep_all'.t(context: context)),
                       ),
                     );
                   },
                   icon: const Icon(Icons.close),
-                  label: Text('keep_all'.t(context: context)),
+                  label: Text('select_keep_all'.t(context: context)),
                 ),
               ],
             ),
@@ -338,30 +338,6 @@ class _DuplicateAssetCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // Suggested chip
-              if (isSuggested)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withAlpha(230),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'suggested_primary'.t(context: context),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
           // Metadata
@@ -435,7 +411,7 @@ class _DuplicateAssetCard extends StatelessWidget {
                     onPressed: () => onDeleteToggle(!isSelectedToDelete),
                     icon: const Icon(Icons.delete, size: 18),
                     label: Text(
-                      'delete'.t(context: context),
+                      'to_trash'.t(context: context),
                       style: const TextStyle(fontSize: 12),
                     ),
                     style: OutlinedButton.styleFrom(
