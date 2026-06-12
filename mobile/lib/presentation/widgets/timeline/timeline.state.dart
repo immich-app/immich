@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment_builde
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:logging/logging.dart';
 
 class TimelineArgs {
   final double maxWidth;
@@ -96,6 +97,11 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) 
 
   final timelineService = ref.watch(timelineServiceProvider);
   yield* timelineService.watchBuckets().map((buckets) {
+    final layoutTotal = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+    Logger('TimelineService').info(
+      '[${timelineService.origin}] segment layout: ${buckets.length} buckets / $layoutTotal assets '
+      '(service.totalAssets=${timelineService.totalAssets})',
+    );
     return FixedSegmentBuilder(
       buckets: buckets,
       tileHeight: tileExtent,
