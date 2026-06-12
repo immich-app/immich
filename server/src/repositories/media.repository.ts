@@ -158,11 +158,11 @@ export class MediaRepository {
     pipeline: sharp.Sharp,
     edits: AssetEditActionItem[],
     dimensions?: { width: number; height: number },
+    analysis = this.analyzeEdits(edits),
   ): sharp.Sharp {
-    const rotateEdit = edits.find((edit) => edit.action === 'rotate');
-    const straightenActive = rotateEdit && splitRotation(rotateEdit.parameters.angle).straightenAngle !== 0;
+    const { crop, rotateEdit, straightenActive } = analysis;
 
-    if (straightenActive) {
+    if (straightenActive && rotateEdit) {
       const mirrorEdits = edits.filter((edit) => edit.action === 'mirror');
       const effectiveRotation = getEffectiveStraightenRotation(rotateEdit.parameters.angle, mirrorEdits);
 
@@ -176,7 +176,6 @@ export class MediaRepository {
         }
       }
 
-      const crop = edits.find((edit) => edit.action === 'crop');
       if (crop) {
         if (!dimensions?.width || !dimensions.height) {
           throw new Error('Image dimensions are required for straighten edits');
@@ -187,7 +186,6 @@ export class MediaRepository {
         );
       }
     } else {
-      const crop = edits.find((edit) => edit.action === 'crop');
       if (crop) {
         pipeline = pipeline.extract({
           left: Math.round(crop.parameters.x),
@@ -210,6 +208,21 @@ export class MediaRepository {
     return pipeline;
   }
 
+  private analyzeEdits(edits: AssetEditActionItem[]) {
+    const crop = edits.find((edit) => edit.action === 'crop');
+    const rotateEdit = edits.find((edit) => edit.action === 'rotate');
+    const { straightenAngle } = rotateEdit ? splitRotation(rotateEdit.parameters.angle) : { straightenAngle: 0 };
+    const straightenActive = Boolean(rotateEdit) && straightenAngle !== 0;
+
+    return {
+      crop,
+      rotateEdit,
+      straightenAngle,
+      straightenActive,
+      needsDimensions: straightenActive && Boolean(crop),
+    };
+  }
+
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
     const pipeline = await this.getImageDecodingPipeline(input, options);
     await pipeline
@@ -220,12 +233,6 @@ export class MediaRepository {
         progressive: options.progressive,
       })
       .toFile(output);
-  }
-
-  private requiresStraightenDimensions(edits: AssetEditActionItem[]) {
-    const crop = edits.find((edit) => edit.action === 'crop');
-    const rotateEdit = edits.find((edit) => edit.action === 'rotate');
-    return Boolean(crop && rotateEdit && splitRotation(rotateEdit.parameters.angle).straightenAngle !== 0);
   }
 
   private async getDecodedDimensions(
@@ -276,10 +283,9 @@ export class MediaRepository {
     }
 
     if (options.edits && options.edits.length > 0) {
-      const dimensions = this.requiresStraightenDimensions(options.edits)
-        ? await this.getDecodedDimensions(input, options)
-        : options.raw;
-      pipeline = this.applyEdits(pipeline, options.edits, dimensions);
+      const analysis = this.analyzeEdits(options.edits);
+      const dimensions = analysis.needsDimensions ? await this.getDecodedDimensions(input, options) : options.raw;
+      pipeline = this.applyEdits(pipeline, options.edits, dimensions, analysis);
     }
 
     if (options.size !== undefined) {
