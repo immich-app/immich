@@ -81,8 +81,9 @@
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
-    if (asset) handlePromiseError(loadCloseAssets(asset));
-  
+    if (asset) {
+      handlePromiseError(loadCloseAssets(asset));
+    }
   });
 
   const handleRandom = async () => {
