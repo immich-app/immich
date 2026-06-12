@@ -46,20 +46,6 @@ describe(getWorkflowDefaultConfig.name, () => {
       ).toEqual({ test: false });
     });
 
-    it('should default to 0 (integer)', () => {
-      expect(
-        getWorkflowDefaultConfig({
-          type: 'object',
-          properties: {
-            test: {
-              type: 'integer',
-            },
-          },
-          required: ['test'],
-        }),
-      ).toEqual({ test: 0 });
-    });
-
     it('should default to 0 (number)', () => {
       expect(
         getWorkflowDefaultConfig({

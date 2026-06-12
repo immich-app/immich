@@ -55,7 +55,7 @@ export const assetLocationFilter = () => {
     WorkflowType.AssetV1,
     {
       region?: { country?: string; state?: string; city?: string };
-      coordinate?: { latitude?: string; longitude?: string; radius?: number };
+      coordinate?: { latitude?: number; longitude?: number; radius?: number };
     }
   >(({ config, data }) => {
     if (
@@ -66,10 +66,10 @@ export const assetLocationFilter = () => {
       return { workflow: { continue: false } };
     }
 
-    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
-    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+    const configLat = config.coordinate?.latitude;
+    const configLon = config.coordinate?.longitude;
 
-    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+    if (configLat === undefined || configLon === undefined) {
       return { workflow: { continue: true } };
     }
 
