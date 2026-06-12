@@ -103,6 +103,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('AssetUploadReadyV2', _handleSyncAssetUploadReadyV2);
         socket.on('AssetEditReadyV1', _handleSyncAssetEditReadyV1);
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
+        socket.on('on_album_asset_create', _handleAlbumAssetMutation);
+        socket.on('on_album_asset_delete', _handleAlbumAssetMutation);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
@@ -182,6 +184,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void _handleSyncAssetEditReadyV1(dynamic data) {
     unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV1(data));
+  }
+
+  void _handleAlbumAssetMutation(dynamic _) {
+    unawaited(_ref.read(backgroundSyncProvider).syncRemote());
   }
 
   void _handleSyncAssetEditReadyV2(dynamic data) {

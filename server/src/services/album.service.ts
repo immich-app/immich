@@ -195,6 +195,11 @@ export class AlbumService extends BaseService {
       for (const recipientId of allUsersExceptUs) {
         await this.eventRepository.emit('AlbumUpdate', { id, recipientId });
       }
+
+      await this.eventRepository.emit('AlbumAssetCreate', {
+        albumId: id,
+        userIds: album.albumUsers.map(({ user }) => user.id),
+      });
     }
 
     return results;
@@ -223,7 +228,7 @@ export class AlbumService extends BaseService {
     }
 
     const albumAssetValues: { albumId: string; assetId: string }[] = [];
-    const events: { id: string; recipients: string[] }[] = [];
+    const events: { id: string; recipients: string[]; allUserIds: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
       const notPresentAssetIds = [...allowedAssetIds].filter((id) => !existingAssetIds.has(id));
@@ -246,8 +251,9 @@ export class AlbumService extends BaseService {
         },
         auth.user.id,
       );
-      const allUsersExceptUs = album.albumUsers.map(({ user }) => user.id).filter((userId) => userId !== auth.user.id);
-      events.push({ id: albumId, recipients: allUsersExceptUs });
+      const allUserIds = album.albumUsers.map(({ user }) => user.id);
+      const allUsersExceptUs = allUserIds.filter((userId) => userId !== auth.user.id);
+      events.push({ id: albumId, recipients: allUsersExceptUs, allUserIds });
     }
 
     await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
@@ -255,6 +261,7 @@ export class AlbumService extends BaseService {
       for (const recipientId of event.recipients) {
         await this.eventRepository.emit('AlbumUpdate', { id: event.id, recipientId });
       }
+      await this.eventRepository.emit('AlbumAssetCreate', { albumId: event.id, userIds: event.allUserIds });
     }
 
     return results;
@@ -271,8 +278,15 @@ export class AlbumService extends BaseService {
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
-    if (removedIds.length > 0 && album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
-      await this.albumRepository.updateThumbnails();
+    if (removedIds.length > 0) {
+      if (album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
+        await this.albumRepository.updateThumbnails();
+      }
+
+      await this.eventRepository.emit('AlbumAssetDelete', {
+        albumId: id,
+        userIds: album.albumUsers.map(({ user }) => user.id),
+      });
     }
 
     return results;

@@ -230,6 +230,20 @@ export class NotificationService extends BaseService {
     await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId, senderName } });
   }
 
+  @OnEvent({ name: 'AlbumAssetCreate' })
+  onAlbumAssetCreate({ albumId, userIds }: ArgOf<'AlbumAssetCreate'>) {
+    for (const userId of userIds) {
+      this.websocketRepository.clientSend('on_album_asset_create', userId, albumId);
+    }
+  }
+
+  @OnEvent({ name: 'AlbumAssetDelete' })
+  onAlbumAssetDelete({ albumId, userIds }: ArgOf<'AlbumAssetDelete'>) {
+    for (const userId of userIds) {
+      this.websocketRepository.clientSend('on_album_asset_delete', userId, albumId);
+    }
+  }
+
   @OnEvent({ name: 'SessionDelete' })
   onSessionDelete({ sessionId }: ArgOf<'SessionDelete'>) {
     // after the response is sent

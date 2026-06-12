@@ -313,9 +313,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 }
 
-final remoteAlbumDateRangeProvider = FutureProvider.family<(DateTime, DateTime), String>((ref, albumId) async {
+final remoteAlbumDateRangeProvider = StreamProvider.autoDispose.family<(DateTime, DateTime), String>((ref, albumId) {
   final service = ref.watch(remoteAlbumServiceProvider);
-  return service.getDateRange(albumId);
+  return service.watchDateRange(albumId);
 });
 
 final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<UserDto>, String>((ref, albumId) async {

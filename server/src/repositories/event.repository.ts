@@ -40,6 +40,8 @@ type EventMap = {
   // album events
   AlbumUpdate: [{ id: string; recipientId: string }];
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
+  AlbumAssetCreate: [{ albumId: string; userIds: string[] }];
+  AlbumAssetDelete: [{ albumId: string; userIds: string[] }];
 
   // asset events
   AssetCreate: [{ asset: Asset; file: UploadFile }];

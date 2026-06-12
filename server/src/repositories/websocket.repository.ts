@@ -37,6 +37,8 @@ export interface ClientEventMap {
   on_asset_hidden: [string];
   on_asset_restore: [string[]];
   on_asset_stack_update: string[];
+  on_album_asset_create: [string];
+  on_album_asset_delete: [string];
   on_person_thumbnail: [string];
   on_server_version: [ServerVersionResponseDto];
   on_config_update: [];
