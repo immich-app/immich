@@ -17,7 +17,7 @@ running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres versio
 You must install VectorChord into your instance of Postgres using their [instructions][vchord-install]. After installation, add `shared_preload_libraries = 'vchord.so'` to your `postgresql.conf`. If you already have some `shared_preload_libraries` set, you can separate each extension with a comma. For example, `shared_preload_libraries = 'pg_stat_statements, vchord.so'`.
 
 :::note Supported versions
-Immich is known to work with Postgres versions `>= 14, < 19`.
+Immich is known to work with Postgres versions `>= 14, < 20`.
 
 VectorChord is known to work with pgvector versions `>= 0.7, < 0.9`.
 
