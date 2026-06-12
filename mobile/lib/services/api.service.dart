@@ -5,15 +5,15 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class ApiService {
-  late ApiClient _apiClient;
+  final ApiClient _apiClient = ApiClient(basePath: '');
 
   late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
@@ -54,7 +54,7 @@ class ApiService {
   }
 
   setEndpoint(String endpoint) {
-    _apiClient = ApiClient(basePath: endpoint);
+    _apiClient.basePath = endpoint;
     _apiClient.client = NetworkRepository.client;
     usersApi = UsersApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
@@ -177,9 +177,9 @@ class ApiService {
     if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
       urls.add(serverEndpoint);
     }
-    final network = MetadataRepository.instance.systemConfig.network;
+    final network = SettingsRepository.instance.appConfig.network;
     final localEndpoint = network.localEndpoint;
-    if (localEndpoint != null) {
+    if (localEndpoint != null && localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
     }
     for (final url in network.externalEndpointList) {
@@ -191,7 +191,7 @@ class ApiService {
   }
 
   static Map<String, String> getRequestHeaders() {
-    return MetadataRepository.instance.systemConfig.network.customHeaders;
+    return SettingsRepository.instance.appConfig.network.customHeaders;
   }
 
   ApiClient get apiClient => _apiClient;

@@ -47,4 +47,39 @@ describe('Route', () => {
       expect(Route.systemSettings({ isOpen: OpenQueryParam.OAUTH })).toBe('/admin/system-settings?isOpen=oauth');
     });
   });
+
+  describe(Route.continue.name, () => {
+    beforeEach(() => {
+      // @ts-expect-error - override location for testing
+      globalThis.location = new URL('https://my.immich.server');
+      vi.spyOn(document, 'baseURI', 'get').mockReturnValue('https://my.immich.server/');
+    });
+
+    it('should resolve relative URLs', () => {
+      expect(Route.continue('/some/path', '/fallback')).property('href', 'https://my.immich.server/some/path');
+    });
+
+    it('should resolve absolute URLs on the same origin', () => {
+      expect(Route.continue('https://my.immich.server/some/path', '/fallback')).property(
+        'href',
+        'https://my.immich.server/some/path',
+      );
+    });
+
+    it('should return fallback for absolute URLs on a different origin', () => {
+      expect(Route.continue('https://malicious.site/evil', '/fallback')).toBe('/fallback');
+    });
+
+    it('should return fallback for null URLs', () => {
+      expect(Route.continue(null, '/fallback')).property('href', 'https://my.immich.server/fallback');
+    });
+
+    it('should block javascript: URLs', () => {
+      expect(Route.continue('javascript:alert(1)', '/fallback')).toBe('/fallback');
+    });
+
+    it(String.raw`should block \/ URLs`, () => {
+      expect(Route.continue(String.raw`\/malicious.com`, '/fallback')).toBe('/fallback');
+    });
+  });
 });

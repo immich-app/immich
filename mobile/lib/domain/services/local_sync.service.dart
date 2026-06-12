@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -17,6 +18,8 @@ import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 
+const String _kSyncCancelledCode = "SYNC_CANCELLED";
+
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   // ignore: unused_field
@@ -25,21 +28,22 @@ class LocalSyncService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
   final IPermissionRepository _permissionRepository;
+  final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
-    required DriftLocalAlbumRepository localAlbumRepository,
-    required DriftLocalAssetRepository localAssetRepository,
-    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
-    required AssetMediaRepository assetMediaRepository,
-    required IPermissionRepository permissionRepository,
-    required NativeSyncApi nativeSyncApi,
-  }) : _localAlbumRepository = localAlbumRepository,
-       _localAssetRepository = localAssetRepository,
-       _trashedLocalAssetRepository = trashedLocalAssetRepository,
-       _assetMediaRepository = assetMediaRepository,
-       _permissionRepository = permissionRepository,
-       _nativeSyncApi = nativeSyncApi;
+    required this._localAlbumRepository,
+    required this._localAssetRepository,
+    required this._nativeSyncApi,
+    required this._trashedLocalAssetRepository,
+    required this._assetMediaRepository,
+    required this._permissionRepository,
+    this._cancellation,
+  }) {
+    _cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning));
+  }
+
+  bool get _isCancelled => _cancellation?.isCompleted ?? false;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -86,6 +90,10 @@ class LocalSyncService {
       // detect album deletions from the native side
       if (CurrentPlatform.isAndroid) {
         for (final album in dbAlbums) {
+          if (_isCancelled) {
+            _log.warning("Local sync cancelled. Stopped processing albums.");
+            return;
+          }
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
@@ -96,6 +104,10 @@ class LocalSyncService {
         // does not include changes for cloud albums.
         final cloudAlbums = deviceAlbums.where((a) => a.isCloud).toLocalAlbums();
         for (final album in cloudAlbums) {
+          if (_isCancelled) {
+            _log.warning("Local sync cancelled. Stopped processing cloud albums.");
+            return;
+          }
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
           if (dbAlbum == null) {
             _log.warning("Cloud album ${album.name} not found in local database. Skipping sync.");
@@ -107,6 +119,12 @@ class LocalSyncService {
         await _mapIosCloudIds(newAssets);
       }
       await _nativeSyncApi.checkpointSync();
+    } on PlatformException catch (e, s) {
+      if (e.code == _kSyncCancelledCode) {
+        _log.warning("Local sync cancelled");
+      } else {
+        _log.severe("Error performing device sync", e, s);
+      }
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
     } finally {
@@ -134,12 +152,21 @@ class LocalSyncService {
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
+    } on PlatformException catch (e, s) {
+      if (e.code == _kSyncCancelledCode) {
+        _log.warning("Full device sync cancelled");
+      } else {
+        _log.severe("Error performing full device sync", e, s);
+      }
     } catch (e, s) {
       _log.severe("Error performing full device sync", e, s);
     }
   }
 
   Future<void> addAlbum(LocalAlbum album) async {
+    if (_isCancelled) {
+      return;
+    }
     try {
       _log.fine("Adding device album ${album.name}");
 
@@ -167,6 +194,9 @@ class LocalSyncService {
 
   // The deviceAlbum is ignored since we are going to refresh it anyways
   FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
+    if (_isCancelled) {
+      return false;
+    }
     try {
       _log.fine("Syncing device album ${dbAlbum.name}");
 

@@ -54,6 +54,30 @@ const DatabaseBackupSchema = z
   })
   .meta({ id: 'DatabaseBackupConfig' });
 
+const SystemConfigIntegrityJobSchema = z
+  .object({
+    enabled: z.boolean().describe('Enabled'),
+    cronExpression: cronExpressionSchema.describe('Cron expression for when the integrity check should run'),
+  })
+  .describe('Integrity job config')
+  .meta({ id: 'SystemConfigIntegrityJob' });
+
+const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
+  timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
+  percentageLimit: z.int().nonnegative().describe('Percentage limit of the integrity checksum job'),
+})
+  .describe('Integrity checksum job config')
+  .meta({ id: 'SystemConfigIntegrityChecksumJob' });
+
+const SystemConfigIntegrityChecksSchema = z
+  .object({
+    missingFiles: SystemConfigIntegrityJobSchema,
+    untrackedFiles: SystemConfigIntegrityJobSchema,
+    checksumFiles: SystemConfigIntegrityChecksumJobSchema,
+  })
+  .describe('Integrity checks config')
+  .meta({ id: 'SystemConfigIntegrityChecks' });
+
 const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
 
 const SystemConfigFFmpegSchema = z
@@ -79,6 +103,11 @@ const SystemConfigFFmpegSchema = z
     accel: TranscodeHardwareAccelerationSchema,
     accelDecode: configBool.describe('Accelerated decode'),
     tonemap: ToneMappingSchema,
+    realtime: z
+      .object({
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+      })
+      .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 
@@ -98,6 +127,7 @@ const SystemConfigJobSchema = z
     ocr: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
+    integrityCheck: JobSettingsSchema,
   })
   .meta({ id: 'SystemConfigJobDto' });
 
@@ -151,8 +181,15 @@ const SystemConfigMapSchema = z
   })
   .meta({ id: 'SystemConfigMapDto' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 const SystemConfigNewVersionCheckSchema = z
-  .object({ enabled: configBool.describe('Enabled') })
+  .object({ enabled: configBool.describe('Enabled'), channel: ReleaseChannelSchema })
   .meta({ id: 'SystemConfigNewVersionCheckDto' });
 
 const SystemConfigNightlyTasksSchema = z
@@ -370,6 +407,7 @@ export const SystemConfigSchema = z
     templates: SystemConfigTemplatesSchema,
     server: SystemConfigServerSchema,
     user: SystemConfigUserSchema,
+    integrityChecks: SystemConfigIntegrityChecksSchema,
   })
   .describe('System configuration')
   .meta({ id: 'SystemConfigDto' });

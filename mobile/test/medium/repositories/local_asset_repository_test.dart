@@ -456,7 +456,7 @@ void main() {
 
     test('does not update when longitude does not match', () async {
       final remoteAsset = await ctx.newRemoteAsset(ownerId: userId);
-      final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id, longitude: (-74.006).toOption());
+      final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id, longitude: .fromNullable((-74.006)));
       final localAsset = await ctx.newLocalAsset(
         checksumOption: const Option.none(),
         iCloudId: cloudIdAsset.cloudId,

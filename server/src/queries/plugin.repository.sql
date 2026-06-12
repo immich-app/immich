@@ -35,6 +35,7 @@ select
   "plugin"."version",
   "plugin"."createdAt",
   "plugin"."updatedAt",
+  "plugin"."templates",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -60,6 +61,42 @@ from
 order by
   "plugin"."name"
 
+-- PluginRepository.getByHash
+select
+  "plugin"."id",
+  "plugin"."name",
+  "plugin"."title",
+  "plugin"."description",
+  "plugin"."author",
+  "plugin"."version",
+  "plugin"."createdAt",
+  "plugin"."updatedAt",
+  "plugin"."templates",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "plugin_method"."name",
+          "plugin_method"."title",
+          "plugin_method"."description",
+          "plugin_method"."types",
+          "plugin_method"."schema",
+          "plugin_method"."hostFunctions",
+          "plugin_method"."uiHints",
+          "plugin"."name" as "pluginName"
+        from
+          "plugin_method"
+        where
+          "plugin_method"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "methods"
+from
+  "plugin"
+where
+  "plugin"."sha256hash" = $1
+
 -- PluginRepository.getByName
 select
   "plugin"."id",
@@ -70,6 +107,7 @@ select
   "plugin"."version",
   "plugin"."createdAt",
   "plugin"."updatedAt",
+  "plugin"."templates",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -105,6 +143,7 @@ select
   "plugin"."version",
   "plugin"."createdAt",
   "plugin"."updatedAt",
+  "plugin"."templates",
   (
     select
       coalesce(json_agg(agg), '[]')
