@@ -144,7 +144,7 @@ ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512);
 
 <details>
 <summary>Migration steps</summary>
-1. Ensure you have at least 0.7.0 of pgvector installed. If it is below that, please upgrade it and run the SQL command `ALTER EXTENSION vector UPDATE;` using psql or your choice of database client
+1. Ensure you have at least `0.7.0` of pgvector installed. If it is below that, please upgrade it and run the SQL command `ALTER EXTENSION vector UPDATE;` using psql or your choice of database client
 2. Follow the Prerequisites to install VectorChord
 3. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;`
 4. Remove the `DB_VECTOR_EXTENSION=pgvector` environmental variable as it will make Immich still use pgvector if set
