@@ -23,6 +23,7 @@ class UserPreferencesUpdateDto {
     this.people = const Optional.absent(),
     this.purchase = const Optional.absent(),
     this.ratings = const Optional.absent(),
+    this.recentlyAdded = const Optional.absent(),
     this.sharedLinks = const Optional.absent(),
     this.tags = const Optional.absent(),
   });
@@ -113,6 +114,14 @@ class UserPreferencesUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  Optional<RecentlyAddedUpdate?> recentlyAdded;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   Optional<SharedLinksUpdate?> sharedLinks;
 
   ///
@@ -135,6 +144,7 @@ class UserPreferencesUpdateDto {
     other.people == people &&
     other.purchase == purchase &&
     other.ratings == ratings &&
+    other.recentlyAdded == recentlyAdded &&
     other.sharedLinks == sharedLinks &&
     other.tags == tags;
 
@@ -151,11 +161,12 @@ class UserPreferencesUpdateDto {
     (people == null ? 0 : people!.hashCode) +
     (purchase == null ? 0 : purchase!.hashCode) +
     (ratings == null ? 0 : ratings!.hashCode) +
+    (recentlyAdded == null ? 0 : recentlyAdded!.hashCode) +
     (sharedLinks == null ? 0 : sharedLinks!.hashCode) +
     (tags == null ? 0 : tags!.hashCode);
 
   @override
-  String toString() => 'UserPreferencesUpdateDto[albums=$albums, avatar=$avatar, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
+  String toString() => 'UserPreferencesUpdateDto[albums=$albums, avatar=$avatar, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, recentlyAdded=$recentlyAdded, sharedLinks=$sharedLinks, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -199,6 +210,10 @@ class UserPreferencesUpdateDto {
       final value = this.ratings.value;
       json[r'ratings'] = value;
     }
+    if (this.recentlyAdded.isPresent) {
+      final value = this.recentlyAdded.value;
+      json[r'recentlyAdded'] = value;
+    }
     if (this.sharedLinks.isPresent) {
       final value = this.sharedLinks.value;
       json[r'sharedLinks'] = value;
@@ -229,6 +244,7 @@ class UserPreferencesUpdateDto {
         people: json.containsKey(r'people') ? Optional.present(PeopleUpdate.fromJson(json[r'people'])) : const Optional.absent(),
         purchase: json.containsKey(r'purchase') ? Optional.present(PurchaseUpdate.fromJson(json[r'purchase'])) : const Optional.absent(),
         ratings: json.containsKey(r'ratings') ? Optional.present(RatingsUpdate.fromJson(json[r'ratings'])) : const Optional.absent(),
+        recentlyAdded: json.containsKey(r'recentlyAdded') ? Optional.present(RecentlyAddedUpdate.fromJson(json[r'recentlyAdded'])) : const Optional.absent(),
         sharedLinks: json.containsKey(r'sharedLinks') ? Optional.present(SharedLinksUpdate.fromJson(json[r'sharedLinks'])) : const Optional.absent(),
         tags: json.containsKey(r'tags') ? Optional.present(TagsUpdate.fromJson(json[r'tags'])) : const Optional.absent(),
       );

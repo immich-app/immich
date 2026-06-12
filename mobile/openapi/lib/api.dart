@@ -266,6 +266,8 @@ part 'model/ratings_response.dart';
 part 'model/ratings_update.dart';
 part 'model/reaction_level.dart';
 part 'model/reaction_type.dart';
+part 'model/recently_added_response.dart';
+part 'model/recently_added_update.dart';
 part 'model/release_channel.dart';
 part 'model/release_event_v1.dart';
 part 'model/release_type.dart';

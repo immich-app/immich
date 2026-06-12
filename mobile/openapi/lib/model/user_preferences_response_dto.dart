@@ -22,6 +22,7 @@ class UserPreferencesResponseDto {
     required this.people,
     required this.purchase,
     required this.ratings,
+    required this.recentlyAdded,
     required this.sharedLinks,
     required this.tags,
   });
@@ -44,6 +45,8 @@ class UserPreferencesResponseDto {
 
   RatingsResponse ratings;
 
+  RecentlyAddedResponse recentlyAdded;
+
   SharedLinksResponse sharedLinks;
 
   TagsResponse tags;
@@ -59,6 +62,7 @@ class UserPreferencesResponseDto {
     other.people == people &&
     other.purchase == purchase &&
     other.ratings == ratings &&
+    other.recentlyAdded == recentlyAdded &&
     other.sharedLinks == sharedLinks &&
     other.tags == tags;
 
@@ -74,11 +78,12 @@ class UserPreferencesResponseDto {
     (people.hashCode) +
     (purchase.hashCode) +
     (ratings.hashCode) +
+    (recentlyAdded.hashCode) +
     (sharedLinks.hashCode) +
     (tags.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[albums=$albums, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
+  String toString() => 'UserPreferencesResponseDto[albums=$albums, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, recentlyAdded=$recentlyAdded, sharedLinks=$sharedLinks, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +96,7 @@ class UserPreferencesResponseDto {
       json[r'people'] = this.people;
       json[r'purchase'] = this.purchase;
       json[r'ratings'] = this.ratings;
+      json[r'recentlyAdded'] = this.recentlyAdded;
       json[r'sharedLinks'] = this.sharedLinks;
       json[r'tags'] = this.tags;
     return json;
@@ -114,6 +120,7 @@ class UserPreferencesResponseDto {
         people: PeopleResponse.fromJson(json[r'people'])!,
         purchase: PurchaseResponse.fromJson(json[r'purchase'])!,
         ratings: RatingsResponse.fromJson(json[r'ratings'])!,
+        recentlyAdded: RecentlyAddedResponse.fromJson(json[r'recentlyAdded'])!,
         sharedLinks: SharedLinksResponse.fromJson(json[r'sharedLinks'])!,
         tags: TagsResponse.fromJson(json[r'tags'])!,
       );
@@ -172,6 +179,7 @@ class UserPreferencesResponseDto {
     'people',
     'purchase',
     'ratings',
+    'recentlyAdded',
     'sharedLinks',
     'tags',
   };

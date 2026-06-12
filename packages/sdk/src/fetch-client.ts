@@ -342,6 +342,10 @@ export type RatingsResponse = {
     /** Whether ratings are enabled */
     enabled: boolean;
 };
+export type RecentlyAddedResponse = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb: boolean;
+};
 export type SharedLinksResponse = {
     /** Whether shared links are enabled */
     enabled: boolean;
@@ -364,6 +368,7 @@ export type UserPreferencesResponseDto = {
     people: PeopleResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
+    recentlyAdded: RecentlyAddedResponse;
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
@@ -421,6 +426,10 @@ export type RatingsUpdate = {
     /** Whether ratings are enabled */
     enabled?: boolean;
 };
+export type RecentlyAddedUpdate = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb?: boolean;
+};
 export type SharedLinksUpdate = {
     /** Whether shared links are enabled */
     enabled?: boolean;
@@ -444,6 +453,7 @@ export type UserPreferencesUpdateDto = {
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
+    recentlyAdded?: RecentlyAddedUpdate;
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };

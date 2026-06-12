@@ -577,6 +577,10 @@ class ApiClient {
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
+        case 'RecentlyAddedResponse':
+          return RecentlyAddedResponse.fromJson(value);
+        case 'RecentlyAddedUpdate':
+          return RecentlyAddedUpdate.fromJson(value);
         case 'ReleaseChannel':
           return ReleaseChannelTypeTransformer().decode(value);
         case 'ReleaseEventV1':
