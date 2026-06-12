@@ -20,12 +20,12 @@ class QueuesApiRepository extends ApiRepository {
   }
 
   Future<QueueResponse> updateQueue(QueueName name, bool isPaused) async {
-    final response = await checkNull(_api.updateQueue(name, QueueUpdateDto(isPaused: isPaused)));
+    final response = await checkNull(_api.updateQueue(name, QueueUpdateDto(isPaused: Optional.present(isPaused))));
     return QueueResponse.fromDto(response);
   }
 
   Future<QueueResponse> emptyQueue(QueueName name, {bool failed = false}) async {
-    await _api.emptyQueue(name, QueueDeleteDto(failed: failed));
+    await _api.emptyQueue(name, QueueDeleteDto(failed: Optional.present(failed)));
     try {
       final response = await checkNull(_api.getQueue(name));
       return QueueResponse.fromDto(response);
@@ -40,7 +40,7 @@ class QueuesApiRepository extends ApiRepository {
 
   Future<QueueResponse> runQueueCommand(QueueName name, QueueCommand command, {bool? force}) async {
     final response = await checkNull(
-      _jobsApi.runQueueCommandLegacy(name, QueueCommandDto(command: command, force: force)),
+      _jobsApi.runQueueCommandLegacy(name, QueueCommandDto(command: command, force: Optional.present(force))),
     );
     return QueueResponse.fromLegacyDto(response, name.value);
   }
