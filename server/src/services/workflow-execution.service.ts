@@ -274,6 +274,11 @@ export class WorkflowExecutionService extends BaseService {
     return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetMetadataExtraction });
   }
 
+  @OnEvent({ name: 'AssetTag' })
+  onAssetTagged({ assetId, userId }: ArgOf<'AssetTag'>) {
+    return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetTagged });
+  }
+
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
     const items = await this.workflowRepository.search({ userId, trigger });
     await this.jobRepository.queueAll(

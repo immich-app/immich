@@ -95,6 +95,26 @@ export const assetLocationFilter = () => {
   });
 };
 
+export const assetTagFilter = () => {
+  return wrapper<WorkflowType.AssetV1, { tags: string[]; matching: 'any' | 'all' | 'none' }>(({ config, data }) => {
+    const assetTags = data.asset.tags.map((tag) => tag.id);
+
+    for (const tag of config.tags) {
+      if (assetTags.includes(tag)) {
+        if (config.matching === 'any') {
+          break;
+        } else if (config.matching === 'none') {
+          return { workflow: { continue: false } };
+        }
+      } else if (config.matching === 'all') {
+        return { workflow: { continue: false } };
+      }
+    }
+
+    return { workflow: { continue: true } };
+  });
+};
+
 export const assetFavorite = () => {
   return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
     const target = config.inverse ? false : true;
