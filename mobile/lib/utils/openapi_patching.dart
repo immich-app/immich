@@ -26,6 +26,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'sharedLinks': SharedLinksResponse(enabled: true, sidebarWeb: false).toJson(),
     'cast': CastResponse(gCastEnabled: false).toJson(),
     'albums': {'defaultAssetOrder': 'desc'},
+    'recentlyAdded': RecentlyAddedResponse(sidebarWeb: false).toJson(),
   },
   'ServerConfigDto': {
     'mapLightStyleUrl': 'https://tiles.immich.cloud/v1/style/light.json',
