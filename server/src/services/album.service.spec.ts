@@ -472,17 +472,41 @@ describe(AlbumService.name, () => {
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
 
-    it('should throw an error if the userId is already added', async () => {
+    it('should skip users that are already members', async () => {
       const userId = newUuid();
       const album = AlbumFactory.from().albumUser({ userId }).build();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
-      await expect(
-        sut.addUsers(AuthFactory.create(owner), album.id, { albumUsers: [{ userId }] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.album.update).not.toHaveBeenCalled();
-      expect(mocks.user.get).not.toHaveBeenCalled();
+      mocks.album.update.mockResolvedValue(getForAlbum(album));
+      await sut.addUsers(AuthFactory.create(owner), album.id, { albumUsers: [{ userId }] });
+      expect(mocks.albumUser.create).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should add new users and skip already-existing members in the same request', async () => {
+      const existingUserId = newUuid();
+      const album = AlbumFactory.from().albumUser({ userId: existingUserId }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const newUser = UserFactory.create();
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.update.mockResolvedValue(getForAlbum(album));
+      mocks.user.get.mockResolvedValue(newUser);
+      mocks.albumUser.create.mockResolvedValue(AlbumUserFactory.from().album(album).user(newUser).build());
+
+      await sut.addUsers(AuthFactory.create(owner), album.id, {
+        albumUsers: [{ userId: existingUserId }, { userId: newUser.id }],
+      });
+
+      expect(mocks.albumUser.create).toHaveBeenCalledTimes(1);
+      expect(mocks.albumUser.create).toHaveBeenCalledWith({ userId: newUser.id, albumId: album.id });
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
+        id: album.id,
+        userId: newUser.id,
+        senderName: owner.name,
+      });
     });
 
     it('should throw an error if the userId does not exist', async () => {
