@@ -111,7 +111,7 @@ const SystemConfigFFmpegSchema = z
       .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
   .refine((ffmpeg) => (ffmpeg.targetVideoCodec === VideoCodec.Av1 ? ffmpeg.threads <= 6 : true), {
-    error: 'AV1 threads/parallelism must be 0 or 1–6',
+    error: 'Threads: for AV1, parallelism must be 0–6',
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 
