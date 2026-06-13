@@ -44,41 +44,4 @@ void main() {
       expect(result, null);
     });
   });
-
-  group('v1.106.0 minor compatibility', () {
-    const message =
-        'Your mobile app is not compatible with the server! Please update your server to version v1.106.0 or newer to login';
-
-    test('returns message when server is older than 1.106.0 and app is newer', () {
-      final result = getVersionCompatibilityMessage(
-        const SemVer(major: 1, minor: 105, patch: 0),
-        const SemVer(major: 1, minor: 107, patch: 0),
-      );
-      expect(result, message);
-    });
-
-    test('returns null when both are at the 1.106.0 boundary', () {
-      final result = getVersionCompatibilityMessage(
-        const SemVer(major: 1, minor: 106, patch: 0),
-        const SemVer(major: 1, minor: 106, patch: 0),
-      );
-      expect(result, null);
-    });
-
-    test('returns null when server is at or newer than 1.106.0', () {
-      final result = getVersionCompatibilityMessage(
-        const SemVer(major: 1, minor: 106, patch: 0),
-        const SemVer(major: 1, minor: 107, patch: 0),
-      );
-      expect(result, null);
-    });
-
-    test('returns null when server is newer than app', () {
-      final result = getVersionCompatibilityMessage(
-        const SemVer(major: 1, minor: 108, patch: 0),
-        const SemVer(major: 1, minor: 107, patch: 0),
-      );
-      expect(result, null);
-    });
-  });
 }

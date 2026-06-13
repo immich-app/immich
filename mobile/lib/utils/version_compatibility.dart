@@ -13,10 +13,5 @@ String? getVersionCompatibilityMessage(SemVer serverVersion, SemVer appVersion) 
     return 'Your server version is not compatible with the mobile app! Please update your server to the latest version.';
   }
 
-  const v1_106_0 = SemVer(major: 1, minor: 106, patch: 0);
-  if (serverVersion < v1_106_0 && appVersion > v1_106_0) {
-    return 'Your mobile app is not compatible with the server! Please update your server to version v1.106.0 or newer to login';
-  }
-
   return null;
 }
