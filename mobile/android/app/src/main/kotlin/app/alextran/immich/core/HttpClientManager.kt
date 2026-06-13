@@ -41,8 +41,10 @@ import java.net.PasswordAuthentication
 import java.net.Socket
 import java.net.URI
 import java.security.KeyStore
+import java.security.MessageDigest
 import java.security.Principal
 import java.security.PrivateKey
+import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -60,6 +62,7 @@ private const val PREFS_CERT_ALIAS = "immich.client_cert"
 private const val PREFS_HEADERS = "immich.request_headers"
 private const val PREFS_SERVER_URLS = "immich.server_urls"
 private const val PREFS_COOKIES = "immich.cookies"
+private const val PREFS_ACCEPTED_CERTS = "immich.accepted_certs"
 private const val COOKIE_EXPIRY_DAYS = 400L
 
 private enum class AuthCookie(val cookieName: String, val httpOnly: Boolean) {
@@ -105,6 +108,49 @@ object HttpClientManager {
   private val cookieJar = PersistentCookieJar()
 
   val isMtls: Boolean get() = keyChainAlias != null || keyStore.containsAlias(CERT_ALIAS)
+
+  val isCertOverrideActive: Boolean
+    get() = synchronized(acceptedFingerprints) { acceptedFingerprints.isNotEmpty() }
+
+  private val acceptedFingerprints = mutableSetOf<String>()
+  private val pendingCertLock = Any()
+
+  @Volatile
+  var pendingCertFingerprint: String? = null
+    private set
+
+  @Volatile
+  var pendingCertSubject: String? = null
+    private set
+
+  @Volatile
+  var pendingCertIssuer: String? = null
+    private set
+
+  fun isCertAccepted(fp: String): Boolean {
+    return synchronized(acceptedFingerprints) { fp in acceptedFingerprints }
+  }
+
+  fun acceptPendingCert() {
+    val fp = synchronized(pendingCertLock) {
+      val f = pendingCertFingerprint
+      clearPendingCert()
+      f
+    } ?: return
+    synchronized(acceptedFingerprints) {
+      acceptedFingerprints.add(fp)
+      prefs.edit { putStringSet(PREFS_ACCEPTED_CERTS, acceptedFingerprints) }
+    }
+    clientChangedListeners.forEach { it() }
+  }
+
+  fun rejectPendingCert() = synchronized(pendingCertLock) { clearPendingCert() }
+
+  private fun clearPendingCert() {
+    pendingCertFingerprint = null
+    pendingCertSubject = null
+    pendingCertIssuer = null
+  }
 
   fun initialize(context: Context) {
     if (initialized) return
@@ -156,6 +202,8 @@ object HttpClientManager {
 
       cronetStorageDir = File(context.cacheDir, "cronet").apply { mkdirs() }
       cronetEngine = buildCronetEngine()
+
+      prefs.getStringSet(PREFS_ACCEPTED_CERTS, emptySet())?.let { acceptedFingerprints.addAll(it) }
 
       initialized = true
     }
@@ -298,7 +346,7 @@ object HttpClientManager {
 
   @OptIn(UnstableApi::class)
   fun createDataSourceFactory(headers: Map<String, String>): DataSource.Factory {
-    return if (isMtls) {
+    return if (isMtls || isCertOverrideActive) {
       OkHttpDataSource.Factory(client.newBuilder().cache(null).build())
     } else {
       ResolvingDataSource.Factory(
@@ -353,7 +401,19 @@ object HttpClientManager {
 
     val managerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
     managerFactory.init(null as KeyStore?)
-    val trustManager = managerFactory.trustManagers.filterIsInstance<X509TrustManager>().first()
+    val defaultTm = managerFactory.trustManagers.filterIsInstance<X509TrustManager>().first()
+    val trustManager = FingerprintTrustManager(
+      defaultTm = defaultTm,
+      acceptedFingerprints = acceptedFingerprints,
+      onCertFailure = { fp, subject, issuer ->
+        synchronized(pendingCertLock) {
+          if (pendingCertFingerprint != null) return@synchronized
+          pendingCertFingerprint = fp
+          pendingCertSubject = subject
+          pendingCertIssuer = issuer
+        }
+      },
+    )
 
     val sslContext = SSLContext.getInstance("TLS")
       .apply { init(arrayOf(DynamicKeyManager()), arrayOf(trustManager), null) }
@@ -421,6 +481,41 @@ object HttpClientManager {
       issuers: Array<Principal>?,
       socket: Socket?
     ): String? = null
+  }
+
+  /**
+   * X509TrustManager that delegates to the system default but allows overriding
+   * certificate validation failures by SHA-256 fingerprint. Accepted fingerprints
+   * are persisted and checked before failing.
+   */
+  private class FingerprintTrustManager(
+    private val defaultTm: X509TrustManager,
+    private val acceptedFingerprints: MutableSet<String>,
+    private val onCertFailure: (String, String, String) -> Unit,
+  ) : X509TrustManager {
+    override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
+      defaultTm.checkClientTrusted(chain, authType)
+    }
+
+    override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
+      try {
+        defaultTm.checkServerTrusted(chain, authType)
+      } catch (e: CertificateException) {
+        val serverCert = chain.firstOrNull() ?: throw e
+        val fp = sha256Fingerprint(serverCert)
+        synchronized(acceptedFingerprints) { if (fp in acceptedFingerprints) return }
+        onCertFailure(fp, serverCert.subjectX500Principal.name, serverCert.issuerX500Principal.name)
+        throw e
+      }
+    }
+
+    override fun getAcceptedIssuers(): Array<X509Certificate> = defaultTm.acceptedIssuers
+
+    private fun sha256Fingerprint(cert: X509Certificate): String {
+      val digest = MessageDigest.getInstance("SHA-256")
+      val hash = digest.digest(cert.encoded)
+      return hash.joinToString(":") { "%02x".format(it.toInt() and 0xFF) }
+    }
   }
 
   /**

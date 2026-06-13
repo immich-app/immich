@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/services/ssl_cert_bridge.service.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
@@ -85,6 +86,71 @@ class LoginForm extends HookConsumerWidget {
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
+    Future<bool> showCertOverrideDialog() async {
+      final fp = await SslCertBridge.getPendingCertFingerprint();
+      if (fp == null) return false;
+      if (!context.mounted) return false;
+
+      final subject = await SslCertBridge.getPendingCertSubject() ?? '';
+      final issuer = await SslCertBridge.getPendingCertIssuer() ?? '';
+
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+          title: Text(
+            'ssl_cert_untrusted_title'.tr(),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.primaryColor),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('ssl_cert_untrusted_message'.tr()),
+                const SizedBox(height: 12),
+                if (subject.isNotEmpty) ...[
+                  Text('ssl_cert_subject_label'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(subject, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(height: 8),
+                ],
+                if (issuer.isNotEmpty) ...[
+                  Text('ssl_cert_issuer_label'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(issuer, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(height: 8),
+                ],
+                Text('ssl_cert_fingerprint_label'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                SelectableText(fp, style: const TextStyle(fontSize: 11)),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                'cancel'.tr(),
+                style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                'ssl_cert_trust'.tr(),
+                style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (accepted == true) {
+        await SslCertBridge.acceptPendingCert();
+        return true;
+      }
+      await SslCertBridge.rejectPendingCert();
+      return false;
+    }
+
     checkVersionMismatch() async {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
@@ -106,7 +172,6 @@ class LoginForm extends HookConsumerWidget {
     }
 
     /// Fetch the server login credential and enables oAuth login if necessary
-    /// Returns true if successful, false otherwise
     Future<void> getServerAuthSettings() async {
       final sanitizeServerUrl = sanitizeUrl(serverEndpointController.text);
       final serverUrl = punycodeEncodeUrl(sanitizeServerUrl);
@@ -116,49 +181,53 @@ class LoginForm extends HookConsumerWidget {
         ImmichToast.show(context: context, msg: "login_form_server_empty".tr(), toastType: ToastType.error);
       }
 
-      try {
-        final endpoint = await ref.read(authProvider.notifier).validateServerUrl(serverUrl);
+      // Retry once if the user accepts an untrusted certificate
+      for (int attempt = 0; attempt < 2; attempt++) {
+        try {
+          final endpoint = await ref.read(authProvider.notifier).validateServerUrl(serverUrl);
 
-        // Fetch and load server config and features
-        await ref.read(serverInfoProvider.notifier).getServerInfo();
+          await ref.read(serverInfoProvider.notifier).getServerInfo();
 
-        final serverInfo = ref.read(serverInfoProvider);
-        final features = serverInfo.serverFeatures;
-        final config = serverInfo.serverConfig;
+          final serverInfo = ref.read(serverInfoProvider);
+          final features = serverInfo.serverFeatures;
+          final config = serverInfo.serverConfig;
 
-        isOauthEnable.value = features.oauthEnabled;
-        isPasswordLoginEnable.value = features.passwordLogin;
-        oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty ? config.oauthButtonText : 'OAuth';
+          isOauthEnable.value = features.oauthEnabled;
+          isPasswordLoginEnable.value = features.passwordLogin;
+          oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty ? config.oauthButtonText : 'OAuth';
 
-        serverEndpoint.value = endpoint;
-      } on ApiException catch (e) {
-        ImmichToast.show(
-          context: context,
-          msg: e.message ?? 'login_form_api_exception'.tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.TOP,
-        );
-        isOauthEnable.value = false;
-        isPasswordLoginEnable.value = true;
-      } on HandshakeException {
-        ImmichToast.show(
-          context: context,
-          msg: 'login_form_handshake_exception'.tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.TOP,
-        );
-        isOauthEnable.value = false;
-        isPasswordLoginEnable.value = true;
-      } catch (e) {
-        ImmichToast.show(
-          context: context,
-          msg: 'login_form_server_error'.tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.TOP,
-        );
-        isOauthEnable.value = false;
-        isPasswordLoginEnable.value = true;
+          serverEndpoint.value = endpoint;
+          return;
+        } on ApiException catch (e) {
+          if (attempt == 0 && await showCertOverrideDialog()) continue;
+          ImmichToast.show(
+            context: context,
+            msg: e.message ?? 'login_form_api_exception'.tr(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
+          );
+        } on HandshakeException {
+          if (attempt == 0 && await showCertOverrideDialog()) continue;
+          ImmichToast.show(
+            context: context,
+            msg: 'login_form_handshake_exception'.tr(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
+          );
+        } catch (e) {
+          if (attempt == 0 && await showCertOverrideDialog()) continue;
+          ImmichToast.show(
+            context: context,
+            msg: 'login_form_server_error'.tr(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.TOP,
+          );
+        }
+        break;
       }
+
+      isOauthEnable.value = false;
+      isPasswordLoginEnable.value = true;
     }
 
     useEffect(() {
@@ -308,60 +377,69 @@ class LoginForm extends HookConsumerWidget {
       final codeVerifier = randomCodeVerifier();
       final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
 
-      try {
-        oAuthServerUrl = await oAuthService.getOAuthServerUrl(
-          sanitizeUrl(serverEndpointController.text),
-          state,
-          codeChallenge,
-        );
-
-        // Invalidate all api repository provider instance to take into account new access token
-        invalidateAllApiRepositoryProviders(ref);
-      } catch (error, stack) {
-        log.severe('Error getting OAuth server Url: $error', stack);
-
-        ImmichToast.show(
-          context: context,
-          msg: "login_form_failed_get_oauth_server_config".tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.TOP,
-        );
-        return;
-      }
-
-      if (oAuthServerUrl != null) {
+      for (int attempt = 0; attempt < 2; attempt++) {
         try {
-          final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
+          oAuthServerUrl = await oAuthService.getOAuthServerUrl(
+            sanitizeUrl(serverEndpointController.text),
+            state,
+            codeChallenge,
+          );
 
-          if (loginResponseDto == null) {
-            return;
-          }
-
-          log.info("Finished OAuth login with response: ${loginResponseDto.userEmail}");
-
-          final isSuccess = await ref
-              .watch(authProvider.notifier)
-              .saveAuthInfo(accessToken: loginResponseDto.accessToken);
-
-          if (isSuccess) {
-            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
-              await getManageMediaPermission();
-            }
-            unawaited(handleSyncFlow());
-            unawaited(context.router.replaceAll([const TabShellRoute()]));
-            return;
-          }
+          // Invalidate all api repository provider instance to take into account new access token
+          invalidateAllApiRepositoryProviders(ref);
+          break;
         } catch (error, stack) {
-          log.severe('Error logging in with OAuth: $error', stack);
+          if (attempt == 0 && await showCertOverrideDialog()) continue;
+          log.severe('Error getting OAuth server Url: $error', stack);
 
           ImmichToast.show(
             context: context,
-            msg: error.toString(),
+            msg: "login_form_failed_get_oauth_server_config".tr(),
             toastType: ToastType.error,
             gravity: ToastGravity.TOP,
           );
-        } finally {}
+          return;
+        }
+      }
+
+      if (oAuthServerUrl != null) {
+        for (int attempt = 0; attempt < 2; attempt++) {
+          try {
+            final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
+
+            if (loginResponseDto == null) {
+              return;
+            }
+
+            log.info("Finished OAuth login with response: ${loginResponseDto.userEmail}");
+
+            final isSuccess = await ref
+                .watch(authProvider.notifier)
+                .saveAuthInfo(accessToken: loginResponseDto.accessToken);
+
+            if (isSuccess) {
+              await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+              if (isSyncRemoteDeletionsMode()) {
+                await getManageMediaPermission();
+              }
+              unawaited(handleSyncFlow());
+              unawaited(context.router.replaceAll([const TabShellRoute()]));
+              return;
+            }
+            break;
+          } catch (error, stack) {
+            if (attempt == 0 && await showCertOverrideDialog()) continue;
+            log.severe('Error logging in with OAuth: $error', stack);
+
+            ImmichToast.show(
+              context: context,
+              msg: error.toString(),
+              toastType: ToastType.error,
+              gravity: ToastGravity.TOP,
+            );
+            return;
+          }
+        }
       } else {
         ImmichToast.show(
           context: context,

@@ -8,17 +8,50 @@ import app.alextran.immich.NativeBuffer
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.MethodChannel
 
 class NetworkApiPlugin : FlutterPlugin, ActivityAware {
   private var networkApi: NetworkApiImpl? = null
+  private var sslCertChannel: MethodChannel? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     networkApi = NetworkApiImpl(binding.applicationContext)
     NetworkApi.setUp(binding.binaryMessenger, networkApi)
+
+    sslCertChannel = MethodChannel(binding.binaryMessenger, "app.immich/ssl_cert").apply {
+      setMethodCallHandler { call, result ->
+        when (call.method) {
+          "getPendingCertFingerprint" -> {
+            result.success(HttpClientManager.pendingCertFingerprint)
+          }
+          "getPendingCertSubject" -> {
+            result.success(HttpClientManager.pendingCertSubject)
+          }
+          "getPendingCertIssuer" -> {
+            result.success(HttpClientManager.pendingCertIssuer)
+          }
+          "acceptPendingCert" -> {
+            HttpClientManager.acceptPendingCert()
+            result.success(null)
+          }
+          "rejectPendingCert" -> {
+            HttpClientManager.rejectPendingCert()
+            result.success(null)
+          }
+          "isCertAccepted" -> {
+            val fp = call.arguments as? String
+            result.success(fp?.let { HttpClientManager.isCertAccepted(it) } ?: false)
+          }
+          else -> result.notImplemented()
+        }
+      }
+    }
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     NetworkApi.setUp(binding.binaryMessenger, null)
+    sslCertChannel?.setMethodCallHandler(null)
+    sslCertChannel = null
     networkApi = null
   }
 
