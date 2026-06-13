@@ -16,10 +16,6 @@ void main() {
     sut = await SettingsRepository.ensureInitialized(ctx.db);
   });
 
-  tearDownAll(() async {
-    await ctx.dispose();
-  });
-
   setUp(() async {
     await ctx.db.delete(ctx.db.settingsEntity).go();
     await SettingsRepository.instance.refresh();

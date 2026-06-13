@@ -3,10 +3,10 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
@@ -198,6 +198,9 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
         playbackStyle: Value(e.playbackStyle),
+        // getToRestore only restores assets whose album is selected
+        // TODO: Refactor getToRestore to not assume that and remove the backup candidate flag from here
+        isBackupCandidate: const Value(true),
       );
     });
 
@@ -283,7 +286,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
 
     for (final row in rows) {
       final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-      final asset = row.readTable(_db.localAssetEntity).toDto();
+      final asset = mapToLocalAsset(row.readTable(_db.localAssetEntity));
       (result[albumId] ??= <LocalAsset>[]).add(asset);
     }
 

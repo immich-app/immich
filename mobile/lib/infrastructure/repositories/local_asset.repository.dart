@@ -6,9 +6,8 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class RemovalCandidatesResult {
@@ -33,7 +32,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     ])..where(_db.localAssetEntity.id.equals(id));
 
     return query.map((row) {
-      final asset = row.readTable(_db.localAssetEntity).toDto();
+      final asset = mapToLocalAsset(row.readTable(_db.localAssetEntity));
       return asset.copyWith(remoteId: row.read(_db.remoteAssetEntity.id));
     });
   }
@@ -43,7 +42,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   Future<List<LocalAsset?>> getByChecksum(String checksum) {
     final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.equals(checksum));
 
-    return query.map((row) => row.toDto()).get();
+    return query.map(mapToLocalAsset).get();
   }
 
   Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
@@ -79,7 +78,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   Future<LocalAsset?> getById(String id) {
     final query = _db.localAssetEntity.select()..where((lae) => lae.id.equals(id));
 
-    return query.map((row) => row.toDto()).getSingleOrNull();
+    return query.map(mapToLocalAsset).getSingleOrNull();
   }
 
   Future<int> getCount() {
@@ -106,7 +105,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     if (backupSelection != null) {
       query.where((lae) => lae.backupSelection.equalsValue(backupSelection));
     }
-    return query.map((localAlbum) => localAlbum.toDto()).get();
+    return query.map(mapToLocalAlbum).get();
   }
 
   Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> remoteIds) async {
@@ -138,7 +137,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-        final asset = row.readTable(_db.localAssetEntity).toDto();
+        final asset = mapToLocalAsset(row.readTable(_db.localAssetEntity));
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
     }
@@ -200,7 +199,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     query.where(whereClause);
 
     final rows = await query.get();
-    final assets = rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+    final assets = rows.map((row) => mapToLocalAsset(row.readTable(_db.localAssetEntity))).toList();
     final totalBytes = rows.fold<int>(0, (sum, row) {
       final fileSize = row.readTableOrNull(_db.remoteExifEntity)?.fileSize;
       return sum + (fileSize ?? 0);
@@ -211,7 +210,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<List<LocalAsset>> getEmptyCloudIdAssets() {
     final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
+    return query.map(mapToLocalAsset).get();
   }
 
   Future<void> reconcileHashesFromCloudId() async {

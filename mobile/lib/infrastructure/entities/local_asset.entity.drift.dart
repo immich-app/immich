@@ -20,6 +20,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       required String id,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
+      i0.Value<bool> isBackupCandidate,
       i0.Value<int> orientation,
       i0.Value<String?> iCloudId,
       i0.Value<DateTime?> adjustmentTime,
@@ -39,6 +40,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<String> id,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
+      i0.Value<bool> isBackupCandidate,
       i0.Value<int> orientation,
       i0.Value<String?> iCloudId,
       i0.Value<DateTime?> adjustmentTime,
@@ -104,6 +106,11 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
     column: $table.isFavorite,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<bool> get isBackupCandidate => $composableBuilder(
+    column: $table.isBackupCandidate,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -202,6 +209,11 @@ class $$LocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
+  i0.ColumnOrderings<bool> get isBackupCandidate => $composableBuilder(
+    column: $table.isBackupCandidate,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i0.ColumnOrderings<int> get orientation => $composableBuilder(
     column: $table.orientation,
     builder: (column) => i0.ColumnOrderings(column),
@@ -273,6 +285,11 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
     column: $table.isFavorite,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<bool> get isBackupCandidate => $composableBuilder(
+    column: $table.isBackupCandidate,
     builder: (column) => column,
   );
 
@@ -352,6 +369,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
+                i0.Value<bool> isBackupCandidate = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
                 i0.Value<String?> iCloudId = const i0.Value.absent(),
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
@@ -370,6 +388,7 @@ class $$LocalAssetEntityTableTableManager
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
+                isBackupCandidate: isBackupCandidate,
                 orientation: orientation,
                 iCloudId: iCloudId,
                 adjustmentTime: adjustmentTime,
@@ -389,6 +408,7 @@ class $$LocalAssetEntityTableTableManager
                 required String id,
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
+                i0.Value<bool> isBackupCandidate = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
                 i0.Value<String?> iCloudId = const i0.Value.absent(),
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
@@ -407,6 +427,7 @@ class $$LocalAssetEntityTableTableManager
                 id: id,
                 checksum: checksum,
                 isFavorite: isFavorite,
+                isBackupCandidate: isBackupCandidate,
                 orientation: orientation,
                 iCloudId: iCloudId,
                 adjustmentTime: adjustmentTime,
@@ -568,6 +589,21 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     ),
     defaultValue: const i4.Constant(false),
   );
+  static const i0.VerificationMeta _isBackupCandidateMeta =
+      const i0.VerificationMeta('isBackupCandidate');
+  @override
+  late final i0.GeneratedColumn<bool> isBackupCandidate =
+      i0.GeneratedColumn<bool>(
+        'is_backup_candidate',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_backup_candidate" IN (0, 1))',
+        ),
+        defaultValue: const i4.Constant(false),
+      );
   static const i0.VerificationMeta _orientationMeta = const i0.VerificationMeta(
     'orientation',
   );
@@ -649,6 +685,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     id,
     checksum,
     isFavorite,
+    isBackupCandidate,
     orientation,
     iCloudId,
     adjustmentTime,
@@ -721,6 +758,15 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
       context.handle(
         _isFavoriteMeta,
         isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
+    }
+    if (data.containsKey('is_backup_candidate')) {
+      context.handle(
+        _isBackupCandidateMeta,
+        isBackupCandidate.isAcceptableOrUnknown(
+          data['is_backup_candidate']!,
+          _isBackupCandidateMeta,
+        ),
       );
     }
     if (data.containsKey('orientation')) {
@@ -813,6 +859,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.bool,
         data['${effectivePrefix}is_favorite'],
       )!,
+      isBackupCandidate: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}is_backup_candidate'],
+      )!,
       orientation: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
         data['${effectivePrefix}orientation'],
@@ -871,6 +921,7 @@ class LocalAssetEntityData extends i0.DataClass
   final String id;
   final String? checksum;
   final bool isFavorite;
+  final bool isBackupCandidate;
   final int orientation;
   final String? iCloudId;
   final DateTime? adjustmentTime;
@@ -888,6 +939,7 @@ class LocalAssetEntityData extends i0.DataClass
     required this.id,
     this.checksum,
     required this.isFavorite,
+    required this.isBackupCandidate,
     required this.orientation,
     this.iCloudId,
     this.adjustmentTime,
@@ -920,6 +972,7 @@ class LocalAssetEntityData extends i0.DataClass
       map['checksum'] = i0.Variable<String>(checksum);
     }
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
+    map['is_backup_candidate'] = i0.Variable<bool>(isBackupCandidate);
     map['orientation'] = i0.Variable<int>(orientation);
     if (!nullToAbsent || iCloudId != null) {
       map['i_cloud_id'] = i0.Variable<String>(iCloudId);
@@ -959,6 +1012,7 @@ class LocalAssetEntityData extends i0.DataClass
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      isBackupCandidate: serializer.fromJson<bool>(json['isBackupCandidate']),
       orientation: serializer.fromJson<int>(json['orientation']),
       iCloudId: serializer.fromJson<String?>(json['iCloudId']),
       adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
@@ -985,6 +1039,7 @@ class LocalAssetEntityData extends i0.DataClass
       'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
+      'isBackupCandidate': serializer.toJson<bool>(isBackupCandidate),
       'orientation': serializer.toJson<int>(orientation),
       'iCloudId': serializer.toJson<String?>(iCloudId),
       'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
@@ -1007,6 +1062,7 @@ class LocalAssetEntityData extends i0.DataClass
     String? id,
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
+    bool? isBackupCandidate,
     int? orientation,
     i0.Value<String?> iCloudId = const i0.Value.absent(),
     i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
@@ -1024,6 +1080,7 @@ class LocalAssetEntityData extends i0.DataClass
     id: id ?? this.id,
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
+    isBackupCandidate: isBackupCandidate ?? this.isBackupCandidate,
     orientation: orientation ?? this.orientation,
     iCloudId: iCloudId.present ? iCloudId.value : this.iCloudId,
     adjustmentTime: adjustmentTime.present
@@ -1049,6 +1106,9 @@ class LocalAssetEntityData extends i0.DataClass
       isFavorite: data.isFavorite.present
           ? data.isFavorite.value
           : this.isFavorite,
+      isBackupCandidate: data.isBackupCandidate.present
+          ? data.isBackupCandidate.value
+          : this.isBackupCandidate,
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
@@ -1077,6 +1137,7 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
+          ..write('isBackupCandidate: $isBackupCandidate, ')
           ..write('orientation: $orientation, ')
           ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
@@ -1099,6 +1160,7 @@ class LocalAssetEntityData extends i0.DataClass
     id,
     checksum,
     isFavorite,
+    isBackupCandidate,
     orientation,
     iCloudId,
     adjustmentTime,
@@ -1120,6 +1182,7 @@ class LocalAssetEntityData extends i0.DataClass
           other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
+          other.isBackupCandidate == this.isBackupCandidate &&
           other.orientation == this.orientation &&
           other.iCloudId == this.iCloudId &&
           other.adjustmentTime == this.adjustmentTime &&
@@ -1140,6 +1203,7 @@ class LocalAssetEntityCompanion
   final i0.Value<String> id;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
+  final i0.Value<bool> isBackupCandidate;
   final i0.Value<int> orientation;
   final i0.Value<String?> iCloudId;
   final i0.Value<DateTime?> adjustmentTime;
@@ -1157,6 +1221,7 @@ class LocalAssetEntityCompanion
     this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
+    this.isBackupCandidate = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
     this.iCloudId = const i0.Value.absent(),
     this.adjustmentTime = const i0.Value.absent(),
@@ -1175,6 +1240,7 @@ class LocalAssetEntityCompanion
     required String id,
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
+    this.isBackupCandidate = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
     this.iCloudId = const i0.Value.absent(),
     this.adjustmentTime = const i0.Value.absent(),
@@ -1195,6 +1261,7 @@ class LocalAssetEntityCompanion
     i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
+    i0.Expression<bool>? isBackupCandidate,
     i0.Expression<int>? orientation,
     i0.Expression<String>? iCloudId,
     i0.Expression<DateTime>? adjustmentTime,
@@ -1213,6 +1280,7 @@ class LocalAssetEntityCompanion
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
+      if (isBackupCandidate != null) 'is_backup_candidate': isBackupCandidate,
       if (orientation != null) 'orientation': orientation,
       if (iCloudId != null) 'i_cloud_id': iCloudId,
       if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
@@ -1233,6 +1301,7 @@ class LocalAssetEntityCompanion
     i0.Value<String>? id,
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
+    i0.Value<bool>? isBackupCandidate,
     i0.Value<int>? orientation,
     i0.Value<String?>? iCloudId,
     i0.Value<DateTime?>? adjustmentTime,
@@ -1251,6 +1320,7 @@ class LocalAssetEntityCompanion
       id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
+      isBackupCandidate: isBackupCandidate ?? this.isBackupCandidate,
       orientation: orientation ?? this.orientation,
       iCloudId: iCloudId ?? this.iCloudId,
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
@@ -1295,6 +1365,9 @@ class LocalAssetEntityCompanion
     if (isFavorite.present) {
       map['is_favorite'] = i0.Variable<bool>(isFavorite.value);
     }
+    if (isBackupCandidate.present) {
+      map['is_backup_candidate'] = i0.Variable<bool>(isBackupCandidate.value);
+    }
     if (orientation.present) {
       map['orientation'] = i0.Variable<int>(orientation.value);
     }
@@ -1333,6 +1406,7 @@ class LocalAssetEntityCompanion
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
+          ..write('isBackupCandidate: $isBackupCandidate, ')
           ..write('orientation: $orientation, ')
           ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
@@ -1351,4 +1425,8 @@ i0.Index get idxLocalAssetCloudId => i0.Index(
 i0.Index get idxLocalAssetCreatedAt => i0.Index(
   'idx_local_asset_created_at',
   'CREATE INDEX IF NOT EXISTS idx_local_asset_created_at ON local_asset_entity (created_at)',
+);
+i0.Index get idxLocalAssetBackupCandidate => i0.Index(
+  'idx_local_asset_backup_candidate',
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_backup_candidate ON local_asset_entity (is_backup_candidate)',
 );

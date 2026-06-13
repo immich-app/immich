@@ -7,9 +7,9 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -175,7 +175,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           ..limit(count, offset: offset);
 
     return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto(remoteId: row.read(_db.remoteAssetEntity.id)))
+        .map(
+          (row) => mapToLocalAsset(row.readTable(_db.localAssetEntity), remoteId: row.read(_db.remoteAssetEntity.id)),
+        )
         .get();
   }
 
