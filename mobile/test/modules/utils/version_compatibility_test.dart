@@ -3,37 +3,82 @@ import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
 
 void main() {
-  test('getVersionCompatibilityMessage', () {
-    String? result;
+  group('app major version behind server', () {
+    const message =
+        'Your mobile app version is not compatible with the server! Please update your mobile app to the latest version.';
 
-    // server older than 1.106.0, app newer -> incompatible
-    result = getVersionCompatibilityMessage(
-      const SemVer(major: 1, minor: 105, patch: 0),
-      const SemVer(major: 1, minor: 107, patch: 0),
-    );
-    expect(
-      result,
-      'Your app minor version is not compatible with the server! Please update your server to version v1.106.0 or newer to login',
-    );
+    test('returns message when app major is behind server major', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 2, minor: 0, patch: 0),
+        const SemVer(major: 1, minor: 200, patch: 0),
+      );
+      expect(result, message);
+    });
 
-    // server at 1.106.0 boundary -> compatible
-    result = getVersionCompatibilityMessage(
-      const SemVer(major: 1, minor: 106, patch: 0),
-      const SemVer(major: 1, minor: 106, patch: 0),
-    );
-    expect(result, null);
+    test('returns null when app major matches server major', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 2, minor: 0, patch: 0),
+        const SemVer(major: 2, minor: 0, patch: 0),
+      );
+      expect(result, null);
+    });
+  });
 
-    result = getVersionCompatibilityMessage(
-      const SemVer(major: 1, minor: 106, patch: 0),
-      const SemVer(major: 1, minor: 107, patch: 0),
-    );
-    expect(result, null);
+  group('app major version too far ahead of server', () {
+    const message =
+        'Your server version is not compatible with the mobile app! Please update your server to the latest version.';
 
-    // server newer than app -> compatible
-    result = getVersionCompatibilityMessage(
-      const SemVer(major: 1, minor: 108, patch: 0),
-      const SemVer(major: 1, minor: 107, patch: 0),
-    );
-    expect(result, null);
+    test('returns message when app major is more than one ahead of server', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 1, minor: 200, patch: 0),
+        const SemVer(major: 3, minor: 0, patch: 0),
+      );
+      expect(result, message);
+    });
+
+    test('returns null when app major is exactly one ahead of server', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 1, minor: 200, patch: 0),
+        const SemVer(major: 2, minor: 0, patch: 0),
+      );
+      expect(result, null);
+    });
+  });
+
+  group('v1.106.0 minor compatibility', () {
+    const message =
+        'Your mobile app is not compatible with the server! Please update your server to version v1.106.0 or newer to login';
+
+    test('returns message when server is older than 1.106.0 and app is newer', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 1, minor: 105, patch: 0),
+        const SemVer(major: 1, minor: 107, patch: 0),
+      );
+      expect(result, message);
+    });
+
+    test('returns null when both are at the 1.106.0 boundary', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 1, minor: 106, patch: 0),
+        const SemVer(major: 1, minor: 106, patch: 0),
+      );
+      expect(result, null);
+    });
+
+    test('returns null when server is at or newer than 1.106.0', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 1, minor: 106, patch: 0),
+        const SemVer(major: 1, minor: 107, patch: 0),
+      );
+      expect(result, null);
+    });
+
+    test('returns null when server is newer than app', () {
+      final result = getVersionCompatibilityMessage(
+        const SemVer(major: 1, minor: 108, patch: 0),
+        const SemVer(major: 1, minor: 107, patch: 0),
+      );
+      expect(result, null);
+    });
   });
 }
