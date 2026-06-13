@@ -459,7 +459,7 @@ describe(SystemConfigService.name, () => {
       {
         should: 'validate av1 parallelism setting',
         config: { ffmpeg: { targetVideoCodec: VideoCodec.Av1, threads: 7 } },
-        throws: '[ffmpeg] AV1 threads/parallelism must be 0 or 1–6',
+        throws: '[ffmpeg] Threads: for AV1, parallelism must be 0–6',
       },
     ];
 
