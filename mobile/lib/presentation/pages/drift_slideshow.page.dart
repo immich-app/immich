@@ -158,11 +158,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       await widget.timeline.preloadAssets(_nextIndex);
     }
 
-    if (_config.direction == SlideshowDirection.shuffle || !_config.transition) {
-      _crossFadeToPage(_nextIndex);
-    } else {
-      unawaited(_pageController.animateToPage(_nextIndex, duration: Durations.long2, curve: Curves.easeIn));
-    }
+    _crossFadeToPage(_nextIndex);
   }
 
   void _crossFadeToPage(int page) {
