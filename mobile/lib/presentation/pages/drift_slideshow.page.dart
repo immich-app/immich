@@ -33,7 +33,7 @@ class DriftSlideshowPage extends ConsumerStatefulWidget {
   ConsumerState<DriftSlideshowPage> createState() => _DriftSlideshowPageState();
 }
 
-class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
+class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with SingleTickerProviderStateMixin {
   late SlideshowConfig _config;
   late final PageController _pageController;
   late final Stopwatch _stopwatch;
@@ -43,6 +43,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
   bool _paused = false;
   bool _showAppBar = false;
 
+  late final AnimationController _crossfadeController;
+  late final Animation<double> _crossfadeOpacity;
+  int? _crossfadeFromIndex;
+  double _crossfadeFromZoom = 0.0;
+
   @override
   initState() {
     super.initState();
@@ -50,6 +55,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     final asset = ref.read(assetViewerProvider).currentAsset;
     _index = asset == null ? 0 : widget.timeline.getIndex(asset.heroTag) ?? 0;
     _pageController = PageController(initialPage: _index);
+    _crossfadeController = AnimationController(vsync: this, duration: Durations.long2);
+    _crossfadeOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(_crossfadeController);
     _stopwatch = Stopwatch();
     _createTimer();
     _updateNextIndex();
@@ -64,6 +71,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     _timer.cancel();
     _stopwatch.stop();
     _pageController.dispose();
+    _crossfadeController.dispose();
     unawaited(WakelockPlus.disable());
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
@@ -151,10 +159,48 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
     }
 
     if (_config.direction == SlideshowDirection.shuffle || !_config.transition) {
-      _pageController.jumpToPage(_nextIndex);
+      _crossFadeToPage(_nextIndex);
     } else {
       unawaited(_pageController.animateToPage(_nextIndex, duration: Durations.long2, curve: Curves.easeIn));
     }
+  }
+
+  void _crossFadeToPage(int page) {
+    final previousIndex = _index;
+    _crossfadeFromZoom = previousIndex % 2 == 1 ? 0.0 : 1.0;
+    _pageController.jumpToPage(page);
+    setState(() {
+      _crossfadeFromIndex = previousIndex;
+    });
+    _crossfadeController.forward(from: 0.0).whenComplete(() {
+      if (mounted) {
+        setState(() {
+          _crossfadeFromIndex = null;
+        });
+      }
+    });
+  }
+
+  Widget _getCrossfadeChild(BuildContext context, int index, double zoom) {
+    final asset = widget.timeline.getAssetSafe(index);
+
+    if (asset == null) {
+      return const SizedBox.shrink();
+    }
+
+    final scale = _config.look == SlideshowLook.cover
+        ? PhotoViewComputedScale.covered
+        : PhotoViewComputedScale.contained;
+
+    return PhotoView(
+      imageProvider: getFullImageProvider(asset, size: context.sizeData),
+      index: index,
+      disableScaleGestures: true,
+      gaplessPlayback: true,
+      filterQuality: FilterQuality.high,
+      initialScale: scale * (1.0 + zoom / 20.0),
+      controller: PhotoViewController(),
+    );
   }
 
   void _createTimer() {
@@ -289,7 +335,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
           disableScaleGestures: true,
           gaplessPlayback: true,
           filterQuality: FilterQuality.high,
-          initialScale: scale * (1.0 + value / 10.0),
+          initialScale: scale * (1.0 + value / 20.0),
           controller: PhotoViewController(),
           onTapUp: (_, _, _) => _onTapUp(),
         ),
@@ -356,20 +402,39 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> {
       extendBody: true,
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
-      body: PhotoViewGestureDetectorScope(
-        axis: Axis.horizontal,
-        child: PageView.builder(
-          controller: _pageController,
-          physics: const FastClampingScrollPhysics(),
-          itemCount: widget.timeline.totalAssets,
-          onPageChanged: _pageChanged,
-          itemBuilder: (context, index) => Stack(
-            children: [
-              if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
-              _getPhotoView(context, index),
-            ],
+      body: Stack(
+        children: [
+          PhotoViewGestureDetectorScope(
+            axis: Axis.horizontal,
+            child: PageView.builder(
+              controller: _pageController,
+              physics: const FastClampingScrollPhysics(),
+              itemCount: widget.timeline.totalAssets,
+              onPageChanged: _pageChanged,
+              itemBuilder: (context, index) => Stack(
+                children: [
+                  if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
+                  _getPhotoView(context, index),
+                ],
+              ),
+            ),
           ),
-        ),
+          if (_crossfadeFromIndex != null)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: FadeTransition(
+                  opacity: _crossfadeOpacity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, _crossfadeFromIndex!),
+                      _getCrossfadeChild(context, _crossfadeFromIndex!, _crossfadeFromZoom),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
