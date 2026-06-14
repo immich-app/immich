@@ -34,6 +34,8 @@ class DriftSlideshowPage extends ConsumerStatefulWidget {
 }
 
 class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with SingleTickerProviderStateMixin {
+  static const double _kenBurnsZoom = 0.1;
+
   late SlideshowConfig _config;
   late final PageController _pageController;
   late final Stopwatch _stopwatch;
@@ -47,6 +49,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   late final Animation<double> _crossfadeOpacity;
   int? _crossfadeFromIndex;
   int? _crossfadeToIndex;
+  int _zoomCycle = 0;
 
   @override
   initState() {
@@ -185,7 +188,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     if (isIncoming && asset?.isImage == true) {
       child = _getPhotoView(context, index);
     } else {
-      final zoom = isIncoming ? (index % 2 == 1 ? 1.0 : 0.0) : (index % 2 == 1 ? 0.0 : 1.0);
+      final zoomOut = isIncoming ? _zoomCycle.isOdd : _zoomCycle.isEven;
+      final zoom = isIncoming ? (zoomOut ? 1.0 : 0.0) : (zoomOut ? 0.0 : 1.0);
       child = _getCrossfadeChild(context, index, zoom);
     }
 
@@ -212,7 +216,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       disableScaleGestures: true,
       gaplessPlayback: true,
       filterQuality: FilterQuality.high,
-      initialScale: scale * (1.0 + zoom / 40.0),
+      initialScale: scale * (1.0 + zoom * _kenBurnsZoom),
       controller: PhotoViewController(),
     );
   }
@@ -232,6 +236,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     setState(() {
       _index = page;
+      _zoomCycle++;
 
       if (!asset.isImage) {
         _paused = false;
@@ -328,7 +333,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final imageProvider = getFullImageProvider(asset, size: context.sizeData);
 
     if (asset.isImage) {
-      final zoomOut = index % 2 == 1;
+      final zoomOut = _zoomCycle.isOdd;
       final elapsed = _stopwatch.elapsedMilliseconds;
       final duration = _config.duration * 1000;
       final progress = zoomOut ? 1.0 - elapsed / duration.toDouble() : elapsed / duration.toDouble();
@@ -349,7 +354,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
           disableScaleGestures: true,
           gaplessPlayback: true,
           filterQuality: FilterQuality.high,
-          initialScale: scale * (1.0 + value / 40.0),
+          initialScale: scale * (1.0 + value * _kenBurnsZoom),
           controller: PhotoViewController(),
           onTapUp: (_, _, _) => _onTapUp(),
         ),
