@@ -46,7 +46,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   late final AnimationController _crossfadeController;
   late final Animation<double> _crossfadeOpacity;
   int? _crossfadeFromIndex;
-  double _crossfadeFromZoom = 0.0;
+  int? _crossfadeToIndex;
 
   @override
   initState() {
@@ -55,7 +55,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final asset = ref.read(assetViewerProvider).currentAsset;
     _index = asset == null ? 0 : widget.timeline.getIndex(asset.heroTag) ?? 0;
     _pageController = PageController(initialPage: _index);
-    _crossfadeController = AnimationController(vsync: this, duration: Durations.long2);
+    _crossfadeController = AnimationController(vsync: this, duration: Durations.extralong2);
     _crossfadeOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(_crossfadeController);
     _stopwatch = Stopwatch();
     _createTimer();
@@ -167,18 +167,29 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
   void _crossFadeToPage(int page) {
     final previousIndex = _index;
-    _crossfadeFromZoom = previousIndex % 2 == 1 ? 0.0 : 1.0;
     _pageController.jumpToPage(page);
     setState(() {
       _crossfadeFromIndex = previousIndex;
+      _crossfadeToIndex = page;
     });
     _crossfadeController.forward(from: 0.0).whenComplete(() {
       if (mounted) {
         setState(() {
           _crossfadeFromIndex = null;
+          _crossfadeToIndex = null;
         });
       }
     });
+  }
+
+  Widget _getCrossfadeLayer(BuildContext context, int index, double zoom) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
+        _getCrossfadeChild(context, index, zoom),
+      ],
+    );
   }
 
   Widget _getCrossfadeChild(BuildContext context, int index, double zoom) {
@@ -198,7 +209,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       disableScaleGestures: true,
       gaplessPlayback: true,
       filterQuality: FilterQuality.high,
-      initialScale: scale * (1.0 + zoom / 20.0),
+      initialScale: scale * (1.0 + zoom / 40.0),
       controller: PhotoViewController(),
     );
   }
@@ -335,7 +346,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
           disableScaleGestures: true,
           gaplessPlayback: true,
           filterQuality: FilterQuality.high,
-          initialScale: scale * (1.0 + value / 20.0),
+          initialScale: scale * (1.0 + value / 40.0),
           controller: PhotoViewController(),
           onTapUp: (_, _, _) => _onTapUp(),
         ),
@@ -419,18 +430,26 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
               ),
             ),
           ),
-          if (_crossfadeFromIndex != null)
+          if (_crossfadeFromIndex != null && _crossfadeToIndex != null)
             Positioned.fill(
               child: IgnorePointer(
-                child: FadeTransition(
-                  opacity: _crossfadeOpacity,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, _crossfadeFromIndex!),
-                      _getCrossfadeChild(context, _crossfadeFromIndex!, _crossfadeFromZoom),
-                    ],
-                  ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    const ColoredBox(color: Colors.black),
+                    FadeTransition(
+                      opacity: _crossfadeController,
+                      child: _getCrossfadeLayer(context, _crossfadeToIndex!, _crossfadeToIndex! % 2 == 1 ? 1.0 : 0.0),
+                    ),
+                    FadeTransition(
+                      opacity: _crossfadeOpacity,
+                      child: _getCrossfadeLayer(
+                        context,
+                        _crossfadeFromIndex!,
+                        _crossfadeFromIndex! % 2 == 1 ? 0.0 : 1.0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
