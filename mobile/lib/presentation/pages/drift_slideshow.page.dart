@@ -178,13 +178,20 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     });
   }
 
-  Widget _getCrossfadeLayer(BuildContext context, int index, double zoom) {
+  Widget _getCrossfadeLayer(BuildContext context, int index, {required bool isIncoming}) {
+    final asset = widget.timeline.getAssetSafe(index);
+
+    final Widget child;
+    if (isIncoming && asset?.isImage == true) {
+      child = _getPhotoView(context, index);
+    } else {
+      final zoom = isIncoming ? (index % 2 == 1 ? 1.0 : 0.0) : (index % 2 == 1 ? 0.0 : 1.0);
+      child = _getCrossfadeChild(context, index, zoom);
+    }
+
     return Stack(
       fit: StackFit.expand,
-      children: [
-        if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index),
-        _getCrossfadeChild(context, index, zoom),
-      ],
+      children: [if (_config.look == SlideshowLook.blurredBackground) _getBlur(context, index), child],
     );
   }
 
@@ -435,15 +442,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
                     const ColoredBox(color: Colors.black),
                     FadeTransition(
                       opacity: _crossfadeController,
-                      child: _getCrossfadeLayer(context, _crossfadeToIndex!, _crossfadeToIndex! % 2 == 1 ? 1.0 : 0.0),
+                      child: _getCrossfadeLayer(context, _crossfadeToIndex!, isIncoming: true),
                     ),
                     FadeTransition(
                       opacity: _crossfadeOpacity,
-                      child: _getCrossfadeLayer(
-                        context,
-                        _crossfadeFromIndex!,
-                        _crossfadeFromIndex! % 2 == 1 ? 0.0 : 1.0,
-                      ),
+                      child: _getCrossfadeLayer(context, _crossfadeFromIndex!, isIncoming: false),
                     ),
                   ],
                 ),

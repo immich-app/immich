@@ -9,21 +9,17 @@ class SlideshowConfig {
   const SlideshowConfig({
     this.repeat = true,
     this.duration = 5,
-    this.look = SlideshowLook.contain,
+    this.look = SlideshowLook.blurredBackground,
     this.direction = SlideshowDirection.forward,
   });
 
-  SlideshowConfig copyWith({
-    bool? repeat,
-    int? duration,
-    SlideshowLook? look,
-    SlideshowDirection? direction,
-  }) => SlideshowConfig(
-    repeat: repeat ?? this.repeat,
-    duration: duration ?? this.duration,
-    look: look ?? this.look,
-    direction: direction ?? this.direction,
-  );
+  SlideshowConfig copyWith({bool? repeat, int? duration, SlideshowLook? look, SlideshowDirection? direction}) =>
+      SlideshowConfig(
+        repeat: repeat ?? this.repeat,
+        duration: duration ?? this.duration,
+        look: look ?? this.look,
+        direction: direction ?? this.direction,
+      );
 
   @override
   bool operator ==(Object other) =>
