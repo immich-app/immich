@@ -66,11 +66,12 @@ class HashService {
           await _hashAssets(pseudoAlbum, trashedToHash, isTrashed: true);
         }
       }
-    } on PlatformException catch (e) {
+    } on PlatformException catch (e, s) {
       if (e.code == _kHashCancelledCode) {
         _log.warning("Hashing cancelled by platform");
         return;
       }
+      _log.severe("Native hashing failed: ${e.code}", e, s);
     } catch (e, s) {
       _log.severe("Error during hashing", e, s);
     }
