@@ -1,1 +1,0 @@
-* Correctly display time based on timezone

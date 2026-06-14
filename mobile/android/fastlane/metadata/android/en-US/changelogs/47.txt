@@ -1,1 +1,0 @@
-* Improve scroll thumb date info

@@ -1,1 +1,0 @@
-* Album name is now editable

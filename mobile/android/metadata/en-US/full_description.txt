@@ -1,3 +1,0 @@
-This is a client app for Immich Server and you will need to run/manage the server on your own in order to use the app.
-
-Github URL: https://github.com/immich-app/immich

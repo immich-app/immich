@@ -1,1 +1,0 @@
-* Hot fix: timeline crash when trying to group invalid date info.

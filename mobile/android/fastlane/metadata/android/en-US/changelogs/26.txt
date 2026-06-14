@@ -1,1 +1,0 @@
-* Refactored app to use OpenAPI SDK to improve performance and project structure.

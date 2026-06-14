@@ -1,4 +1,0 @@
-* fix: Prevents duplicate taps navigating to the same route twice.
-* fix: Adds safe area to album to stop from clipping bottom of albums.
-* feat: Adds onboarding for permissions.
-* feat: Responsive list and grid view of backup album selection and fixes search filter.

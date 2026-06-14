@@ -1,3 +1,0 @@
-* Improve performance 
-* Fix album title overflow
-* New feature - Share asset from mobile to other apps

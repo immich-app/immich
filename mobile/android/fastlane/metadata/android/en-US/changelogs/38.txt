@@ -1,2 +1,0 @@
-* Fixed remove empty translations
-* Fixed search page crashes the app on some Android models

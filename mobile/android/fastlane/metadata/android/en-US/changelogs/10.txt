@@ -1,2 +1,0 @@
-* Accepting webp file format
-* Fixed backup stop when an asset is of wrong file type. The app will now skip that asset and try its best to perform the backup operation on the rest of the assets.

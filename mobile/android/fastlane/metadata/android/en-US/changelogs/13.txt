@@ -1,2 +1,0 @@
-* New Feature - Selection backup. User can now select a combination of albums to be included or excluded during the backup process, and only unique photos, and videos that are not overlapping between the two groups will be backup.
-* Bug fix - Show correct count of backup and remainder assets.

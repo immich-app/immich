@@ -1,2 +1,0 @@
-* Added zoom functionality to the image viewer
-* Fixed issue with the user is logged out after turning off the app

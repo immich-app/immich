@@ -1,3 +1,0 @@
-* Improved logging page experience
-* Fixed shared page does not get all shared albums
-* Fixed hero animation re-enabling on immich asset grid

@@ -1,5 +1,0 @@
-* Added Autofill login form 
-* Added Delete button in detail viewer 
-* Added Disable autocorrection on endpoint URL 
-* Fixed Notification android 13 permission
-* Fixed Minor typo 

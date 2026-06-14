@@ -1,6 +1,0 @@
-* Scroll to top when tapping photos while already on photo page.
-* Delete goes to next page instead of popping back to the main timeline.
-* Improve date formatting.
-* Styling and linter.
-* User get logged out upon clicking on any thing after logging in.
-* Improve reliability of asset loading and indexing.

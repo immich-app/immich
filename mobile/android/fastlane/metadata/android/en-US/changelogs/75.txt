@@ -1,8 +1,0 @@
-* refactor: migrate all Hive boxes to Isar database.
-* feat: Use new search API and GridView for Places / Locations.
-* refactor: store backup settings on device.
-* feat: Explore favorites, recently added, videos, and motion photos.
-* fix: Fixed mobile app not reporting webm MIME type.
-* feature: Hardening synchronization mechanism + Pull to refresh.
-* feat: improve explore page and allow metadata search.
-* feat: Allow headers to upload large file in chunk.

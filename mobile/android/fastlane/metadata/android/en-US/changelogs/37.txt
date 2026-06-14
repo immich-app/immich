@@ -1,2 +1,0 @@
-* Add cache setting and improve caching mechanism
-* Persist WiFi + charging settings of background backup
