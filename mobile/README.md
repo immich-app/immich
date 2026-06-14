@@ -11,21 +11,6 @@ The Immich mobile app is a Flutter-based solution leveraging the Isar Database f
 5. Run `make translation` to generate the translation file.
 6. Run `flutter run` to start the app.
 
-### iOS Code Signing
-
-The Immich Apple Team ID and bundle IDs are specified in `ios/Signing.xcconfig`. For local development, we provide an override mechanism.
-
-Create `ios/Signing.local.xcconfig` and populate it with the necessary values needed to build and sign Immich yourself. This local override file is gitignored.
-
-```
-IMMICH_TEAM_ID = ABCDE12345
-IMMICH_BUNDLE_ID_PROD = com.customuniqueid.immich
-IMMICH_BUNDLE_ID_DEV = com.customuniqueid.immichdev
-IMMICH_GROUP_ID = group.com.customuniqueid.immich
-```
-
-The environment values are used across Immich's targets and schemes to prevent redundant edits by contributors.
-
 ## Translation
 
 To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then, from the `mobile/` directory, run
