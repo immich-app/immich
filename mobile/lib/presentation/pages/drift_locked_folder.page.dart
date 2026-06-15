@@ -49,7 +49,7 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
       return;
     }
     setState(() {
-      _showOverlay = _pendingClose || state != AppLifecycleState.resumed;
+      _showOverlay = state != AppLifecycleState.resumed;
     });
   }
 
