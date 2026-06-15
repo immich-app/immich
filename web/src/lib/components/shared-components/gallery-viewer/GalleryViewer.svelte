@@ -316,6 +316,7 @@
         }
         break;
       }
+      // no default
     }
   };
 

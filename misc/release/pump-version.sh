@@ -69,10 +69,12 @@ if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
   echo "Pumping Mobile: $CURRENT_MOBILE => $NEXT_MOBILE"
 fi
 
-sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
-sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
-sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
-perl -i -p0e "s/(<key>CFBundleShortVersionString<\/key>\s*<string>)$CURRENT_SERVER(<\/string>)/\${1}$NEXT_SERVER\${2}/s" mobile/ios/Runner/Info.plist
+sed -i "s/\"android\.injected\.version\.name\" => \".*\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
+sed -i "s/\"android\.injected\.version\.code\" => [0-9]\+,/\"android\.injected\.version\.code\" => $NEXT_MOBILE,/" mobile/android/fastlane/Fastfile
+sed -i "s/^version: .*+[0-9]\+$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
+# strip prerelease from CFBundleShortVersionString (deploying to testflight _is_ the prerelease)
+NEXT_SERVER_SHORT="${NEXT_SERVER%%-*}"
+perl -i -p0e "s/(<key>CFBundleShortVersionString<\/key>\s*<string>).*?(<\/string>)/\${1}$NEXT_SERVER_SHORT\${2}/s" mobile/ios/Runner/Info.plist
 
 
 echo "IMMICH_VERSION=v$NEXT_SERVER" >>"$GITHUB_ENV"

@@ -50,6 +50,7 @@ jobs:
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
       version: ${{ steps.output.outputs.version }}
+      rc: ${{ steps.output.outputs.rc }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - id: token
@@ -81,7 +82,13 @@ jobs:
         run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
 
       - id: output
-        run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+        run: |
+          echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$IMMICH_VERSION" =~ -rc\.[0-9]+$ ]]; then
+            echo "rc=true" >> $GITHUB_OUTPUT
+          else
+            echo "rc=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and tag
         id: push-tag
@@ -97,6 +104,7 @@ jobs:
     needs: bump_version
     permissions:
       contents: read
+      pull-requests: write
     secrets:
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
@@ -144,6 +152,7 @@ jobs:
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           draft: true
+          prerelease: ${{ needs.bump_version.outputs.rc }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true
