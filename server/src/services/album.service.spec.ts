@@ -480,8 +480,8 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       await expect(
         sut.addUsers(AuthFactory.create(owner), album.id, { albumUsers: [{ userId }] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.album.update).not.toHaveBeenCalled();
+      ).resolves.toBeDefined();
+      expect(mocks.albumUser.create).not.toHaveBeenCalled();
       expect(mocks.user.get).not.toHaveBeenCalled();
     });
 
@@ -505,11 +505,10 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       await expect(
         sut.addUsers(AuthFactory.create(owner), album.id, {
-          albumUsers: [{ userId: owner.id }],
+          albumUsers: [{ userId: newUuid(), role: AlbumUserRole.Owner }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.album.update).not.toHaveBeenCalled();
-      expect(mocks.user.get).not.toHaveBeenCalled();
+      expect(mocks.albumUser.create).not.toHaveBeenCalled();
     });
 
     it('should add valid shared users', async () => {
@@ -532,6 +531,28 @@ describe(AlbumService.name, () => {
         id: album.id,
         userId: user.id,
         senderName: owner.name,
+      });
+    });
+
+    it('should add the remaining users when one is already a member', async () => {
+      const existingId = newUuid();
+      const album = AlbumFactory.from().albumUser({ userId: existingId }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      const newUser = UserFactory.create();
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.update.mockResolvedValue(getForAlbum(album));
+      mocks.user.get.mockResolvedValue(newUser);
+      mocks.albumUser.create.mockResolvedValue(AlbumUserFactory.from().album(album).user(newUser).build());
+
+      await sut.addUsers(AuthFactory.create(owner), album.id, {
+        albumUsers: [{ userId: existingId }, { userId: newUser.id }],
+      });
+
+      expect(mocks.albumUser.create).toHaveBeenCalledTimes(1);
+      expect(mocks.albumUser.create).toHaveBeenCalledWith({
+        userId: newUser.id,
+        albumId: album.id,
       });
     });
   });
