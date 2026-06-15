@@ -472,7 +472,7 @@ describe(AlbumService.name, () => {
       expect(mocks.album.update).not.toHaveBeenCalled();
     });
 
-    it('should throw an error if the userId is already added', async () => {
+    it('should skip if the userId is already added', async () => {
       const userId = newUuid();
       const album = AlbumFactory.from().albumUser({ userId }).build();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
@@ -480,9 +480,8 @@ describe(AlbumService.name, () => {
       mocks.album.getById.mockResolvedValue(getForAlbum(album));
       await expect(
         sut.addUsers(AuthFactory.create(owner), album.id, { albumUsers: [{ userId }] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mocks.album.update).not.toHaveBeenCalled();
-      expect(mocks.user.get).not.toHaveBeenCalled();
+      ).resolves.toBeDefined();
+      expect(mocks.albumUser.create).not.toHaveBeenCalled();
     });
 
     it('should throw an error if the userId does not exist', async () => {
