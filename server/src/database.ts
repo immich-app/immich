@@ -532,4 +532,5 @@ export const lockableProperties = [
   'rating',
   'timeZone',
   'tags',
-] as const;
+  'livePhotoCID',
+] as const satisfies Array<keyof AssetExifTable>;

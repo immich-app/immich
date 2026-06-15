@@ -396,6 +396,23 @@ export class MetadataService extends BaseService {
       tasks.push(() => this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
+    if (!this.isMotionPhoto(asset, exifTags) && !exifData.livePhotoCID && asset.livePhotoVideoId) {
+      // delete the motion part if the asset gets changed to not be a live photo anymore
+      tasks.push(async () => {
+        if (!asset.livePhotoVideoId) {
+          throw new Error('asset.livePhotoVideoId should not have been reset');
+        }
+        await this.assetRepository.update({ id: asset.id, livePhotoVideoId: null });
+        const count = await this.assetRepository.getLivePhotoCount(asset.livePhotoVideoId);
+        if (count === 0) {
+          await this.jobRepository.queue({
+            name: JobName.AssetDelete,
+            data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
+          });
+        }
+      });
+    }
+
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
       tasks.push(() => this.applyTaggedFaces(asset, exifTags));
     }
@@ -500,7 +517,7 @@ export class MetadataService extends BaseService {
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
-    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = _.pick(
+    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone, livePhotoCID } = _.pick(
       {
         description: asset.exifInfo.description,
         dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
@@ -509,6 +526,7 @@ export class MetadataService extends BaseService {
         rating: asset.exifInfo.rating ?? 0,
         tags: asset.exifInfo.tags,
         timeZone: asset.exifInfo.timeZone,
+        livePhotoCID: asset.exifInfo.livePhotoCID,
       },
       lockedProperties,
     );
@@ -522,6 +540,7 @@ export class MetadataService extends BaseService {
         GPSLongitude: longitude,
         Rating: rating,
         TagsList: tags,
+        ContentIdentifier: livePhotoCID,
       },
       _.isUndefined,
     );

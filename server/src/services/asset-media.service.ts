@@ -181,7 +181,7 @@ export class AssetMediaService extends BaseService {
       }
       await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
       await this.assetRepository.upsertExif({
-        exif: { assetId: asset.id, fileSizeInByte: file.size },
+        exif: { assetId: asset.id, fileSizeInByte: file.size, livePhotoCID: dto.livePhotoVideoId },
         lockedPropertiesBehavior: 'override',
       });
 

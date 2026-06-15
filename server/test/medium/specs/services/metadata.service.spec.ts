@@ -3,10 +3,12 @@ import { Stats } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { AssetType, JobName } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -41,7 +43,7 @@ const setup = (db?: Kysely<DB>) => {
       SystemMetadataRepository,
       TagRepository,
     ],
-    mock: [EventRepository, StorageRepository, LoggingRepository],
+    mock: [EventRepository, JobRepository, StorageRepository, LoggingRepository],
   });
 
   ctx.getMock(StorageRepository).stat.mockResolvedValue({
@@ -150,6 +152,26 @@ describe(MetadataService.name, () => {
           .executeTakeFirstOrThrow(),
         // note that this date is technically wrong. it does not throw though and should get the user's attention either way.
       ).resolves.toEqual({ dateTimeOriginal: new Date('4260-03-05T04:04:12.000Z') });
+    });
+  });
+
+  it('should remove motion asset if asset is updated to not be a motion photo anymore', async () => {
+    const { sut, ctx } = setup();
+    ctx.getMock(EventRepository).emit.mockResolvedValue();
+    ctx.getMock(JobRepository).queue.mockResolvedValue();
+    const { user } = await ctx.newUser();
+    const { asset: motionAsset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+    const { asset } = await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: motionAsset.id });
+    await ctx.newExif({ assetId: asset.id, description: '' });
+
+    await sut.handleMetadataExtraction({ id: asset.id });
+
+    await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
+      expect.objectContaining({ livePhotoVideoId: null }),
+    );
+    expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
+      name: JobName.AssetDelete,
+      data: { id: motionAsset.id, deleteOnDisk: true },
     });
   });
 });
