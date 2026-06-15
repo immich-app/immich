@@ -82,9 +82,6 @@ url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353224133"
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
 
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
-
 [[tools."github:webassembly/binaryen"]]
 version = "version_124"
 backend = "github:webassembly/binaryen"
