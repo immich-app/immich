@@ -2,7 +2,6 @@ import { defaults, SystemConfig } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { NotificationService } from 'src/services/notification.service';
-import { INotifyAlbumUpdateJob } from 'src/types';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -157,12 +156,20 @@ describe(NotificationService.name, () => {
   });
 
   describe('onAlbumUpdateEvent', () => {
-    it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdate({ id: 'album', recipientId: '42' });
-      expect(mocks.job.queue).toHaveBeenCalledWith({
+    it('should send a websocket event to every user and queue notify jobs for recipients', async () => {
+      await sut.onAlbumUpdate({ id: 'album', userIds: ['1', '42'], recipientIds: ['42'] });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_album_update', '1', 'album');
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_album_update', '42', 'album');
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
         name: JobName.NotifyAlbumUpdate,
         data: { id: 'album', recipientId: '42', delay: 300_000 },
       });
+    });
+
+    it('should not queue email jobs when there are no recipients', async () => {
+      await sut.onAlbumUpdate({ id: 'album', userIds: ['1'], recipientIds: [] });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_album_update', '1', 'album');
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
   });
 
@@ -522,7 +529,7 @@ describe(NotificationService.name, () => {
     });
 
     it('should add new recipients for new images if job is already queued', async () => {
-      await sut.onAlbumUpdate({ id: '1', recipientId: '2' } as INotifyAlbumUpdateJob);
+      await sut.onAlbumUpdate({ id: '1', userIds: ['2'], recipientIds: ['2'] });
       expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, '1/2');
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NotifyAlbumUpdate,

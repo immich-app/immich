@@ -217,31 +217,23 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
-    await this.jobRepository.queue({
-      name: JobName.NotifyAlbumUpdate,
-      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
-    });
+  async onAlbumUpdate({ id, userIds, recipientIds }: ArgOf<'AlbumUpdate'>) {
+    for (const userId of userIds) {
+      this.websocketRepository.clientSend('on_album_update', userId, id);
+    }
+
+    for (const recipientId of recipientIds) {
+      await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
+      await this.jobRepository.queue({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
+      });
+    }
   }
 
   @OnEvent({ name: 'AlbumInvite' })
   async onAlbumInvite({ id, userId, senderName }: ArgOf<'AlbumInvite'>) {
     await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId, senderName } });
-  }
-
-  @OnEvent({ name: 'AlbumAssetCreate' })
-  onAlbumAssetCreate({ albumId, userIds }: ArgOf<'AlbumAssetCreate'>) {
-    for (const userId of userIds) {
-      this.websocketRepository.clientSend('on_album_asset_create', userId, albumId);
-    }
-  }
-
-  @OnEvent({ name: 'AlbumAssetDelete' })
-  onAlbumAssetDelete({ albumId, userIds }: ArgOf<'AlbumAssetDelete'>) {
-    for (const userId of userIds) {
-      this.websocketRepository.clientSend('on_album_asset_delete', userId, albumId);
-    }
   }
 
   @OnEvent({ name: 'SessionDelete' })

@@ -38,10 +38,8 @@ type EventMap = {
   ConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  AlbumUpdate: [{ id: string; recipientId: string }];
+  AlbumUpdate: [{ id: string; userIds: string[]; recipientIds: string[] }];
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
-  AlbumAssetCreate: [{ albumId: string; userIds: string[] }];
-  AlbumAssetDelete: [{ albumId: string; userIds: string[] }];
 
   // asset events
   AssetCreate: [{ asset: Asset; file: UploadFile }];
