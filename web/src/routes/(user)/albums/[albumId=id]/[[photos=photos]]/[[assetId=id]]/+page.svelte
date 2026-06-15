@@ -206,7 +206,11 @@
     }
   });
 
-  let album = $derived(data.album);
+  let album: AlbumResponseDto = $state(data.album);
+
+  $effect(() => {
+    album = data.album;
+  });
   let albumId = $derived(album.id);
 
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
@@ -376,7 +380,7 @@
                   <button
                     class="flex gap-x-1"
                     type="button"
-                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned, onUpdate: (updated) => (album = updated) })}
                   >
                     <!-- owner & users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
@@ -570,7 +574,7 @@
                   <MenuOption
                     icon={mdiCogOutline}
                     text={$t('options')}
-                    onClick={() => modalManager.show(AlbumOptionsModal, { album })}
+                    onClick={() => modalManager.show(AlbumOptionsModal, { album, onUpdate: (updated) => (album = updated) })}
                   />
                 {/if}
 

@@ -26,9 +26,10 @@
     album: AlbumResponseDto;
     readOnly?: boolean;
     onClose: () => void;
+    onUpdate?: (album: AlbumResponseDto) => void;
   };
 
-  let { album, readOnly = false, onClose }: Props = $props();
+  let { album, readOnly = false, onClose, onUpdate }: Props = $props();
 
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
@@ -70,7 +71,10 @@
   onAlbumShare={refreshAlbum}
   {onSharedLinkCreate}
   {onSharedLinkDelete}
-  onAlbumUpdate={(newAlbum) => (album = newAlbum)}
+  onAlbumUpdate={(newAlbum) => {
+    album = newAlbum;
+    onUpdate?.(newAlbum);
+  }}
 />
 
 <Modal title={readOnly ? $t('album') : $t('options')} {onClose} size="small">
