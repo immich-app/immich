@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
@@ -19,6 +20,7 @@ class DriftLockedFolderPage extends ConsumerStatefulWidget {
 
 class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> with WidgetsBindingObserver {
   bool _showOverlay = false;
+  bool _pendingClose = false;
 
   @override
   void initState() {
@@ -34,11 +36,21 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (mounted) {
-      setState(() {
-        _showOverlay = state != AppLifecycleState.resumed;
-      });
+    if (!mounted) {
+      return;
     }
+    if (state == AppLifecycleState.paused) {
+      _pendingClose = true;
+      ref.read(authProvider.notifier).lockPinCode();
+    }
+    if (state == AppLifecycleState.resumed && _pendingClose) {
+      _pendingClose = false;
+      context.navigateTo(const TabShellRoute());
+      return;
+    }
+    setState(() {
+      _showOverlay = _pendingClose || state != AppLifecycleState.resumed;
+    });
   }
 
   @override
