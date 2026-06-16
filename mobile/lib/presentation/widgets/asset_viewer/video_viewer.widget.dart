@@ -10,7 +10,6 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -49,7 +48,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
-  String? _sessionId;
   String? _remoteAssetId;
 
   VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
@@ -72,7 +70,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
       _notifier.pause();
-      _endSession();
+      _notifier.endHlsSession();
       return;
     }
 
@@ -85,7 +83,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     WidgetsBinding.instance.removeObserver(this);
     _loadTimer?.cancel();
     _removeListeners();
-    _endSession();
     super.dispose();
   }
 
@@ -226,31 +223,9 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   void _onSourceResolved() {
     final url = _controller?.onPlaybackSourceResolved.value;
-    if (url == null) {
-      return;
-    }
-
-    final sessionId = extractHlsSessionId(url);
-    if (sessionId == null || sessionId == _sessionId) {
-      return;
-    }
-    // If the player started a new session without us reloading, end the old one
-    _endSession();
-    _sessionId = sessionId;
-  }
-
-  void _endSession() {
-    final sessionId = _sessionId;
-    final assetId = _remoteAssetId;
-    _sessionId = null;
-    if (sessionId == null || assetId == null) {
-      return;
-    }
-
-    unawaited(
-      ref.read(apiServiceProvider).assetsApi.endSession(assetId, sessionId).onError((error, stackTrace) {
-        _log.warning('Failed to end HLS session $sessionId for asset $assetId', error, stackTrace);
-      }),
+    _notifier.updateHlsSession(
+      assetId: _remoteAssetId,
+      sessionId: url == null ? null : extractHlsSessionId(url),
     );
   }
 
