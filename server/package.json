@@ -107,7 +107,7 @@
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
     "semver": "^7.8.1",
-    "sharp": "^0.35.0",
+    "sharp": "^0.35.2",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
@@ -168,6 +168,6 @@
     "vitest": "^3.0.0"
   },
   "overrides": {
-    "sharp": "^0.35.0"
+    "sharp": "^0.35.2"
   }
 }

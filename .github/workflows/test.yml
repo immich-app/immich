@@ -716,7 +716,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Install server dependencies
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
+        run: pnpm --filter immich install --frozen-lockfile
       - name: Run API generation
         run: mise //:open-api
         working-directory: open-api
@@ -774,7 +774,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Install server dependencies
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build plugins
         run: mise //:plugins
