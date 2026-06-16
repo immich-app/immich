@@ -25,6 +25,7 @@ export enum ImmichHeader {
   Checksum = 'x-immich-checksum',
   CorrelationId = 'X-Correlation-ID',
   HlsInitSegment = 'x-immich-hls-msn',
+  HlsPosition = 'x-immich-hls-pos',
 }
 
 export enum ImmichQuery {

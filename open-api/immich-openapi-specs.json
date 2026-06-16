@@ -4924,6 +4924,15 @@
               "maximum": 9007199254740991,
               "type": "integer"
             }
+          },
+          {
+            "name": "x-immich-hls-pos",
+            "required": false,
+            "in": "header",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
           }
         ],
         "responses": {

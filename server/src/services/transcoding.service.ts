@@ -5,6 +5,7 @@ import {
   HLS_BACKPRESSURE_PAUSE_SEGMENTS,
   HLS_BACKPRESSURE_RESUME_SEGMENTS,
   HLS_CLEANUP_INTERVAL_MS,
+  HLS_CRF,
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
   HLS_SEGMENT_DURATION,
@@ -13,7 +14,7 @@ import {
 } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum';
+import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget, VideoCodec } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VideoInterfaces } from 'src/types';
@@ -221,6 +222,7 @@ export class TranscodingService extends BaseService {
           targetResolution: String(variant.resolution),
           maxBitrate: `${Math.round(variant.bitrate / 1000)}k`,
           gopSize: gop,
+          crf: HLS_CRF[variant.codec],
         },
         this.videoInterfaces,
         { strictGop: true, lowLatency: true },
