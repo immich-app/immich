@@ -1,21 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
-class HapticSetting extends HookWidget {
+class HapticSetting extends HookConsumerWidget {
   const HapticSetting({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final hapticFeedbackSetting = useAppSettingsState(AppSettingsEnum.enableHapticFeedback);
-    final isHapticFeedbackEnabled = useValueNotifier(hapticFeedbackSetting.value);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isHapticFeedbackEnabled = useState(ref.watch(appConfigProvider).advanced.enableHapticFeedback);
+    useValueChanged(
+      isHapticFeedbackEnabled.value,
+      (_, __) =>
+          unawaited(ref.read(settingsProvider).write(.advancedEnableHapticFeedback, isHapticFeedbackEnabled.value)),
+    );
 
     void onHapticFeedbackChange(bool isEnabled) {
-      hapticFeedbackSetting.value = isEnabled;
+      isHapticFeedbackEnabled.value = isEnabled;
     }
 
     return Column(
