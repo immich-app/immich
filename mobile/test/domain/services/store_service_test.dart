@@ -23,12 +23,12 @@ void main() {
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.legacyAccessToken);
     registerFallbackValue(StoreKey.version);
-    registerFallbackValue(StoreKey.advancedTroubleshooting);
+    registerFallbackValue(StoreKey.legacyAdvancedTroubleshooting);
 
     when(() => mockDriftStoreRepo.getAll()).thenAnswer(
       (_) async => [
         const StoreDto(StoreKey.legacyAccessToken, _kAccessToken),
-        const StoreDto(StoreKey.advancedTroubleshooting, _kAdvancedTroubleshooting),
+        const StoreDto(StoreKey.legacyAdvancedTroubleshooting, _kAdvancedTroubleshooting),
         const StoreDto(StoreKey.version, _kVersion),
       ],
     );
@@ -46,7 +46,7 @@ void main() {
     test('Populates the internal cache on init', () {
       verify(() => mockDriftStoreRepo.getAll()).called(1);
       expect(sut.tryGet(StoreKey.legacyAccessToken), _kAccessToken);
-      expect(sut.tryGet(StoreKey.advancedTroubleshooting), _kAdvancedTroubleshooting);
+      expect(sut.tryGet(StoreKey.legacyAdvancedTroubleshooting), _kAdvancedTroubleshooting);
       expect(sut.tryGet(StoreKey.version), _kVersion);
       // Other keys should be null
       expect(sut.tryGet(StoreKey.deviceId), isNull);
@@ -147,7 +147,7 @@ void main() {
       await sut.clear();
       verify(() => mockDriftStoreRepo.deleteAll()).called(1);
       expect(sut.tryGet(StoreKey.legacyAccessToken), isNull);
-      expect(sut.tryGet(StoreKey.advancedTroubleshooting), isNull);
+      expect(sut.tryGet(StoreKey.legacyAdvancedTroubleshooting), isNull);
       expect(sut.tryGet(StoreKey.version), isNull);
     });
   });

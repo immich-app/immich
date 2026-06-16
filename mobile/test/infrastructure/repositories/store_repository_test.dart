@@ -17,7 +17,7 @@ Future<void> _populateStore(Drift db) async {
     batch.insert(
       db.storeEntity,
       StoreEntityCompanion(
-        id: Value(StoreKey.advancedTroubleshooting.id),
+        id: Value(StoreKey.legacyAdvancedTroubleshooting.id),
         intValue: const Value(_kTestAdvancedTroubleshooting ? 1 : 0),
         stringValue: const Value(null),
       ),
@@ -72,10 +72,10 @@ void main() {
     });
 
     test('converts bool', () async {
-      bool? advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      bool? advancedTroubleshooting = await sut.tryGet(StoreKey.legacyAdvancedTroubleshooting);
       expect(advancedTroubleshooting, isNull);
-      await sut.upsert(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting);
-      advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      await sut.upsert(StoreKey.legacyAdvancedTroubleshooting, _kTestAdvancedTroubleshooting);
+      advancedTroubleshooting = await sut.tryGet(StoreKey.legacyAdvancedTroubleshooting);
       expect(advancedTroubleshooting, _kTestAdvancedTroubleshooting);
     });
   });
@@ -86,10 +86,10 @@ void main() {
     });
 
     test('delete()', () async {
-      bool? advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      bool? advancedTroubleshooting = await sut.tryGet(StoreKey.legacyAdvancedTroubleshooting);
       expect(advancedTroubleshooting, isFalse);
-      await sut.delete(StoreKey.advancedTroubleshooting);
-      advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
+      await sut.delete(StoreKey.legacyAdvancedTroubleshooting);
+      advancedTroubleshooting = await sut.tryGet(StoreKey.legacyAdvancedTroubleshooting);
       expect(advancedTroubleshooting, isNull);
     });
 
@@ -136,12 +136,12 @@ void main() {
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion),
               const StoreDto<Object>(StoreKey.legacyAccessToken, _kTestAccessToken),
-              const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
+              const StoreDto<Object>(StoreKey.legacyAdvancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
               const StoreDto<Object>(StoreKey.legacyAccessToken, _kTestAccessToken),
-              const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
+              const StoreDto<Object>(StoreKey.legacyAdvancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
           ]),
         ),
