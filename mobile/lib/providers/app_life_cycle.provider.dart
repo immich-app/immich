@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -13,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:logging/logging.dart';
 
@@ -140,7 +139,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final isEnableBackup = _ref.read(appConfigProvider).backup.enabled;
 
     if (isEnableBackup) {
-      final currentUser = Store.tryGet(StoreKey.currentUser);
+      final currentUser = _ref.read(currentUserProvider);
       if (currentUser != null) {
         await _safeRun(
           _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),

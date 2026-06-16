@@ -60,7 +60,7 @@ void main() {
     when(() => actionService.editDateTime(any(), any())).thenAnswer((_) async => true);
     when(() => assetService.watchAsset(any())).thenAnswer((_) => const Stream.empty());
     when(() => assetService.getExif(any())).thenAnswer((_) async => null);
-    when(() => userService.tryGetMyUser()).thenReturn(_user);
+    when(() => userService.tryGetMyUser()).thenAnswer((_) async => _user);
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
 
     container = ProviderContainer(
