@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.drift.dart';
@@ -66,8 +65,6 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
             const (String) => entity.stringValue,
             const (bool) => entity.intValue == 1,
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-            const (UserDto) =>
-              entity.stringValue == null ? null : await AuthUserRepository(_db).get(entity.stringValue!),
             _ => null,
           }
           as T?;
@@ -78,7 +75,6 @@ class StoreRepository extends DatabaseAccessor<Drift> with $StoreRepositoryMixin
       const (String) => (null, value as String),
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
-      const (UserDto) => (null, (await AuthUserRepository(_db).upsert(value as UserDto)).id),
       _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreEntityCompanion(id: Value(key.id), intValue: Value(intValue), stringValue: Value(strValue));

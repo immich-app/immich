@@ -47,8 +47,8 @@ void main() {
     memoryRepository = MockMemoryRepository();
     userService = MockUserService();
 
-    when(() => memoryRepository.getAll('user-1')).thenAnswer((_) async => []);
-    when(() => userService.tryGetMyUser()).thenReturn(user());
+    when(() => memoryService.getMemoryLane('user-1')).thenAnswer((_) async => []);
+    when(() => userService.tryGetMyUser()).thenAnswer((_) async => user());
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
   });
 
@@ -87,7 +87,7 @@ void main() {
     });
 
     test('does not query or arm the timer when memories are disabled', () {
-      when(() => userService.tryGetMyUser()).thenReturn(user(memoryEnabled: false));
+      when(() => userService.tryGetMyUser()).thenAnswer((_) async => user(memoryEnabled: false));
 
       fakeAsync((async) {
         final container = makeContainer();
