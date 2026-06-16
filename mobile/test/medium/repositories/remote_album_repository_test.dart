@@ -13,10 +13,6 @@ void main() {
     sut = DriftRemoteAlbumRepository(ctx.db);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('addAssets', () {
     test('sets the first added asset as thumbnail when the album has no thumbnail', () async {
       final user = await ctx.newUser();

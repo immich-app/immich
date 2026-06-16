@@ -12,10 +12,6 @@ void main() {
     sut = PartnerRepository(ctx.db);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('search', () {
     test('sharedBy returns users the current user shares their library to', () async {
       final me = await ctx.newUser();

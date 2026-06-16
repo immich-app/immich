@@ -15,10 +15,6 @@ void main() {
     sut = DriftLocalAssetRepository(ctx.db);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('getRemovalCandidates', () {
     final cutoffDate = DateTime(2024, 1, 1);
     final beforeCutoff = DateTime(2023, 12, 31);

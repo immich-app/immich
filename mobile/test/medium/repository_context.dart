@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
 
@@ -25,11 +27,28 @@ import '../utils.dart';
 class MediumRepositoryContext {
   final Drift db;
 
-  MediumRepositoryContext() : db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+  MediumRepositoryContext() : db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true)) {
+    addTearDown(dispose);
+  }
 
   Future<void> dispose() async {
     await db.close();
   }
+
+  Future<bool> isAssetBackupCandidate(String assetId) async =>
+      await (db.localAssetEntity.select()..where((row) => row.id.equals(assetId)))
+          .map((row) => row.isBackupCandidate)
+          .getSingleOrNull() ==
+      true;
+
+  Future<bool> hasLocalAsset(String assetId) async =>
+      await (db.localAssetEntity.count(where: (row) => row.id.equals(assetId))).getSingle() == 1;
+
+  Future<bool> hasLocalAlbum(String albumId) async =>
+      await (db.localAlbumEntity.count(where: (row) => row.id.equals(albumId))).getSingle() == 1;
+
+  Future<int> albumAssetCount(String albumId) async =>
+      await (db.localAlbumAssetEntity.count(where: (row) => row.albumId.equals(albumId))).getSingle();
 
   static Value<T> _resolveUndefined<T>(T? plain, Option<T>? option, T fallback) {
     if (plain != null) {
@@ -214,8 +233,8 @@ class MediumRepositoryContext {
   }
 
   Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
-    imageWidth ??= TestUtils.randInt(999) + 1;
-    imageHeight ??= TestUtils.randInt(999) + 1;
+    imageWidth ??= TestUtils.randInt(998) + 2;
+    imageHeight ??= TestUtils.randInt(998) + 2;
 
     final x1 = TestUtils.randInt(imageWidth - 1);
     final y1 = TestUtils.randInt(imageHeight - 1);
@@ -306,7 +325,16 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<void> newLocalAlbumAsset({required String albumId, required String assetId}) => db
-      .into(db.localAlbumAssetEntity)
-      .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+  Future<void> newLocalAlbumAsset({
+    required String albumId,
+    required String assetId,
+    bool recomputeBackupCandidates = true,
+  }) async {
+    await db
+        .into(db.localAlbumAssetEntity)
+        .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+    if (recomputeBackupCandidates) {
+      await DriftLocalAlbumRepository(db).recomputeBackupCandidatesForAssets([assetId]);
+    }
+  }
 }

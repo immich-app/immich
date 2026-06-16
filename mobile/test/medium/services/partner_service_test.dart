@@ -13,10 +13,6 @@ void main() {
     sut = PartnerService(ctx.userRepository, ctx.partnerRepository, ctx.partnerApi);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('getCandidates', () {
     test('returns the other users and excludes the current user', () async {
       final me = await ctx.newUser();

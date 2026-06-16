@@ -12,10 +12,6 @@ void main() {
     sut = DriftPeopleRepository(ctx.db);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('getAssetPeople', () {
     test('does not duplicate a person with multiple face records on the same asset', () async {
       // Regression check for #20585: a join on asset_face_entity returned one row

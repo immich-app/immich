@@ -18,10 +18,6 @@ void main() {
     sut = DriftTimelineRepository(ctx.db);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('remoteAlbum assets', () {
     test('no duplicate assets when identical checksum appears in multiple local asset rows', () async {
       // Regression check for #23273: a LEFT OUTER JOIN on checksum would fan out and create duplicates

@@ -14,10 +14,6 @@ void main() {
     sut = DriftBackupRepository(ctx.db);
   });
 
-  tearDown(() async {
-    await ctx.dispose();
-  });
-
   group('getAllCounts', () {
     late String userId;
 

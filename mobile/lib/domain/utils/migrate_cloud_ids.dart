@@ -6,7 +6,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -211,7 +211,7 @@ Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId, 
   return query.map((row) {
     return (
       remoteAssetId: row.read(drift.remoteAssetEntity.id)!,
-      localAsset: row.readTable(drift.localAssetEntity).toDto(),
+      localAsset: mapToLocalAsset(row.readTable(drift.localAssetEntity)),
     );
   }).get();
 }
