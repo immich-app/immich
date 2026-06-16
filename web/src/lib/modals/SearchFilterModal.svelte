@@ -8,6 +8,7 @@
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/SearchRatingsSection.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/SearchTagsSection.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/SearchTextSection.svelte';
+  import SearchImagePropsSection from '$lib/components/shared-components/search-bar/SearchImagePropsSection.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
@@ -28,6 +29,73 @@
   let { searchQuery, onClose }: Props = $props();
 
   const parseOptionalDate = (dateString?: DateTime) => (dateString ? parseUtcDate(dateString.toString()) : undefined);
+
+  const numberToOptionalString = (value?: number | null) =>
+    value === null || value === undefined ? undefined : value.toString();
+
+  const parseOptionalPositiveInteger = (value?: string) => {
+    if (!value?.trim()) {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+    const parsed = Number(trimmed);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+  };
+
+  const greatestCommonDivisor = (left: number, right: number): number => {
+    let a = Math.abs(left);
+    let b = Math.abs(right);
+
+    while (b !== 0) {
+      [a, b] = [b, a % b];
+    }
+
+    return a || 1;
+  };
+
+  const ratioToOptionalPair = (value?: number | null) => {
+    if (value === null || value === undefined || !Number.isFinite(value) || value <= 0) {
+      return { width: undefined, height: undefined };
+    }
+
+    let bestWidth = 1;
+    let bestHeight = 1;
+    let bestError = Number.POSITIVE_INFINITY;
+
+    for (let denominator = 1; denominator <= 1000; denominator++) {
+      const numerator = Math.max(1, Math.round(value * denominator));
+      const error = Math.abs(numerator / denominator - value);
+
+      if (error < bestError) {
+        bestWidth = numerator;
+        bestHeight = denominator;
+        bestError = error;
+      }
+
+      if (error < Number.EPSILON) {
+        break;
+      }
+    }
+
+    const divisor = greatestCommonDivisor(bestWidth, bestHeight);
+    return {
+      width: numberToOptionalString(bestWidth / divisor),
+      height: numberToOptionalString(bestHeight / divisor),
+    };
+  };
+
+  const parseOptionalAspectRatio = (width?: string, height?: string) => {
+    const parsedWidth = parseOptionalPositiveInteger(width);
+    const parsedHeight = parseOptionalPositiveInteger(height);
+
+    if (!parsedWidth || !parsedHeight) {
+      return undefined;
+    }
+
+    return parsedWidth / parsedHeight;
+  };
+
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day') || undefined;
   const formId = generateId();
 
@@ -57,6 +125,9 @@
     if ('originalPath' in searchQuery && searchQuery.originalPath) {
       query = searchQuery.originalPath;
     }
+
+    const minAspectRatio = ratioToOptionalPair(searchQuery.minAspectRatio);
+    const maxAspectRatio = ratioToOptionalPair(searchQuery.maxAspectRatio);
 
     return {
       query,
@@ -96,6 +167,16 @@
             ? MediaType.Video
             : MediaType.All,
       rating: searchQuery.rating,
+      imageProperties: {
+        minAspectRatioWidth: minAspectRatio.width,
+        minAspectRatioHeight: minAspectRatio.height,
+        maxAspectRatioWidth: maxAspectRatio.width,
+        maxAspectRatioHeight: maxAspectRatio.height,
+        minWidth: numberToOptionalString(searchQuery.minWidth),
+        maxWidth: numberToOptionalString(searchQuery.maxWidth),
+        minHeight: numberToOptionalString(searchQuery.minHeight),
+        maxHeight: numberToOptionalString(searchQuery.maxHeight),
+      },
     };
   };
 
@@ -118,6 +199,16 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      imageProperties: {
+        minAspectRatioWidth: undefined,
+        minAspectRatioHeight: undefined,
+        maxAspectRatioWidth: undefined,
+        maxAspectRatioHeight: undefined,
+        minWidth: undefined,
+        maxWidth: undefined,
+        minHeight: undefined,
+        maxHeight: undefined,
+      },
     };
   };
 
@@ -149,6 +240,18 @@
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
+      minAspectRatio: parseOptionalAspectRatio(
+        filter.imageProperties.minAspectRatioWidth,
+        filter.imageProperties.minAspectRatioHeight,
+      ),
+      maxAspectRatio: parseOptionalAspectRatio(
+        filter.imageProperties.maxAspectRatioWidth,
+        filter.imageProperties.maxAspectRatioHeight,
+      ),
+      minWidth: parseOptionalPositiveInteger(filter.imageProperties.minWidth),
+      maxWidth: parseOptionalPositiveInteger(filter.imageProperties.maxWidth),
+      minHeight: parseOptionalPositiveInteger(filter.imageProperties.minHeight),
+      maxHeight: parseOptionalPositiveInteger(filter.imageProperties.maxHeight),
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
@@ -209,6 +312,9 @@
           <!-- DISPLAY OPTIONS -->
           <SearchDisplaySection bind:filters={filter.display} />
         </div>
+
+        <!-- IMAGE PROPERTIES -->
+        <SearchImagePropsSection bind:filters={filter.imageProperties} />
       </div>
     </form>
   </ModalBody>

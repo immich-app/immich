@@ -10272,12 +10272,78 @@
             }
           },
           {
+            "name": "maxAspectRatio",
+            "required": false,
+            "in": "query",
+            "description": "Filter by maximum aspect ratio (width/height)",
+            "schema": {
+              "exclusiveMinimum": true,
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "maxHeight",
+            "required": false,
+            "in": "query",
+            "description": "Filter by maximum image height",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "maxWidth",
+            "required": false,
+            "in": "query",
+            "description": "Filter by maximum image width",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "minAspectRatio",
+            "required": false,
+            "in": "query",
+            "description": "Filter by minimum aspect ratio (width/height)",
+            "schema": {
+              "exclusiveMinimum": true,
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          {
             "name": "minFileSize",
             "required": false,
             "in": "query",
             "description": "Minimum file size in bytes",
             "schema": {
               "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "minHeight",
+            "required": false,
+            "in": "query",
+            "description": "Filter by minimum image height",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "minWidth",
+            "required": false,
+            "in": "query",
+            "description": "Filter by minimum image width",
+            "schema": {
+              "minimum": 1,
               "maximum": 9007199254740991,
               "type": "integer"
             }
@@ -20050,6 +20116,42 @@
             "nullable": true,
             "type": "string"
           },
+          "maxAspectRatio": {
+            "description": "Filter by maximum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "maxHeight": {
+            "description": "Filter by maximum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxWidth": {
+            "description": "Filter by maximum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minAspectRatio": {
+            "description": "Filter by minimum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minHeight": {
+            "description": "Filter by minimum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minWidth": {
+            "description": "Filter by minimum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
           "model": {
             "description": "Filter by camera model",
             "nullable": true,
@@ -21756,6 +21858,42 @@
             "nullable": true,
             "type": "string"
           },
+          "maxAspectRatio": {
+            "description": "Filter by maximum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "maxHeight": {
+            "description": "Filter by maximum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxWidth": {
+            "description": "Filter by maximum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minAspectRatio": {
+            "description": "Filter by minimum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minHeight": {
+            "description": "Filter by minimum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minWidth": {
+            "description": "Filter by minimum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
           "model": {
             "description": "Filter by camera model",
             "nullable": true,
@@ -23209,6 +23347,42 @@
             "nullable": true,
             "type": "string"
           },
+          "maxAspectRatio": {
+            "description": "Filter by maximum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "maxHeight": {
+            "description": "Filter by maximum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxWidth": {
+            "description": "Filter by maximum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minAspectRatio": {
+            "description": "Filter by minimum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minHeight": {
+            "description": "Filter by minimum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minWidth": {
+            "description": "Filter by minimum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
           "model": {
             "description": "Filter by camera model",
             "nullable": true,
@@ -23489,6 +23663,42 @@
             "description": "Filter by camera make",
             "nullable": true,
             "type": "string"
+          },
+          "maxAspectRatio": {
+            "description": "Filter by maximum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "maxHeight": {
+            "description": "Filter by maximum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "maxWidth": {
+            "description": "Filter by maximum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minAspectRatio": {
+            "description": "Filter by minimum aspect ratio (width/height)",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "number"
+          },
+          "minHeight": {
+            "description": "Filter by minimum image height",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minWidth": {
+            "description": "Filter by minimum image width",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
           },
           "model": {
             "description": "Filter by camera model",

@@ -189,6 +189,12 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      minAspectRatio: $t('min_aspect_ratio'),
+      maxAspectRatio: $t('max_aspect_ratio'),
+      minWidth: $t('min_width'),
+      maxWidth: $t('max_width'),
+      minHeight: $t('min_height'),
+      maxHeight: $t('max_height'),
     };
     return keyMap[key] || key;
   }
