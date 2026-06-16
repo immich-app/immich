@@ -148,7 +148,7 @@ const AssetMetadataResponseSchema = z
   .meta({ id: 'AssetMetadataResponseDto' });
 
 const AssetMetadataBulkResponseSchema = AssetMetadataResponseSchema.extend({
-  assetId: z.string().describe('Asset ID'),
+  assetId: z.uuidv4().describe('Asset ID'),
 }).meta({ id: 'AssetMetadataBulkResponseDto' });
 
 const AssetCopySchema = z

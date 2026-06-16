@@ -14,7 +14,7 @@ const DownloadInfoSchema = z
 const DownloadArchiveInfoSchema = z
   .object({
     size: z.int().describe('Archive size in bytes'),
-    assetIds: z.array(z.string()).describe('Asset IDs in this archive'),
+    assetIds: z.array(z.uuidv4()).describe('Asset IDs in this archive'),
   })
   .meta({ id: 'DownloadArchiveInfo' });
 
