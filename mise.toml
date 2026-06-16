@@ -65,7 +65,6 @@ dir = "open-api"
 run = "bash ./bin/generate-dart-sdk.sh"
 
 [tasks.open-api]
-env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
 run = [
   { task = "//:plugins" },
   { task = "//server:install" },

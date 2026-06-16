@@ -29,7 +29,7 @@ allowBuilds:
   postman-code-generators: false
 overrides:
   canvas: 3.2.3
-  sharp: ^0.35.0
+  sharp: ^0.35.2
 packageExtensions:
   nestjs-kysely:
     dependencies:
