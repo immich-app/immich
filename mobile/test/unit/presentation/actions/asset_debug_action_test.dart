@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -13,7 +12,7 @@ void main() {
 
   setUp(() async {
     context = await PresentationContext.create();
-    await StoreService.I.put(StoreKey.advancedTroubleshooting, true);
+    await SettingsRepository.instance.write(.advancedTroubleshooting, true);
   });
 
   tearDown(() async {
@@ -42,7 +41,7 @@ void main() {
     });
 
     testWidgets('hidden when advanced troubleshooting is off', (tester) async {
-      await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
+      await SettingsRepository.instance.write(.advancedTroubleshooting, false);
 
       await tester.pumpTestWidget(
         context,
