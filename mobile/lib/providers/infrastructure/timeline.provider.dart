@@ -5,6 +5,9 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:logging/logging.dart';
+
+final _log = Logger('TimelineProvider');
 
 final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
   (ref) => DriftTimelineRepository(ref.watch(driftProvider)),
@@ -18,7 +21,11 @@ final timelineServiceProvider = Provider<TimelineService>(
   (ref) {
     final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
     final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
-    ref.onDispose(timelineService.dispose);
+    _log.info('main TimelineService built users=$timelineUsers');
+    ref.onDispose(() {
+      _log.info('main TimelineService disposed');
+      timelineService.dispose();
+    });
     return timelineService;
   },
   // Empty dependencies to inform the framework that this provider
@@ -36,8 +43,12 @@ final timelineFactoryProvider = Provider<TimelineFactory>(
 final timelineUsersProvider = StreamProvider<List<String>>((ref) {
   final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
   if (currentUserId == null) {
+    _log.info('timelineUsers: currentUserId=null -> []');
     return Stream.value([]);
   }
 
-  return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
+  return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId).map((users) {
+    _log.info('timelineUsers emission: $users');
+    return users;
+  });
 });

@@ -28,6 +28,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
+import 'package:logging/logging.dart';
 
 class Timeline extends StatelessWidget {
   const Timeline({
@@ -136,6 +137,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 }
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
+  static final Logger _log = Logger('Timeline');
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
 
@@ -153,6 +155,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
+    _log.info('SliverTimeline initState');
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -179,6 +182,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _onEvent(Event event) {
+    _log.info('event ${event.runtimeType}');
     switch (event) {
       case ScrollToTopEvent():
         {
@@ -186,7 +190,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           timelineState.setScrubbing(true);
           _scrollController
               .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-              .whenComplete(() => timelineState.setScrubbing(false));
+              .whenComplete(() {
+                _log.info('ScrollToTop animation done -> setScrubbing(false)');
+                timelineState.setScrubbing(false);
+              });
         }
 
       case ScrollToDateEvent scrollToDateEvent:
@@ -246,6 +253,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   void dispose() {
+    _log.info('SliverTimeline dispose');
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
@@ -286,8 +294,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
             )
-            .whenComplete(() => timelineState.setScrubbing(false));
+            .whenComplete(() {
+              _log.info('ScrollToDate animation done -> setScrubbing(false)');
+              timelineState.setScrubbing(false);
+            });
       } else {
+        _log.info('ScrollToDate: no matching segment for $date -> setScrubbing(false)');
         timelineState.setScrubbing(false);
       }
     });

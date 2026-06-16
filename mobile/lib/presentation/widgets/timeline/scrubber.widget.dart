@@ -13,6 +13,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:logging/logging.dart';
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
 /// for quick navigation of the BoxScrollView.
@@ -84,6 +85,7 @@ List<_Segment> _buildSegments({required List<Segment> layoutSegments, required d
 }
 
 class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixin {
+  static final Logger _log = Logger('Scrubber');
   String? _lastLabel;
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
@@ -114,6 +116,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   @override
   void initState() {
     super.initState();
+    _log.info('Scrubber initState');
     _isDragging = false;
     _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
     _thumbAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
@@ -134,7 +137,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void didUpdateWidget(covariant Scrubber oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
+    final oldEnd = oldWidget.layoutSegments.lastOrNull?.endOffset;
+    final newEnd = widget.layoutSegments.lastOrNull?.endOffset;
+    if (oldEnd != newEnd) {
+      _log.info('Scrubber layoutSegments endOffset $oldEnd -> $newEnd (isDragging=$_isDragging)');
       _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
       _monthCount = getMonthCount();
     }
@@ -142,6 +148,15 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
 
   @override
   void dispose() {
+    if (_isDragging || _currentScrubberDate != null || _scrubberDebouncer != null) {
+      _log.warning(
+        'Scrubber dispose mid-scrub '
+        '(isDragging=$_isDragging, pendingDate=$_currentScrubberDate, '
+        'debouncerPending=${_scrubberDebouncer != null}) — scrubbing reset may be orphaned',
+      );
+    } else {
+      _log.info('Scrubber dispose');
+    }
     _thumbAnimationController.dispose();
     _labelAnimationController.dispose();
     _fadeOutTimer?.cancel();
@@ -208,6 +223,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragStart(DragStartDetails _) {
+    _log.info('scrub dragStart');
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
@@ -222,7 +238,13 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     }
 
     if (_scrubberHeight <= 0) {
+      _log.warning('drag ignored: scrubberHeight=$_scrubberHeight <= 0');
       return;
+    }
+
+    final maxScrollExtent = _scrollController.hasClients ? _scrollController.position.maxScrollExtent : -1;
+    if (maxScrollExtent <= 0) {
+      _log.warning('drag ineffective: hasClients=${_scrollController.hasClients} maxScrollExtent=$maxScrollExtent');
     }
 
     if (_thumbAnimationController.status != AnimationStatus.forward) {
@@ -344,6 +366,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
+    _log.info('scrub dragEnd -> setScrubbing(false)');
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;

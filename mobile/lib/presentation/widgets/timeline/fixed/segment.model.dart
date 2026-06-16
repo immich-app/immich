@@ -91,6 +91,7 @@ class FixedSegment extends Segment {
 }
 
 class _FixedSegmentRow extends ConsumerWidget {
+  static final Logger _log = Logger('TimelineRow');
   final int assetIndex;
   final int assetCount;
   final double tileHeight;
@@ -110,8 +111,20 @@ class _FixedSegmentRow extends ConsumerWidget {
     final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
     final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
+    final inRange = timelineService.hasRange(assetIndex, assetCount);
 
-    if (timelineService.hasRange(assetIndex, assetCount)) {
+    if (assetIndex == 0) {
+      _log.info(
+        'row[0] inRange=$inRange isScrubbing=$isScrubbing totalAssets=${timelineService.totalAssets} '
+        'branch=${inRange
+            ? "assets"
+            : isScrubbing
+            ? "placeholder(scrubbing)"
+            : "future(load)"}',
+      );
+    }
+
+    if (inRange) {
       return _buildAssetRow(
         context,
         timelineService.getAssets(assetIndex, assetCount),
@@ -131,7 +144,7 @@ class _FixedSegmentRow extends ConsumerWidget {
           return _buildPlaceholder(context);
         }
         if (snapshot.hasError) {
-          Logger('TimelineService').warning(
+          _log.warning(
             'render row loadAssets($assetIndex, $assetCount) failed (totalAssets=${timelineService.totalAssets})',
             snapshot.error,
             snapshot.stackTrace,
