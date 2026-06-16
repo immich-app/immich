@@ -4452,13 +4452,13 @@ export function endSession({ id, key, sessionId, slug }: {
 /**
  * Get HLS media playlist
  */
-export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex, xImmichHlsMsn }: {
+export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex, xImmichHlsPos }: {
     id: string;
     key?: string;
     sessionId: string;
     slug?: string;
     variantIndex: number;
-    xImmichHlsMsn?: number;
+    xImmichHlsPos?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4469,7 +4469,7 @@ export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex, xImmi
     }))}`, {
         ...opts,
         headers: oazapfts.mergeHeaders(opts?.headers, {
-            "x-immich-hls-msn": xImmichHlsMsn
+            "x-immich-hls-pos": xImmichHlsPos
         })
     }));
 }
