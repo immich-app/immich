@@ -160,8 +160,7 @@ class ServiceMocks {
   }
 
   void _stubUserService() {
-    when(user.getMyUser).thenReturn(UserFactory.createDto());
-    when(user.tryGetMyUser).thenReturn(null);
+    when(user.tryGetMyUser).thenAnswer((_) async => UserFactory.createDto());
     when(user.watchMyUser).thenAnswer((_) => const Stream.empty());
     when(user.refreshMyUser).thenAnswer((_) async => null);
     when(user.createProfileImage).thenAnswer((_) async => null);
@@ -322,10 +321,7 @@ extension type const PartnerServiceStub(MockPartnerService service) implements S
 }
 
 extension type const UserServiceStub(MockUserService service) implements Stub<MockUserService> {
-  UserDto Function() get getMyUser =>
-      () => service.getMyUser();
-
-  UserDto? Function() get tryGetMyUser =>
+  Future<UserDto?> Function() get tryGetMyUser =>
       () => service.tryGetMyUser();
 
   Stream<UserDto?> Function() get watchMyUser =>

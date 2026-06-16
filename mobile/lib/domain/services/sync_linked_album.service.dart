@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
@@ -18,21 +19,21 @@ final syncLinkedAlbumServiceProvider = Provider((ref) {
     db.localAlbumRepository,
     db.remoteAlbumRepository,
     ref.watch(driftAlbumApiRepositoryProvider),
-    ref.watch(storeServiceProvider),
-  );
-});
+    ref.watch(authUserRepositoryProvider),
+  ),
+);
 
 class SyncLinkedAlbumService {
   final LocalAlbumRepository _localAlbumRepository;
   final RemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
-  final StoreService _storeService;
+  final DriftAuthUserRepository _authUserRepository;
 
   SyncLinkedAlbumService(
     this._localAlbumRepository,
     this._remoteAlbumRepository,
     this._albumApiRepository,
-    this._storeService,
+    this._authUserRepository,
   );
 
   final _log = Logger("SyncLinkedAlbumService");
@@ -120,11 +121,12 @@ class SyncLinkedAlbumService {
   /// Creates a new remote album and links it to the local album
   Future<void> _createAndLinkNewRemoteAlbum(LocalAlbum localAlbum) async {
     dPrint(() => "Creating new remote album for local album: ${localAlbum.name}");
-    final newRemoteAlbum = await _albumApiRepository.createDriftAlbum(
-      localAlbum.name,
-      _storeService.get(StoreKey.currentUser),
-      assetIds: [],
-    );
+    final currentUser = await _authUserRepository.get();
+    if (currentUser == null) {
+      _log.warning("No user logged in, skipping remote album creation for local album: ${localAlbum.name}");
+      return;
+    }
+    final newRemoteAlbum = await _albumApiRepository.createDriftAlbum(localAlbum.name, currentUser, assetIds: []);
     await _remoteAlbumRepository.create(newRemoteAlbum, []);
     return _localAlbumRepository.linkRemoteAlbum(localAlbum.id, newRemoteAlbum.id);
   }

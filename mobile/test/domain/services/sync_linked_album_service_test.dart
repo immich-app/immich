@@ -7,7 +7,6 @@ import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
-import '../../service.mocks.dart';
 
 void main() {
   // A container with the service's deps overridden but cancellationProvider left
@@ -21,7 +20,7 @@ void main() {
       overrides: [
         driftProvider.overrideWithValue(drift),
         driftAlbumApiRepositoryProvider.overrideWithValue(MockDriftAlbumApiRepository()),
-        storeServiceProvider.overrideWithValue(MockStoreService()),
+        authUserRepositoryProvider.overrideWithValue(MockDriftAuthUserRepository()),
       ],
     );
     addTearDown(container.dispose);
