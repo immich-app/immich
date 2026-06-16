@@ -18490,7 +18490,6 @@
         "properties": {
           "cronExpression": {
             "description": "Cron expression",
-            "pattern": "(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}",
             "type": "string"
           },
           "enabled": {
@@ -25677,7 +25676,6 @@
         "properties": {
           "cronExpression": {
             "description": "Cron expression for when the integrity check should run",
-            "pattern": "(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}",
             "type": "string"
           },
           "enabled": {
@@ -25710,7 +25708,6 @@
         "properties": {
           "cronExpression": {
             "description": "Cron expression for when the integrity check should run",
-            "pattern": "(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}",
             "type": "string"
           },
           "enabled": {
@@ -25810,7 +25807,6 @@
         "properties": {
           "cronExpression": {
             "description": "Cron expression",
-            "pattern": "(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}",
             "type": "string"
           },
           "enabled": {
