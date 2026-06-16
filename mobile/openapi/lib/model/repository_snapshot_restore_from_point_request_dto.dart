@@ -13,11 +13,11 @@ part of openapi.api;
 class RepositorySnapshotRestoreFromPointRequestDto {
   /// Returns a new [RepositorySnapshotRestoreFromPointRequestDto] instance.
   RepositorySnapshotRestoreFromPointRequestDto({
-    this.include = const [],
-    this.yuccaConfig,
+    this.include = const Optional.present(const []),
+    this.yuccaConfig = const Optional.absent(),
   });
 
-  List<String> include;
+  Optional<List<String>?> include;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -25,7 +25,7 @@ class RepositorySnapshotRestoreFromPointRequestDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? yuccaConfig;
+  Optional<String?> yuccaConfig;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RepositorySnapshotRestoreFromPointRequestDto &&
@@ -43,11 +43,13 @@ class RepositorySnapshotRestoreFromPointRequestDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'include'] = this.include;
-    if (this.yuccaConfig != null) {
-      json[r'yuccaConfig'] = this.yuccaConfig;
-    } else {
-    //  json[r'yuccaConfig'] = null;
+    if (this.include.isPresent) {
+      final value = this.include.value;
+      json[r'include'] = value;
+    }
+    if (this.yuccaConfig.isPresent) {
+      final value = this.yuccaConfig.value;
+      json[r'yuccaConfig'] = value;
     }
     return json;
   }
@@ -61,10 +63,10 @@ class RepositorySnapshotRestoreFromPointRequestDto {
       final json = value.cast<String, dynamic>();
 
       return RepositorySnapshotRestoreFromPointRequestDto(
-        include: json[r'include'] is Iterable
+        include: json.containsKey(r'include') ? Optional.present(json[r'include'] is Iterable
             ? (json[r'include'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        yuccaConfig: mapValueOfType<String>(json, r'yuccaConfig'),
+            : const []) : const Optional.absent(),
+        yuccaConfig: json.containsKey(r'yuccaConfig') ? Optional.present(mapValueOfType<String>(json, r'yuccaConfig')) : const Optional.absent(),
       );
     }
     return null;

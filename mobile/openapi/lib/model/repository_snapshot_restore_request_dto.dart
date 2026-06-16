@@ -13,11 +13,11 @@ part of openapi.api;
 class RepositorySnapshotRestoreRequestDto {
   /// Returns a new [RepositorySnapshotRestoreRequestDto] instance.
   RepositorySnapshotRestoreRequestDto({
-    this.include = const [],
-    this.target,
+    this.include = const Optional.present(const []),
+    this.target = const Optional.absent(),
   });
 
-  List<String> include;
+  Optional<List<String>?> include;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -25,7 +25,7 @@ class RepositorySnapshotRestoreRequestDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? target;
+  Optional<String?> target;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RepositorySnapshotRestoreRequestDto &&
@@ -43,11 +43,13 @@ class RepositorySnapshotRestoreRequestDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'include'] = this.include;
-    if (this.target != null) {
-      json[r'target'] = this.target;
-    } else {
-    //  json[r'target'] = null;
+    if (this.include.isPresent) {
+      final value = this.include.value;
+      json[r'include'] = value;
+    }
+    if (this.target.isPresent) {
+      final value = this.target.value;
+      json[r'target'] = value;
     }
     return json;
   }
@@ -61,10 +63,10 @@ class RepositorySnapshotRestoreRequestDto {
       final json = value.cast<String, dynamic>();
 
       return RepositorySnapshotRestoreRequestDto(
-        include: json[r'include'] is Iterable
+        include: json.containsKey(r'include') ? Optional.present(json[r'include'] is Iterable
             ? (json[r'include'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        target: mapValueOfType<String>(json, r'target'),
+            : const []) : const Optional.absent(),
+        target: json.containsKey(r'target') ? Optional.present(mapValueOfType<String>(json, r'target')) : const Optional.absent(),
       );
     }
     return null;

@@ -13,9 +13,9 @@ part of openapi.api;
 class RunningTaskDto {
   /// Returns a new [RunningTaskDto] instance.
   RunningTaskDto({
-    this.logId,
+    this.logId = const Optional.absent(),
     required this.parentId,
-    this.scheduleStatus = const [],
+    this.scheduleStatus = const Optional.present(const []),
     required this.type,
   });
 
@@ -25,11 +25,11 @@ class RunningTaskDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? logId;
+  Optional<String?> logId;
 
   String parentId;
 
-  List<ActiveScheduleItemDto> scheduleStatus;
+  Optional<List<ActiveScheduleItemDto>?> scheduleStatus;
 
   TaskType type;
 
@@ -53,13 +53,15 @@ class RunningTaskDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.logId != null) {
-      json[r'logId'] = this.logId;
-    } else {
-    //  json[r'logId'] = null;
+    if (this.logId.isPresent) {
+      final value = this.logId.value;
+      json[r'logId'] = value;
     }
       json[r'parentId'] = this.parentId;
-      json[r'scheduleStatus'] = this.scheduleStatus;
+    if (this.scheduleStatus.isPresent) {
+      final value = this.scheduleStatus.value;
+      json[r'scheduleStatus'] = value;
+    }
       json[r'type'] = this.type;
     return json;
   }
@@ -73,9 +75,9 @@ class RunningTaskDto {
       final json = value.cast<String, dynamic>();
 
       return RunningTaskDto(
-        logId: mapValueOfType<String>(json, r'logId'),
+        logId: json.containsKey(r'logId') ? Optional.present(mapValueOfType<String>(json, r'logId')) : const Optional.absent(),
         parentId: mapValueOfType<String>(json, r'parentId')!,
-        scheduleStatus: ActiveScheduleItemDto.listFromJson(json[r'scheduleStatus']),
+        scheduleStatus: json.containsKey(r'scheduleStatus') ? Optional.present(ActiveScheduleItemDto.listFromJson(json[r'scheduleStatus'])) : const Optional.absent(),
         type: TaskType.fromJson(json[r'type'])!,
       );
     }

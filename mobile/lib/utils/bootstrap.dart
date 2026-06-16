@@ -43,8 +43,10 @@ void configureFileDownloaderNotifications() {
 
 abstract final class Bootstrap {
   static Future<(Drift, DriftLogger)> initDomain({bool listenStoreUpdates = true, bool shouldBufferLogs = true}) async {
-    final drift = Drift();
-    final logDb = DriftLogger();
+    await configureSqliteCache();
+    final (db, updatePool) = await openSqliteConnectionWithUpdatePool(name: 'immich');
+    final drift = Drift.sqlite(db, updatePool);
+    final logDb = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
     final DriftStoreRepository storeRepo = DriftStoreRepository(drift);
 
     await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);

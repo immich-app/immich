@@ -13,8 +13,8 @@ part of openapi.api;
 class InspectedLocalRepositoryDto {
   /// Returns a new [InspectedLocalRepositoryDto] instance.
   InspectedLocalRepositoryDto({
-    this.backends,
-    this.configuration,
+    this.backends = const Optional.absent(),
+    this.configuration = const Optional.absent(),
     required this.id,
     required this.metrics,
     required this.name,
@@ -28,7 +28,7 @@ class InspectedLocalRepositoryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  RepositoryBackendsDto? backends;
+  Optional<RepositoryBackendsDto?> backends;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -36,7 +36,7 @@ class InspectedLocalRepositoryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  RepositoryConfigurationDto? configuration;
+  Optional<RepositoryConfigurationDto?> configuration;
 
   String id;
 
@@ -74,15 +74,13 @@ class InspectedLocalRepositoryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.backends != null) {
-      json[r'backends'] = this.backends;
-    } else {
-    //  json[r'backends'] = null;
+    if (this.backends.isPresent) {
+      final value = this.backends.value;
+      json[r'backends'] = value;
     }
-    if (this.configuration != null) {
-      json[r'configuration'] = this.configuration;
-    } else {
-    //  json[r'configuration'] = null;
+    if (this.configuration.isPresent) {
+      final value = this.configuration.value;
+      json[r'configuration'] = value;
     }
       json[r'id'] = this.id;
       json[r'metrics'] = this.metrics;
@@ -101,8 +99,8 @@ class InspectedLocalRepositoryDto {
       final json = value.cast<String, dynamic>();
 
       return InspectedLocalRepositoryDto(
-        backends: RepositoryBackendsDto.fromJson(json[r'backends']),
-        configuration: RepositoryConfigurationDto.fromJson(json[r'configuration']),
+        backends: json.containsKey(r'backends') ? Optional.present(RepositoryBackendsDto.fromJson(json[r'backends'])) : const Optional.absent(),
+        configuration: json.containsKey(r'configuration') ? Optional.present(RepositoryConfigurationDto.fromJson(json[r'configuration'])) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
         metrics: RepositoryMetricsDto.fromJson(json[r'metrics'])!,
         name: mapValueOfType<String>(json, r'name')!,

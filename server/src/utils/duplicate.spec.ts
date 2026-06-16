@@ -78,7 +78,7 @@ describe('duplicate utils', () => {
         model: null,
         latitude: undefined,
         city: '',
-        rating: 0,
+        rating: null,
       });
       // fileSizeInByte (1000) + make ('Canon') = 2 truthy values
       // model (null), latitude (undefined), city (''), rating (0) are all falsy

@@ -17,7 +17,7 @@ class OnboardingApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'POST /yucca/onboarding/recovery-key' operation and returns the [Response].
-  Future<Response> confirmRecoveryKeyWithHttpInfo() async {
+  Future<Response> confirmRecoveryKeyWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/onboarding/recovery-key';
 
@@ -39,18 +39,19 @@ class OnboardingApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<void> confirmRecoveryKey() async {
-    final response = await confirmRecoveryKeyWithHttpInfo();
+  Future<void> confirmRecoveryKey({ Future<void>? abortTrigger, }) async {
+    final response = await confirmRecoveryKeyWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'GET /yucca/onboarding/recovery-key' operation and returns the [Response].
-  Future<Response> currentRecoveryKeyWithHttpInfo() async {
+  Future<Response> currentRecoveryKeyWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/onboarding/recovery-key';
 
@@ -72,11 +73,12 @@ class OnboardingApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<CurrentRecoveryKeyResponse?> currentRecoveryKey() async {
-    final response = await currentRecoveryKeyWithHttpInfo();
+  Future<CurrentRecoveryKeyResponse?> currentRecoveryKey({ Future<void>? abortTrigger, }) async {
+    final response = await currentRecoveryKeyWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -94,7 +96,7 @@ class OnboardingApi {
   /// Parameters:
   ///
   /// * [ImportRecoveryKeyRequest] importRecoveryKeyRequest (required):
-  Future<Response> importRecoveryKeyWithHttpInfo(ImportRecoveryKeyRequest importRecoveryKeyRequest,) async {
+  Future<Response> importRecoveryKeyWithHttpInfo(ImportRecoveryKeyRequest importRecoveryKeyRequest, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/onboarding/recovery-key';
 
@@ -116,21 +118,22 @@ class OnboardingApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [ImportRecoveryKeyRequest] importRecoveryKeyRequest (required):
-  Future<void> importRecoveryKey(ImportRecoveryKeyRequest importRecoveryKeyRequest,) async {
-    final response = await importRecoveryKeyWithHttpInfo(importRecoveryKeyRequest,);
+  Future<void> importRecoveryKey(ImportRecoveryKeyRequest importRecoveryKeyRequest, { Future<void>? abortTrigger, }) async {
+    final response = await importRecoveryKeyWithHttpInfo(importRecoveryKeyRequest, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'GET /yucca/onboarding' operation and returns the [Response].
-  Future<Response> onboardingStatusWithHttpInfo() async {
+  Future<Response> onboardingStatusWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/onboarding';
 
@@ -152,11 +155,12 @@ class OnboardingApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<OnboardingStatusResponseDto?> onboardingStatus() async {
-    final response = await onboardingStatusWithHttpInfo();
+  Future<OnboardingStatusResponseDto?> onboardingStatus({ Future<void>? abortTrigger, }) async {
+    final response = await onboardingStatusWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -171,7 +175,7 @@ class OnboardingApi {
   }
 
   /// Performs an HTTP 'POST /yucca/onboarding/skip' operation and returns the [Response].
-  Future<Response> skipOnboardingExtraConfigWithHttpInfo() async {
+  Future<Response> skipOnboardingExtraConfigWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/onboarding/skip';
 
@@ -193,11 +197,12 @@ class OnboardingApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<void> skipOnboardingExtraConfig() async {
-    final response = await skipOnboardingExtraConfigWithHttpInfo();
+  Future<void> skipOnboardingExtraConfig({ Future<void>? abortTrigger, }) async {
+    final response = await skipOnboardingExtraConfigWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -20,7 +20,7 @@ class BackendApi {
   /// Parameters:
   ///
   /// * [CreateLocalBackendRequestDto] createLocalBackendRequestDto (required):
-  Future<Response> createLocalBackendWithHttpInfo(CreateLocalBackendRequestDto createLocalBackendRequestDto,) async {
+  Future<Response> createLocalBackendWithHttpInfo(CreateLocalBackendRequestDto createLocalBackendRequestDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/backend/local';
 
@@ -42,14 +42,15 @@ class BackendApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [CreateLocalBackendRequestDto] createLocalBackendRequestDto (required):
-  Future<BackendResponseDto?> createLocalBackend(CreateLocalBackendRequestDto createLocalBackendRequestDto,) async {
-    final response = await createLocalBackendWithHttpInfo(createLocalBackendRequestDto,);
+  Future<BackendResponseDto?> createLocalBackend(CreateLocalBackendRequestDto createLocalBackendRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await createLocalBackendWithHttpInfo(createLocalBackendRequestDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -64,7 +65,7 @@ class BackendApi {
   }
 
   /// Performs an HTTP 'GET /yucca/backend' operation and returns the [Response].
-  Future<Response> getBackendsWithHttpInfo() async {
+  Future<Response> getBackendsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/backend';
 
@@ -86,11 +87,12 @@ class BackendApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<BackendsResponseDto?> getBackends() async {
-    final response = await getBackendsWithHttpInfo();
+  Future<BackendsResponseDto?> getBackends({ Future<void>? abortTrigger, }) async {
+    final response = await getBackendsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

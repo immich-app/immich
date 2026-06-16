@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-enum SettingsKey<T extends Object> {
+enum SettingsKey<T> {
   // Theme
   themePrimaryColor<ImmichColorPreset>(codec: _EnumCodec(ImmichColorPreset.values)),
   themeMode<ThemeMode>(codec: _EnumCodec(ThemeMode.values)),
@@ -26,8 +26,8 @@ enum SettingsKey<T extends Object> {
 
   // Network
   networkAutoEndpointSwitching<bool>(),
-  networkPreferredWifiName<String>(),
-  networkLocalEndpoint<String>(),
+  networkPreferredWifiName<String?>(),
+  networkLocalEndpoint<String?>(),
   networkExternalEndpointList<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
   networkCustomHeaders<Map<String, String>>(codec: _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string)),
 
@@ -66,8 +66,10 @@ enum SettingsKey<T extends Object> {
   cleanupCutoffDaysAgo<int>(),
   cleanupDefaultsInitialized<bool>(),
 
+  // Share
+  shareFileType<ShareAssetType>(codec: _EnumCodec(ShareAssetType.values)),
+
   // Slideshow
-  slideshowTransition<bool>(),
   slideshowRepeat<bool>(),
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
@@ -84,21 +86,29 @@ enum SettingsKey<T extends Object> {
   T decode(String raw) => _codec.decode(raw);
 }
 
-sealed class _SettingsCodec<T extends Object> {
+sealed class _SettingsCodec<T> {
   const _SettingsCodec();
 
   String encode(T value);
   T decode(String raw);
 
-  static const Map<Type, _SettingsCodec<Object>> _primitives = {
-    int: _PrimitiveCodec.integer,
-    double: _PrimitiveCodec.real,
-    bool: _PrimitiveCodec.boolean,
-    String: _PrimitiveCodec.string,
-    DateTime: _DateTimeCodec(),
+  static final Map<Type, _SettingsCodec<Object>> _primitives = {
+    ..._register<int>(_PrimitiveCodec.integer),
+    ..._register<double>(_PrimitiveCodec.real),
+    ..._register<bool>(_PrimitiveCodec.boolean),
+    ..._register<String>(_PrimitiveCodec.string),
+    ..._register<DateTime>(const _DateTimeCodec()),
   };
 
-  static _SettingsCodec<T> forType<T extends Object>(Type runtimeType) {
+  static Map<Type, _SettingsCodec<Object>> _register<T>(_SettingsCodec<Object> codec) => {
+    T: codec,
+    // Reifies the nullable type T so it can be used as a key in the _primitives map
+    _typeOf<T?>(): codec,
+  };
+
+  static Type _typeOf<T>() => T;
+
+  static _SettingsCodec<T> forType<T>(Type runtimeType) {
     final codec = _primitives[runtimeType];
     if (codec == null) {
       throw StateError('No primitive codec for $runtimeType. Provide an explicit codec when defining the SettingsKey.');

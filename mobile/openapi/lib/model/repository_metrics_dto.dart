@@ -13,9 +13,9 @@ part of openapi.api;
 class RepositoryMetricsDto {
   /// Returns a new [RepositoryMetricsDto] instance.
   RepositoryMetricsDto({
-    this.lastBackup,
-    this.lastBackupDuration,
-    this.lastSuccessfulBackup,
+    this.lastBackup = const Optional.absent(),
+    this.lastBackupDuration = const Optional.absent(),
+    this.lastSuccessfulBackup = const Optional.absent(),
     required this.sizeBytes,
   });
 
@@ -25,7 +25,7 @@ class RepositoryMetricsDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? lastBackup;
+  Optional<String?> lastBackup;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -33,7 +33,7 @@ class RepositoryMetricsDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? lastBackupDuration;
+  Optional<num?> lastBackupDuration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -41,7 +41,7 @@ class RepositoryMetricsDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? lastSuccessfulBackup;
+  Optional<String?> lastSuccessfulBackup;
 
   num sizeBytes;
 
@@ -65,20 +65,17 @@ class RepositoryMetricsDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.lastBackup != null) {
-      json[r'lastBackup'] = this.lastBackup;
-    } else {
-    //  json[r'lastBackup'] = null;
+    if (this.lastBackup.isPresent) {
+      final value = this.lastBackup.value;
+      json[r'lastBackup'] = value;
     }
-    if (this.lastBackupDuration != null) {
-      json[r'lastBackupDuration'] = this.lastBackupDuration;
-    } else {
-    //  json[r'lastBackupDuration'] = null;
+    if (this.lastBackupDuration.isPresent) {
+      final value = this.lastBackupDuration.value;
+      json[r'lastBackupDuration'] = value;
     }
-    if (this.lastSuccessfulBackup != null) {
-      json[r'lastSuccessfulBackup'] = this.lastSuccessfulBackup;
-    } else {
-    //  json[r'lastSuccessfulBackup'] = null;
+    if (this.lastSuccessfulBackup.isPresent) {
+      final value = this.lastSuccessfulBackup.value;
+      json[r'lastSuccessfulBackup'] = value;
     }
       json[r'sizeBytes'] = this.sizeBytes;
     return json;
@@ -93,9 +90,9 @@ class RepositoryMetricsDto {
       final json = value.cast<String, dynamic>();
 
       return RepositoryMetricsDto(
-        lastBackup: mapValueOfType<String>(json, r'lastBackup'),
-        lastBackupDuration: num.parse('${json[r'lastBackupDuration']}'),
-        lastSuccessfulBackup: mapValueOfType<String>(json, r'lastSuccessfulBackup'),
+        lastBackup: json.containsKey(r'lastBackup') ? Optional.present(mapValueOfType<String>(json, r'lastBackup')) : const Optional.absent(),
+        lastBackupDuration: json.containsKey(r'lastBackupDuration') ? Optional.present(json[r'lastBackupDuration'] == null ? null : num.parse('${json[r'lastBackupDuration']}')) : const Optional.absent(),
+        lastSuccessfulBackup: json.containsKey(r'lastSuccessfulBackup') ? Optional.present(mapValueOfType<String>(json, r'lastSuccessfulBackup')) : const Optional.absent(),
         sizeBytes: num.parse('${json[r'sizeBytes']}'),
       );
     }

@@ -20,7 +20,7 @@ class RunningTasksApi {
   /// Parameters:
   ///
   /// * [String] parentId (required):
-  Future<Response> cancelTaskWithHttpInfo(String parentId,) async {
+  Future<Response> cancelTaskWithHttpInfo(String parentId, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/tasks/{parentId}/cancel'
       .replaceAll('{parentId}', parentId);
@@ -43,21 +43,22 @@ class RunningTasksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] parentId (required):
-  Future<void> cancelTask(String parentId,) async {
-    final response = await cancelTaskWithHttpInfo(parentId,);
+  Future<void> cancelTask(String parentId, { Future<void>? abortTrigger, }) async {
+    final response = await cancelTaskWithHttpInfo(parentId, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'GET /yucca/tasks' operation and returns the [Response].
-  Future<Response> getRunningTasksWithHttpInfo() async {
+  Future<Response> getRunningTasksWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/tasks';
 
@@ -79,11 +80,12 @@ class RunningTasksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<RunningTaskListResponse?> getRunningTasks() async {
-    final response = await getRunningTasksWithHttpInfo();
+  Future<RunningTaskListResponse?> getRunningTasks({ Future<void>? abortTrigger, }) async {
+    final response = await getRunningTasksWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

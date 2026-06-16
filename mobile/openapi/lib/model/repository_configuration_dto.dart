@@ -14,12 +14,12 @@ class RepositoryConfigurationDto {
   /// Returns a new [RepositoryConfigurationDto] instance.
   RepositoryConfigurationDto({
     this.paths = const [],
-    this.retentionPolicy,
+    this.retentionPolicy = const Optional.absent(),
   });
 
   List<String> paths;
 
-  RetentionPolicyDto? retentionPolicy;
+  Optional<RetentionPolicyDto?> retentionPolicy;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RepositoryConfigurationDto &&
@@ -38,10 +38,9 @@ class RepositoryConfigurationDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'paths'] = this.paths;
-    if (this.retentionPolicy != null) {
-      json[r'retentionPolicy'] = this.retentionPolicy;
-    } else {
-    //  json[r'retentionPolicy'] = null;
+    if (this.retentionPolicy.isPresent) {
+      final value = this.retentionPolicy.value;
+      json[r'retentionPolicy'] = value;
     }
     return json;
   }
@@ -58,7 +57,7 @@ class RepositoryConfigurationDto {
         paths: json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        retentionPolicy: RetentionPolicyDto.fromJson(json[r'retentionPolicy']),
+        retentionPolicy: json.containsKey(r'retentionPolicy') ? Optional.present(RetentionPolicyDto.fromJson(json[r'retentionPolicy'])) : const Optional.absent(),
       );
     }
     return null;

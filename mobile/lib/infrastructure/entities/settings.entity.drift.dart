@@ -10,13 +10,13 @@ import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 typedef $$SettingsEntityTableCreateCompanionBuilder =
     i1.SettingsEntityCompanion Function({
       required String key,
-      required String value,
+      i0.Value<String?> value,
       i0.Value<DateTime> updatedAt,
     });
 typedef $$SettingsEntityTableUpdateCompanionBuilder =
     i1.SettingsEntityCompanion Function({
       i0.Value<String> key,
-      i0.Value<String> value,
+      i0.Value<String?> value,
       i0.Value<DateTime> updatedAt,
     });
 
@@ -127,7 +127,7 @@ class $$SettingsEntityTableTableManager
           updateCompanionCallback:
               ({
                 i0.Value<String> key = const i0.Value.absent(),
-                i0.Value<String> value = const i0.Value.absent(),
+                i0.Value<String?> value = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
               }) => i1.SettingsEntityCompanion(
                 key: key,
@@ -137,7 +137,7 @@ class $$SettingsEntityTableTableManager
           createCompanionCallback:
               ({
                 required String key,
-                required String value,
+                i0.Value<String?> value = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
               }) => i1.SettingsEntityCompanion.insert(
                 key: key,
@@ -196,9 +196,9 @@ class $SettingsEntityTable extends i2.SettingsEntity
   late final i0.GeneratedColumn<String> value = i0.GeneratedColumn<String>(
     'value',
     aliasedName,
-    false,
+    true,
     type: i0.DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta(
     'updatedAt',
@@ -240,8 +240,6 @@ class $SettingsEntityTable extends i2.SettingsEntity
         _valueMeta,
         value.isAcceptableOrUnknown(data['value']!, _valueMeta),
       );
-    } else if (isInserting) {
-      context.missing(_valueMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(
@@ -265,7 +263,7 @@ class $SettingsEntityTable extends i2.SettingsEntity
       value: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
         data['${effectivePrefix}value'],
-      )!,
+      ),
       updatedAt: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
@@ -287,18 +285,20 @@ class $SettingsEntityTable extends i2.SettingsEntity
 class SettingsEntityData extends i0.DataClass
     implements i0.Insertable<i1.SettingsEntityData> {
   final String key;
-  final String value;
+  final String? value;
   final DateTime updatedAt;
   const SettingsEntityData({
     required this.key,
-    required this.value,
+    this.value,
     required this.updatedAt,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['key'] = i0.Variable<String>(key);
-    map['value'] = i0.Variable<String>(value);
+    if (!nullToAbsent || value != null) {
+      map['value'] = i0.Variable<String>(value);
+    }
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
     return map;
   }
@@ -310,7 +310,7 @@ class SettingsEntityData extends i0.DataClass
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return SettingsEntityData(
       key: serializer.fromJson<String>(json['key']),
-      value: serializer.fromJson<String>(json['value']),
+      value: serializer.fromJson<String?>(json['value']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -319,18 +319,18 @@ class SettingsEntityData extends i0.DataClass
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'key': serializer.toJson<String>(key),
-      'value': serializer.toJson<String>(value),
+      'value': serializer.toJson<String?>(value),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
   i1.SettingsEntityData copyWith({
     String? key,
-    String? value,
+    i0.Value<String?> value = const i0.Value.absent(),
     DateTime? updatedAt,
   }) => i1.SettingsEntityData(
     key: key ?? this.key,
-    value: value ?? this.value,
+    value: value.present ? value.value : this.value,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   SettingsEntityData copyWithCompanion(i1.SettingsEntityCompanion data) {
@@ -365,7 +365,7 @@ class SettingsEntityData extends i0.DataClass
 class SettingsEntityCompanion
     extends i0.UpdateCompanion<i1.SettingsEntityData> {
   final i0.Value<String> key;
-  final i0.Value<String> value;
+  final i0.Value<String?> value;
   final i0.Value<DateTime> updatedAt;
   const SettingsEntityCompanion({
     this.key = const i0.Value.absent(),
@@ -374,10 +374,9 @@ class SettingsEntityCompanion
   });
   SettingsEntityCompanion.insert({
     required String key,
-    required String value,
+    this.value = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
-  }) : key = i0.Value(key),
-       value = i0.Value(value);
+  }) : key = i0.Value(key);
   static i0.Insertable<i1.SettingsEntityData> custom({
     i0.Expression<String>? key,
     i0.Expression<String>? value,
@@ -392,7 +391,7 @@ class SettingsEntityCompanion
 
   i1.SettingsEntityCompanion copyWith({
     i0.Value<String>? key,
-    i0.Value<String>? value,
+    i0.Value<String?>? value,
     i0.Value<DateTime>? updatedAt,
   }) {
     return i1.SettingsEntityCompanion(

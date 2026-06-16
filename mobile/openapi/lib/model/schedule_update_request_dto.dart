@@ -13,10 +13,10 @@ part of openapi.api;
 class ScheduleUpdateRequestDto {
   /// Returns a new [ScheduleUpdateRequestDto] instance.
   ScheduleUpdateRequestDto({
-    this.cron,
-    this.name,
-    this.paused,
-    this.repositories = const [],
+    this.cron = const Optional.absent(),
+    this.name = const Optional.absent(),
+    this.paused = const Optional.absent(),
+    this.repositories = const Optional.present(const []),
   });
 
   ///
@@ -25,7 +25,7 @@ class ScheduleUpdateRequestDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? cron;
+  Optional<String?> cron;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -33,7 +33,7 @@ class ScheduleUpdateRequestDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? name;
+  Optional<String?> name;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -41,9 +41,9 @@ class ScheduleUpdateRequestDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? paused;
+  Optional<bool?> paused;
 
-  List<String> repositories;
+  Optional<List<String>?> repositories;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScheduleUpdateRequestDto &&
@@ -65,22 +65,22 @@ class ScheduleUpdateRequestDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.cron != null) {
-      json[r'cron'] = this.cron;
-    } else {
-    //  json[r'cron'] = null;
+    if (this.cron.isPresent) {
+      final value = this.cron.value;
+      json[r'cron'] = value;
     }
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
-    if (this.paused != null) {
-      json[r'paused'] = this.paused;
-    } else {
-    //  json[r'paused'] = null;
+    if (this.paused.isPresent) {
+      final value = this.paused.value;
+      json[r'paused'] = value;
     }
-      json[r'repositories'] = this.repositories;
+    if (this.repositories.isPresent) {
+      final value = this.repositories.value;
+      json[r'repositories'] = value;
+    }
     return json;
   }
 
@@ -93,12 +93,12 @@ class ScheduleUpdateRequestDto {
       final json = value.cast<String, dynamic>();
 
       return ScheduleUpdateRequestDto(
-        cron: mapValueOfType<String>(json, r'cron'),
-        name: mapValueOfType<String>(json, r'name'),
-        paused: mapValueOfType<bool>(json, r'paused'),
-        repositories: json[r'repositories'] is Iterable
+        cron: json.containsKey(r'cron') ? Optional.present(mapValueOfType<String>(json, r'cron')) : const Optional.absent(),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
+        paused: json.containsKey(r'paused') ? Optional.present(mapValueOfType<bool>(json, r'paused')) : const Optional.absent(),
+        repositories: json.containsKey(r'repositories') ? Optional.present(json[r'repositories'] is Iterable
             ? (json[r'repositories'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            : const []) : const Optional.absent(),
       );
     }
     return null;

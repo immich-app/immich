@@ -34,7 +34,7 @@ test.describe('Yucca Backups', () => {
     await resetOrchestrator({ headers });
     await importRecoveryKey({ importRecoveryKeyRequest: { recoveryKey: '0'.repeat(64) } }, { headers });
     await confirmRecoveryKey({ headers });
-    await utils.mkdir('/local-backend');
+    await utils.mkFolder('/local-backend');
 
     socket = io(baseUrl, {
       path: '/api/yucca/socket.io',

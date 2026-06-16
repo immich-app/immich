@@ -13,9 +13,9 @@ part of openapi.api;
 class RepositoryUpdateRequestDto {
   /// Returns a new [RepositoryUpdateRequestDto] instance.
   RepositoryUpdateRequestDto({
-    this.name,
-    this.paths = const [],
-    this.retentionPolicy,
+    this.name = const Optional.absent(),
+    this.paths = const Optional.present(const []),
+    this.retentionPolicy = const Optional.absent(),
   });
 
   ///
@@ -24,11 +24,11 @@ class RepositoryUpdateRequestDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? name;
+  Optional<String?> name;
 
-  List<String> paths;
+  Optional<List<String>?> paths;
 
-  RetentionPolicyDto? retentionPolicy;
+  Optional<RetentionPolicyDto?> retentionPolicy;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RepositoryUpdateRequestDto &&
@@ -48,16 +48,17 @@ class RepositoryUpdateRequestDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
-      json[r'paths'] = this.paths;
-    if (this.retentionPolicy != null) {
-      json[r'retentionPolicy'] = this.retentionPolicy;
-    } else {
-    //  json[r'retentionPolicy'] = null;
+    if (this.paths.isPresent) {
+      final value = this.paths.value;
+      json[r'paths'] = value;
+    }
+    if (this.retentionPolicy.isPresent) {
+      final value = this.retentionPolicy.value;
+      json[r'retentionPolicy'] = value;
     }
     return json;
   }
@@ -71,11 +72,11 @@ class RepositoryUpdateRequestDto {
       final json = value.cast<String, dynamic>();
 
       return RepositoryUpdateRequestDto(
-        name: mapValueOfType<String>(json, r'name'),
-        paths: json[r'paths'] is Iterable
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
+        paths: json.containsKey(r'paths') ? Optional.present(json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        retentionPolicy: RetentionPolicyDto.fromJson(json[r'retentionPolicy']),
+            : const []) : const Optional.absent(),
+        retentionPolicy: json.containsKey(r'retentionPolicy') ? Optional.present(RetentionPolicyDto.fromJson(json[r'retentionPolicy'])) : const Optional.absent(),
       );
     }
     return null;

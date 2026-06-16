@@ -13,7 +13,7 @@ part of openapi.api;
 class BackendDto {
   /// Returns a new [BackendDto] instance.
   BackendDto({
-    this.error,
+    this.error = const Optional.absent(),
     required this.id,
     required this.isOnline,
     required this.type,
@@ -25,7 +25,7 @@ class BackendDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? error;
+  Optional<String?> error;
 
   String id;
 
@@ -53,10 +53,9 @@ class BackendDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.error != null) {
-      json[r'error'] = this.error;
-    } else {
-    //  json[r'error'] = null;
+    if (this.error.isPresent) {
+      final value = this.error.value;
+      json[r'error'] = value;
     }
       json[r'id'] = this.id;
       json[r'isOnline'] = this.isOnline;
@@ -73,7 +72,7 @@ class BackendDto {
       final json = value.cast<String, dynamic>();
 
       return BackendDto(
-        error: mapValueOfType<String>(json, r'error'),
+        error: json.containsKey(r'error') ? Optional.present(mapValueOfType<String>(json, r'error')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
         isOnline: mapValueOfType<bool>(json, r'isOnline')!,
         type: BackendType.fromJson(json[r'type'])!,

@@ -20,7 +20,7 @@ class IntegrationsApi {
   /// Parameters:
   ///
   /// * [ConfigureImmichIntegrationRequestDto] configureImmichIntegrationRequestDto (required):
-  Future<Response> configureImmichIntegrationWithHttpInfo(ConfigureImmichIntegrationRequestDto configureImmichIntegrationRequestDto,) async {
+  Future<Response> configureImmichIntegrationWithHttpInfo(ConfigureImmichIntegrationRequestDto configureImmichIntegrationRequestDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/integrations/immich';
 
@@ -42,21 +42,22 @@ class IntegrationsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [ConfigureImmichIntegrationRequestDto] configureImmichIntegrationRequestDto (required):
-  Future<void> configureImmichIntegration(ConfigureImmichIntegrationRequestDto configureImmichIntegrationRequestDto,) async {
-    final response = await configureImmichIntegrationWithHttpInfo(configureImmichIntegrationRequestDto,);
+  Future<void> configureImmichIntegration(ConfigureImmichIntegrationRequestDto configureImmichIntegrationRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await configureImmichIntegrationWithHttpInfo(configureImmichIntegrationRequestDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'GET /yucca/integrations' operation and returns the [Response].
-  Future<Response> getIntegrationsWithHttpInfo() async {
+  Future<Response> getIntegrationsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/integrations';
 
@@ -78,11 +79,12 @@ class IntegrationsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<IntegrationsResponseDto?> getIntegrations() async {
-    final response = await getIntegrationsWithHttpInfo();
+  Future<IntegrationsResponseDto?> getIntegrations({ Future<void>? abortTrigger, }) async {
+    final response = await getIntegrationsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

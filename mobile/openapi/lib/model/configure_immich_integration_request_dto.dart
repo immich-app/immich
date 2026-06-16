@@ -18,7 +18,7 @@ class ConfigureImmichIntegrationRequestDto {
     this.dataFolders = const [],
     required this.libraries,
     required this.name,
-    this.retentionPolicy,
+    this.retentionPolicy = const Optional.absent(),
     required this.worm,
   });
 
@@ -32,7 +32,7 @@ class ConfigureImmichIntegrationRequestDto {
 
   String name;
 
-  RetentionPolicyDto? retentionPolicy;
+  Optional<RetentionPolicyDto?> retentionPolicy;
 
   bool worm;
 
@@ -67,10 +67,9 @@ class ConfigureImmichIntegrationRequestDto {
       json[r'dataFolders'] = this.dataFolders;
       json[r'libraries'] = this.libraries;
       json[r'name'] = this.name;
-    if (this.retentionPolicy != null) {
-      json[r'retentionPolicy'] = this.retentionPolicy;
-    } else {
-    //  json[r'retentionPolicy'] = null;
+    if (this.retentionPolicy.isPresent) {
+      final value = this.retentionPolicy.value;
+      json[r'retentionPolicy'] = value;
     }
       json[r'worm'] = this.worm;
     return json;
@@ -92,7 +91,7 @@ class ConfigureImmichIntegrationRequestDto {
             : const [],
         libraries: ConfigureImmichIntegrationRequestDtoLibraries.fromJson(json[r'libraries'])!,
         name: mapValueOfType<String>(json, r'name')!,
-        retentionPolicy: RetentionPolicyDto.fromJson(json[r'retentionPolicy']),
+        retentionPolicy: json.containsKey(r'retentionPolicy') ? Optional.present(RetentionPolicyDto.fromJson(json[r'retentionPolicy'])) : const Optional.absent(),
         worm: mapValueOfType<bool>(json, r'worm')!,
       );
     }

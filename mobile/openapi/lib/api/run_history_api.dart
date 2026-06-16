@@ -20,7 +20,7 @@ class RunHistoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getRunWithHttpInfo(String id,) async {
+  Future<Response> getRunWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/logs/{id}'
       .replaceAll('{id}', id);
@@ -43,14 +43,15 @@ class RunHistoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<RunResponseDto?> getRun(String id,) async {
-    final response = await getRunWithHttpInfo(id,);
+  Future<RunResponseDto?> getRun(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getRunWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -68,7 +69,7 @@ class RunHistoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> logStreamSseWithHttpInfo(String id,) async {
+  Future<Response> logStreamSseWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/logs/{id}/stream'
       .replaceAll('{id}', id);
@@ -91,14 +92,15 @@ class RunHistoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> logStreamSse(String id,) async {
-    final response = await logStreamSseWithHttpInfo(id,);
+  Future<void> logStreamSse(String id, { Future<void>? abortTrigger, }) async {
+    final response = await logStreamSseWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -14,13 +14,13 @@ class RepositoryCreateRequestDto {
   /// Returns a new [RepositoryCreateRequestDto] instance.
   RepositoryCreateRequestDto({
     required this.name,
-    this.paths = const [],
+    this.paths = const Optional.present(const []),
     required this.worm,
   });
 
   String name;
 
-  List<String> paths;
+  Optional<List<String>?> paths;
 
   bool worm;
 
@@ -43,7 +43,10 @@ class RepositoryCreateRequestDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'name'] = this.name;
-      json[r'paths'] = this.paths;
+    if (this.paths.isPresent) {
+      final value = this.paths.value;
+      json[r'paths'] = value;
+    }
       json[r'worm'] = this.worm;
     return json;
   }
@@ -58,9 +61,9 @@ class RepositoryCreateRequestDto {
 
       return RepositoryCreateRequestDto(
         name: mapValueOfType<String>(json, r'name')!,
-        paths: json[r'paths'] is Iterable
+        paths: json.containsKey(r'paths') ? Optional.present(json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            : const []) : const Optional.absent(),
         worm: mapValueOfType<bool>(json, r'worm')!,
       );
     }

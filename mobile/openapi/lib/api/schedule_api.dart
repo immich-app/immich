@@ -20,7 +20,7 @@ class ScheduleApi {
   /// Parameters:
   ///
   /// * [ScheduleCreateRequestDto] scheduleCreateRequestDto (required):
-  Future<Response> createScheduleWithHttpInfo(ScheduleCreateRequestDto scheduleCreateRequestDto,) async {
+  Future<Response> createScheduleWithHttpInfo(ScheduleCreateRequestDto scheduleCreateRequestDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/schedule';
 
@@ -42,14 +42,15 @@ class ScheduleApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [ScheduleCreateRequestDto] scheduleCreateRequestDto (required):
-  Future<ScheduleCreateResponseDto?> createSchedule(ScheduleCreateRequestDto scheduleCreateRequestDto,) async {
-    final response = await createScheduleWithHttpInfo(scheduleCreateRequestDto,);
+  Future<ScheduleCreateResponseDto?> createSchedule(ScheduleCreateRequestDto scheduleCreateRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await createScheduleWithHttpInfo(scheduleCreateRequestDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -64,7 +65,7 @@ class ScheduleApi {
   }
 
   /// Performs an HTTP 'GET /yucca/schedule' operation and returns the [Response].
-  Future<Response> getSchedulesWithHttpInfo() async {
+  Future<Response> getSchedulesWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/schedule';
 
@@ -86,11 +87,12 @@ class ScheduleApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<ScheduleListResponseDto?> getSchedules() async {
-    final response = await getSchedulesWithHttpInfo();
+  Future<ScheduleListResponseDto?> getSchedules({ Future<void>? abortTrigger, }) async {
+    final response = await getSchedulesWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -108,7 +110,7 @@ class ScheduleApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> removeScheduleWithHttpInfo(String id,) async {
+  Future<Response> removeScheduleWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/schedule/{id}'
       .replaceAll('{id}', id);
@@ -131,14 +133,15 @@ class ScheduleApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> removeSchedule(String id,) async {
-    final response = await removeScheduleWithHttpInfo(id,);
+  Future<void> removeSchedule(String id, { Future<void>? abortTrigger, }) async {
+    final response = await removeScheduleWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -150,7 +153,7 @@ class ScheduleApi {
   /// * [String] id (required):
   ///
   /// * [ScheduleUpdateRequestDto] scheduleUpdateRequestDto (required):
-  Future<Response> updateScheduleWithHttpInfo(String id, ScheduleUpdateRequestDto scheduleUpdateRequestDto,) async {
+  Future<Response> updateScheduleWithHttpInfo(String id, ScheduleUpdateRequestDto scheduleUpdateRequestDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/schedule/{id}'
       .replaceAll('{id}', id);
@@ -173,6 +176,7 @@ class ScheduleApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -181,8 +185,8 @@ class ScheduleApi {
   /// * [String] id (required):
   ///
   /// * [ScheduleUpdateRequestDto] scheduleUpdateRequestDto (required):
-  Future<ScheduleUpdateResponseDto?> updateSchedule(String id, ScheduleUpdateRequestDto scheduleUpdateRequestDto,) async {
-    final response = await updateScheduleWithHttpInfo(id, scheduleUpdateRequestDto,);
+  Future<ScheduleUpdateResponseDto?> updateSchedule(String id, ScheduleUpdateRequestDto scheduleUpdateRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateScheduleWithHttpInfo(id, scheduleUpdateRequestDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

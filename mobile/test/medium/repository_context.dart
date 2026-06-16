@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
@@ -64,6 +65,18 @@ class MediumRepositoryContext {
             avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
             profileChangedAt: .new(TestUtils.date(profileChangedAt)),
             hasProfileImage: .new(hasProfileImage ?? false),
+          ),
+        );
+  }
+
+  Future<void> newPartner({required String sharedById, required String sharedWithId, bool? inTimeline}) {
+    return db
+        .into(db.partnerEntity)
+        .insert(
+          PartnerEntityCompanion(
+            sharedById: .new(sharedById),
+            sharedWithId: .new(sharedWithId),
+            inTimeline: .new(inTimeline ?? false),
           ),
         );
   }

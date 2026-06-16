@@ -44,7 +44,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   imageLoaderStatus = $state<ImageLoaderStatus | undefined>();
   #isImageLoading = $derived.by(() => {
     const quality = this.imageLoaderStatus?.quality;
-    if (!quality) {
+    if (!quality || this.imageLoaderStatus?.hasError) {
       return false;
     }
     const previewOrOriginalReady = quality.preview === 'success' || quality.original === 'success';

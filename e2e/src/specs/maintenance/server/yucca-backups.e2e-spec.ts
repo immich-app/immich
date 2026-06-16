@@ -97,7 +97,7 @@ describe('/yucca', () => {
     });
 
     it.sequential('configures a local backend', async () => {
-      await utils.mkdir('/local-backend');
+      await utils.mkFolder('/local-backend');
 
       await sdk.createLocalBackend(
         {
@@ -143,7 +143,7 @@ describe('/yucca', () => {
     });
 
     it.sequential('updates configuration', async () => {
-      await utils.mkdir('/test');
+      await utils.mkFolder('/test');
 
       ({ id: libraryId } = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,

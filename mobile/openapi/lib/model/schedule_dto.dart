@@ -15,8 +15,8 @@ class ScheduleDto {
   ScheduleDto({
     required this.cron,
     required this.id,
-    this.lastFinished,
-    this.lastRun,
+    this.lastFinished = const Optional.absent(),
+    this.lastRun = const Optional.absent(),
     required this.name,
     required this.paused,
     this.repositories = const [],
@@ -32,7 +32,7 @@ class ScheduleDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? lastFinished;
+  Optional<String?> lastFinished;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -40,7 +40,7 @@ class ScheduleDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? lastRun;
+  Optional<String?> lastRun;
 
   String name;
 
@@ -76,15 +76,13 @@ class ScheduleDto {
     final json = <String, dynamic>{};
       json[r'cron'] = this.cron;
       json[r'id'] = this.id;
-    if (this.lastFinished != null) {
-      json[r'lastFinished'] = this.lastFinished;
-    } else {
-    //  json[r'lastFinished'] = null;
+    if (this.lastFinished.isPresent) {
+      final value = this.lastFinished.value;
+      json[r'lastFinished'] = value;
     }
-    if (this.lastRun != null) {
-      json[r'lastRun'] = this.lastRun;
-    } else {
-    //  json[r'lastRun'] = null;
+    if (this.lastRun.isPresent) {
+      final value = this.lastRun.value;
+      json[r'lastRun'] = value;
     }
       json[r'name'] = this.name;
       json[r'paused'] = this.paused;
@@ -103,8 +101,8 @@ class ScheduleDto {
       return ScheduleDto(
         cron: mapValueOfType<String>(json, r'cron')!,
         id: mapValueOfType<String>(json, r'id')!,
-        lastFinished: mapValueOfType<String>(json, r'lastFinished'),
-        lastRun: mapValueOfType<String>(json, r'lastRun'),
+        lastFinished: json.containsKey(r'lastFinished') ? Optional.present(mapValueOfType<String>(json, r'lastFinished')) : const Optional.absent(),
+        lastRun: json.containsKey(r'lastRun') ? Optional.present(mapValueOfType<String>(json, r'lastRun')) : const Optional.absent(),
         name: mapValueOfType<String>(json, r'name')!,
         paused: mapValueOfType<bool>(json, r'paused')!,
         repositories: json[r'repositories'] is Iterable

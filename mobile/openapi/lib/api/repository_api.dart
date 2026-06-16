@@ -22,7 +22,7 @@ class RepositoryApi {
   /// * [String] backend (required):
   ///
   /// * [String] id (required):
-  Future<Response> checkImportRepositoryWithHttpInfo(String backend, String id,) async {
+  Future<Response> checkImportRepositoryWithHttpInfo(String backend, String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/import'
       .replaceAll('{id}', id);
@@ -47,6 +47,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -55,8 +56,8 @@ class RepositoryApi {
   /// * [String] backend (required):
   ///
   /// * [String] id (required):
-  Future<RepositoryCheckImportResponseDto?> checkImportRepository(String backend, String id,) async {
-    final response = await checkImportRepositoryWithHttpInfo(backend, id,);
+  Future<RepositoryCheckImportResponseDto?> checkImportRepository(String backend, String id, { Future<void>? abortTrigger, }) async {
+    final response = await checkImportRepositoryWithHttpInfo(backend, id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -74,7 +75,7 @@ class RepositoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> createBackupWithHttpInfo(String id,) async {
+  Future<Response> createBackupWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}'
       .replaceAll('{id}', id);
@@ -97,14 +98,15 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<LogResponseDto?> createBackup(String id,) async {
-    final response = await createBackupWithHttpInfo(id,);
+  Future<LogResponseDto?> createBackup(String id, { Future<void>? abortTrigger, }) async {
+    final response = await createBackupWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -124,7 +126,7 @@ class RepositoryApi {
   /// * [RepositoryCreateRequestDto] repositoryCreateRequestDto (required):
   ///
   /// * [String] backend:
-  Future<Response> createRepositoryWithHttpInfo(RepositoryCreateRequestDto repositoryCreateRequestDto, { String? backend, }) async {
+  Future<Response> createRepositoryWithHttpInfo(RepositoryCreateRequestDto repositoryCreateRequestDto, { String? backend, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository';
 
@@ -150,6 +152,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -158,8 +161,8 @@ class RepositoryApi {
   /// * [RepositoryCreateRequestDto] repositoryCreateRequestDto (required):
   ///
   /// * [String] backend:
-  Future<RepositoryCreateResponseDto?> createRepository(RepositoryCreateRequestDto repositoryCreateRequestDto, { String? backend, }) async {
-    final response = await createRepositoryWithHttpInfo(repositoryCreateRequestDto,  backend: backend, );
+  Future<RepositoryCreateResponseDto?> createRepository(RepositoryCreateRequestDto repositoryCreateRequestDto, { String? backend, Future<void>? abortTrigger, }) async {
+    final response = await createRepositoryWithHttpInfo(repositoryCreateRequestDto, backend: backend, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -177,7 +180,7 @@ class RepositoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteRepositoryWithHttpInfo(String id,) async {
+  Future<Response> deleteRepositoryWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}'
       .replaceAll('{id}', id);
@@ -200,14 +203,15 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteRepository(String id,) async {
-    final response = await deleteRepositoryWithHttpInfo(id,);
+  Future<void> deleteRepository(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteRepositoryWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -219,7 +223,7 @@ class RepositoryApi {
   /// * [String] id (required):
   ///
   /// * [String] snapshot (required):
-  Future<Response> forgetSnapshotWithHttpInfo(String id, String snapshot,) async {
+  Future<Response> forgetSnapshotWithHttpInfo(String id, String snapshot, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/snapshots/{snapshot}'
       .replaceAll('{id}', id)
@@ -243,6 +247,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -251,8 +256,8 @@ class RepositoryApi {
   /// * [String] id (required):
   ///
   /// * [String] snapshot (required):
-  Future<ListSnapshotsResponseDto?> forgetSnapshot(String id, String snapshot,) async {
-    final response = await forgetSnapshotWithHttpInfo(id, snapshot,);
+  Future<ListSnapshotsResponseDto?> forgetSnapshot(String id, String snapshot, { Future<void>? abortTrigger, }) async {
+    final response = await forgetSnapshotWithHttpInfo(id, snapshot, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -267,7 +272,7 @@ class RepositoryApi {
   }
 
   /// Performs an HTTP 'GET /yucca/repository' operation and returns the [Response].
-  Future<Response> getRepositoriesWithHttpInfo() async {
+  Future<Response> getRepositoriesWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository';
 
@@ -289,11 +294,12 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<RepositoryListResponseDto?> getRepositories() async {
-    final response = await getRepositoriesWithHttpInfo();
+  Future<RepositoryListResponseDto?> getRepositories({ Future<void>? abortTrigger, }) async {
+    final response = await getRepositoriesWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -311,7 +317,7 @@ class RepositoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getRunHistoryWithHttpInfo(String id,) async {
+  Future<Response> getRunHistoryWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/runs'
       .replaceAll('{id}', id);
@@ -334,14 +340,15 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<RunHistoryResponseDto?> getRunHistory(String id,) async {
-    final response = await getRunHistoryWithHttpInfo(id,);
+  Future<RunHistoryResponseDto?> getRunHistory(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getRunHistoryWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -363,7 +370,7 @@ class RepositoryApi {
   /// * [String] snapshot (required):
   ///
   /// * [String] path:
-  Future<Response> getSnapshotListingWithHttpInfo(String id, String snapshot, { String? path, }) async {
+  Future<Response> getSnapshotListingWithHttpInfo(String id, String snapshot, { String? path, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/snapshots/{snapshot}/listing'
       .replaceAll('{id}', id)
@@ -391,6 +398,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -401,8 +409,8 @@ class RepositoryApi {
   /// * [String] snapshot (required):
   ///
   /// * [String] path:
-  Future<FilesystemListingResponseDto?> getSnapshotListing(String id, String snapshot, { String? path, }) async {
-    final response = await getSnapshotListingWithHttpInfo(id, snapshot,  path: path, );
+  Future<FilesystemListingResponseDto?> getSnapshotListing(String id, String snapshot, { String? path, Future<void>? abortTrigger, }) async {
+    final response = await getSnapshotListingWithHttpInfo(id, snapshot, path: path, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -420,7 +428,7 @@ class RepositoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getSnapshotsWithHttpInfo(String id,) async {
+  Future<Response> getSnapshotsWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/snapshots'
       .replaceAll('{id}', id);
@@ -443,14 +451,15 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<ListSnapshotsResponseDto?> getSnapshots(String id,) async {
-    final response = await getSnapshotsWithHttpInfo(id,);
+  Future<ListSnapshotsResponseDto?> getSnapshots(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getSnapshotsWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -470,7 +479,7 @@ class RepositoryApi {
   /// * [String] backend (required):
   ///
   /// * [String] id (required):
-  Future<Response> importRepositoryWithHttpInfo(String backend, String id,) async {
+  Future<Response> importRepositoryWithHttpInfo(String backend, String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/import'
       .replaceAll('{id}', id);
@@ -495,6 +504,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -503,8 +513,8 @@ class RepositoryApi {
   /// * [String] backend (required):
   ///
   /// * [String] id (required):
-  Future<RepositoryCreateResponseDto?> importRepository(String backend, String id,) async {
-    final response = await importRepositoryWithHttpInfo(backend, id,);
+  Future<RepositoryCreateResponseDto?> importRepository(String backend, String id, { Future<void>? abortTrigger, }) async {
+    final response = await importRepositoryWithHttpInfo(backend, id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -519,7 +529,7 @@ class RepositoryApi {
   }
 
   /// Performs an HTTP 'GET /yucca/repository/inspect' operation and returns the [Response].
-  Future<Response> inspectRepositoriesWithHttpInfo() async {
+  Future<Response> inspectRepositoriesWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/inspect';
 
@@ -541,11 +551,12 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<RepositoryInspectResponseDto?> inspectRepositories() async {
-    final response = await inspectRepositoriesWithHttpInfo();
+  Future<RepositoryInspectResponseDto?> inspectRepositories({ Future<void>? abortTrigger, }) async {
+    final response = await inspectRepositoriesWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -563,7 +574,7 @@ class RepositoryApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> pruneRepositoryWithHttpInfo(String id,) async {
+  Future<Response> pruneRepositoryWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/snapshots/prune'
       .replaceAll('{id}', id);
@@ -586,14 +597,15 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<LogResponseDto?> pruneRepository(String id,) async {
-    final response = await pruneRepositoryWithHttpInfo(id,);
+  Future<LogResponseDto?> pruneRepository(String id, { Future<void>? abortTrigger, }) async {
+    final response = await pruneRepositoryWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -617,7 +629,7 @@ class RepositoryApi {
   /// * [String] snapshot (required):
   ///
   /// * [RepositorySnapshotRestoreFromPointRequestDto] repositorySnapshotRestoreFromPointRequestDto (required):
-  Future<Response> restoreFromPointWithHttpInfo(String backend, String id, String snapshot, RepositorySnapshotRestoreFromPointRequestDto repositorySnapshotRestoreFromPointRequestDto,) async {
+  Future<Response> restoreFromPointWithHttpInfo(String backend, String id, String snapshot, RepositorySnapshotRestoreFromPointRequestDto repositorySnapshotRestoreFromPointRequestDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/snapshots/{snapshot}/restore-from-point'
       .replaceAll('{id}', id)
@@ -643,6 +655,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -655,8 +668,8 @@ class RepositoryApi {
   /// * [String] snapshot (required):
   ///
   /// * [RepositorySnapshotRestoreFromPointRequestDto] repositorySnapshotRestoreFromPointRequestDto (required):
-  Future<LogResponseDto?> restoreFromPoint(String backend, String id, String snapshot, RepositorySnapshotRestoreFromPointRequestDto repositorySnapshotRestoreFromPointRequestDto,) async {
-    final response = await restoreFromPointWithHttpInfo(backend, id, snapshot, repositorySnapshotRestoreFromPointRequestDto,);
+  Future<LogResponseDto?> restoreFromPoint(String backend, String id, String snapshot, RepositorySnapshotRestoreFromPointRequestDto repositorySnapshotRestoreFromPointRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await restoreFromPointWithHttpInfo(backend, id, snapshot, repositorySnapshotRestoreFromPointRequestDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -678,7 +691,7 @@ class RepositoryApi {
   /// * [String] snapshot (required):
   ///
   /// * [RepositorySnapshotRestoreRequestDto] repositorySnapshotRestoreRequestDto (required):
-  Future<Response> restoreSnapshotWithHttpInfo(String id, String snapshot, RepositorySnapshotRestoreRequestDto repositorySnapshotRestoreRequestDto,) async {
+  Future<Response> restoreSnapshotWithHttpInfo(String id, String snapshot, RepositorySnapshotRestoreRequestDto repositorySnapshotRestoreRequestDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}/snapshots/{snapshot}'
       .replaceAll('{id}', id)
@@ -702,6 +715,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -712,8 +726,8 @@ class RepositoryApi {
   /// * [String] snapshot (required):
   ///
   /// * [RepositorySnapshotRestoreRequestDto] repositorySnapshotRestoreRequestDto (required):
-  Future<LogResponseDto?> restoreSnapshot(String id, String snapshot, RepositorySnapshotRestoreRequestDto repositorySnapshotRestoreRequestDto,) async {
-    final response = await restoreSnapshotWithHttpInfo(id, snapshot, repositorySnapshotRestoreRequestDto,);
+  Future<LogResponseDto?> restoreSnapshot(String id, String snapshot, RepositorySnapshotRestoreRequestDto repositorySnapshotRestoreRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await restoreSnapshotWithHttpInfo(id, snapshot, repositorySnapshotRestoreRequestDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -735,7 +749,7 @@ class RepositoryApi {
   /// * [RepositoryUpdateRequestDto] repositoryUpdateRequestDto (required):
   ///
   /// * [String] backend:
-  Future<Response> updateRepositoryWithHttpInfo(String id, RepositoryUpdateRequestDto repositoryUpdateRequestDto, { String? backend, }) async {
+  Future<Response> updateRepositoryWithHttpInfo(String id, RepositoryUpdateRequestDto repositoryUpdateRequestDto, { String? backend, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/{id}'
       .replaceAll('{id}', id);
@@ -762,6 +776,7 @@ class RepositoryApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -772,8 +787,8 @@ class RepositoryApi {
   /// * [RepositoryUpdateRequestDto] repositoryUpdateRequestDto (required):
   ///
   /// * [String] backend:
-  Future<RepositoryUpdateResponseDto?> updateRepository(String id, RepositoryUpdateRequestDto repositoryUpdateRequestDto, { String? backend, }) async {
-    final response = await updateRepositoryWithHttpInfo(id, repositoryUpdateRequestDto,  backend: backend, );
+  Future<RepositoryUpdateResponseDto?> updateRepository(String id, RepositoryUpdateRequestDto repositoryUpdateRequestDto, { String? backend, Future<void>? abortTrigger, }) async {
+    final response = await updateRepositoryWithHttpInfo(id, repositoryUpdateRequestDto, backend: backend, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

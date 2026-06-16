@@ -8,34 +8,31 @@ packages:
   - web
   - .github
   - packages/*
+allowBuilds:
+  '@nestjs/core': false
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  '@swc/core': false
+  bcrypt: true
+  better-sqlite3: true
+  canvas: false
+  core-js: false
+  cpu-features: false
+  es5-ext: false
+  esbuild: false
+  msgpackr-extract: false
+  protobufjs: false
+  sharp: true
+  ssh2: false
+  utimes: false
+  '@tailwindcss/oxide': true
+  core-js-pure: false
+  postman-code-generators: false
 dedupePeerDependents: false
-ignoredBuiltDependencies:
-  - '@nestjs/core'
-  - '@parcel/watcher'
-  - '@scarf/scarf'
-  - '@swc/core'
-  - canvas
-  - core-js
-  - core-js-pure
-  - cpu-features
-  - es5-ext
-  - esbuild
-  - msgpackr-extract
-  - postman-code-generators
-  - protobufjs
-  - ssh2
-  - utimes
 injectWorkspacePackages: true
-onlyBuiltDependencies:
-  - '@tailwindcss/oxide'
-  - bcrypt
-  - better-sqlite3
-  - sharp
 overrides:
   canvas: 3.2.3
   sharp: ^0.34.5
-  # pending docusaurus 3.10.1
-  webpackbar: ^7.0.0
 packageExtensions:
   '@immich/ui':
     dependencies:

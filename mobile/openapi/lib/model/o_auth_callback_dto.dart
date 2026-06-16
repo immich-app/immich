@@ -13,8 +13,8 @@ part of openapi.api;
 class OAuthCallbackDto {
   /// Returns a new [OAuthCallbackDto] instance.
   OAuthCallbackDto({
-    this.codeVerifier,
-    this.state,
+    this.codeVerifier = const Optional.absent(),
+    this.state = const Optional.absent(),
     required this.url,
   });
 
@@ -25,7 +25,7 @@ class OAuthCallbackDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? codeVerifier;
+  Optional<String?> codeVerifier;
 
   /// OAuth state parameter
   ///
@@ -34,7 +34,7 @@ class OAuthCallbackDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? state;
+  Optional<String?> state;
 
   /// OAuth callback URL
   String url;
@@ -57,15 +57,13 @@ class OAuthCallbackDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.codeVerifier != null) {
-      json[r'codeVerifier'] = this.codeVerifier;
-    } else {
-    //  json[r'codeVerifier'] = null;
+    if (this.codeVerifier.isPresent) {
+      final value = this.codeVerifier.value;
+      json[r'codeVerifier'] = value;
     }
-    if (this.state != null) {
-      json[r'state'] = this.state;
-    } else {
-    //  json[r'state'] = null;
+    if (this.state.isPresent) {
+      final value = this.state.value;
+      json[r'state'] = value;
     }
       json[r'url'] = this.url;
     return json;
@@ -80,8 +78,8 @@ class OAuthCallbackDto {
       final json = value.cast<String, dynamic>();
 
       return OAuthCallbackDto(
-        codeVerifier: mapValueOfType<String>(json, r'codeVerifier'),
-        state: mapValueOfType<String>(json, r'state'),
+        codeVerifier: json.containsKey(r'codeVerifier') ? Optional.present(mapValueOfType<String>(json, r'codeVerifier')) : const Optional.absent(),
+        state: json.containsKey(r'state') ? Optional.present(mapValueOfType<String>(json, r'state')) : const Optional.absent(),
         url: mapValueOfType<String>(json, r'url')!,
       );
     }

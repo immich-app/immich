@@ -13,8 +13,8 @@ part of openapi.api;
 class IntegrationsResponseDto {
   /// Returns a new [IntegrationsResponseDto] instance.
   IntegrationsResponseDto({
-    this.immichIntegration,
-    this.immichState,
+    this.immichIntegration = const Optional.absent(),
+    this.immichState = const Optional.absent(),
   });
 
   ///
@@ -23,7 +23,7 @@ class IntegrationsResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  ImmichIntegrationDto? immichIntegration;
+  Optional<ImmichIntegrationDto?> immichIntegration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -31,7 +31,7 @@ class IntegrationsResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  ImmichStateDto? immichState;
+  Optional<ImmichStateDto?> immichState;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is IntegrationsResponseDto &&
@@ -49,15 +49,13 @@ class IntegrationsResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.immichIntegration != null) {
-      json[r'immichIntegration'] = this.immichIntegration;
-    } else {
-    //  json[r'immichIntegration'] = null;
+    if (this.immichIntegration.isPresent) {
+      final value = this.immichIntegration.value;
+      json[r'immichIntegration'] = value;
     }
-    if (this.immichState != null) {
-      json[r'immichState'] = this.immichState;
-    } else {
-    //  json[r'immichState'] = null;
+    if (this.immichState.isPresent) {
+      final value = this.immichState.value;
+      json[r'immichState'] = value;
     }
     return json;
   }
@@ -71,8 +69,8 @@ class IntegrationsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return IntegrationsResponseDto(
-        immichIntegration: ImmichIntegrationDto.fromJson(json[r'immichIntegration']),
-        immichState: ImmichStateDto.fromJson(json[r'immichState']),
+        immichIntegration: json.containsKey(r'immichIntegration') ? Optional.present(ImmichIntegrationDto.fromJson(json[r'immichIntegration'])) : const Optional.absent(),
+        immichState: json.containsKey(r'immichState') ? Optional.present(ImmichStateDto.fromJson(json[r'immichState'])) : const Optional.absent(),
       );
     }
     return null;

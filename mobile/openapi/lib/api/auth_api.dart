@@ -17,7 +17,7 @@ class AuthApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'GET /yucca/auth/oidc/device' operation and returns the [Response].
-  Future<Response> oidcDeviceFlowWithHttpInfo() async {
+  Future<Response> oidcDeviceFlowWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/auth/oidc/device';
 
@@ -39,11 +39,12 @@ class AuthApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<DeviceFlowResponseDto?> oidcDeviceFlow() async {
-    final response = await oidcDeviceFlowWithHttpInfo();
+  Future<DeviceFlowResponseDto?> oidcDeviceFlow({ Future<void>? abortTrigger, }) async {
+    final response = await oidcDeviceFlowWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

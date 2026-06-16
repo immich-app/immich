@@ -13,13 +13,13 @@ part of openapi.api;
 class RetentionPolicyDto {
   /// Returns a new [RetentionPolicyDto] instance.
   RetentionPolicyDto({
-    this.keepLast,
-    this.keepWithin,
-    this.keepWithinDaily,
-    this.keepWithinHourly,
-    this.keepWithinMonthly,
-    this.keepWithinWeekly,
-    this.keepWithinYearly,
+    this.keepLast = const Optional.absent(),
+    this.keepWithin = const Optional.absent(),
+    this.keepWithinDaily = const Optional.absent(),
+    this.keepWithinHourly = const Optional.absent(),
+    this.keepWithinMonthly = const Optional.absent(),
+    this.keepWithinWeekly = const Optional.absent(),
+    this.keepWithinYearly = const Optional.absent(),
   });
 
   ///
@@ -28,7 +28,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? keepLast;
+  Optional<num?> keepLast;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -36,7 +36,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? keepWithin;
+  Optional<String?> keepWithin;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -44,7 +44,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? keepWithinDaily;
+  Optional<String?> keepWithinDaily;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -52,7 +52,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? keepWithinHourly;
+  Optional<String?> keepWithinHourly;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -60,7 +60,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? keepWithinMonthly;
+  Optional<String?> keepWithinMonthly;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -68,7 +68,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? keepWithinWeekly;
+  Optional<String?> keepWithinWeekly;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -76,7 +76,7 @@ class RetentionPolicyDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? keepWithinYearly;
+  Optional<String?> keepWithinYearly;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is RetentionPolicyDto &&
@@ -104,40 +104,33 @@ class RetentionPolicyDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.keepLast != null) {
-      json[r'keepLast'] = this.keepLast;
-    } else {
-    //  json[r'keepLast'] = null;
+    if (this.keepLast.isPresent) {
+      final value = this.keepLast.value;
+      json[r'keepLast'] = value;
     }
-    if (this.keepWithin != null) {
-      json[r'keepWithin'] = this.keepWithin;
-    } else {
-    //  json[r'keepWithin'] = null;
+    if (this.keepWithin.isPresent) {
+      final value = this.keepWithin.value;
+      json[r'keepWithin'] = value;
     }
-    if (this.keepWithinDaily != null) {
-      json[r'keepWithinDaily'] = this.keepWithinDaily;
-    } else {
-    //  json[r'keepWithinDaily'] = null;
+    if (this.keepWithinDaily.isPresent) {
+      final value = this.keepWithinDaily.value;
+      json[r'keepWithinDaily'] = value;
     }
-    if (this.keepWithinHourly != null) {
-      json[r'keepWithinHourly'] = this.keepWithinHourly;
-    } else {
-    //  json[r'keepWithinHourly'] = null;
+    if (this.keepWithinHourly.isPresent) {
+      final value = this.keepWithinHourly.value;
+      json[r'keepWithinHourly'] = value;
     }
-    if (this.keepWithinMonthly != null) {
-      json[r'keepWithinMonthly'] = this.keepWithinMonthly;
-    } else {
-    //  json[r'keepWithinMonthly'] = null;
+    if (this.keepWithinMonthly.isPresent) {
+      final value = this.keepWithinMonthly.value;
+      json[r'keepWithinMonthly'] = value;
     }
-    if (this.keepWithinWeekly != null) {
-      json[r'keepWithinWeekly'] = this.keepWithinWeekly;
-    } else {
-    //  json[r'keepWithinWeekly'] = null;
+    if (this.keepWithinWeekly.isPresent) {
+      final value = this.keepWithinWeekly.value;
+      json[r'keepWithinWeekly'] = value;
     }
-    if (this.keepWithinYearly != null) {
-      json[r'keepWithinYearly'] = this.keepWithinYearly;
-    } else {
-    //  json[r'keepWithinYearly'] = null;
+    if (this.keepWithinYearly.isPresent) {
+      final value = this.keepWithinYearly.value;
+      json[r'keepWithinYearly'] = value;
     }
     return json;
   }
@@ -151,13 +144,13 @@ class RetentionPolicyDto {
       final json = value.cast<String, dynamic>();
 
       return RetentionPolicyDto(
-        keepLast: num.parse('${json[r'keepLast']}'),
-        keepWithin: mapValueOfType<String>(json, r'keepWithin'),
-        keepWithinDaily: mapValueOfType<String>(json, r'keepWithinDaily'),
-        keepWithinHourly: mapValueOfType<String>(json, r'keepWithinHourly'),
-        keepWithinMonthly: mapValueOfType<String>(json, r'keepWithinMonthly'),
-        keepWithinWeekly: mapValueOfType<String>(json, r'keepWithinWeekly'),
-        keepWithinYearly: mapValueOfType<String>(json, r'keepWithinYearly'),
+        keepLast: json.containsKey(r'keepLast') ? Optional.present(json[r'keepLast'] == null ? null : num.parse('${json[r'keepLast']}')) : const Optional.absent(),
+        keepWithin: json.containsKey(r'keepWithin') ? Optional.present(mapValueOfType<String>(json, r'keepWithin')) : const Optional.absent(),
+        keepWithinDaily: json.containsKey(r'keepWithinDaily') ? Optional.present(mapValueOfType<String>(json, r'keepWithinDaily')) : const Optional.absent(),
+        keepWithinHourly: json.containsKey(r'keepWithinHourly') ? Optional.present(mapValueOfType<String>(json, r'keepWithinHourly')) : const Optional.absent(),
+        keepWithinMonthly: json.containsKey(r'keepWithinMonthly') ? Optional.present(mapValueOfType<String>(json, r'keepWithinMonthly')) : const Optional.absent(),
+        keepWithinWeekly: json.containsKey(r'keepWithinWeekly') ? Optional.present(mapValueOfType<String>(json, r'keepWithinWeekly')) : const Optional.absent(),
+        keepWithinYearly: json.containsKey(r'keepWithinYearly') ? Optional.present(mapValueOfType<String>(json, r'keepWithinYearly')) : const Optional.absent(),
       );
     }
     return null;

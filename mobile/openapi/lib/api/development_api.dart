@@ -17,7 +17,7 @@ class DevelopmentApi {
   final ApiClient apiClient;
 
   /// Performs an HTTP 'POST /yucca/debug/reset' operation and returns the [Response].
-  Future<Response> resetOrchestratorWithHttpInfo() async {
+  Future<Response> resetOrchestratorWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/debug/reset';
 
@@ -39,11 +39,12 @@ class DevelopmentApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<void> resetOrchestrator() async {
-    final response = await resetOrchestratorWithHttpInfo();
+  Future<void> resetOrchestrator({ Future<void>? abortTrigger, }) async {
+    final response = await resetOrchestratorWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

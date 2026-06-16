@@ -20,7 +20,7 @@ class FilesystemApi {
   /// Parameters:
   ///
   /// * [String] path:
-  Future<Response> getFileListingWithHttpInfo({ String? path, }) async {
+  Future<Response> getFileListingWithHttpInfo({ String? path, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/fs';
 
@@ -46,14 +46,15 @@ class FilesystemApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Parameters:
   ///
   /// * [String] path:
-  Future<FilesystemListingResponseDto?> getFileListing({ String? path, }) async {
-    final response = await getFileListingWithHttpInfo( path: path, );
+  Future<FilesystemListingResponseDto?> getFileListing({ String? path, Future<void>? abortTrigger, }) async {
+    final response = await getFileListingWithHttpInfo(path: path, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -15,7 +15,7 @@ class SnapshotDto {
   SnapshotDto({
     required this.id,
     this.paths = const [],
-    this.summary,
+    this.summary = const Optional.absent(),
     required this.time,
   });
 
@@ -29,7 +29,7 @@ class SnapshotDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  SnapshotSummaryDto? summary;
+  Optional<SnapshotSummaryDto?> summary;
 
   String time;
 
@@ -55,10 +55,9 @@ class SnapshotDto {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
       json[r'paths'] = this.paths;
-    if (this.summary != null) {
-      json[r'summary'] = this.summary;
-    } else {
-    //  json[r'summary'] = null;
+    if (this.summary.isPresent) {
+      final value = this.summary.value;
+      json[r'summary'] = value;
     }
       json[r'time'] = this.time;
     return json;
@@ -77,7 +76,7 @@ class SnapshotDto {
         paths: json[r'paths'] is Iterable
             ? (json[r'paths'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        summary: SnapshotSummaryDto.fromJson(json[r'summary']),
+        summary: json.containsKey(r'summary') ? Optional.present(SnapshotSummaryDto.fromJson(json[r'summary'])) : const Optional.absent(),
         time: mapValueOfType<String>(json, r'time')!,
       );
     }
