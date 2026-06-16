@@ -10,11 +10,14 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/hls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 
@@ -46,6 +49,8 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
+  String? _sessionId;
+  String? _remoteAssetId;
 
   VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
 
@@ -67,6 +72,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
       _notifier.pause();
+      _endSession();
       return;
     }
 
@@ -79,6 +85,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     WidgetsBinding.instance.removeObserver(this);
     _loadTimer?.cancel();
     _removeListeners();
+    _endSession();
     super.dispose();
   }
 
@@ -141,14 +148,22 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      final remoteId = (videoAsset as RemoteAsset).id;
-
-      final serverEndpoint = Store.get(StoreKey.serverEndpoint);
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
-      final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-      final String videoUrl = videoAsset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
-          : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      final realtimeTranscoding = ref.read(serverInfoProvider).serverFeatures.realtimeTranscoding;
+      // Motion photo clips are short, so spinning up a transcoding session for them is wasteful
+      final useHls = !isOriginalVideo && videoAsset.livePhotoVideoId == null && realtimeTranscoding;
+      final remoteId = (videoAsset as RemoteAsset).id;
+      final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+      final String videoUrl;
+      if (useHls) {
+        videoUrl = '$serverEndpoint/assets/$remoteId/video/stream/main.m3u8';
+      } else {
+        final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
+        videoUrl = videoAsset.livePhotoVideoId != null
+            ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
+            : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      }
+      _remoteAssetId = remoteId;
 
       return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
     } catch (error) {
@@ -209,11 +224,42 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _notifier.onNativeStatusChanged();
   }
 
+  void _onSourceResolved() {
+    final url = _controller?.onPlaybackSourceResolved.value;
+    if (url == null) {
+      return;
+    }
+
+    final sessionId = extractHlsSessionId(url);
+    if (sessionId == null || sessionId == _sessionId) {
+      return;
+    }
+    // If the player started a new session without us reloading, end the old one
+    _endSession();
+    _sessionId = sessionId;
+  }
+
+  void _endSession() {
+    final sessionId = _sessionId;
+    final assetId = _remoteAssetId;
+    _sessionId = null;
+    if (sessionId == null || assetId == null) {
+      return;
+    }
+
+    unawaited(
+      ref.read(apiServiceProvider).assetsApi.endSession(assetId, sessionId).onError((error, stackTrace) {
+        _log.warning('Failed to end HLS session $sessionId for asset $assetId', error, stackTrace);
+      }),
+    );
+  }
+
   void _removeListeners() {
     _controller?.onPlaybackPositionChanged.removeListener(_onPlaybackPositionChanged);
     _controller?.onPlaybackStatusChanged.removeListener(_onPlaybackStatusChanged);
     _controller?.onPlaybackReady.removeListener(_onPlaybackReady);
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
+    _controller?.onPlaybackSourceResolved.removeListener(_onSourceResolved);
   }
 
   void _loadVideo() async {
@@ -244,6 +290,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     nc.onPlaybackStatusChanged.addListener(_onPlaybackStatusChanged);
     nc.onPlaybackReady.addListener(_onPlaybackReady);
     nc.onPlaybackEnded.addListener(_onPlaybackEnded);
+    nc.onPlaybackSourceResolved.addListener(_onSourceResolved);
 
     _controller = nc;
 

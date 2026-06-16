@@ -67,6 +67,9 @@ class URLSessionManager: NSObject {
     delegate = URLSessionManagerDelegate()
     session = Self.buildSession(delegate: delegate)
     super.init()
+    if #available(iOS 15, *) {
+      VideoProxyServer.shared.session = session
+    }
     Self.serverUrls = UserDefaults.group.stringArray(forKey: SERVER_URLS_KEY) ?? []
     NotificationCenter.default.addObserver(
       Self.self,
@@ -78,6 +81,9 @@ class URLSessionManager: NSObject {
 
   func recreateSession() {
     session = Self.buildSession(delegate: delegate)
+    if #available(iOS 15, *) {
+      VideoProxyServer.shared.session = session
+    }
   }
 
   static func setServerUrls(_ urls: [String]) {
@@ -249,9 +255,6 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       let credential = URLCredential(identity: identity as! SecIdentity,
                                      certificates: nil,
                                      persistence: .forSession)
-      if #available(iOS 15, *) {
-        VideoProxyServer.shared.session = session
-      }
       return completion(.useCredential, credential)
     }
     completion(.performDefaultHandling, nil)
@@ -267,9 +270,6 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       let password = url.password
     else {
       return completion(.performDefaultHandling, nil)
-    }
-    if #available(iOS 15, *) {
-      VideoProxyServer.shared.session = session
     }
     let credential = URLCredential(user: user, password: password, persistence: .forSession)
     completion(.useCredential, credential)
