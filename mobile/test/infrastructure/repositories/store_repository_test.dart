@@ -4,17 +4,13 @@ import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 
-import '../../fixtures/user.stub.dart';
-
 const _kTestAccessToken = "#TestToken";
 const _kTestVersion = 10;
 const _kTestAdvancedTroubleshooting = false;
-final _kTestUser = UserStub.admin;
 
 Future<void> _populateStore(Drift db) async {
   await db.batch((batch) async {
@@ -81,14 +77,6 @@ void main() {
       await sut.upsert(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting);
       advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
       expect(advancedTroubleshooting, _kTestAdvancedTroubleshooting);
-    });
-
-    test('converts user', () async {
-      UserDto? user = await sut.tryGet(StoreKey.currentUser);
-      expect(user, isNull);
-      await sut.upsert(StoreKey.currentUser, _kTestUser);
-      user = await sut.tryGet(StoreKey.currentUser);
-      expect(user, _kTestUser);
     });
   });
 

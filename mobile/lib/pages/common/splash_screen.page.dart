@@ -8,15 +8,15 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -318,6 +318,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final backgroundManager = ref.read(backgroundSyncProvider);
       final backupProvider = ref.read(driftBackupProvider.notifier);
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
+      final authUserRepository = ref.read(authUserRepositoryProvider);
 
       unawaited(
         ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
@@ -337,9 +338,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               if (syncSuccess) {
                 await Future.wait([
                   backgroundManager.hashAssets().then((_) {
-                    _resumeBackup(backupProvider);
+                    _resumeBackup(backupProvider, authUserRepository);
                   }),
-                  _resumeBackup(backupProvider),
+                  _resumeBackup(backupProvider, authUserRepository),
                   // TODO: Bring back when the soft freeze issue is addressed
                   // backgroundManager.syncCloudIds(),
                 ]);
@@ -375,11 +376,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
   }
 
-  Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
+  Future<void> _resumeBackup(DriftBackupNotifier notifier, DriftAuthUserRepository authUserRepository) async {
     final isEnableBackup = SettingsRepository.instance.appConfig.backup.enabled;
 
     if (isEnableBackup) {
-      final currentUser = Store.tryGet(StoreKey.currentUser);
+      final currentUser = await authUserRepository.get();
       if (currentUser != null) {
         unawaited(notifier.startForegroundBackup(currentUser.id));
       }

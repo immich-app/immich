@@ -5,8 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -85,7 +83,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     final backupSyncManager = ref.read(backgroundSyncProvider);
 
     Future<void> startBackup() async {
-      final currentUser = Store.tryGet(StoreKey.currentUser);
+      final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) {
         return;
       }

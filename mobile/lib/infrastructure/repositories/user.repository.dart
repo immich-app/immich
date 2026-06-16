@@ -17,16 +17,15 @@ class DriftAuthUserRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftAuthUserRepository(super.db) : _db = db;
 
-  Future<UserDto?> get(String id) async {
-    final user = await _db.managers.authUserEntity.filter((user) => user.id.equals(id)).getSingleOrNull();
+  Selectable<UserDto?> get _authUserQuery => (_db.authUserEntity.select()..limit(1)).asyncMap(_toDto);
 
-    if (user == null) {
-      return null;
-    }
+  Future<UserDto?> get() => _authUserQuery.getSingleOrNull();
 
-    final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(id));
+  Stream<UserDto?> watch() => _authUserQuery.watchSingleOrNull();
+
+  Future<UserDto> _toDto(AuthUserEntityData user) async {
+    final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(user.id));
     final metadata = await query.map((row) => row.toDto()).get();
-
     return user.toDto(metadata);
   }
 
