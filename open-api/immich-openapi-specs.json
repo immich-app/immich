@@ -16965,7 +16965,7 @@
             "type": "string"
           },
           "id": {
-            "description": "Asset ID",
+            "description": "Client-side identifier echoed in the response to match results to inputs (e.g. filename)",
             "type": "string"
           }
         },

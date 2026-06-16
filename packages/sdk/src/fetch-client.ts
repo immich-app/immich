@@ -696,7 +696,7 @@ export type AssetBulkUpdateDto = {
 export type AssetBulkUploadCheckItem = {
     /** Base64 or hex encoded SHA1 hash */
     checksum: string;
-    /** Asset ID */
+    /** Client-side identifier echoed in the response to match results to inputs (e.g. filename) */
     id: string;
 };
 export type AssetBulkUploadCheckDto = {
