@@ -15,6 +15,7 @@ const Map<String, Locale> locales = {
   'Czech (cs)': Locale('cs'),
   'Danish (da)': Locale('da'),
   'Dutch (nl)': Locale('nl'),
+  'English (United Kingdom) (en_GB)': Locale('en', 'GB'),
   'Estonian (et)': Locale('et'),
   'Filipino (tl)': Locale('tl'),
   'Finnish (fi)': Locale('fi'),

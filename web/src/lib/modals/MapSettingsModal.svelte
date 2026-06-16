@@ -1,17 +1,16 @@
 <script lang="ts">
-  import type { MapSettings } from '$lib/stores/preferences.store';
+  import { mapSettings, type MapSettings } from '$lib/stores/preferences.store';
   import { Button, DatePicker, Field, FormModal, Select, Stack, Switch } from '@immich/ui';
-  import { Duration } from 'luxon';
+  import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
   type Props = {
-    settings: MapSettings;
     onClose: (settings?: MapSettings) => void;
   };
 
-  let { settings: initialValues, onClose }: Props = $props();
-  let settings = $state(initialValues);
+  let { onClose }: Props = $props();
+  let settings = $state({ ...$mapSettings });
 
   let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
 
@@ -41,10 +40,17 @@
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
         <Field label={$t('date_after')}>
-          <DatePicker bind:value={settings.dateAfter} maxDate={settings.dateBefore} />
+          <DatePicker
+            value={DateTime.fromISO(settings.dateAfter ?? '')}
+            maxDate={DateTime.fromISO(settings.dateBefore ?? '')}
+            onChange={(date) => (settings.dateAfter = date?.toUTC().toISO() ?? undefined)}
+          />
         </Field>
         <Field label={$t('date_before')}>
-          <DatePicker bind:value={settings.dateBefore} />
+          <DatePicker
+            value={DateTime.fromISO(settings.dateBefore ?? '')}
+            onChange={(date) => (settings.dateBefore = date?.toUTC().toISO() ?? undefined)}
+          />
         </Field>
         <div class="flex justify-center">
           <Button

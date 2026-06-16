@@ -208,13 +208,13 @@
     if (relativeDate) {
       const duration = Duration.fromISO(relativeDate);
       return {
-        fileCreatedAfter: duration.isValid ? DateTime.now().minus(duration).toISO() : undefined,
+        fileCreatedAfter: duration.isValid ? DateTime.now().minus(duration).toUTC().toISO() : undefined,
       };
     }
 
     return {
-      fileCreatedAfter: dateAfter?.toUTC().toISO(),
-      fileCreatedBefore: dateBefore?.toUTC().toISO(),
+      fileCreatedAfter: dateAfter,
+      fileCreatedBefore: dateBefore,
     };
   }
 
@@ -243,7 +243,7 @@
   }
 
   const handleSettingsClick = async () => {
-    const settings = await modalManager.show(MapSettingsModal, { settings: { ...$mapSettings } });
+    const settings = await modalManager.show(MapSettingsModal);
     if (settings) {
       const shouldUpdate = !isEqual(omit(settings, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
       $mapSettings = settings;
