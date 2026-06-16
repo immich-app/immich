@@ -70,7 +70,10 @@ class DeepLinkService {
 
     if (assetRegex.hasMatch(path)) {
       final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
-      return _buildAssetDeepLink(assetId, ref);
+      // /albums/<albumId>/photos/<assetId> links carry the album context,
+      // which drives the like/comment UI in the viewer
+      final albumId = albumRegex.firstMatch(path)?.group(1);
+      return _buildAssetDeepLink(assetId, ref, albumId: albumId);
     }
     if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
@@ -107,16 +110,19 @@ class DeepLinkService {
     return DriftMemoryRoute(memories: memories, memoryIndex: 0);
   }
 
-  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref) async {
+  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref, {String? albumId}) async {
     final asset = await _betaAssetService.getRemoteAsset(assetId);
     if (asset == null) {
       return null;
     }
 
+    final album = albumId != null ? await _betaRemoteAlbumService.get(albumId) : null;
+
     AssetViewer.setAsset(ref, asset);
     return AssetViewerRoute(
       initialIndex: 0,
       timelineService: _betaTimelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
+      currentAlbum: album,
     );
   }
 

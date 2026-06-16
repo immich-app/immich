@@ -12,10 +12,11 @@
     icon?: string;
     title: string;
     valuePromise: MaybePromise<ValueData>;
+    tooltip?: string;
     footer?: Snippet;
   }
 
-  let { icon, title, valuePromise, footer }: Props = $props();
+  let { icon, title, valuePromise, tooltip, footer }: Props = $props();
   const zeros = (data?: ValueData) => {
     let length = 13;
     if (data) {
@@ -32,7 +33,7 @@
     {#if icon}
       <Icon {icon} size="40" />
     {/if}
-    <Text size="giant" fontWeight="medium">{title}</Text>
+    <Text size="giant" fontWeight="medium" title={tooltip}>{title}</Text>
   </div>
 
   {#await valuePromise}

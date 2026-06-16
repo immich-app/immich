@@ -65,3 +65,5 @@ preferWorkspacePackages: true
 injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
+minimumReleaseAgeExclude:
+  - '@immich/ui@0.81.1'
