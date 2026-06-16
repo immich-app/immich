@@ -88,6 +88,7 @@
               desc={$t('admin.transcoding_accepted_video_codecs_description')}
               bind:value={configToEdit.ffmpeg.acceptedVideoCodecs}
               name="videoCodecs"
+              lockedOptions={[configToEdit.ffmpeg.targetVideoCodec]}
               options={[
                 { value: VideoCodec.H264, text: 'H.264' },
                 { value: VideoCodec.Hevc, text: 'HEVC' },
@@ -106,6 +107,7 @@
               desc={$t('admin.transcoding_accepted_audio_codecs_description')}
               bind:value={configToEdit.ffmpeg.acceptedAudioCodecs}
               name="audioCodecs"
+              lockedOptions={[configToEdit.ffmpeg.targetAudioCodec]}
               options={[
                 { value: AudioCodec.Aac, text: 'AAC' },
                 { value: AudioCodec.Mp3, text: 'MP3' },

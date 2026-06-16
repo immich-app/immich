@@ -37,7 +37,7 @@
       }
       uploadAssetsStore.reset();
     }}
-    class="fixed inset-e-16 bottom-6"
+    class="fixed inset-e-16 bottom-6 z-60"
   >
     {#if showDetail}
       <div

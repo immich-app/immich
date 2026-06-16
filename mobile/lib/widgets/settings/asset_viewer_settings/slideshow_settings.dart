@@ -16,15 +16,11 @@ class SlideshowSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final slideshow = ref.read(appConfigProvider).slideshow;
-    final useTransition = useState(slideshow.transition);
     final useRepeat = useState(slideshow.repeat);
     final useDuration = useState(slideshow.duration);
     final useLook = useState(slideshow.look);
     final useDirection = useState(slideshow.direction);
 
-    useValueChanged<bool, void>(useTransition.value, (_, __) {
-      ref.read(settingsProvider).write(.slideshowTransition, useTransition.value);
-    });
     useValueChanged<bool, void>(useRepeat.value, (_, __) {
       ref.read(settingsProvider).write(.slideshowRepeat, useRepeat.value);
     });
@@ -44,11 +40,6 @@ class SlideshowSettings extends HookConsumerWidget {
         SettingGroupTitle(
           title: 'slideshow'.t(context: context),
           icon: Icons.slideshow_outlined,
-        ),
-        SettingsSwitchListTile(
-          valueNotifier: useTransition,
-          title: "show_slideshow_transition".t(context: context),
-          enabled: useDirection.value != SlideshowDirection.shuffle,
         ),
         SettingsSwitchListTile(
           valueNotifier: useRepeat,

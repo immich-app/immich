@@ -70,7 +70,6 @@ enum SettingsKey<T> {
   shareFileType<ShareAssetType>(codec: _EnumCodec(ShareAssetType.values)),
 
   // Slideshow
-  slideshowTransition<bool>(),
   slideshowRepeat<bool>(),
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
