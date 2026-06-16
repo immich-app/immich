@@ -16868,7 +16868,7 @@
             "type": "string"
           },
           "dateTimeRelative": {
-            "description": "Relative time offset in seconds",
+            "description": "Relative time offset in minutes",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"
