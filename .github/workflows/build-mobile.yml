@@ -237,7 +237,7 @@ jobs:
         run: flutter build ios --config-only --no-codesign
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@afeafc3d1ab54a631816aba4c914a0081c12ff2f # v1.310.0
+        uses: ruby/setup-ruby@12fd324f1d0b43274fdc8130f6980590a667c455 # v1.312.0
         with:
           ruby-version: '3.3'
           bundler-cache: true
