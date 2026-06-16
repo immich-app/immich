@@ -16,22 +16,29 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/hls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
+
+final _hlsVideoSessionIdRegex = RegExp(
+  r'/video/stream/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+);
+// For BC if we add an audio endpoint
+final _hlsAudioSessionIdRegex = RegExp(
+  r'/audio/stream/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+);
 
 class NativeVideoViewer extends ConsumerStatefulWidget {
   final BaseAsset asset;
   final String? localFilePath;
   final bool isCurrent;
   final bool showControls;
-  final Widget image;
+  final ImageProvider imageProvider;
 
   const NativeVideoViewer({
     super.key,
     required this.asset,
     this.localFilePath,
-    required this.image,
+    required this.imageProvider,
     this.isCurrent = false,
     this.showControls = true,
   });
@@ -74,8 +81,12 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    // Prevent unnecessary loading when swiping between assets.
-    _loadTimer = Timer(const Duration(milliseconds: 200), _loadVideo);
+    if (ref.read(serverInfoProvider).serverFeatures.realtimeTranscoding) {
+      _loadVideo();
+    } else {
+      // Prevent unnecessary loading when swiping between assets.
+      _loadTimer = Timer(const Duration(milliseconds: 200), _loadVideo);
+    }
   }
 
   @override
@@ -223,10 +234,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   void _onSourceResolved() {
     final url = _controller?.onPlaybackSourceResolved.value;
-    _notifier.updateHlsSession(
-      assetId: _remoteAssetId,
-      sessionId: url == null ? null : extractHlsSessionId(url),
-    );
+    _notifier.updateHlsSession(assetId: _remoteAssetId, sessionId: url == null ? null : _extractHlsSessionId(url));
   }
 
   void _removeListeners() {
@@ -274,28 +282,29 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
   }
 
+  /// Extracts the HLS session id from a resolved playlist or segment URL,
+  /// e.g. `https://host/api/assets/{id}/video/stream/{sessionId}/0/playlist.m3u8`.
+  String? _extractHlsSessionId(String url) =>
+      _hlsVideoSessionIdRegex.firstMatch(url)?.group(1) ?? _hlsAudioSessionIdRegex.firstMatch(url)?.group(1);
+
   @override
   Widget build(BuildContext context) {
-    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final image = Image(image: widget.imageProvider, fit: BoxFit.contain, alignment: Alignment.center);
+    if (ref.watch(castProvider.select((c) => c.isCasting))) {
+      return IgnorePointer(child: Center(child: image));
+    }
 
+    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
     return IgnorePointer(
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Center(child: widget.image),
-          if (!isCasting) ...[
-            Visibility.maintain(
-              visible: _isVideoReady,
-              child: NativeVideoPlayerView(onViewReady: _initController),
-            ),
-            Center(
-              child: AnimatedOpacity(
-                opacity: status == VideoPlaybackStatus.buffering ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 400),
-                child: const CircularProgressIndicator(),
-              ),
-            ),
-          ],
+          image,
+          Visibility.maintain(
+            visible: _isVideoReady,
+            child: NativeVideoPlayerView(onViewReady: _initController),
+          ),
+          if (status == VideoPlaybackStatus.buffering) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

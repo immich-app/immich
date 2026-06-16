@@ -377,7 +377,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         child: NativeVideoViewer(
           asset: asset,
           isCurrent: isCurrent,
-          image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+          imageProvider: imageProvider,
         ),
       );
     }

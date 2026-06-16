@@ -388,7 +388,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         asset: asset,
         localFilePath: localFilePath,
         isCurrent: isCurrent,
-        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+        imageProvider: imageProvider,
       ),
     );
   }
