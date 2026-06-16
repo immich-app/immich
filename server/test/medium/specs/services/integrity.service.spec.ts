@@ -512,6 +512,82 @@ describe(IntegrityService.name, () => {
         nextCursor: undefined,
       });
     });
+
+    it('should not fail when the same path is duplicated within a batch', async () => {
+      const { sut, ctx } = setup();
+      const storage = ctx.getMock(StorageRepository);
+
+      const {
+        result: { id: ownerId },
+      } = await ctx.newUser();
+
+      const {
+        result: { id: assetId1 },
+      } = await ctx.newAsset({ ownerId, originalPath: '/path/to/duplicate' });
+
+      const {
+        result: { id: assetId2 },
+      } = await ctx.newAsset({ ownerId, originalPath: '/path/to/duplicate' });
+
+      const fileAssetId1 = randomUUID();
+      await ctx.newAssetFile({
+        id: fileAssetId1,
+        assetId: assetId1,
+        type: AssetFileType.Thumbnail,
+        path: '/path/to/duplicate-file',
+      });
+
+      const fileAssetId2 = randomUUID();
+      await ctx.newAssetFile({
+        id: fileAssetId2,
+        assetId: assetId1,
+        type: AssetFileType.Preview,
+        path: '/path/to/duplicate-file',
+      });
+
+      const {
+        result: { id: assetId3 },
+      } = await ctx.newAsset({ ownerId, originalPath: '/path/to/duplicate-cross' });
+
+      const fileAssetId3 = randomUUID();
+      await ctx.newAssetFile({
+        id: fileAssetId3,
+        assetId: assetId3,
+        type: AssetFileType.Thumbnail,
+        path: '/path/to/duplicate-cross',
+      });
+
+      storage.stat.mockRejectedValue(new Error('ENOENT'));
+
+      await expect(
+        sut.handleMissingFiles({
+          items: [
+            { path: '/path/to/duplicate', assetId: assetId1, fileAssetId: null, reportId: null },
+            { path: '/path/to/duplicate', assetId: assetId2, fileAssetId: null, reportId: null },
+            { path: '/path/to/duplicate-file', assetId: null, fileAssetId: fileAssetId1, reportId: null },
+            { path: '/path/to/duplicate-file', assetId: null, fileAssetId: fileAssetId2, reportId: null },
+            { path: '/path/to/duplicate-cross', assetId: assetId3, fileAssetId: null, reportId: null },
+            { path: '/path/to/duplicate-cross', assetId: null, fileAssetId: fileAssetId3, reportId: null },
+          ],
+        }),
+      ).resolves.toBe(JobStatus.Success);
+
+      await expect(
+        ctx.get(IntegrityRepository).getIntegrityReport(
+          {
+            limit: 100,
+          },
+          IntegrityReport.MissingFile,
+        ),
+      ).resolves.toEqual({
+        items: expect.arrayContaining([
+          expect.objectContaining({ path: '/path/to/duplicate' }),
+          expect.objectContaining({ path: '/path/to/duplicate-file' }),
+          expect.objectContaining({ path: '/path/to/duplicate-cross' }),
+        ]),
+        nextCursor: undefined,
+      });
+    });
   });
 
   describe('handleMissingRefresh', () => {
@@ -683,6 +759,40 @@ describe(IntegrityService.name, () => {
         ),
       ).resolves.toEqual({
         items: [],
+        nextCursor: undefined,
+      });
+    });
+
+    it('should not fail when the same path is duplicated across assets', async () => {
+      const { sut, ctx } = setup();
+      const storage = ctx.getMock(StorageRepository);
+      const job = ctx.getMock(JobRepository);
+      job.queue.mockResolvedValue(void 0);
+
+      const {
+        result: { id: ownerId },
+      } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId, originalPath: '/path/to/duplicate', checksum: Buffer.from('mismatch-a') });
+      await ctx.newAsset({ ownerId, originalPath: '/path/to/duplicate', checksum: Buffer.from('mismatch-b') });
+
+      storage.createPlainReadStream.mockImplementation(() => Readable.from('garbage data'));
+
+      await expect(sut.handleChecksumFiles({ refreshOnly: false })).resolves.toBe(JobStatus.Success);
+
+      await expect(
+        ctx.get(IntegrityRepository).getIntegrityReport(
+          {
+            limit: 100,
+          },
+          IntegrityReport.ChecksumFail,
+        ),
+      ).resolves.toEqual({
+        items: [
+          expect.objectContaining({
+            path: '/path/to/duplicate',
+          }),
+        ],
         nextCursor: undefined,
       });
     });
