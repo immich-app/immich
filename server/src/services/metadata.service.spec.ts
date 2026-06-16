@@ -1371,6 +1371,52 @@ describe(MetadataService.name, () => {
       expect(mocks.person.updateAll).not.toHaveBeenCalled();
     });
 
+    it('should skip importing faces with NaN region coordinates', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      mockReadTags({
+        RegionInfo: {
+          AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
+          RegionList: [
+            {
+              Type: 'face',
+              Name: 'Person 1',
+              Area: { X: NaN, Y: 0.4, W: 0.2, H: 0.4, Unit: 'normalized' },
+            },
+          ],
+        },
+      });
+      mocks.person.getDistinctNames.mockResolvedValue([]);
+      mocks.person.createAll.mockResolvedValue([]);
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.person.refreshFaces).not.toHaveBeenCalled();
+      expect(mocks.person.updateAll).not.toHaveBeenCalled();
+    });
+
+    it('should skip importing faces when image dimensions are NaN', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      mockReadTags({
+        RegionInfo: {
+          AppliedToDimensions: { W: NaN, H: 100, Unit: 'pixel' },
+          RegionList: [
+            {
+              Type: 'face',
+              Name: 'Person 1',
+              Area: { X: 0.1, Y: 0.4, W: 0.2, H: 0.4, Unit: 'normalized' },
+            },
+          ],
+        },
+      });
+      mocks.person.getDistinctNames.mockResolvedValue([]);
+      mocks.person.createAll.mockResolvedValue([]);
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.person.refreshFaces).not.toHaveBeenCalled();
+      expect(mocks.person.updateAll).not.toHaveBeenCalled();
+    });
+
     it('should apply metadata face tags creating new people', async () => {
       const asset = AssetFactory.create();
       const person = PersonFactory.create();

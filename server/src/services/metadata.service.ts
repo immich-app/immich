@@ -918,8 +918,21 @@ export class MetadataService extends BaseService {
     const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
     const imageHeight = adjustedRegionInfo.AppliedToDimensions.H;
 
+    if (!isFinite(imageWidth) || !isFinite(imageHeight)) {
+      this.logger.warn(
+        `Skipping face regions for asset ${asset.id}: invalid image dimensions (width=${imageWidth}, height=${imageHeight})`,
+      );
+      return;
+    }
+
     for (const region of adjustedRegionInfo.RegionList) {
       if (!region.Name) {
+        continue;
+      }
+
+      const { X, Y, W, H } = region.Area;
+      if (!isFinite(X) || !isFinite(Y) || !isFinite(W) || !isFinite(H)) {
+        this.logger.debug(`Skipping face region "${region.Name}" with invalid coordinates: X=${X}, Y=${Y}, W=${W}, H=${H}`);
         continue;
       }
 
