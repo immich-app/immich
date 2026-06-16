@@ -322,36 +322,36 @@ version = "10.33.4"
 backend = "aqua:pnpm/pnpm"
 
 [[tools.restic]]
-version = "0.18.1"
+version = "0.19.0"
 backend = "aqua:restic/restic"
 
 [tools.restic."platforms.linux-arm64"]
-checksum = "sha256:87f53fddde38764095e9c058a3b31834052c37e5826d2acf34e18923c006bd45"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_arm64.bz2"
+checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
 
 [tools.restic."platforms.linux-arm64-musl"]
-checksum = "sha256:87f53fddde38764095e9c058a3b31834052c37e5826d2acf34e18923c006bd45"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_arm64.bz2"
+checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
 
 [tools.restic."platforms.linux-x64"]
-checksum = "sha256:680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2"
+checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
 
 [tools.restic."platforms.linux-x64-musl"]
-checksum = "sha256:680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2"
+checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
 
 [tools.restic."platforms.macos-arm64"]
-checksum = "sha256:193fccc8bb4567b498923bc70261e104ff22be88016f0f108b035dad372ab711"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_darwin_arm64.bz2"
+checksum = "sha256:1475397bf759ef4be16a77b19dec650bdbfec00d2cacd82005553411cdd37997"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_arm64.bz2"
 
 [tools.restic."platforms.macos-x64"]
-checksum = "sha256:eb8543ed92ff1ddb67762daebf09f7bea4b0c37d21edb6a910bee3d4f514015f"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_darwin_amd64.bz2"
+checksum = "sha256:c9d9a71234bc0955fdba6da93cc9375f8793ec1e1cbce77a91014d536a969148"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_amd64.bz2"
 
 [tools.restic."platforms.windows-x64"]
-checksum = "sha256:0c1a713440578cb400d2e76208feb24f1b339426b075a21f73b6b2132692515d"
-url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_windows_amd64.zip"
+checksum = "sha256:6fa4219a70b1b5d1c429bb106a7f97f3d2a5aab74494db2e490b625edc486d8f"
+url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_windows_amd64.zip"
 
 [[tools.terragrunt]]
 version = "1.0.3"

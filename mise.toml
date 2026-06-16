@@ -25,7 +25,7 @@ java = "21.0.2"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
 "github:extism/js-pdk" = "1.6.0"
-restic = "0.18.1"
+restic = "0.19.0"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"
