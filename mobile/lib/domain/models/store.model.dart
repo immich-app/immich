@@ -1,10 +1,7 @@
-import 'package:immich_mobile/domain/models/user.model.dart';
-
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
 enum StoreKey<T> {
   version<int>._(0),
-  currentUser<UserDto>._(2),
   deviceId<String>._(4),
   advancedTroubleshooting<bool>._(114),
   enableHapticFeedback<bool>._(126),
