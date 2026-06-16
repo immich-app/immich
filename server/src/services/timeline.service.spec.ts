@@ -2,6 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { AssetVisibility } from 'src/enum';
 import { TimelineService } from 'src/services/timeline.service';
 import { authStub } from 'test/fixtures/auth.stub';
+import { PartnerFactory } from 'test/factories/partner.factory';
+import { getForPartner } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(TimelineService.name, () => {
@@ -203,6 +205,31 @@ describe(TimelineService.name, () => {
           userId: authStub.admin.user.id,
         }),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should include partner assets with inTimeline=false when bbox is set', async () => {
+      const json = `[{ id: ['asset-id'] }]`;
+      mocks.asset.getTimeBucket.mockResolvedValue({ assets: json });
+      const partner = PartnerFactory.create({ sharedWithId: authStub.admin.user.id, inTimeline: false });
+      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
+
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          timeBucket: 'bucket',
+          visibility: AssetVisibility.Timeline,
+          userId: authStub.admin.user.id,
+          withPartners: true,
+          bbox: { west: -10, south: -10, east: 10, north: 10 },
+        }),
+      ).resolves.toEqual(json);
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        expect.objectContaining({
+          withPartners: true,
+          userIds: expect.arrayContaining([authStub.admin.user.id, partner.sharedById]),
+        }),
+        authStub.admin,
+      );
     });
 
     it('should throw an error if withPartners is true and visibility is locked', async () => {

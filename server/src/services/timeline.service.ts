@@ -32,10 +32,13 @@ export class TimelineService extends BaseService {
     if (userId) {
       userIds = [userId];
       if (dto.withPartners) {
+        // When filtering by bounding box (map side panel), include all partners regardless
+        // of their "Show in timeline" setting — the map markers are drawn using all partners,
+        // so the side panel must use the same set to avoid count/content mismatches.
         const partnerIds = await getMyPartnerIds({
           userId: auth.user.id,
           repository: this.partnerRepository,
-          timelineEnabled: true,
+          timelineEnabled: !dto.bbox,
         });
         userIds.push(...partnerIds);
       }
