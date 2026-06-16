@@ -673,7 +673,7 @@ export type AssetMediaResponseDto = {
 export type AssetBulkUpdateDto = {
     /** Original date and time */
     dateTimeOriginal?: string;
-    /** Relative time offset in seconds */
+    /** Relative time offset in minutes */
     dateTimeRelative?: number;
     /** Asset description */
     description?: string;
