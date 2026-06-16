@@ -29,8 +29,8 @@ describe(StackRepository.name, () => {
       const { asset: primaryAsset } = await ctx.newAsset({ ownerId: user.id });
       const { asset: secondaryAsset } = await ctx.newAsset({ ownerId: user.id });
 
-      await ctx.newExif({ assetId: primaryAsset.id });
-      await ctx.newExif({ assetId: secondaryAsset.id });
+      await ctx.newExif({ assetId: primaryAsset.id, fileSizeInByte: 123 });
+      await ctx.newExif({ assetId: secondaryAsset.id, fileSizeInByte: 456 });
 
       const { person } = await ctx.newPerson({ ownerId: user.id });
       await ctx.newAssetFace({ assetId: primaryAsset.id, personId: person.id });
