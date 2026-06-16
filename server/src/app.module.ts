@@ -21,7 +21,6 @@ import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
-import { YuccaAdminGuard } from 'src/middleware/yucca-admin.guard';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -52,12 +51,7 @@ const commonMiddleware = [
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
 
-const apiMiddleware = [
-  FileUploadInterceptor,
-  ...commonMiddleware,
-  { provide: APP_GUARD, useClass: YuccaAdminGuard },
-  { provide: APP_GUARD, useClass: AuthGuard },
-];
+const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, otel } = configRepository.getEnv();
