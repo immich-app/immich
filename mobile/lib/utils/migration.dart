@@ -18,10 +18,11 @@ import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 27;
+const int targetVersion = 28;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -36,6 +37,10 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 27) {
     await _migrateTo27(drift);
+  }
+
+  if (version < 28) {
+    await _migrateTo28(drift);
   }
 
   await Store.put(StoreKey.version, targetVersion);
@@ -153,6 +158,16 @@ Future<void> _migrateTo27(Drift drift) async {
   await migrator.complete();
 
   await SessionRepository.instance.refresh();
+}
+
+Future<void> _migrateTo28(Drift drift) async {
+  final migrator = _StoreMigrator.settings(drift);
+  await migrator.migrateBool(StoreKey.legacyAdvancedTroubleshooting, SettingsKey.advancedTroubleshooting);
+  await migrator.migrateBool(StoreKey.legacyEnableHapticFeedback, SettingsKey.advancedEnableHapticFeedback);
+  await migrator.migrateBool(StoreKey.legacyReadonlyModeEnabled, SettingsKey.advancedReadonlyModeEnabled);
+  await migrator.complete();
+
+  await SettingsRepository.instance.refresh();
 }
 
 Future<void> _migrateAlbumSortMode(_StoreMigrator<SettingsKey> migrator) async {

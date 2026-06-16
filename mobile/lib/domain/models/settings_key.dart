@@ -73,7 +73,12 @@ enum SettingsKey<T> {
   slideshowRepeat<bool>(),
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: EnumCodec(SlideshowLook.values)),
-  slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values));
+  slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
+
+  // Advanced
+  advancedTroubleshooting<bool>(),
+  advancedEnableHapticFeedback<bool>(),
+  advancedReadonlyModeEnabled<bool>();
 
   final ValueCodec<T>? _codecOverride;
 

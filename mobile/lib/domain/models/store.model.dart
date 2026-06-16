@@ -3,16 +3,15 @@
 enum StoreKey<T> {
   version<int>._(0),
   deviceId<String>._(4),
-  advancedTroubleshooting<bool>._(114),
-  enableHapticFeedback<bool>._(126),
 
   manageLocalMediaAndroid<bool>._(137),
-  // Read-only Mode settings
-  readonlyModeEnabled<bool>._(138),
 
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyAdvancedTroubleshooting<bool>._(114),
+  legacyEnableHapticFeedback<bool>._(126),
+  legacyReadonlyModeEnabled<bool>._(138),
   legacyServerUrl<String>._(10),
   legacyAccessToken<String>._(11),
   legacyServerEndpoint<String>._(12),

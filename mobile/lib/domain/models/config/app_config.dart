@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/config/advanced_config.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
@@ -32,6 +33,7 @@ class AppConfig {
   final BackupConfig backup;
   final NetworkConfig network;
   final ShareConfig share;
+  final AdvancedConfig advanced;
 
   const AppConfig({
     this.logLevel = .info,
@@ -46,6 +48,7 @@ class AppConfig {
     this.backup = const .new(),
     this.network = const .new(),
     this.share = const .new(),
+    this.advanced = const .new(),
   });
 
   AppConfig copyWith({
@@ -61,6 +64,7 @@ class AppConfig {
     BackupConfig? backup,
     NetworkConfig? network,
     ShareConfig? share,
+    AdvancedConfig? advanced,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
     theme: theme ?? this.theme,
@@ -74,6 +78,7 @@ class AppConfig {
     backup: backup ?? this.backup,
     network: network ?? this.network,
     share: share ?? this.share,
+    advanced: advanced ?? this.advanced,
   );
 
   @override
@@ -91,15 +96,29 @@ class AppConfig {
           other.album == album &&
           other.backup == backup &&
           other.network == network &&
-          other.share == share);
+          other.share == share &&
+          other.advanced == advanced);
 
   @override
-  int get hashCode =>
-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share);
+  int get hashCode => Object.hash(
+    logLevel,
+    theme,
+    cleanup,
+    map,
+    timeline,
+    image,
+    viewer,
+    slideshow,
+    album,
+    backup,
+    network,
+    share,
+    advanced,
+  );
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, advanced: $advanced)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -147,6 +166,9 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .advancedTroubleshooting => advanced.troubleshooting,
+            .advancedEnableHapticFeedback => advanced.enableHapticFeedback,
+            .advancedReadonlyModeEnabled => advanced.readonlyModeEnabled,
           })
           as T;
 
@@ -201,6 +223,9 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .advancedTroubleshooting => copyWith(advanced: advanced.copyWith(troubleshooting: value as bool)),
+      .advancedEnableHapticFeedback => copyWith(advanced: advanced.copyWith(enableHapticFeedback: value as bool)),
+      .advancedReadonlyModeEnabled => copyWith(advanced: advanced.copyWith(readonlyModeEnabled: value as bool)),
     };
   }
 }
