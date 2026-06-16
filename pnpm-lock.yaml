@@ -18,7 +18,7 @@ importers:
   .:
     devDependencies:
       '@types/node':
-        specifier: ^24.12.4
+        specifier: ^24.13.2
         version: 24.13.2
       prettier:
         specifier: ^3.8.3
@@ -136,7 +136,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^24.12.4
+        specifier: ^24.13.2
         version: 24.13.2
       '@types/pg':
         specifier: ^8.15.1
@@ -248,7 +248,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^24.12.4
+        specifier: ^24.13.2
         version: 24.13.2
       '@vitest/coverage-v8':
         specifier: ^4.0.0
@@ -347,7 +347,7 @@ importers:
         specifier: workspace:*
         version: link:../sdk
       '@types/node':
-        specifier: ^24.12.4
+        specifier: ^24.13.2
         version: 24.13.2
       esbuild:
         specifier: ^0.28.0
@@ -366,7 +366,7 @@ importers:
         version: 1.2.0
     devDependencies:
       '@types/node':
-        specifier: ^24.12.4
+        specifier: ^24.13.2
         version: 24.13.2
       typescript:
         specifier: ^6.0.0
@@ -676,7 +676,7 @@ importers:
         specifier: ^2.0.0
         version: 2.1.0
       '@types/node':
-        specifier: ^24.12.4
+        specifier: ^24.13.2
         version: 24.13.2
       '@types/nodemailer':
         specifier: ^8.0.0
@@ -13922,7 +13922,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.29.7
       '@babel/generator': 7.29.7
-      '@babel/parser': 7.27.0
+      '@babel/parser': 7.29.7
       '@babel/template': 7.29.7
       '@babel/types': 7.29.7
       debug: 4.4.3
@@ -18032,7 +18032,7 @@ snapshots:
 
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
-      '@types/express-serve-static-core': 4.19.8
+      '@types/express-serve-static-core': 5.1.1
       '@types/node': 24.13.2
 
   '@types/connect@3.4.38':
@@ -18382,7 +18382,7 @@ snapshots:
 
   '@types/pg-pool@2.0.7':
     dependencies:
-      '@types/pg': 8.15.6
+      '@types/pg': 8.20.0
 
   '@types/pg@8.15.6':
     dependencies:
