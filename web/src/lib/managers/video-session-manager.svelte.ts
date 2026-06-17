@@ -36,7 +36,7 @@ class VideoSessionManager {
     session.timer = setTimeout(() => {
       session.controller.release();
       this.#sessions.delete(assetId);
-    }, 1_000);
+    }, 1000);
   }
 
   get(assetId: string): VideoController | undefined {

@@ -45,8 +45,8 @@ export class VideoController {
     this.#playOriginal = playOriginal;
 
     const element = document.createElement('video');
-    element.playsInline = true;
-    element.disablePictureInPicture = true;
+    element.setAttribute('playsinline', '');
+    element.setAttribute('disablepictureinpicture', '');
     element.addEventListener('play', () => {
       this.loading = false;
       this.error = false;

@@ -15,6 +15,7 @@
     videoPlayer: HTMLVideoElement | undefined;
   }
 
+  // eslint-disable-next-line no-useless-assignment
   let { asset, videoPlayer = $bindable() }: Props = $props();
 
   let showVideo = $state(false);
@@ -34,7 +35,6 @@
 
 {#if showVideo}
   <div class="size-full" transition:fade={{ duration: assetViewerFadeDuration }}>
-    <!-- svelte-ignore a11y_media_has_caption -->
     <media-controller id="memory-video" nohotkeys class="size-full rounded-2xl object-contain transition-all">
       <immich-video
         slot="media"
