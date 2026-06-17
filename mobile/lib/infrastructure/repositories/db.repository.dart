@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/src/runtime/executor/stream_queries.dart' show StreamQueryStore;
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/infrastructure/entities/app_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.dart';
@@ -69,6 +70,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     SettingsEntity,
     AssetOcrEntity,
     SessionEntity,
+    AppMetadataEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -122,7 +124,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -315,6 +317,14 @@ class Drift extends $Drift {
           },
           from30To31: (m, v31) async {
             await m.createTable(v31.session);
+          },
+          from31To32: (m, v32) async {
+            await m.createTable(v32.appMetadata);
+            await customStatement(
+              "INSERT INTO app_metadata (key, value) "
+              "SELECT 'version', CAST(int_value AS TEXT) FROM store_entity "
+              "WHERE id = 0 AND int_value IS NOT NULL",
+            );
           },
         ),
       );

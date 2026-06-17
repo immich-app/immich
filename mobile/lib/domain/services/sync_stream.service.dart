@@ -1,13 +1,11 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/app_metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
@@ -38,6 +36,7 @@ class SyncStreamService {
   final IPermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
+  final AppMetadataRepository _appMetadataRepository;
   final Completer<void>? _cancellation;
 
   SyncStreamService({
@@ -49,10 +48,12 @@ class SyncStreamService {
     required this._permissionRepository,
     required this._syncMigrationRepository,
     required this._api,
+    required this._appMetadataRepository,
     this._cancellation,
   });
 
   bool get isCancelled => _cancellation?.isCompleted ?? false;
+  bool _manageLocalMediaAndroid = false;
 
   Future<bool> sync() async {
     _logger.info("Remote sync request for user");
@@ -64,15 +65,16 @@ class SyncStreamService {
 
     final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
 
-    final value = Store.get(StoreKey.syncMigrationStatus, "[]");
-    final migrations = (jsonDecode(value) as List).cast<String>();
+    final migrations = (await _appMetadataRepository.get(.syncMigrationStatus)).toList();
     int previousLength = migrations.length;
     await _runPreSyncTasks(migrations, serverSemVer);
 
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
-      await Store.put(StoreKey.syncMigrationStatus, jsonEncode(migrations));
+      await _appMetadataRepository.set(.syncMigrationStatus, migrations);
     }
+
+    _manageLocalMediaAndroid = CurrentPlatform.isAndroid && await _appMetadataRepository.get(.manageLocalMediaAndroid);
 
     // Start the sync stream and handle events
     bool shouldReset = false;
@@ -96,7 +98,7 @@ class SyncStreamService {
 
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
-      await Store.put(StoreKey.syncMigrationStatus, jsonEncode(migrations));
+      await _appMetadataRepository.set(.syncMigrationStatus, migrations);
     }
 
     return true;
@@ -106,10 +108,10 @@ class SyncStreamService {
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetExifV1.name)) {
       _logger.info("Running pre-sync task: v20260128_ResetExifV1");
       await _syncApiRepository.deleteSyncAck([
-        SyncEntityType.assetExifV1,
-        SyncEntityType.partnerAssetExifV1,
-        SyncEntityType.albumAssetExifCreateV1,
-        SyncEntityType.albumAssetExifUpdateV1,
+        .assetExifV1,
+        .partnerAssetExifV1,
+        .albumAssetExifCreateV1,
+        .albumAssetExifUpdateV1,
       ]);
       migrations.add(SyncMigrationTask.v20260128_ResetExifV1.name);
     }
@@ -117,12 +119,7 @@ class SyncStreamService {
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name) &&
         semVer >= const SemVer(major: 2, minor: 5, patch: 0)) {
       _logger.info("Running pre-sync task: v20260128_ResetAssetV1");
-      await _syncApiRepository.deleteSyncAck([
-        SyncEntityType.assetV1,
-        SyncEntityType.partnerAssetV1,
-        SyncEntityType.albumAssetCreateV1,
-        SyncEntityType.albumAssetUpdateV1,
-      ]);
+      await _syncApiRepository.deleteSyncAck([.assetV1, .partnerAssetV1, .albumAssetCreateV1, .albumAssetUpdateV1]);
 
       migrations.add(SyncMigrationTask.v20260128_ResetAssetV1.name);
 
@@ -134,7 +131,7 @@ class SyncStreamService {
     if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name) &&
         semVer > const SemVer(major: 2, minor: 7, patch: 5)) {
       _logger.info("Running pre-sync task: v20260597_ResetAssetV1AssetV2");
-      await _syncApiRepository.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]);
+      await _syncApiRepository.deleteSyncAck([.assetV1, .assetV2]);
       migrations.add(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name);
     }
   }
@@ -197,20 +194,20 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+        if (_manageLocalMediaAndroid) {
           await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
         }
         return;
       case SyncEntityType.assetV2:
         final remoteSyncAssets = data.cast<SyncAssetV2>();
         await _syncStreamRepository.updateAssetsV2(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+        if (_manageLocalMediaAndroid) {
           await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
         }
         return;
       case SyncEntityType.assetDeleteV1:
         final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+        if (_manageLocalMediaAndroid) {
           await _syncAssetDeletion(remoteSyncAssets.map((e) => e.assetId).toList());
         }
         return _syncStreamRepository.deleteAssetsV1(remoteSyncAssets);

@@ -1,14 +1,12 @@
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
 enum StoreKey<T> {
-  version<int>._(0),
   deviceId<String>._(4),
 
-  manageLocalMediaAndroid<bool>._(137),
-
-  syncMigrationStatus<String>._(1013),
-
   // Legacy keys that have been migrated to the new metadata store
+  legacyVersion<int>._(0),
+  legacyManageLocalMediaAndroid<bool>._(137),
+  legacySyncMigrationStatus<String>._(1013),
   legacyAdvancedTroubleshooting<bool>._(114),
   legacyEnableHapticFeedback<bool>._(126),
   legacyReadonlyModeEnabled<bool>._(138),

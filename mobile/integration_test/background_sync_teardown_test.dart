@@ -34,14 +34,14 @@ void main() {
     server = await FakeImmichServer.start();
     await ApiService().resolveAndSetEndpoint(server.endpoint);
     await drift.delete(drift.userEntity).go();
-    await Store.delete(StoreKey.syncMigrationStatus);
+    await Store.delete(StoreKey.legacySyncMigrationStatus);
   });
 
   tearDown(() async {
     await workerManagerPatch.dispose();
     await server.close();
     await Store.delete(StoreKey.legacyServerEndpoint);
-    await Store.delete(StoreKey.syncMigrationStatus);
+    await Store.delete(StoreKey.legacySyncMigrationStatus);
   });
 
   void sendUser(SyncStream stream, String id, String name) {
