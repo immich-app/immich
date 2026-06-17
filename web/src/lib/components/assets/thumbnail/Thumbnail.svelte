@@ -342,7 +342,7 @@
 
         {#if !!assetOwner}
           <div class="absolute inset-e-2 bottom-1 z-2 max-w-[50%]">
-            <p class="max-w-full truncate text-xs font-medium text-white drop-shadow-lg">
+            <p class="max-w-full truncate text-xs font-medium text-white p-1 text-white-shadow">
               {assetOwner.name}
             </p>
           </div>
