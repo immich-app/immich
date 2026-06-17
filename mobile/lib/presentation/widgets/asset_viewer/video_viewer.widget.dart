@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -299,7 +300,9 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          image,
+          // The engine snaps the video platform view to the device-pixel grid; snap the
+          // placeholder the same way so it doesn't show a hairline past the video's edge.
+          _DevicePixelSnap(devicePixelRatio: MediaQuery.devicePixelRatioOf(context), child: image),
           Visibility.maintain(
             visible: _isVideoReady,
             child: NativeVideoPlayerView(onViewReady: _initController),
@@ -308,5 +311,57 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         ],
       ),
     );
+  }
+}
+
+class _DevicePixelSnap extends SingleChildRenderObjectWidget {
+  final double devicePixelRatio;
+
+  const _DevicePixelSnap({required this.devicePixelRatio, required Widget super.child});
+
+  @override
+  _RenderDevicePixelSnap createRenderObject(BuildContext context) => _RenderDevicePixelSnap(devicePixelRatio);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderDevicePixelSnap renderObject) {
+    renderObject.devicePixelRatio = devicePixelRatio;
+  }
+}
+
+class _RenderDevicePixelSnap extends RenderShiftedBox {
+  _RenderDevicePixelSnap(this._devicePixelRatio) : super(null);
+
+  double _devicePixelRatio;
+  set devicePixelRatio(double value) {
+    if (_devicePixelRatio == value) {
+      return;
+    }
+    _devicePixelRatio = value;
+    markNeedsLayout();
+  }
+
+  /// The largest device-pixel-aligned extent that still tucks under the platform view.
+  double _snap(double extent) {
+    final scaled = extent * _devicePixelRatio;
+    final floored = scaled.floorToDouble();
+    if (floored == scaled) {
+      return extent;
+    }
+    final pixels = floored - 1;
+    return pixels <= 0 ? extent : pixels / _devicePixelRatio;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  void performLayout() {
+    size = constraints.biggest;
+    final child = this.child;
+    if (child == null) {
+      return;
+    }
+    child.layout(BoxConstraints.tight(Size(_snap(size.width), _snap(size.height))));
+    (child.parentData! as BoxParentData).offset = Offset.zero;
   }
 }
