@@ -7,6 +7,8 @@ import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
@@ -40,6 +42,7 @@ import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 import { configureUserAgent } from 'src/utils/fetch';
+import { detectMediaLocation } from 'src/utils/storage';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -54,10 +57,11 @@ const commonMiddleware = [
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, /* environment, */ otel } = configRepository.getEnv();
+const { bull, cls, database, /* environment, */ otel, storage } = configRepository.getEnv();
 
-const isYuccaDevelopmentMode = true; // TODO[YUCCA]: for testing
 // const isYuccaDevelopmentMode = environment === ImmichEnvironment.Development;
+const isYuccaDevelopmentMode = true; // TODO[YUCCA]: for testing
+const yuccaStatePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'yucca');
 
 const commonImports = [
   ClsModule.forRoot(cls.config),
@@ -112,7 +116,7 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
     ScheduleModule.forRoot(),
     OrchestrationApiModule.forRoot({
       yuccaProductionApi: 'https://staging.fubar.computer', // TODO[YUCCA]: remove to load from futo.cloud/.well-known
-      statePath: '/data/yucca', // TODO[YUCCA]: point to {immich_data_location}/yucca
+      statePath: yuccaStatePath,
       requireWsAuth: true,
       requireLock: true,
       developmentMode: isYuccaDevelopmentMode,
@@ -128,7 +132,7 @@ export class ApiModule extends BaseModule {}
     ...commonImports,
     OrchestrationApiModule.forRoot({
       yuccaProductionApi: 'https://staging.fubar.computer', // TODO[YUCCA]: remove to load from futo.cloud/.well-known
-      statePath: '/data/yucca', // TODO[YUCCA]: point to {immich_data_location}/yucca
+      statePath: yuccaStatePath,
       externalBaseUrl: 'https://my.immich.app',
       requireWsAuth: true,
       requireLock: true,
