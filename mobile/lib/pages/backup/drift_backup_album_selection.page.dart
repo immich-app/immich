@@ -251,23 +251,32 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                     ],
                   ),
                 ),
-                SliverLayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.crossAxisExtent > 600) {
-                      return _AlbumSelectionGrid(
-                        filteredAlbums: filteredAlbums,
-                        searchQuery: _searchQuery,
-                        isLoading: isLoading,
-                      );
-                    } else {
-                      return _AlbumSelectionList(
-                        filteredAlbums: filteredAlbums,
-                        searchQuery: _searchQuery,
-                        isLoading: isLoading,
-                      );
-                    }
-                  },
-                ),
+                if (filteredAlbums.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Center(
+                      child: _searchQuery.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Text('album_search_not_found'.t(context: context)),
+                            )
+                          : isLoading
+                          ? const CircularProgressIndicator()
+                          : Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Text('no_albums_found'.t(context: context)),
+                            ),
+                    ),
+                  )
+                else
+                  SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.crossAxisExtent > 600) {
+                        return _AlbumSelectionGrid(filteredAlbums: filteredAlbums);
+                      } else {
+                        return _AlbumSelectionList(filteredAlbums: filteredAlbums);
+                      }
+                    },
+                  ),
               ],
             ),
             if (_handleLinkedAlbumFuture != null)
@@ -304,39 +313,11 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
 
 class _AlbumSelectionList extends StatelessWidget {
   final List<LocalAlbum> filteredAlbums;
-  final String searchQuery;
-  final bool isLoading;
 
-  const _AlbumSelectionList({required this.filteredAlbums, required this.searchQuery, required this.isLoading});
+  const _AlbumSelectionList({required this.filteredAlbums});
 
   @override
   Widget build(BuildContext context) {
-    if (filteredAlbums.isEmpty && searchQuery.isNotEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text('album_search_not_found'.t(context: context)),
-          ),
-        ),
-      );
-    }
-
-    if (filteredAlbums.isEmpty) {
-      if (isLoading) {
-        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
-      }
-
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text('no_albums_found'.t(context: context)),
-          ),
-        ),
-      );
-    }
-
     return SliverPadding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       sliver: SliverList(
@@ -350,39 +331,11 @@ class _AlbumSelectionList extends StatelessWidget {
 
 class _AlbumSelectionGrid extends StatelessWidget {
   final List<LocalAlbum> filteredAlbums;
-  final String searchQuery;
-  final bool isLoading;
 
-  const _AlbumSelectionGrid({required this.filteredAlbums, required this.searchQuery, required this.isLoading});
+  const _AlbumSelectionGrid({required this.filteredAlbums});
 
   @override
   Widget build(BuildContext context) {
-    if (filteredAlbums.isEmpty && searchQuery.isNotEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text('album_search_not_found'.t(context: context)),
-          ),
-        ),
-      );
-    }
-
-    if (filteredAlbums.isEmpty) {
-      if (isLoading) {
-        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
-      }
-
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text('no_albums_found'.t(context: context)),
-          ),
-        ),
-      );
-    }
-
     return SliverPadding(
       padding: const EdgeInsets.all(12.0),
       sliver: SliverGrid.builder(
