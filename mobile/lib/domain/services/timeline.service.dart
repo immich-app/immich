@@ -11,6 +11,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:logging/logging.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
@@ -107,7 +108,7 @@ class TimelineService {
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
   TimelineService._({required this._assetSource, required this._bucketSource, required this.origin}) {
-    _bucketSubscription = _bucketSource().listen(
+    _bucketSubscription = watchBuckets().listen(
       (buckets) {
         _mutex.run(() async {
           try {
@@ -152,7 +153,8 @@ class TimelineService {
     );
   }
 
-  Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
+  Stream<List<Bucket>> Function() get watchBuckets =>
+      () => _bucketSource().throttle(const Duration(milliseconds: 500), trailing: true);
 
   Future<List<BaseAsset>> loadAssets(int index, int count) => _mutex.run(() => _loadAssets(index, count));
 
