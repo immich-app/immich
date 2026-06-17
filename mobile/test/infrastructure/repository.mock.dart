@@ -1,3 +1,4 @@
+import 'package:immich_mobile/infrastructure/repositories/app_metadata.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -27,6 +28,8 @@ class MockMemoryRepository extends Mock implements MemoryRepository {}
 class MockStoreRepository extends Mock implements StoreRepository {}
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
+
+class MockAppMetadataRepository extends Mock implements AppMetadataRepository {}
 
 class MockLogRepository extends Mock implements LogRepository {}
 

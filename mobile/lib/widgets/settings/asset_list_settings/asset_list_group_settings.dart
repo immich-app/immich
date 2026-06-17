@@ -20,7 +20,6 @@ class GroupSettings extends HookConsumerWidget {
 
     Future<void> updateAppSettings(GroupAssetsBy groupBy) async {
       await ref.read(settingsProvider).write(.timelineGroupAssetsBy, groupBy);
-      ref.invalidate(appSettingsServiceProvider);
       ref.invalidate(timelineServiceProvider);
     }
 

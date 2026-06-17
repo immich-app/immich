@@ -48,6 +48,7 @@ void main() {
       apiRepository: apiRepository,
       mediaRepository: mocks.assetMedia.api,
       trashedLocalRepository: mocks.trashedAsset,
+      appMetadataRepository: mocks.metadata,
     );
   });
 

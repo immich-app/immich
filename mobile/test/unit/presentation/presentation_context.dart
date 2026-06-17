@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -63,6 +64,7 @@ class PresentationContext {
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
+    appMetadataRepositoryProvider.overrideWithValue(repository.metadata),
   ];
 
   Drift _mockDrift() {

@@ -30,9 +30,6 @@ class LayoutSettings extends HookConsumerWidget {
           maxValue: 6,
           minValue: 2,
           noDivisons: 4,
-          onChangeEnd: (value) {
-            ref.invalidate(appSettingsServiceProvider);
-          },
         ),
       ],
     );

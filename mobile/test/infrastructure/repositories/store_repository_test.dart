@@ -33,7 +33,7 @@ Future<void> _populateStore(Drift db) async {
     batch.insert(
       db.storeEntity,
       StoreEntityCompanion(
-        id: Value(StoreKey.version.id),
+        id: Value(StoreKey.legacyVersion.id),
         intValue: const Value(_kTestVersion),
         stringValue: const Value(null),
       ),
@@ -56,10 +56,10 @@ void main() {
 
   group('Store Repository converters:', () {
     test('converts int', () async {
-      int? version = await sut.tryGet(StoreKey.version);
+      int? version = await sut.tryGet(StoreKey.legacyVersion);
       expect(version, isNull);
-      await sut.upsert(StoreKey.version, _kTestVersion);
-      version = await sut.tryGet(StoreKey.version);
+      await sut.upsert(StoreKey.legacyVersion, _kTestVersion);
+      version = await sut.tryGet(StoreKey.legacyVersion);
       expect(version, _kTestVersion);
     });
 
@@ -107,10 +107,10 @@ void main() {
     });
 
     test('upsert()', () async {
-      int? version = await sut.tryGet(StoreKey.version);
+      int? version = await sut.tryGet(StoreKey.legacyVersion);
       expect(version, _kTestVersion);
-      await sut.upsert(StoreKey.version, _kTestVersion + 10);
-      version = await sut.tryGet(StoreKey.version);
+      await sut.upsert(StoreKey.legacyVersion, _kTestVersion + 10);
+      version = await sut.tryGet(StoreKey.legacyVersion);
       expect(version, _kTestVersion + 10);
     });
   });
@@ -121,10 +121,10 @@ void main() {
     });
 
     test('watch()', () async {
-      final stream = sut.watch(StoreKey.version);
+      final stream = sut.watch(StoreKey.legacyVersion);
       unawaited(expectLater(stream, emitsInOrder([_kTestVersion, _kTestVersion + 10])));
       await pumpEventQueue();
-      await sut.upsert(StoreKey.version, _kTestVersion + 10);
+      await sut.upsert(StoreKey.legacyVersion, _kTestVersion + 10);
     });
 
     test('watchAll()', () async {
@@ -134,19 +134,19 @@ void main() {
           stream,
           emitsInOrder([
             [
-              const StoreDto<Object>(StoreKey.version, _kTestVersion),
+              const StoreDto<Object>(StoreKey.legacyVersion, _kTestVersion),
               const StoreDto<Object>(StoreKey.legacyAccessToken, _kTestAccessToken),
               const StoreDto<Object>(StoreKey.legacyAdvancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
             [
-              const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
+              const StoreDto<Object>(StoreKey.legacyVersion, _kTestVersion + 10),
               const StoreDto<Object>(StoreKey.legacyAccessToken, _kTestAccessToken),
               const StoreDto<Object>(StoreKey.legacyAdvancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
           ]),
         ),
       );
-      await sut.upsert(StoreKey.version, _kTestVersion + 10);
+      await sut.upsert(StoreKey.legacyVersion, _kTestVersion + 10);
     });
   });
 }
