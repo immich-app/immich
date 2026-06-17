@@ -163,6 +163,9 @@ export class DatabaseBackupService {
       );
 
       switch (bin) {
+        case 'pg_dump': {
+          break;
+        }
         case 'pg_dumpall': {
           args.push('--database');
           break;
