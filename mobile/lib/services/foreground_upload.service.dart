@@ -6,14 +6,13 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -310,7 +309,7 @@ class ForegroundUploadService {
       // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
       final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
       final originalFileName = p.setExtension(fileName, extension);
-      final deviceId = Store.get(StoreKey.deviceId);
+      final deviceId = Store.deviceId!;
 
       final fields = {
         // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
@@ -424,7 +423,7 @@ class ForegroundUploadService {
       final fields = {
         // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
         'deviceAssetId': deviceAssetId,
-        'deviceId': Store.get(StoreKey.deviceId),
+        'deviceId': Store.requireDeviceId,
         'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
         'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
         'isFavorite': 'false',

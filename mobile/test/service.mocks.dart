@@ -2,7 +2,6 @@ import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/services/partner.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -22,8 +21,6 @@ import 'package:mocktail/mocktail.dart';
 class MockApiService extends Mock implements ApiService {}
 
 class MockNetworkService extends Mock implements NetworkService {}
-
-class MockStoreService extends Mock implements StoreService {}
 
 class MockNativeSyncApi extends Mock implements NativeSyncApi {}
 
