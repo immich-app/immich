@@ -70,8 +70,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
     _wasPaused = false;
 
-    _ref.invalidate(driftMemoryFutureProvider);
-
     final isAuthenticated = _ref.read(authProvider).isAuthenticated;
 
     // Needs to be logged in
@@ -85,7 +83,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     _ref.read(websocketProvider.notifier).connect();
     await _handleBetaTimelineResume();
-    _ref.invalidate(driftMemoryFutureProvider);
 
     await _ref.read(notificationPermissionProvider.notifier).getNotificationPermission();
 
@@ -119,6 +116,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
         _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
+      _ref.invalidate(driftMemoryFutureProvider);
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
