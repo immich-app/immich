@@ -4,6 +4,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
@@ -31,6 +32,7 @@ final assetServiceProvider = Provider(
     apiRepository: ref.watch(assetApiRepositoryProvider),
     mediaRepository: ref.watch(assetMediaRepositoryProvider),
     trashedLocalRepository: ref.watch(trashedLocalAssetRepository),
+    appMetadataRepository: ref.read(appMetadataRepositoryProvider),
   ),
 );
 

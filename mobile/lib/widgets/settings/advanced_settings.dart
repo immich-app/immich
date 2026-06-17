@@ -6,15 +6,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -33,7 +33,7 @@ class AdvancedSettings extends HookConsumerWidget {
       advancedTroubleshooting.value,
       (_, __) => unawaited(ref.read(settingsProvider).write(.advancedTroubleshooting, advancedTroubleshooting.value)),
     );
-    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final manageLocalMediaAndroid = useState(false);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
     final levelId = useState<int>(ref.watch(appConfigProvider).logLevel.index);
@@ -64,7 +64,17 @@ class AdvancedSettings extends HookConsumerWidget {
     useEffect(() {
       unawaited(() async {
         isManageMediaSupported.value = await checkAndroidVersion();
-        if (isManageMediaSupported.value && context.mounted) {
+        if (!context.mounted) {
+          return;
+        }
+
+        if (isManageMediaSupported.value) {
+          manageLocalMediaAndroid.value = await ref
+              .read(appMetadataRepositoryProvider)
+              .get(AppMetadataKey.manageLocalMediaAndroid);
+          if (!context.mounted) {
+            return;
+          }
           manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
         }
       }());
@@ -91,6 +101,12 @@ class AdvancedSettings extends HookConsumerWidget {
                   final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                   manageMediaAndroidPermission.value = result;
+                  if (!context.mounted) {
+                    return;
+                  }
+                  await ref.read(appMetadataRepositoryProvider).set(.manageLocalMediaAndroid, result);
+                } else {
+                  await ref.read(appMetadataRepositoryProvider).set(.manageLocalMediaAndroid, false);
                 }
               },
             ),

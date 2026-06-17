@@ -22,14 +22,14 @@ void main() {
     mockDriftStoreRepo = MockDriftStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.legacyAccessToken);
-    registerFallbackValue(StoreKey.version);
+    registerFallbackValue(StoreKey.legacyVersion);
     registerFallbackValue(StoreKey.legacyAdvancedTroubleshooting);
 
     when(() => mockDriftStoreRepo.getAll()).thenAnswer(
       (_) async => [
         const StoreDto(StoreKey.legacyAccessToken, _kAccessToken),
         const StoreDto(StoreKey.legacyAdvancedTroubleshooting, _kAdvancedTroubleshooting),
-        const StoreDto(StoreKey.version, _kVersion),
+        const StoreDto(StoreKey.legacyVersion, _kVersion),
       ],
     );
     when(() => mockDriftStoreRepo.watchAll()).thenAnswer((_) => controller.stream);
@@ -47,7 +47,7 @@ void main() {
       verify(() => mockDriftStoreRepo.getAll()).called(1);
       expect(sut.tryGet(StoreKey.legacyAccessToken), _kAccessToken);
       expect(sut.tryGet(StoreKey.legacyAdvancedTroubleshooting), _kAdvancedTroubleshooting);
-      expect(sut.tryGet(StoreKey.version), _kVersion);
+      expect(sut.tryGet(StoreKey.legacyVersion), _kVersion);
       // Other keys should be null
       expect(sut.tryGet(StoreKey.deviceId), isNull);
     });
@@ -148,7 +148,7 @@ void main() {
       verify(() => mockDriftStoreRepo.deleteAll()).called(1);
       expect(sut.tryGet(StoreKey.legacyAccessToken), isNull);
       expect(sut.tryGet(StoreKey.legacyAdvancedTroubleshooting), isNull);
-      expect(sut.tryGet(StoreKey.version), isNull);
+      expect(sut.tryGet(StoreKey.legacyVersion), isNull);
     });
   });
 }

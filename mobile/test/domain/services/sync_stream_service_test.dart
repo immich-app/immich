@@ -4,8 +4,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
@@ -50,6 +50,7 @@ void main() {
   late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
   late _MockAbortCallbackWrapper mockResetCallbackWrapper;
+  late MockAppMetadataRepository mockAppMetadataRepository;
   late Drift db;
   late bool hasManageMediaPermission;
 
@@ -58,6 +59,8 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
+    registerFallbackValue(AppMetadataKey.syncMigrationStatus);
+    registerFallbackValue(const <String>[]);
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
@@ -83,6 +86,7 @@ void main() {
     mockApi = MockApiService();
     mockServerApi = MockServerApi();
     mockSyncMigrationRepo = MockSyncMigrationRepository();
+    mockAppMetadataRepository = MockAppMetadataRepository();
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
@@ -158,6 +162,7 @@ void main() {
       permissionRepository: mockPermissionRepo,
       api: mockApi,
       syncMigrationRepository: mockSyncMigrationRepo,
+      appMetadataRepository: mockAppMetadataRepository,
     );
 
     when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
@@ -171,7 +176,11 @@ void main() {
       return ids;
     });
     when(() => mockAssetMediaRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
-    await Store.put(StoreKey.manageLocalMediaAndroid, false);
+    when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => false);
+    when(
+      () => mockAppMetadataRepository.get(AppMetadataKey.syncMigrationStatus),
+    ).thenAnswer((_) async => const <String>[]);
+    when(() => mockAppMetadataRepository.set<List<String>, List<String>>(any(), any())).thenAnswer((_) async {});
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -242,6 +251,7 @@ void main() {
         cancellation: cancellation,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
+        appMetadataRepository: mockAppMetadataRepository,
       );
       await sut.sync();
 
@@ -282,6 +292,7 @@ void main() {
         cancellation: cancellation,
         api: mockApi,
         syncMigrationRepository: mockSyncMigrationRepo,
+        appMetadataRepository: mockAppMetadataRepository,
       );
 
       await sut.sync();
@@ -393,12 +404,12 @@ void main() {
 
   group("SyncStreamService - remote trash & restore", () {
     setUp(() async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => true);
       hasManageMediaPermission = true;
     });
 
     tearDown(() async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => false);
       hasManageMediaPermission = false;
     });
 
@@ -551,7 +562,9 @@ void main() {
 
   group('SyncStreamService - Sync Migration', () {
     test('ensure that <2.5.0 migrations run', () async {
-      await Store.put(StoreKey.syncMigrationStatus, "[]");
+      when(
+        () => mockAppMetadataRepository.get(AppMetadataKey.syncMigrationStatus),
+      ).thenAnswer((_) async => const <String>[]);
       when(
         () => mockServerApi.getServerVersion(),
       ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1, prerelease: null));
@@ -579,7 +592,9 @@ void main() {
       );
     });
     test('ensure that >=2.5.0 migrations run', () async {
-      await Store.put(StoreKey.syncMigrationStatus, "[]");
+      when(
+        () => mockAppMetadataRepository.get(AppMetadataKey.syncMigrationStatus),
+      ).thenAnswer((_) async => const <String>[]);
       when(
         () => mockServerApi.getServerVersion(),
       ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0, prerelease: null));
@@ -605,10 +620,9 @@ void main() {
     });
 
     test('ensure that migrations do not re-run', () async {
-      await Store.put(
-        StoreKey.syncMigrationStatus,
-        '["${SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name}"]',
-      );
+      when(
+        () => mockAppMetadataRepository.get(AppMetadataKey.syncMigrationStatus),
+      ).thenAnswer((_) async => [SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name]);
 
       when(
         () => mockServerApi.getServerVersion(),

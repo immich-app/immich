@@ -20,6 +20,7 @@ import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -83,6 +84,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
       assetMediaRepository: ref.read(assetMediaRepositoryProvider),
       permissionRepository: ref.read(permissionRepositoryProvider),
+      appMetadataRepository: ref.read(appMetadataRepositoryProvider),
       cancellation: _cancellationToken,
     );
     _remoteSyncService = SyncStreamService(
@@ -94,6 +96,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       permissionRepository: ref.read(permissionRepositoryProvider),
       syncMigrationRepository: ref.read(syncMigrationRepositoryProvider),
       api: ref.read(apiServiceProvider),
+      appMetadataRepository: ref.read(appMetadataRepositoryProvider),
       cancellation: _cancellationToken,
     );
     _hashService = HashService(
