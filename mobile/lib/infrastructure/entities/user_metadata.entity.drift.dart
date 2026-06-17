@@ -40,18 +40,7 @@ final class $$UserMetadataEntityTableReferences
   static i5.$UserEntityTable _userIdTable(i0.GeneratedDatabase db) =>
       i6.ReadDatabaseContainer(db)
           .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$UserMetadataEntityTable>(
-                    'user_metadata_entity',
-                  )
-                  .userId,
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$UserEntityTable>('user_entity').id,
-            ),
-          );
+          .createAlias('user_metadata_entity__user_id__user_entity__id');
 
   i5.$$UserEntityTableProcessedTableManager get userId {
     final $_column = $_itemColumn<String>('user_id')!;

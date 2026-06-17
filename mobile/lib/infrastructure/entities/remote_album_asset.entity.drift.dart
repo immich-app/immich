@@ -39,16 +39,7 @@ final class $$RemoteAlbumAssetEntityTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAlbumAssetEntityTable>(
-                    'remote_album_asset_entity',
-                  )
-                  .assetId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity').id,
-            ),
+            'remote_album_asset_entity__asset_id__remote_asset_entity__id',
           );
 
   i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {
@@ -73,16 +64,7 @@ final class $$RemoteAlbumAssetEntityTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAlbumAssetEntityTable>(
-                    'remote_album_asset_entity',
-                  )
-                  .albumId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity').id,
-            ),
+            'remote_album_asset_entity__album_id__remote_album_entity__id',
           );
 
   i5.$$RemoteAlbumEntityTableProcessedTableManager get albumId {

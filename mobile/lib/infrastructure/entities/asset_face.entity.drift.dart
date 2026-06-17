@@ -59,16 +59,7 @@ final class $$AssetFaceEntityTableReferences
   static i4.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
       i5.ReadDatabaseContainer(db)
           .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i1.$AssetFaceEntityTable>('asset_face_entity')
-                  .assetId,
-              i5.ReadDatabaseContainer(
-                db,
-              ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity').id,
-            ),
-          );
+          .createAlias('asset_face_entity__asset_id__remote_asset_entity__id');
 
   i4.$$RemoteAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<String>('asset_id')!;
@@ -91,16 +82,7 @@ final class $$AssetFaceEntityTableReferences
   static i6.$PersonEntityTable _personIdTable(i0.GeneratedDatabase db) =>
       i5.ReadDatabaseContainer(db)
           .resultSet<i6.$PersonEntityTable>('person_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i1.$AssetFaceEntityTable>('asset_face_entity')
-                  .personId,
-              i5.ReadDatabaseContainer(
-                db,
-              ).resultSet<i6.$PersonEntityTable>('person_entity').id,
-            ),
-          );
+          .createAlias('asset_face_entity__person_id__person_entity__id');
 
   i6.$$PersonEntityTableProcessedTableManager? get personId {
     final $_column = $_itemColumn<String>('person_id');

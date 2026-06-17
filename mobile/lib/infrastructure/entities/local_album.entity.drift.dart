@@ -50,14 +50,7 @@ final class $$LocalAlbumEntityTableReferences
   ) => i6.ReadDatabaseContainer(db)
       .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity')
       .createAlias(
-        i0.$_aliasNameGenerator(
-          i6.ReadDatabaseContainer(db)
-              .resultSet<i1.$LocalAlbumEntityTable>('local_album_entity')
-              .linkedRemoteAlbumId,
-          i6.ReadDatabaseContainer(
-            db,
-          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity').id,
-        ),
+        'local_album_entity__linked_remote_album_id__remote_album_entity__id',
       );
 
   i5.$$RemoteAlbumEntityTableProcessedTableManager? get linkedRemoteAlbumId {
