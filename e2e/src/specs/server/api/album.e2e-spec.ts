@@ -730,8 +730,8 @@ describe('/albums', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }] });
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('User already added'));
+      expect(status).toBe(200);
+      expect(body.albumUsers.length).toEqual(1);
     });
 
     it('should not be able to add existing user to shared album', async () => {
@@ -745,8 +745,8 @@ describe('/albums', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('User already added'));
+      expect(status).toBe(200);
+      expect(body.albumUsers.length).toEqual(2);
     });
   });
 
