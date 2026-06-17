@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
@@ -34,7 +34,7 @@ Cancelable<T?> runInIsolateGentle<T>({
     DartPluginRegistrant.ensureInitialized();
 
     final log = Logger("IsolateLogger");
-    final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
+    final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false);
     final ref = ProviderContainer(
       overrides: [cancellationProvider.overrideWithValue(onCancel), driftProvider.overrideWith(driftOverride(drift))],
     );

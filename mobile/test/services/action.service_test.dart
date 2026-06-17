@@ -2,10 +2,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,7 +34,7 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await DeviceIdStore.init(db);
   });
 
   tearDownAll(() async {

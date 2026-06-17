@@ -4,10 +4,9 @@ import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/session.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -136,7 +135,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
-    String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
+    String deviceId = Store.deviceId ?? await FlutterUdid.consistentUdid;
 
     UserDto? user = await _userService.tryGetMyUser();
 
@@ -148,7 +147,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         // If the user information is successfully retrieved, update the store
         // Due to the flow of the code, this will always happen on first login
         user = serverUser;
-        await Store.put(StoreKey.deviceId, deviceId);
+        await Store.setDeviceId(deviceId);
       }
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {

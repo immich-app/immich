@@ -8,13 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/session.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -39,11 +36,11 @@ void main() {
       (MethodCall methodCall) async => 'test',
     );
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await DeviceIdStore.init(db);
     await SettingsRepository.ensureInitialized(db);
     await SessionRepository.ensureInitialized(db);
     await SessionRepository.instance.write(SessionKey.serverEndpoint, 'https://demo.immich.app');
-    await Store.put(StoreKey.deviceId, 'test-device-id');
+    await Store.setDeviceId('test-device-id');
   });
 
   setUp(() {
