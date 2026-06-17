@@ -85,10 +85,6 @@ export const getWorkflowDefaultConfig = (schema: JSONSchemaProperty) => {
         config[key] = property.properties ? getWorkflowDefaultConfig(property) : {};
         break;
       }
-
-      default: {
-        console.log(`Unknown configuration type: ${property.type}`);
-      }
     }
   }
 

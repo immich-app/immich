@@ -116,6 +116,7 @@ const nonIntlNames: Record<string, string> = {
   kxm: 'Khmer Surin',
   mfa: 'Malay (Pattani)',
   swg: 'Schwäbisch',
+  tl: 'Tagalog',
 };
 
 const getLanguageName = (code: string) =>

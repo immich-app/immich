@@ -23,7 +23,9 @@ class MapBottomSheet extends StatelessWidget {
       resizeOnScroll: false,
       actions: [],
       backgroundColor: context.themeData.colorScheme.surface,
-      slivers: [const SliverFillRemaining(hasScrollBody: true, child: _ScopedMapTimeline())],
+      slivers: [
+        const SliverFillRemaining(hasScrollBody: false, child: SizedBox(height: 0, child: _ScopedMapTimeline())),
+      ],
     );
   }
 }

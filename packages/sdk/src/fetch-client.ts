@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0-rc.0
+ * 3.0.0-rc.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -673,7 +673,7 @@ export type AssetMediaResponseDto = {
 export type AssetBulkUpdateDto = {
     /** Original date and time */
     dateTimeOriginal?: string;
-    /** Relative time offset in seconds */
+    /** Relative time offset in minutes */
     dateTimeRelative?: number;
     /** Asset description */
     description?: string;
@@ -696,7 +696,7 @@ export type AssetBulkUpdateDto = {
 export type AssetBulkUploadCheckItem = {
     /** Base64 or hex encoded SHA1 hash */
     checksum: string;
-    /** Asset ID */
+    /** Client-side identifier echoed in the response to match results to inputs (e.g. filename) */
     id: string;
 };
 export type AssetBulkUploadCheckDto = {

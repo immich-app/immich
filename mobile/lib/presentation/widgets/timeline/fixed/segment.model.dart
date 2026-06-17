@@ -110,9 +110,6 @@ class _FixedSegmentRow extends ConsumerWidget {
     final timelineService = ref.read(timelineServiceProvider);
     final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
-    if (isScrubbing) {
-      return _buildPlaceholder(context);
-    }
     if (timelineService.hasRange(assetIndex, assetCount)) {
       return _buildAssetRow(
         context,
@@ -120,6 +117,10 @@ class _FixedSegmentRow extends ConsumerWidget {
         timelineService,
         isDynamicLayout,
       );
+    }
+
+    if (isScrubbing) {
+      return _buildPlaceholder(context);
     }
 
     return FutureBuilder<List<BaseAsset>>(

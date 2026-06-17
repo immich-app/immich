@@ -21,6 +21,7 @@
   import { onMount } from 'svelte';
   import { t, type Translations } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { SvelteSet } from 'svelte/reactivity';
 
   type Props = {
     data: PageData;
@@ -50,7 +51,7 @@
   };
 
   let jobs: QueuesResponseLegacyDto | undefined = $state();
-  let expectingUpdate: boolean = $state(false);
+  const activeJobs = new SvelteSet<ManualJobName>();
 
   const getReportTypeTranslation = (report: IntegrityReport): Translations => {
     switch (report) {
@@ -66,13 +67,27 @@
     }
   };
 
+  const getReportTypeDescriptionKey = (report: IntegrityReport): Translations => {
+    switch (report) {
+      case IntegrityReport.UntrackedFile: {
+        return 'admin.maintenance_integrity_untracked_file_description';
+      }
+      case IntegrityReport.MissingFile: {
+        return 'admin.maintenance_integrity_missing_file_description';
+      }
+      case IntegrityReport.ChecksumMismatch: {
+        return 'admin.maintenance_integrity_checksum_mismatch_description';
+      }
+    }
+  };
+
   const updateReports = async () => {
     jobs = await getQueuesLegacy();
     if (jobs.integrityCheck.queueStatus.isActive) {
-      expectingUpdate = true;
-    } else if (expectingUpdate) {
+      activeJobs.add(ManualJobName.IntegrityUntrackedFilesRefresh);
+    } else if (activeJobs.size > 0) {
+      activeJobs.clear();
       integrityReport = await getIntegrityReportSummary();
-      expectingUpdate = false;
     }
   };
 
@@ -84,7 +99,7 @@
 
   const onJobCreate = ({ dto }: { dto: JobCreateDto }) => {
     if ((Object.values(jobNames).includes(dto.name) || Object.values(refreshJobNames).includes(dto.name)) && jobs) {
-      expectingUpdate = true;
+      activeJobs.add(dto.name);
       jobs.integrityCheck.queueStatus.isActive = true;
     }
   };
@@ -106,7 +121,7 @@
             }
           }}
           class="mt-1 self-end"
-          disabled={expectingUpdate}>{$t('admin.maintenance_integrity_check_all')}</Button
+          disabled={activeJobs.size > 0}>{$t('admin.maintenance_integrity_check_all')}</Button
         >
         <Button
           size="tiny"
@@ -117,7 +132,7 @@
             }
           }}
           class="mt-1 self-end"
-          disabled={expectingUpdate}>{$t('refresh')}</Button
+          disabled={activeJobs.size > 0}>{$t('refresh')}</Button
         ></HStack
       >
 
@@ -125,36 +140,36 @@
         {#each reportTypes as reportType (reportType)}
           <ServerStatisticsCard
             title={$t(getReportTypeTranslation(reportType))}
+            tooltip={$t(getReportTypeDescriptionKey(reportType))}
             valuePromise={{ value: integrityReport[reportType] }}
           >
             {#snippet footer()}
-              <HStack gap={1} class="justify-end">
-                <Button
-                  onclick={() =>
-                    handleCreateJob({
-                      name: jobNames[reportType],
-                    })}
-                  size="tiny"
-                  variant="ghost"
-                  class="mt-1 self-end"
-                  disabled={expectingUpdate}>{$t('admin.maintenance_integrity_check_all')}</Button
-                >
-                <Button
-                  onclick={() =>
-                    handleCreateJob({
-                      name: refreshJobNames[reportType],
-                    })}
-                  size="tiny"
-                  variant="ghost"
-                  class="mt-1 self-end"
-                  disabled={expectingUpdate}>{$t('refresh')}</Button
-                >
+              <HStack gap={1} class="justify-between">
+                <HStack gap={0}>
+                  <Button
+                    onclick={() =>
+                      handleCreateJob({
+                        name: jobNames[reportType],
+                      })}
+                    size="tiny"
+                    variant="ghost"
+                    disabled={activeJobs.has(jobNames[reportType])}>{$t('admin.maintenance_integrity_check')}</Button
+                  >
+                  <Button
+                    onclick={() =>
+                      handleCreateJob({
+                        name: refreshJobNames[reportType],
+                      })}
+                    size="tiny"
+                    variant="ghost"
+                    disabled={activeJobs.has(refreshJobNames[reportType])}>{$t('refresh')}</Button
+                  >
+                </HStack>
                 <Button
                   href={`${Route.systemMaintenanceIntegrityReport({
                     reportType,
                   })}`}
-                  size="tiny"
-                  class="mt-1 self-end">{$t('view')}</Button
+                  size="tiny">{$t('view')}</Button
                 >
               </HStack>
             {/snippet}
@@ -166,7 +181,7 @@
 
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
-      <Text size="small">{$t('admin.maintenance_settings')}</Text>
+      <Text size="small">{$t('admin.maintenance_backup_management')}</Text>
 
       <SettingAccordion
         title={$t('admin.maintenance_restore_database_backup')}
