@@ -1,7 +1,6 @@
 import 'package:background_downloader/background_downloader.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
@@ -9,7 +8,7 @@ import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.d
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -46,13 +45,11 @@ void configureFileDownloaderNotifications() {
 }
 
 abstract final class Bootstrap {
-  static Future<(Drift, DriftLogger)> initDomain({bool listenStoreUpdates = true, bool shouldBufferLogs = true}) async {
+  static Future<(Drift, DriftLogger)> initDomain({bool shouldBufferLogs = true}) async {
     await configureSqliteCache();
     final (db, updatePool) = await openSqliteConnectionWithUpdatePool(name: 'immich');
     final drift = Drift.sqlite(db, updatePool);
-    final DriftStoreRepository storeRepo = DriftStoreRepository(drift);
-
-    await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
+    await DeviceIdStore.init(drift);
     await SessionRepository.ensureInitialized(drift);
     final settingsRepo = await SettingsRepository.ensureInitialized(drift);
     final logDb = await _initLogger(settingsRepository: settingsRepo, shouldBufferLogs: shouldBufferLogs);
