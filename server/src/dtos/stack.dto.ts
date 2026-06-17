@@ -24,8 +24,8 @@ const StackUpdateSchema = z
 
 const StackResponseSchema = z
   .object({
-    id: z.string().describe('Stack ID'),
-    primaryAssetId: z.string().describe('Primary asset ID'),
+    id: z.uuidv4().describe('Stack ID'),
+    primaryAssetId: z.uuidv4().describe('Primary asset ID'),
     assets: z.array(AssetResponseSchema),
   })
   .describe('Stack response')

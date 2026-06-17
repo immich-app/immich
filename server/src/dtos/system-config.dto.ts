@@ -1,3 +1,4 @@
+import { validateCronExpression } from 'cron';
 import { createZodDto } from 'nestjs-zod';
 import { SystemConfig } from 'src/config';
 import {
@@ -43,7 +44,16 @@ const JobSettingsSchema = z
 
 const cronExpressionSchema = z
   .string()
-  .regex(/(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}/, 'Invalid cron expression')
+  .superRefine((value, ctx) => {
+    const validated = validateCronExpression(value);
+    if (!validated.valid) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Invalid cron expression. ${validated.error?.message ?? ''}`,
+        input: value,
+      });
+    }
+  })
   .describe('Cron expression');
 
 const DatabaseBackupSchema = z

@@ -503,6 +503,9 @@ export class LibraryService extends BaseService {
       const stat = stats[i];
       const action = this.checkExistingAsset(asset, stat);
       switch (action) {
+        case AssetSyncResult.DO_NOTHING: {
+          break;
+        }
         case AssetSyncResult.OFFLINE: {
           if (asset.status === AssetStatus.Trashed) {
             trashedAssetIdsToOffline.push(asset.id);

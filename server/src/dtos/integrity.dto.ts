@@ -27,7 +27,7 @@ const IntegrityDeleteReportSchema = z.object({ type: IntegrityReport }).meta({ i
 export class IntegrityDeleteReportDto extends createZodDto(IntegrityDeleteReportSchema) {}
 
 const IntegrityReportResponseItemSchema = z.object({
-  id: z.string().describe('Integrity report item id'),
+  id: z.uuidv4().describe('Integrity report item id'),
   type: IntegrityReportSchema,
   path: z.string().describe('Integrity report item path'),
 });

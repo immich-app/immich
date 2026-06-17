@@ -24,7 +24,7 @@ import z from 'zod';
 
 const SanitizedAssetResponseSchema = z
   .object({
-    id: z.string().describe('Asset ID'),
+    id: z.uuidv4().describe('Asset ID'),
     type: AssetTypeSchema,
     thumbhash: z
       .string()
@@ -52,8 +52,8 @@ export class SanitizedAssetResponseDto extends createZodDto(SanitizedAssetRespon
 
 const AssetStackResponseSchema = z
   .object({
-    id: z.string().describe('Stack ID'),
-    primaryAssetId: z.string().describe('Primary asset ID'),
+    id: z.uuidv4().describe('Stack ID'),
+    primaryAssetId: z.uuidv4().describe('Primary asset ID'),
     assetCount: z.int().min(0).describe('Number of assets in stack'),
   })
   .meta({ id: 'AssetStackResponseDto' });
@@ -65,7 +65,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .string()
       .meta({ format: 'date-time' })
       .describe('The UTC timestamp when the asset was originally uploaded to Immich.'),
-    ownerId: z.string().describe('Owner user ID'),
+    ownerId: z.uuidv4().describe('Owner user ID'),
     owner: UserResponseSchema.optional(),
     libraryId: z
       .uuidv4()
@@ -103,7 +103,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     people: z.array(PersonResponseSchema).optional(),
     checksum: z.string().describe('Base64 encoded SHA1 hash'),
     stack: AssetStackResponseSchema.nullish(),
-    duplicateId: z.string().nullish().describe('Duplicate group ID'),
+    duplicateId: z.uuidv4().nullish().describe('Duplicate group ID'),
     resized: z
       .boolean()
       .optional()
