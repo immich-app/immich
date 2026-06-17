@@ -24,7 +24,6 @@ class AssetListSettings extends HookConsumerWidget {
         title: context.t.theme_setting_asset_list_storage_indicator_title,
         onChanged: (value) {
           unawaited(ref.read(settingsProvider).write(.timelineStorageIndicator, value));
-          ref.invalidate(appSettingsServiceProvider);
           ref.invalidate(settingsProvider);
         },
       ),

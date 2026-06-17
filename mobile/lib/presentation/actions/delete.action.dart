@@ -5,8 +5,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -218,9 +218,9 @@ Future<int> _cleanupLocalAssets(
   final requiresPrompt =
       requestCustomPrompt &&
       CurrentPlatform.isAndroid &&
-      ref.read(storeServiceProvider).get(.manageLocalMediaAndroid, false);
+      await ref.read(appMetadataRepositoryProvider).get(.manageLocalMediaAndroid);
 
-  if (requiresPrompt) {
+  if (requiresPrompt && context.mounted) {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => ConfirmDialog(

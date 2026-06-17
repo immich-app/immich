@@ -7,7 +7,6 @@ import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
@@ -24,13 +23,9 @@ class MockApiService extends Mock implements ApiService {}
 
 class MockNetworkService extends Mock implements NetworkService {}
 
-class MockAppSettingService extends Mock implements AppSettingsService {}
-
 class MockStoreService extends Mock implements StoreService {}
 
 class MockNativeSyncApi extends Mock implements NativeSyncApi {}
-
-class MockAppSettingsService extends Mock implements AppSettingsService {}
 
 class MockPartnerService extends Mock implements PartnerService {}
 

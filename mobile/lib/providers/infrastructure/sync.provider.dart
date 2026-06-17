@@ -4,6 +4,9 @@ import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -21,6 +24,7 @@ final syncStreamServiceProvider = Provider((ref) {
     permissionRepository: ref.watch(permissionRepositoryProvider),
     syncMigrationRepository: db.syncMigrationRepository,
     api: ref.watch(apiServiceProvider),
+    appMetadataRepository: ref.watch(appMetadataRepositoryProvider),
     cancellation: ref.watch(cancellationProvider),
   );
 });
@@ -36,6 +40,7 @@ final localSyncServiceProvider = Provider((ref) {
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
+    appMetadataRepository: ref.watch(appMetadataRepositoryProvider),
     cancellation: ref.watch(cancellationProvider),
   );
 });

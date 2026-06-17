@@ -9,16 +9,15 @@ import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
@@ -232,8 +231,16 @@ class _SyncStatsCounts extends ConsumerWidget {
       final remoteAlbumCounts = remoteAlbumService.getCount();
       final memoryCount = memoryService.getCount();
       final getLocalHashedCount = assetService.getLocalHashedCount();
+      final manageLocalMediaAndroid = appMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid);
 
-      return await Future.wait([assetCounts, localAlbumCounts, remoteAlbumCounts, memoryCount, getLocalHashedCount]);
+      return await Future.wait([
+        assetCounts,
+        localAlbumCounts,
+        remoteAlbumCounts,
+        memoryCount,
+        getLocalHashedCount,
+        manageLocalMediaAndroid,
+      ]);
     }
 
     return FutureBuilder(
@@ -259,14 +266,15 @@ class _SyncStatsCounts extends ConsumerWidget {
           );
         }
 
-        final assetCounts = snapshot.data![0]! as (int, int);
+        final assetCounts = snapshot.data![0] as (int, int);
         final localAssetCount = assetCounts.$1;
         final remoteAssetCount = assetCounts.$2;
 
-        final localAlbumCount = snapshot.data![1]! as int;
-        final remoteAlbumCount = snapshot.data![2]! as int;
-        final memoryCount = snapshot.data![3]! as int;
-        final localHashedCount = snapshot.data![4]! as int;
+        final localAlbumCount = snapshot.data![1] as int;
+        final remoteAlbumCount = snapshot.data![2] as int;
+        final memoryCount = snapshot.data![3] as int;
+        final localHashedCount = snapshot.data![4] as int;
+        final manageLocalMediaAndroid = snapshot.data![5] as bool;
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.start,
