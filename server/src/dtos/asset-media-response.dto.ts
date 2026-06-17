@@ -11,7 +11,7 @@ const AssetMediaStatusSchema = z.enum(AssetMediaStatus).describe('Upload status'
 const AssetMediaResponseSchema = z
   .object({
     status: AssetMediaStatusSchema,
-    id: z.string().describe('Asset media ID'),
+    id: z.uuidv4().describe('Asset media ID'),
   })
   .meta({ id: 'AssetMediaResponseDto' });
 
@@ -34,7 +34,7 @@ const AssetRejectReasonSchema = z
 
 const AssetBulkUploadCheckResultSchema = z
   .object({
-    id: z.string().describe('Asset ID'),
+    id: z.uuidv4().describe('Asset ID'),
     action: AssetUploadActionSchema,
     reason: AssetRejectReasonSchema.optional(),
     assetId: z.string().optional().describe('Existing asset ID if duplicate'),
