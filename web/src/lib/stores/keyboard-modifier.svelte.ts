@@ -5,12 +5,12 @@ class KeyboardModifierStore {
   alt = $state(false);
 
   constructor() {
-    if (typeof window === 'undefined') {
+    if (globalThis.window === undefined) {
       return;
     }
-    window.addEventListener('keydown', this.update);
-    window.addEventListener('keyup', this.update);
-    window.addEventListener('blur', this.clear);
+    globalThis.addEventListener('keydown', this.update);
+    globalThis.addEventListener('keyup', this.update);
+    globalThis.addEventListener('blur', this.clear);
   }
 
   private update = (event: KeyboardEvent) => {
