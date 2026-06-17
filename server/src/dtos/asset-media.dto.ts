@@ -58,7 +58,7 @@ const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
 
 const AssetBulkUploadCheckItemSchema = z
   .object({
-    id: z.string().describe('Asset ID'),
+    id: z.string().describe('Client-side identifier echoed in the response to match results to inputs (e.g. filename)'),
     checksum: z.string().describe('Base64 or hex encoded SHA1 hash'),
   })
   .meta({ id: 'AssetBulkUploadCheckItem' });

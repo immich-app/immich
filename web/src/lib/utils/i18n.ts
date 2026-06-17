@@ -112,8 +112,11 @@ const capitalize = (string: string) =>
     .join(' ');
 
 const nonIntlNames: Record<string, string> = {
-  mfa: 'Malay (Pattani)',
   bi: 'Bislama',
+  kxm: 'Khmer Surin',
+  mfa: 'Malay (Pattani)',
+  swg: 'Schwäbisch',
+  tl: 'Tagalog',
 };
 
 const getLanguageName = (code: string) =>

@@ -14,7 +14,11 @@ jobs:
       should_run: ${{ steps.should_run.outputs.run }}
     steps:
       - id: should_run
-        run: echo "run=${{ github.event_name == 'issues' || github.event.discussion.category.name == 'Feature Request' }}" >> $GITHUB_OUTPUT
+        run: |
+          echo "run=${{
+            (github.event_name == 'issues' || github.event.discussion.category.name == 'Feature Request')
+            && !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association || github.event.discussion.author_association)
+          }}" >> "$GITHUB_OUTPUT"
 
   get_body:
     runs-on: ubuntu-latest
@@ -35,7 +39,7 @@ jobs:
     needs: [get_body, should_run]
     if: ${{ needs.should_run.outputs.should_run == 'true' }}
     container:
-      image: ghcr.io/immich-app/mdq:main@sha256:e73f60195b39748c4876f23e3e6cd22a68a9754acec8aef1fd6979fd52cd2c9f
+      image: ghcr.io/immich-app/mdq:main@sha256:2a64c7f045cb7b580fbdf3614d7d1805f5775fec453e3d1023764180efa8c70b
     outputs:
       checked: ${{ steps.get_checkbox.outputs.checked }}
     steps:

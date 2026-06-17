@@ -1,3 +1,4 @@
+import { validateCronExpression } from 'cron';
 import { createZodDto } from 'nestjs-zod';
 import { SystemConfig } from 'src/config';
 import {
@@ -43,7 +44,16 @@ const JobSettingsSchema = z
 
 const cronExpressionSchema = z
   .string()
-  .regex(/(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}/, 'Invalid cron expression')
+  .superRefine((value, ctx) => {
+    const validated = validateCronExpression(value);
+    if (!validated.valid) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Invalid cron expression. ${validated.error?.message ?? ''}`,
+        input: value,
+      });
+    }
+  })
   .describe('Cron expression');
 
 const DatabaseBackupSchema = z
@@ -53,6 +63,30 @@ const DatabaseBackupSchema = z
     keepLastAmount: z.int().min(1).describe('Keep last amount'),
   })
   .meta({ id: 'DatabaseBackupConfig' });
+
+const SystemConfigIntegrityJobSchema = z
+  .object({
+    enabled: z.boolean().describe('Enabled'),
+    cronExpression: cronExpressionSchema.describe('Cron expression for when the integrity check should run'),
+  })
+  .describe('Integrity job config')
+  .meta({ id: 'SystemConfigIntegrityJob' });
+
+const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
+  timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
+  percentageLimit: z.int().nonnegative().describe('Percentage limit of the integrity checksum job'),
+})
+  .describe('Integrity checksum job config')
+  .meta({ id: 'SystemConfigIntegrityChecksumJob' });
+
+const SystemConfigIntegrityChecksSchema = z
+  .object({
+    missingFiles: SystemConfigIntegrityJobSchema,
+    untrackedFiles: SystemConfigIntegrityJobSchema,
+    checksumFiles: SystemConfigIntegrityChecksumJobSchema,
+  })
+  .describe('Integrity checks config')
+  .meta({ id: 'SystemConfigIntegrityChecks' });
 
 const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
 
@@ -103,6 +137,7 @@ const SystemConfigJobSchema = z
     ocr: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
+    integrityCheck: JobSettingsSchema,
   })
   .meta({ id: 'SystemConfigJobDto' });
 
@@ -382,6 +417,7 @@ export const SystemConfigSchema = z
     templates: SystemConfigTemplatesSchema,
     server: SystemConfigServerSchema,
     user: SystemConfigUserSchema,
+    integrityChecks: SystemConfigIntegrityChecksSchema,
   })
   .describe('System configuration')
   .meta({ id: 'SystemConfigDto' });

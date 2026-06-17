@@ -564,6 +564,298 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/integrity/report": {
+      "get": {
+        "description": "Get all flagged items by integrity report type",
+        "operationId": "getIntegrityReport",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor for pagination",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "maximum": 9007199254740991,
+              "exclusiveMinimum": true,
+              "default": 500,
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/IntegrityReport"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrityReportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report by type",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report/{id}": {
+      "delete": {
+        "description": "Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)",
+        "operationId": "deleteIntegrityReport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete integrity report item",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report/{id}/file": {
+      "get": {
+        "description": "Download the untracked/broken file if one exists",
+        "operationId": "getIntegrityReportFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download flagged file",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report/{type}/csv": {
+      "get": {
+        "description": "Get all integrity report entries for a given type as a CSV",
+        "operationId": "getIntegrityReportCsv",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/IntegrityReport"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Export integrity report by type as CSV",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/summary": {
+      "get": {
+        "description": "Get a count of the items flagged in each integrity report",
+        "operationId": "getIntegrityReportSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrityReportSummaryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report summary",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance": {
       "post": {
         "description": "Put Immich into or take it out of maintenance mode",
@@ -1194,6 +1486,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing user.",
         "operationId": "updateUserAdmin",
         "parameters": [
@@ -1243,7 +1536,8 @@
         ],
         "summary": "Update a user",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1258,10 +1552,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/calendar-heatmap": {
@@ -1416,6 +1715,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of a specific user.",
         "operationId": "updateUserPreferencesAdmin",
         "parameters": [
@@ -1465,7 +1765,8 @@
         ],
         "summary": "Update user preferences",
         "tags": [
-          "Users (admin)"
+          "Users (admin)",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -1480,10 +1781,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateUserPreferencesAdmin"
           }
         ],
         "x-immich-permission": "adminUser.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/admin/users/{id}/restore": {
@@ -2863,6 +3169,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
         "operationId": "updateApiKey",
         "parameters": [
@@ -2912,7 +3219,8 @@
         ],
         "summary": "Update an API key",
         "tags": [
-          "API keys"
+          "API keys",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -2926,10 +3234,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateApiKey"
           }
         ],
         "x-immich-permission": "apiKey.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets": {
@@ -3080,6 +3393,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Updates multiple assets at the same time.",
         "operationId": "updateAssets",
         "parameters": [],
@@ -3111,7 +3425,8 @@
         ],
         "summary": "Update assets",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3125,10 +3440,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAssets"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/bulk-upload-check": {
@@ -3557,6 +3877,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update information of a specific asset.",
         "operationId": "updateAsset",
         "parameters": [
@@ -3606,7 +3927,8 @@
         ],
         "summary": "Update an asset",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -3620,10 +3942,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateAsset"
           }
         ],
         "x-immich-permission": "asset.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/assets/{id}/edits": {
@@ -4694,6 +5021,16 @@
             "name": "variantIndex",
             "required": true,
             "in": "path",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "x-immich-hls-msn",
+            "required": false,
+            "in": "header",
             "schema": {
               "minimum": 0,
               "maximum": 9007199254740991,
@@ -6329,6 +6666,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing external library.",
         "operationId": "updateLibrary",
         "parameters": [
@@ -6378,7 +6716,8 @@
         ],
         "summary": "Update a library",
         "tags": [
-          "Libraries"
+          "Libraries",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -6393,10 +6732,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateLibrary"
           }
         ],
         "x-immich-permission": "library.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/libraries/{id}/scan": {
@@ -7165,6 +7509,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing memory by its ID.",
         "operationId": "updateMemory",
         "parameters": [
@@ -7214,7 +7559,8 @@
         ],
         "summary": "Update a memory",
         "tags": [
-          "Memories"
+          "Memories",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -7228,10 +7574,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMemory"
           }
         ],
         "x-immich-permission": "memory.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/memories/{id}/assets": {
@@ -8711,6 +9062,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an individual person.",
         "operationId": "updatePerson",
         "parameters": [
@@ -8760,7 +9112,8 @@
         ],
         "summary": "Update person",
         "tags": [
-          "People"
+          "People",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -8774,10 +9127,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updatePerson"
           }
         ],
         "x-immich-permission": "person.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/people/{id}/merge": {
@@ -11529,6 +11887,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update a specific session identified by id.",
         "operationId": "updateSession",
         "parameters": [
@@ -11578,7 +11937,8 @@
         ],
         "summary": "Update a session",
         "tags": [
-          "Sessions"
+          "Sessions",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -11592,10 +11952,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateSession"
           }
         ],
         "x-immich-permission": "session.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/sessions/{id}/lock": {
@@ -12545,6 +12910,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing stack by its ID.",
         "operationId": "updateStack",
         "parameters": [
@@ -12594,7 +12960,8 @@
         ],
         "summary": "Update a stack",
         "tags": [
-          "Stacks"
+          "Stacks",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -12608,10 +12975,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateStack"
           }
         ],
         "x-immich-permission": "stack.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -13648,6 +14020,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update an existing tag identified by its ID.",
         "operationId": "updateTag",
         "parameters": [
@@ -13697,7 +14070,8 @@
         ],
         "summary": "Update a tag",
         "tags": [
-          "Tags"
+          "Tags",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -13711,10 +14085,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateTag"
           }
         ],
         "x-immich-permission": "tag.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/tags/{id}/assets": {
@@ -14517,6 +14896,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the current user making the API request.",
         "operationId": "updateMyUser",
         "parameters": [],
@@ -14555,7 +14935,8 @@
         ],
         "summary": "Update current user",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -14569,10 +14950,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyUser"
           }
         ],
         "x-immich-permission": "user.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/me/calendar-heatmap": {
@@ -15003,6 +15389,7 @@
         "x-immich-state": "Stable"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the preferences of the current user.",
         "operationId": "updateMyPreferences",
         "parameters": [],
@@ -15041,7 +15428,8 @@
         ],
         "summary": "Update my preferences",
         "tags": [
-          "Users"
+          "Users",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -15055,10 +15443,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateMyPreferences"
           }
         ],
         "x-immich-permission": "userPreference.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/users/profile-image": {
@@ -15680,6 +16073,7 @@
         "x-immich-permission": "workflow.read"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.",
         "operationId": "updateWorkflow",
         "parameters": [
@@ -15729,15 +16123,22 @@
         ],
         "summary": "Update a workflow",
         "tags": [
-          "Workflows"
+          "Workflows",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
             "version": "v3.0.0",
             "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Deprecated",
+            "replacementId": "updateWorkflow"
           }
         ],
-        "x-immich-permission": "workflow.update"
+        "x-immich-permission": "workflow.update",
+        "x-immich-state": "Deprecated"
       }
     },
     "/workflows/{id}/share": {
@@ -15796,7 +16197,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.0.0",
+    "version": "3.0.0-rc.1",
     "contact": {}
   },
   "tags": [
@@ -15843,6 +16244,10 @@
     {
       "name": "Faces",
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
+    },
+    {
+      "name": "Integrity (admin)",
+      "description": "Endpoints for viewing and managing integrity reports."
     },
     {
       "name": "Jobs",
@@ -16463,7 +16868,7 @@
             "type": "string"
           },
           "dateTimeRelative": {
-            "description": "Relative time offset in seconds",
+            "description": "Relative time offset in minutes",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"
@@ -16503,9 +16908,9 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], or null for unrated",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
-            "minimum": 1,
+            "minimum": -1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -16518,14 +16923,9 @@
                 "state": "Stable"
               },
               {
-                "version": "v2.6.0",
-                "state": "Updated",
-                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
-              },
-              {
                 "version": "v3",
                 "state": "Updated",
-                "description": "Using -1 as a rating is no longer valid."
+                "description": "Using 0 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -16565,7 +16965,7 @@
             "type": "string"
           },
           "id": {
-            "description": "Asset ID",
+            "description": "Client-side identifier echoed in the response to match results to inputs (e.g. filename)",
             "type": "string"
           }
         },
@@ -18090,7 +18490,6 @@
         "properties": {
           "cronExpression": {
             "description": "Cron expression",
-            "pattern": "(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}",
             "type": "string"
           },
           "enabled": {
@@ -18686,6 +19085,75 @@
         ],
         "type": "string"
       },
+      "IntegrityReport": {
+        "description": "Integrity report type",
+        "enum": [
+          "untracked_file",
+          "missing_file",
+          "checksum_mismatch"
+        ],
+        "type": "string"
+      },
+      "IntegrityReportResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "properties": {
+                "id": {
+                  "description": "Integrity report item id",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "Integrity report item path",
+                  "type": "string"
+                },
+                "type": {
+                  "$ref": "#/components/schemas/IntegrityReport"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "path"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "IntegrityReportSummaryResponseDto": {
+        "properties": {
+          "checksum_mismatch": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "missing_file": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "untracked_file": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checksum_mismatch",
+          "missing_file",
+          "untracked_file"
+        ],
+        "type": "object"
+      },
       "JobCreateDto": {
         "properties": {
           "name": {
@@ -18755,7 +19223,17 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowAssetTrigger"
+          "WorkflowAssetTrigger",
+          "IntegrityUntrackedFilesQueueAll",
+          "IntegrityUntrackedFiles",
+          "IntegrityUntrackedRefresh",
+          "IntegrityMissingFilesQueueAll",
+          "IntegrityMissingFiles",
+          "IntegrityMissingFilesRefresh",
+          "IntegrityChecksumFiles",
+          "IntegrityChecksumFilesRefresh",
+          "IntegrityDeleteReportType",
+          "IntegrityDeleteReports"
         ],
         "type": "string"
       },
@@ -19129,7 +19607,16 @@
           "user-cleanup",
           "memory-cleanup",
           "memory-create",
-          "backup-database"
+          "backup-database",
+          "integrity-missing-files",
+          "integrity-untracked-files",
+          "integrity-checksum-mismatch",
+          "integrity-missing-files-refresh",
+          "integrity-untracked-files-refresh",
+          "integrity-checksum-mismatch-refresh",
+          "integrity-missing-files-delete-all",
+          "integrity-untracked-files-delete-all",
+          "integrity-checksum-mismatch-delete-all"
         ],
         "type": "string"
       },
@@ -20998,6 +21485,7 @@
           "backupDatabase",
           "ocr",
           "workflow",
+          "integrityCheck",
           "editor"
         ],
         "type": "string"
@@ -21132,6 +21620,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "integrityCheck": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "library": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -21176,6 +21667,7 @@
           "editor",
           "faceDetection",
           "facialRecognition",
+          "integrityCheck",
           "library",
           "metadataExtraction",
           "migration",
@@ -24838,6 +25330,9 @@
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
+          "integrityChecks": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecks"
+          },
           "job": {
             "$ref": "#/components/schemas/SystemConfigJobDto"
           },
@@ -24897,6 +25392,7 @@
           "backup",
           "ffmpeg",
           "image",
+          "integrityChecks",
           "job",
           "library",
           "logging",
@@ -25155,6 +25651,76 @@
         ],
         "type": "object"
       },
+      "SystemConfigIntegrityChecks": {
+        "description": "Integrity checks config",
+        "properties": {
+          "checksumFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityChecksumJob"
+          },
+          "missingFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          },
+          "untrackedFiles": {
+            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
+          }
+        },
+        "required": [
+          "checksumFiles",
+          "missingFiles",
+          "untrackedFiles"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityChecksumJob": {
+        "description": "Integrity checksum job config",
+        "properties": {
+          "cronExpression": {
+            "description": "Cron expression for when the integrity check should run",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "percentageLimit": {
+            "description": "Percentage limit of the integrity checksum job",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timeLimit": {
+            "description": "How long the integrity checksum job may run for",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "percentageLimit",
+          "timeLimit"
+        ],
+        "type": "object"
+      },
+      "SystemConfigIntegrityJob": {
+        "description": "Integrity job config",
+        "properties": {
+          "cronExpression": {
+            "description": "Cron expression for when the integrity check should run",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
+        ],
+        "type": "object"
+      },
       "SystemConfigJobDto": {
         "properties": {
           "backgroundTask": {
@@ -25164,6 +25730,9 @@
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "faceDetection": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "integrityCheck": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "library": {
@@ -25204,6 +25773,7 @@
           "backgroundTask",
           "editor",
           "faceDetection",
+          "integrityCheck",
           "library",
           "metadataExtraction",
           "migration",
@@ -25237,7 +25807,6 @@
         "properties": {
           "cronExpression": {
             "description": "Cron expression",
-            "pattern": "(((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7}",
             "type": "string"
           },
           "enabled": {
@@ -26331,9 +26900,9 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating in range [1-5], or null for unrated",
+            "description": "Rating in range [1-5] (starred), -1 (rejected), or null (unrated)",
             "maximum": 5,
-            "minimum": 1,
+            "minimum": -1,
             "nullable": true,
             "type": "integer",
             "x-immich-history": [
@@ -26346,14 +26915,9 @@
                 "state": "Stable"
               },
               {
-                "version": "v2.6.0",
-                "state": "Updated",
-                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
-              },
-              {
                 "version": "v3",
                 "state": "Updated",
-                "description": "Using -1 as a rating is no longer valid."
+                "description": "Using 0 as a rating is no longer valid."
               }
             ],
             "x-immich-state": "Stable"
@@ -27184,8 +27748,7 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
-          "AssetMetadataExtraction",
-          "PersonRecognized"
+          "AssetMetadataExtraction"
         ],
         "type": "string"
       },
@@ -27212,8 +27775,7 @@
       "WorkflowType": {
         "description": "Workflow type",
         "enum": [
-          "AssetV1",
-          "AssetPersonV1"
+          "AssetV1"
         ],
         "type": "string"
       },

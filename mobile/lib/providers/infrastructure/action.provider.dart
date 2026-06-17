@@ -353,6 +353,10 @@ class ActionNotifier extends Notifier<void> {
         return null;
       }
 
+      if (source == ActionSource.viewer) {
+        ref.invalidate(assetExifProvider);
+      }
+
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit date and time for assets', error, stack);
@@ -514,19 +518,21 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult> shareAssets(
     ActionSource source,
     BuildContext context, {
+    ShareAssetType fileType = ShareAssetType.original,
     Completer<void>? cancelCompleter,
     void Function(double progress)? onAssetDownloadProgress,
   }) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(
+      final count = await _service.shareAssets(
         ids,
         context,
+        fileType: fileType,
         cancelCompleter: cancelCompleter,
         onAssetDownloadProgress: onAssetDownloadProgress,
       );
-      return ActionResult(count: ids.length, success: true);
+      return ActionResult(count: count, success: count > 0 || ids.isEmpty);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());

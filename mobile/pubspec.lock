@@ -354,6 +354,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.3"
+  diacritic:
+    dependency: "direct main"
+    description:
+      name: diacritic
+      sha256: "12981945ec38931748836cd76f2b38773118d0baef3c68404bdfde9566147876"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.6"
   drift:
     dependency: "direct main"
     description:
@@ -1636,7 +1644,7 @@ packages:
     source: hosted
     version: "3.3.2"
   sqlite3_connection_pool:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqlite3_connection_pool
       sha256: "9d2b3b398b03c96743fd071521fc665be73c33c9cd5c56d87196baff8d8b4398"

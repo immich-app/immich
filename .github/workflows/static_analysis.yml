@@ -55,13 +55,13 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
         with:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
@@ -90,6 +90,8 @@ jobs:
             mobile/**/*.g.dart
             mobile/**/*.gr.dart
             mobile/**/*.drift.dart
+            mobile/**/*.g.swift
+            mobile/**/*.g.kt
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'

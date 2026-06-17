@@ -1,4 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
+import { ImmichHeader } from 'src/enum';
 import z from 'zod';
 
 const HlsSessionParamSchema = z.object({
@@ -24,3 +25,10 @@ const HlsSegmentParamSchema = z.object({
 });
 
 export class HlsSegmentParamDto extends createZodDto(HlsSegmentParamSchema) {}
+
+const HlsSegmentHeaderSchema = z.object({
+  // Lets the client hint at which segment will be loaded after init.mp4.
+  [ImmichHeader.HlsInitSegment]: z.coerce.number().int().min(0).optional(),
+});
+
+export class HlsSegmentHeaderDto extends createZodDto(HlsSegmentHeaderSchema) {}

@@ -6,7 +6,7 @@ class SettingsEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get key => text()();
 
-  TextColumn get value => text()();
+  TextColumn get value => text().nullable()();
 
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 

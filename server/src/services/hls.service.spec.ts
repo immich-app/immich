@@ -256,7 +256,7 @@ describe(HlsService.name, () => {
       });
     });
 
-    it('returns lastRequested + 1 for init.mp4 after a segment has been served', async () => {
+    it('returns lastRequested + 1 for init.mp4 without a target segment', async () => {
       await sut.getSegment(auth, assetId, sessionId, variantIndex, 'seg_5.m4s');
       mocks.websocket.serverSend.mockClear();
       await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4');
@@ -312,6 +312,35 @@ describe(HlsService.name, () => {
       await expect(sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+
+    it('uses the target segment for init.mp4 when provided', async () => {
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4', 7);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex,
+        segmentIndex: 7,
+      });
+    });
+
+    it('prefers the target segment over the lastRequested + 1 fallback', async () => {
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'seg_5.m4s'); // fallback would be 6
+      mocks.websocket.serverSend.mockClear();
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4', 12);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex,
+        segmentIndex: 12,
+      });
+    });
+
+    it('ignores the target segment for media segment requests (the filename wins)', async () => {
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'seg_5.m4s', 99);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex,
+        segmentIndex: 5,
+      });
     });
   });
 
