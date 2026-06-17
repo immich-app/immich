@@ -28,7 +28,7 @@
   "devDependencies": {
     "@extism/js-pdk": "^1.1.1",
     "@immich/sdk": "workspace:*",
-    "@types/node": "^24.12.4",
+    "@types/node": "^24.13.2",
     "esbuild": "^0.28.0",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3"

@@ -129,10 +129,10 @@ from
   and "integrity_report"."type" = $1
 where
   "asset"."deletedAt" is null
-  and "createdAt" >= $2
-  and "createdAt" <= $3
+  and "integrity_report"."createdAt" >= $2
+  and "integrity_report"."createdAt" <= $3
 order by
-  "createdAt" asc
+  "integrity_report"."createdAt" asc
 
 -- IntegrityRepository.streamIntegrityReports
 select

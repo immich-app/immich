@@ -285,7 +285,9 @@ class AssetMediaRepository {
         return 0;
       }
 
-      final shareFile = switch (fileType) {
+      final effectiveFileType = asset.isVideo ? ShareAssetType.original : fileType;
+
+      final shareFile = switch (effectiveFileType) {
         ShareAssetType.original => await _getOriginalShareFile(
           asset,
           cancelCompleter: cancelCompleter,
