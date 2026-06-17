@@ -30,6 +30,10 @@ allowBuilds:
   postman-code-generators: false
 dedupePeerDependents: false
 injectWorkspacePackages: true
+minimumReleaseAgeExclude:
+  - '@futo-org/backups-api-client@0.3.1'
+  - '@futo-org/backups-orchestrator-ui@0.3.1'
+  - '@futo-org/backups-orchestrator-api@0.3.1'
 overrides:
   canvas: 3.2.3
   sharp: ^0.34.5

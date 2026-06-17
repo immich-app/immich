@@ -118,8 +118,8 @@ importers:
         specifier: ^10.1.0
         version: 10.4.0
       '@futo-org/backups-orchestrator-ui':
-        specifier: 0.1.72
-        version: 0.1.72(svelte@5.56.2(@typescript-eslint/types@8.60.1))
+        specifier: 0.3.1
+        version: 0.3.1(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       '@immich/cli':
         specifier: workspace:*
         version: link:../packages/cli
@@ -381,8 +381,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@futo-org/backups-orchestrator-api':
-        specifier: 0.1.72
-        version: 0.1.72(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/platform-socket.io@11.1.24)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24))(@nestjs/websockets@11.1.24)(reflect-metadata@0.2.2)
+        specifier: 0.3.1
+        version: 0.3.1(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/platform-socket.io@11.1.24)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24))(@nestjs/websockets@11.1.24)(reflect-metadata@0.2.2)
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugin-sdk
@@ -629,7 +629,7 @@ importers:
         version: 10.0.1(eslint@10.4.1(jiti@2.7.0))
       '@nestjs/cli':
         specifier: ^11.0.2
-        version: 11.0.21(@swc/core@1.15.40(@swc/helpers@0.5.23))(@types/node@24.13.1)(esbuild@0.28.0)(lightningcss@1.32.0)(prettier@3.8.3)
+        version: 11.0.21(@swc/core@1.15.40(@swc/helpers@0.5.23))(@types/node@24.13.1)(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)(prettier@3.8.3)
       '@nestjs/schematics':
         specifier: ^11.0.0
         version: 11.1.0(chokidar@4.0.3)(prettier@3.8.3)(typescript@6.0.3)
@@ -772,8 +772,8 @@ importers:
         specifier: ^3.0.0
         version: 3.5.11
       '@futo-org/backups-orchestrator-ui':
-        specifier: 0.1.72
-        version: 0.1.72(@sveltejs/kit@2.63.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.2(@typescript-eslint/types@8.60.1))(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))
+        specifier: 0.3.1
+        version: 0.3.1(@sveltejs/kit@2.63.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.2(@typescript-eslint/types@8.60.1))(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       '@immich/justified-layout-wasm':
         specifier: ^0.4.3
         version: 0.4.3
@@ -3017,11 +3017,11 @@ packages:
     resolution: {integrity: sha512-YTVITFGN0/24PxzXrwqCgnyd7njDuzp5ZvaCx5nq/jg55kUYd94Nj8UTchBdBofi/L0nwRfjGOg0E41d2u9T1w==}
     engines: {node: '>=6'}
 
-  '@futo-org/backups-api-client@0.1.72':
-    resolution: {integrity: sha512-qWCGJzivSNcfFMGFRIfaxkSkoVdC6oBIcGyWma1hRpoaQyYM3vGfntzpsI9VbYp1tunoolzF/rSYvkwy3x/SXg==}
+  '@futo-org/backups-api-client@0.3.1':
+    resolution: {integrity: sha512-CO2kDerCTRk3fSEwYFR3HWU3A6SGzuu8IM4RI8OgGp/7TI4fGCi4wb5c3KjbZKtSHvUmN4Wy1WPD1GNWv30OIA==}
 
-  '@futo-org/backups-orchestrator-api@0.1.72':
-    resolution: {integrity: sha512-SxxbA8GkovEw8TAuV8DHYBV+KA269OH1dgnNSK5t/1siQRV3bpRbbgd/13WN0VCsC8os8hvhp0xwi9sNXtiayA==}
+  '@futo-org/backups-orchestrator-api@0.3.1':
+    resolution: {integrity: sha512-7AGByA1OshaaXHg50MxxnLtlJn8BZnOdpR43clG2DqJxMRps84KMAQlolT+lyL3l6RgT+0KU6Xc8FWd9Qlxr4A==}
     peerDependencies:
       '@nestjs/common': ^11.0.0
       '@nestjs/core': ^11.0.0
@@ -3029,8 +3029,8 @@ packages:
       '@nestjs/schedule': ^6.0.0
       '@nestjs/websockets': ^11.0.0
 
-  '@futo-org/backups-orchestrator-ui@0.1.72':
-    resolution: {integrity: sha512-aWswjn74Wmmleqb6HccXW+AFnv5EdjiBtwjPTCrQOccjL+AizrPVidgPBhCpTGoZr4LQDbqkmyd3lmvzkIdf1w==}
+  '@futo-org/backups-orchestrator-ui@0.3.1':
+    resolution: {integrity: sha512-5IO4EF6w5q7gkBQarDUYRqKWXuEVOxjzcPtVBUzg52PAVB+iEtPYKiTpBqEOWDcM1ooAMQcbqtkzD/D2LSVVgw==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -15898,13 +15898,13 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.2.0
 
-  '@futo-org/backups-api-client@0.1.72':
+  '@futo-org/backups-api-client@0.3.1':
     dependencies:
       '@oazapfts/runtime': 1.2.0
 
-  '@futo-org/backups-orchestrator-api@0.1.72(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/platform-socket.io@11.1.24)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24))(@nestjs/websockets@11.1.24)(reflect-metadata@0.2.2)':
+  '@futo-org/backups-orchestrator-api@0.3.1(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/platform-socket.io@11.1.24)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24))(@nestjs/websockets@11.1.24)(reflect-metadata@0.2.2)':
     dependencies:
-      '@futo-org/backups-api-client': 0.1.72
+      '@futo-org/backups-api-client': 0.3.1
       '@futo-org/restic-wrapper': 1.2.1
       '@nestjs/common': 11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.24(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.24)(@nestjs/websockets@11.1.24)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -15931,9 +15931,9 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@futo-org/backups-orchestrator-ui@0.1.72(@sveltejs/kit@2.63.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.2(@typescript-eslint/types@8.60.1))(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))':
+  '@futo-org/backups-orchestrator-ui@0.3.1(@sveltejs/kit@2.63.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.2(@typescript-eslint/types@8.60.1))(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))':
     dependencies:
-      '@futo-org/backups-api-client': 0.1.72
+      '@futo-org/backups-api-client': 0.3.1
       '@immich/ui': 0.59.0(@sveltejs/kit@2.63.0(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.2(@typescript-eslint/types@8.60.1))(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       '@mdi/js': 7.4.47
       '@oazapfts/runtime': 1.2.0
@@ -15950,9 +15950,9 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@futo-org/backups-orchestrator-ui@0.1.72(svelte@5.56.2(@typescript-eslint/types@8.60.1))':
+  '@futo-org/backups-orchestrator-ui@0.3.1(svelte@5.56.2(@typescript-eslint/types@8.60.1))':
     dependencies:
-      '@futo-org/backups-api-client': 0.1.72
+      '@futo-org/backups-api-client': 0.3.1
       '@immich/ui': 0.59.0(svelte@5.56.2(@typescript-eslint/types@8.60.1))
       '@mdi/js': 7.4.47
       '@oazapfts/runtime': 1.2.0
@@ -16730,7 +16730,7 @@ snapshots:
       bullmq: 5.78.0
       tslib: 2.8.1
 
-  '@nestjs/cli@11.0.21(@swc/core@1.15.40(@swc/helpers@0.5.23))(@types/node@24.13.1)(esbuild@0.28.0)(lightningcss@1.32.0)(prettier@3.8.3)':
+  '@nestjs/cli@11.0.21(@swc/core@1.15.40(@swc/helpers@0.5.23))(@types/node@24.13.1)(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)(prettier@3.8.3)':
     dependencies:
       '@angular-devkit/core': 19.2.24(chokidar@4.0.3)
       '@angular-devkit/schematics': 19.2.24(chokidar@4.0.3)
@@ -16741,14 +16741,14 @@ snapshots:
       chokidar: 4.0.3
       cli-table3: 0.6.5
       commander: 4.1.1
-      fork-ts-checker-webpack-plugin: 9.1.0(typescript@5.9.3)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0))
+      fork-ts-checker-webpack-plugin: 9.1.0(typescript@5.9.3)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
       glob: 13.0.6
       node-emoji: 1.11.0
       ora: 5.4.1
       tsconfig-paths: 4.2.0
       tsconfig-paths-webpack-plugin: 4.2.0
       typescript: 5.9.3
-      webpack: 5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)
+      webpack: 5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)
       webpack-node-externals: 3.0.0
     optionalDependencies:
       '@swc/core': 1.15.40(@swc/helpers@0.5.23)
@@ -18856,7 +18856,7 @@ snapshots:
       obug: 2.1.2
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@24.13.1)(@vitest/coverage-v8@4.1.8)(happy-dom@20.10.1)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.16(@types/node@24.13.1)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.2)(@vitest/coverage-v8@4.1.8)(happy-dom@20.10.1)(jsdom@26.1.0(canvas@3.2.3))(vite@8.0.16(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.22.4)(yaml@2.9.0))
 
   '@vitest/expect@3.2.6':
     dependencies:
@@ -21478,7 +21478,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.3)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)):
+  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.3)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)):
     dependencies:
       '@babel/code-frame': 7.29.0
       chalk: 4.1.2
@@ -21493,7 +21493,7 @@ snapshots:
       semver: 7.8.4
       tapable: 2.3.3
       typescript: 5.9.3
-      webpack: 5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)
+      webpack: 5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)
 
   form-data-encoder@2.1.4: {}
 
@@ -26197,17 +26197,18 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  terser-webpack-plugin@5.6.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)):
+  terser-webpack-plugin@5.6.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.47.1
-      webpack: 5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)
+      webpack: 5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)
     optionalDependencies:
       '@swc/core': 1.15.40(@swc/helpers@0.5.23)
       esbuild: 0.28.0
       lightningcss: 1.32.0
+      postcss: 8.5.15
 
   terser-webpack-plugin@5.6.0(clean-css@5.3.3)(cssnano@6.1.2(postcss@8.5.15))(esbuild@0.28.0)(html-minifier-terser@7.2.0)(postcss@8.5.15)(webpack@5.107.0(esbuild@0.28.0)(postcss@8.5.15)):
     dependencies:
@@ -27062,7 +27063,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0):
+  webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.9
@@ -27086,7 +27087,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
-      terser-webpack-plugin: 5.6.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0))
+      terser-webpack-plugin: 5.6.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)(webpack@5.106.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
       watchpack: 2.5.1
       webpack-sources: 3.4.1
     transitivePeerDependencies:
