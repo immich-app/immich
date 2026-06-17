@@ -20,7 +20,6 @@ class DriftLockedFolderPage extends ConsumerStatefulWidget {
 
 class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> with WidgetsBindingObserver {
   bool _showOverlay = false;
-  bool _pendingClose = false;
 
   @override
   void initState() {
@@ -40,11 +39,7 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
       return;
     }
     if (state == AppLifecycleState.paused) {
-      _pendingClose = true;
       ref.read(authProvider.notifier).lockPinCode();
-    }
-    if (state == AppLifecycleState.resumed && _pendingClose) {
-      _pendingClose = false;
       context.navigateTo(const TabShellRoute());
       return;
     }
