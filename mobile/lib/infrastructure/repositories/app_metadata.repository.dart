@@ -22,8 +22,8 @@ class AppMetadataRepository extends DatabaseAccessor<Drift> with $AppMetadataRep
         .insertOnConflictUpdate(
           AppMetadataEntityCompanion.insert(
             key: key.name,
-            value: Value(key.encode(value)),
-            updatedAt: Value(DateTime.now()),
+            value: .new(key.encode(value)),
+            updatedAt: .new(DateTime.now()),
           ),
         );
   }

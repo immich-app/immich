@@ -10,7 +10,6 @@ import 'package:immich_mobile/infrastructure/repositories/remote_album.repositor
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
@@ -20,12 +19,6 @@ import 'package:immich_mobile/infrastructure/repositories/user_api.repository.da
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:mocktail/mocktail.dart';
-
-class MockDrift extends Mock implements Drift {}
-
-class MockMemoryRepository extends Mock implements MemoryRepository {}
-
-class MockStoreRepository extends Mock implements StoreRepository {}
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
