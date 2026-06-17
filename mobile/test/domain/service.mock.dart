@@ -1,10 +1,7 @@
 import 'package:immich_mobile/domain/services/partner.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:mocktail/mocktail.dart';
-
-class MockStoreService extends Mock implements StoreService {}
 
 class MockBackgroundSyncManager extends Mock implements BackgroundSyncManager {}
 

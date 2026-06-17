@@ -5,12 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -37,7 +35,7 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await DeviceIdStore.init(db);
   });
 
   tearDownAll(() async {

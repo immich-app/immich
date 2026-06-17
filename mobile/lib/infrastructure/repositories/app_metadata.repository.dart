@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/infrastructure/entities/app_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -20,8 +19,8 @@ class AppMetadataRepository {
         .insertOnConflictUpdate(
           AppMetadataEntityCompanion.insert(
             key: key.name,
-            value: Value(key.encode(value)),
-            updatedAt: Value(DateTime.now()),
+            value: .new(key.encode(value)),
+            updatedAt: .new(DateTime.now()),
           ),
         );
   }

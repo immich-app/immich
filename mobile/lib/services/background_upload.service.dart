@@ -8,14 +8,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/infrastructure/store.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -390,7 +389,7 @@ class BackgroundUploadService {
     final serverEndpoint = SessionRepository.instance.session.serverEndpoint!;
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
-    final deviceId = Store.get(StoreKey.deviceId);
+    final deviceId = Store.requireDeviceId;
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final fieldsMap = {
       'filename': originalFileName ?? filename,
