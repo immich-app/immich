@@ -44,7 +44,7 @@
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     albumUsers?: UserResponseDto[];
-    onClick?: (asset: TimelineAsset, event?: MouseEvent) => void;
+    onClick?: (asset: TimelineAsset) => void;
     onPreview?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
@@ -93,12 +93,12 @@
     }
   };
 
-  const callClickHandlers = (e?: MouseEvent) => {
+  const callClickHandlers = () => {
     if (selected) {
-      onIconClickedHandler(e);
+      onIconClickedHandler();
       return;
     }
-    onClick?.($state.snapshot(asset), e);
+    onClick?.($state.snapshot(asset));
   };
 
   const handleClick = (e: MouseEvent) => {
@@ -109,7 +109,7 @@
 
     e.stopPropagation();
     e.preventDefault();
-    callClickHandlers(e);
+    callClickHandlers();
   };
 
   const onMouseEnter = () => {
