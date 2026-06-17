@@ -138,7 +138,9 @@ class LocalSyncService {
       final Stopwatch stopwatch = Stopwatch()..start();
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
+      final getAlbumsTime = stopwatch.elapsedMilliseconds;
       final dbAlbums = await _localAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id});
+      final getAllTime = stopwatch.elapsedMilliseconds;
 
       await diffSortedLists(
         dbAlbums,
@@ -148,10 +150,15 @@ class LocalSyncService {
         onlyFirst: removeAlbum,
         onlySecond: addAlbum,
       );
+      final diffTime = stopwatch.elapsedMilliseconds;
 
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
-      _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
+      _log.info(
+        "Full device sync took - ${stopwatch.elapsedMilliseconds}ms "
+        "(getAlbums=${getAlbumsTime}ms, getAll=${getAllTime - getAlbumsTime}ms, "
+        "diff=${diffTime - getAllTime}ms, checkpoint=${stopwatch.elapsedMilliseconds - diffTime}ms)",
+      );
     } on PlatformException catch (e, s) {
       if (e.code == _kSyncCancelledCode) {
         _log.warning("Full device sync cancelled");
