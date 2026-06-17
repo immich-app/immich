@@ -72,9 +72,6 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchTheme(ThemeMode mode) {
-    // TODO: Remove this line when map theme provider is removed
-    // Until then, keep both in sync as MapThemeOverride uses map state provider
-    // ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapThemeMode, mode.index);
     ref.read(mapStateNotifierProvider.notifier).switchTheme(mode);
     state = state.copyWith(themeMode: mode);
   }

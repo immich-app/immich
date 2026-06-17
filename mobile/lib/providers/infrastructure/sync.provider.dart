@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/sync_migration.reposit
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -26,6 +27,7 @@ final syncStreamServiceProvider = Provider(
     permissionRepository: ref.watch(permissionRepositoryProvider),
     syncMigrationRepository: ref.watch(syncMigrationRepositoryProvider),
     api: ref.watch(apiServiceProvider),
+    appMetadataRepository: ref.watch(appMetadataRepositoryProvider),
     cancellation: ref.watch(cancellationProvider),
   ),
 );
@@ -42,6 +44,7 @@ final localSyncServiceProvider = Provider(
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
+    appMetadataRepository: ref.watch(appMetadataRepositoryProvider),
     cancellation: ref.watch(cancellationProvider),
   ),
 );

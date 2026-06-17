@@ -2,8 +2,8 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -29,6 +29,7 @@ void main() {
   late AssetMediaRepository mockAssetMediaRepository;
   late MockPermissionRepository mockPermissionRepository;
   late MockNativeSyncApi mockNativeSyncApi;
+  late MockAppMetadataRepository mockAppMetadataRepository;
   late Drift db;
 
   setUpAll(() async {
@@ -52,6 +53,7 @@ void main() {
     mockAssetMediaRepository = MockAssetMediaRepository();
     mockPermissionRepository = MockPermissionRepository();
     mockNativeSyncApi = MockNativeSyncApi();
+    mockAppMetadataRepository = MockAppMetadataRepository();
 
     when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => false);
     when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
@@ -75,15 +77,16 @@ void main() {
       assetMediaRepository: mockAssetMediaRepository,
       permissionRepository: mockPermissionRepository,
       nativeSyncApi: mockNativeSyncApi,
+      appMetadataRepository: mockAppMetadataRepository,
     );
 
-    await Store.put(StoreKey.manageLocalMediaAndroid, false);
+    when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => false);
     when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
   });
 
   group('LocalSyncService - syncTrashedAssets gating', () {
     test('invokes syncTrashedAssets when Android flag enabled and permission granted', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => true);
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();
@@ -93,7 +96,7 @@ void main() {
     });
 
     test('skips syncTrashedAssets when store flag disabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => false);
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();
@@ -102,7 +105,7 @@ void main() {
     });
 
     test('skips syncTrashedAssets when MANAGE_MEDIA permission absent', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => true);
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
 
       await sut.sync();
@@ -114,7 +117,7 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
 
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => mockAppMetadataRepository.get(AppMetadataKey.manageLocalMediaAndroid)).thenAnswer((_) async => true);
       when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => true);
 
       await sut.sync();

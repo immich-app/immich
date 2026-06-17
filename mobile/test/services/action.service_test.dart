@@ -2,7 +2,6 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -28,6 +27,7 @@ void main() {
   late MockAssetMediaRepository assetMediaRepository;
   late MockDownloadRepository downloadRepository;
   late MockTagService tagService;
+  late MockAppMetadataRepository appMetadataRepository;
 
   late Drift db;
 
@@ -55,6 +55,7 @@ void main() {
     assetMediaRepository = MockAssetMediaRepository();
     downloadRepository = MockDownloadRepository();
     tagService = MockTagService();
+    appMetadataRepository = MockAppMetadataRepository();
 
     sut = ActionService(
       assetApiRepository,
@@ -66,7 +67,10 @@ void main() {
       assetMediaRepository,
       downloadRepository,
       tagService,
+      appMetadataRepository,
     );
+
+    when(() => appMetadataRepository.get(.manageLocalMediaAndroid)).thenAnswer((_) async => false);
   });
 
   tearDown(() async {
@@ -144,7 +148,7 @@ void main() {
 
   group('ActionService.deleteLocal', () {
     test('routes deleted ids to trashed repository when Android trash handling is enabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => appMetadataRepository.get(.manageLocalMediaAndroid)).thenAnswer((_) async => true);
       const ids = ['a', 'b'];
 
       when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
@@ -159,7 +163,7 @@ void main() {
     });
 
     test('deletes locally when Android trash handling is disabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      when(() => appMetadataRepository.get(.manageLocalMediaAndroid)).thenAnswer((_) async => false);
       const ids = ['c'];
 
       when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
@@ -174,7 +178,7 @@ void main() {
     });
 
     test('short-circuits when nothing was deleted', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      when(() => appMetadataRepository.get(.manageLocalMediaAndroid)).thenAnswer((_) async => true);
       const ids = ['x'];
 
       when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => <String>[]);

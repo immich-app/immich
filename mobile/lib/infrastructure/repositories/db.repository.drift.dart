@@ -49,9 +49,11 @@ import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dar
     as i23;
 import 'package:immich_mobile/infrastructure/entities/session.entity.drift.dart'
     as i24;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/app_metadata.entity.drift.dart'
     as i25;
-import 'package:drift/internal/modular.dart' as i26;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i26;
+import 'package:drift/internal/modular.dart' as i27;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -104,9 +106,11 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i24.$SessionEntityTable sessionEntity = i24.$SessionEntityTable(
     this,
   );
-  i25.MergedAssetDrift get mergedAssetDrift => i26.ReadDatabaseContainer(
+  late final i25.$AppMetadataEntityTable appMetadataEntity = i25
+      .$AppMetadataEntityTable(this);
+  i26.MergedAssetDrift get mergedAssetDrift => i27.ReadDatabaseContainer(
     this,
-  ).accessor<i25.MergedAssetDrift>(i25.MergedAssetDrift.new);
+  ).accessor<i26.MergedAssetDrift>(i26.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -146,6 +150,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     settingsEntity,
     assetOcrEntity,
     sessionEntity,
+    appMetadataEntity,
     i10.idxPartnerSharedWithId,
     i11.idxLatLng,
     i11.idxRemoteExifCity,
@@ -422,4 +427,6 @@ class $DriftManager {
       i23.$$AssetOcrEntityTableTableManager(_db, _db.assetOcrEntity);
   i24.$$SessionEntityTableTableManager get sessionEntity =>
       i24.$$SessionEntityTableTableManager(_db, _db.sessionEntity);
+  i25.$$AppMetadataEntityTableTableManager get appMetadataEntity =>
+      i25.$$AppMetadataEntityTableTableManager(_db, _db.appMetadataEntity);
 }

@@ -104,19 +104,19 @@ final class ListCodec<T extends Object> extends ValueCodec<List<T>> {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! List) {
-        return [];
+        return const [];
       }
       final result = <T>[];
       for (final item in decoded) {
         if (item is! String) {
-          return [];
+          return const [];
         }
         final element = _elementCodec.decode(item);
         result.add(element);
       }
       return result;
     } on FormatException {
-      return [];
+      return const [];
     }
   }
 }

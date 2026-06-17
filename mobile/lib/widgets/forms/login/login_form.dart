@@ -11,14 +11,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/app_metadata_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
@@ -242,7 +242,8 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
+    Future<bool> isSyncRemoteDeletionsMode() async =>
+        Platform.isAndroid && await ref.read(appMetadataRepositoryProvider).get(AppMetadataKey.manageLocalMediaAndroid);
 
     login() async {
       TextInput.finishAutofillContext();
@@ -257,7 +258,7 @@ class LoginForm extends HookConsumerWidget {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
         } else {
           await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-          if (isSyncRemoteDeletionsMode()) {
+          if (await isSyncRemoteDeletionsMode()) {
             await getManageMediaPermission();
           }
           unawaited(handleSyncFlow());
@@ -345,7 +346,7 @@ class LoginForm extends HookConsumerWidget {
 
           if (isSuccess) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
+            if (await isSyncRemoteDeletionsMode()) {
               await getManageMediaPermission();
             }
             unawaited(handleSyncFlow());
