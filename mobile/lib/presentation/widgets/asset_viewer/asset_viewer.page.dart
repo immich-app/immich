@@ -242,8 +242,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    ref.read(stackProvider.notifier).setStack(stack);
-
     if (stack.isEmpty) {
       _onViewerReloadEvent();
       return;
