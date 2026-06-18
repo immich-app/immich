@@ -26144,8 +26144,8 @@
             "type": "boolean"
           },
           "startTime": {
-            "description": "Start time",
-            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+            "description": "Start time (HH:MM)",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$",
             "type": "string"
           },
           "syncQuotaUsage": {
