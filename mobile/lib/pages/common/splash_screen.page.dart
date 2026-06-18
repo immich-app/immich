@@ -355,14 +355,14 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
           onError: (exception) => {
             log.severe('Failed to update auth info with access token: $accessToken'),
             ref.read(authProvider.notifier).logout(),
-            context.replaceRoute(const LoginRoute()),
+            context.router.replaceAll([const LoginRoute()]),
           },
         ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
       unawaited(ref.read(authProvider.notifier).logout());
-      unawaited(context.replaceRoute(const LoginRoute()));
+      unawaited(context.router.replaceAll([const LoginRoute()]));
       return;
     }
 
