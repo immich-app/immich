@@ -151,6 +151,19 @@ export class StackRepository {
           return null;
         }
 
+        // A re-uploaded duplicate can resolve to a trashed row; a trashed asset
+        // must never become (or, with keepPrimary, silently join) the stack.
+        const newAsset = await tx
+          .selectFrom('asset')
+          .select(['id', 'deletedAt'])
+          .where('id', '=', asUuid(newAssetId))
+          .forUpdate()
+          .executeTakeFirst();
+
+        if (!newAsset || newAsset.deletedAt) {
+          return null;
+        }
+
         if (parent.stackId) {
           await tx
             .updateTable('asset')

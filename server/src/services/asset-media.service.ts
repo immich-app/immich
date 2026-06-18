@@ -164,19 +164,28 @@ export class AssetMediaService extends BaseService {
       }
 
       if (dto.stackParentId) {
+        // Linking is best-effort: a failure must not skip the AssetCreate event
+        // (quota + workflows) below, so swallow it and still emit.
+        const linkResult = await this.linkToStackParent(
+          auth.user.id,
+          asset.id,
+          dto.stackParentId,
+          dto.keepPrimary,
+        ).catch((error: any) => {
+          this.logger.error(`Post-create stack linking failed for asset ${asset.id}: ${error}`, error?.stack);
+          return null;
+        });
         // emit AssetCreate with the populated stackId so clients don't briefly
-        // see the asset as standalone
+        // see the asset as standalone. Guard the emit too: the asset already
+        // exists, so a listener failure must not fall through to
+        // handleUploadError and FileDelete, which would orphan the row.
         try {
-          const linkResult = await this.linkToStackParent(auth.user.id, asset.id, dto.stackParentId, dto.keepPrimary);
           await this.eventRepository.emit('AssetCreate', {
             asset: linkResult ? { ...asset, stackId: linkResult.stackId } : asset,
             file,
           });
         } catch (error: any) {
-          // the asset exists at this point - falling through to handleUploadError
-          // would queue a FileDelete for its original file and orphan the row.
-          // Linking and events degrade gracefully, so log and return the id.
-          this.logger.error(`Post-create stack handling failed for asset ${asset.id}: ${error}`, error?.stack);
+          this.logger.error(`AssetCreate emit failed for asset ${asset.id}: ${error}`, error?.stack);
         }
       } else {
         await this.eventRepository.emit('AssetCreate', { asset, file });

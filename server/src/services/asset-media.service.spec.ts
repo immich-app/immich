@@ -585,6 +585,8 @@ describe(AssetMediaService.name, () => {
 
       // the original file must not be deleted - the asset row already exists
       expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      // and AssetCreate still fires (standalone, no stackId) so quota + workflows run
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file });
     });
 
     it('should keep the created asset when the AssetCreate emit fails', async () => {

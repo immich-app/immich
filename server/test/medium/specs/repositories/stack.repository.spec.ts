@@ -113,6 +113,19 @@ describe(StackRepository.name, () => {
       expect(result).toBeNull();
     });
 
+    it('returns null when the asset being linked is trashed (duplicate re-upload)', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: parent } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: trashed } = await ctx.newAsset({ ownerId: user.id, deletedAt: new Date() });
+
+      const result = await sut.linkAsset(user.id, trashed.id, parent.id);
+
+      expect(result).toBeNull();
+      // the parent stays unstacked rather than getting a trashed cover
+      expect(await stackIdOf(parent.id)).toBeNull();
+    });
+
     it('returns null (not a 500) when the new asset is already another stack primary', async () => {
       // A retried upload can try to link an asset that is already a stack primary;
       // the unique-primary constraint must surface as "couldn't stack", not a 500.
