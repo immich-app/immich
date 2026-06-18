@@ -350,60 +350,73 @@ class _QuickAccessButtonList extends ConsumerWidget {
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
       sliver: SliverToBoxAdapter(
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-            gradient: LinearGradient(
-              colors: [
-                context.colorScheme.primary.withAlpha(10),
-                context.colorScheme.primary.withAlpha(15),
-                context.colorScheme.primary.withAlpha(20),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(0),
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(20),
-                    topRight: const Radius.circular(20),
-                    bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
-                    bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
+        child: Column(
+          children: [
+            // Existing quick access buttons...
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+                gradient: LinearGradient(
+                  colors: [
+                    context.colorScheme.primary.withAlpha(10),
+                    context.colorScheme.primary.withAlpha(15),
+                    context.colorScheme.primary.withAlpha(20),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(0),
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(20),
+                        topRight: const Radius.circular(20),
+                        bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
+                        bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
+                      ),
+                    ),
+                    leading: const Icon(Icons.folder_outlined, size: 26),
+                    title: Text(
+                      'folders'.t(context: context),
+                      style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    onTap: () => context.pushRoute(FolderRoute()),
                   ),
-                ),
-                leading: const Icon(Icons.folder_outlined, size: 26),
-                title: Text(
-                  'folders'.t(context: context),
-                  style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                onTap: () => context.pushRoute(FolderRoute()),
+                  ListTile(
+                    leading: const Icon(Icons.lock_outline_rounded, size: 26),
+                    title: Text(
+                      'locked_folder'.t(context: context),
+                      style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    onTap: () => context.pushRoute(const DriftLockedFolderRoute()),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.group_outlined, size: 26),
+                    title: Text(
+                      'partners'.t(context: context),
+                      style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    onTap: () => context.pushRoute(const PartnerRoute()),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.build_outlined, size: 26),
+                    title: Text(
+                      'utilities'.t(context: context),
+                      style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    onTap: () => context.pushRoute(const DriftDuplicateReviewRoute()),
+                  ),
+                  _PartnerList(partners: partners.toList()),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.lock_outline_rounded, size: 26),
-                title: Text(
-                  'locked_folder'.t(context: context),
-                  style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                onTap: () => context.pushRoute(const DriftLockedFolderRoute()),
-              ),
-              ListTile(
-                leading: const Icon(Icons.group_outlined, size: 26),
-                title: Text(
-                  'partners'.t(context: context),
-                  style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                onTap: () => context.pushRoute(const PartnerRoute()),
-              ),
-              _PartnerList(partners: partners.toList()),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

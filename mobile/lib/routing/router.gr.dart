@@ -580,6 +580,22 @@ class DriftCreateAlbumRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftDuplicateReviewPage]
+class DriftDuplicateReviewRoute extends PageRouteInfo<void> {
+  const DriftDuplicateReviewRoute({List<PageRouteInfo>? children})
+    : super(DriftDuplicateReviewRoute.name, initialChildren: children);
+
+  static const String name = 'DriftDuplicateReviewRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftDuplicateReviewPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftEditImagePage]
 class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
   DriftEditImageRoute({
