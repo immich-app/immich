@@ -188,10 +188,6 @@ export const isoDateToDate = z
   )
   .meta({ example: '2024-01-01' });
 
-export const isValidTime = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid input: expected string in HH:mm format, received string');
-
 /**
  * Latitude in range [-90, 90]. Reuse for body or query params.
  *
