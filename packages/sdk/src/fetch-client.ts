@@ -2501,7 +2501,7 @@ export type SystemConfigNightlyTasksDto = {
     generateMemories: boolean;
     /** Missing thumbnails */
     missingThumbnails: boolean;
-    /** Start time */
+    /** Start time (HH:MM) */
     startTime: string;
     /** Sync quota usage */
     syncQuotaUsage: boolean;
