@@ -4,7 +4,6 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { autoPlayVideo } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
-  import { videoSessionManager } from '$lib/managers/video-session-manager.svelte';
   import { AssetMediaSize } from '@immich/sdk';
   import 'media-chrome/media-controller';
   import { onMount } from 'svelte';
@@ -12,24 +11,14 @@
 
   interface Props {
     asset: TimelineAsset;
-    videoPlayer: HTMLVideoElement | undefined;
   }
 
-  // eslint-disable-next-line no-useless-assignment
-  let { asset, videoPlayer = $bindable() }: Props = $props();
+  let { asset }: Props = $props();
 
   let showVideo = $state(false);
   onMount(() => {
     // Show video after mount to ensure fading in.
     showVideo = true;
-  });
-
-  const controller = $derived(videoSessionManager.get(asset.id)); // <immich-video> self-acquires the controller for the asset
-  $effect(() => {
-    videoPlayer = controller?.element;
-    return () => {
-      videoPlayer = undefined;
-    };
   });
 </script>
 
