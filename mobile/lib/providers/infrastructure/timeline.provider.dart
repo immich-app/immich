@@ -26,6 +26,12 @@ final timelineServiceProvider = Provider<TimelineService>(
   dependencies: [],
 );
 
+final localOnlyTimelineServiceProvider = Provider<TimelineService>((ref) {
+  final timelineService = ref.watch(timelineFactoryProvider).allLocal();
+  ref.onDispose(timelineService.dispose);
+  return timelineService;
+});
+
 final timelineFactoryProvider = Provider<TimelineFactory>(
   (ref) => TimelineFactory(
     timelineRepository: ref.watch(timelineRepositoryProvider),

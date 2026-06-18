@@ -360,9 +360,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
         ),
       );
     } else {
-      log.severe('Missing crucial offline login info - Logging out completely');
+      log.info('No stored credentials - showing local gallery in guest mode');
       unawaited(ref.read(authProvider.notifier).logout());
-      unawaited(context.replaceRoute(const LoginRoute()));
+      unawaited(context.replaceRoute(const GuestGalleryRoute()));
       return;
     }
 
