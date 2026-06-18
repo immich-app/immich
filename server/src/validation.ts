@@ -1,7 +1,6 @@
 import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { IntegrityReportSchema } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 import z from 'zod';
 
@@ -131,10 +130,6 @@ const FilenameParamSchema = z.object({
 });
 
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
-
-const IntegrityReportParamSchema = z.object({ type: IntegrityReportSchema }).meta({ id: 'IntegrityReportDto' });
-
-export class IntegrityReportTypeParamDto extends createZodDto(IntegrityReportParamSchema) {}
 
 /**
  * Unified email validation
