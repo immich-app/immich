@@ -55,8 +55,8 @@
     first = showRelative && first ? calcNewDate(first, selectedDuration, selectedOption?.value) : first;
     last = showRelative && last ? calcNewDate(last, selectedDuration, selectedOption?.value) : last;
     return {
-      first: first ? first.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) : '',
-      last: last ? last.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) : '',
+      first: first?.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) ?? '',
+      last: last?.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) ?? '',
     };
   });
 
