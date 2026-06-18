@@ -74,10 +74,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             await _db.assetOcrEntity.deleteAll();
             // The edit-stacking stamps point at remote rows wiped above; left in
             // place they'd make the next backup (possibly a different account or
-            // server) stack onto ids that no longer exist.
-            await _db.localAssetEntity.update().write(
-              const LocalAssetEntityCompanion(priorRemoteId: Value(null), syncedChecksum: Value(null)),
-            );
+            // server) stack onto ids that no longer exist. Only stamped rows need
+            // clearing, so skip the full-table rewrite when none are set.
+            await (_db.localAssetEntity.update()
+                  ..where((e) => e.priorRemoteId.isNotNull() | e.syncedChecksum.isNotNull()))
+                .write(const LocalAssetEntityCompanion(priorRemoteId: Value(null), syncedChecksum: Value(null)));
           });
         } finally {
           // re-enable FK even if the transaction throws, otherwise the connection

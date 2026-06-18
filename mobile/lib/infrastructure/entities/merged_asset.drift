@@ -53,6 +53,9 @@ WHERE
 		rae.stack_id IS NULL
 		OR rae.id = se.primary_asset_id
 	)
+	-- iOS burst: hide non-representative members only in the pre-stack-sync window;
+	-- once stack_id is set the rae.id = se.primary_asset_id rule above already hides them.
+	AND (rae.stack_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum AND lae.burst_id IS NOT NULL AND lae.is_burst_representative = 0))
 
 UNION ALL
 
@@ -105,6 +108,14 @@ AND NOT EXISTS (
 AND NOT EXISTS (
 	SELECT 1 FROM remote_asset_entity rae WHERE rae.id = lae.prior_remote_id AND rae.owner_id IN :user_ids
 )
+-- iOS burst: show only the representative as a local tile; other members still back up + stack.
+-- A rep-less group (Keep Everything / re-pick) has no representative, so show every
+-- frame as an individual instead of hiding the whole group.
+AND (
+	lae.burst_id IS NULL
+	OR lae.is_burst_representative = 1
+	OR NOT EXISTS (SELECT 1 FROM local_asset_entity r WHERE r.burst_id = lae.burst_id AND r.is_burst_representative = 1)
+)
 ORDER BY created_at DESC
 LIMIT $limit;
 
@@ -137,6 +148,8 @@ FROM
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
 		)
+		-- iOS burst: hide non-representative members only in the pre-stack-sync window (see mergedAsset)
+		AND (rae.stack_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum AND lae.burst_id IS NOT NULL AND lae.is_burst_representative = 0))
 	UNION ALL
 	SELECT
 		CASE
@@ -162,6 +175,12 @@ FROM
 	-- row (trashed included, same as the tile query above).
 	AND NOT EXISTS (
 		SELECT 1 FROM remote_asset_entity rae WHERE rae.id = lae.prior_remote_id AND rae.owner_id IN :user_ids
+	)
+	-- iOS burst: count only the representative; a rep-less group counts every frame (see mergedAsset)
+	AND (
+		lae.burst_id IS NULL
+		OR lae.is_burst_representative = 1
+		OR NOT EXISTS (SELECT 1 FROM local_asset_entity r WHERE r.burst_id = lae.burst_id AND r.is_burst_representative = 1)
 	)
 )
 GROUP BY bucket_date

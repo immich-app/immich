@@ -459,11 +459,36 @@ describe(AssetMediaService.name, () => {
         status: AssetMediaStatus.CREATED,
       });
 
-      expect(mocks.stack.linkAsset).toHaveBeenCalledWith(authStub.user1.user.id, assetEntity.id, parent.id);
+      expect(mocks.stack.linkAsset).toHaveBeenCalledWith(authStub.user1.user.id, assetEntity.id, parent.id, false);
       expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
         asset: expect.objectContaining({ stackId: 'stack-1' }),
         file: expect.objectContaining({ originalPath: file.originalPath }),
       });
+    });
+
+    it('should keep the parent as primary when keepPrimary is set (iOS burst frame)', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      const parent = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([parent.id]));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(parent));
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.stack.linkAsset.mockResolvedValue({ stackId: 'stack-1', created: true });
+
+      await expect(
+        sut.uploadAsset(authStub.user1, { ...createDto, stackParentId: parent.id, keepPrimary: true }, file),
+      ).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.stack.linkAsset).toHaveBeenCalledWith(authStub.user1.user.id, assetEntity.id, parent.id, true);
     });
 
     it('should reject stacking onto a trashed asset', async () => {
@@ -510,7 +535,7 @@ describe(AssetMediaService.name, () => {
         status: AssetMediaStatus.DUPLICATE,
       });
 
-      expect(mocks.stack.linkAsset).toHaveBeenCalledWith(authStub.user1.user.id, 'dup-id', parent.id);
+      expect(mocks.stack.linkAsset).toHaveBeenCalledWith(authStub.user1.user.id, 'dup-id', parent.id, false);
     });
 
     it('should not link a duplicate that resolves to the stack parent itself', async () => {

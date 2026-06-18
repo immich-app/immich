@@ -205,6 +205,9 @@ struct PlatformAsset: Hashable {
   var latitude: Double? = nil
   var longitude: Double? = nil
   var playbackStyle: PlatformAssetPlaybackStyle
+  var burstId: String? = nil
+  var isBurstRepresentative: Bool
+  var burstSelectionType: Int64
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -223,6 +226,9 @@ struct PlatformAsset: Hashable {
     let latitude: Double? = nilOrValue(pigeonVar_list[11])
     let longitude: Double? = nilOrValue(pigeonVar_list[12])
     let playbackStyle = pigeonVar_list[13] as! PlatformAssetPlaybackStyle
+    let burstId: String? = nilOrValue(pigeonVar_list[14])
+    let isBurstRepresentative = pigeonVar_list[15] as! Bool
+    let burstSelectionType = pigeonVar_list[16] as! Int64
 
     return PlatformAsset(
       id: id,
@@ -238,7 +244,10 @@ struct PlatformAsset: Hashable {
       adjustmentTime: adjustmentTime,
       latitude: latitude,
       longitude: longitude,
-      playbackStyle: playbackStyle
+      playbackStyle: playbackStyle,
+      burstId: burstId,
+      isBurstRepresentative: isBurstRepresentative,
+      burstSelectionType: burstSelectionType
     )
   }
   func toList() -> [Any?] {
@@ -257,13 +266,16 @@ struct PlatformAsset: Hashable {
       latitude,
       longitude,
       playbackStyle,
+      burstId,
+      isBurstRepresentative,
+      burstSelectionType,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle)
+    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle) && deepEqualsMessages(lhs.burstId, rhs.burstId) && deepEqualsMessages(lhs.isBurstRepresentative, rhs.isBurstRepresentative) && deepEqualsMessages(lhs.burstSelectionType, rhs.burstSelectionType)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -282,6 +294,9 @@ struct PlatformAsset: Hashable {
     deepHashMessages(value: latitude, hasher: &hasher)
     deepHashMessages(value: longitude, hasher: &hasher)
     deepHashMessages(value: playbackStyle, hasher: &hasher)
+    deepHashMessages(value: burstId, hasher: &hasher)
+    deepHashMessages(value: isBurstRepresentative, hasher: &hasher)
+    deepHashMessages(value: burstSelectionType, hasher: &hasher)
   }
 }
 
@@ -638,6 +653,13 @@ protocol NativeSyncApi {
   func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
   func getBaseResource(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<BaseResource?, Error>) -> Void)
+  /// Streams the bytes immich treats as the asset's canonical content — the same
+  /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+  /// rendition). Used to upload iOS burst members: they're invisible to
+  /// photo_manager, so this is the only way to read their file, and streaming
+  /// the same resource the hash measured keeps the server checksum aligned with
+  /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+  func getCurrentResource(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<BaseResource?, Error>) -> Void)
   func getEditState(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<EditState, Error>) -> Void)
   func getBaseLivePhoto(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<BaseLivePhoto?, Error>) -> Void)
 }
@@ -892,6 +914,32 @@ class NativeSyncApiSetup {
       }
     } else {
       getBaseResourceChannel.setMessageHandler(nil)
+    }
+    /// Streams the bytes immich treats as the asset's canonical content — the same
+    /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+    /// rendition). Used to upload iOS burst members: they're invisible to
+    /// photo_manager, so this is the only way to read their file, and streaming
+    /// the same resource the hash measured keeps the server checksum aligned with
+    /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+    let getCurrentResourceChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCurrentResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCurrentResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getCurrentResourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        let allowNetworkAccessArg = args[1] as! Bool
+        api.getCurrentResource(assetId: assetIdArg, allowNetworkAccess: allowNetworkAccessArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getCurrentResourceChannel.setMessageHandler(nil)
     }
     let getEditStateChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getEditState\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

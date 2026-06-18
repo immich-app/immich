@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_created_at ON local_asset_entity (created_at)')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_prior_remote_id ON local_asset_entity (prior_remote_id)')
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_burst_id ON local_asset_entity (burst_id)')
 class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const LocalAssetEntity();
 
@@ -37,6 +38,16 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   // revert case, where the reverted render hashes fresh but is already reconciled.
   TextColumn get syncedChecksum => text().nullable()();
 
+  // iOS burst grouping. burstId = PHAsset.burstIdentifier (null for non-burst).
+  // isBurstRepresentative = the auto-picked lead frame at detection; the rep is
+  // the timeline tile and the stack anchor. burstSelectionType = 0 none /
+  // 1 autoPick / 2 userPick / 3 both (informational — the rep, not the pick,
+  // anchors the stack). All three re-sync on every delta, so a Photos re-pick
+  // that moves the rep flag is reflected.
+  TextColumn get burstId => text().nullable()();
+  BoolColumn get isBurstRepresentative => boolean().withDefault(const Constant(false))();
+  IntColumn get burstSelectionType => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -63,5 +74,8 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     isEdited: false,
     priorRemoteId: priorRemoteId,
     syncedChecksum: syncedChecksum,
+    burstId: burstId,
+    isBurstRepresentative: isBurstRepresentative,
+    burstSelectionType: burstSelectionType,
   );
 }

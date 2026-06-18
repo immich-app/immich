@@ -35,6 +35,14 @@ class PlatformAsset {
 
   final PlatformAssetPlaybackStyle playbackStyle;
 
+  // iOS burst grouping. `burstId` = PHAsset.burstIdentifier (null for non-burst
+  // assets). `isBurstRepresentative` = the auto-picked lead frame at detection
+  // time. `burstSelectionType` = 0 none / 1 autoPick / 2 userPick / 3 both.
+  // android always returns null/false/0 (no burstIdentifier equivalent).
+  final String? burstId;
+  final bool isBurstRepresentative;
+  final int burstSelectionType;
+
   const PlatformAsset({
     required this.id,
     required this.name,
@@ -50,6 +58,9 @@ class PlatformAsset {
     this.latitude,
     this.longitude,
     this.playbackStyle = PlatformAssetPlaybackStyle.unknown,
+    this.burstId,
+    this.isBurstRepresentative = false,
+    this.burstSelectionType = 0,
   });
 }
 
@@ -170,6 +181,16 @@ abstract class NativeSyncApi {
   @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   BaseResource? getBaseResource(String assetId, {bool allowNetworkAccess = false});
+
+  /// Streams the bytes immich treats as the asset's canonical content — the same
+  /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+  /// rendition). Used to upload iOS burst members: they're invisible to
+  /// photo_manager, so this is the only way to read their file, and streaming
+  /// the same resource the hash measured keeps the server checksum aligned with
+  /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  BaseResource? getCurrentResource(String assetId, {bool allowNetworkAccess = false});
 
   @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

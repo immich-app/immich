@@ -124,10 +124,18 @@ export class StackRepository {
     });
   }
 
+  /**
+   * Link `newAssetId` into the stack containing `parentId`. By default the new
+   * asset becomes the stack primary (edit-pair semantics: the latest edit leads).
+   * With `keepPrimary`, the parent/existing primary is preserved and the new
+   * asset just joins — used for iOS burst frames so the representative stays the
+   * displayed cover.
+   */
   async linkAsset(
     ownerId: string,
     newAssetId: string,
     parentId: string,
+    keepPrimary = false,
   ): Promise<{ stackId: string; created: boolean } | null> {
     try {
       return await this.db.transaction().execute(async (tx) => {
@@ -149,9 +157,11 @@ export class StackRepository {
             .set({ stackId: parent.stackId, updatedAt: new Date() })
             .where('id', '=', asUuid(newAssetId))
             .execute();
+          // keepPrimary: leave the existing primary, just touch the stack;
+          // otherwise promote the newcomer.
           await tx
             .updateTable('stack')
-            .set({ primaryAssetId: newAssetId, updatedAt: new Date() })
+            .set(keepPrimary ? { updatedAt: new Date() } : { primaryAssetId: newAssetId, updatedAt: new Date() })
             .where('id', '=', parent.stackId)
             .execute();
           return { stackId: parent.stackId, created: false };
@@ -159,7 +169,7 @@ export class StackRepository {
 
         const stack = await tx
           .insertInto('stack')
-          .values({ ownerId, primaryAssetId: newAssetId })
+          .values({ ownerId, primaryAssetId: keepPrimary ? parent.id : newAssetId })
           .returning('id')
           .executeTakeFirstOrThrow();
 

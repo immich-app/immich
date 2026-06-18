@@ -58,12 +58,29 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         FROM local_asset_entity lae
         LEFT JOIN main.remote_asset_entity rae
             ON lae.checksum = rae.checksum AND rae.owner_id = ?1
-        WHERE EXISTS (
+        WHERE (
+          EXISTS (
             SELECT 1
             FROM local_album_asset_entity laa
             INNER JOIN main.local_album_entity la on laa.album_id = la.id
             WHERE laa.asset_id = lae.id
                 AND la.backup_selection = ?2
+          )
+          -- iOS burst: a hidden member inherits candidacy from its representative,
+          -- which is the one actually in the user's selected album.
+          OR (lae.is_burst_representative = 0 AND lae.burst_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM local_asset_entity rep
+            INNER JOIN local_album_asset_entity laa ON laa.asset_id = rep.id
+            INNER JOIN main.local_album_entity la ON la.id = laa.album_id
+            WHERE rep.burst_id = lae.burst_id AND rep.is_burst_representative = 1
+                AND la.backup_selection = ?2
+                -- exclude-wins propagates to the burst: the rep must not be excluded
+                AND NOT EXISTS (
+                    SELECT 1 FROM local_album_asset_entity laa2
+                    INNER JOIN main.local_album_entity la2 ON la2.id = laa2.album_id
+                    WHERE laa2.asset_id = rep.id AND la2.backup_selection = ?3
+                )
+          ))
         )
         AND NOT EXISTS (
             SELECT 1
@@ -87,6 +104,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         .getSingle();
 
     final data = row.data;
+
     return (
       total: (data['total_count'] as int?) ?? 0,
       remainder: (data['remainder_count'] as int?) ?? 0,
@@ -94,22 +112,60 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true}) async {
+  /// Backup candidates. With [burstId], scoped to the non-representative members
+  /// of that burst — used to re-enqueue a burst's gated frames once its
+  /// representative has uploaded, without re-walking (and re-enqueuing) assets
+  /// already in flight from the main pass.
+  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true, String? burstId}) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
 
+    // iOS burst: a hidden member isn't a member of the user album its rep sits in
+    // (Photos only adds the cover), so it inherits backup candidacy from its rep.
+    // Matched with a correlated EXISTS (var-safe, mirrors getAllCounts) instead of
+    // materialising the burst-id list — a large library could blow the SQLite
+    // variable limit.
+    final rep = _db.localAssetEntity.createAlias('rep');
+
     final query = _db.localAssetEntity.select()
       ..where(
         (lae) =>
-            existsQuery(
-              _db.localAlbumAssetEntity.selectOnly()
-                ..addColumns([_db.localAlbumAssetEntity.assetId])
-                ..where(
-                  _db.localAlbumAssetEntity.albumId.isInQuery(selectedAlbumIds) &
-                      _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
-                ),
-            ) &
+            (existsQuery(
+                  _db.localAlbumAssetEntity.selectOnly()
+                    ..addColumns([_db.localAlbumAssetEntity.assetId])
+                    ..where(
+                      _db.localAlbumAssetEntity.albumId.isInQuery(selectedAlbumIds) &
+                          _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
+                    ),
+                ) |
+                (lae.isBurstRepresentative.equals(false) &
+                    lae.burstId.isNotNull() &
+                    existsQuery(
+                      rep.selectOnly()
+                        ..addColumns([rep.id])
+                        ..join([
+                          innerJoin(
+                            _db.localAlbumAssetEntity,
+                            _db.localAlbumAssetEntity.assetId.equalsExp(rep.id),
+                            useColumns: false,
+                          ),
+                          innerJoin(
+                            _db.localAlbumEntity,
+                            _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+                            useColumns: false,
+                          ),
+                        ])
+                        ..where(
+                          rep.burstId.equalsExp(lae.burstId) &
+                              rep.isBurstRepresentative.equals(true) &
+                              _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                              // exclude-wins propagates to the burst: a member only
+                              // inherits candidacy if its rep is itself a candidate
+                              // (in a selected album AND not in an excluded one).
+                              rep.id.isNotInQuery(_getExcludedSubquery()),
+                        ),
+                    ))) &
             notExistsQuery(
               _db.remoteAssetEntity.selectOnly()
                 ..addColumns([_db.remoteAssetEntity.checksum])
@@ -137,6 +193,10 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
     if (onlyHashed) {
       query.where((lae) => lae.checksum.isNotNull());
+    }
+
+    if (burstId != null) {
+      query.where((lae) => lae.burstId.equals(burstId) & lae.isBurstRepresentative.equals(false));
     }
 
     return query.map((localAsset) => localAsset.toDto()).get();

@@ -94,15 +94,26 @@ class ForegroundUploadService {
   }
 
   /// Bulk upload of backup candidates from selected albums
-  Future<void> uploadCandidates(
+  /// Returns the number of candidates this pass attempted (after [skipIds]
+  /// filtering), so the multi-pass driver can stop as soon as a pass has nothing
+  /// left to do instead of walking the candidate set one extra time.
+  Future<int> uploadCandidates(
     String userId,
     Completer<void> cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
     bool useSequentialUpload = false,
+    Set<String>? skipIds,
   }) async {
-    final candidates = await _backupRepository.getCandidates(userId);
+    var candidates = await _backupRepository.getCandidates(userId);
+    if (skipIds != null && skipIds.isNotEmpty) {
+      // Multi-pass driver passes the ids it already uploaded this session: a
+      // freshly uploaded asset stays a candidate until its remote row syncs back
+      // locally, so skipping it here stops the next pass re-uploading it (the
+      // server would just dedup it, wasting the transfer).
+      candidates = candidates.where((a) => !skipIds.contains(a.id)).toList();
+    }
     if (candidates.isEmpty) {
-      return;
+      return 0;
     }
 
     final networkCapabilities = await _connectivityApi.getCapabilities();
@@ -122,6 +133,7 @@ class ForegroundUploadService {
         processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
     }
+    return candidates.length;
   }
 
   /// Sequential upload - used for background isolate where concurrent HTTP clients may cause issues
@@ -258,6 +270,15 @@ class ForegroundUploadService {
     required UploadCallbacks callbacks,
     bool surfaceDefers = false,
   }) async {
+    // iOS burst non-representative: photo_manager can't resolve it (the entity
+    // lookup below returns null), so fetch its bytes natively and upload it
+    // stacked under the burst anchor. Burst frames are never edited or live, so
+    // they skip the edit-pair + live-photo handling entirely.
+    if (CurrentPlatform.isIOS && asset.burstId != null && !asset.isBurstRepresentative) {
+      await _uploadBurstMember(asset, cancelToken, callbacks: callbacks);
+      return;
+    }
+
     File? file;
     File? livePhotoFile;
 
@@ -505,6 +526,105 @@ class ForegroundUploadService {
         } catch (error, stackTrace) {
           _logger.severe(() => "ERROR deleting file: ${error.toString()}", stackTrace);
         }
+      }
+    }
+  }
+
+  /// Foreground upload of an iOS burst non-representative member. Streams the
+  /// same rendition the hash measured ([NativeSyncApi.getCurrentResource]) — the
+  /// member is invisible to photo_manager and matching the hashed bytes keeps it
+  /// merging with its local — and stacks it under the burst anchor with
+  /// `keepPrimary` so the representative stays the primary. Gated until the
+  /// representative has uploaded; returns silently to be retried by the backup
+  /// loop once the anchor resolves.
+  Future<void> _uploadBurstMember(
+    LocalAsset asset,
+    Completer<void>? cancelToken, {
+    required UploadCallbacks callbacks,
+  }) async {
+    final ownerId = Store.tryGet(StoreKey.currentUser)?.id;
+    final parentRemoteId = await _localAssetRepository.getBurstParentRemoteId(asset.burstId!, ownerId: ownerId);
+    if (parentRemoteId == null) {
+      // No anchor. A rep-less group (Keep Everything / re-pick) can never anchor,
+      // so upload the frame standalone instead of gating forever; if a rep still
+      // exists the member is just waiting for it to upload.
+      if (await _localAssetRepository.burstHasRepresentative(asset.burstId!)) {
+        return;
+      }
+    }
+
+    BaseResource? resource;
+    try {
+      resource = await _nativeSyncApi.getCurrentResource(asset.id, allowNetworkAccess: true);
+    } catch (error, stack) {
+      _logger.warning(() => "burst getCurrentResource failed for ${asset.id}: $error", error, stack);
+    }
+    if (resource == null) {
+      callbacks.onError?.call(asset.localId!, "asset_not_found_on_device_ios".t());
+      return;
+    }
+
+    final file = File(resource.path);
+    try {
+      final deviceId = Store.get(StoreKey.deviceId);
+      final fields = {
+        'deviceAssetId': asset.localId!,
+        'deviceId': deviceId,
+        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
+        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
+        'isFavorite': asset.isFavorite.toString(),
+        'duration': (asset.durationMs ?? 0).toString(),
+        // Rep-less group → standalone (no stack); otherwise stack under the anchor.
+        if (parentRemoteId != null) 'stackParentId': parentRemoteId,
+        if (parentRemoteId != null) 'keepPrimary': 'true',
+      };
+      final metadata = _cloudMetadata(asset, includeAdjustment: true);
+      if (metadata != null) {
+        fields['metadata'] = metadata;
+      }
+      final originalFileName = p.setExtension(
+        await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name,
+        p.extension(resource.path),
+      );
+
+      final onProgress = callbacks.onProgress;
+      final result = await _uploadRepository.uploadFile(
+        file: file,
+        originalFileName: originalFileName,
+        fields: fields,
+        cancelToken: cancelToken,
+        onProgress: onProgress != null
+            ? (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes)
+            : null,
+        logContext: 'burstMember[${asset.localId}]',
+      );
+
+      if (result.isSuccess && result.remoteAssetId != null) {
+        unawaited(
+          _localAssetRepository
+              .markSynced(asset.localId!, priorRemoteId: result.remoteAssetId!, syncedChecksum: asset.checksum)
+              .catchError(
+                (Object error, StackTrace stack) =>
+                    _logger.warning(() => "Failed to mark burst member ${asset.localId} synced", error, stack),
+              ),
+        );
+        callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
+      } else if (result.isCancelled) {
+        shouldAbortUpload = true;
+      } else if (result.errorMessage != null) {
+        callbacks.onError?.call(asset.localId!, result.errorMessage!);
+        if (result.errorMessage == _kQuotaError) {
+          shouldAbortUpload = true;
+        }
+      }
+    } catch (error, stackTrace) {
+      _logger.severe(() => "Error uploading burst member ${asset.localId}: $error", stackTrace);
+      callbacks.onError?.call(asset.localId!, error.toString());
+    } finally {
+      if (Platform.isIOS) {
+        try {
+          await file.delete();
+        } catch (_) {}
       }
     }
   }

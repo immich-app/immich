@@ -196,6 +196,11 @@ class BackgroundUploadService {
 
   bool shouldAbortQueuingTasks = false;
 
+  // Burst ids whose gated members have already been re-enqueued this session, so
+  // the re-enqueue fires exactly once per burst no matter which frame's
+  // completion triggers it (and never double-enqueues in-flight members).
+  final Set<String> _reenqueuedBurstIds = {};
+
   void _onTaskProgressCallback(TaskProgressUpdate update) {
     if (!_taskProgressController.isClosed) {
       _taskProgressController.add(update);
@@ -246,6 +251,9 @@ class BackgroundUploadService {
     // any backup group, so no pending chain still references these base temps.
     await _storageRepository.clearEditBaseCache();
     shouldAbortQueuingTasks = false;
+    // Fresh cycle: let each burst's fast re-enqueue fire again (members that
+    // failed last cycle can be retried by the completion-driven path).
+    _reenqueuedBurstIds.clear();
 
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
@@ -282,6 +290,7 @@ class BackgroundUploadService {
   /// Returns the number of tasks left in the queue
   Future<int> cancel() async {
     shouldAbortQueuingTasks = true;
+    _reenqueuedBurstIds.clear();
 
     await _storageRepository.clearCache();
     await _storageRepository.clearEditBaseCache();
@@ -313,8 +322,7 @@ class BackgroundUploadService {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update, metadata));
-        unawaited(handleLiveEditChain(update, metadata));
-        unawaited(recordPriorRemoteIdOnSuccess(update, metadata));
+        unawaited(_advanceChainAndBurst(update, metadata));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -384,6 +392,86 @@ class BackgroundUploadService {
       await enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
+    }
+  }
+
+  /// Runs the edit-chain advance and prior-stamping in order, then re-enqueues a
+  /// burst's gated members once its representative's terminal upload has stamped
+  /// a prior. Serialized so the re-enqueue sees the stamp regardless of which
+  /// path wrote it (normal completion via [recordPriorRemoteIdOnSuccess], or the
+  /// edit chain's final still). Mid-chain hops are skipped so members enqueue
+  /// exactly once.
+  Future<void> _advanceChainAndBurst(TaskStatusUpdate update, UploadTaskMetadata? metadata) async {
+    await handleLiveEditChain(update, metadata);
+    await recordPriorRemoteIdOnSuccess(update, metadata);
+    final phase = metadata?.liveEditPhase ?? LiveEditPhase.none;
+    if (phase == LiveEditPhase.none || phase == LiveEditPhase.editStill) {
+      await _maybeReenqueueBurstChildren(metadata);
+    }
+  }
+
+  /// Once a burst's anchor frame has uploaded, its gated members become eligible
+  /// (their [getBurstParentRemoteId] gate now resolves). Background batches
+  /// enqueue once, so re-enqueue just this burst's members here instead of
+  /// waiting for the next resume. Keyed on `burstId`, NOT the representative flag:
+  /// iOS can move the representative (a Photos re-pick) between task build and
+  /// here, so "is this the rep" is unreliable — the anchor (whichever frame
+  /// uploaded first) is what members stack under. The per-burst once-guard makes
+  /// this fire exactly once, so member completions never re-trigger it and
+  /// double-enqueue in-flight uploads. Scoped to the burst, so it never re-walks
+  /// the full candidate list.
+  Future<void> _maybeReenqueueBurstChildren(UploadTaskMetadata? metadata) async {
+    // Bursts are iOS-only; skip the per-completion DB lookup on Android entirely.
+    if (!CurrentPlatform.isIOS || metadata == null || metadata.localAssetId.isEmpty || shouldAbortQueuingTasks) {
+      return;
+    }
+    try {
+      final completed = await _localAssetRepository.getById(metadata.localAssetId);
+      final burstId = completed?.burstId;
+      if (burstId == null || _reenqueuedBurstIds.contains(burstId)) {
+        return;
+      }
+      final ownerId = Store.tryGet(StoreKey.currentUser)?.id;
+      if (ownerId == null) {
+        return;
+      }
+      final anchorRemoteId = await _localAssetRepository.getBurstParentRemoteId(burstId, ownerId: ownerId);
+      if (anchorRemoteId == null) {
+        return;
+      }
+      final members = await _backupRepository.getCandidates(ownerId, burstId: burstId);
+      if (members.isEmpty) {
+        return;
+      }
+      // Claim the burst in one synchronous slice (re-check after the awaits above):
+      // two completions for the same burst can both pass the early contains-check,
+      // so the claim-right-before-the-loop is what makes the re-enqueue fire once.
+      if (_reenqueuedBurstIds.contains(burstId)) {
+        return;
+      }
+      _reenqueuedBurstIds.add(burstId);
+      final tasks = <UploadTask>[];
+      for (final member in members) {
+        if (shouldAbortQueuingTasks) {
+          break;
+        }
+        // Skip a member already in flight (e.g. from the main pass) so we don't
+        // re-upload it + repeat the heavy native resource fetch / iCloud pull.
+        if (await _hasActiveTask(member.id)) {
+          continue;
+        }
+        // Anchor fetched once above and threaded in, so the member loop doesn't
+        // repeat an identical lookup per frame.
+        final task = await getUploadTask(member, ownerId: ownerId, burstAnchorRemoteId: anchorRemoteId);
+        if (task != null) {
+          tasks.add(task);
+        }
+      }
+      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+        await enqueueTasks(tasks);
+      }
+    } catch (error, stack) {
+      dPrint(() => "burst child re-enqueue failed: $error $stack");
     }
   }
 
@@ -801,7 +889,17 @@ class BackgroundUploadService {
     String group = kBackupGroup,
     int? priority,
     String? ownerId,
+    String? burstAnchorRemoteId,
   }) async {
+    // iOS burst non-representative member: photo_manager can't resolve it
+    // (getAssetEntityForAsset returns null), so fetch its bytes natively and
+    // upload it stacked under the burst's representative. The representative
+    // itself falls through to the normal path below (it's resolvable, and an
+    // edited one still gets edit-pair stacking) and becomes the stack anchor.
+    if (CurrentPlatform.isIOS && asset.burstId != null && !asset.isBurstRepresentative) {
+      return _buildBurstMemberTask(asset, knownAnchorRemoteId: burstAnchorRemoteId, ownerId: ownerId);
+    }
+
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       _logger.warning("Asset entity not found for ${asset.id} - ${asset.name}");
@@ -915,6 +1013,73 @@ class BackgroundUploadService {
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
       longitude: entity.isLivePhoto ? null : asset.longitude?.toString(),
+    );
+  }
+
+  /// iOS burst non-representative upload. Streams the same rendition the hash
+  /// measured ([NativeSyncApi.getCurrentResource]) — burst members are invisible
+  /// to photo_manager, so this is the only way to read them, and matching the
+  /// hashed bytes keeps the asset merging with its local instead of showing
+  /// cloud-only. Stacks under the burst anchor with `keepPrimary` so the
+  /// representative stays the stack primary. Gated until the anchor has a remote
+  /// id; returns null to wait, retried once the representative lands.
+  @visibleForTesting
+  Future<UploadTask?> buildBurstMemberTask(LocalAsset asset, {String? ownerId}) =>
+      _buildBurstMemberTask(asset, ownerId: ownerId);
+
+  Future<UploadTask?> _buildBurstMemberTask(LocalAsset asset, {String? knownAnchorRemoteId, String? ownerId}) async {
+    // The re-enqueue path fetches the anchor once and threads it in; the main
+    // backup pass passes null and each member resolves its own (still indexed).
+    final parentRemoteId =
+        knownAnchorRemoteId ?? await _localAssetRepository.getBurstParentRemoteId(asset.burstId!, ownerId: ownerId);
+    if (parentRemoteId == null) {
+      // No anchor. If the burst still has a representative the member is just
+      // gated until the rep uploads — wait. If the group is rep-less (Keep
+      // Everything / re-pick), it can never anchor, so upload the frame
+      // standalone (no stack) instead of gating it forever.
+      if (await _localAssetRepository.burstHasRepresentative(asset.burstId!)) {
+        return null;
+      }
+    }
+
+    BaseResource? resource;
+    try {
+      resource = await _nativeSyncApi.getCurrentResource(asset.id, allowNetworkAccess: true);
+    } catch (error, stack) {
+      _logger.warning(() => "burst getCurrentResource failed for ${asset.id}: $error", error, stack);
+      return null;
+    }
+    if (resource == null) {
+      _logger.warning("burst getCurrentResource returned null for ${asset.id} - ${asset.name}");
+      return null;
+    }
+
+    // basePath records the temp so a failed upload cleans it up; a successful one
+    // is deleted by the iOS terminal-status handler. Not an edit chain, so the
+    // success handler stamps its prior like any normal upload.
+    final metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      basePath: resource.path,
+      checksum: asset.checksum,
+    ).toJson();
+
+    final baseName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    return buildUploadTask(
+      File(resource.path),
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
+      originalFileName: p.setExtension(baseName, p.extension(resource.path)),
+      deviceAssetId: asset.id,
+      metadata: metadata,
+      // Rep-less group → standalone (no stack); otherwise stack under the anchor.
+      fields: parentRemoteId != null ? {'stackParentId': parentRemoteId, 'keepPrimary': 'true'} : const {},
+      group: kBackupGroup,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: _shouldRequireWiFi(asset),
+      cloudId: asset.cloudId,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 

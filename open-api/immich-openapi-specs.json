@@ -17480,6 +17480,10 @@
             "description": "Mark as favorite",
             "type": "boolean"
           },
+          "keepPrimary": {
+            "description": "When stacking via stackParentId, keep the parent/existing asset as the stack primary instead of promoting this one. Used by iOS burst frames.",
+            "type": "boolean"
+          },
           "livePhotoVideoId": {
             "description": "Live photo video ID",
             "format": "uuid",

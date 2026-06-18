@@ -27,8 +27,20 @@ extension PHAsset {
       adjustmentTime: adjustmentTimestamp,
       latitude: location?.coordinate.latitude,
       longitude: location?.coordinate.longitude,
-      playbackStyle: platformPlaybackStyle
+      playbackStyle: platformPlaybackStyle,
+      burstId: burstIdentifier,
+      isBurstRepresentative: representsBurst,
+      burstSelectionType: Int64(platformBurstSelectionType)
     )
+  }
+
+  // 0 none / 1 autoPick / 2 userPick / 3 both — matches the encoding the Dart
+  // side expects. `burstSelectionTypes` is an OptionSet so a frame can be both.
+  var platformBurstSelectionType: Int {
+    var value = 0
+    if burstSelectionTypes.contains(.autoPick) { value |= 1 }
+    if burstSelectionTypes.contains(.userPick) { value |= 2 }
+    return value
   }
 
   var title: String {

@@ -12,6 +12,12 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 
+/// Max foreground-backup passes per run. iOS burst stacking needs a pass for the
+/// representative, then another for its now-eligible members; a few more cover
+/// multi-burst captures. Bounded so a stuck candidate can't loop forever — the
+/// no-progress break usually stops sooner.
+const _kMaxBackupPasses = 6;
+
 class EnqueueStatus {
   final int enqueueCount;
   final int totalCount;
@@ -208,6 +214,9 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   final BackgroundUploadService _backgroundUploadService;
   final UploadSpeedManager _uploadSpeedManager;
   Completer<void>? _cancelToken;
+  // Ids uploaded in the current foreground-backup session, so the multi-pass
+  // loop doesn't re-grab an asset whose remote row hasn't synced back locally yet.
+  final Set<String> _sessionUploadedIds = {};
 
   final _logger = Logger("DriftBackupNotifier");
 
@@ -255,7 +264,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startForegroundBackup(String userId) {
+  Future<void> startForegroundBackup(String userId) async {
     // Cancel any existing backup before starting a new one
     if (_cancelToken != null) {
       stopForegroundBackup();
@@ -265,16 +274,52 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     _cancelToken = Completer<void>();
 
-    return _foregroundUploadService.uploadCandidates(
-      userId,
-      _cancelToken!,
-      callbacks: UploadCallbacks(
-        onProgress: _handleForegroundBackupProgress,
-        onSuccess: _handleForegroundBackupSuccess,
-        onError: _handleForegroundBackupError,
-        onICloudProgress: _handleICloudProgress,
-      ),
+    // Ids uploaded this session: a just-uploaded asset stays a backup candidate
+    // until its remote row syncs back locally, so the next pass would re-grab it
+    // (the server dedups, but it wastes the transfer). Skipping known-uploaded
+    // ids makes the multi-pass loop idempotent. Populated in the success handler.
+    _sessionUploadedIds.clear();
+    final callbacks = UploadCallbacks(
+      onProgress: _handleForegroundBackupProgress,
+      onSuccess: _handleForegroundBackupSuccess,
+      onError: _handleForegroundBackupError,
+      onICloudProgress: _handleICloudProgress,
     );
+
+    // iOS burst stacking needs more than one pass: a burst's representative
+    // uploads first, then its members become eligible (they stack under it).
+    // Loop until a pass has no candidates left to attempt or the cap is hit.
+    // A non-burst library stops after the second pass (the first uploads
+    // everything, the second finds them all skipped and returns 0). `myToken`
+    // is captured once: if another backup supersedes this one (restart installs
+    // a fresh token), `identical` fails and this loop exits instead of running
+    // concurrently against the shared session state.
+    final myToken = _cancelToken;
+    var lastUploadedCount = -1;
+    for (var pass = 0; pass < _kMaxBackupPasses; pass++) {
+      if (!mounted || myToken == null || myToken.isCompleted || !identical(_cancelToken, myToken)) {
+        break;
+      }
+      if ((await _foregroundUploadService.getBackupCounts(userId)).remainder == 0) {
+        break;
+      }
+      // No new upload since the last pass → nothing left to unblock, stop.
+      if (_sessionUploadedIds.length == lastUploadedCount) {
+        break;
+      }
+      lastUploadedCount = _sessionUploadedIds.length;
+      final attempted = await _foregroundUploadService.uploadCandidates(
+        userId,
+        myToken,
+        callbacks: callbacks,
+        skipIds: _sessionUploadedIds,
+      );
+      // Nothing left to attempt this pass (all remaining candidates were already
+      // uploaded this session) → done, don't walk the candidate set again.
+      if (attempted == 0) {
+        break;
+      }
+    }
   }
 
   void stopForegroundBackup() {
@@ -333,6 +378,12 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupSuccess(String localAssetId, String remoteAssetId) {
+    _sessionUploadedIds.add(localAssetId);
+    if (!mounted) {
+      // Upload finished after the notifier was disposed (e.g. navigated away
+      // mid-backup). Keep the session-id bookkeeping above but don't touch state.
+      return;
+    }
     state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
     _uploadSpeedManager.removeTask(localAssetId);
 

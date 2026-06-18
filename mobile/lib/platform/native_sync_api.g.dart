@@ -106,6 +106,9 @@ class PlatformAsset {
     this.latitude,
     this.longitude,
     required this.playbackStyle,
+    this.burstId,
+    required this.isBurstRepresentative,
+    required this.burstSelectionType,
   });
 
   String id;
@@ -136,6 +139,12 @@ class PlatformAsset {
 
   PlatformAssetPlaybackStyle playbackStyle;
 
+  String? burstId;
+
+  bool isBurstRepresentative;
+
+  int burstSelectionType;
+
   List<Object?> _toList() {
     return <Object?>[
       id,
@@ -152,6 +161,9 @@ class PlatformAsset {
       latitude,
       longitude,
       playbackStyle,
+      burstId,
+      isBurstRepresentative,
+      burstSelectionType,
     ];
   }
 
@@ -176,6 +188,9 @@ class PlatformAsset {
       latitude: result[11] as double?,
       longitude: result[12] as double?,
       playbackStyle: result[13]! as PlatformAssetPlaybackStyle,
+      burstId: result[14] as String?,
+      isBurstRepresentative: result[15]! as bool,
+      burstSelectionType: result[16]! as int,
     );
   }
 
@@ -201,7 +216,10 @@ class PlatformAsset {
         _deepEquals(adjustmentTime, other.adjustmentTime) &&
         _deepEquals(latitude, other.latitude) &&
         _deepEquals(longitude, other.longitude) &&
-        _deepEquals(playbackStyle, other.playbackStyle);
+        _deepEquals(playbackStyle, other.playbackStyle) &&
+        _deepEquals(burstId, other.burstId) &&
+        _deepEquals(isBurstRepresentative, other.isBurstRepresentative) &&
+        _deepEquals(burstSelectionType, other.burstSelectionType);
   }
 
   @override
@@ -801,6 +819,31 @@ class NativeSyncApi {
   Future<BaseResource?> getBaseResource(String assetId, {bool allowNetworkAccess = false}) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getBaseResource$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetId, allowNetworkAccess]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: true,
+    );
+    return pigeonVar_replyValue as BaseResource?;
+  }
+
+  /// Streams the bytes immich treats as the asset's canonical content — the same
+  /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+  /// rendition). Used to upload iOS burst members: they're invisible to
+  /// photo_manager, so this is the only way to read their file, and streaming
+  /// the same resource the hash measured keeps the server checksum aligned with
+  /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+  Future<BaseResource?> getCurrentResource(String assetId, {bool allowNetworkAccess = false}) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCurrentResource$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

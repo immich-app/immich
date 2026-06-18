@@ -268,7 +268,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
         }
 
-        return _ref
+        await _ref
             ?.read(foregroundUploadServiceProvider)
             .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
       },

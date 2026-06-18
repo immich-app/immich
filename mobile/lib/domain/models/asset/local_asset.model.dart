@@ -19,6 +19,13 @@ class LocalAsset extends BaseAsset {
   // local whose current render hashes fresh (the iOS revert case).
   final String? syncedChecksum;
 
+  // iOS burst grouping. burstId = PHAsset.burstIdentifier (null for non-burst).
+  // isBurstRepresentative = the auto-picked lead frame (timeline tile + stack
+  // anchor). burstSelectionType = 0 none / 1 autoPick / 2 userPick / 3 both.
+  final String? burstId;
+  final bool isBurstRepresentative;
+  final int burstSelectionType;
+
   const LocalAsset({
     required this.id,
     String? remoteId,
@@ -41,6 +48,9 @@ class LocalAsset extends BaseAsset {
     required super.isEdited,
     this.priorRemoteId,
     this.syncedChecksum,
+    this.burstId,
+    this.isBurstRepresentative = false,
+    this.burstSelectionType = 0,
   }) : remoteAssetId = remoteId;
 
   @override
@@ -131,6 +141,9 @@ class LocalAsset extends BaseAsset {
     bool? isEdited,
     String? priorRemoteId,
     String? syncedChecksum,
+    String? burstId,
+    bool? isBurstRepresentative,
+    int? burstSelectionType,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -153,6 +166,9 @@ class LocalAsset extends BaseAsset {
       isEdited: isEdited ?? this.isEdited,
       priorRemoteId: priorRemoteId ?? this.priorRemoteId,
       syncedChecksum: syncedChecksum ?? this.syncedChecksum,
+      burstId: burstId ?? this.burstId,
+      isBurstRepresentative: isBurstRepresentative ?? this.isBurstRepresentative,
+      burstSelectionType: burstSelectionType ?? this.burstSelectionType,
     );
   }
 }

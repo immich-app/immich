@@ -469,6 +469,9 @@ extension PlatformToLocalAsset on PlatformAsset {
     latitude: latitude,
     longitude: longitude,
     isEdited: false,
+    burstId: burstId,
+    isBurstRepresentative: isBurstRepresentative,
+    burstSelectionType: burstSelectionType,
   );
 }
 

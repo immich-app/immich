@@ -158,6 +158,118 @@ void main() {
     });
   });
 
+  group('getUploadTask burst (iOS incremental stacking)', () {
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    });
+
+    test('representative uploads via the normal path (no native fetch, becomes the anchor)', () async {
+      final rep = LocalAssetStub.image1.copyWith(burstId: 'burst-1', isBurstRepresentative: true);
+      final mockEntity = MockAssetEntity();
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(rep)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(rep.id)).thenAnswer((_) async => File('/path/rep.jpg'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(rep.id)).thenAnswer((_) async => 'rep.jpg');
+
+      final task = await sut.getUploadTask(rep);
+
+      expect(task, isNotNull);
+      // the rep is a plain new upload — no stack fields, resolved via photo_manager
+      expect(task!.fields.containsKey('stackParentId'), isFalse);
+      expect(task.fields.containsKey('keepPrimary'), isFalse);
+      verify(() => mockStorageRepository.getAssetEntityForAsset(rep)).called(1);
+      verifyNever(
+        () => mockNativeSyncApi.getCurrentResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      );
+    });
+
+    test('non-representative with the anchor uploaded stacks under it with keepPrimary', () async {
+      final member = LocalAssetStub.image1.copyWith(burstId: 'burst-1', isBurstRepresentative: false);
+      when(
+        () => mockLocalAssetRepository.getBurstParentRemoteId('burst-1', ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => 'rep-remote-id');
+      when(
+        () => mockNativeSyncApi.getCurrentResource(member.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer((_) async => BaseResource(path: '/tmp/member_base.jpg', sha1: 'sha-member'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(member.id)).thenAnswer((_) async => 'member.jpg');
+
+      final task = await sut.getUploadTask(member);
+
+      expect(task, isNotNull);
+      expect(task!.fields['stackParentId'], 'rep-remote-id');
+      expect(task.fields['keepPrimary'], 'true');
+      // photo_manager can't resolve a non-rep — never goes through the entity path
+      verifyNever(() => mockStorageRepository.getAssetEntityForAsset(any()));
+    });
+
+    test('non-representative is gated (no task, no native fetch) until the anchor lands', () async {
+      final member = LocalAssetStub.image1.copyWith(burstId: 'burst-1', isBurstRepresentative: false);
+      when(
+        () => mockLocalAssetRepository.getBurstParentRemoteId('burst-1', ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => null);
+      // a representative still exists, so the member waits for it (not standalone)
+      when(() => mockLocalAssetRepository.burstHasRepresentative('burst-1')).thenAnswer((_) async => true);
+
+      final task = await sut.getUploadTask(member);
+
+      expect(task, isNull);
+      verifyNever(
+        () => mockNativeSyncApi.getCurrentResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      );
+    });
+
+    test('rep-less burst member uploads standalone (no anchor, no stack fields)', () async {
+      // Keep Everything / re-pick can leave a group with no representative; the
+      // member can never anchor, so it uploads as its own asset.
+      final member = LocalAssetStub.image1.copyWith(burstId: 'burst-1', isBurstRepresentative: false);
+      when(
+        () => mockLocalAssetRepository.getBurstParentRemoteId('burst-1', ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => null);
+      when(() => mockLocalAssetRepository.burstHasRepresentative('burst-1')).thenAnswer((_) async => false);
+      when(
+        () => mockNativeSyncApi.getCurrentResource(member.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer((_) async => BaseResource(path: '/tmp/member_base.jpg', sha1: 'sha-member'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(member.id)).thenAnswer((_) async => 'member.jpg');
+
+      final task = await sut.getUploadTask(member);
+
+      expect(task, isNotNull);
+      expect(task!.fields.containsKey('stackParentId'), isFalse);
+      expect(task.fields.containsKey('keepPrimary'), isFalse);
+    });
+
+    test('non-representative returns null when the native rendition is unavailable', () async {
+      final member = LocalAssetStub.image1.copyWith(burstId: 'burst-1', isBurstRepresentative: false);
+      when(
+        () => mockLocalAssetRepository.getBurstParentRemoteId('burst-1', ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => 'rep-remote-id');
+      when(
+        () => mockNativeSyncApi.getCurrentResource(member.id, allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer((_) async => null);
+
+      expect(await sut.getUploadTask(member), isNull);
+    });
+
+    test('android burst member is NOT short-circuited (bursts are iOS-only)', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final member = LocalAssetStub.image1.copyWith(burstId: 'burst-1', isBurstRepresentative: false);
+      final mockEntity = MockAssetEntity();
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(member)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(member.id)).thenAnswer((_) async => File('/path/m.jpg'));
+      when(() => mockAssetMediaRepository.getOriginalFilename(member.id)).thenAnswer((_) async => 'm.jpg');
+
+      final task = await sut.getUploadTask(member);
+
+      expect(task, isNotNull);
+      verify(() => mockStorageRepository.getAssetEntityForAsset(member)).called(1);
+      verifyNever(
+        () => mockNativeSyncApi.getCurrentResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      );
+    });
+  });
+
   group('getUploadTask edit pair', () {
     test('absorption: stacks the edit under the prior upload via stackParentId', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;

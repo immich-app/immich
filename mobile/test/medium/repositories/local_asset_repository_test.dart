@@ -19,6 +19,105 @@ void main() {
     await ctx.dispose();
   });
 
+  group('getBurstParentRemoteId', () {
+    test('returns null until a member of the burst has uploaded', () async {
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+
+      expect(await sut.getBurstParentRemoteId('b1'), isNull);
+    });
+
+    test('returns the representative prior once it has uploaded', () async {
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true, priorRemoteId: 'rep-remote');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+
+      expect(await sut.getBurstParentRemoteId('b1'), 'rep-remote');
+    });
+
+    test('returns an uploaded member prior even when the representative flag has moved away from it', () async {
+      // Moving-cover invariant: the anchor is whichever frame uploaded first, NOT
+      // the current representative. Here the only uploaded frame is a non-rep
+      // (the cover moved to a not-yet-uploaded frame) — it must still anchor the
+      // stack so later frames don't spawn a second one.
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false, priorRemoteId: 'member-remote');
+
+      expect(await sut.getBurstParentRemoteId('b1'), 'member-remote');
+    });
+
+    test('ignores priors from other bursts', () async {
+      await ctx.newLocalAsset(burstId: 'other', isBurstRepresentative: true, priorRemoteId: 'other-remote');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+
+      expect(await sut.getBurstParentRemoteId('b1'), isNull);
+    });
+
+    test('falls back to the rep already-synced remote (matched by checksum) for a pre-existing burst', () async {
+      // The whole burst was backed up before this feature, so no local frame ever
+      // stamped a prior. The rep is on the server already (checksum match) — its
+      // remote id must anchor the hidden members so they can still stack.
+      final user = await ctx.newUser();
+      final repRemote = await ctx.newRemoteAsset(ownerId: user.id, checksum: 'rep-sum');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true, checksum: 'rep-sum');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false, checksum: 'mem-sum');
+
+      expect(await sut.getBurstParentRemoteId('b1', ownerId: user.id), repRemote.id);
+    });
+
+    test('checksum fallback only matches the rep owned by the given user', () async {
+      final me = await ctx.newUser();
+      final other = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: other.id, checksum: 'rep-sum');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true, checksum: 'rep-sum');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false, checksum: 'mem-sum');
+
+      // rep is only on another user's server account → no anchor for me.
+      expect(await sut.getBurstParentRemoteId('b1', ownerId: me.id), isNull);
+    });
+
+    test('a stamped local prior wins over the checksum fallback', () async {
+      final user = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: user.id, checksum: 'rep-sum');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true, checksum: 'rep-sum');
+      await ctx.newLocalAsset(
+        burstId: 'b1',
+        isBurstRepresentative: false,
+        checksum: 'mem-sum',
+        priorRemoteId: 'member-remote',
+      );
+
+      expect(await sut.getBurstParentRemoteId('b1', ownerId: user.id), 'member-remote');
+    });
+
+    test('without ownerId the checksum fallback is skipped', () async {
+      final user = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: user.id, checksum: 'rep-sum');
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true, checksum: 'rep-sum');
+
+      expect(await sut.getBurstParentRemoteId('b1'), isNull);
+    });
+  });
+
+  group('burstHasRepresentative', () {
+    test('true when the group has a representative', () async {
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+
+      expect(await sut.burstHasRepresentative('b1'), isTrue);
+    });
+
+    test('false for a rep-less group (Keep Everything / re-pick)', () async {
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+
+      expect(await sut.burstHasRepresentative('b1'), isFalse);
+    });
+
+    test('false for an unknown burst', () async {
+      expect(await sut.burstHasRepresentative('nope'), isFalse);
+    });
+  });
+
   group('getRemovalCandidates', () {
     final cutoffDate = DateTime(2024, 1, 1);
     final beforeCutoff = DateTime(2023, 12, 31);

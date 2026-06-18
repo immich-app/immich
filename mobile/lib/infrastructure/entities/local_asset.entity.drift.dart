@@ -28,6 +28,9 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<i2.AssetPlaybackStyle> playbackStyle,
       i0.Value<String?> priorRemoteId,
       i0.Value<String?> syncedChecksum,
+      i0.Value<String?> burstId,
+      i0.Value<bool> isBurstRepresentative,
+      i0.Value<int> burstSelectionType,
     });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
@@ -49,6 +52,9 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<i2.AssetPlaybackStyle> playbackStyle,
       i0.Value<String?> priorRemoteId,
       i0.Value<String?> syncedChecksum,
+      i0.Value<String?> burstId,
+      i0.Value<bool> isBurstRepresentative,
+      i0.Value<int> burstSelectionType,
     });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -155,6 +161,21 @@ class $$LocalAssetEntityTableFilterComposer
     column: $table.syncedChecksum,
     builder: (column) => i0.ColumnFilters(column),
   );
+
+  i0.ColumnFilters<String> get burstId => $composableBuilder(
+    column: $table.burstId,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<bool> get isBurstRepresentative => $composableBuilder(
+    column: $table.isBurstRepresentative,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<int> get burstSelectionType => $composableBuilder(
+    column: $table.burstSelectionType,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -255,6 +276,21 @@ class $$LocalAssetEntityTableOrderingComposer
     column: $table.syncedChecksum,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<String> get burstId => $composableBuilder(
+    column: $table.burstId,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<bool> get isBurstRepresentative => $composableBuilder(
+    column: $table.isBurstRepresentative,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<int> get burstSelectionType => $composableBuilder(
+    column: $table.burstSelectionType,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -334,6 +370,19 @@ class $$LocalAssetEntityTableAnnotationComposer
     column: $table.syncedChecksum,
     builder: (column) => column,
   );
+
+  i0.GeneratedColumn<String> get burstId =>
+      $composableBuilder(column: $table.burstId, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get isBurstRepresentative => $composableBuilder(
+    column: $table.isBurstRepresentative,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<int> get burstSelectionType => $composableBuilder(
+    column: $table.burstSelectionType,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalAssetEntityTableTableManager
@@ -395,6 +444,9 @@ class $$LocalAssetEntityTableTableManager
                     const i0.Value.absent(),
                 i0.Value<String?> priorRemoteId = const i0.Value.absent(),
                 i0.Value<String?> syncedChecksum = const i0.Value.absent(),
+                i0.Value<String?> burstId = const i0.Value.absent(),
+                i0.Value<bool> isBurstRepresentative = const i0.Value.absent(),
+                i0.Value<int> burstSelectionType = const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion(
                 name: name,
                 type: type,
@@ -414,6 +466,9 @@ class $$LocalAssetEntityTableTableManager
                 playbackStyle: playbackStyle,
                 priorRemoteId: priorRemoteId,
                 syncedChecksum: syncedChecksum,
+                burstId: burstId,
+                isBurstRepresentative: isBurstRepresentative,
+                burstSelectionType: burstSelectionType,
               ),
           createCompanionCallback:
               ({
@@ -436,6 +491,9 @@ class $$LocalAssetEntityTableTableManager
                     const i0.Value.absent(),
                 i0.Value<String?> priorRemoteId = const i0.Value.absent(),
                 i0.Value<String?> syncedChecksum = const i0.Value.absent(),
+                i0.Value<String?> burstId = const i0.Value.absent(),
+                i0.Value<bool> isBurstRepresentative = const i0.Value.absent(),
+                i0.Value<int> burstSelectionType = const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -455,6 +513,9 @@ class $$LocalAssetEntityTableTableManager
                 playbackStyle: playbackStyle,
                 priorRemoteId: priorRemoteId,
                 syncedChecksum: syncedChecksum,
+                burstId: burstId,
+                isBurstRepresentative: isBurstRepresentative,
+                burstSelectionType: burstSelectionType,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -701,6 +762,44 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         type: i0.DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const i0.VerificationMeta _burstIdMeta = const i0.VerificationMeta(
+    'burstId',
+  );
+  @override
+  late final i0.GeneratedColumn<String> burstId = i0.GeneratedColumn<String>(
+    'burst_id',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _isBurstRepresentativeMeta =
+      const i0.VerificationMeta('isBurstRepresentative');
+  @override
+  late final i0.GeneratedColumn<bool> isBurstRepresentative =
+      i0.GeneratedColumn<bool>(
+        'is_burst_representative',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_burst_representative" IN (0, 1))',
+        ),
+        defaultValue: const i4.Constant(false),
+      );
+  static const i0.VerificationMeta _burstSelectionTypeMeta =
+      const i0.VerificationMeta('burstSelectionType');
+  @override
+  late final i0.GeneratedColumn<int> burstSelectionType =
+      i0.GeneratedColumn<int>(
+        'burst_selection_type',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const i4.Constant(0),
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     name,
@@ -721,6 +820,9 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     playbackStyle,
     priorRemoteId,
     syncedChecksum,
+    burstId,
+    isBurstRepresentative,
+    burstSelectionType,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -843,6 +945,30 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         ),
       );
     }
+    if (data.containsKey('burst_id')) {
+      context.handle(
+        _burstIdMeta,
+        burstId.isAcceptableOrUnknown(data['burst_id']!, _burstIdMeta),
+      );
+    }
+    if (data.containsKey('is_burst_representative')) {
+      context.handle(
+        _isBurstRepresentativeMeta,
+        isBurstRepresentative.isAcceptableOrUnknown(
+          data['is_burst_representative']!,
+          _isBurstRepresentativeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('burst_selection_type')) {
+      context.handle(
+        _burstSelectionTypeMeta,
+        burstSelectionType.isAcceptableOrUnknown(
+          data['burst_selection_type']!,
+          _burstSelectionTypeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -931,6 +1057,18 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}synced_checksum'],
       ),
+      burstId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}burst_id'],
+      ),
+      isBurstRepresentative: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}is_burst_representative'],
+      )!,
+      burstSelectionType: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}burst_selection_type'],
+      )!,
     );
   }
 
@@ -971,6 +1109,9 @@ class LocalAssetEntityData extends i0.DataClass
   final i2.AssetPlaybackStyle playbackStyle;
   final String? priorRemoteId;
   final String? syncedChecksum;
+  final String? burstId;
+  final bool isBurstRepresentative;
+  final int burstSelectionType;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -990,6 +1131,9 @@ class LocalAssetEntityData extends i0.DataClass
     required this.playbackStyle,
     this.priorRemoteId,
     this.syncedChecksum,
+    this.burstId,
+    required this.isBurstRepresentative,
+    required this.burstSelectionType,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -1040,6 +1184,11 @@ class LocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || syncedChecksum != null) {
       map['synced_checksum'] = i0.Variable<String>(syncedChecksum);
     }
+    if (!nullToAbsent || burstId != null) {
+      map['burst_id'] = i0.Variable<String>(burstId);
+    }
+    map['is_burst_representative'] = i0.Variable<bool>(isBurstRepresentative);
+    map['burst_selection_type'] = i0.Variable<int>(burstSelectionType);
     return map;
   }
 
@@ -1071,6 +1220,11 @@ class LocalAssetEntityData extends i0.DataClass
       ),
       priorRemoteId: serializer.fromJson<String?>(json['priorRemoteId']),
       syncedChecksum: serializer.fromJson<String?>(json['syncedChecksum']),
+      burstId: serializer.fromJson<String?>(json['burstId']),
+      isBurstRepresentative: serializer.fromJson<bool>(
+        json['isBurstRepresentative'],
+      ),
+      burstSelectionType: serializer.fromJson<int>(json['burstSelectionType']),
     );
   }
   @override
@@ -1099,6 +1253,9 @@ class LocalAssetEntityData extends i0.DataClass
       ),
       'priorRemoteId': serializer.toJson<String?>(priorRemoteId),
       'syncedChecksum': serializer.toJson<String?>(syncedChecksum),
+      'burstId': serializer.toJson<String?>(burstId),
+      'isBurstRepresentative': serializer.toJson<bool>(isBurstRepresentative),
+      'burstSelectionType': serializer.toJson<int>(burstSelectionType),
     };
   }
 
@@ -1121,6 +1278,9 @@ class LocalAssetEntityData extends i0.DataClass
     i2.AssetPlaybackStyle? playbackStyle,
     i0.Value<String?> priorRemoteId = const i0.Value.absent(),
     i0.Value<String?> syncedChecksum = const i0.Value.absent(),
+    i0.Value<String?> burstId = const i0.Value.absent(),
+    bool? isBurstRepresentative,
+    int? burstSelectionType,
   }) => i1.LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -1146,6 +1306,9 @@ class LocalAssetEntityData extends i0.DataClass
     syncedChecksum: syncedChecksum.present
         ? syncedChecksum.value
         : this.syncedChecksum,
+    burstId: burstId.present ? burstId.value : this.burstId,
+    isBurstRepresentative: isBurstRepresentative ?? this.isBurstRepresentative,
+    burstSelectionType: burstSelectionType ?? this.burstSelectionType,
   );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -1181,6 +1344,13 @@ class LocalAssetEntityData extends i0.DataClass
       syncedChecksum: data.syncedChecksum.present
           ? data.syncedChecksum.value
           : this.syncedChecksum,
+      burstId: data.burstId.present ? data.burstId.value : this.burstId,
+      isBurstRepresentative: data.isBurstRepresentative.present
+          ? data.isBurstRepresentative.value
+          : this.isBurstRepresentative,
+      burstSelectionType: data.burstSelectionType.present
+          ? data.burstSelectionType.value
+          : this.burstSelectionType,
     );
   }
 
@@ -1204,13 +1374,16 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('longitude: $longitude, ')
           ..write('playbackStyle: $playbackStyle, ')
           ..write('priorRemoteId: $priorRemoteId, ')
-          ..write('syncedChecksum: $syncedChecksum')
+          ..write('syncedChecksum: $syncedChecksum, ')
+          ..write('burstId: $burstId, ')
+          ..write('isBurstRepresentative: $isBurstRepresentative, ')
+          ..write('burstSelectionType: $burstSelectionType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     name,
     type,
     createdAt,
@@ -1229,7 +1402,10 @@ class LocalAssetEntityData extends i0.DataClass
     playbackStyle,
     priorRemoteId,
     syncedChecksum,
-  );
+    burstId,
+    isBurstRepresentative,
+    burstSelectionType,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1251,7 +1427,10 @@ class LocalAssetEntityData extends i0.DataClass
           other.longitude == this.longitude &&
           other.playbackStyle == this.playbackStyle &&
           other.priorRemoteId == this.priorRemoteId &&
-          other.syncedChecksum == this.syncedChecksum);
+          other.syncedChecksum == this.syncedChecksum &&
+          other.burstId == this.burstId &&
+          other.isBurstRepresentative == this.isBurstRepresentative &&
+          other.burstSelectionType == this.burstSelectionType);
 }
 
 class LocalAssetEntityCompanion
@@ -1274,6 +1453,9 @@ class LocalAssetEntityCompanion
   final i0.Value<i2.AssetPlaybackStyle> playbackStyle;
   final i0.Value<String?> priorRemoteId;
   final i0.Value<String?> syncedChecksum;
+  final i0.Value<String?> burstId;
+  final i0.Value<bool> isBurstRepresentative;
+  final i0.Value<int> burstSelectionType;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -1293,6 +1475,9 @@ class LocalAssetEntityCompanion
     this.playbackStyle = const i0.Value.absent(),
     this.priorRemoteId = const i0.Value.absent(),
     this.syncedChecksum = const i0.Value.absent(),
+    this.burstId = const i0.Value.absent(),
+    this.isBurstRepresentative = const i0.Value.absent(),
+    this.burstSelectionType = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -1313,6 +1498,9 @@ class LocalAssetEntityCompanion
     this.playbackStyle = const i0.Value.absent(),
     this.priorRemoteId = const i0.Value.absent(),
     this.syncedChecksum = const i0.Value.absent(),
+    this.burstId = const i0.Value.absent(),
+    this.isBurstRepresentative = const i0.Value.absent(),
+    this.burstSelectionType = const i0.Value.absent(),
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id);
@@ -1335,6 +1523,9 @@ class LocalAssetEntityCompanion
     i0.Expression<int>? playbackStyle,
     i0.Expression<String>? priorRemoteId,
     i0.Expression<String>? syncedChecksum,
+    i0.Expression<String>? burstId,
+    i0.Expression<bool>? isBurstRepresentative,
+    i0.Expression<int>? burstSelectionType,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1355,6 +1546,11 @@ class LocalAssetEntityCompanion
       if (playbackStyle != null) 'playback_style': playbackStyle,
       if (priorRemoteId != null) 'prior_remote_id': priorRemoteId,
       if (syncedChecksum != null) 'synced_checksum': syncedChecksum,
+      if (burstId != null) 'burst_id': burstId,
+      if (isBurstRepresentative != null)
+        'is_burst_representative': isBurstRepresentative,
+      if (burstSelectionType != null)
+        'burst_selection_type': burstSelectionType,
     });
   }
 
@@ -1377,6 +1573,9 @@ class LocalAssetEntityCompanion
     i0.Value<i2.AssetPlaybackStyle>? playbackStyle,
     i0.Value<String?>? priorRemoteId,
     i0.Value<String?>? syncedChecksum,
+    i0.Value<String?>? burstId,
+    i0.Value<bool>? isBurstRepresentative,
+    i0.Value<int>? burstSelectionType,
   }) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1397,6 +1596,10 @@ class LocalAssetEntityCompanion
       playbackStyle: playbackStyle ?? this.playbackStyle,
       priorRemoteId: priorRemoteId ?? this.priorRemoteId,
       syncedChecksum: syncedChecksum ?? this.syncedChecksum,
+      burstId: burstId ?? this.burstId,
+      isBurstRepresentative:
+          isBurstRepresentative ?? this.isBurstRepresentative,
+      burstSelectionType: burstSelectionType ?? this.burstSelectionType,
     );
   }
 
@@ -1463,6 +1666,17 @@ class LocalAssetEntityCompanion
     if (syncedChecksum.present) {
       map['synced_checksum'] = i0.Variable<String>(syncedChecksum.value);
     }
+    if (burstId.present) {
+      map['burst_id'] = i0.Variable<String>(burstId.value);
+    }
+    if (isBurstRepresentative.present) {
+      map['is_burst_representative'] = i0.Variable<bool>(
+        isBurstRepresentative.value,
+      );
+    }
+    if (burstSelectionType.present) {
+      map['burst_selection_type'] = i0.Variable<int>(burstSelectionType.value);
+    }
     return map;
   }
 
@@ -1486,7 +1700,10 @@ class LocalAssetEntityCompanion
           ..write('longitude: $longitude, ')
           ..write('playbackStyle: $playbackStyle, ')
           ..write('priorRemoteId: $priorRemoteId, ')
-          ..write('syncedChecksum: $syncedChecksum')
+          ..write('syncedChecksum: $syncedChecksum, ')
+          ..write('burstId: $burstId, ')
+          ..write('isBurstRepresentative: $isBurstRepresentative, ')
+          ..write('burstSelectionType: $burstSelectionType')
           ..write(')'))
         .toString();
   }
@@ -1503,4 +1720,8 @@ i0.Index get idxLocalAssetCreatedAt => i0.Index(
 i0.Index get idxLocalAssetPriorRemoteId => i0.Index(
   'idx_local_asset_prior_remote_id',
   'CREATE INDEX IF NOT EXISTS idx_local_asset_prior_remote_id ON local_asset_entity (prior_remote_id)',
+);
+i0.Index get idxLocalAssetBurstId => i0.Index(
+  'idx_local_asset_burst_id',
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_burst_id ON local_asset_entity (burst_id)',
 );

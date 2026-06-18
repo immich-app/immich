@@ -167,7 +167,7 @@ export class AssetMediaService extends BaseService {
         // emit AssetCreate with the populated stackId so clients don't briefly
         // see the asset as standalone
         try {
-          const linkResult = await this.linkToStackParent(auth.user.id, asset.id, dto.stackParentId);
+          const linkResult = await this.linkToStackParent(auth.user.id, asset.id, dto.stackParentId, dto.keepPrimary);
           await this.eventRepository.emit('AssetCreate', {
             asset: linkResult ? { ...asset, stackId: linkResult.stackId } : asset,
             file,
@@ -184,7 +184,7 @@ export class AssetMediaService extends BaseService {
 
       return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
-      return this.handleUploadError(error, auth, file, sidecarFile, dto.stackParentId);
+      return this.handleUploadError(error, auth, file, sidecarFile, dto.stackParentId, dto.keepPrimary);
     }
   }
 
@@ -192,13 +192,14 @@ export class AssetMediaService extends BaseService {
     ownerId: string,
     newAssetId: string,
     parentId: string,
+    keepPrimary = false,
   ): Promise<{ stackId: string; created: boolean } | null> {
     if (newAssetId === parentId) {
       // duplicate upload resolving to the parent itself - linking would create
       // a one-member stack
       return null;
     }
-    const result = await this.stackRepository.linkAsset(ownerId, newAssetId, parentId);
+    const result = await this.stackRepository.linkAsset(ownerId, newAssetId, parentId, keepPrimary);
     if (!result) {
       this.logger.warn(`Could not link asset ${newAssetId} to stack parent ${parentId}: parent missing or not owned`);
       return null;
@@ -341,6 +342,7 @@ export class AssetMediaService extends BaseService {
     file: UploadFile,
     sidecarFile?: UploadFile,
     stackParentId?: string,
+    keepPrimary?: boolean,
   ): Promise<AssetMediaResponseDto> {
     // clean up files
     await this.jobRepository.queue({
@@ -365,7 +367,7 @@ export class AssetMediaService extends BaseService {
         // stacks instead of silently staying separate. A link failure shouldn't
         // turn the duplicate response into a 500 - the asset exists either way.
         try {
-          await this.linkToStackParent(auth.user.id, duplicateId, stackParentId);
+          await this.linkToStackParent(auth.user.id, duplicateId, stackParentId, keepPrimary);
         } catch (error: any) {
           this.logger.error(`Failed to stack duplicate ${duplicateId}: ${error}`, error?.stack);
         }

@@ -116,7 +116,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
         options.includeHiddenAssets = false
-        
+
         let assets = getAssetsFromAlbum(in: album, options: options)
         
         let isCloud = album.assetCollectionSubtype == .albumCloudShared || album.assetCollectionSubtype == .albumMyPhotoStream
@@ -176,13 +176,14 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       deletedAssets.formUnion(details.deletedLocalIdentifiers)
       
       if (updated.isEmpty) { continue }
-      
+
       let options = PHFetchOptions()
       options.includeHiddenAssets = false
+      options.includeAllBurstAssets = true
       let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
       for i in 0..<result.count {
         let asset = result.object(at: i)
-        
+
         // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
         let predicate = PlatformAsset(
           id: asset.localIdentifier,
@@ -191,14 +192,29 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
           durationMs: 0,
           orientation: 0,
           isFavorite: false,
-          playbackStyle: .unknown
+          playbackStyle: .unknown,
+          isBurstRepresentative: false,
+          burstSelectionType: 0
         )
         if (updatedAssets.contains(AssetWrapper(with: predicate))) {
           continue
         }
-        
+
         let domainAsset = AssetWrapper(with: asset.toPlatformAsset())
         updatedAssets.insert(domainAsset)
+
+        // iOS reports only the representative in change details, so a delta sync
+        // would otherwise miss the other frames. Pull the full burst group
+        // explicitly and add each member (deduped by the wrapper's id).
+        if let burstId = asset.burstIdentifier {
+          let burstOptions = PHFetchOptions()
+          burstOptions.includeHiddenAssets = false
+          burstOptions.includeAllBurstAssets = true
+          let members = PHAsset.fetchAssets(withBurstIdentifier: burstId, options: burstOptions)
+          members.enumerateObjects { (member, _, _) in
+            updatedAssets.insert(AssetWrapper(with: member.toPlatformAsset()))
+          }
+        }
       }
     }
     
@@ -310,7 +326,12 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       var missingAssetIds = Set(assetIds)
       var assets = [PHAsset]()
       assets.reserveCapacity(assetIds.count)
-      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: nil).enumerateObjects { (asset, _, stop) in
+      // includeAllBurstAssets: a non-representative burst member is invisible to a
+      // default fetch-by-id, so without this it'd be reported "not found" and never
+      // hashed — leaving it out of the backup candidate set permanently.
+      let hashFetchOptions = PHFetchOptions()
+      hashFetchOptions.includeAllBurstAssets = true
+      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: hashFetchOptions).enumerateObjects { (asset, _, stop) in
         if Task.isCancelled {
           stop.pointee = true
           return
@@ -446,6 +467,11 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   }
   
   private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
+    // Surface every burst member, not just the auto-picked representative. Set in
+    // the shared fetch helper so album asset counts and the asset lists stay
+    // consistent — LocalSyncService compares assetCount against the synced set, so
+    // a count that excludes burst members while the list includes them wedges sync.
+    options.includeAllBurstAssets = true
     // Ensure to actually getting all assets for the Recents album
     if (album.assetCollectionSubtype == .smartAlbumUserLibrary) {
       return PHAsset.fetchAssets(with: options)
@@ -476,6 +502,38 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       }
     }
     return mappings;
+  }
+
+  // Streams the asset's current rendition — the same resource hashAssets hashes
+  // (getResource(): the isCurrent rendition, the lone .photo otherwise). Used for
+  // iOS burst members, which photo_manager can't resolve by id; streaming the same
+  // bytes the hash measured keeps the server checksum aligned with the local one
+  // (else the asset shows cloud-only). includeAllBurstAssets so a non-rep resolves.
+  func getCurrentResource(
+    assetId: String,
+    allowNetworkAccess: Bool,
+    completion: @escaping (Result<BaseResource?, Error>) -> Void
+  ) {
+    Task { [weak self] in
+      guard let self = self else { return }
+      let options = PHFetchOptions()
+      options.includeAllBurstAssets = true
+      guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: options).firstObject,
+        let resource = asset.getResource()
+      else {
+        return self.completeWhenActive(for: completion, with: .success(nil))
+      }
+      do {
+        let result = try await self.streamBaseResource(
+          resource: resource,
+          localId: assetId,
+          allowNetworkAccess: allowNetworkAccess
+        )
+        self.completeWhenActive(for: completion, with: .success(result))
+      } catch {
+        self.completeWhenActive(for: completion, with: .failure(error))
+      }
+    }
   }
 
   func getBaseResource(

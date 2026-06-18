@@ -234,7 +234,10 @@ data class PlatformAsset (
   val adjustmentTime: Long? = null,
   val latitude: Double? = null,
   val longitude: Double? = null,
-  val playbackStyle: PlatformAssetPlaybackStyle
+  val playbackStyle: PlatformAssetPlaybackStyle,
+  val burstId: String? = null,
+  val isBurstRepresentative: Boolean,
+  val burstSelectionType: Long
 )
  {
   companion object {
@@ -253,7 +256,10 @@ data class PlatformAsset (
       val latitude = pigeonVar_list[11] as Double?
       val longitude = pigeonVar_list[12] as Double?
       val playbackStyle = pigeonVar_list[13] as PlatformAssetPlaybackStyle
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationMs, orientation, isFavorite, adjustmentTime, latitude, longitude, playbackStyle)
+      val burstId = pigeonVar_list[14] as String?
+      val isBurstRepresentative = pigeonVar_list[15] as Boolean
+      val burstSelectionType = pigeonVar_list[16] as Long
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationMs, orientation, isFavorite, adjustmentTime, latitude, longitude, playbackStyle, burstId, isBurstRepresentative, burstSelectionType)
     }
   }
   fun toList(): List<Any?> {
@@ -272,6 +278,9 @@ data class PlatformAsset (
       latitude,
       longitude,
       playbackStyle,
+      burstId,
+      isBurstRepresentative,
+      burstSelectionType,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -282,7 +291,7 @@ data class PlatformAsset (
       return true
     }
     val other = other as PlatformAsset
-    return MessagesPigeonUtils.deepEquals(this.id, other.id) && MessagesPigeonUtils.deepEquals(this.name, other.name) && MessagesPigeonUtils.deepEquals(this.type, other.type) && MessagesPigeonUtils.deepEquals(this.createdAt, other.createdAt) && MessagesPigeonUtils.deepEquals(this.updatedAt, other.updatedAt) && MessagesPigeonUtils.deepEquals(this.width, other.width) && MessagesPigeonUtils.deepEquals(this.height, other.height) && MessagesPigeonUtils.deepEquals(this.durationMs, other.durationMs) && MessagesPigeonUtils.deepEquals(this.orientation, other.orientation) && MessagesPigeonUtils.deepEquals(this.isFavorite, other.isFavorite) && MessagesPigeonUtils.deepEquals(this.adjustmentTime, other.adjustmentTime) && MessagesPigeonUtils.deepEquals(this.latitude, other.latitude) && MessagesPigeonUtils.deepEquals(this.longitude, other.longitude) && MessagesPigeonUtils.deepEquals(this.playbackStyle, other.playbackStyle)
+    return MessagesPigeonUtils.deepEquals(this.id, other.id) && MessagesPigeonUtils.deepEquals(this.name, other.name) && MessagesPigeonUtils.deepEquals(this.type, other.type) && MessagesPigeonUtils.deepEquals(this.createdAt, other.createdAt) && MessagesPigeonUtils.deepEquals(this.updatedAt, other.updatedAt) && MessagesPigeonUtils.deepEquals(this.width, other.width) && MessagesPigeonUtils.deepEquals(this.height, other.height) && MessagesPigeonUtils.deepEquals(this.durationMs, other.durationMs) && MessagesPigeonUtils.deepEquals(this.orientation, other.orientation) && MessagesPigeonUtils.deepEquals(this.isFavorite, other.isFavorite) && MessagesPigeonUtils.deepEquals(this.adjustmentTime, other.adjustmentTime) && MessagesPigeonUtils.deepEquals(this.latitude, other.latitude) && MessagesPigeonUtils.deepEquals(this.longitude, other.longitude) && MessagesPigeonUtils.deepEquals(this.playbackStyle, other.playbackStyle) && MessagesPigeonUtils.deepEquals(this.burstId, other.burstId) && MessagesPigeonUtils.deepEquals(this.isBurstRepresentative, other.isBurstRepresentative) && MessagesPigeonUtils.deepEquals(this.burstSelectionType, other.burstSelectionType)
   }
 
   override fun hashCode(): Int {
@@ -301,6 +310,9 @@ data class PlatformAsset (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.latitude)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.longitude)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.playbackStyle)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.burstId)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.isBurstRepresentative)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.burstSelectionType)
     return result
   }
 }
@@ -672,6 +684,15 @@ interface NativeSyncApi {
   fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit)
   fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult>
   fun getBaseResource(assetId: String, allowNetworkAccess: Boolean, callback: (Result<BaseResource?>) -> Unit)
+  /**
+   * Streams the bytes immich treats as the asset's canonical content — the same
+   * resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+   * rendition). Used to upload iOS burst members: they're invisible to
+   * photo_manager, so this is the only way to read their file, and streaming
+   * the same resource the hash measured keeps the server checksum aligned with
+   * the local one (else the asset shows cloud-only). iOS-only; android returns null.
+   */
+  fun getCurrentResource(assetId: String, allowNetworkAccess: Boolean, callback: (Result<BaseResource?>) -> Unit)
   fun getEditState(assetId: String, allowNetworkAccess: Boolean, callback: (Result<EditState>) -> Unit)
   fun getBaseLivePhoto(assetId: String, allowNetworkAccess: Boolean, callback: (Result<BaseLivePhoto?>) -> Unit)
 
@@ -944,6 +965,27 @@ interface NativeSyncApi {
             val assetIdArg = args[0] as String
             val allowNetworkAccessArg = args[1] as Boolean
             api.getBaseResource(assetIdArg, allowNetworkAccessArg) { result: Result<BaseResource?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCurrentResource$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetIdArg = args[0] as String
+            val allowNetworkAccessArg = args[1] as Boolean
+            api.getCurrentResource(assetIdArg, allowNetworkAccessArg) { result: Result<BaseResource?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(MessagesPigeonUtils.wrapError(error))
