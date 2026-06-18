@@ -314,7 +314,7 @@ class Drift extends $Drift {
             await m.alterTable(TableMigration(v30.settings));
           },
           from30To31: (m, v31) async {
-            await m.create(v30.trashSyncEntity);
+            await m.create(v31.trashSyncEntity);
             await m.createIndex(v31.idxTrashSyncIsSyncApproved);
             await m.createIndex(v31.idxTrashSyncChecksumStatus);
             await m.addColumn(v31.trashedLocalAssetEntity, v31.trashedLocalAssetEntity.iCloudId);

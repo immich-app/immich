@@ -167,7 +167,7 @@ Future<void> _migrateTo27(Drift drift) async {
           .insertOnConflictUpdate(
             SettingsEntityCompanion.insert(
               key: key.name,
-              value: key.encode(TrashSyncMode.autoSync),
+              value: Value(key.encode(TrashSyncMode.autoSync)),
               updatedAt: Value(DateTime.now()),
             ),
           );
