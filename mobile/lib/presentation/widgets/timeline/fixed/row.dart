@@ -62,14 +62,11 @@ class RenderFixedRow extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, _RowParentData> {
   RenderFixedRow({
     List<RenderBox>? children,
-    required double height,
-    required List<double> widths,
-    required double spacing,
-    required TextDirection textDirection,
-  }) : _height = height,
-       _widths = widths,
-       _spacing = spacing,
-       _textDirection = textDirection {
+    required this._height,
+    required this._widths,
+    required this._spacing,
+    required this._textDirection,
+  }) {
     addAll(children);
   }
 
@@ -77,7 +74,9 @@ class RenderFixedRow extends RenderBox
   double _height;
 
   set height(double value) {
-    if (_height == value) return;
+    if (_height == value) {
+      return;
+    }
     _height = value;
     markNeedsLayout();
   }
@@ -86,7 +85,9 @@ class RenderFixedRow extends RenderBox
   List<double> _widths;
 
   set widths(List<double> value) {
-    if (listEquals(_widths, value)) return;
+    if (listEquals(_widths, value)) {
+      return;
+    }
     _widths = value;
     markNeedsLayout();
   }
@@ -95,7 +96,9 @@ class RenderFixedRow extends RenderBox
   double _spacing;
 
   set spacing(double value) {
-    if (_spacing == value) return;
+    if (_spacing == value) {
+      return;
+    }
     _spacing = value;
     markNeedsLayout();
   }
@@ -104,7 +107,9 @@ class RenderFixedRow extends RenderBox
   TextDirection _textDirection;
 
   set textDirection(TextDirection value) {
-    if (_textDirection == value) return;
+    if (_textDirection == value) {
+      return;
+    }
     _textDirection = value;
     markNeedsLayout();
   }

@@ -1,9 +1,15 @@
 import 'dart:convert';
 
+import 'package:diacritic/diacritic.dart' as diacritic;
+
 extension StringExtension on String {
   String capitalize() {
     return split(" ").map((str) => str.isEmpty ? str : str[0].toUpperCase() + str.substring(1)).join(" ");
   }
+
+  String? get nullIfEmpty => isEmpty ? null : this;
+
+  String removeDiacritics() => diacritic.removeDiacritics(this);
 }
 
 extension DurationExtension on String {

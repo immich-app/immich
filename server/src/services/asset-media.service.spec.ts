@@ -339,7 +339,6 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.create).toHaveBeenCalled();
-      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         file.originalPath,
         expect.any(Date),

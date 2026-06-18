@@ -59,7 +59,7 @@ const MemoryStatisticsResponseSchema = z
 
 const MemoryResponseSchema = z
   .object({
-    id: z.string().describe('Memory ID'),
+    id: z.uuidv4().describe('Memory ID'),
     createdAt: isoDatetimeToDate.describe('Creation date'),
     updatedAt: isoDatetimeToDate.describe('Last update date'),
     deletedAt: isoDatetimeToDate.optional().describe('Deletion date'),
@@ -67,7 +67,7 @@ const MemoryResponseSchema = z
     seenAt: isoDatetimeToDate.optional().describe('Date when memory was seen'),
     showAt: isoDatetimeToDate.optional().describe('Date when memory should be shown'),
     hideAt: isoDatetimeToDate.optional().describe('Date when memory should be hidden'),
-    ownerId: z.string().describe('Owner user ID'),
+    ownerId: z.uuidv4().describe('Owner user ID'),
     type: MemoryTypeSchema,
     data: OnThisDaySchema,
     isSaved: z.boolean().describe('Is memory saved'),

@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
@@ -106,10 +107,17 @@ class DriftSearchPage extends HookConsumerWidget {
 
       Future.microtask(() {
         textSearchController.clear();
+        peopleCurrentFilterWidget.value = null;
+        dateRangeCurrentFilterWidget.value = null;
+        cameraCurrentFilterWidget.value = null;
+        tagCurrentFilterWidget.value = null;
+        mediaTypeCurrentFilterWidget.value = null;
+        ratingCurrentFilterWidget.value = null;
+        displayOptionCurrentFilterWidget.value = null;
+        locationCurrentFilterWidget.value = preFilter.location.city != null
+            ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
+            : null;
         search(preFilter);
-        if (preFilter.location.city != null) {
-          locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
-        }
       });
 
       return null;
@@ -178,7 +186,7 @@ class DriftSearchPage extends HookConsumerWidget {
             expanded: true,
             onSearch: handleApply,
             onClear: handleClear,
-            child: TagPicker(onSelect: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+            child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
           ),
         ),
       );
@@ -396,12 +404,15 @@ class DriftSearchPage extends HookConsumerWidget {
 
       handleClear() {
         ratingCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(rating: SearchRatingFilter(rating: null)));
+        search(filter.value.copyWith(rating: SearchRatingFilter()));
       }
 
       handleApply() {
-        ratingCurrentFilterWidget.value = rating.rating != null
-            ? Text('rating_count'.t(args: {'count': rating.rating!}), style: context.textTheme.labelLarge)
+        ratingCurrentFilterWidget.value = rating.rating.isSome
+            ? Text(
+                'rating_count'.t(args: {'count': rating.rating.unwrapOrNull ?? 0}),
+                style: context.textTheme.labelLarge,
+              )
             : null;
         search(filter.value.copyWith(rating: rating));
       }
@@ -701,7 +712,9 @@ class _SearchResultGrid extends ConsumerWidget {
   bool _onScrollUpdateNotification(ScrollNotification notification) {
     final metrics = notification.metrics;
 
-    if (metrics.axis != Axis.vertical) return false;
+    if (metrics.axis != Axis.vertical) {
+      return false;
+    }
 
     final isBottomSheet = notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
     final remaining = metrics.maxScrollExtent - metrics.pixels;
@@ -728,7 +741,9 @@ class _SearchResultGrid extends ConsumerWidget {
 
     final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
 
-    if (hasMore) return null;
+    if (hasMore) {
+      return null;
+    }
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -867,6 +882,12 @@ class _QuickLinkList extends StatelessWidget {
             icon: Icons.schedule_outlined,
             isTop: true,
             onTap: () => context.pushRoute(const DriftRecentlyTakenRoute()),
+          ),
+          _QuickLink(
+            title: context.t.recently_added,
+            icon: Icons.upload_outlined,
+            isTop: true,
+            onTap: () => context.pushRoute(const DriftRecentlyAddedRoute()),
           ),
           _QuickLink(
             title: 'videos'.t(context: context),

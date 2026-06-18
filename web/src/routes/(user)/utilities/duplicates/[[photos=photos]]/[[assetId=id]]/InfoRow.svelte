@@ -6,21 +6,23 @@
     icon: string;
     children?: Snippet;
     borderBottom?: boolean;
-    highlight?: boolean;
     title?: string;
   }
 
-  let { icon, children, borderBottom = true, highlight = false, title }: Props = $props();
+  let { icon, children, borderBottom = true, title }: Props = $props();
 </script>
 
-<div class="grid grid-cols-[25px_1fr] w-full px-1 py-0.5" class:border-b={borderBottom} {title}>
-  <Icon {icon} size="18" class="text-dark/25 {highlight ? 'text-primary/75' : ''}" />
-  <div class="justify-self-end text-end rounded px-1 transition-colors w-full overflow-hidden">
-    <Text
-      size="tiny"
-      fontWeight={highlight ? 'semi-bold' : 'normal'}
-      class={`${highlight ? 'text-primary' : ''} text-ellipsis w-full overflow-hidden`}
-    >
+<div class="grid w-full grid-cols-[20px_auto_1fr] overflow-hidden px-1 py-0.5" class:border-b={borderBottom} {title}>
+  <Icon {icon} size="16" class="self-center text-dark/25" />
+
+  {#if title}
+    <Text size="tiny" class="self-center truncate px-1 pr-2 text-immich-fg/40 dark:text-immich-dark-fg/40">
+      {title}
+    </Text>
+  {/if}
+
+  <div class="justify-self-end overflow-hidden rounded-sm px-1 text-end transition-colors">
+    <Text size="tiny" class="break-all">
       {@render children?.()}
     </Text>
   </div>

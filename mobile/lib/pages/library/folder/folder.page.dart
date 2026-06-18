@@ -31,7 +31,9 @@ RecursiveFolder? _findFolderInStructure(RootFolder rootFolder, RecursiveFolder t
 
     if (folder.subfolders.isNotEmpty) {
       final found = _findFolderInStructure(folder, targetFolder);
-      if (found != null) return found;
+      if (found != null) {
+        return found;
+      }
     }
   }
   return null;
@@ -113,7 +115,9 @@ class FolderContent extends HookConsumerWidget {
 
     // Initial asset fetch
     useEffect(() {
-      if (folder == null) return;
+      if (folder == null) {
+        return;
+      }
       ref.read(folderRenderListProvider(folder!).notifier).fetchAssets(sortOrder);
       return null;
     }, [folder]);
@@ -193,7 +197,7 @@ class FolderContent extends HookConsumerWidget {
                           style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          "${asset.exifInfo.fileSize != null ? formatBytes(asset.exifInfo.fileSize ?? 0) : ""} • ${DateFormat.yMMMd().format(asset.createdAt)}",
+                          "${asset.exifInfo.fileSize != null ? "${formatBytes(asset.exifInfo.fileSize ?? 0)} • " : ""}${DateFormat.yMMMd().format(asset.createdAt.toLocal())}",
                           style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                         ),
                       ),

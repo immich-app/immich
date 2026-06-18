@@ -59,6 +59,7 @@
         groupTitle: string,
         asset: TimelineAsset,
       ) => void,
+      event?: MouseEvent,
     ) => void;
   }
 
@@ -261,6 +262,7 @@
     if (!enableRouting) {
       invisible = false;
     }
+    scrollableElement?.focus({ preventScroll: true });
   });
 
   const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, timelineMonthScrollPercent: number) => {
@@ -616,7 +618,7 @@
 <!-- Right margin MUST be equal to the width of scrubber -->
 <section
   id="asset-grid"
-  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  class={['h-full scrollbar-hidden overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
@@ -684,9 +686,9 @@
                 {asset}
                 {albumUsers}
                 {groupIndex}
-                onClick={(asset) => {
+                onClick={(asset, event) => {
                   if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
+                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick, event);
                   } else {
                     _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
                   }

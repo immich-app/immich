@@ -33,6 +33,7 @@
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
   import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -97,6 +98,8 @@
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
     assetViewerManager.closeEditFacesPanel();
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
@@ -126,7 +129,7 @@
     </div>
 
     {#if asset.isOffline}
-      <section class="px-4 py-4">
+      <section class="p-4">
         <div role="alert">
           <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
             {$t('asset_offline')}
@@ -140,7 +143,7 @@
               {/if}
             </p>
           </div>
-          <div class="rounded-b bg-red-500 px-4 py-2 text-white text-sm">
+          <div class="rounded-b bg-red-500 px-4 py-2 text-sm text-white">
             <p>{asset.originalPath}</p>
           </div>
         </div>
@@ -151,7 +154,7 @@
     <DetailPanelRating {asset} {isOwner} />
     <DetailPanelPeople {asset} {isOwner} {previousRoute} />
 
-    <div class="px-4 py-4">
+    <div class="p-4">
       {#if asset.exifInfo}
         <div class="flex h-10 w-full items-center justify-between text-sm">
           <Text size="small" color="muted">{$t('details')}</Text>
@@ -166,7 +169,7 @@
         <div><Icon icon={mdiImageOutline} size="24" /></div>
 
         <div>
-          <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
+          <p class="flex place-items-center gap-2 break-all whitespace-pre-wrap">
             {asset.originalFileName}
             {#if isOwner}
               <IconButton
@@ -181,7 +184,7 @@
             {/if}
           </p>
           {#if assetViewerManager.isShowAssetPath}
-            <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
+            <p class="pb-2 text-xs break-all opacity-50 hover:text-primary" transition:slide={{ duration: 250 }}>
               <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
               <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
                 {asset.originalPath}
@@ -251,7 +254,7 @@
                 <a
                   href={Route.search({ lensModel: asset.exifInfo.lensModel })}
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:text-primary line-clamp-1"
+                  class="line-clamp-1 hover:text-primary"
                 >
                   {asset.exifInfo.lensModel}
                 </a>
@@ -280,7 +283,7 @@
       {#await import('$lib/components/shared-components/map/Map.svelte')}
         {#await delay(timeToLoadTheMap) then}
           <!-- show the loading spinner only if loading the map takes too much time -->
-          <div class="flex items-center justify-center h-full w-full">
+          <div class="flex size-full items-center justify-center">
             <LoadingSpinner />
           </div>
         {/await}
@@ -323,14 +326,14 @@
   {/if}
 
   {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
-    <section class="px-6 dark:text-immich-dark-fg mt-4">
+    <section class="mt-4 px-6 dark:text-immich-dark-fg">
       <Text size="small" color="muted">{$t('shared_by')}</Text>
       <div class="flex gap-4 pt-4">
         <div>
           <UserAvatar user={asset.owner} size="md" />
         </div>
 
-        <div class="mb-auto mt-auto">
+        <div class="my-auto">
           <p>
             {asset.owner.name}
           </p>
@@ -341,24 +344,24 @@
 
   {#await albums then albums}
     {#if albums.length > 0}
-      <section class="px-6 py-6 dark:text-immich-dark-fg">
+      <section class="p-6 dark:text-immich-dark-fg">
         <div class="pb-4">
           <Text size="small" color="muted">{$t('appears_in')}</Text>
         </div>
         {#each albums as album (album.id)}
           <a href={Route.viewAlbum(album)}>
-            <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
+            <div class="flex items-center gap-4 pt-2 hover:cursor-pointer">
               <div>
                 <img
                   alt={album.albumName}
-                  class="h-12.5 w-12.5 rounded object-cover"
+                  class="size-12.5 rounded-sm object-cover"
                   src={album.albumThumbnailAssetId &&
                     getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
                   draggable="false"
                 />
               </div>
 
-              <div class="mb-auto mt-auto">
+              <div class="my-auto">
                 <p class="dark:text-immich-dark-primary">{album.albumName}</p>
                 <div class="flex flex-col gap-0 text-sm">
                   <div>

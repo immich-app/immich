@@ -104,6 +104,7 @@
           break;
         }
       }
+      // no default
     }
 
     try {
@@ -115,6 +116,7 @@
           toastManager.primary($t('admin.cleared_jobs', { values: { job: item.title } }));
           break;
         }
+        // no default
       }
     } catch (error) {
       handleError(error, $t('admin.failed_job_command', { values: { command: dto.command, job: item.title } }));
@@ -122,7 +124,7 @@
   };
 </script>
 
-<div class="flex flex-col gap-7 mt-10">
+<div class="mt-10 flex flex-col gap-7">
   {#each queueList as [queueName, props] (queueName)}
     {@const queue = queues.find(({ name }) => name === queueName)}
     {#if queue}

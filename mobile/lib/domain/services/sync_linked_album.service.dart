@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -34,7 +36,7 @@ class SyncLinkedAlbumService {
 
   final _log = Logger("SyncLinkedAlbumService");
 
-  Future<void> syncLinkedAlbums(String userId) async {
+  Future<void> syncLinkedAlbums(String userId, {Completer<void>? cancellation}) async {
     final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
 
     await Future.wait(
@@ -55,7 +57,11 @@ class SyncLinkedAlbumService {
         final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
         _log.fine("Syncing ${assetIds.length} assets to remote album: ${remoteAlbum.name}");
         if (assetIds.isNotEmpty) {
-          final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
+          final album = await _albumApiRepository.addAssets(
+            remoteAlbum.id,
+            assetIds,
+            abortTrigger: cancellation?.future,
+          );
           await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
         }
       }),

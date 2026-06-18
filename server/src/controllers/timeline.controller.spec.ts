@@ -42,7 +42,9 @@ describe(TimelineController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/timeline/buckets').query({ bbox: '1,2,3' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['[bbox] bbox must have 4 comma-separated numbers: west,south,east,north'] as any),
+        errorDto.validationError([
+          { path: ['bbox'], message: 'bbox must have 4 comma-separated numbers: west,south,east,north' },
+        ]),
       );
     });
 
@@ -51,7 +53,7 @@ describe(TimelineController.name, () => {
         .get('/timeline/buckets')
         .query({ bbox: '1,2,3,invalid' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[bbox] bbox parts must be valid numbers'] as any));
+      expect(body).toEqual(errorDto.validationError([{ path: ['bbox'], message: 'bbox parts must be valid numbers' }]));
     });
   });
 

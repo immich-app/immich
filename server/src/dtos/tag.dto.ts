@@ -1,21 +1,21 @@
 import { createZodDto } from 'nestjs-zod';
 import { Tag } from 'src/database';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
-import { emptyStringToNull, hexColor } from 'src/validation';
+import { asDateTimeString } from 'src/utils/date';
+import { hexColor } from 'src/validation';
 import z from 'zod';
 
 const TagCreateSchema = z
   .object({
     name: z.string().describe('Tag name'),
     parentId: z.uuidv4().nullish().describe('Parent tag ID'),
-    color: emptyStringToNull(hexColor.nullable()).optional().describe('Tag color (hex)'),
+    color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagCreateDto' });
 
 const TagUpdateSchema = z
   .object({
-    color: emptyStringToNull(hexColor.nullable()).optional().describe('Tag color (hex)'),
+    color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagUpdateDto' });
 
@@ -40,7 +40,7 @@ const TagBulkAssetsResponseSchema = z
 
 export const TagResponseSchema = z
   .object({
-    id: z.string().describe('Tag ID'),
+    id: z.uuidv4().describe('Tag ID'),
     parentId: z.string().optional().describe('Parent tag ID'),
     name: z.string().describe('Tag name'),
     value: z.string().describe('Tag value (full path)'),
@@ -65,8 +65,8 @@ export function mapTag(entity: MaybeDehydrated<Tag>): TagResponseDto {
     parentId: entity.parentId ?? undefined,
     name: entity.value.split('/').at(-1) as string,
     value: entity.value,
-    createdAt: asDateString(entity.createdAt),
-    updatedAt: asDateString(entity.updatedAt),
+    createdAt: asDateTimeString(entity.createdAt),
+    updatedAt: asDateTimeString(entity.updatedAt),
     color: entity.color ?? undefined,
   };
 }

@@ -35,7 +35,9 @@ isOnboarded: $isOnboarded,
 
   @override
   bool operator ==(covariant Onboarding other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return isOnboarded == other.isOnboarded;
   }
@@ -53,6 +55,7 @@ class Preferences {
   final bool tagsEnabled;
   final AvatarColor userAvatarColor;
   final bool showSupportBadge;
+  final int minimumFaces;
 
   const Preferences({
     this.foldersEnabled = false,
@@ -63,6 +66,7 @@ class Preferences {
     this.tagsEnabled = false,
     this.userAvatarColor = AvatarColor.primary,
     this.showSupportBadge = true,
+    this.minimumFaces = 3,
   });
 
   Preferences copyWith({
@@ -74,6 +78,7 @@ class Preferences {
     bool? tagsEnabled,
     AvatarColor? userAvatarColor,
     bool? showSupportBadge,
+    int? minimumFaces,
   }) {
     return Preferences(
       foldersEnabled: foldersEnabled ?? this.foldersEnabled,
@@ -84,6 +89,7 @@ class Preferences {
       tagsEnabled: tagsEnabled ?? this.tagsEnabled,
       userAvatarColor: userAvatarColor ?? this.userAvatarColor,
       showSupportBadge: showSupportBadge ?? this.showSupportBadge,
+      minimumFaces: minimumFaces ?? this.minimumFaces,
     );
   }
 
@@ -97,6 +103,7 @@ class Preferences {
     preferences["tags-Enabled"] = tagsEnabled;
     preferences["avatar-Color"] = userAvatarColor.value;
     preferences["purchase-ShowSupportBadge"] = showSupportBadge;
+    preferences["minimumFaces"] = minimumFaces;
     return preferences;
   }
 
@@ -113,6 +120,7 @@ class Preferences {
         orElse: () => AvatarColor.primary,
       ),
       showSupportBadge: (map["purchase"] as Map<String, Object?>?)?["showSupportBadge"] as bool? ?? true,
+      minimumFaces: (map["people"] as Map<String, Object?>?)?["minimumFaces"] as int? ?? 3,
     );
   }
 
@@ -127,12 +135,15 @@ sharedLinksEnabled: $sharedLinksEnabled,
 tagsEnabled: $tagsEnabled,
 userAvatarColor: $userAvatarColor,
 showSupportBadge: $showSupportBadge,
+minimumFaces: $minimumFaces,
 }''';
   }
 
   @override
   bool operator ==(covariant Preferences other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.foldersEnabled == foldersEnabled &&
         other.memoriesEnabled == memoriesEnabled &&
@@ -141,7 +152,8 @@ showSupportBadge: $showSupportBadge,
         other.sharedLinksEnabled == sharedLinksEnabled &&
         other.tagsEnabled == tagsEnabled &&
         other.userAvatarColor == userAvatarColor &&
-        other.showSupportBadge == showSupportBadge;
+        other.showSupportBadge == showSupportBadge &&
+        other.minimumFaces == minimumFaces;
   }
 
   @override
@@ -153,7 +165,8 @@ showSupportBadge: $showSupportBadge,
         sharedLinksEnabled.hashCode ^
         tagsEnabled.hashCode ^
         userAvatarColor.hashCode ^
-        showSupportBadge.hashCode;
+        showSupportBadge.hashCode ^
+        minimumFaces.hashCode;
   }
 }
 
@@ -199,7 +212,9 @@ licenseKey: $licenseKey,
 
   @override
   bool operator ==(covariant License other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return activatedAt == other.activatedAt && activationKey == other.activationKey && licenseKey == other.licenseKey;
   }
@@ -251,7 +266,9 @@ license: ${license ?? "<NA>"},
 
   @override
   bool operator ==(covariant UserMetadata other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.userId == userId &&
         other.key == key &&

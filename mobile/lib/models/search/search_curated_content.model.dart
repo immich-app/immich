@@ -42,7 +42,9 @@ class SearchCuratedContent {
 
   @override
   bool operator ==(covariant SearchCuratedContent other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.label == label && other.subtitle == subtitle && other.id == id;
   }

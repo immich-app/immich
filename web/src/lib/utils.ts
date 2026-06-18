@@ -24,10 +24,11 @@ import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
-import { langs } from '$lib/utils/i18n';
+import { convertBCP47, langs } from '$lib/utils/i18n';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -46,7 +47,7 @@ interface DateFormatter {
 export const initLanguage = async () => {
   const preferenceLang = get(lang);
   for (const { code, loader } of langs) {
-    register(code, loader);
+    register(convertBCP47(code), loader);
   }
 
   await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
@@ -243,21 +244,65 @@ export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
+export const getAssetHlsUrl = (id: string) => {
+  return createUrl(`/assets/${id}/video/stream/main.m3u8`, authManager.params);
+};
+
+export const getAssetHlsSessionUrl = (id: string, sessionId: string) => {
+  return createUrl(`/assets/${id}/video/stream/${sessionId}`, authManager.params);
+};
+
 export const getProfileImageUrl = (user: UserResponseDto) =>
   createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
-export const copyToClipboard = async (secret: string) => {
+export const copyToClipboard = async (secret: string | unknown) => {
   const $t = get(t);
 
   try {
-    await navigator.clipboard.writeText(secret);
+    const value = typeof secret === 'string' ? secret : JSON.stringify(secret, jsonReplacer, 2);
+    await navigator.clipboard.writeText(value);
     toastManager.info($t('copied_to_clipboard'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
+};
+
+// https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify/43636793#43636793
+const jsonReplacer = (_key: string, value: unknown) =>
+  value instanceof Object && !Array.isArray(value)
+    ? Object.keys(value)
+        .sort()
+        // eslint-disable-next-line unicorn/no-array-reduce
+        .reduce((sorted: { [key: string]: unknown }, key) => {
+          sorted[key] = (value as { [key: string]: unknown })[key];
+          return sorted;
+        }, {})
+    : value;
+
+export const downloadUrl = (url: string, filename: string) => {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+};
+
+export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
+
+export const downloadJson = (data: unknown, filename: string) => {
+  const blob = new Blob([JSON.stringify(data, jsonReplacer, 2)], { type: 'application/json' });
+  const downloadKey = filename;
+  downloadManager.add(downloadKey, blob.size);
+  downloadManager.update(downloadKey, blob.size);
+  downloadBlob(blob, downloadKey);
+  setTimeout(() => downloadManager.clear(downloadKey), 5000);
 };
 
 export const oauth = {
@@ -374,26 +419,8 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
   };
 }
 
-export const getReleaseType = (
-  current: ServerVersionResponseDto,
-  newVersion: ServerVersionResponseDto,
-): 'major' | 'minor' | 'patch' | 'none' => {
-  if (current.major !== newVersion.major) {
-    return 'major';
-  }
-
-  if (current.minor !== newVersion.minor) {
-    return 'minor';
-  }
-
-  if (current.patch !== newVersion.patch) {
-    return 'patch';
-  }
-
-  return 'none';
-};
-
-export const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+export const semverToName = ({ major, minor, patch, prerelease }: ServerVersionResponseDto) =>
+  `v${major}.${minor}.${patch}${prerelease === null ? '' : `-rc.${prerelease}`}`;
 
 export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));

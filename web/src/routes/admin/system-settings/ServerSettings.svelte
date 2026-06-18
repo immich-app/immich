@@ -16,7 +16,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={(event) => event.preventDefault()}>
-      <div class="mt-4 ms-4">
+      <div class="ms-4 mt-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_external_domain_settings')}

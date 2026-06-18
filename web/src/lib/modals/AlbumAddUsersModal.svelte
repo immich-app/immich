@@ -64,7 +64,7 @@
   {onClose}
 >
   {#if loading}
-    <div class="w-full flex place-items-center place-content-center">
+    <div class="flex w-full place-content-center place-items-center">
       <LoadingSpinner />
     </div>
   {:else}
@@ -78,7 +78,7 @@
       {#each filteredUsers as user (user.id)}
         <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>
           <UserAvatar {user} size="md" />
-          <div class="text-start grow">
+          <div class="grow text-start">
             <Text fontWeight="medium">{user.name}</Text>
             <Text size="tiny" color="muted">{user.email}</Text>
           </div>

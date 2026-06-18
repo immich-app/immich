@@ -78,7 +78,7 @@
     src={url}
     onLoad={setLoaded}
     onError={setErrored}
-    class={['object-cover bg-gray-300 dark:bg-gray-700', sharedClasses, imageClass]}
+    class={['bg-gray-300 object-cover dark:bg-gray-700', sharedClasses, imageClass]}
     {style}
     alt={loaded || errored ? altText : ''}
     draggable={false}
@@ -88,7 +88,7 @@
 {/if}
 
 {#if hidden}
-  <div class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform">
+  <div class="absolute inset-s-1/2 top-1/2 translate-[-50%] transform">
     <!-- TODO fix `title` type -->
     <Icon title={title ?? undefined} icon={mdiEyeOffOutline} size="2em" class={hiddenIconClass} />
   </div>

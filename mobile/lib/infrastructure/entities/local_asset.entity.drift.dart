@@ -1348,3 +1348,7 @@ i0.Index get idxLocalAssetCloudId => i0.Index(
   'idx_local_asset_cloud_id',
   'CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)',
 );
+i0.Index get idxLocalAssetCreatedAt => i0.Index(
+  'idx_local_asset_created_at',
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_created_at ON local_asset_entity (created_at)',
+);

@@ -28,8 +28,12 @@ export class SchemaCheck extends CommandRunner {
             }
 
             case 'missing': {
-              console.log(`  - ${migration.name} exists, but has not been applied to the database`);
+              console.log(`  - ${migration.name} exists on disk, but has not been applied to the database`);
               break;
+            }
+
+            case 'applied': {
+              break; // happy path, do nothing
             }
           }
         }

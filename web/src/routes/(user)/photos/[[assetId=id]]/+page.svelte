@@ -106,7 +106,7 @@
       <ImageCarousel {items} />
     {/if}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mt-10 mx-auto" />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mx-auto mt-10" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

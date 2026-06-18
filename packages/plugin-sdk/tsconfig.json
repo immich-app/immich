@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "lib": ["esnext"],
+    "module": "nodenext",
+    "moduleDetection": "force",
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    "outDir": "./dist",
+    "paths": {
+      "src/*": ["./src/*"]
+    },
+    "removeComments": true,
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "strict": true,
+    "target": "esnext",
+    "types": ["node", "@extism/js-pdk"],
+    "verbatimModuleSyntax": true
+  }
+}

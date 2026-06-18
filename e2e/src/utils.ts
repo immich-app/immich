@@ -90,7 +90,7 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../cli' }).promise;
+  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../packages/cli' }).promise;
 export const dockerExec = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', args.join(' ')]);
 export const immichAdmin = (args: string[]) => dockerExec([`immich-admin ${args.join(' ')}`]);
@@ -192,6 +192,7 @@ export const utils = {
       'user',
       'system_metadata',
       'tag',
+      'integrity_report',
     ];
 
     const truncateTables = tables.filter((table) => table !== 'system_metadata');
@@ -559,14 +560,60 @@ export const utils = {
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
   },
 
+  putFile(source: string, dest: string) {
+    return executeCommand('docker', ['cp', source, `immich-e2e-server:${dest}`]).promise;
+  },
+
+  async putTextFile(contents: string, dest: string) {
+    const dir = await mkdtemp(join(tmpdir(), 'test-'));
+    const fn = join(dir, 'file');
+    await pipeline(Readable.from(contents), createWriteStream(fn));
+    return executeCommand('docker', ['cp', fn, `immich-e2e-server:${dest}`]).promise;
+  },
+
   async move(source: string, dest: string) {
     return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
+  async copyFolder(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'cp', '-r', source, dest]).promise;
+  },
+
+  async deleteFile(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', path]).promise;
+  },
+
+  async deleteFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', '-r', path]).promise;
+  },
+
+  async truncateFolder(path: string) {
+    return executeCommand('docker', [
+      'exec',
+      'immich-e2e-server',
+      'find',
+      path,
+      '-type',
+      'f',
+      '-exec',
+      'truncate',
+      '-s',
+      '1',
+      '{}',
+      ';',
+    ]).promise;
+  },
+
+  async mkFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mkdir', '-p', path]).promise;
   },
 
   createBackup: async (accessToken: string) => {
     await utils.createJob(accessToken, {
       name: ManualJobName.BackupDatabase,
     });
+
+    await utils.waitForQueueFinish(accessToken, 'backupDatabase');
 
     return utils.poll(
       () => request(app).get('/admin/database-backups').set('Authorization', `Bearer ${accessToken}`),
@@ -577,10 +624,8 @@ export const utils = {
 
   resetBackups: async (accessToken: string) => {
     const { backups } = await listDatabaseBackups({ headers: asBearerAuth(accessToken) });
-
-    const backupFiles = backups.map((b) => b.filename);
     await deleteDatabaseBackup(
-      { databaseBackupDeleteDto: { backups: backupFiles } },
+      { databaseBackupDeleteDto: { backups: backups.map((dto) => dto.filename) } },
       { headers: asBearerAuth(accessToken) },
     );
   },
