@@ -471,7 +471,6 @@ extension PlatformToLocalAsset on PlatformAsset {
     isEdited: false,
     burstId: burstId,
     isBurstRepresentative: isBurstRepresentative,
-    burstSelectionType: burstSelectionType,
   );
 }
 

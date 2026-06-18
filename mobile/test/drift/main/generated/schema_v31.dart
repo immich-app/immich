@@ -1672,15 +1672,6 @@ class LocalAssetEntity extends Table
         'NOT NULL DEFAULT 0 CHECK (is_burst_representative IN (0, 1))',
     defaultValue: const CustomExpression('0'),
   );
-  late final GeneratedColumn<int> burstSelectionType = GeneratedColumn<int>(
-    'burst_selection_type',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 0',
-    defaultValue: const CustomExpression('0'),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     name,
@@ -1703,7 +1694,6 @@ class LocalAssetEntity extends Table
     syncedChecksum,
     burstId,
     isBurstRepresentative,
-    burstSelectionType,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1796,10 +1786,6 @@ class LocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}is_burst_representative'],
       )!,
-      burstSelectionType: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}burst_selection_type'],
-      )!,
     );
   }
 
@@ -1840,7 +1826,6 @@ class LocalAssetEntityData extends DataClass
   final String? syncedChecksum;
   final String? burstId;
   final int isBurstRepresentative;
-  final int burstSelectionType;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -1862,7 +1847,6 @@ class LocalAssetEntityData extends DataClass
     this.syncedChecksum,
     this.burstId,
     required this.isBurstRepresentative,
-    required this.burstSelectionType,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1909,7 +1893,6 @@ class LocalAssetEntityData extends DataClass
       map['burst_id'] = Variable<String>(burstId);
     }
     map['is_burst_representative'] = Variable<int>(isBurstRepresentative);
-    map['burst_selection_type'] = Variable<int>(burstSelectionType);
     return map;
   }
 
@@ -1941,7 +1924,6 @@ class LocalAssetEntityData extends DataClass
       isBurstRepresentative: serializer.fromJson<int>(
         json['isBurstRepresentative'],
       ),
-      burstSelectionType: serializer.fromJson<int>(json['burstSelectionType']),
     );
   }
   @override
@@ -1968,7 +1950,6 @@ class LocalAssetEntityData extends DataClass
       'syncedChecksum': serializer.toJson<String?>(syncedChecksum),
       'burstId': serializer.toJson<String?>(burstId),
       'isBurstRepresentative': serializer.toJson<int>(isBurstRepresentative),
-      'burstSelectionType': serializer.toJson<int>(burstSelectionType),
     };
   }
 
@@ -1993,7 +1974,6 @@ class LocalAssetEntityData extends DataClass
     Value<String?> syncedChecksum = const Value.absent(),
     Value<String?> burstId = const Value.absent(),
     int? isBurstRepresentative,
-    int? burstSelectionType,
   }) => LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -2021,7 +2001,6 @@ class LocalAssetEntityData extends DataClass
         : this.syncedChecksum,
     burstId: burstId.present ? burstId.value : this.burstId,
     isBurstRepresentative: isBurstRepresentative ?? this.isBurstRepresentative,
-    burstSelectionType: burstSelectionType ?? this.burstSelectionType,
   );
   LocalAssetEntityData copyWithCompanion(LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -2061,9 +2040,6 @@ class LocalAssetEntityData extends DataClass
       isBurstRepresentative: data.isBurstRepresentative.present
           ? data.isBurstRepresentative.value
           : this.isBurstRepresentative,
-      burstSelectionType: data.burstSelectionType.present
-          ? data.burstSelectionType.value
-          : this.burstSelectionType,
     );
   }
 
@@ -2089,14 +2065,13 @@ class LocalAssetEntityData extends DataClass
           ..write('priorRemoteId: $priorRemoteId, ')
           ..write('syncedChecksum: $syncedChecksum, ')
           ..write('burstId: $burstId, ')
-          ..write('isBurstRepresentative: $isBurstRepresentative, ')
-          ..write('burstSelectionType: $burstSelectionType')
+          ..write('isBurstRepresentative: $isBurstRepresentative')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
     name,
     type,
     createdAt,
@@ -2117,8 +2092,7 @@ class LocalAssetEntityData extends DataClass
     syncedChecksum,
     burstId,
     isBurstRepresentative,
-    burstSelectionType,
-  ]);
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2142,8 +2116,7 @@ class LocalAssetEntityData extends DataClass
           other.priorRemoteId == this.priorRemoteId &&
           other.syncedChecksum == this.syncedChecksum &&
           other.burstId == this.burstId &&
-          other.isBurstRepresentative == this.isBurstRepresentative &&
-          other.burstSelectionType == this.burstSelectionType);
+          other.isBurstRepresentative == this.isBurstRepresentative);
 }
 
 class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
@@ -2167,7 +2140,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
   final Value<String?> syncedChecksum;
   final Value<String?> burstId;
   final Value<int> isBurstRepresentative;
-  final Value<int> burstSelectionType;
   const LocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -2189,7 +2161,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     this.syncedChecksum = const Value.absent(),
     this.burstId = const Value.absent(),
     this.isBurstRepresentative = const Value.absent(),
-    this.burstSelectionType = const Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -2212,7 +2183,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     this.syncedChecksum = const Value.absent(),
     this.burstId = const Value.absent(),
     this.isBurstRepresentative = const Value.absent(),
-    this.burstSelectionType = const Value.absent(),
   }) : name = Value(name),
        type = Value(type),
        id = Value(id);
@@ -2237,7 +2207,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     Expression<String>? syncedChecksum,
     Expression<String>? burstId,
     Expression<int>? isBurstRepresentative,
-    Expression<int>? burstSelectionType,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -2261,8 +2230,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
       if (burstId != null) 'burst_id': burstId,
       if (isBurstRepresentative != null)
         'is_burst_representative': isBurstRepresentative,
-      if (burstSelectionType != null)
-        'burst_selection_type': burstSelectionType,
     });
   }
 
@@ -2287,7 +2254,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     Value<String?>? syncedChecksum,
     Value<String?>? burstId,
     Value<int>? isBurstRepresentative,
-    Value<int>? burstSelectionType,
   }) {
     return LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -2311,7 +2277,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
       burstId: burstId ?? this.burstId,
       isBurstRepresentative:
           isBurstRepresentative ?? this.isBurstRepresentative,
-      burstSelectionType: burstSelectionType ?? this.burstSelectionType,
     );
   }
 
@@ -2380,9 +2345,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
         isBurstRepresentative.value,
       );
     }
-    if (burstSelectionType.present) {
-      map['burst_selection_type'] = Variable<int>(burstSelectionType.value);
-    }
     return map;
   }
 
@@ -2408,8 +2370,7 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
           ..write('priorRemoteId: $priorRemoteId, ')
           ..write('syncedChecksum: $syncedChecksum, ')
           ..write('burstId: $burstId, ')
-          ..write('isBurstRepresentative: $isBurstRepresentative, ')
-          ..write('burstSelectionType: $burstSelectionType')
+          ..write('isBurstRepresentative: $isBurstRepresentative')
           ..write(')'))
         .toString();
   }
@@ -9050,10 +9011,10 @@ class Settings extends Table with TableInfo<Settings, SettingsData> {
   late final GeneratedColumn<String> value = GeneratedColumn<String>(
     'value',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
   );
   late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
     'updated_at',
@@ -9084,7 +9045,7 @@ class Settings extends Table with TableInfo<Settings, SettingsData> {
       value: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}value'],
-      )!,
+      ),
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}updated_at'],
@@ -9109,18 +9070,16 @@ class Settings extends Table with TableInfo<Settings, SettingsData> {
 
 class SettingsData extends DataClass implements Insertable<SettingsData> {
   final String key;
-  final String value;
+  final String? value;
   final String updatedAt;
-  const SettingsData({
-    required this.key,
-    required this.value,
-    required this.updatedAt,
-  });
+  const SettingsData({required this.key, this.value, required this.updatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['key'] = Variable<String>(key);
-    map['value'] = Variable<String>(value);
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<String>(value);
+    }
     map['updated_at'] = Variable<String>(updatedAt);
     return map;
   }
@@ -9132,7 +9091,7 @@ class SettingsData extends DataClass implements Insertable<SettingsData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SettingsData(
       key: serializer.fromJson<String>(json['key']),
-      value: serializer.fromJson<String>(json['value']),
+      value: serializer.fromJson<String?>(json['value']),
       updatedAt: serializer.fromJson<String>(json['updatedAt']),
     );
   }
@@ -9141,17 +9100,20 @@ class SettingsData extends DataClass implements Insertable<SettingsData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'key': serializer.toJson<String>(key),
-      'value': serializer.toJson<String>(value),
+      'value': serializer.toJson<String?>(value),
       'updatedAt': serializer.toJson<String>(updatedAt),
     };
   }
 
-  SettingsData copyWith({String? key, String? value, String? updatedAt}) =>
-      SettingsData(
-        key: key ?? this.key,
-        value: value ?? this.value,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  SettingsData copyWith({
+    String? key,
+    Value<String?> value = const Value.absent(),
+    String? updatedAt,
+  }) => SettingsData(
+    key: key ?? this.key,
+    value: value.present ? value.value : this.value,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
   SettingsData copyWithCompanion(SettingsCompanion data) {
     return SettingsData(
       key: data.key.present ? data.key.value : this.key,
@@ -9183,7 +9145,7 @@ class SettingsData extends DataClass implements Insertable<SettingsData> {
 
 class SettingsCompanion extends UpdateCompanion<SettingsData> {
   final Value<String> key;
-  final Value<String> value;
+  final Value<String?> value;
   final Value<String> updatedAt;
   const SettingsCompanion({
     this.key = const Value.absent(),
@@ -9192,10 +9154,9 @@ class SettingsCompanion extends UpdateCompanion<SettingsData> {
   });
   SettingsCompanion.insert({
     required String key,
-    required String value,
+    this.value = const Value.absent(),
     this.updatedAt = const Value.absent(),
-  }) : key = Value(key),
-       value = Value(value);
+  }) : key = Value(key);
   static Insertable<SettingsData> custom({
     Expression<String>? key,
     Expression<String>? value,
@@ -9210,7 +9171,7 @@ class SettingsCompanion extends UpdateCompanion<SettingsData> {
 
   SettingsCompanion copyWith({
     Value<String>? key,
-    Value<String>? value,
+    Value<String?>? value,
     Value<String>? updatedAt,
   }) {
     return SettingsCompanion(

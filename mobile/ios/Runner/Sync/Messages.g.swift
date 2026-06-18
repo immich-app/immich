@@ -207,7 +207,6 @@ struct PlatformAsset: Hashable {
   var playbackStyle: PlatformAssetPlaybackStyle
   var burstId: String? = nil
   var isBurstRepresentative: Bool
-  var burstSelectionType: Int64
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -228,7 +227,6 @@ struct PlatformAsset: Hashable {
     let playbackStyle = pigeonVar_list[13] as! PlatformAssetPlaybackStyle
     let burstId: String? = nilOrValue(pigeonVar_list[14])
     let isBurstRepresentative = pigeonVar_list[15] as! Bool
-    let burstSelectionType = pigeonVar_list[16] as! Int64
 
     return PlatformAsset(
       id: id,
@@ -246,8 +244,7 @@ struct PlatformAsset: Hashable {
       longitude: longitude,
       playbackStyle: playbackStyle,
       burstId: burstId,
-      isBurstRepresentative: isBurstRepresentative,
-      burstSelectionType: burstSelectionType
+      isBurstRepresentative: isBurstRepresentative
     )
   }
   func toList() -> [Any?] {
@@ -268,14 +265,13 @@ struct PlatformAsset: Hashable {
       playbackStyle,
       burstId,
       isBurstRepresentative,
-      burstSelectionType,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle) && deepEqualsMessages(lhs.burstId, rhs.burstId) && deepEqualsMessages(lhs.isBurstRepresentative, rhs.isBurstRepresentative) && deepEqualsMessages(lhs.burstSelectionType, rhs.burstSelectionType)
+    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle) && deepEqualsMessages(lhs.burstId, rhs.burstId) && deepEqualsMessages(lhs.isBurstRepresentative, rhs.isBurstRepresentative)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -296,7 +292,6 @@ struct PlatformAsset: Hashable {
     deepHashMessages(value: playbackStyle, hasher: &hasher)
     deepHashMessages(value: burstId, hasher: &hasher)
     deepHashMessages(value: isBurstRepresentative, hasher: &hasher)
-    deepHashMessages(value: burstSelectionType, hasher: &hasher)
   }
 }
 

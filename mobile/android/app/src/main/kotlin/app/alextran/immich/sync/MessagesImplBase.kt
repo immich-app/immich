@@ -206,7 +206,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
             playbackStyle = playbackStyle,
             // Android has no burstIdentifier equivalent in MediaStore — bursts are iOS-only.
             isBurstRepresentative = false,
-            burstSelectionType = 0L,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }

@@ -341,7 +341,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           // Photos re-pick that moves the representative flag is reflected.
           burstId: Value(asset.burstId),
           isBurstRepresentative: Value(asset.isBurstRepresentative),
-          burstSelectionType: Value(asset.burstSelectionType),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,

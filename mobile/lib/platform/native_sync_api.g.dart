@@ -108,7 +108,6 @@ class PlatformAsset {
     required this.playbackStyle,
     this.burstId,
     required this.isBurstRepresentative,
-    required this.burstSelectionType,
   });
 
   String id;
@@ -143,8 +142,6 @@ class PlatformAsset {
 
   bool isBurstRepresentative;
 
-  int burstSelectionType;
-
   List<Object?> _toList() {
     return <Object?>[
       id,
@@ -163,7 +160,6 @@ class PlatformAsset {
       playbackStyle,
       burstId,
       isBurstRepresentative,
-      burstSelectionType,
     ];
   }
 
@@ -190,7 +186,6 @@ class PlatformAsset {
       playbackStyle: result[13]! as PlatformAssetPlaybackStyle,
       burstId: result[14] as String?,
       isBurstRepresentative: result[15]! as bool,
-      burstSelectionType: result[16]! as int,
     );
   }
 
@@ -218,8 +213,7 @@ class PlatformAsset {
         _deepEquals(longitude, other.longitude) &&
         _deepEquals(playbackStyle, other.playbackStyle) &&
         _deepEquals(burstId, other.burstId) &&
-        _deepEquals(isBurstRepresentative, other.isBurstRepresentative) &&
-        _deepEquals(burstSelectionType, other.burstSelectionType);
+        _deepEquals(isBurstRepresentative, other.isBurstRepresentative);
   }
 
   @override

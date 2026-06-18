@@ -372,15 +372,9 @@ class BackgroundUploadService {
       if (metadata.checksum != null && metadata.checksum != localAsset.checksum) {
         return;
       }
-      try {
-        final state = await _nativeSyncApi
-            .getEditState(localAsset.id, allowNetworkAccess: false)
-            .timeout(const Duration(seconds: 30));
-        if (state == EditState.edited) {
-          return;
-        }
-      } catch (_) {
-        // No positive edit evidence; proceed like before.
+      // No positive edit evidence (null on timeout/error) → proceed like before.
+      if (await _probeEditState(localAsset.id) == EditState.edited) {
+        return;
       }
 
       final uploadTask = await getLivePhotoUploadTask(localAsset, remoteId);
@@ -607,14 +601,17 @@ class BackgroundUploadService {
     if (metadata.checksum != null && metadata.checksum != asset.checksum) {
       return true;
     }
+    // No positive revert evidence (null on timeout/error) → let the chain finish.
+    return await _probeEditState(asset.id) == EditState.notEdited;
+  }
+
+  // Offline edit-state read with a hard 30s cap; null on timeout/error so the
+  // caller falls back to its no-evidence path.
+  Future<EditState?> _probeEditState(String id) async {
     try {
-      final state = await _nativeSyncApi
-          .getEditState(asset.id, allowNetworkAccess: false)
-          .timeout(const Duration(seconds: 30));
-      return state == EditState.notEdited;
+      return await _nativeSyncApi.getEditState(id, allowNetworkAccess: false).timeout(const Duration(seconds: 30));
     } catch (_) {
-      // No positive revert evidence; let the chain finish.
-      return false;
+      return null;
     }
   }
 
@@ -1072,7 +1069,7 @@ class BackgroundUploadService {
       deviceAssetId: asset.id,
       metadata: metadata,
       // Rep-less group → standalone (no stack); otherwise stack under the anchor.
-      fields: parentRemoteId != null ? {'stackParentId': parentRemoteId, 'keepPrimary': 'true'} : const {},
+      fields: burstStackFields(parentRemoteId),
       group: kBackupGroup,
       isFavorite: asset.isFavorite,
       requiresWiFi: _shouldRequireWiFi(asset),

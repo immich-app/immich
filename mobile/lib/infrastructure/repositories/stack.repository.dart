@@ -80,6 +80,10 @@ class DriftStackRepository extends DriftDatabaseRepository {
         .toList();
   }
 
+  // A trashed or locked-folder (visibility = 3) remote can't be stacked onto,
+  // so it reads as trashed; anything else is live.
+  PriorState _stateFromBlocked(bool blocked) => blocked ? PriorState.trashed : PriorState.live;
+
   // What the synced remote table knows about a stamped prior. missing is
   // ambiguous: either just uploaded and not synced back yet, or hard-deleted on
   // the server — the caller tells them apart via syncedChecksum (null = a chain
@@ -98,7 +102,7 @@ class DriftStackRepository extends DriftDatabaseRepository {
     if (row == null) {
       return PriorState.missing;
     }
-    return row.read<bool>('blocked') ? PriorState.trashed : PriorState.live;
+    return _stateFromBlocked(row.read<bool>('blocked'));
   }
 
   // The synced remote owned by [ownerId] with these exact bytes, if any. The
@@ -116,7 +120,7 @@ class DriftStackRepository extends DriftDatabaseRepository {
     if (row == null) {
       return (state: PriorState.missing, remoteId: null);
     }
-    return (state: row.read<bool>('blocked') ? PriorState.trashed : PriorState.live, remoteId: row.read<String>('id'));
+    return (state: _stateFromBlocked(row.read<bool>('blocked')), remoteId: row.read<String>('id'));
   }
 
   // The stack a remote asset belongs to, if any. Used by the revert path to find

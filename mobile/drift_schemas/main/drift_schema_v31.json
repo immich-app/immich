@@ -654,16 +654,6 @@
             "default_dart": "const CustomExpression('0')",
             "default_client_dart": null,
             "dsl_features": []
-          },
-          {
-            "name": "burst_selection_type",
-            "getter_name": "burstSelectionType",
-            "moor_type": "int",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": []
           }
         ],
         "is_virtual": false,
@@ -2877,7 +2867,7 @@
             "name": "value",
             "getter_name": "value",
             "moor_type": "string",
-            "nullable": false,
+            "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
@@ -3299,7 +3289,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"prior_remote_id\" TEXT NULL, \"synced_checksum\" TEXT NULL, \"burst_id\" TEXT NULL, \"is_burst_representative\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_burst_representative\" IN (0, 1)), \"burst_selection_type\" INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"prior_remote_id\" TEXT NULL, \"synced_checksum\" TEXT NULL, \"burst_id\" TEXT NULL, \"is_burst_representative\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_burst_representative\" IN (0, 1)), PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3569,7 +3559,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"settings\" (\"key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"settings\" (\"key\" TEXT NOT NULL, \"value\" TEXT NULL, \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY (\"key\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },

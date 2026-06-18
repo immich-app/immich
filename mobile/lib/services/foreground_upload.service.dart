@@ -264,6 +264,18 @@ class ForegroundUploadService {
     await Future.wait(workerFutures);
   }
 
+  // Multipart fields common to every asset upload. deviceAssetId/deviceId are
+  // required by server v2.7.5 and below (drop in v4.0 per #27818). Returns a
+  // fresh mutable map so callers can add stackParentId/metadata/etc.
+  Map<String, String> _baseUploadFields(LocalAsset asset) => {
+    'deviceAssetId': asset.localId!,
+    'deviceId': Store.get(StoreKey.deviceId),
+    'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
+    'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
+    'isFavorite': asset.isFavorite.toString(),
+    'duration': (asset.durationMs ?? 0).toString(),
+  };
+
   Future<void> _uploadSingleAsset(
     LocalAsset asset,
     Completer<void>? cancelToken, {
@@ -304,16 +316,7 @@ class ForegroundUploadService {
         }
       }
 
-      final deviceId = Store.get(StoreKey.deviceId);
-      final fields = {
-        // deviceAssetId/deviceId required by server v2.7.5 and below (drop in v4.0 per #27818).
-        'deviceAssetId': asset.localId!,
-        'deviceId': deviceId,
-        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
-        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
-        'isFavorite': asset.isFavorite.toString(),
-        'duration': (asset.durationMs ?? 0).toString(),
-      };
+      final fields = _baseUploadFields(asset);
 
       // Edit pair: upload the unedited original first and stack the edit onto it. For a
       // live photo that's the original still+video pair; this upload stays the edit and
@@ -566,18 +569,8 @@ class ForegroundUploadService {
 
     final file = File(resource.path);
     try {
-      final deviceId = Store.get(StoreKey.deviceId);
-      final fields = {
-        'deviceAssetId': asset.localId!,
-        'deviceId': deviceId,
-        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
-        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
-        'isFavorite': asset.isFavorite.toString(),
-        'duration': (asset.durationMs ?? 0).toString(),
-        // Rep-less group → standalone (no stack); otherwise stack under the anchor.
-        if (parentRemoteId != null) 'stackParentId': parentRemoteId,
-        if (parentRemoteId != null) 'keepPrimary': 'true',
-      };
+      // Rep-less group → standalone (no stack); otherwise stack under the anchor.
+      final fields = _baseUploadFields(asset)..addAll(burstStackFields(parentRemoteId));
       final metadata = _cloudMetadata(asset, includeAdjustment: true);
       if (metadata != null) {
         fields['metadata'] = metadata;

@@ -40,13 +40,10 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   // iOS burst grouping. burstId = PHAsset.burstIdentifier (null for non-burst).
   // isBurstRepresentative = the auto-picked lead frame at detection; the rep is
-  // the timeline tile and the stack anchor. burstSelectionType = 0 none /
-  // 1 autoPick / 2 userPick / 3 both (informational — the rep, not the pick,
-  // anchors the stack). All three re-sync on every delta, so a Photos re-pick
-  // that moves the rep flag is reflected.
+  // the timeline tile and the stack anchor. Both re-sync on every delta, so a
+  // Photos re-pick that moves the rep flag is reflected.
   TextColumn get burstId => text().nullable()();
   BoolColumn get isBurstRepresentative => boolean().withDefault(const Constant(false))();
-  IntColumn get burstSelectionType => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -76,6 +73,5 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     syncedChecksum: syncedChecksum,
     burstId: burstId,
     isBurstRepresentative: isBurstRepresentative,
-    burstSelectionType: burstSelectionType,
   );
 }

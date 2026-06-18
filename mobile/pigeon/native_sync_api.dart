@@ -37,11 +37,9 @@ class PlatformAsset {
 
   // iOS burst grouping. `burstId` = PHAsset.burstIdentifier (null for non-burst
   // assets). `isBurstRepresentative` = the auto-picked lead frame at detection
-  // time. `burstSelectionType` = 0 none / 1 autoPick / 2 userPick / 3 both.
-  // android always returns null/false/0 (no burstIdentifier equivalent).
+  // time. android always returns null/false (no burstIdentifier equivalent).
   final String? burstId;
   final bool isBurstRepresentative;
-  final int burstSelectionType;
 
   const PlatformAsset({
     required this.id,
@@ -60,7 +58,6 @@ class PlatformAsset {
     this.playbackStyle = PlatformAssetPlaybackStyle.unknown,
     this.burstId,
     this.isBurstRepresentative = false,
-    this.burstSelectionType = 0,
   });
 }
 

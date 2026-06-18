@@ -30,6 +30,12 @@ const String kHiddenVisibility = 'hidden';
 // (asset-media.service.ts). Matching it clears the stale prior stamps so the
 // next backup cycle re-resolves instead of looping on the same dead id.
 const String kDeadStackParentError = 'Cannot stack onto a trashed or missing asset';
+
+// Multipart fields that stack a burst frame under its representative without
+// letting it steal the cover (server keepPrimary, asset-media.service.ts).
+// Empty when there's no anchor yet (rep-less group → standalone upload).
+Map<String, String> burstStackFields(String? anchorRemoteId) =>
+    anchorRemoteId != null ? {'stackParentId': anchorRemoteId, 'keepPrimary': 'true'} : const {};
 const String kDownloadGroupImage = 'group_image';
 const String kDownloadGroupVideo = 'group_video';
 const String kDownloadGroupLivePhoto = 'group_livephoto';

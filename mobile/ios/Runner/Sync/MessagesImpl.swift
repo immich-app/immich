@@ -193,8 +193,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
           orientation: 0,
           isFavorite: false,
           playbackStyle: .unknown,
-          isBurstRepresentative: false,
-          burstSelectionType: 0
+          isBurstRepresentative: false
         )
         if (updatedAssets.contains(AssetWrapper(with: predicate))) {
           continue

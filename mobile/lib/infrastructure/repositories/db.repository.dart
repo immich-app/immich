@@ -316,7 +316,6 @@ class Drift extends $Drift {
             await m.addColumn(v31.localAssetEntity, v31.localAssetEntity.syncedChecksum);
             await m.addColumn(v31.localAssetEntity, v31.localAssetEntity.burstId);
             await m.addColumn(v31.localAssetEntity, v31.localAssetEntity.isBurstRepresentative);
-            await m.addColumn(v31.localAssetEntity, v31.localAssetEntity.burstSelectionType);
             await m.createIndex(v31.idxLocalAssetPriorRemoteId);
             await m.createIndex(v31.idxLocalAssetBurstId);
           },
