@@ -97,7 +97,7 @@ class ForegroundUploadService {
   /// Returns the number of candidates this pass attempted (after [skipIds]
   /// filtering), so the multi-pass driver can stop as soon as a pass has nothing
   /// left to do instead of walking the candidate set one extra time.
-  Future<int> uploadCandidates(
+  Future<({int attempted, bool hadBurst})> uploadCandidates(
     String userId,
     Completer<void> cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
@@ -113,8 +113,12 @@ class ForegroundUploadService {
       candidates = candidates.where((a) => !skipIds.contains(a.id)).toList();
     }
     if (candidates.isEmpty) {
-      return 0;
+      return (attempted: 0, hadBurst: false);
     }
+    // Burst frames may unblock more candidates next pass (a member only becomes
+    // eligible once its representative has uploaded), so the driver keeps going.
+    // Without burst frames this pass is final - no wasted follow-up query.
+    final hadBurst = candidates.any((a) => a.burstId != null);
 
     final networkCapabilities = await _connectivityApi.getCapabilities();
     final hasWifi = networkCapabilities.isUnmetered;
@@ -133,7 +137,7 @@ class ForegroundUploadService {
         processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
     }
-    return candidates.length;
+    return (attempted: candidates.length, hadBurst: hadBurst);
   }
 
   /// Sequential upload - used for background isolate where concurrent HTTP clients may cause issues

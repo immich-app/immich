@@ -287,36 +287,28 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
 
     // iOS burst stacking needs more than one pass: a burst's representative
-    // uploads first, then its members become eligible (they stack under it).
-    // Loop until a pass has no candidates left to attempt or the cap is hit.
-    // A non-burst library stops after the second pass (the first uploads
-    // everything, the second finds them all skipped and returns 0). `myToken`
+    // uploads first, then its members become eligible (they stack under it). So
+    // loop only while a pass still has burst frames to work through - a non-burst
+    // library (and all of Android) finishes in a single pass with no extra
+    // candidate query. Capped so a stuck candidate can't spin forever. `myToken`
     // is captured once: if another backup supersedes this one (restart installs
     // a fresh token), `identical` fails and this loop exits instead of running
-    // concurrently against the shared session state.
+    // concurrently against the shared session state. `skipIds` keeps a just-
+    // uploaded asset (remote row not synced back yet) from being re-grabbed.
     final myToken = _cancelToken;
-    var lastUploadedCount = -1;
     for (var pass = 0; pass < _kMaxBackupPasses; pass++) {
       if (!mounted || myToken == null || myToken.isCompleted || !identical(_cancelToken, myToken)) {
         break;
       }
-      if ((await _foregroundUploadService.getBackupCounts(userId)).remainder == 0) {
-        break;
-      }
-      // No new upload since the last pass → nothing left to unblock, stop.
-      if (_sessionUploadedIds.length == lastUploadedCount) {
-        break;
-      }
-      lastUploadedCount = _sessionUploadedIds.length;
-      final attempted = await _foregroundUploadService.uploadCandidates(
+      final result = await _foregroundUploadService.uploadCandidates(
         userId,
         myToken,
         callbacks: callbacks,
         skipIds: _sessionUploadedIds,
       );
-      // Nothing left to attempt this pass (all remaining candidates were already
-      // uploaded this session) → done, don't walk the candidate set again.
-      if (attempted == 0) {
+      // Nothing attempted (all remaining candidates already uploaded this
+      // session), or nothing burst-related to unblock a later pass → done.
+      if (result.attempted == 0 || !result.hadBurst) {
         break;
       }
     }

@@ -34,18 +34,9 @@ void main() {
 
   tearDown(() => sut.dispose());
 
-  // Keep getBackupCounts returning a fixed remainder forever — simulates the
-  // count lagging behind reality (a just-uploaded rep's remote row hasn't synced
-  // back locally yet, so the remainder doesn't drop).
-  void stubFlatRemainder(int remainder) {
-    when(
-      () => fg.getBackupCounts(any()),
-    ).thenAnswer((_) async => (total: remainder, remainder: remainder, processing: 0));
-  }
-
   UploadCallbacks callbacksOf(Invocation inv) => inv.namedArguments[#callbacks] as UploadCallbacks;
 
-  void whenUpload(Future<int> Function(Invocation) body) {
+  void whenUpload(Future<({int attempted, bool hadBurst})> Function(Invocation) body) {
     when(
       () => fg.uploadCandidates(
         any(),
@@ -66,21 +57,23 @@ void main() {
   ).callCount;
 
   group('startForegroundBackup multi-pass loop', () {
-    test('keeps running passes while uploads make progress, even if the remainder count lags', () async {
-      // The exact iOS-burst regression: the representative uploads on pass 1, its
-      // members only become eligible afterwards. The remainder count stays flat
-      // (rep's remote row not synced yet) — the loop must NOT stop on that stale
-      // count; it stops only when a pass uploads nothing new.
-      stubFlatRemainder(2);
-      const uploadedPerPass = ['rep', 'member'];
+    test('keeps running passes while a pass still uploads burst frames', () async {
+      // The iOS-burst path: the representative uploads on pass 0, its member only
+      // becomes eligible afterwards (pass 1). Each burst pass reports hadBurst so
+      // the loop keeps going; it stops once a pass attempts nothing new.
       var pass = 0;
       whenUpload((inv) async {
-        if (pass < uploadedPerPass.length) {
-          callbacksOf(inv).onSuccess?.call(uploadedPerPass[pass], 'remote-${uploadedPerPass[pass]}');
+        if (pass == 0) {
+          callbacksOf(inv).onSuccess?.call('rep', 'remote-rep');
           pass++;
-          return 1;
+          return (attempted: 1, hadBurst: true);
         }
-        return 0;
+        if (pass == 1) {
+          callbacksOf(inv).onSuccess?.call('member', 'remote-member');
+          pass++;
+          return (attempted: 1, hadBurst: true);
+        }
+        return (attempted: 0, hadBurst: false);
       });
 
       await sut.startForegroundBackup('u1');
@@ -89,16 +82,12 @@ void main() {
       expect(uploadCallCount(), 3);
     });
 
-    test('stops after one pass once the remainder reaches zero (normal library)', () async {
-      var checks = 0;
-      when(() => fg.getBackupCounts(any())).thenAnswer((_) async {
-        checks++;
-        // remainder 1 on the first check, 0 after the single upload cleared it
-        return (total: 1, remainder: checks <= 1 ? 1 : 0, processing: 0);
-      });
+    test('stops after one pass for a non-burst library (no burst frames)', () async {
+      // No burst frames -> hadBurst is false, so nothing can be unblocked by a
+      // second pass and the loop stops immediately. No extra candidate query.
       whenUpload((inv) async {
         callbacksOf(inv).onSuccess?.call('a', 'remote-a');
-        return 1;
+        return (attempted: 1, hadBurst: false);
       });
 
       await sut.startForegroundBackup('u1');
@@ -106,14 +95,13 @@ void main() {
       expect(uploadCallCount(), 1);
     });
 
-    test('never exceeds the max pass cap even if every pass makes progress', () async {
-      // remainder never drops and every pass uploads a brand-new id, so neither
-      // the zero-remainder nor the no-progress break can fire — only the cap can.
-      stubFlatRemainder(5);
+    test('never exceeds the max pass cap even if every pass has burst work', () async {
+      // Every pass attempts something and reports hadBurst, so only the cap can
+      // stop the loop.
       var n = 0;
       whenUpload((inv) async {
         callbacksOf(inv).onSuccess?.call('id-${n++}', 'remote');
-        return 1;
+        return (attempted: 1, hadBurst: true);
       });
 
       await sut.startForegroundBackup('u1');
@@ -122,7 +110,6 @@ void main() {
     });
 
     test('carries already-uploaded ids forward as skipIds so a later pass never re-uploads them', () async {
-      stubFlatRemainder(3);
       final skipSnapshots = <Set<String>>[];
       var n = 0;
       whenUpload((inv) async {
@@ -130,9 +117,9 @@ void main() {
         if (n < 2) {
           callbacksOf(inv).onSuccess?.call('id-$n', 'remote');
           n++;
-          return 1;
+          return (attempted: 1, hadBurst: true);
         }
-        return 0;
+        return (attempted: 0, hadBurst: false);
       });
 
       await sut.startForegroundBackup('u1');
@@ -146,14 +133,13 @@ void main() {
       // Re-entrancy guard: a restart (app resume / page tap) completes and
       // replaces the loop's token. The captured token then reads as completed, so
       // the loop must break instead of marching to the cap against shared state.
-      // remainder never hits 0, so only the token guard can stop it.
-      stubFlatRemainder(5);
+      // Every pass reports hadBurst, so only the token guard can stop it.
       var calls = 0;
       whenUpload((inv) async {
         calls++;
         callbacksOf(inv).onSuccess?.call('id-$calls', 'remote');
         sut.stopForegroundBackup(); // supersede the in-flight loop's token
-        return 1;
+        return (attempted: 1, hadBurst: true);
       });
 
       await sut.startForegroundBackup('u1');
