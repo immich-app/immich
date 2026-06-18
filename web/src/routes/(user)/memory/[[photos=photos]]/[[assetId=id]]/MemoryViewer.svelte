@@ -21,6 +21,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { memoryManager, type MemoryAsset } from '$lib/managers/memory-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import { videoSessionManager } from '$lib/managers/video-session-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { locale } from '$lib/stores/preferences.store';
@@ -80,7 +81,7 @@
   // need to include padding in the viewport for gallery
   const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
   let progressBarController: Tween<number> | undefined = $state(undefined);
-  let videoPlayer: HTMLVideoElement | undefined = $state();
+  const videoPlayer = $derived(currentAssetId ? videoSessionManager.get(currentAssetId)?.element : undefined);
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
 
   const handleNavigate = async (asset?: { id: string }) => {
@@ -516,7 +517,7 @@
           <div class="relative size-full rounded-2xl bg-black">
             {#key current.asset.id}
               {#if current.asset.isVideo}
-                <MemoryVideoViewer asset={current.asset} bind:videoPlayer />
+                <MemoryVideoViewer asset={current.asset} />
               {:else}
                 <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
               {/if}

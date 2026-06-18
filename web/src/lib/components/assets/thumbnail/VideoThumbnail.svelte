@@ -1,12 +1,16 @@
 <script lang="ts">
   import { cleanClass } from '$lib';
+  import '$lib/components/asset-viewer/immich-video-element';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { videoSessionManager } from '$lib/managers/video-session-manager.svelte';
   import { Icon, LoadingSpinner } from '@immich/ui';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { Duration } from 'luxon';
   import type { ClassValue } from 'svelte/elements';
 
   interface Props {
-    url: string;
+    assetId: string;
+    cacheKey: string | null;
     durationInSeconds?: number;
     enablePlayback?: boolean;
     playbackOnIconHover?: boolean;
@@ -18,7 +22,8 @@
   }
 
   let {
-    url,
+    assetId,
+    cacheKey,
     durationInSeconds = 0,
     enablePlayback = $bindable(false),
     playbackOnIconHover = false,
@@ -29,26 +34,27 @@
     class: className,
   }: Props = $props();
 
-  let remainingSeconds = $state(durationInSeconds);
-  let loading = $state(true);
-  let error = $state(false);
-  let player: HTMLVideoElement | undefined = $state();
+  const useHls = $derived(featureFlagsManager.value.realtimeTranscoding);
+
+  let active = $state(false);
+  const controller = $derived(videoSessionManager.get(assetId));
+  const remainingSeconds = $derived(controller?.remainingSeconds || durationInSeconds);
 
   $effect(() => {
     if (!enablePlayback) {
-      remainingSeconds = durationInSeconds;
+      active = false;
       return;
     }
-    if (!player) {
+    if (!useHls) {
+      active = true;
       return;
     }
-    const video = player;
-    return () => {
-      video.pause();
-      video.removeAttribute('src');
-      video.load();
-    };
+    // Cold-starting a transcode for every thumbnail the pointer brushes over would hammer the server,
+    // so wait for the hover to settle before opening an HLS session.
+    const timer = setTimeout(() => (active = true), 200);
+    return () => clearTimeout(timer);
   });
+
   const onMouseEnter = () => {
     if (playbackOnIconHover) {
       enablePlayback = true;
@@ -62,35 +68,15 @@
   };
 </script>
 
-{#if enablePlayback}
-  <video
-    bind:this={player}
-    class={cleanClass('h-full w-full object-cover', className)}
-    class:rounded-xl={curve}
+{#if active}
+  <immich-video
+    asset-id={assetId}
+    cache-key={cacheKey ?? ''}
     muted
-    autoplay
     loop
-    src={url}
-    onplay={() => {
-      loading = false;
-      error = false;
-    }}
-    onerror={() => {
-      if (!player?.src) {
-        // Do not show error when the URL is empty.
-        return;
-      }
-      error = true;
-      loading = false;
-    }}
-    ontimeupdate={({ currentTarget }) => {
-      const remaining = currentTarget.duration - currentTarget.currentTime;
-      remainingSeconds = Math.min(
-        Math.ceil(Number.isNaN(remaining) ? Number.POSITIVE_INFINITY : remaining),
-        durationInSeconds,
-      );
-    }}
-  ></video>
+    autoplay
+    class={cleanClass('h-full w-full [--media-object-fit:cover]', className, curve && 'rounded-xl overflow-hidden')}
+  ></immich-video>
 {/if}
 
 <div
@@ -114,10 +100,10 @@
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
   >
-    {#if enablePlayback}
-      {#if loading}
+    {#if active}
+      {#if !controller || controller.loading}
         <LoadingSpinner size="large" />
-      {:else if error}
+      {:else if controller.error}
         <Icon icon={mdiAlertCircleOutline} size="24" class="text-red-600" />
       {:else}
         <Icon icon={pauseIcon} size="24" />

@@ -5,9 +5,11 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
-  import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import '$lib/components/asset-viewer/immich-video-element';
+  import { videoSessionManager } from '$lib/managers/video-session-manager.svelte';
+  import VideoQualityMenu from '$lib/components/asset-viewer/VideoQualityMenu.svelte';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
@@ -23,9 +25,6 @@
     mdiVolumeMedium,
     mdiVolumeMute,
   } from '@mdi/js';
-  import 'hls-video-element';
-  import type HlsVideoElement from 'hls-video-element';
-  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
   import 'media-chrome/media-control-bar';
   import 'media-chrome/media-controller';
   import 'media-chrome/media-fullscreen-button';
@@ -35,11 +34,10 @@
   import 'media-chrome/media-time-display';
   import 'media-chrome/media-volume-range';
   import 'media-chrome/menu/media-playback-rate-menu';
-  import 'media-chrome/menu/media-rendition-menu';
   import 'media-chrome/menu/media-settings-menu';
   import 'media-chrome/menu/media-settings-menu-button';
   import 'media-chrome/menu/media-settings-menu-item';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -73,7 +71,6 @@
     onClose = () => {},
   }: Props = $props();
 
-  let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let assetFileUrl = $derived.by(() => {
     if (featureFlagsManager.value.realtimeTranscoding) {
@@ -88,181 +85,28 @@
   });
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   let showVideo = $state(false);
-  let hasFocused = $state(false);
-  let activeSession: { assetId: string; id: string } | undefined;
-  let rebuildCount = 0;
+  let focusedAssetId = $state<string>();
 
-  const MAX_REBUILDS = 1;
-  const SESSION_ID_REGEX = /\/video\/stream\/([0-9a-f-]{36})\//;
-
-  // hls.js can abandon fetching an in-flight fragment if it thinks it'll take too long, in which case
-  // it emergency switches to a different variant. This extends the delay even further due to
-  // cold starting another transcode, so let the fragment finish and have steady ABR decide the next level.
-  //
-  // It can also emergency switch between fragments: while a switch's first segment is still loading,
-  // it can run out of buffer and drop to a lower level for just one segment before continuing at the switched quality.
-  // This can cause multiple redundant transcoding restarts when it occurs.
-  // Hold the committed level until its first fragment lands, then resume normal ABR.
-  class NoAbandonAbrController extends AbrController {
-    private switchTarget = -1;
-
-    protected override onFragLoading(_event: Events.FRAG_LOADING, data: FragLoadingData) {
-      if (data.frag.sn === 'initSegment') {
-        this.switchTarget = data.frag.level;
-      }
-    }
-
-    protected override onFragLoaded(event: Events.FRAG_LOADED, data: FragLoadedData) {
-      if (data.frag.sn !== 'initSegment') {
-        this.switchTarget = -1;
-      }
-      super.onFragLoaded(event, data);
-    }
-
-    override get nextAutoLevel(): number {
-      const level = super.nextAutoLevel;
-      const target = this.hls.levels[this.switchTarget];
-      // Hold the committed level, but only while hls.js still considers it healthy.
-      if (target && level < this.switchTarget && target.loadError === 0 && target.fragmentError === 0) {
-        return this.switchTarget;
-      }
-      return level;
-    }
-
-    override set nextAutoLevel(level: number) {
-      super.nextAutoLevel = level;
-    }
-  }
-
-  const hlsConfig: Partial<HlsConfig> = {
-    abrController: NoAbandonAbrController,
-    highBufferWatchdogPeriod: 10,
-    detectStallWithCurrentTimeMs: 10_000,
-    maxBufferHole: 0.5,
-    maxBufferLength: 30,
-    maxMaxBufferLength: 60,
-    fragLoadPolicy: {
-      default: {
-        maxTimeToFirstByteMs: 30_000,
-        maxLoadTimeMs: 60_000,
-        timeoutRetry: { maxNumRetry: 5, retryDelayMs: 100, maxRetryDelayMs: 0 },
-        errorRetry: { maxNumRetry: 3, retryDelayMs: 1000, maxRetryDelayMs: 8000 },
-      },
-    },
-    useMediaCapabilities: false,
-  };
-
-  const releaseSession = () => {
-    const session = activeSession;
-    if (!session) {
-      return;
-    }
-    activeSession = undefined;
-    const url = getAssetHlsSessionUrl(session.assetId, session.id);
-    void fetch(url, { method: 'DELETE' }).catch(() => console.warn('Failed to release HLS session', session));
-  };
-
-  const isHlsElement = (el: HTMLVideoElement | undefined): el is HlsVideoElement => {
-    return el?.tagName === 'HLS-VIDEO';
-  };
-
-  const wireHlsListeners = (el: HlsVideoElement, assetId: string, resumeTime?: number) => {
-    const api = el.api;
-    if (!api) {
-      return;
-    }
-
-    // This is a hack to make the rendition menu use `api.currentLevel` instead of `api.nextLevel`.
-    // `api.nextLevel` makes the player request the next segment followed by the current segment.
-    // That backward request causes the server to restart transcoding for no reason.
-    Object.defineProperty(api, 'nextLevel', {
-      configurable: true,
-      get: () => api.currentLevel,
-      set: (level: number) => {
-        api.currentLevel = level;
-      },
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    api.on(Hls.Events.MANIFEST_PARSED, async () => {
-      // Defer hls.js's first fragment load until we filter out suboptimal variants
-      api.stopLoad();
-      const id = api.levels[0]?.url[0]?.match(SESSION_ID_REGEX)?.[1];
-      if (id) {
-        activeSession = { assetId, id };
-      }
-
-      const keep = await mediaCapabilitiesManager.efficientLevels(api.levels);
-      for (let i = api.levels.length - 1; i >= 0; i--) {
-        if (!keep.has(i)) {
-          api.removeLevel(i);
-        }
-      }
-
-      api.startLoad(resumeTime);
-    });
-
-    api.on(Hls.Events.FRAG_LOADED, () => (rebuildCount = 0));
-
-    api.on(Hls.Events.ERROR, (_, data) => {
-      // 404 on a fragment can mean the server-side session has expired. Refetch
-      // master for a new session, but give up if it still 404s.
-      if (
-        !data.fatal ||
-        data.details !== Hls.ErrorDetails.FRAG_LOAD_ERROR ||
-        data.response?.code !== 404 ||
-        rebuildCount++ >= MAX_REBUILDS
-      ) {
-        console.error('HLS error', JSON.stringify(data));
-        return;
-      }
-      console.warn('Error loading segment, starting new session');
-      activeSession = undefined;
-      resumeTime = el.currentTime;
-      el.load();
-      // wireHlsListeners must run after el.api is repopulated.
-      queueMicrotask(() => wireHlsListeners(el, assetId, resumeTime));
-    });
-  };
+  const controller = $derived(videoSessionManager.get(assetId)); // <immich-video> self-acquires the controller for the asset
+  const videoPlayer = $derived(controller?.element);
 
   onMount(() => {
     showVideo = true;
   });
 
+  // A hover-warmed element is already past `canplay` and won't fire it again, so kick playback ourselves once we adopt it
   $effect(() => {
-    // reactive on `assetFileUrl` changes
-    if (videoPlayer && assetFileUrl) {
-      hasFocused = false;
-      rebuildCount = 0;
-      releaseSession();
-      if (isHlsElement(videoPlayer)) {
-        videoPlayer.config = hlsConfig;
-        videoPlayer.src = assetFileUrl;
-        const el = videoPlayer;
-        queueMicrotask(() => wireHlsListeners(el, assetId));
-      } else {
-        videoPlayer.load();
-      }
+    if (videoPlayer && videoPlayer.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      void handleCanPlay(videoPlayer);
     }
-    return releaseSession;
   });
 
-  const onPagehide = (event: PageTransitionEvent) => {
-    if (!event.persisted) {
-      releaseSession();
+  const onPlaying = () => {
+    if (focusedAssetId !== assetId) {
+      videoPlayer?.focus();
+      focusedAssetId = assetId;
     }
   };
-
-  $effect(() => {
-    window.addEventListener('pagehide', onPagehide);
-    return () => window.removeEventListener('pagehide', onPagehide);
-  });
-
-  onDestroy(() => {
-    if (videoPlayer) {
-      videoPlayer.src = '';
-    }
-  });
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
@@ -352,53 +196,23 @@
         class="dark h-full max-w-full"
         style:aspect-ratio={aspectRatio}
         defaultduration={asset.duration! / 1000}
+        {...useSwipe(onSwipe)}
       >
-        {#if featureFlagsManager.value.realtimeTranscoding}
-          <hls-video
-            bind:this={videoPlayer}
-            slot="media"
-            loop={$loopVideoPreference && loopVideo}
-            autoplay={$autoPlayVideo}
-            disablePictureInPicture
-            playsinline
-            {...useSwipe(onSwipe)}
-            class="h-full object-contain"
-            oncanplay={(e: Event) => handleCanPlay(e.currentTarget as HTMLVideoElement)}
-            onended={onVideoEnded}
-            onseeking={onSeeking}
-            onplaying={(e: Event) => {
-              if (!hasFocused) {
-                (e.currentTarget as HTMLElement).focus();
-                hasFocused = true;
-              }
-            }}
-            onclose={onClose}
-            poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
-          ></hls-video>
-        {:else}
-          <video
-            bind:this={videoPlayer}
-            slot="media"
-            src={assetFileUrl}
-            loop={$loopVideoPreference && loopVideo}
-            autoplay={$autoPlayVideo}
-            disablePictureInPicture
-            playsinline
-            {...useSwipe(onSwipe)}
-            class="h-full object-contain"
-            oncanplay={(e) => handleCanPlay(e.currentTarget)}
-            onended={onVideoEnded}
-            onseeking={onSeeking}
-            onplaying={(e) => {
-              if (!hasFocused) {
-                e.currentTarget.focus();
-                hasFocused = true;
-              }
-            }}
-            onclose={onClose}
-            poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
-          ></video>
-        {/if}
+        <immich-video
+          slot="media"
+          asset-id={assetId}
+          cache-key={cacheKey ?? ''}
+          play-original={playOriginalVideo}
+          class="h-full"
+          loop={$loopVideoPreference && loopVideo}
+          autoplay={$autoPlayVideo}
+          poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
+          oncanplay={(event: Event) => handleCanPlay(event.currentTarget as HTMLVideoElement)}
+          onended={onVideoEnded}
+          onseeking={onSeeking}
+          onplaying={onPlaying}
+          onclose={onClose}
+        ></immich-video>
 
         {#if extendedControls}
           <media-settings-menu hidden anchor="auto" class="min-w-3xs rounded-xl border border-light-300 shadow-sm">
@@ -411,14 +225,11 @@
                 <span slot="title">{$t('media_chrome.playback_rate')}</span>
               </media-playback-rate-menu>
             </media-settings-menu-item>
-            {#if featureFlagsManager.value.realtimeTranscoding}
+            {#if featureFlagsManager.value.realtimeTranscoding && controller}
               <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
                 {$t('video_quality')}
                 <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />
-                <media-rendition-menu slot="submenu" hidden>
-                  <Icon slot="back-icon" icon={mdiChevronLeft} class="m-2" />
-                  <span slot="title">{$t('video_quality')}</span>
-                </media-rendition-menu>
+                <VideoQualityMenu video={controller} slot="submenu" />
               </media-settings-menu-item>
             {/if}
           </media-settings-menu>

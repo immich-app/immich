@@ -4,7 +4,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -264,7 +264,8 @@
         <div class="pointer-events-none absolute size-full group-focus-visible:rounded-lg">
           <VideoThumbnail
             class="group-focus-visible:rounded-lg"
-            url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+            assetId={asset.id}
+            cacheKey={asset.thumbhash}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             curve={selected}
             durationInSeconds={asset.duration ? asset.duration / 1000 : 0}
@@ -275,7 +276,8 @@
         <div class="pointer-events-none absolute size-full group-focus-visible:rounded-lg">
           <VideoThumbnail
             class="group-focus-visible:rounded-lg"
-            url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
+            assetId={asset.livePhotoVideoId}
+            cacheKey={asset.thumbhash}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             pauseIcon={mdiMotionPauseOutline}
             playIcon={mdiMotionPlayOutline}
