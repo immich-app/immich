@@ -13,7 +13,7 @@
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
-  import { keyboardModifier } from '$lib/stores/keyboard-modifier.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
@@ -153,7 +153,7 @@
   };
 
   const selectAssetCandidates = (endAsset: TimelineAsset) => {
-    if (!keyboardModifier.shift) {
+    if (!keyboardManager.shift) {
       return;
     }
 
@@ -173,7 +173,7 @@
   };
 
   const onSelectStart = (event: Event) => {
-    if (assetInteraction.selectionActive && keyboardModifier.shift) {
+    if (assetInteraction.selectionActive && keyboardManager.shift) {
       event.preventDefault();
     }
   };
@@ -318,13 +318,13 @@
   });
 
   $effect(() => {
-    if (!keyboardModifier.shift) {
+    if (!keyboardManager.shift) {
       assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
-    if (keyboardModifier.shift && lastAssetMouseEvent) {
+    if (keyboardManager.shift && lastAssetMouseEvent) {
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });

@@ -19,7 +19,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
-  import { keyboardModifier } from '$lib/stores/keyboard-modifier.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -471,7 +471,7 @@
   };
 
   const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!keyboardModifier.shift) {
+    if (!keyboardManager.shift) {
       return;
     }
 
@@ -491,13 +491,13 @@
   });
 
   $effect(() => {
-    if (!keyboardModifier.shift) {
+    if (!keyboardManager.shift) {
       assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
-    if (keyboardModifier.shift && lastAssetMouseEvent) {
+    if (keyboardManager.shift && lastAssetMouseEvent) {
       void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
@@ -583,12 +583,12 @@
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
-      if (keyboardModifier.shift) {
+      if (keyboardManager.shift) {
         amount = 500;
       }
       if (evt.key === 'ArrowUp') {
         amount = -amount;
-        if (keyboardModifier.shift) {
+        if (keyboardManager.shift) {
           scrollableElement?.scrollBy({ top: amount, behavior: 'smooth' });
         }
       } else if (evt.key === 'ArrowDown') {

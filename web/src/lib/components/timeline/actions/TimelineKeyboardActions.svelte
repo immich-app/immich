@@ -15,7 +15,7 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
-  import { keyboardModifier } from '$lib/stores/keyboard-modifier.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -75,7 +75,7 @@
   };
 
   const onSelectStart = (e: Event) => {
-    if (!searchStore.isSearchEnabled && assetInteraction.selectionActive && keyboardModifier.shift) {
+    if (!searchStore.isSearchEnabled && assetInteraction.selectionActive && keyboardManager.shift) {
       e.preventDefault();
     }
   };

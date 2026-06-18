@@ -1,4 +1,4 @@
-class KeyboardModifierStore {
+class KeyboardManager {
   shift = $state(false);
   ctrl = $state(false);
   meta = $state(false);
@@ -28,4 +28,4 @@ class KeyboardModifierStore {
   };
 }
 
-export const keyboardModifier = new KeyboardModifierStore();
+export const keyboardManager = new KeyboardManager();
