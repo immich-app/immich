@@ -12,13 +12,14 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -31,8 +32,31 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
     await _migrateTo26(drift);
   }
 
+  if (version < 27) {
+    if (!await _migrateTo27(drift)) {
+      return;
+    }
+  }
+
   await Store.put(StoreKey.version, targetVersion);
   return;
+}
+
+Future<bool> _migrateTo27(Drift drift) async {
+  // Android-only: no-EXIF photos got a wrong createdAt (DATE_ADDED copy-time instead
+  // of the real DATE_MODIFIED). Those rows can't self-heal -- the local sync only
+  // updates an asset when its updatedAt (DATE_MODIFIED) changes, which it never does
+  // here. A createdAt later than updatedAt is the copy-time signature, so clamp it
+  // back to updatedAt (the real date, == the new minOf(DATE_MODIFIED, DATE_ADDED)).
+  if (!CurrentPlatform.isAndroid) {
+    return true;
+  }
+  try {
+    await drift.customStatement('UPDATE local_asset_entity SET created_at = updated_at WHERE created_at > updated_at');
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 Future<void> _migrateTo25() async {
