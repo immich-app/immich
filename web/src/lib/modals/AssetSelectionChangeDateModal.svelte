@@ -122,7 +122,7 @@
     ></Combobox>
   </div>
   {#if showRelative}
-    <Label for="datetime" class="block mt-2 mb-1">{$t('new_date_range')}</Label>
+    <Label for="datetime" class="mt-2 mb-1 block">{$t('new_date_range')}</Label>
     {#if assets.length > 1}
       <Text size="small">{$t('first_date', { values: { date: dateRange.first } })}</Text>
       <Text size="small">{$t('last_date', { values: { date: dateRange.last } })}</Text>
