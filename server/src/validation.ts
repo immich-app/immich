@@ -156,6 +156,7 @@ export const isoDatetimeToDate = z
   .codec(
     z.iso.datetime({
       error: (iss) => `Invalid input: expected ISO 8601 datetime string, received ${typeof iss.input}`,
+      offset: true,
     }),
     z.date(),
     {
