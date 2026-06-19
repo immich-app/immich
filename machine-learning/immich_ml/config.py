@@ -13,7 +13,7 @@ from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
-from .schemas import ModelPrecision
+from .schemas import ModelPrecision, ModelTask, ModelType
 
 
 class ClipSettings(BaseModel):
@@ -37,6 +37,19 @@ class PreloadModelData(BaseModel):
     ocr: OcrSettings = OcrSettings()
 
 
+class ModelTtl(BaseModel):
+    textual: int | None = None
+    visual: int | None = None
+    recognition: int | None = None
+    detection: int | None = None
+
+
+class ModelTtlOverrides(BaseModel):
+    clip: ModelTtl = ModelTtl()
+    facial_recognition: ModelTtl = ModelTtl()
+    ocr: ModelTtl = ModelTtl()
+
+
 class MaxBatchSize(BaseModel):
     facial_recognition: int | None = None
     ocr: int | None = None
@@ -57,6 +70,7 @@ class Settings(BaseSettings):
     cache_folder: Path = (Path.home() / ".cache" / "immich_ml").resolve()
     model_ttl: int = 300
     model_ttl_poll_s: int = 10
+    model_ttl_overrides: ModelTtlOverrides | None = None
     workers: int = 1
     worker_timeout: int = Field(default_factory=default_worker_timeout)
     http_keepalive_timeout_s: int = 2
@@ -78,6 +92,40 @@ class Settings(BaseSettings):
     @property
     def device_id(self) -> str:
         return os.environ.get("MACHINE_LEARNING_DEVICE_ID", "0")
+
+    def get_model_ttl(self, model_type: ModelType, model_task: ModelTask) -> int:
+        """Cache TTL (seconds) for a model, falling back to the global ``model_ttl``."""
+        overrides = self.model_ttl_overrides
+        if overrides is None:
+            return self.model_ttl
+        ttls = {
+            (ModelType.TEXTUAL, ModelTask.SEARCH): overrides.clip.textual,
+            (ModelType.VISUAL, ModelTask.SEARCH): overrides.clip.visual,
+            (ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION): overrides.facial_recognition.detection,
+            (ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION): overrides.facial_recognition.recognition,
+            (ModelType.DETECTION, ModelTask.OCR): overrides.ocr.detection,
+            (ModelType.RECOGNITION, ModelTask.OCR): overrides.ocr.recognition,
+        }
+        ttl = ttls.get((model_type, model_task))
+        return ttl if ttl is not None else self.model_ttl
+
+    @property
+    def revalidate_cache(self) -> bool:
+        """Whether to reset a model's TTL on cache hit (active when any TTL is set)."""
+        if self.model_ttl > 0 or self.model_ttl_overrides is None:
+            return self.model_ttl > 0
+        o = self.model_ttl_overrides
+        return any(
+            v is not None and v > 0
+            for v in (
+                o.clip.textual,
+                o.clip.visual,
+                o.facial_recognition.detection,
+                o.facial_recognition.recognition,
+                o.ocr.detection,
+                o.ocr.recognition,
+            )
+        )
 
 
 class NonPrefixedSettings(BaseSettings):

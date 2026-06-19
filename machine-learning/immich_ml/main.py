@@ -39,7 +39,7 @@ from .schemas import (
 
 MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or larger
 
-model_cache = ModelCache(revalidate=settings.model_ttl > 0)
+model_cache = ModelCache(revalidate=settings.revalidate_cache)
 thread_pool: ThreadPoolExecutor | None = None
 lock = threading.Lock()
 active_requests = 0
@@ -188,7 +188,11 @@ async def run_inference(payload: Image | str, entries: InferenceEntries) -> Infe
 
     async def _run_inference(entry: InferenceEntry) -> None:
         model = await model_cache.get(
-            entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl, **entry["options"]
+            entry["name"],
+            entry["type"],
+            entry["task"],
+            ttl=settings.get_model_ttl(entry["type"], entry["task"]),
+            **entry["options"],
         )
         inputs = [payload]
         for dep in model.depends:

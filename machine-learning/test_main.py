@@ -205,6 +205,79 @@ class TestBase:
         ort_session.assert_not_called()
 
 
+class TestModelTtl:
+    def test_defaults_to_global_model_ttl(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.delenv("MACHINE_LEARNING_MODEL_TTL", raising=False)
+        monkeypatch.delenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__TEXTUAL", raising=False)
+
+        settings = Settings()
+
+        assert settings.model_ttl == 300
+        assert settings.model_ttl_overrides is None
+        assert settings.get_model_ttl(ModelType.TEXTUAL, ModelTask.SEARCH) == 300
+        assert settings.get_model_ttl(ModelType.VISUAL, ModelTask.SEARCH) == 300
+        assert settings.get_model_ttl(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION) == 300
+        assert settings.get_model_ttl(ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION) == 300
+        assert settings.get_model_ttl(ModelType.DETECTION, ModelTask.OCR) == 300
+        assert settings.get_model_ttl(ModelType.RECOGNITION, ModelTask.OCR) == 300
+
+    def test_overrides_are_parsed_from_env(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL", "120")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__TEXTUAL", "3600")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__FACIAL_RECOGNITION__DETECTION", "30")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__OCR__RECOGNITION", "0")
+
+        settings = Settings()
+
+        assert settings.model_ttl == 120
+        assert settings.model_ttl_overrides is not None
+        assert settings.model_ttl_overrides.clip.textual == 3600
+        assert settings.model_ttl_overrides.facial_recognition.detection == 30
+        assert settings.model_ttl_overrides.ocr.recognition == 0
+
+    def test_get_model_ttl_uses_overrides_then_falls_back(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL", "120")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__TEXTUAL", "3600")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__OCR__RECOGNITION", "0")
+
+        settings = Settings()
+
+        # overridden values win
+        assert settings.get_model_ttl(ModelType.TEXTUAL, ModelTask.SEARCH) == 3600
+        assert settings.get_model_ttl(ModelType.RECOGNITION, ModelTask.OCR) == 0
+        # unset models fall back to the global default
+        assert settings.get_model_ttl(ModelType.VISUAL, ModelTask.SEARCH) == 120
+        assert settings.get_model_ttl(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION) == 120
+        assert settings.get_model_ttl(ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION) == 120
+        assert settings.get_model_ttl(ModelType.DETECTION, ModelTask.OCR) == 120
+
+    def test_revalidate_cache_follows_global_ttl(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.delenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__TEXTUAL", raising=False)
+
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL", "300")
+        assert Settings().revalidate_cache is True
+
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL", "0")
+        assert Settings().revalidate_cache is False
+
+    def test_revalidate_cache_enabled_by_override_when_global_disabled(
+        self, monkeypatch: MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL", "0")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__TEXTUAL", "3600")
+
+        assert Settings().revalidate_cache is True
+
+    def test_revalidate_cache_disabled_when_global_and_overrides_disabled(
+        self, monkeypatch: MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL", "0")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__TEXTUAL", "0")
+        monkeypatch.setenv("MACHINE_LEARNING_MODEL_TTL_OVERRIDES__CLIP__VISUAL", "0")
+
+        assert Settings().revalidate_cache is False
+
+
 @pytest.mark.usefixtures("ort_session")
 class TestOrtSession:
     CPU_EP = ["CPUExecutionProvider"]
