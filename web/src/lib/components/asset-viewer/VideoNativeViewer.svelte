@@ -324,6 +324,18 @@
       shortcut: { key: ' ' },
       onShortcut: () => (videoPlayer?.paused ? videoPlayer?.play() : videoPlayer?.pause()),
     },
+    {
+      shortcut: { shift: true, key: 'ArrowLeft' },
+      onShortcut: () =>
+        videoPlayer ? (videoPlayer.currentTime = Math.max(videoPlayer.currentTime - 0.4, 0)) : undefined,
+    },
+    {
+      shortcut: { shift: true, key: 'ArrowRight' },
+      onShortcut: () =>
+        videoPlayer
+          ? (videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 0.4, videoPlayer.duration))
+          : undefined,
+    },
   ]}
 />
 
