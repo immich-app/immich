@@ -38,14 +38,7 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
-  import {
-    mdiArrowLeft,
-    mdiArrowRight,
-    mdiCompare,
-    mdiDotsVertical,
-    mdiImageSearch,
-    mdiVideoOutline,
-  } from '@mdi/js';
+  import { mdiArrowLeft, mdiArrowRight, mdiCompare, mdiDotsVertical, mdiImageSearch, mdiVideoOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
