@@ -499,11 +499,9 @@
         {album}
         {person}
         {stack}
-        showSlideshow={true}
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
-        onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {onRemoveFromAlbum}
         {playOriginalVideo}

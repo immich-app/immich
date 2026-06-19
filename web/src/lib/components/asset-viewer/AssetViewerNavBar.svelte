@@ -54,11 +54,9 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
-    showSlideshow?: boolean;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onPlaySlideshow: () => void;
     onClose?: () => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     playOriginalVideo: boolean;
@@ -70,11 +68,9 @@
     album = null,
     person = null,
     stack = null,
-    showSlideshow = false,
     preAction,
     onAction,
     onUndoDelete = undefined,
-    onPlaySlideshow,
     onClose,
     onRemoveFromAlbum,
     playOriginalVideo = false,
@@ -147,9 +143,7 @@
 
     {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow && !isLocked}
-          <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
-        {/if}
+        <ActionMenuItem action={Actions.PlaySlideshow} />
 
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />

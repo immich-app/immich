@@ -28,6 +28,7 @@ import {
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiPlus,
+  mdiPresentationPlay,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
@@ -45,6 +46,7 @@ import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 
 export const getAssetBulkActions = ($t: MessageFormatter) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
@@ -139,6 +141,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
       assetViewerManager.isPlayingMotionPhoto = false;
     },
   };
+
+  const PlaySlideshow: ActionItem = {
+    title: $t('slideshow'),
+    icon: mdiPresentationPlay,
+    $if: () => asset.visibility !== AssetVisibility.Locked,
+    onAction: () => slideshowStore.slideshowState.set(SlideshowState.PlaySlideshow),
+  }
 
   const Favorite: ActionItem = {
     title: $t('to_favorite'),
@@ -269,6 +278,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    PlaySlideshow,
     AddToAlbum,
     ZoomIn,
     ZoomOut,
