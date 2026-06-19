@@ -18,7 +18,6 @@
   import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import RemoveFromAlbumAction from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -51,7 +50,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    album?: AlbumResponseDto | null;
+    album?: AlbumResponseDto;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     showSlideshow?: boolean;
@@ -60,14 +59,13 @@
     onUndoDelete?: OnUndoDelete;
     onPlaySlideshow: () => void;
     onClose?: () => void;
-    onRemoveFromAlbum?: (assetIds: string[]) => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
   }
 
   let {
     asset,
-    album = null,
+    album,
     person = null,
     stack = null,
     showSlideshow = false,
@@ -76,13 +74,11 @@
     onUndoDelete = undefined,
     onPlaySlideshow,
     onClose,
-    onRemoveFromAlbum,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
 
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
-  const isAlbumOwner = $derived(authManager.authenticated && album?.albumUsers[0].user.id === authManager.user.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
   const smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
@@ -96,7 +92,7 @@
     shortcuts: [{ key: 'Escape' }],
   });
 
-  const Actions = $derived(getAssetActions($t, asset));
+  const Actions = $derived(getAssetActions($t, asset, album));
   const sharedLink = getSharedLink();
 </script>
 
@@ -159,9 +155,7 @@
         {/if}
 
         <ActionMenuItem action={Actions.AddToAlbum} />
-        {#if album && (isOwner || isAlbumOwner)}
-          <RemoveFromAlbumAction {album} onRemove={onRemoveFromAlbum} assetIds={[asset.id]} menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.RemoveFromAlbum} />
 
         {#if isOwner}
           <AddToStackAction {asset} {stack} {onAction} />
