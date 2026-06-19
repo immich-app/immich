@@ -16484,9 +16484,37 @@
         ]
       }
     },
+    "/yucca/onboarding/report-error": {
+      "post": {
+        "operationId": "reportError",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
     "/yucca/onboarding/skip": {
       "post": {
         "operationId": "skipOnboardingExtraConfig",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/yucca/onboarding/telemetry": {
+      "post": {
+        "operationId": "enableTelemetry",
         "parameters": [],
         "responses": {
           "201": {
@@ -16560,7 +16588,16 @@
     "/yucca/repository/inspect": {
       "get": {
         "operationId": "inspectRepositories",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -16664,6 +16701,46 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/backend": {
+      "put": {
+        "operationId": "reconfigureRepositoryPrimaryBackend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryPrimaryBackendReconfigureRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
                 }
               }
             },
@@ -19170,6 +19247,9 @@
       },
       "BackendDto": {
         "properties": {
+          "description": {
+            "type": "string"
+          },
           "error": {
             "type": "string"
           },
@@ -19188,6 +19268,7 @@
           }
         },
         "required": [
+          "description",
           "id",
           "isOnline",
           "type"
@@ -19226,6 +19307,14 @@
           "backends"
         ],
         "type": "object"
+      },
+      "BootstrapStatus": {
+        "enum": [
+          "not-ready",
+          "ready",
+          "error"
+        ],
+        "type": "string"
       },
       "BulkIdErrorReason": {
         "description": "Error reason",
@@ -20444,6 +20533,9 @@
           "id": {
             "type": "string"
           },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
           "metrics": {
             "$ref": "#/components/schemas/RepositoryMetricsDto"
           },
@@ -20802,6 +20894,9 @@
           },
           "id": {
             "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
           },
           "metrics": {
             "$ref": "#/components/schemas/RepositoryMetricsDto"
@@ -22018,6 +22113,9 @@
       },
       "OnboardingStatusResponseDto": {
         "properties": {
+          "error": {
+            "type": "string"
+          },
           "hasBackend": {
             "type": "boolean"
           },
@@ -22032,6 +22130,20 @@
           },
           "hasSkippedExtraConfig": {
             "type": "boolean"
+          },
+          "hasTelemetry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TelemetryLevel"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BootstrapStatus"
+              }
+            ]
           }
         },
         "required": [
@@ -22039,7 +22151,9 @@
           "hasBackup",
           "hasOnboardedKey",
           "hasSchedule",
-          "hasSkippedExtraConfig"
+          "hasSkippedExtraConfig",
+          "hasTelemetry",
+          "status"
         ],
         "type": "object"
       },
@@ -23610,6 +23724,24 @@
         ],
         "type": "object"
       },
+      "RepositoryMeterDto": {
+        "properties": {
+          "lastUpdated": {
+            "type": "string"
+          },
+          "objectCount": {
+            "type": "number"
+          },
+          "sizeBytes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "objectCount",
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
       "RepositoryMetricsDto": {
         "properties": {
           "lastBackup": {
@@ -23627,6 +23759,17 @@
         },
         "required": [
           "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryPrimaryBackendReconfigureRequestDto": {
+        "properties": {
+          "backendId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "backendId"
         ],
         "type": "object"
       },
@@ -24383,6 +24526,10 @@
       },
       "ServerFeaturesDto": {
         "properties": {
+          "backups": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "configFile": {
             "description": "Whether config file is available",
             "type": "boolean"
@@ -24449,6 +24596,7 @@
           }
         },
         "required": [
+          "backups",
           "configFile",
           "duplicateDetection",
           "email",
@@ -27467,11 +27615,16 @@
       },
       "SystemConfigBackupsDto": {
         "properties": {
+          "beta": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "database": {
             "$ref": "#/components/schemas/DatabaseBackupConfig"
           }
         },
         "required": [
+          "beta",
           "database"
         ],
         "type": "object"
@@ -28725,6 +28878,13 @@
           "restore",
           "backup",
           "forget"
+        ],
+        "type": "string"
+      },
+      "TelemetryLevel": {
+        "enum": [
+          "full",
+          "none"
         ],
         "type": "string"
       },

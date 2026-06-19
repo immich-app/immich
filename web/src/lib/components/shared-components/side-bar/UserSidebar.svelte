@@ -88,7 +88,9 @@
     <NavbarItem title={$t('folders')} href={Route.folders()} icon={{ icon: mdiFolderOutline, flipped: true }} />
   {/if}
 
-  <NavbarItem title="Backups" href={Route.backups()} icon={mdiBackupRestore} />
+  {#if featureFlagsManager.value.backups && authManager.user.isAdmin}
+    <NavbarItem title="Backups" href={Route.backups()} icon={mdiBackupRestore} />
+  {/if}
 
   <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
 

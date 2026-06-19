@@ -2009,6 +2009,8 @@ export type ServerConfigDto = {
     userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
+    /** Whether the backups feature is enabled */
+    backups: boolean;
     /** Whether config file is available */
     configFile: boolean;
     /** Whether duplicate detection is enabled */
@@ -2287,6 +2289,8 @@ export type DatabaseBackupConfig = {
     keepLastAmount: number;
 };
 export type SystemConfigBackupsDto = {
+    /** Whether the backups feature is in beta */
+    beta: boolean;
     database: DatabaseBackupConfig;
 };
 export type SystemConfigFFmpegRealtimeDto = {

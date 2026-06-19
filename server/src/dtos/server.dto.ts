@@ -135,6 +135,7 @@ const ServerFeaturesSchema = z
     configFile: z.boolean().describe('Whether config file is available'),
     facialRecognition: z.boolean().describe('Whether facial recognition is enabled'),
     map: z.boolean().describe('Whether map feature is enabled'),
+    backups: z.boolean().describe('Whether the backups feature is enabled'),
     trash: z.boolean().describe('Whether trash feature is enabled'),
     reverseGeocoding: z.boolean().describe('Whether reverse geocoding is enabled'),
     importFaces: z.boolean().describe('Whether face import is enabled'),

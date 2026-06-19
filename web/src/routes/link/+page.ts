@@ -1,3 +1,4 @@
+import { getConfig, updateConfig } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { OpenQueryParam } from '$lib/constants';
 import { Route } from '$lib/route';
@@ -8,9 +9,10 @@ enum LinkTarget {
   UNSUBSCRIBE = 'unsubscribe',
   VIEW_ASSET = 'view_asset',
   ACTIVATE_LICENSE = 'activate_license',
+  BACKUPS = 'backups',
 }
 
-export const load = (({ url }) => {
+export const load = (async ({ url }) => {
   const queryParams = url.searchParams;
   const target = queryParams.get('target') as LinkTarget;
   switch (target) {
@@ -20,6 +22,17 @@ export const load = (({ url }) => {
 
     case LinkTarget.UNSUBSCRIBE: {
       return redirect(307, Route.userSettings({ isOpen: OpenQueryParam.NOTIFICATIONS }));
+    }
+
+    case LinkTarget.BACKUPS: {
+      const config = await getConfig().catch(() => undefined);
+      if (config && !config.backup.beta) {
+        await updateConfig({
+          systemConfigDto: { ...config, backup: { ...config.backup, beta: true } },
+        }).catch(() => undefined);
+      }
+
+      return redirect(307, Route.backups());
     }
 
     case LinkTarget.VIEW_ASSET: {

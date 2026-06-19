@@ -109,6 +109,7 @@ describe('/server', () => {
         configFile: false,
         duplicateDetection: false,
         facialRecognition: false,
+        backups: false,
         map: true,
         reverseGeocoding: true,
         importFaces: false,
