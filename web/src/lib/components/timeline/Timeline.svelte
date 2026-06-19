@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
   import Month from '$lib/components/timeline/Month.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
@@ -19,6 +19,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -261,6 +262,7 @@
     if (!enableRouting) {
       invisible = false;
     }
+    scrollableElement?.focus({ preventScroll: true });
   });
 
   const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, timelineMonthScrollPercent: number) => {
@@ -369,21 +371,6 @@
 
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
 
-  let shiftKeyIsDown = $state(false);
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
-  };
   const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
       void selectAssetCandidates(asset);
@@ -484,7 +471,7 @@
   };
 
   const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       return;
     }
 
@@ -504,13 +491,13 @@
   });
 
   $effect(() => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
-    if (shiftKeyIsDown && lastAssetMouseEvent) {
+    if (keyboardManager.shift && lastAssetMouseEvent) {
       void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
@@ -559,8 +546,6 @@
   };
 </script>
 
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
-
 <HotModuleReload
   onAfterUpdate={() => {
     const asset = page.url.searchParams.get('at');
@@ -598,12 +583,12 @@
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
-      if (shiftKeyIsDown) {
+      if (keyboardManager.shift) {
         amount = 500;
       }
       if (evt.key === 'ArrowUp') {
         amount = -amount;
-        if (shiftKeyIsDown) {
+        if (keyboardManager.shift) {
           scrollableElement?.scrollBy({ top: amount, behavior: 'smooth' });
         }
       } else if (evt.key === 'ArrowDown') {
@@ -616,7 +601,7 @@
 <!-- Right margin MUST be equal to the width of scrubber -->
 <section
   id="asset-grid"
-  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  class={['h-full scrollbar-hidden overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
   style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}

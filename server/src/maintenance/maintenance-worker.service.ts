@@ -281,17 +281,20 @@ export class MaintenanceWorkerService {
 
   async runAction(action: SetMaintenanceModeDto) {
     switch (action.action) {
-      case MaintenanceAction.Start: {
+      case MaintenanceAction.Start:
+      case MaintenanceAction.SelectDatabaseRestore: {
         return;
       }
       case MaintenanceAction.End: {
         return this.endMaintenance();
       }
-      case MaintenanceAction.SelectDatabaseRestore: {
-        return;
+      case MaintenanceAction.RestoreDatabase: {
+        return this.runRestoreDatabase(action);
       }
     }
+  }
 
+  async runRestoreDatabase(action: SetMaintenanceModeDto) {
     const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
     if (!lock) {
       return;

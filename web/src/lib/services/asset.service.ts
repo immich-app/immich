@@ -1,16 +1,3 @@
-import { ProjectionType } from '$lib/constants';
-import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
-import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { user as authUser, preferences } from '$lib/stores/user.store';
-import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
-import { downloadUrl } from '$lib/utils/asset-utils';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   AssetJobName,
   AssetMediaSize,
@@ -41,20 +28,31 @@ import {
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiPlus,
+  mdiPresentationPlay,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { ProjectionType } from '$lib/constants';
+import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
+import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
+import { downloadUrl } from '$lib/utils';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getAssetBulkActions = ($t: MessageFormatter) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
-  const assetIds = ownedAssets.map((asset) => asset.id);
-  const isAllVideos = ownedAssets.every((asset) => asset.isVideo);
 
   const onAction = async (name: AssetJobName) => {
-    await handleRunAssetJob({ name, assetIds });
+    await handleRunAssetJob({ name, assetIds: ownedAssets.map(({ id }) => id) });
     assetMultiSelectManager.clear();
   };
 
@@ -62,7 +60,8 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
+    onAction: () =>
+      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -87,7 +86,7 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     title: $t('refresh_encoded_videos'),
     icon: mdiCogRefreshOutline,
     onAction: () => onAction(AssetJobName.TranscodeVideo),
-    $if: () => isAllVideos,
+    $if: () => ownedAssets.every((asset) => asset.isVideo),
   };
 
   return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
@@ -95,15 +94,13 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
   const sharedLink = getSharedLink();
-  const currentAuthUser = get(authUser);
-  const userPreferences = get(preferences);
-  const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
+  const authUser = authManager.authenticated ? authManager.user : undefined;
+  const isOwner = !!(authUser && authUser.id === asset.ownerId);
 
   const Share: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
-    type: $t('assets'),
-    $if: () => !!(currentAuthUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
+    $if: () => !!(authUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
 
@@ -111,16 +108,14 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('download'),
     icon: mdiDownload,
     shortcuts: { key: 'd', shift: true },
-    type: $t('assets'),
-    $if: () => !!currentAuthUser,
+    $if: () => !!authUser,
     onAction: () => handleDownloadAsset(asset, { edited: true }),
   };
 
   const DownloadOriginal: ActionItem = {
     title: $t('download_original'),
     icon: mdiDownloadBox,
-    type: $t('assets'),
-    $if: () => !!currentAuthUser && asset.isEdited,
+    $if: () => !!authUser && asset.isEdited,
     onAction: () => handleDownloadAsset(asset, { edited: false }),
   };
 
@@ -132,7 +127,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const PlayMotionPhoto: ActionItem = {
     title: $t('play_motion_photo'),
     icon: mdiMotionPlayOutline,
-    type: $t('assets'),
     $if: () => !!asset.livePhotoVideoId && !assetViewerManager.isPlayingMotionPhoto,
     onAction: () => {
       assetViewerManager.isPlayingMotionPhoto = true;
@@ -142,17 +136,22 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const StopMotionPhoto: ActionItem = {
     title: $t('stop_motion_photo'),
     icon: mdiMotionPauseOutline,
-    type: $t('assets'),
     $if: () => !!asset.livePhotoVideoId && assetViewerManager.isPlayingMotionPhoto,
     onAction: () => {
       assetViewerManager.isPlayingMotionPhoto = false;
     },
   };
 
+  const PlaySlideshow: ActionItem = {
+    title: $t('slideshow'),
+    icon: mdiPresentationPlay,
+    $if: () => asset.visibility !== AssetVisibility.Locked,
+    onAction: () => slideshowStore.slideshowState.set(SlideshowState.PlaySlideshow),
+  };
+
   const Favorite: ActionItem = {
     title: $t('to_favorite'),
     icon: mdiHeartOutline,
-    type: $t('assets'),
     $if: () => isOwner && !asset.isFavorite,
     onAction: () => handleFavorite(asset),
     shortcuts: [{ key: 'f' }],
@@ -161,7 +160,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Unfavorite: ActionItem = {
     title: $t('unfavorite'),
     icon: mdiHeart,
-    type: $t('assets'),
     $if: () => isOwner && asset.isFavorite,
     onAction: () => handleUnfavorite(asset),
     shortcuts: [{ key: 'f' }],
@@ -178,7 +176,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Offline: ActionItem = {
     title: $t('asset_offline'),
     icon: mdiAlertOutline,
-    type: $t('assets'),
     color: 'danger',
     $if: () => !!asset.isOffline,
     onAction: () => assetViewerManager.toggleDetailPanel(),
@@ -208,7 +205,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Info: ActionItem = {
     title: $t('info'),
     icon: mdiInformationOutline,
-    type: $t('assets'),
     $if: () => asset.hasMetadata,
     onAction: () => assetViewerManager.toggleDetailPanel(),
     shortcuts: { key: 'i' },
@@ -217,8 +213,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const Tag: ActionItem = {
     title: $t('add_tag'),
     icon: mdiTagPlusOutline,
-    type: $t('assets'),
-    $if: () => userPreferences.tags.enabled,
+    $if: () => authManager.authenticated && authManager.preferences.tags.enabled,
     onAction: () => modalManager.show(AssetTagModal, { assetIds: [asset.id] }),
     shortcuts: { key: 't' },
   };
@@ -226,7 +221,6 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const TagPeople: ActionItem = {
     title: $t('tag_people'),
     icon: mdiFaceRecognition,
-    type: $t('assets'),
     $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
     onAction: () => assetViewerManager.toggleFaceEditMode(),
     shortcuts: { key: 'p' },
@@ -284,6 +278,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    PlaySlideshow,
     AddToAlbum,
     ZoomIn,
     ZoomOut,
@@ -315,7 +310,10 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
 
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
-    if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
+    if (
+      !isAndroidMotionVideo(motionAsset) ||
+      (authManager.authenticated && authManager.preferences.download.includeEmbeddedVideos)
+    ) {
       const motionFilename = motionAsset.originalFileName;
       const lastDotIndex = motionFilename.lastIndexOf('.');
       const motionDownloadFilename =

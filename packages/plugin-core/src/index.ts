@@ -1,0 +1,183 @@
+import { wrapper } from '@immich/plugin-sdk';
+import { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
+
+type AssetFileFilterConfig = {
+  pattern: string;
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  caseSensitive?: boolean;
+};
+export const assetFileFilter = () => {
+  return wrapper<WorkflowType.AssetV1, AssetFileFilterConfig>(({ data, config }) => {
+    const { pattern, matchType = 'contains', caseSensitive = false } = config;
+
+    const { asset } = data;
+
+    const fileName = asset.originalFileName || '';
+    const searchName = caseSensitive ? fileName : fileName.toLowerCase();
+    const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
+
+    switch (matchType) {
+      case 'contains': {
+        return { workflow: { continue: searchName.includes(searchPattern) } };
+      }
+
+      case 'exact': {
+        return { workflow: { continue: searchName === searchPattern } };
+      }
+
+      case 'startsWith': {
+        return { workflow: { continue: searchName.startsWith(searchPattern) } };
+      }
+
+      case 'regex': {
+        const flags = caseSensitive ? '' : 'i';
+        const regex = new RegExp(searchPattern, flags);
+        return { workflow: { continue: regex.test(fileName) } };
+      }
+
+      default: {
+        return {};
+      }
+    }
+  });
+};
+
+export const assetMissingTimeZoneFilter = () => {
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+    const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
+    const needsTimeZone = config.inverse ? true : false;
+    return { workflow: { continue: hasTimeZone === needsTimeZone } };
+  });
+};
+
+export const assetLocationFilter = () => {
+  return wrapper<
+    WorkflowType.AssetV1,
+    {
+      region?: { country?: string; state?: string; city?: string };
+      coordinate?: { latitude?: string; longitude?: string; radius?: number };
+    }
+  >(({ config, data }) => {
+    if (
+      (config.region?.country && config.region.country !== data.asset.exifInfo?.country) ||
+      (config.region?.state && config.region.state !== data.asset.exifInfo?.state) ||
+      (config.region?.city && config.region.city !== data.asset.exifInfo?.city)
+    ) {
+      return { workflow: { continue: false } };
+    }
+
+    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
+    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+
+    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+      return { workflow: { continue: true } };
+    }
+
+    const assetLat = data.asset.exifInfo?.latitude;
+    const assetLon = data.asset.exifInfo?.longitude;
+
+    if (assetLat === undefined || assetLat === null || assetLon === undefined || assetLon === null) {
+      return { workflow: { continue: false } };
+    }
+
+    const earthDiameter = 12742;
+    const deg = Math.PI / 180;
+    const delta = Math.asin(
+      Math.sqrt(
+        Math.pow(Math.sin((assetLat * deg - configLat * deg) / 2), 2) +
+          Math.cos(assetLat * deg) *
+            Math.cos(configLat * deg) *
+            Math.pow(Math.sin((assetLon * deg - configLon * deg) / 2), 2),
+      ),
+    );
+
+    return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  });
+};
+
+export const assetTypeFilter = () => {
+  return wrapper<WorkflowType.AssetV1, { allowedTypes: AssetTypeEnum[] }>(({ config, data }) => {
+    return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
+  });
+};
+
+export const assetFavorite = () => {
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+    const target = config.inverse ? false : true;
+    if (target !== data.asset.isFavorite) {
+      return {
+        changes: {
+          asset: { isFavorite: target },
+        },
+      };
+    }
+  });
+};
+
+export const assetVisibility = () => {
+  return wrapper<WorkflowType.AssetV1, { visibility: AssetVisibility }>(({ config }) => ({
+    changes: { asset: { visibility: config.visibility } },
+  }));
+};
+
+export const assetArchive = () => {
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+    if (!config.inverse && data.asset.visibility !== AssetVisibility.Archive) {
+      return { changes: { asset: { visibility: AssetVisibility.Archive } } };
+    }
+
+    if (config.inverse && data.asset.visibility === AssetVisibility.Archive) {
+      return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
+    }
+
+    return {};
+  });
+};
+
+export const assetLock = () => {
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+    if (!config.inverse && data.asset.visibility !== AssetVisibility.Locked) {
+      return { changes: { asset: { visibility: AssetVisibility.Locked } } };
+    }
+
+    if (config.inverse && data.asset.visibility === AssetVisibility.Locked) {
+      return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
+    }
+
+    return {};
+  });
+};
+
+export const assetTrash = () => {
+  // TODO use trash/untrash host functions
+  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(() => ({}));
+};
+
+export const assetAddToAlbums = () => {
+  return wrapper<WorkflowType.AssetV1, { albumIds: string[]; albumName?: string }>(({ config, data, functions }) => {
+    const assetId = data.asset.id;
+
+    if (config.albumIds.length === 0) {
+      if (!config.albumName) {
+        return {};
+      }
+
+      const [existing] = functions.searchAlbums({ name: config.albumName });
+      if (!existing) {
+        const created = functions.createAlbum({ albumName: config.albumName, assetIds: [assetId] });
+        config.albumIds.push(created.id);
+        return {};
+      }
+
+      config.albumIds.push(existing.id);
+    }
+
+    if (config.albumIds.length === 1) {
+      functions.addAssetsToAlbum(config.albumIds[0], [assetId]);
+      return {};
+    }
+
+    functions.addAssetsToAlbums({ albumIds: config.albumIds, assetIds: [assetId] });
+    return {};
+  });
+};

@@ -160,12 +160,25 @@ class DriftMemoryPage extends HookConsumerWidget {
       currentAssetPage.value = otherIndex;
       updateProgressText();
 
+      final activeMemory = currentMemory.value;
+
       // Wait for page change animation to finish
       await Future.delayed(const Duration(milliseconds: 400));
+
+      // check if memory is still the same and if context is still mounted
+      if (currentMemory.value != activeMemory || !context.mounted) {
+        return;
+      }
+
       // And then precache the next asset
       await precacheAsset(otherIndex + 1);
 
-      final asset = currentMemory.value.assets[otherIndex];
+      // check again as precache involves async operations
+      if (currentMemory.value != activeMemory || !context.mounted) {
+        return;
+      }
+
+      final asset = activeMemory.assets[otherIndex];
       currentAsset.value = asset;
       ref.read(assetViewerProvider.notifier).setAsset(asset);
     }

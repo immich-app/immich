@@ -13,12 +13,17 @@ part of openapi.api;
 class AlbumUserAddDto {
   /// Returns a new [AlbumUserAddDto] instance.
   AlbumUserAddDto({
-    this.role = AlbumUserRole.editor,
+    this.role = const Optional.absent(),
     required this.userId,
   });
 
-  /// Album user role
-  AlbumUserRole role;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<AlbumUserRole?> role;
 
   /// User ID
   String userId;
@@ -31,7 +36,7 @@ class AlbumUserAddDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (role.hashCode) +
+    (role == null ? 0 : role!.hashCode) +
     (userId.hashCode);
 
   @override
@@ -39,7 +44,10 @@ class AlbumUserAddDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'role'] = this.role;
+    if (this.role.isPresent) {
+      final value = this.role.value;
+      json[r'role'] = value;
+    }
       json[r'userId'] = this.userId;
     return json;
   }
@@ -53,7 +61,7 @@ class AlbumUserAddDto {
       final json = value.cast<String, dynamic>();
 
       return AlbumUserAddDto(
-        role: AlbumUserRole.fromJson(json[r'role']) ?? AlbumUserRole.editor,
+        role: json.containsKey(r'role') ? Optional.present(AlbumUserRole.fromJson(json[r'role'])) : const Optional.absent(),
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

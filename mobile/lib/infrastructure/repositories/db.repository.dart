@@ -1,16 +1,20 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:drift/src/runtime/executor/stream_queries.dart' show StreamQueryStore;
+import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
-import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -19,30 +23,24 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/settings.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
-import 'package:isar/isar.dart' hide Index;
-
-// #zoneTxn is the symbol used by Isar to mark a transaction within the current zone
-// ref: isar/isar_common.dart
-const Symbol _kzoneTxn = #zoneTxn;
-
-class IsarDatabaseRepository implements IDatabaseRepository {
-  final Isar _db;
-  const IsarDatabaseRepository(Isar db) : _db = db;
-
-  // Isar do not support nested transactions. This is a workaround to prevent us from making nested transactions
-  // Reuse the current transaction if it is already active, else start a new transaction
-  @override
-  Future<T> transaction<T>(Future<T> Function() callback) =>
-      Zone.current[_kzoneTxn] == null ? _db.writeTxn(callback) : callback();
-}
+import 'package:logging/logging.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
+import 'package:sqlite_async/native.dart';
+import 'package:sqlite_async/sqlite_async.dart';
 
 @DriftDatabase(
   tables: [
@@ -67,12 +65,25 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     StoreEntity,
     TrashedLocalAssetEntity,
     AssetEditEntity,
+    SettingsEntity,
+    AssetOcrEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
-class Drift extends $Drift implements IDatabaseRepository {
-  Drift([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
+class Drift extends $Drift {
+  final SqliteConnectionPool? _updatePool;
+
+  Drift(super.executor) : _updatePool = null;
+
+  Drift.sqlite(SqliteConnection db, SqliteConnectionPool updatePool)
+    : _updatePool = updatePool,
+      super(DatabaseConnection(SqliteAsyncQueryExecutor(db), streamQueries: _DriftPoolStreamQueries(updatePool)));
+
+  @override
+  Future<void> close() async {
+    await super.close();
+    _updatePool?.close();
+  }
 
   Future<void> reset() async {
     // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
@@ -97,8 +108,19 @@ class Drift extends $Drift implements IDatabaseRepository {
     });
   }
 
+  Future<void> optimize({bool allTables = false}) async {
+    try {
+      if (allTables) {
+        await customStatement('PRAGMA optimize=0x10002');
+      }
+      await customStatement('PRAGMA optimize');
+    } catch (error) {
+      Logger('Drift').fine('Failed to optimize database', error);
+    }
+  }
+
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -239,6 +261,56 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createTable(v22.assetEditEntity);
             await m.createIndex(v22.idxAssetEditAssetId);
           },
+          from22To23: (m, v23) async {
+            await m.renameColumn(v23.localAssetEntity, 'duration_in_seconds', v23.localAssetEntity.durationMs);
+            await m.renameColumn(v23.remoteAssetEntity, 'duration_in_seconds', v23.remoteAssetEntity.durationMs);
+            await m.renameColumn(
+              v23.trashedLocalAssetEntity,
+              'duration_in_seconds',
+              v23.trashedLocalAssetEntity.durationMs,
+            );
+
+            await localAssetEntity.update().write(
+              LocalAssetEntityCompanion.custom(durationMs: v23.localAssetEntity.durationMs * const Constant(1000)),
+            );
+            await remoteAssetEntity.update().write(
+              RemoteAssetEntityCompanion.custom(durationMs: v23.remoteAssetEntity.durationMs * const Constant(1000)),
+            );
+            await trashedLocalAssetEntity.update().write(
+              TrashedLocalAssetEntityCompanion.custom(
+                durationMs: v23.trashedLocalAssetEntity.durationMs * const Constant(1000),
+              ),
+            );
+          },
+          from23To24: (m, v24) async {
+            await customStatement('DROP INDEX IF EXISTS idx_remote_album_owner_id');
+            await m.alterTable(TableMigration(v24.remoteAlbumEntity));
+          },
+          from24To25: (m, v25) async {
+            await m.createTable(v25.metadata);
+            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_owner_checksum');
+            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_day');
+            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_month');
+            await m.createIndex(v25.idxRemoteAssetOwnerVisibilityDeletedCreated);
+            await m.createIndex(v25.idxRemoteExifCity);
+            await m.createIndex(v25.idxAssetFaceVisiblePerson);
+          },
+          from25To26: (m, v26) async {
+            await m.addColumn(v26.remoteAssetEntity, v26.remoteAssetEntity.uploadedAt);
+          },
+          from26To27: (m, v27) async {
+            await customStatement('ALTER TABLE metadata RENAME TO settings');
+          },
+          from27To28: (m, v28) async {
+            await m.createIndex(v28.idxLocalAssetCreatedAt);
+          },
+          from28To29: (m, v29) async {
+            await m.createTable(v29.assetOcrEntity);
+            await m.createIndex(v29.idxAssetOcrAssetId);
+          },
+          from29To30: (m, v30) async {
+            await m.alterTable(TableMigration(v30.settings));
+          },
         ),
       );
 
@@ -249,6 +321,7 @@ class Drift extends $Drift implements IDatabaseRepository {
       }
 
       await customStatement('PRAGMA foreign_keys = ON;');
+      await optimize();
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -261,10 +334,88 @@ class Drift extends $Drift implements IDatabaseRepository {
   );
 }
 
-class DriftDatabaseRepository implements IDatabaseRepository {
+class DriftDatabaseRepository {
   final Drift _db;
   const DriftDatabaseRepository(this._db);
 
-  @override
   Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
+}
+
+// ignore: invalid_use_of_internal_member
+final class _DriftPoolStreamQueries extends StreamQueryStore {
+  _DriftPoolStreamQueries(this._pool);
+
+  final SqliteConnectionPool _pool;
+
+  @override
+  void handleTableUpdates(Set<TableUpdate> updates) {
+    if (updates.isEmpty) {
+      return;
+    }
+    _pool.dispatchUpdateNotification([for (final update in updates) update.table]);
+  }
+
+  @override
+  Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
+    return _pool.updatedTables
+        .map((tables) => {for (final table in tables) TableUpdate(table)})
+        .where((updates) => updates.any(query.matches));
+  }
+}
+
+Future<SqliteConnection> openSqliteConnection({required String name}) async {
+  return _openImmichDatabase(await _databaseFile(name));
+}
+
+Future<(SqliteConnection, SqliteConnectionPool)> openSqliteConnectionWithUpdatePool({required String name}) async {
+  final file = await _databaseFile(name);
+  final db = _openImmichDatabase(file);
+  await db.initialize();
+  final updatePool = SqliteConnectionPool.open(
+    name: file.path,
+    openConnections: () => throw StateError('Pool for "$name" should already be open via sqlite_async'),
+  );
+  return (db, updatePool);
+}
+
+Future<File> _databaseFile(String name) async {
+  final dbFolder = await getApplicationDocumentsDirectory();
+  return File(p.join(dbFolder.path, '$name.sqlite'));
+}
+
+SqliteDatabase _openImmichDatabase(File file) {
+  return SqliteDatabase.withFactory(
+    ImmichSqliteOpenFactory(
+      path: file.path,
+      sqliteOptions: const SqliteOptions(
+        journalMode: SqliteJournalMode.wal, // PRAGMA journal_mode (writer only)
+        synchronous: SqliteSynchronous.normal, // PRAGMA synchronous
+        lockTimeout: Duration(seconds: 30), // -> PRAGMA busy_timeout = 30000
+      ),
+    ),
+  );
+}
+
+@visibleForTesting
+final class ImmichSqliteOpenFactory extends NativeSqliteOpenFactory {
+  ImmichSqliteOpenFactory({required super.path, super.sqliteOptions});
+
+  @override
+  List<String> pragmaStatements(SqliteOpenOptions options) {
+    return [
+      ...super.pragmaStatements(options),
+      'PRAGMA cache_size = -32000', // 32MB
+      'PRAGMA temp_store = MEMORY',
+      'PRAGMA foreign_keys = ON',
+    ];
+  }
+}
+
+Future<void> configureSqliteCache() async {
+  // Make sqlite3 pick a more suitable location for temporary files - the
+  // one from the system may be inaccessible due to sand-boxing.
+  final cacheBase = (await getTemporaryDirectory()).path;
+  // We can't access /tmp on Android, which sqlite3 would try by default.
+  // Explicitly tell it about the correct temporary directory.
+  sqlite3.tempDirectory = cacheBase;
 }

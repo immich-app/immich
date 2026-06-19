@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
+  import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import { AssetAction } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
@@ -15,7 +15,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -82,7 +82,7 @@
   $effect(() => {
     const asset = assetViewerManager.asset;
     if (asset) {
-      untrack(() => handlePromiseError(loadCloseAssets(asset)));
+      handlePromiseError(loadCloseAssets(asset));
     }
   });
 
@@ -96,9 +96,9 @@
     return { id: randomAsset.id };
   };
 
-  const handleClose = async (asset: { id: string }) => {
+  const handleClose = async (assetId: string) => {
     invisible = true;
-    assetViewerManager.gridScrollTarget = { at: asset.id };
+    assetViewerManager.gridScrollTarget = { at: assetId };
     await navigate({
       targetRoute: 'current',
       assetId: null,
@@ -117,7 +117,7 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     (await navigateToAsset(assetCursor?.nextAsset)) ||
       (await navigateToAsset(assetCursor?.previousAsset)) ||
-      (await handleClose(assetCursor.current));
+      (await handleClose(assetCursor.current.id));
   };
 
   const handlePreAction = async (action: Action) => {
@@ -136,10 +136,11 @@
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await navigateToAsset(assetCursor?.nextAsset)) ||
           (await navigateToAsset(assetCursor?.previousAsset)) ||
-          (await handleClose(action.asset));
+          (await handleClose(action.asset.id));
 
         break;
       }
+      // no default
     }
   };
   const handleAction = (action: Action) => {
@@ -195,6 +196,7 @@
         });
         break;
       }
+      // no default
     }
   };
   const handleUndoDelete = async (assets: TimelineAsset[]) => {
@@ -232,7 +234,7 @@
   });
 </script>
 
-{#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+{#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
     cursor={assetCursor}

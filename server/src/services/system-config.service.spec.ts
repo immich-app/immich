@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults, SystemConfig } from 'src/config';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
@@ -41,6 +42,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
   },
   backup: {
@@ -70,8 +72,27 @@ const updatedConfig = Object.freeze<SystemConfig>({
     preferredHwDevice: 'auto',
     transcode: TranscodePolicy.Required,
     accel: TranscodeHardwareAcceleration.Disabled,
-    accelDecode: false,
+    accelDecode: true,
     tonemap: ToneMapping.Hable,
+    realtime: {
+      enabled: false,
+    },
+  },
+  integrityChecks: {
+    untrackedFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    missingFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    checksumFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+      timeLimit: 60 * 60 * 1000,
+      percentageLimit: 1,
+    },
   },
   logging: {
     enabled: true,
@@ -138,13 +159,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    endSessionEndpoint: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
+    allowInsecureRequests: false,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
     roleClaim: 'immich_role',
@@ -181,6 +205,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+    channel: ReleaseChannel.Stable,
   },
   trash: {
     enabled: true,
@@ -294,26 +319,33 @@ describe(SystemConfigService.name, () => {
     it('should accept valid cron expressions', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(
-        JSON.stringify({ library: { scan: { cronExpression: '0 0 * * *' } } }),
+        JSON.stringify({ library: { scan: { cronExpression: '0 0 */3 * *' } } }),
       );
 
       await expect(sut.getSystemConfig()).resolves.toMatchObject({
         library: {
           scan: {
             enabled: true,
-            cronExpression: '0 0 * * *',
+            cronExpression: '0 0 */3 * *',
           },
         },
       });
+    });
+
+    it('should reject an invalid issuer URL', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ oauth: { issuerUrl: 'accounts.google.com' } }));
+
+      await expect(sut.getSystemConfig()).rejects.toThrow(
+        '[oauth.issuerUrl] Issuer URL must be an empty string or a valid URL',
+      );
     });
 
     it('should reject invalid cron expressions', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: 'foo' } } }));
 
-      await expect(sut.getSystemConfig()).rejects.toThrow(
-        'library.scan.cronExpression has failed the following constraints: cronValidator',
-      );
+      await expect(sut.getSystemConfig()).rejects.toThrow('[library.scan.cronExpression] Invalid cron expression');
     });
 
     it('should log errors with the config file', async () => {
@@ -402,10 +434,26 @@ describe(SystemConfigService.name, () => {
     });
 
     const tests = [
-      { should: 'validate numbers', config: { ffmpeg: { crf: 'not-a-number' } } },
-      { should: 'validate booleans', config: { oauth: { enabled: 'invalid' } } },
-      { should: 'validate enums', config: { ffmpeg: { transcode: 'unknown' } } },
-      { should: 'validate required oauth fields', config: { oauth: { enabled: true } } },
+      {
+        should: 'validate numbers',
+        config: { ffmpeg: { crf: 'not-a-number' } },
+        throws: '[ffmpeg.crf] Invalid input: expected number, received NaN',
+      },
+      {
+        should: 'validate booleans',
+        config: { oauth: { enabled: 'invalid' } },
+        throws: '[oauth.enabled] Invalid input: expected boolean, received string',
+      },
+      {
+        should: 'validate enums',
+        config: { ffmpeg: { transcode: 'unknown' } },
+        throws: '[ffmpeg.transcode] Invalid option: expected one of',
+      },
+      {
+        should: 'validate required oauth fields',
+        config: { oauth: { enabled: true } },
+        check: (c: SystemConfig) => expect(c.oauth.enabled).toBe(true),
+      },
       { should: 'warn for top level unknown options', warn: true, config: { unknownOption: true } },
       { should: 'warn for nested unknown options', warn: true, config: { ffmpeg: { unknownOption: true } } },
     ];
@@ -415,11 +463,14 @@ describe(SystemConfigService.name, () => {
         mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
         mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(test.config));
 
-        if (test.warn) {
+        if (test.throws) {
+          await expect(sut.getSystemConfig()).rejects.toThrow(test.throws);
+        } else if (test.warn) {
           await sut.getSystemConfig();
           expect(mocks.logger.warn).toHaveBeenCalled();
         } else {
-          await expect(sut.getSystemConfig()).rejects.toBeInstanceOf(Error);
+          const config = await sut.getSystemConfig();
+          test.check!(config);
         }
       });
     }

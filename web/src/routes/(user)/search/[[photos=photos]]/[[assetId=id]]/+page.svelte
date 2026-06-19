@@ -3,10 +3,10 @@
   import { page } from '$app/state';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
+  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -20,12 +20,12 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { QueryParameter } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { lang, locale } from '$lib/stores/preferences.store';
-  import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
@@ -42,7 +42,7 @@
     type SmartSearchDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -65,6 +65,7 @@
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
+  let searchTermKeys = $derived(getObjectKeys(terms));
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -184,6 +185,7 @@
       personIds: $t('people'),
       tagIds: $t('tags'),
       originalFileName: $t('file_name_text'),
+      originalPath: $t('full_path_or_folder'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
@@ -234,55 +236,70 @@
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
+
+  function removeFilter(key: keyof SearchTerms) {
+    delete terms[key];
+    void goto(Route.search(terms));
+  }
 </script>
 
 <svelte:window bind:scrollY />
 
 <OnEvents {onAlbumAddAssets} />
 
-{#if terms}
-  <section
-    id="search-chips"
-    class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
-  >
-    {#each getObjectKeys(terms) as searchKey (searchKey)}
-      {@const value = terms[searchKey]}
-      <div class="flex place-content-center place-items-center items-stretch text-xs">
+{#if searchTermKeys.length > 0}
+  <section id="search-chips" class="mx-auto mt-24 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
+    <div class="flex w-full flex-wrap place-content-center place-items-center gap-2.5 sm:gap-3">
+      {#each searchTermKeys as searchKey (searchKey)}
+        {@const value = terms[searchKey]}
         <div
-          class="flex items-center justify-center bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
-          {value === true ? 'rounded-full' : 'rounded-s-full'}"
+          class="inline-flex max-w-full items-center rounded-full bg-primary/10 py-1 ps-1 pe-1 text-xs text-primary ring-1 ring-primary/15 transition-shadow hover:ring-primary/25 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20 dark:hover:ring-immich-dark-primary/30"
         >
-          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
-        </div>
+          <span
+            class="shrink-0 rounded-full bg-primary px-3 py-1.5 font-medium text-light dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+          >
+            {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+          </span>
 
-        {#if value !== true}
-          <div class="bg-gray-300 py-2 px-4 dark:bg-gray-800 dark:text-white rounded-e-full">
-            {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
-              {getHumanReadableDate(value)}
-            {:else if searchKey === 'personIds' && Array.isArray(value)}
-              {#await getPersonName(value) then personName}
-                {personName}
-              {/await}
-            {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
-              {#await getTagNames(value) then tagNames}
-                {tagNames}
-              {/await}
-            {:else if searchKey === 'rating'}
-              {$t('rating_count', { values: { count: value ?? 0 } })}
-            {:else if value === null || value === ''}
-              {$t('unknown')}
-            {:else}
-              {value}
-            {/if}
-          </div>
-        {/if}
-      </div>
-    {/each}
+          {#if value !== true}
+            <span class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg">
+              {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
+                {getHumanReadableDate(value)}
+              {:else if searchKey === 'personIds' && Array.isArray(value)}
+                {#await getPersonName(value) then personName}
+                  {personName}
+                {/await}
+              {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
+                {#await getTagNames(value) then tagNames}
+                  {tagNames}
+                {/await}
+              {:else if searchKey === 'rating'}
+                {$t('rating_count', { values: { count: value ?? 0 } })}
+              {:else if value === null || value === ''}
+                {$t('unknown')}
+              {:else}
+                {value}
+              {/if}
+            </span>
+          {/if}
+
+          <button
+            type="button"
+            class="ms-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-primary outline-offset-2 outline-immich-primary transition-colors hover:bg-primary/15 focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary dark:hover:bg-immich-dark-primary/20"
+            aria-label={$t('remove_filter')}
+            title={$t('remove_filter')}
+            onclick={() => removeFilter(searchKey)}
+          >
+            <Icon icon={mdiClose} size="14" />
+          </button>
+        </div>
+      {/each}
+    </div>
   </section>
 {/if}
 
 <section
-  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4 max-h-screen"
+  class="m-4 mb-12 max-h-screen bg-immich-bg dark:bg-immich-dark-bg"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
@@ -292,7 +309,7 @@
       <GalleryViewer
         assets={searchResultAssets}
         assetInteraction={assetMultiSelectManager}
-        onIntersected={loadNextPage}
+        onEndReached={loadNextPage}
         showArchiveIcon={true}
         {viewport}
         onReload={onSearchQueryUpdate}
@@ -309,7 +326,7 @@
     {/if}
 
     {#if isLoading}
-      <div class="flex justify-center py-16 items-center">
+      <div class="flex items-center justify-center py-16">
         <LoadingSpinner size="giant" />
       </div>
     {/if}
@@ -317,7 +334,7 @@
 
   <section>
     {#if assetMultiSelectManager.selectionActive}
-      <div class="fixed top-0 start-0 w-full z-2">
+      <div class="fixed inset-s-0 top-0 z-2 w-full">
         <AssetSelectControlBar>
           {@const Actions = getAssetBulkActions($t)}
           <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
@@ -353,7 +370,7 @@
               <ChangeLocation menuItem />
               <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
               <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-              {#if $preferences.tags.enabled}
+              {#if authManager.preferences.tags.enabled}
                 <TagAction menuItem />
               {/if}
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
@@ -368,10 +385,9 @@
         </AssetSelectControlBar>
       </div>
     {:else}
-      <div class="fixed top-0 start-0 w-full z-2">
+      <div class="fixed inset-s-0 top-0 z-2 w-full">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-          <div class="absolute bg-light"></div>
-          <div class="w-full flex-1 ps-4">
+          <div class="mx-auto w-full max-w-2xl pe-2">
             <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
           </div>
         </ControlAppBar>

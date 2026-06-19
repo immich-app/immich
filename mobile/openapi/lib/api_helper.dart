@@ -61,6 +61,9 @@ String parameterToString(dynamic value) {
   if (value is AssetEditAction) {
     return AssetEditActionTypeTransformer().encode(value).toString();
   }
+  if (value is AssetIdErrorReason) {
+    return AssetIdErrorReasonTypeTransformer().encode(value).toString();
+  }
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
@@ -73,8 +76,17 @@ String parameterToString(dynamic value) {
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
+  if (value is AssetOrderBy) {
+    return AssetOrderByTypeTransformer().encode(value).toString();
+  }
+  if (value is AssetRejectReason) {
+    return AssetRejectReasonTypeTransformer().encode(value).toString();
+  }
   if (value is AssetTypeEnum) {
     return AssetTypeEnumTypeTransformer().encode(value).toString();
+  }
+  if (value is AssetUploadAction) {
+    return AssetUploadActionTypeTransformer().encode(value).toString();
   }
   if (value is AssetVisibility) {
     return AssetVisibilityTypeTransformer().encode(value).toString();
@@ -88,11 +100,17 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
+  if (value is CalendarHeatmapType) {
+    return CalendarHeatmapTypeTypeTransformer().encode(value).toString();
+  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
+  }
+  if (value is IntegrityReport) {
+    return IntegrityReportTypeTransformer().encode(value).toString();
   }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
@@ -130,12 +148,6 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
-  if (value is PluginContextType) {
-    return PluginContextTypeTypeTransformer().encode(value).toString();
-  }
-  if (value is PluginTriggerType) {
-    return PluginTriggerTypeTypeTransformer().encode(value).toString();
-  }
   if (value is QueueCommand) {
     return QueueCommandTypeTransformer().encode(value).toString();
   }
@@ -150,6 +162,12 @@ String parameterToString(dynamic value) {
   }
   if (value is ReactionType) {
     return ReactionTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is ReleaseChannel) {
+    return ReleaseChannelTypeTransformer().encode(value).toString();
+  }
+  if (value is ReleaseType) {
+    return ReleaseTypeTypeTransformer().encode(value).toString();
   }
   if (value is SearchSuggestionType) {
     return SearchSuggestionTypeTypeTransformer().encode(value).toString();
@@ -193,6 +211,12 @@ String parameterToString(dynamic value) {
   if (value is VideoContainer) {
     return VideoContainerTypeTransformer().encode(value).toString();
   }
+  if (value is WorkflowTrigger) {
+    return WorkflowTriggerTypeTransformer().encode(value).toString();
+  }
+  if (value is WorkflowType) {
+    return WorkflowTypeTypeTransformer().encode(value).toString();
+  }
   return value.toString();
 }
 
@@ -208,6 +232,9 @@ Future<String> _decodeBodyBytes(Response response) async {
 /// Returns a valid [T] value found at the specified Map [key], null otherwise.
 T? mapValueOfType<T>(dynamic map, String key) {
   final dynamic value = map is Map ? map[key] : null;
+  if (T == double && value is int) {
+    return value.toDouble() as T;
+  }
   return value is T ? value : null;
 }
 

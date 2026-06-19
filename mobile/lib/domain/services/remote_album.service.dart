@@ -7,14 +7,49 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:logging/logging.dart';
+
+/// Categorizes a heterogeneous asset selection into the candidates that can
+/// be added to an album immediately (already on the server) and the local-only
+/// candidates that must be uploaded first.
+class AlbumAssetCandidates {
+  final List<String> remoteAssetIds;
+  final List<LocalAsset> localAssetsToUpload;
+
+  const AlbumAssetCandidates({required this.remoteAssetIds, required this.localAssetsToUpload});
+}
 
 class RemoteAlbumService {
+  static final _logger = Logger('RemoteAlbumService');
+
   final DriftRemoteAlbumRepository _repository;
   final DriftAlbumApiRepository _albumApiRepository;
+  final ForegroundUploadService _uploadService;
 
-  const RemoteAlbumService(this._repository, this._albumApiRepository);
+  const RemoteAlbumService(this._repository, this._albumApiRepository, this._uploadService);
+
+  /// Categorizes a heterogeneous asset selection into already-on-server IDs
+  /// and local assets that still need to be uploaded.
+  static AlbumAssetCandidates categorizeCandidates(Iterable<BaseAsset> assets) {
+    final remoteIds = <String>[];
+    final localToUpload = <LocalAsset>[];
+    for (final asset in assets) {
+      if (asset is RemoteAsset) {
+        remoteIds.add(asset.id);
+      } else if (asset is LocalAsset) {
+        final remoteId = asset.remoteId;
+        if (remoteId != null) {
+          remoteIds.add(remoteId);
+        } else {
+          localToUpload.add(asset);
+        }
+      }
+    }
+    return AlbumAssetCandidates(remoteAssetIds: remoteIds, localAssetsToUpload: localToUpload);
+  }
 
   Stream<RemoteAlbum?> watchAlbum(String albumId) {
     return _repository.watchAlbum(albumId);
@@ -26,10 +61,6 @@ class RemoteAlbumService {
 
   Future<RemoteAlbum?> get(String albumId) {
     return _repository.get(albumId);
-  }
-
-  Future<RemoteAlbum?> getByName(String albumName, String ownerId) {
-    return _repository.getByName(albumName, ownerId);
   }
 
   Future<List<RemoteAlbum>> sortAlbums(
@@ -86,8 +117,18 @@ class RemoteAlbumService {
     return filtered;
   }
 
-  Future<RemoteAlbum> createAlbum({required String title, required List<String> assetIds, String? description}) async {
-    final album = await _albumApiRepository.createDriftAlbum(title, description: description, assetIds: assetIds);
+  Future<RemoteAlbum> createAlbum({
+    required String title,
+    required UserDto owner,
+    required List<String> assetIds,
+    String? description,
+  }) async {
+    final album = await _albumApiRepository.createDriftAlbum(
+      title,
+      owner,
+      description: description,
+      assetIds: assetIds,
+    );
     await _repository.create(album, assetIds);
 
     return album;
@@ -101,8 +142,10 @@ class RemoteAlbumService {
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
   }) async {
+    final owner = await _repository.getOwner(albumId);
     final updatedAlbum = await _albumApiRepository.updateAlbum(
       albumId,
+      owner,
       name: name,
       description: description,
       thumbnailAssetId: thumbnailAssetId,
@@ -138,6 +181,109 @@ class RemoteAlbumService {
     await _repository.addAssets(albumId, album.added);
 
     return album.added.length;
+  }
+
+  /// !TODO The name here is not clear as we have addAssets method above,
+  /// which is only add remote assets to album, for the next PR, we will allow
+  /// adding local assets from album from the timeline as well with this flow.
+  /// So saving that for the next refactor
+  Future<int> addAssetsToAlbum({
+    required String albumId,
+    required UserDto uploader,
+    required AlbumAssetCandidates candidates,
+    UploadCallbacks uploadCallbacks = const UploadCallbacks(),
+    Completer<void>? cancelToken,
+  }) async {
+    int addedCount = 0;
+    if (candidates.remoteAssetIds.isNotEmpty) {
+      addedCount += await addAssets(albumId: albumId, assetIds: candidates.remoteAssetIds);
+    }
+    if (candidates.localAssetsToUpload.isNotEmpty) {
+      addedCount += await _uploadAndAddLocals(
+        albumId,
+        uploader,
+        candidates.localAssetsToUpload,
+        uploadCallbacks,
+        cancelToken,
+      );
+    }
+    return addedCount;
+  }
+
+  Future<int> _uploadAndAddLocals(
+    String albumId,
+    UserDto uploader,
+    List<LocalAsset> localAssets,
+    UploadCallbacks userCallbacks,
+    Completer<void>? cancelToken,
+  ) async {
+    int addedCount = 0;
+    final pendingAdds = <Future<void>>[];
+    final localById = {for (final a in localAssets) a.id: a};
+
+    final wrappedCallbacks = UploadCallbacks(
+      onProgress: (localId, filename, bytes, totalBytes) => _runUploadCallback(
+        'Upload progress callback failed for $localId',
+        () => userCallbacks.onProgress?.call(localId, filename, bytes, totalBytes),
+      ),
+      onICloudProgress: (localId, progress) => _runUploadCallback(
+        'iCloud progress callback failed for $localId',
+        () => userCallbacks.onICloudProgress?.call(localId, progress),
+      ),
+      onError: (localId, errorMessage) => _runUploadCallback(
+        'Upload error callback failed for $localId',
+        () => userCallbacks.onError?.call(localId, errorMessage),
+      ),
+      onSuccess: (localId, remoteId) {
+        _runUploadCallback(
+          'Upload success callback failed for $localId',
+          () => userCallbacks.onSuccess?.call(localId, remoteId),
+        );
+        final source = localById[localId];
+        if (source == null) {
+          _logger.warning('Upload success for $localId but source LocalAsset missing; skipping album link');
+          return;
+        }
+        pendingAdds.add(
+          linkUploadedAssetToAlbum(albumId, remoteId, uploader, source)
+              .then<void>((added) {
+                addedCount += added;
+              })
+              .catchError((Object error, StackTrace stack) {
+                _logger.warning('Failed to add uploaded asset $remoteId to album $albumId', error, stack);
+              }),
+        );
+      },
+    );
+
+    await _uploadService.uploadManual(localAssets, callbacks: wrappedCallbacks, cancelToken: cancelToken);
+    await Future.wait(pendingAdds);
+    return addedCount;
+  }
+
+  void _runUploadCallback(String message, void Function() callback) {
+    try {
+      callback();
+    } catch (error, stack) {
+      _logger.warning(message, error, stack);
+    }
+  }
+
+  /// Links a freshly-uploaded asset to an album, ensuring the local DB
+  /// reflects the change without waiting for the next sync. We call the API
+  /// (server is the source of truth), then upsert a placeholder
+  /// `remote_asset_entity` row from the local source so the FK-protected
+  /// junction insert succeeds. Sync overwrites the placeholder later with
+  /// the authoritative server data.
+  Future<int> linkUploadedAssetToAlbum(String albumId, String remoteId, UserDto uploader, LocalAsset source) async {
+    final result = await _albumApiRepository.addAssets(albumId, [remoteId]);
+    if (result.added.isEmpty) {
+      return 0;
+    }
+
+    await _repository.upsertRemoteAssetStub(remoteId: remoteId, ownerId: uploader.id, source: source);
+    await _repository.addAssets(albumId, result.added);
+    return result.added.length;
   }
 
   Future<void> deleteAlbum(String albumId) async {
@@ -176,7 +322,9 @@ class RemoteAlbumService {
     List<RemoteAlbum> albums, {
     required AssetDateAggregation aggregation,
   }) async {
-    if (albums.isEmpty) return [];
+    if (albums.isEmpty) {
+      return [];
+    }
 
     final albumIds = albums.map((e) => e.id).toList();
     final sortedIds = await _repository.getSortedAlbumIds(albumIds, aggregation: aggregation);

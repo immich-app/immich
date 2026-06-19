@@ -10,13 +10,13 @@ describe('mapAlbum', () => {
       .asset({ localDateTime: endDate }, (builder) => builder.exif())
       .asset({ localDateTime: startDate }, (builder) => builder.exif())
       .build();
-    const dto = mapAlbum(getForAlbum(album), false);
+    const dto = mapAlbum(getForAlbum(album));
     expect(dto.startDate).toEqual(startDate.toISOString());
     expect(dto.endDate).toEqual(endDate.toISOString());
   });
 
   it('should not set start and end dates for empty assets', () => {
-    const dto = mapAlbum(getForAlbum(AlbumFactory.create()), false);
+    const dto = mapAlbum(getForAlbum(AlbumFactory.create()));
     expect(dto.startDate).toBeUndefined();
     expect(dto.endDate).toBeUndefined();
   });

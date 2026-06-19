@@ -1,36 +1,42 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcut } from '$lib/actions/shortcut';
-  import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-  import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
+  import { getPagesProvider, getSettingsProvider } from '$lib/commands';
+  import DownloadPanel from './DownloadPanel.svelte';
+  import ErrorLayout from './ErrorLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
-  import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-  import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
+  import NavigationLoadingBar from './NavigationLoadingBar.svelte';
+  import UploadPanel from './UploadPanel.svelte';
+  import VersionAnnouncement from './VersionAnnouncement.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
+  import { lang, locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
-  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getServerConfig } from '@immich/sdk';
   import {
-    CommandPaletteDefaultProvider,
-    TooltipProvider,
+    CommandPaletteProvider,
+    CORE_PAGE_COMMANDS,
+    defaultProvider,
+    MOBILE_APP_COMMANDS,
     modalManager,
+    OTHER_SITE_COMMANDS,
+    PROJECT_SUPPORT_COMMANDS,
+    ScreencastOverlay,
     setLocale,
     setTranslations,
+    SOCIAL_COMMANDS,
+    Theme,
+    themeManager,
     toastManager,
-    type ActionItem,
+    TooltipProvider,
   } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
+  import { En } from 'media-chrome/lang/en';
+  import { addTranslation } from 'media-chrome/utils/i18n';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -39,6 +45,38 @@
   interface Props {
     children?: Snippet;
   }
+
+  const MediaChromeDefaultKeys = [
+    'Start airplay',
+    'Stop airplay',
+    'Audio',
+    'Start casting',
+    'Stop casting',
+    'Enter picture in picture mode',
+    'Exit picture in picture mode',
+    'Seek backward',
+    'Seek forward',
+    'audio player',
+    'seek',
+    'audio tracks',
+    'chapter: {chapterName}',
+    'live',
+    'start airplay',
+    'stop airplay',
+    'start casting',
+    'stop casting',
+    'enter picture in picture mode',
+    'exit picture in picture mode',
+    'seek to live',
+    'playing live',
+    'seek back {seekOffset} seconds',
+    'seek forward {seekOffset} seconds',
+    'Encryption Error',
+    'The media is encrypted and there are no keys to decrypt it.',
+  ] as const satisfies Array<keyof typeof En>;
+  const MediaChromeDefaults = Object.fromEntries(MediaChromeDefaultKeys.map((key) => [key, key])) as {
+    [K in (typeof MediaChromeDefaultKeys)[number]]: K;
+  };
 
   $effect(() => {
     setTranslations({
@@ -52,7 +90,7 @@
       prompt_default: $t('are_you_sure_to_do_this'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
-      dark_theme: themeManager.isDark ? $t('light_theme') : $t('dark_theme'),
+      dark_theme: themeManager.value === Theme.Dark ? $t('light_theme') : $t('dark_theme'),
       open_menu: $t('open'),
       command_palette_prompt_default: $t('command_palette_prompt'),
       command_palette_to_select: $t('command_palette_to_select'),
@@ -69,6 +107,58 @@
       save: $t('save'),
       supporter: $t('supporter'),
     });
+
+    addTranslation($lang, {
+      ...MediaChromeDefaults,
+      Captions: $t('media_chrome.captions'),
+      'Enable captions': $t('media_chrome.enable_captions'),
+      'Disable captions': $t('media_chrome.disable_captions'),
+      'Enter fullscreen mode': $t('media_chrome.enter_fullscreen_mode'),
+      'Exit fullscreen mode': $t('media_chrome.exit_fullscreen_mode'),
+      Mute: $t('media_chrome.mute'),
+      Unmute: $t('media_chrome.unmute'),
+      Loop: $t('media_chrome.loop'),
+      Play: $t('play'),
+      Pause: $t('pause'),
+      'Playback rate': $t('media_chrome.playback_rate'),
+      'Playback rate {playbackRate}': $t('media_chrome.playback_rate_value'),
+      Quality: $t('media_chrome.quality'),
+      Settings: $t('settings'),
+      Auto: $t('media_chrome.auto'),
+      'video player': $t('media_chrome.video_player'),
+      volume: $t('media_chrome.volume'),
+      'closed captions': $t('media_chrome.closed_captions'),
+      'current playback rate': $t('media_chrome.playback_rate_current'),
+      'playback time': $t('media_chrome.playback_time'),
+      'media loading': $t('media_chrome.media_loading'),
+      settings: $t('settings'),
+      quality: $t('media_chrome.quality'),
+      play: $t('play'),
+      pause: $t('pause'),
+      mute: $t('media_chrome.mute'),
+      unmute: $t('media_chrome.unmute'),
+      Off: $t('media_chrome.captions_off'),
+      'enter fullscreen mode': $t('media_chrome.enter_fullscreen_mode'),
+      'exit fullscreen mode': $t('media_chrome.exit_fullscreen_mode'),
+      'Network Error': $t('media_chrome.network_error'),
+      'Decode Error': $t('media_chrome.decode_error'),
+      'Source Not Supported': $t('media_chrome.not_supported_error'),
+      'A network error caused the media download to fail.': $t('media_chrome.network_error_description'),
+      'A media error caused playback to be aborted. The media could be corrupt or your browser does not support this format.':
+        $t('media_chrome.media_error_description'),
+      'An unsupported error occurred. The server or network failed, or your browser does not support this format.': $t(
+        'media_chrome.unsupported_error_description',
+      ),
+      hour: $t('hour'),
+      hours: $t('hours'),
+      minute: $t('minute'),
+      minutes: $t('minutes'),
+      second: $t('media_chrome.second'),
+      seconds: $t('media_chrome.seconds'),
+      '{time} remaining': $t('media_chrome.time_value_remaining'),
+      '{currentTime} of {totalTime}': $t('media_chrome.time_value_of_total_time'),
+      'video not loaded, unknown time.': $t('media_chrome.video_not_loaded_unknown_time'),
+    });
   });
 
   $effect(() => setLocale($locale));
@@ -76,10 +166,6 @@
   let { children }: Props = $props();
 
   let showNavigationLoadingBar = $state(false);
-
-  const getMyImmichLink = () => {
-    return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
-  };
 
   toastManager.setOptions({ class: 'top-16 fixed' });
 
@@ -96,7 +182,11 @@
       sidebarStore.reset();
     }
 
-    if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
+    const fromRouteId = from?.route?.id;
+    const toRouteId = to?.route?.id;
+    const sameRouteTransition = fromRouteId && toRouteId && fromRouteId === toRouteId;
+
+    if (sameRouteTransition) {
       return;
     }
 
@@ -112,7 +202,7 @@
   const { serverRestarting } = websocketStore;
 
   $effect.pre(() => {
-    if ($user || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
+    if (authManager.authenticated || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
@@ -138,58 +228,10 @@
       }
     }
   };
-
-  const userCommands: ActionItem[] = [
-    {
-      title: $t('theme'),
-      description: $t('toggle_theme_description'),
-      type: $t('command'),
-      icon: mdiThemeLightDark,
-      onAction: () => themeManager.toggleTheme(),
-      shortcuts: { shift: true, key: 't' },
-    },
-  ];
-
-  const adminCommands: ActionItem[] = [
-    {
-      title: $t('users'),
-      description: $t('admin.users_page_description'),
-      icon: mdiAccountMultipleOutline,
-      onAction: () => goto(Route.users()),
-    },
-    {
-      title: $t('settings'),
-      description: $t('admin.settings_page_description'),
-      icon: mdiCog,
-      onAction: () => goto(Route.systemSettings()),
-    },
-    {
-      title: $t('admin.queues'),
-      description: $t('admin.queues_page_description'),
-      icon: mdiSync,
-      type: $t('page'),
-      onAction: () => goto(Route.queues()),
-    },
-    {
-      title: $t('external_libraries'),
-      description: $t('admin.external_libraries_page_description'),
-      icon: mdiBookshelf,
-      onAction: () => goto(Route.libraries()),
-    },
-    {
-      title: $t('server_stats'),
-      description: $t('admin.server_stats_page_description'),
-      icon: mdiServer,
-      onAction: () => goto(Route.systemStatistics()),
-    },
-  ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
-
-  const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
 <OnEvents {onWebsocketConnect} />
 
-<CommandPaletteDefaultProvider name="Global" actions={commands} />
 <VersionAnnouncement />
 
 <svelte:head>
@@ -231,13 +273,6 @@
   {/if}
 </svelte:head>
 
-<svelte:document
-  use:shortcut={{
-    shortcut: { ctrl: true, shift: true, key: 'm' },
-    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
-  }}
-/>
-
 <TooltipProvider>
   {#if page.data.error}
     <ErrorLayout error={page.data.error}></ErrorLayout>
@@ -251,4 +286,17 @@
 
   <DownloadPanel />
   <UploadPanel />
+  <ScreencastOverlay />
+
+  <CommandPaletteProvider
+    providers={[
+      getPagesProvider($t),
+      getSettingsProvider($t),
+      defaultProvider({ name: $t('documentation'), types: ['doc', 'documentation'], actions: CORE_PAGE_COMMANDS }),
+      defaultProvider({ name: $t('support'), actions: PROJECT_SUPPORT_COMMANDS }),
+      defaultProvider({ name: 'Socials', types: ['social', 'socials'], actions: SOCIAL_COMMANDS }),
+      defaultProvider({ name: $t('mobile_app'), actions: MOBILE_APP_COMMANDS }),
+      defaultProvider({ name: 'Sites', types: ['site', 'sites'], actions: OTHER_SITE_COMMANDS }),
+    ]}
+  />
 </TooltipProvider>

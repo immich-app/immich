@@ -16,13 +16,13 @@ class PartnerApiRepository extends ApiRepository {
 
   Future<List<UserDto>> getAll(Direction direction) async {
     final response = await checkNull(
-      _api.getPartners(direction == Direction.sharedByMe ? PartnerDirection.by : PartnerDirection.with_),
+      _api.getPartners(direction == Direction.sharedByMe ? PartnerDirection.sharedBy : PartnerDirection.sharedWith),
     );
     return response.map(UserConverter.fromPartnerDto).toList();
   }
 
-  Future<UserDto> create(String id) async {
-    final dto = await checkNull(_api.createPartnerDeprecated(id));
+  Future<UserDto> create(String sharedWithId) async {
+    final dto = await checkNull(_api.createPartner(PartnerCreateDto(sharedWithId: sharedWithId)));
     return UserConverter.fromPartnerDto(dto);
   }
 

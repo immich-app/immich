@@ -13,9 +13,9 @@ part of openapi.api;
 class MemoryUpdateDto {
   /// Returns a new [MemoryUpdateDto] instance.
   MemoryUpdateDto({
-    this.isSaved,
-    this.memoryAt,
-    this.seenAt,
+    this.isSaved = const Optional.absent(),
+    this.memoryAt = const Optional.absent(),
+    this.seenAt = const Optional.absent(),
   });
 
   /// Is memory saved
@@ -25,7 +25,7 @@ class MemoryUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isSaved;
+  Optional<bool?> isSaved;
 
   /// Memory date
   ///
@@ -34,7 +34,7 @@ class MemoryUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? memoryAt;
+  Optional<DateTime?> memoryAt;
 
   /// Date when memory was seen
   ///
@@ -43,7 +43,7 @@ class MemoryUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  DateTime? seenAt;
+  Optional<DateTime?> seenAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryUpdateDto &&
@@ -63,20 +63,21 @@ class MemoryUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.isSaved != null) {
-      json[r'isSaved'] = this.isSaved;
-    } else {
-    //  json[r'isSaved'] = null;
+    if (this.isSaved.isPresent) {
+      final value = this.isSaved.value;
+      json[r'isSaved'] = value;
     }
-    if (this.memoryAt != null) {
-      json[r'memoryAt'] = this.memoryAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'memoryAt'] = null;
+    if (this.memoryAt.isPresent) {
+      final value = this.memoryAt.value;
+      json[r'memoryAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
+        ? value.millisecondsSinceEpoch
+        : value.toUtc().toIso8601String());
     }
-    if (this.seenAt != null) {
-      json[r'seenAt'] = this.seenAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'seenAt'] = null;
+    if (this.seenAt.isPresent) {
+      final value = this.seenAt.value;
+      json[r'seenAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
+        ? value.millisecondsSinceEpoch
+        : value.toUtc().toIso8601String());
     }
     return json;
   }
@@ -90,9 +91,9 @@ class MemoryUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return MemoryUpdateDto(
-        isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r''),
-        seenAt: mapDateTime(json, r'seenAt', r''),
+        isSaved: json.containsKey(r'isSaved') ? Optional.present(mapValueOfType<bool>(json, r'isSaved')) : const Optional.absent(),
+        memoryAt: json.containsKey(r'memoryAt') ? Optional.present(mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
+        seenAt: json.containsKey(r'seenAt') ? Optional.present(mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
       );
     }
     return null;

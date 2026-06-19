@@ -13,15 +13,15 @@ part of openapi.api;
 class SharedLinkCreateDto {
   /// Returns a new [SharedLinkCreateDto] instance.
   SharedLinkCreateDto({
-    this.albumId,
-    this.allowDownload = true,
-    this.allowUpload,
-    this.assetIds = const [],
-    this.description,
-    this.expiresAt,
-    this.password,
-    this.showMetadata = true,
-    this.slug,
+    this.albumId = const Optional.absent(),
+    this.allowDownload = const Optional.present(true),
+    this.allowUpload = const Optional.absent(),
+    this.assetIds = const Optional.present(const []),
+    this.description = const Optional.absent(),
+    this.expiresAt = const Optional.absent(),
+    this.password = const Optional.absent(),
+    this.showMetadata = const Optional.present(true),
+    this.slug = const Optional.absent(),
     required this.type,
   });
 
@@ -32,10 +32,10 @@ class SharedLinkCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? albumId;
+  Optional<String?> albumId;
 
   /// Allow downloads
-  bool allowDownload;
+  Optional<bool?> allowDownload;
 
   /// Allow uploads
   ///
@@ -44,27 +44,26 @@ class SharedLinkCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? allowUpload;
+  Optional<bool?> allowUpload;
 
   /// Asset IDs (for individual assets)
-  List<String> assetIds;
+  Optional<List<String>?> assetIds;
 
   /// Link description
-  String? description;
+  Optional<String?> description;
 
   /// Expiration date
-  DateTime? expiresAt;
+  Optional<DateTime?> expiresAt;
 
   /// Link password
-  String? password;
+  Optional<String?> password;
 
   /// Show metadata
-  bool showMetadata;
+  Optional<bool?> showMetadata;
 
   /// Custom URL slug
-  String? slug;
+  Optional<String?> slug;
 
-  /// Shared link type
   SharedLinkType type;
 
   @override
@@ -99,38 +98,43 @@ class SharedLinkCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albumId != null) {
-      json[r'albumId'] = this.albumId;
-    } else {
-    //  json[r'albumId'] = null;
+    if (this.albumId.isPresent) {
+      final value = this.albumId.value;
+      json[r'albumId'] = value;
     }
-      json[r'allowDownload'] = this.allowDownload;
-    if (this.allowUpload != null) {
-      json[r'allowUpload'] = this.allowUpload;
-    } else {
-    //  json[r'allowUpload'] = null;
+    if (this.allowDownload.isPresent) {
+      final value = this.allowDownload.value;
+      json[r'allowDownload'] = value;
     }
-      json[r'assetIds'] = this.assetIds;
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (this.allowUpload.isPresent) {
+      final value = this.allowUpload.value;
+      json[r'allowUpload'] = value;
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (this.assetIds.isPresent) {
+      final value = this.assetIds.value;
+      json[r'assetIds'] = value;
     }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (this.description.isPresent) {
+      final value = this.description.value;
+      json[r'description'] = value;
     }
-      json[r'showMetadata'] = this.showMetadata;
-    if (this.slug != null) {
-      json[r'slug'] = this.slug;
-    } else {
-    //  json[r'slug'] = null;
+    if (this.expiresAt.isPresent) {
+      final value = this.expiresAt.value;
+      json[r'expiresAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
+        ? value.millisecondsSinceEpoch
+        : value.toUtc().toIso8601String());
+    }
+    if (this.password.isPresent) {
+      final value = this.password.value;
+      json[r'password'] = value;
+    }
+    if (this.showMetadata.isPresent) {
+      final value = this.showMetadata.value;
+      json[r'showMetadata'] = value;
+    }
+    if (this.slug.isPresent) {
+      final value = this.slug.value;
+      json[r'slug'] = value;
     }
       json[r'type'] = this.type;
     return json;
@@ -145,17 +149,17 @@ class SharedLinkCreateDto {
       final json = value.cast<String, dynamic>();
 
       return SharedLinkCreateDto(
-        albumId: mapValueOfType<String>(json, r'albumId'),
-        allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
-        assetIds: json[r'assetIds'] is Iterable
+        albumId: json.containsKey(r'albumId') ? Optional.present(mapValueOfType<String>(json, r'albumId')) : const Optional.absent(),
+        allowDownload: json.containsKey(r'allowDownload') ? Optional.present(mapValueOfType<bool>(json, r'allowDownload')) : const Optional.absent(),
+        allowUpload: json.containsKey(r'allowUpload') ? Optional.present(mapValueOfType<bool>(json, r'allowUpload')) : const Optional.absent(),
+        assetIds: json.containsKey(r'assetIds') ? Optional.present(json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
-        password: mapValueOfType<String>(json, r'password'),
-        showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
-        slug: mapValueOfType<String>(json, r'slug'),
+            : const []) : const Optional.absent(),
+        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
+        password: json.containsKey(r'password') ? Optional.present(mapValueOfType<String>(json, r'password')) : const Optional.absent(),
+        showMetadata: json.containsKey(r'showMetadata') ? Optional.present(mapValueOfType<bool>(json, r'showMetadata')) : const Optional.absent(),
+        slug: json.containsKey(r'slug') ? Optional.present(mapValueOfType<String>(json, r'slug')) : const Optional.absent(),
         type: SharedLinkType.fromJson(json[r'type'])!,
       );
     }

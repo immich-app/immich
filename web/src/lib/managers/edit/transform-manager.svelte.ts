@@ -1,11 +1,11 @@
+import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
+import { clamp } from 'lodash-es';
+import { tick } from 'svelte';
 import { type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
 import { normalizeTransformEdits } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
-import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
-import { clamp } from 'lodash-es';
-import { tick } from 'svelte';
 
 export type CropAspectRatio =
   | '1:1'
@@ -667,6 +667,7 @@ class TransformManager implements EditToolManager {
         desiredWidth = Math.max(minSize, Math.max(mouseX, 0) - x);
         break;
       }
+      // no default
     }
 
     // Height
@@ -683,10 +684,14 @@ class TransformManager implements EditToolManager {
         desiredHeight = Math.max(minSize, Math.max(mouseY, 0) - y);
         break;
       }
+      // no default
     }
 
     // Old
     switch (this.resizeSide) {
+      case ResizeBoundary.None: {
+        break;
+      }
       case ResizeBoundary.Left: {
         const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
         const finalWidth = clamp(w, minSize, canvas.clientWidth);

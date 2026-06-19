@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { handleCreateLibrary } from '$lib/services/library.service';
-  import { user } from '$lib/stores/user.store';
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -14,7 +14,7 @@
 
   const { data }: Props = $props();
 
-  let ownerId: string = $state($user.id);
+  let ownerId: string = $state(authManager.user.id);
   const users = $state(data.allUsers);
 
   const onClose = async () => {

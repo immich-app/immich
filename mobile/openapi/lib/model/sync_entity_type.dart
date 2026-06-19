@@ -27,16 +27,21 @@ class SyncEntityType {
   static const userV1 = SyncEntityType._(r'UserV1');
   static const userDeleteV1 = SyncEntityType._(r'UserDeleteV1');
   static const assetV1 = SyncEntityType._(r'AssetV1');
+  static const assetV2 = SyncEntityType._(r'AssetV2');
   static const assetDeleteV1 = SyncEntityType._(r'AssetDeleteV1');
   static const assetExifV1 = SyncEntityType._(r'AssetExifV1');
   static const assetEditV1 = SyncEntityType._(r'AssetEditV1');
   static const assetEditDeleteV1 = SyncEntityType._(r'AssetEditDeleteV1');
   static const assetMetadataV1 = SyncEntityType._(r'AssetMetadataV1');
   static const assetMetadataDeleteV1 = SyncEntityType._(r'AssetMetadataDeleteV1');
+  static const assetOcrV1 = SyncEntityType._(r'AssetOcrV1');
+  static const assetOcrDeleteV1 = SyncEntityType._(r'AssetOcrDeleteV1');
   static const partnerV1 = SyncEntityType._(r'PartnerV1');
   static const partnerDeleteV1 = SyncEntityType._(r'PartnerDeleteV1');
   static const partnerAssetV1 = SyncEntityType._(r'PartnerAssetV1');
+  static const partnerAssetV2 = SyncEntityType._(r'PartnerAssetV2');
   static const partnerAssetBackfillV1 = SyncEntityType._(r'PartnerAssetBackfillV1');
+  static const partnerAssetBackfillV2 = SyncEntityType._(r'PartnerAssetBackfillV2');
   static const partnerAssetDeleteV1 = SyncEntityType._(r'PartnerAssetDeleteV1');
   static const partnerAssetExifV1 = SyncEntityType._(r'PartnerAssetExifV1');
   static const partnerAssetExifBackfillV1 = SyncEntityType._(r'PartnerAssetExifBackfillV1');
@@ -44,13 +49,17 @@ class SyncEntityType {
   static const partnerStackDeleteV1 = SyncEntityType._(r'PartnerStackDeleteV1');
   static const partnerStackV1 = SyncEntityType._(r'PartnerStackV1');
   static const albumV1 = SyncEntityType._(r'AlbumV1');
+  static const albumV2 = SyncEntityType._(r'AlbumV2');
   static const albumDeleteV1 = SyncEntityType._(r'AlbumDeleteV1');
   static const albumUserV1 = SyncEntityType._(r'AlbumUserV1');
   static const albumUserBackfillV1 = SyncEntityType._(r'AlbumUserBackfillV1');
   static const albumUserDeleteV1 = SyncEntityType._(r'AlbumUserDeleteV1');
   static const albumAssetCreateV1 = SyncEntityType._(r'AlbumAssetCreateV1');
+  static const albumAssetCreateV2 = SyncEntityType._(r'AlbumAssetCreateV2');
   static const albumAssetUpdateV1 = SyncEntityType._(r'AlbumAssetUpdateV1');
+  static const albumAssetUpdateV2 = SyncEntityType._(r'AlbumAssetUpdateV2');
   static const albumAssetBackfillV1 = SyncEntityType._(r'AlbumAssetBackfillV1');
+  static const albumAssetBackfillV2 = SyncEntityType._(r'AlbumAssetBackfillV2');
   static const albumAssetExifCreateV1 = SyncEntityType._(r'AlbumAssetExifCreateV1');
   static const albumAssetExifUpdateV1 = SyncEntityType._(r'AlbumAssetExifUpdateV1');
   static const albumAssetExifBackfillV1 = SyncEntityType._(r'AlbumAssetExifBackfillV1');
@@ -80,16 +89,21 @@ class SyncEntityType {
     userV1,
     userDeleteV1,
     assetV1,
+    assetV2,
     assetDeleteV1,
     assetExifV1,
     assetEditV1,
     assetEditDeleteV1,
     assetMetadataV1,
     assetMetadataDeleteV1,
+    assetOcrV1,
+    assetOcrDeleteV1,
     partnerV1,
     partnerDeleteV1,
     partnerAssetV1,
+    partnerAssetV2,
     partnerAssetBackfillV1,
+    partnerAssetBackfillV2,
     partnerAssetDeleteV1,
     partnerAssetExifV1,
     partnerAssetExifBackfillV1,
@@ -97,13 +111,17 @@ class SyncEntityType {
     partnerStackDeleteV1,
     partnerStackV1,
     albumV1,
+    albumV2,
     albumDeleteV1,
     albumUserV1,
     albumUserBackfillV1,
     albumUserDeleteV1,
     albumAssetCreateV1,
+    albumAssetCreateV2,
     albumAssetUpdateV1,
+    albumAssetUpdateV2,
     albumAssetBackfillV1,
+    albumAssetBackfillV2,
     albumAssetExifCreateV1,
     albumAssetExifUpdateV1,
     albumAssetExifBackfillV1,
@@ -168,16 +186,21 @@ class SyncEntityTypeTypeTransformer {
         case r'UserV1': return SyncEntityType.userV1;
         case r'UserDeleteV1': return SyncEntityType.userDeleteV1;
         case r'AssetV1': return SyncEntityType.assetV1;
+        case r'AssetV2': return SyncEntityType.assetV2;
         case r'AssetDeleteV1': return SyncEntityType.assetDeleteV1;
         case r'AssetExifV1': return SyncEntityType.assetExifV1;
         case r'AssetEditV1': return SyncEntityType.assetEditV1;
         case r'AssetEditDeleteV1': return SyncEntityType.assetEditDeleteV1;
         case r'AssetMetadataV1': return SyncEntityType.assetMetadataV1;
         case r'AssetMetadataDeleteV1': return SyncEntityType.assetMetadataDeleteV1;
+        case r'AssetOcrV1': return SyncEntityType.assetOcrV1;
+        case r'AssetOcrDeleteV1': return SyncEntityType.assetOcrDeleteV1;
         case r'PartnerV1': return SyncEntityType.partnerV1;
         case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
         case r'PartnerAssetV1': return SyncEntityType.partnerAssetV1;
+        case r'PartnerAssetV2': return SyncEntityType.partnerAssetV2;
         case r'PartnerAssetBackfillV1': return SyncEntityType.partnerAssetBackfillV1;
+        case r'PartnerAssetBackfillV2': return SyncEntityType.partnerAssetBackfillV2;
         case r'PartnerAssetDeleteV1': return SyncEntityType.partnerAssetDeleteV1;
         case r'PartnerAssetExifV1': return SyncEntityType.partnerAssetExifV1;
         case r'PartnerAssetExifBackfillV1': return SyncEntityType.partnerAssetExifBackfillV1;
@@ -185,13 +208,17 @@ class SyncEntityTypeTypeTransformer {
         case r'PartnerStackDeleteV1': return SyncEntityType.partnerStackDeleteV1;
         case r'PartnerStackV1': return SyncEntityType.partnerStackV1;
         case r'AlbumV1': return SyncEntityType.albumV1;
+        case r'AlbumV2': return SyncEntityType.albumV2;
         case r'AlbumDeleteV1': return SyncEntityType.albumDeleteV1;
         case r'AlbumUserV1': return SyncEntityType.albumUserV1;
         case r'AlbumUserBackfillV1': return SyncEntityType.albumUserBackfillV1;
         case r'AlbumUserDeleteV1': return SyncEntityType.albumUserDeleteV1;
         case r'AlbumAssetCreateV1': return SyncEntityType.albumAssetCreateV1;
+        case r'AlbumAssetCreateV2': return SyncEntityType.albumAssetCreateV2;
         case r'AlbumAssetUpdateV1': return SyncEntityType.albumAssetUpdateV1;
+        case r'AlbumAssetUpdateV2': return SyncEntityType.albumAssetUpdateV2;
         case r'AlbumAssetBackfillV1': return SyncEntityType.albumAssetBackfillV1;
+        case r'AlbumAssetBackfillV2': return SyncEntityType.albumAssetBackfillV2;
         case r'AlbumAssetExifCreateV1': return SyncEntityType.albumAssetExifCreateV1;
         case r'AlbumAssetExifUpdateV1': return SyncEntityType.albumAssetExifUpdateV1;
         case r'AlbumAssetExifBackfillV1': return SyncEntityType.albumAssetExifBackfillV1;

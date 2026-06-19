@@ -1,15 +1,15 @@
 <script lang="ts">
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getPartners, PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
   import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    user: UserResponseDto;
     onClose: (users?: UserResponseDto[]) => void;
   }
 
-  let { user, onClose }: Props = $props();
+  let { onClose }: Props = $props();
 
   let availableUsers: UserResponseDto[] = $state([]);
   let selectedUsers: UserResponseDto[] = $state([]);
@@ -18,7 +18,7 @@
     let users = await searchUsers();
 
     // remove current user
-    users = users.filter((_user) => _user.id !== user.id);
+    users = users.filter(({ id }) => id !== authManager.user.id);
 
     // exclude partners from the list of users available for selection
     const partners = await getPartners({ direction: PartnerDirection.SharedBy });
@@ -36,16 +36,16 @@
 <Modal title={$t('add_partner')} {onClose} size="small">
   <ModalBody>
     {#await loadUsers()}
-      <div class="w-full flex place-items-center place-content-center">
+      <div class="flex w-full place-content-center place-items-center">
         <LoadingSpinner />
       </div>
     {:then _}
       {#if availableUsers.length > 0}
-        <div class="immich-scrollbar max-h-75 overflow-y-auto gap-2 flex flex-col">
+        <div class="flex max-h-75 immich-scrollbar flex-col gap-2 overflow-y-auto">
           {#each availableUsers as user (user.id)}
             <ListButton onclick={() => selectUser(user)} selected={selectedUsers.includes(user)}>
               <UserAvatar {user} size="md" />
-              <div class="text-start grow">
+              <div class="grow text-start">
                 <Text fontWeight="medium">{user.name}</Text>
                 <Text size="tiny" color="muted">{user.email}</Text>
               </div>

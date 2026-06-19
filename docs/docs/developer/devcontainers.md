@@ -205,7 +205,7 @@ When the Dev Container starts, it automatically:
 1. **Runs post-create script** (`container-server-post-create.sh`):
    - Adjusts file permissions for the `node` user
    - Installs dependencies: `pnpm install` in all packages
-   - Builds TypeScript SDK: `pnpm run build` in `open-api/typescript-sdk`
+   - Builds TypeScript SDK: `pnpm --filter @immich/sdk build`
 
 2. **Starts development servers** via VS Code tasks:
    - `Immich API Server (Nest)` - API server with hot-reloading on port 2283
@@ -218,7 +218,7 @@ When the Dev Container starts, it automatically:
    - Debug ports: 9230 (workers), 9231 (API)
 
 :::info
-The Dev Container setup replaces the `make dev` command from the traditional setup. All services start automatically when you open the container.
+The Dev Container setup replaces the `mise dev` command from the traditional setup. All services start automatically when you open the container.
 :::
 
 ### Accessing Services
@@ -243,8 +243,8 @@ To connect the mobile app to your Dev Container:
 
 - **Server code** (`/server`): Changes trigger automatic restart
 - **Web code** (`/web`): Changes trigger hot module replacement
-- **Database migrations**: Run `pnpm run sync:sql` in the server directory
-- **API changes**: Regenerate TypeScript SDK with `make open-api`
+- **Database migrations**: Run `mise //:sql`
+- **API changes**: Regenerate TypeScript SDK with `mise //:open-api`
 
 ## Testing
 
@@ -252,85 +252,33 @@ To connect the mobile app to your Dev Container:
 
 The Dev Container supports multiple ways to run tests:
 
-#### Using Make Commands (Recommended)
-
 ```bash
-# Run tests for specific components
-make test-server        # Server unit tests
-make test-web           # Web unit tests
-make test-e2e           # End-to-end tests
-make test-cli           # CLI tests
+# Server
+mise //server:test          # unit tests
+mise //server:test-medium   # medium / integration tests
 
-# Run all tests
-make test-all           # Runs tests for all components
+# Web
+mise //web:test             # unit tests
 
-# Medium tests (integration tests)
-make test-medium-dev    # End-to-end tests
+# E2E
+mise //e2e:test             # API tests
+mise //e2e:test-web         # web UI tests (Playwright)
+
+# Run all checks for a component
+mise //server:checklist
+mise //web:checklist
 ```
 
-#### Using PNPM Directly
+### Additional Commands
 
 ```bash
-# Server tests
-cd /workspaces/immich/server
-pnpm test               # Run all tests
-pnpm run test:medium    # Medium tests (integration tests)
-pnpm run test:watch     # Watch mode
-pnpm run test:cov       # Coverage report
-
-# Web tests
-cd /workspaces/immich/web
-pnpm test               # Run all tests
-pnpm run test:watch     # Watch mode
-
-# E2E tests
-cd /workspaces/immich/e2e
-pnpm run test           # Run API tests
-pnpm run test:web       # Run web UI tests
-```
-
-### Code Quality Commands
-
-```bash
-# Linting
-make lint-server        # Lint server code
-make lint-web           # Lint web code
-make lint-all           # Lint all components
-
-# Formatting
-make format-server      # Format server code
-make format-web         # Format web code
-make format-all         # Format all code
-
-# Type checking
-make check-server       # Type check server
-make check-web          # Type check web
-make check-all          # Check all components
-
-# Complete hygiene check
-make hygiene-all        # Run lint, format, check, SQL sync, and audit
-```
-
-### Additional Make Commands
-
-```bash
-# Build commands
-make build-server       # Build server
-make build-web          # Build web app
-make build-all          # Build everything
-
 # API generation
-make open-api           # Generate OpenAPI specs
-make open-api-typescript # Generate TypeScript SDK
-make open-api-dart      # Generate Dart SDK
+mise //:open-api             # Generate OpenAPI specs
+mise //:open-api-typescript  # Generate TypeScript SDK
+mise //:open-api-dart        # Generate Dart SDK
 
 # Database
-make sql                # Sync database schema
-
-# Dependencies
-make install-server     # Install server dependencies
-make install-web        # Install web dependencies
-make install-all        # Install all dependencies
+mise //server:sql            # Sync database schema
 ```
 
 ### Debugging

@@ -14,8 +14,8 @@ class ActivityCreateDto {
   /// Returns a new [ActivityCreateDto] instance.
   ActivityCreateDto({
     required this.albumId,
-    this.assetId,
-    this.comment,
+    this.assetId = const Optional.absent(),
+    this.comment = const Optional.absent(),
     required this.type,
   });
 
@@ -29,7 +29,7 @@ class ActivityCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? assetId;
+  Optional<String?> assetId;
 
   /// Comment text (required if type is comment)
   ///
@@ -38,9 +38,8 @@ class ActivityCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? comment;
+  Optional<String?> comment;
 
-  /// Activity type (like or comment)
   ReactionType type;
 
   @override
@@ -64,15 +63,13 @@ class ActivityCreateDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'albumId'] = this.albumId;
-    if (this.assetId != null) {
-      json[r'assetId'] = this.assetId;
-    } else {
-    //  json[r'assetId'] = null;
+    if (this.assetId.isPresent) {
+      final value = this.assetId.value;
+      json[r'assetId'] = value;
     }
-    if (this.comment != null) {
-      json[r'comment'] = this.comment;
-    } else {
-    //  json[r'comment'] = null;
+    if (this.comment.isPresent) {
+      final value = this.comment.value;
+      json[r'comment'] = value;
     }
       json[r'type'] = this.type;
     return json;
@@ -88,8 +85,8 @@ class ActivityCreateDto {
 
       return ActivityCreateDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
-        assetId: mapValueOfType<String>(json, r'assetId'),
-        comment: mapValueOfType<String>(json, r'comment'),
+        assetId: json.containsKey(r'assetId') ? Optional.present(mapValueOfType<String>(json, r'assetId')) : const Optional.absent(),
+        comment: json.containsKey(r'comment') ? Optional.present(mapValueOfType<String>(json, r'comment')) : const Optional.absent(),
         type: ReactionType.fromJson(json[r'type'])!,
       );
     }

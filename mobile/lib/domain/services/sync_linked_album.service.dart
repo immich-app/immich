@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
@@ -12,6 +17,7 @@ final syncLinkedAlbumServiceProvider = Provider(
     ref.watch(localAlbumRepository),
     ref.watch(remoteAlbumRepository),
     ref.watch(driftAlbumApiRepositoryProvider),
+    ref.watch(storeServiceProvider),
   ),
 );
 
@@ -19,12 +25,18 @@ class SyncLinkedAlbumService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
+  final StoreService _storeService;
 
-  SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+  SyncLinkedAlbumService(
+    this._localAlbumRepository,
+    this._remoteAlbumRepository,
+    this._albumApiRepository,
+    this._storeService,
+  );
 
   final _log = Logger("SyncLinkedAlbumService");
 
-  Future<void> syncLinkedAlbums(String userId) async {
+  Future<void> syncLinkedAlbums(String userId, {Completer<void>? cancellation}) async {
     final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
 
     await Future.wait(
@@ -45,7 +57,11 @@ class SyncLinkedAlbumService {
         final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
         _log.fine("Syncing ${assetIds.length} assets to remote album: ${remoteAlbum.name}");
         if (assetIds.isNotEmpty) {
-          final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
+          final album = await _albumApiRepository.addAssets(
+            remoteAlbum.id,
+            assetIds,
+            abortTrigger: cancellation?.future,
+          );
           await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
         }
       }),
@@ -103,7 +119,11 @@ class SyncLinkedAlbumService {
   /// Creates a new remote album and links it to the local album
   Future<void> _createAndLinkNewRemoteAlbum(LocalAlbum localAlbum) async {
     dPrint(() => "Creating new remote album for local album: ${localAlbum.name}");
-    final newRemoteAlbum = await _albumApiRepository.createDriftAlbum(localAlbum.name, assetIds: []);
+    final newRemoteAlbum = await _albumApiRepository.createDriftAlbum(
+      localAlbum.name,
+      _storeService.get(StoreKey.currentUser),
+      assetIds: [],
+    );
     await _remoteAlbumRepository.create(newRemoteAlbum, []);
     return _localAlbumRepository.linkRemoteAlbum(localAlbum.id, newRemoteAlbum.id);
   }

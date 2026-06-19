@@ -1,6 +1,6 @@
-import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { AssetOrder, type AssetResponseDto } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { AssetDescriptor, Direction, TimelineAsset } from '../types';

@@ -2,8 +2,6 @@ import { DatabaseConnectionParams } from '@immich/sql-tools';
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { QueueOptions } from 'bullmq';
-import { plainToInstance } from 'class-transformer';
-import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
 import { HelmetOptions } from 'helmet';
 import { RedisOptions } from 'ioredis';
@@ -11,9 +9,9 @@ import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { citiesFile, excludePaths, IWorker } from 'src/constants';
+import { citiesFile, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
-import { EnvDto } from 'src/dtos/env.dto';
+import { EnvSchema } from 'src/dtos/env.dto';
 import {
   DatabaseExtension,
   ImmichEnvironment,
@@ -173,15 +171,16 @@ const resolveHelmetFile = (helmetFile: 'true' | 'false' | string | undefined) =>
 };
 
 const getEnv = (): EnvData => {
-  const dto = plainToInstance(EnvDto, process.env);
-  const errors = validateSync(dto);
-  if (errors.length > 0) {
-    const messages = [`Invalid environment variables: `];
-    for (const error of errors) {
-      messages.push(`  - ${error.property}=${error.value} (${Object.values(error.constraints || {}).join(', ')})`);
+  const parseResult = EnvSchema.safeParse(process.env);
+  if (!parseResult.success) {
+    const messages = ['Invalid environment variables: '];
+    for (const issue of parseResult.error.issues) {
+      const path = issue.path.join('.');
+      messages.push(`  - [${path}] ${issue.message}`);
     }
     throw new Error(messages.join('\n'));
   }
+  const dto = parseResult.data;
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
@@ -244,18 +243,16 @@ const getEnv = (): EnvData => {
       };
 
   let vectorExtension: VectorExtension | undefined;
-  switch (dto.DB_VECTOR_EXTENSION) {
-    case 'pgvector': {
-      vectorExtension = DatabaseExtension.Vector;
-      break;
-    }
-    case 'pgvecto.rs': {
-      vectorExtension = DatabaseExtension.Vectors;
-      break;
-    }
-    case 'vectorchord': {
-      vectorExtension = DatabaseExtension.VectorChord;
-      break;
+  if (dto.DB_VECTOR_EXTENSION) {
+    switch (dto.DB_VECTOR_EXTENSION) {
+      case 'pgvector': {
+        vectorExtension = DatabaseExtension.Vector;
+        break;
+      }
+      case 'vectorchord': {
+        vectorExtension = DatabaseExtension.VectorChord;
+        break;
+      }
     }
   }
 
@@ -302,11 +299,9 @@ const getEnv = (): EnvData => {
           mount: true,
           generateId: true,
           setup: (cls, req: Request, res: Response) => {
-            const headerValues = req.headers[ImmichHeader.Cid];
-            const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
-            const cid = headerValue || cls.get(CLS_ID);
+            const cid = req.header(ImmichHeader.CorrelationId) || cls.get(CLS_ID);
             cls.set(CLS_ID, cid);
-            res.header(ImmichHeader.Cid, cid);
+            res.header(ImmichHeader.CorrelationId, cid);
           },
         },
       },
@@ -335,10 +330,6 @@ const getEnv = (): EnvData => {
     otel: {
       metrics: {
         hostMetrics: telemetries.has(ImmichTelemetry.Host),
-        apiMetrics: {
-          enable: telemetries.has(ImmichTelemetry.Api),
-          ignoreRoutes: excludePaths,
-        },
       },
     },
 
@@ -357,7 +348,7 @@ const getEnv = (): EnvData => {
         root: folders.web,
         indexHtml: join(folders.web, 'index.html'),
       },
-      corePlugin: join(buildFolder, 'corePlugin'),
+      corePlugin: join(buildFolder, 'plugins', 'immich-plugin-core'),
     },
 
     setup: {

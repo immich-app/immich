@@ -1,17 +1,17 @@
 <script lang="ts">
-  import SearchCameraSection from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
-  import SearchDateSection from '$lib/components/shared-components/search-bar/search-date-section.svelte';
-  import SearchDisplaySection from '$lib/components/shared-components/search-bar/search-display-section.svelte';
-  import SearchLocationSection from '$lib/components/shared-components/search-bar/search-location-section.svelte';
-  import SearchMediaSection from '$lib/components/shared-components/search-bar/search-media-section.svelte';
-  import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
-  import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
-  import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
-  import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
+  import SearchCameraSection from '$lib/components/shared-components/search-bar/SearchCameraSection.svelte';
+  import SearchDateSection from '$lib/components/shared-components/search-bar/SearchDateSection.svelte';
+  import SearchDisplaySection from '$lib/components/shared-components/search-bar/SearchDisplaySection.svelte';
+  import SearchLocationSection from '$lib/components/shared-components/search-bar/SearchLocationSection.svelte';
+  import SearchMediaSection from '$lib/components/shared-components/search-bar/SearchMediaSection.svelte';
+  import SearchPeopleSection from '$lib/components/shared-components/search-bar/SearchPeopleSection.svelte';
+  import SearchRatingsSection from '$lib/components/shared-components/search-bar/SearchRatingsSection.svelte';
+  import SearchTagsSection from '$lib/components/shared-components/search-bar/SearchTagsSection.svelte';
+  import SearchTextSection from '$lib/components/shared-components/search-bar/SearchTextSection.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
-  import { preferences } from '$lib/stores/user.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
-  import { parseUtcDate } from '$lib/utils/date-time';
+  import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
@@ -27,7 +27,6 @@
 
   let { searchQuery, onClose }: Props = $props();
 
-  const parseOptionalDate = (dateString?: DateTime) => (dateString ? parseUtcDate(dateString.toString()) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day') || undefined;
   const formId = generateId();
 
@@ -52,6 +51,10 @@
     }
     if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
       query = searchQuery.originalFileName;
+    }
+
+    if ('originalPath' in searchQuery && searchQuery.originalPath) {
+      query = searchQuery.originalPath;
     }
 
     return {
@@ -133,14 +136,19 @@
       ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
+      originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
       make: filter.camera.make,
       model: filter.camera.model,
       lensModel: filter.camera.lensModel,
-      takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
-      takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
+      takenAfter: filter.date.takenAfter
+        ? asLocalTimeISO(filter.date.takenAfter.startOf('day') as DateTime<true>)
+        : undefined,
+      takenBefore: filter.date.takenBefore
+        ? asLocalTimeISO(filter.date.takenBefore.endOf('day') as DateTime<true>)
+        : undefined,
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
@@ -193,11 +201,11 @@
         <SearchDateSection bind:filters={filter.date} />
 
         <!-- RATING -->
-        {#if $preferences?.ratings.enabled}
+        {#if authManager.authenticated && authManager.preferences.ratings.enabled}
           <SearchRatingsSection bind:rating={filter.rating} />
         {/if}
 
-        <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
+        <div class="grid gap-x-5 gap-y-10 md:grid-cols-2">
           <!-- MEDIA TYPE -->
           <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 

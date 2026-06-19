@@ -1,6 +1,6 @@
-import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
-import { QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
+import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 
 const asQueueSlug = (name: QueueName) => {
   return name.replaceAll(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -51,6 +51,7 @@ export const Docs = {
 export const Route = {
   // auth
   login: (params?: { continue?: string; autoLaunch?: 0 | 1 }) => '/auth/login' + asQueryString(params),
+  logout: (params?: { continue?: string }) => '/auth/logout' + asQueryString(params),
   register: () => '/auth/register',
   changePassword: () => '/auth/change-password',
   onboarding: (params?: { step?: string }) => '/auth/onboarding' + asQueryString(params),
@@ -104,6 +105,7 @@ export const Route = {
   locked: () => '/locked',
   trash: () => '/trash',
   viewTrashedAsset: ({ id }: { id: string }) => `/trash/photos/${id}`,
+  recentlyAdded: () => '/recently-added',
 
   // search
   search: (dto?: MetadataSearchDto | SmartSearchDto) => {
@@ -127,6 +129,8 @@ export const Route = {
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),
   systemStatistics: () => '/admin/server-status',
   systemMaintenance: (params?: { continue?: string }) => '/admin/maintenance' + asQueryString(params),
+  systemMaintenanceIntegrityReport: ({ reportType }: { reportType: IntegrityReport }) =>
+    `/admin/maintenance/integrity-report/${reportType}`,
 
   // tags
   tags: (params?: { path?: string }) => '/tags' + asQueryString(params),
@@ -144,10 +148,25 @@ export const Route = {
   geolocationUtility: () => '/utilities/geolocation',
 
   // workflows
-  workflows: () => '/utilities/workflows',
-  viewWorkflow: ({ id }: { id: string }) => `/utilities/workflows/${id}`,
+  workflows: () => '/workflows',
+  viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
+
+  // integrity checks
+  integrityReportFile: (reportId: string) => `${getBaseUrl()}/admin/integrity/report/${reportId}/file`,
+  integrityReportCsv: (reportType: IntegrityReport) => `${getBaseUrl()}/admin/integrity/report/${reportType}/csv`,
+
+  // continue helper for ensuring same-origin URLs
+  continue: (url: string | null, fallback: string): string | URL => {
+    const resolved = new URL(url ?? fallback, document.baseURI);
+
+    if (resolved.origin !== location.origin) {
+      return fallback;
+    }
+
+    return resolved;
+  },
 };
