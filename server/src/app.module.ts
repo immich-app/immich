@@ -115,7 +115,6 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
     ...commonImports,
     ScheduleModule.forRoot(),
     OrchestrationApiModule.forRoot({
-      yuccaProductionApi: 'https://staging.fubar.computer', // TODO[YUCCA]: remove to load from futo.cloud/.well-known
       statePath: yuccaStatePath,
       requireWsAuth: true,
       requireLock: true,
@@ -131,7 +130,6 @@ export class ApiModule extends BaseModule {}
   imports: [
     ...commonImports,
     OrchestrationApiModule.forRoot({
-      yuccaProductionApi: 'https://staging.fubar.computer', // TODO[YUCCA]: remove to load from futo.cloud/.well-known
       statePath: yuccaStatePath,
       externalBaseUrl: 'https://my.immich.app',
       requireWsAuth: true,
