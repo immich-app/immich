@@ -9,7 +9,6 @@
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
-  import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/SetAlbumCoverAction.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/SetPersonFeaturedAction.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/SetProfilePictureAction.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
@@ -24,6 +23,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
@@ -38,15 +38,7 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
-  import {
-    mdiArrowLeft,
-    mdiArrowRight,
-    mdiCompare,
-    mdiDotsVertical,
-    mdiImageSearch,
-    mdiPresentationPlay,
-    mdiVideoOutline,
-  } from '@mdi/js';
+  import { mdiArrowLeft, mdiArrowRight, mdiCompare, mdiDotsVertical, mdiImageSearch, mdiVideoOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -54,11 +46,9 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
-    showSlideshow?: boolean;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onPlaySlideshow: () => void;
     onClose?: () => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     playOriginalVideo: boolean;
@@ -70,11 +60,9 @@
     album = null,
     person = null,
     stack = null,
-    showSlideshow = false,
     preAction,
     onAction,
     onUndoDelete = undefined,
-    onPlaySlideshow,
     onClose,
     onRemoveFromAlbum,
     playOriginalVideo = false,
@@ -147,9 +135,7 @@
 
     {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow && !isLocked}
-          <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
-        {/if}
+        <ActionMenuItem action={Actions.PlaySlideshow} />
 
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />
@@ -177,7 +163,8 @@
           {/if}
         {/if}
         {#if album}
-          <SetAlbumCoverAction {asset} {album} />
+          {@const { SetCover } = getAlbumAssetActions($t, album, asset)}
+          <ActionMenuItem action={SetCover} />
         {/if}
         {#if person}
           <SetFeaturedPhotoAction {asset} {person} {onAction} />

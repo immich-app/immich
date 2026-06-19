@@ -28,6 +28,7 @@ import {
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiPlus,
+  mdiPresentationPlay,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
@@ -41,6 +42,7 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
@@ -138,6 +140,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => {
       assetViewerManager.isPlayingMotionPhoto = false;
     },
+  };
+
+  const PlaySlideshow: ActionItem = {
+    title: $t('slideshow'),
+    icon: mdiPresentationPlay,
+    $if: () => asset.visibility !== AssetVisibility.Locked,
+    onAction: () => slideshowStore.slideshowState.set(SlideshowState.PlaySlideshow),
   };
 
   const Favorite: ActionItem = {
@@ -269,6 +278,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    PlaySlideshow,
     AddToAlbum,
     ZoomIn,
     ZoomOut,
