@@ -9,7 +9,6 @@
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
-  import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/SetAlbumCoverAction.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/SetPersonFeaturedAction.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/SetProfilePictureAction.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
@@ -24,6 +23,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
@@ -44,7 +44,6 @@
     mdiCompare,
     mdiDotsVertical,
     mdiImageSearch,
-    mdiPresentationPlay,
     mdiVideoOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -171,7 +170,8 @@
           {/if}
         {/if}
         {#if album}
-          <SetAlbumCoverAction {asset} {album} />
+          {@const { SetCover } = getAlbumAssetActions($t, album, asset)}
+          <ActionMenuItem action={SetCover} />
         {/if}
         {#if person}
           <SetFeaturedPhotoAction {asset} {person} {onAction} />
