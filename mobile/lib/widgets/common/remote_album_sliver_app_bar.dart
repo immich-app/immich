@@ -28,12 +28,24 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
     required this.kebabMenu,
     this.onEditTitle,
     this.onActivity,
+    this.onToggleSortOrder,
+    this.sortOrderTooltip,
+    this.sortOrderActive = false,
+    this.onToggleInteractionMode,
+    this.interactionModeTooltip,
+    this.interactionModeActive = false,
   });
 
   final IconData icon;
   final Widget kebabMenu;
   final void Function()? onEditTitle;
   final void Function()? onActivity;
+  final void Function()? onToggleSortOrder;
+  final String? sortOrderTooltip;
+  final bool sortOrderActive;
+  final void Function()? onToggleInteractionMode;
+  final String? interactionModeTooltip;
+  final bool interactionModeActive;
 
   @override
   ConsumerState<RemoteAlbumSliverAppBar> createState() => _MesmerizingSliverAppBarState();
@@ -65,6 +77,12 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
     }
 
     Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+
+    // Toggle buttons (sort order, interaction mode) use the INVERSE of
+    // actionIconColor so the active state remains distinguishable at any
+    // scroll position: primary at top (vs white icons), white at bottom
+    // (vs primary icons).
+    final activeToggleColor = Color.lerp(context.colorScheme.primary, Colors.white, _scrollProgress);
 
     List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
@@ -98,6 +116,26 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
           IconButton(
             icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
             onPressed: widget.onActivity,
+          ),
+        if (widget.onToggleInteractionMode != null)
+          IconButton(
+            icon: Icon(
+              Icons.drag_indicator,
+              color: widget.interactionModeActive ? activeToggleColor : actionIconColor,
+              shadows: actionIconShadows,
+            ),
+            tooltip: widget.interactionModeTooltip,
+            onPressed: widget.onToggleInteractionMode,
+          ),
+        if (widget.onToggleSortOrder != null)
+          IconButton(
+            icon: Icon(
+              Icons.sort,
+              color: widget.sortOrderActive ? activeToggleColor : actionIconColor,
+              shadows: actionIconShadows,
+            ),
+            tooltip: widget.sortOrderTooltip,
+            onPressed: widget.onToggleSortOrder,
           ),
         widget.kebabMenu,
       ],

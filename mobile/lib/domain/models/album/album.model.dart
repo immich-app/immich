@@ -4,6 +4,11 @@ enum AlbumAssetOrder {
   desc,
 }
 
+enum AlbumSortOrder {
+  date,
+  custom,
+}
+
 enum AlbumUserRole {
   // do not change this order!
   editor,
@@ -22,6 +27,7 @@ class RemoteAlbum {
   final String? thumbnailAssetId;
   final bool isActivityEnabled;
   final AlbumAssetOrder order;
+  final AlbumSortOrder orderBy;
   final int assetCount;
   final String ownerName;
   final bool isShared;
@@ -36,6 +42,7 @@ class RemoteAlbum {
     this.thumbnailAssetId,
     required this.isActivityEnabled,
     required this.order,
+    required this.orderBy,
     required this.assetCount,
     required this.ownerName,
     required this.isShared,
@@ -52,6 +59,7 @@ class RemoteAlbum {
     updatedAt: $updatedAt,
     isActivityEnabled: $isActivityEnabled,
     order: $order,
+    orderBy: $orderBy,
     thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
     assetCount: $assetCount
     ownerName: $ownerName
@@ -76,6 +84,7 @@ class RemoteAlbum {
         thumbnailAssetId == other.thumbnailAssetId &&
         isActivityEnabled == other.isActivityEnabled &&
         order == other.order &&
+        orderBy == other.orderBy &&
         assetCount == other.assetCount &&
         ownerName == other.ownerName &&
         isShared == other.isShared;
@@ -92,6 +101,7 @@ class RemoteAlbum {
         thumbnailAssetId.hashCode ^
         isActivityEnabled.hashCode ^
         order.hashCode ^
+        orderBy.hashCode ^
         assetCount.hashCode ^
         ownerName.hashCode ^
         isShared.hashCode;
@@ -107,6 +117,7 @@ class RemoteAlbum {
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
+    AlbumSortOrder? orderBy,
     int? assetCount,
     String? ownerName,
     bool? isShared,
@@ -121,6 +132,7 @@ class RemoteAlbum {
       thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
       isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
       order: order ?? this.order,
+      orderBy: orderBy ?? this.orderBy,
       assetCount: assetCount ?? this.assetCount,
       ownerName: ownerName ?? this.ownerName,
       isShared: isShared ?? this.isShared,

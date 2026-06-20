@@ -134,3 +134,13 @@ sealed class BaseAsset {
         isEdited.hashCode;
   }
 }
+
+extension BaseAssetId on BaseAsset {
+  String get id {
+    final self = this;
+    if (self is RemoteAsset) {
+      return self.id;
+    }
+    return (self as LocalAsset).id;
+  }
+}

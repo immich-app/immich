@@ -167,6 +167,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         thumbnailAssetId: Value(album.thumbnailAssetId ?? (assetIds.isNotEmpty ? assetIds.first : null)),
         isActivityEnabled: Value(album.isActivityEnabled),
         order: Value(album.order),
+        orderBy: Value(album.orderBy),
       );
 
       await _db.remoteAlbumEntity.insertOne(entity);
@@ -202,6 +203,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         thumbnailAssetId: Value(album.thumbnailAssetId),
         isActivityEnabled: Value(album.isActivityEnabled),
         order: Value(album.order),
+        orderBy: Value(album.orderBy),
       ),
     );
   }
@@ -579,6 +581,7 @@ extension on RemoteAlbumEntityData {
       thumbnailAssetId: thumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
       order: order,
+      orderBy: orderBy,
       assetCount: assetCount,
       ownerName: ownerName,
       isShared: isShared,

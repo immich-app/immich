@@ -23,6 +23,8 @@ class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
 
   IntColumn get order => intEnum<AlbumAssetOrder>()();
 
+  IntColumn get orderBy => intEnum<AlbumSortOrder>().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

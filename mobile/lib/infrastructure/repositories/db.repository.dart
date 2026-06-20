@@ -324,6 +324,16 @@ class Drift extends $Drift {
       await optimize();
     },
     beforeOpen: (details) async {
+      // Lazy migration: add order_by column to remote_album_entity (v30)
+      final hasOrderBy = await customSelect(
+        "SELECT COUNT(*) FROM pragma_table_info('remote_album_entity') WHERE name = 'order_by'",
+      ).getSingle();
+      if ((hasOrderBy.data.values.first as int) == 0) {
+        await customStatement(
+          'ALTER TABLE remote_album_entity ADD COLUMN order_by INTEGER NOT NULL DEFAULT 0',
+        );
+      }
+
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');

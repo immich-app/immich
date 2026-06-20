@@ -10,6 +10,8 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+// ignore: import_rule_openapi
+import 'package:openapi/api.dart' show AlbumAssetPositionItemDto;
 import 'package:logging/logging.dart';
 
 /// Categorizes a heterogeneous asset selection into the candidates that can
@@ -141,6 +143,7 @@ class RemoteAlbumService {
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
+    AlbumSortOrder? orderBy,
   }) async {
     final owner = await _repository.getOwner(albumId);
     final updatedAlbum = await _albumApiRepository.updateAlbum(
@@ -151,12 +154,21 @@ class RemoteAlbumService {
       thumbnailAssetId: thumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
       order: order,
+      orderBy: orderBy,
     );
 
     // Update the local database
     await _repository.update(updatedAlbum);
 
     return updatedAlbum;
+  }
+
+  Future<void> moveAsset(String albumId, {required String assetId, required List<String> assetIds}) async {
+    await _albumApiRepository.moveAlbumAsset(albumId, assetId: assetId, assetIds: assetIds);
+  }
+
+  Future<List<AlbumAssetPositionItemDto>> getAssetPositions(String albumId) async {
+    return _albumApiRepository.getActivatedAssetPositions(albumId);
   }
 
   FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {

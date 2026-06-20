@@ -6,7 +6,6 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 final multiSelectProvider = NotifierProvider<MultiSelectNotifier, MultiSelectState>(
   MultiSelectNotifier.new,
-  dependencies: [timelineServiceProvider],
 );
 
 class MultiSelectState {

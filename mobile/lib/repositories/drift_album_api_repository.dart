@@ -75,10 +75,16 @@ class DriftAlbumApiRepository extends ApiRepository {
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
+    AlbumSortOrder? orderBy,
   }) async {
     AssetOrder? apiOrder;
     if (order != null) {
       apiOrder = order == AlbumAssetOrder.asc ? AssetOrder.asc : AssetOrder.desc;
+    }
+
+    AlbumOrderBy? apiOrderBy;
+    if (orderBy != null) {
+      apiOrderBy = orderBy == AlbumSortOrder.date ? AlbumOrderBy.date : AlbumOrderBy.custom;
     }
 
     final responseDto = await checkNull(
@@ -92,11 +98,24 @@ class DriftAlbumApiRepository extends ApiRepository {
               : Optional.present(thumbnailAssetId),
           isActivityEnabled: isActivityEnabled == null ? const Optional.absent() : Optional.present(isActivityEnabled),
           order: apiOrder == null ? const Optional.absent() : Optional.present(apiOrder),
+          orderBy: apiOrderBy == null ? const Optional.absent() : Optional.present(apiOrderBy),
         ),
       ),
     );
 
     return responseDto.toRemoteAlbum(owner);
+  }
+
+  Future<void> moveAlbumAsset(String albumId, {required String assetId, required List<String> assetIds}) async {
+    await _api.moveAlbumAsset(albumId, MoveAlbumAssetDto(
+      assetId: assetId,
+      assetIds: assetIds,
+    ));
+  }
+
+  Future<List<AlbumAssetPositionItemDto>> getActivatedAssetPositions(String albumId) async {
+    final positions = await checkNull(_api.getActivatedAssetPositions(albumId));
+    return positions;
   }
 
   Future<void> deleteAlbum(String albumId) {
@@ -133,6 +152,7 @@ extension on AlbumResponseDto {
       thumbnailAssetId: albumThumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
       order: order.orElse(null) == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+      orderBy: orderBy.orElse(null) == AlbumOrderBy.custom ? AlbumSortOrder.custom : AlbumSortOrder.date,
       assetCount: assetCount,
       isShared: albumUsers.length > 2,
     );

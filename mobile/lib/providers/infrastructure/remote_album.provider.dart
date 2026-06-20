@@ -13,6 +13,8 @@ import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.da
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+// ignore: import_rule_openapi
+import 'package:openapi/api.dart' show AlbumAssetPositionItemDto;
 import 'package:logging/logging.dart';
 
 class RemoteAlbumState {
@@ -157,6 +159,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     String? thumbnailAssetId,
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
+    AlbumSortOrder? orderBy,
   }) async {
     try {
       final updatedAlbum = await _remoteAlbumService.updateAlbum(
@@ -166,6 +169,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
         thumbnailAssetId: thumbnailAssetId,
         isActivityEnabled: isActivityEnabled,
         order: order,
+        orderBy: orderBy,
       );
 
       final updatedAlbums = state.albums.map((album) {
@@ -181,12 +185,18 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     }
   }
 
-  Future<RemoteAlbum?> toggleAlbumOrder(String albumId) async {
+  Future<RemoteAlbum?> toggleAlbumOrderBy(String albumId) async {
     final currentAlbum = state.albums.firstWhere((album) => album.id == albumId);
+    final newOrderBy = currentAlbum.orderBy == AlbumSortOrder.date ? AlbumSortOrder.custom : AlbumSortOrder.date;
+    return updateAlbum(albumId, orderBy: newOrderBy);
+  }
 
-    final newOrder = currentAlbum.order == AlbumAssetOrder.asc ? AlbumAssetOrder.desc : AlbumAssetOrder.asc;
+  Future<void> moveAlbumAsset(String albumId, {required String assetId, required List<String> assetIds}) async {
+    await _remoteAlbumService.moveAsset(albumId, assetId: assetId, assetIds: assetIds);
+  }
 
-    return updateAlbum(albumId, order: newOrder);
+  Future<List<AlbumAssetPositionItemDto>> getAlbumAssetPositions(String albumId) async {
+    return _remoteAlbumService.getAssetPositions(albumId);
   }
 
   Future<void> deleteAlbum(String albumId) async {
