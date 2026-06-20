@@ -367,6 +367,9 @@ class _AlbumReorderGridState extends ConsumerState<AlbumReorderGrid>
               _moveAsset(details.data, index);
             }
             _dragTargetIndex = null;
+            // onDragEnd is unreliable inside a SliverGrid, so trigger
+            // the save directly from DragTarget.onAcceptWithDetails.
+            _finalizeReorder();
           },
           builder: (context, candidateData, rejectedData) {
             return grid;
@@ -425,13 +428,17 @@ class _AlbumReorderGridState extends ConsumerState<AlbumReorderGrid>
     } else {
       // ---- Reorder mode ----
       tile = LongPressDraggable<BaseAsset>(
+        key: ValueKey('drag_${asset.id}'),
         data: asset,
         delay: const Duration(milliseconds: 200),
         dragAnchorStrategy: pointerDragAnchorStrategy,
         onDragStarted: () {
           HapticFeedback.lightImpact();
         },
-        onDragEnd: (_) => _finalizeReorder(),
+        onDragEnd: (_) {
+          // _finalizeReorder is called from DragTarget.onAcceptWithDetails
+          // because onDragEnd is unreliable inside a SliverGrid.
+        },
         onDraggableCanceled: (_, __) => _cancelDrag(),
         feedback: Transform.translate(
           // Shift feedback so its visual center aligns with the pointer
