@@ -14,7 +14,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumOrderBy, AlbumUserRole } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -30,6 +30,7 @@ export interface AlbumAssetCount {
 
 export interface AlbumInfoOptions {
   withAssets: boolean;
+  orderBy?: AlbumOrderBy;
 }
 
 const withAlbumUsers = (authUserId?: string) => (eb: ExpressionBuilder<DB, 'album'>) =>
@@ -52,10 +53,10 @@ const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) =>
     eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
   ).as('sharedLinks');
 
-const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
+const withAssets = (orderBy?: AlbumOrderBy) => (eb: ExpressionBuilder<DB, 'album'>) => {
   return eb
-    .selectFrom((eb) =>
-      eb
+    .selectFrom((eb) => {
+      let query = eb
         .selectFrom('asset')
         .selectAll('asset')
         .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
@@ -65,10 +66,15 @@ const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
         .whereRef('album_asset.albumId', '=', 'album.id')
         .where('asset.deletedAt', 'is', null)
-        .$call(withDefaultVisibility)
-        .orderBy('asset.fileCreatedAt', 'desc')
-        .as('asset'),
-    )
+        .$call(withDefaultVisibility);
+
+      if (orderBy === AlbumOrderBy.Custom) {
+        query = query.orderBy(sql`album_asset.position COLLATE "C" asc nulls last`);
+      }
+      query = query.orderBy('asset.fileCreatedAt', 'desc');
+
+      return query.as('asset');
+    })
     .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
     .as('assets');
 };
@@ -96,7 +102,7 @@ export class AlbumRepository {
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(authUserId))
       .select(withSharedLink)
-      .$if(options.withAssets, (eb) => eb.select(withAssets))
+      .$if(options.withAssets, (eb) => eb.select(withAssets(options.orderBy)))
       .$narrowType<{ assets: NotNull }>()
       .executeTakeFirst();
   }
@@ -351,7 +357,7 @@ export class AlbumRepository {
       .selectFrom('album')
       .selectAll('album')
       .select(withAlbumUsers(authUserId))
-      .select(withAssets)
+      .select(withAssets())
       .$narrowType<{ assets: NotNull }>()
       .executeTakeFirstOrThrow();
 
@@ -384,6 +390,43 @@ export class AlbumRepository {
       // Allow idempotent album sync without failing on existing album memberships.
       .onConflict((oc) => oc.columns(['albumId', 'assetId']).doNothing())
       .execute();
+  }
+
+  async reorderAssets(albumId: string, positions: Array<{ assetId: string; position: string }>): Promise<void> {
+    if (positions.length === 0) {
+      return;
+    }
+
+    await this.db.transaction().execute(async (tx) => {
+      for (const { assetId, position } of positions) {
+        await tx
+          .updateTable('album_asset')
+          .set({ position })
+          .where('album_asset.albumId', '=', albumId)
+          .where('album_asset.assetId', '=', assetId)
+          .execute();
+      }
+    });
+  }
+
+  async getActivatedAssets(
+    albumId: string,
+  ): Promise<Array<{ assetId: string; position: string; fileCreatedAt: Date }>> {
+    const rows = await this.db
+      .selectFrom('album_asset')
+      .innerJoin('asset', 'asset.id', 'album_asset.assetId')
+      .select(['album_asset.assetId', 'album_asset.position', 'asset.fileCreatedAt'])
+      .where('album_asset.albumId', '=', albumId)
+      .where('album_asset.position', 'is not', null)
+      .where('asset.deletedAt', 'is', null)
+      .orderBy(sql`album_asset.position COLLATE "C"`, 'asc')
+      .execute();
+
+    return rows.map((r) => ({
+      assetId: r.assetId,
+      position: r.position!,
+      fileCreatedAt: r.fileCreatedAt,
+    }));
   }
 
   /**

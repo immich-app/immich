@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetOrder } from 'src/enum';
+import { AlbumOrderBy, AssetOrder } from 'src/enum';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table({ name: 'album' })
@@ -47,6 +47,9 @@ export class AlbumTable {
 
   @Column({ default: AssetOrder.Desc })
   order!: Generated<AssetOrder>;
+
+  @Column({ default: AlbumOrderBy.Date })
+  orderBy!: Generated<AlbumOrderBy>;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

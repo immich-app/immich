@@ -1354,6 +1354,136 @@ describe(AlbumService.name, () => {
     });
   });
 
+  describe('getActivatedPositions', () => {
+    it('should return activated positions for an album', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getActivatedAssets.mockResolvedValue([
+        { assetId: 'asset-1', position: 'A!token!0000000001', fileCreatedAt: new Date() },
+        { assetId: 'asset-2', position: 'B!token!0000000002', fileCreatedAt: new Date() },
+      ]);
+
+      const result = await sut.getActivatedPositions(AuthFactory.create(owner), album.id);
+
+      expect(result).toEqual([
+        { assetId: 'asset-1', position: 'A!token!0000000001' },
+        { assetId: 'asset-2', position: 'B!token!0000000002' },
+      ]);
+    });
+  });
+
+  describe('moveAsset', () => {
+    it('should move asset and anchor prefix gaps', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      // No existing positions — prefix [0..movedIdx] needs anchoring
+      mocks.album.getActivatedAssets.mockResolvedValue([]);
+      mocks.album.reorderAssets.mockResolvedValue();
+      mocks.album.update.mockResolvedValue(getForAlbum(album));
+
+      await sut.moveAsset(AuthFactory.create(owner), album.id, {
+        assetId: 'asset-3',
+        assetIds: ['asset-1', 'asset-2', 'asset-3', 'asset-4'],
+      });
+
+      expect(mocks.album.reorderAssets).toHaveBeenCalledTimes(1);
+      const positions = mocks.album.reorderAssets.mock.calls[0][1];
+      expect(positions).toHaveLength(3); // prefix [0..2] anchored
+      expect(positions.map((p: { assetId: string; position: string }) => p.assetId)).toEqual([
+        'asset-1',
+        'asset-2',
+        'asset-3',
+      ]);
+      expect(positions[0].position < positions[1].position).toBe(true);
+      expect(positions[1].position < positions[2].position).toBe(true);
+      expect(mocks.album.update).toHaveBeenCalledWith(
+        album.id,
+        { id: album.id, updatedAt: expect.any(Date) },
+        owner.id,
+      );
+    });
+
+    it('should handle an empty asset list', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+
+      await sut.moveAsset(AuthFactory.create(owner), album.id, {
+        assetId: 'asset-1',
+        assetIds: [],
+      });
+
+      expect(mocks.album.getById).not.toHaveBeenCalled();
+      expect(mocks.album.getActivatedAssets).not.toHaveBeenCalled();
+      expect(mocks.album.reorderAssets).not.toHaveBeenCalled();
+      expect(mocks.album.update).not.toHaveBeenCalled();
+    });
+
+    it('should only update the moved item when prefix is already anchored', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      // All assets already positioned — prefix needs no anchoring
+      mocks.album.getActivatedAssets.mockResolvedValue([
+        { assetId: 'asset-1', position: 'a!tok!0000000001', fileCreatedAt: new Date() },
+        { assetId: 'asset-2', position: 'd!tok!0000000002', fileCreatedAt: new Date() },
+        { assetId: 'asset-3', position: 'e!tok!0000000003', fileCreatedAt: new Date() },
+        { assetId: 'asset-4', position: 'f!tok!0000000004', fileCreatedAt: new Date() },
+      ]);
+      mocks.album.reorderAssets.mockResolvedValue();
+      mocks.album.update.mockResolvedValue(getForAlbum(album));
+
+      // Move asset-3 between asset-1 and asset-2
+      await sut.moveAsset(AuthFactory.create(owner), album.id, {
+        assetId: 'asset-3',
+        assetIds: ['asset-1', 'asset-3', 'asset-2', 'asset-4'],
+      });
+
+      expect(mocks.album.reorderAssets).toHaveBeenCalledTimes(1);
+      const positions = mocks.album.reorderAssets.mock.calls[0][1];
+      // Only asset-3 changed position; prefix is already anchored
+      expect(positions).toHaveLength(1);
+      expect(positions[0].assetId).toBe('asset-3');
+      expect(mocks.album.update).toHaveBeenCalledWith(
+        album.id,
+        { id: album.id, updatedAt: expect.any(Date) },
+        owner.id,
+      );
+    });
+
+    it('should emit AlbumUpdate events to other album users', async () => {
+      const album = AlbumFactory.from().albumUser({ userId: 'other-user-id', role: AlbumUserRole.Editor }).build();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.getActivatedAssets.mockResolvedValue([
+        { assetId: 'asset-1', position: 'a!tok!0000000001', fileCreatedAt: new Date() },
+        { assetId: 'asset-2', position: 'b!tok!0000000002', fileCreatedAt: new Date() },
+      ]);
+      mocks.album.reorderAssets.mockResolvedValue();
+      mocks.album.update.mockResolvedValue(getForAlbum(album));
+
+      await sut.moveAsset(AuthFactory.create(owner), album.id, {
+        assetId: 'asset-1',
+        assetIds: ['asset-2', 'asset-1'],
+      });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
+        id: album.id,
+        recipientId: 'other-user-id',
+      });
+      // Should NOT notify the acting user
+      expect(mocks.event.emit).not.toHaveBeenCalledWith(
+        'AlbumUpdate',
+        expect.objectContaining({ recipientId: owner.id }),
+      );
+    });
+  });
+
   // // it('removes assets from shared album (shared with auth user)', async () => {
   // //   const albumEntity = _getOwnedSharedAlbum();
   // //   albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));

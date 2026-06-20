@@ -1,5 +1,6 @@
 import {
   AfterDeleteTrigger,
+  Column,
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
@@ -35,4 +36,7 @@ export class AlbumAssetTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'text', nullable: true })
+  position!: string | null;
 }

@@ -4,7 +4,14 @@ import { AlbumUser, AuthSharedLink } from 'src/database';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
-import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
+import {
+  AlbumOrderBy,
+  AlbumOrderBySchema,
+  AlbumUserRole,
+  AlbumUserRoleSchema,
+  AssetOrder,
+  AssetOrderSchema,
+} from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
 import { asDateTimeString } from 'src/utils/date';
 import { stringToBool } from 'src/validation';
@@ -53,6 +60,20 @@ const AlbumsAddAssetsResponseSchema = z
   })
   .meta({ id: 'AlbumsAddAssetsResponseDto' });
 
+const AlbumAssetPositionItemSchema = z
+  .object({
+    assetId: z.string(),
+    position: z.string(),
+  })
+  .meta({ id: 'AlbumAssetPositionItemDto' });
+
+const MoveAlbumAssetSchema = z
+  .object({
+    assetId: z.uuidv4().describe('The asset being moved'),
+    assetIds: z.array(z.uuidv4()).describe('Full ordered asset list for prefix anchoring context'),
+  })
+  .meta({ id: 'MoveAlbumAssetDto' });
+
 const UpdateAlbumSchema = z
   .object({
     albumName: z.string().optional().describe('Album name'),
@@ -60,6 +81,7 @@ const UpdateAlbumSchema = z
     albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
     isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
     order: AssetOrderSchema.optional(),
+    orderBy: AlbumOrderBySchema.optional(),
   })
   .meta({ id: 'UpdateAlbumDto' });
 
@@ -136,6 +158,7 @@ export const AlbumResponseSchema = z
     endDate: z.string().meta({ format: 'date-time' }).optional().describe('End date (latest asset)'),
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
     order: AssetOrderSchema.optional(),
+    orderBy: AlbumOrderBySchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
   })
   .meta({ id: 'AlbumResponseDto' });
@@ -145,6 +168,8 @@ export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 export class CreateAlbumDto extends createZodDto(CreateAlbumSchema) {}
 export class AlbumsAddAssetsDto extends createZodDto(AlbumsAddAssetsSchema) {}
 export class AlbumsAddAssetsResponseDto extends createZodDto(AlbumsAddAssetsResponseSchema) {}
+export class AlbumAssetPositionItemDto extends createZodDto(AlbumAssetPositionItemSchema) {}
+export class MoveAlbumAssetDto extends createZodDto(MoveAlbumAssetSchema) {}
 export class UpdateAlbumDto extends createZodDto(UpdateAlbumSchema) {}
 export class GetAlbumsDto extends createZodDto(GetAlbumsSchema) {}
 export class AlbumStatisticsResponseDto extends createZodDto(AlbumStatisticsResponseSchema) {}
@@ -164,6 +189,7 @@ export type MapAlbumDto = {
   id: string;
   isActivityEnabled: boolean;
   order: AssetOrder;
+  orderBy?: AlbumOrderBy;
 };
 
 export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto => {
@@ -206,5 +232,6 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    orderBy: entity.orderBy,
   };
 };

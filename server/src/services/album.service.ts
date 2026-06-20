@@ -8,16 +8,18 @@ import {
   CreateAlbumDto,
   GetAlbumsDto,
   mapAlbum,
+  MoveAlbumAssetDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto';
-import { AlbumUserRole, Permission } from 'src/enum';
+import { AlbumOrderBy, AlbumUserRole, Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { extractRank, generatePosition, generateRank, generateSiteToken } from 'src/utils/crdt-position';
 import { asDateTimeString } from 'src/utils/date';
 import { getPreferences } from 'src/utils/preferences';
 
@@ -156,6 +158,7 @@ export class AlbumService extends BaseService {
         albumThumbnailAssetId: dto.albumThumbnailAssetId,
         isActivityEnabled: dto.isActivityEnabled,
         order: dto.order,
+        orderBy: dto.orderBy,
       },
       auth.user.id,
     );
@@ -177,6 +180,13 @@ export class AlbumService extends BaseService {
       { access: this.accessRepository, bulk: this.albumRepository },
       { parentId: id, assetIds: dto.ids },
     );
+
+    // Auto-position new assets in custom-sorted albums so they appear
+    // near their natural date position instead of at the end (nulls last).
+    const newAssetIds = results.filter(({ success }) => success).map(({ id }) => id);
+    if (album.orderBy === AlbumOrderBy.Custom && newAssetIds.length > 0) {
+      await this.positionNewAssets(id, newAssetIds);
+    }
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
     if (firstNewAssetId) {
@@ -224,6 +234,7 @@ export class AlbumService extends BaseService {
 
     const albumAssetValues: { albumId: string; assetId: string }[] = [];
     const events: { id: string; recipients: string[] }[] = [];
+    const customOrderAlbums: Array<{ albumId: string; assetIds: string[] }> = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
       const notPresentAssetIds = [...allowedAssetIds].filter((id) => !existingAssetIds.has(id));
@@ -248,9 +259,19 @@ export class AlbumService extends BaseService {
       );
       const allUsersExceptUs = album.albumUsers.map(({ user }) => user.id).filter((userId) => userId !== auth.user.id);
       events.push({ id: albumId, recipients: allUsersExceptUs });
+
+      if (album.orderBy === AlbumOrderBy.Custom) {
+        customOrderAlbums.push({ albumId, assetIds: [...notPresentAssetIds] });
+      }
     }
 
     await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
+
+    // Auto-position new assets in custom-sorted albums.
+    for (const { albumId, assetIds } of customOrderAlbums) {
+      await this.positionNewAssets(albumId, assetIds);
+    }
+
     for (const event of events) {
       for (const recipientId of event.recipients) {
         await this.eventRepository.emit('AlbumUpdate', { id: event.id, recipientId });
@@ -276,6 +297,93 @@ export class AlbumService extends BaseService {
     }
 
     return results;
+  }
+
+  async getActivatedPositions(auth: AuthDto, albumId: string): Promise<Array<{ assetId: string; position: string }>> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [albumId] });
+    const activated = await this.albumRepository.getActivatedAssets(albumId);
+    return activated.map(({ assetId, position }) => ({ assetId, position }));
+  }
+
+  async moveAsset(auth: AuthDto, albumId: string, dto: MoveAlbumAssetDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [albumId] });
+
+    const { assetId, assetIds } = dto;
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    const album = await this.findOrFail(albumId, auth.user.id, { withAssets: false });
+
+    const activated = await this.albumRepository.getActivatedAssets(albumId);
+    const rankMap = new Map(activated.map((a) => [a.assetId, extractRank(a.position)]));
+
+    let sequence =
+      activated.length > 0
+        ? Math.max(
+            ...activated.map((a) => {
+              const parts = a.position.split('!');
+              return Number.parseInt(parts[2] || '0', 10) || 0;
+            }),
+          ) + 1
+        : 1;
+
+    const siteToken = generateSiteToken();
+    const toUpdate: Array<{ assetId: string; position: string }> = [];
+    const movedIdx = assetIds.indexOf(assetId);
+
+    if (movedIdx === -1) {
+      throw new BadRequestException('Asset not found in the ordered list');
+    }
+
+    // Prefix anchoring: walk from index 0 to movedIdx, filling position gaps
+    let lastRank: string | null = null;
+
+    for (let i = 0; i <= movedIdx; i++) {
+      const currentId = assetIds[i];
+      const existingRank = rankMap.get(currentId);
+
+      // Find next ranked asset for upper bound
+      let nextRank: string | null = null;
+      for (let j = i + 1; j < assetIds.length; j++) {
+        const r = rankMap.get(assetIds[j]);
+        if (r) {
+          nextRank = r;
+          break;
+        }
+      }
+
+      // Check if existing rank is still valid between prev and next in the new order.
+      // A rank can become stale when its owner was moved to a new position
+      // that lies between different neighbors.
+      if (existingRank) {
+        const stillValid =
+          (lastRank === null || lastRank < existingRank) && (nextRank === null || existingRank < nextRank);
+        if (stillValid) {
+          lastRank = existingRank;
+          continue;
+        }
+      }
+
+      const rank = generateRank(lastRank, nextRank);
+      const position = generatePosition(rank, siteToken, sequence++);
+      toUpdate.push({ assetId: currentId, position });
+
+      rankMap.set(currentId, rank);
+      lastRank = rank;
+    }
+
+    if (toUpdate.length === 0) {
+      return;
+    }
+
+    await this.albumRepository.reorderAssets(albumId, toUpdate);
+    await this.albumRepository.update(albumId, { id: albumId, updatedAt: new Date() }, auth.user.id);
+
+    const allUsersExceptUs = album.albumUsers.map(({ user }) => user.id).filter((userId) => userId !== auth.user.id);
+    for (const recipientId of allUsersExceptUs) {
+      await this.eventRepository.emit('AlbumUpdate', { id: albumId, recipientId });
+    }
   }
 
   async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {
@@ -336,6 +444,72 @@ export class AlbumService extends BaseService {
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+  }
+
+  /**
+   * Assigns CRDT positions to newly added assets in a custom-sorted album.
+   *
+   * Left-to-right scan: finds the last positioned asset whose fileCreatedAt
+   * is before the new asset's date, then generates a rank between it and the
+   * next positioned asset. This places new photos near their natural date
+   * position without requiring a full reorder.
+   */
+  private async positionNewAssets(albumId: string, assetIds: string[]): Promise<void> {
+    const activated = await this.albumRepository.getActivatedAssets(albumId);
+
+    // Get fileCreatedAt for the new assets
+    const newAssets = await this.assetRepository.getByIds(assetIds);
+
+    let sequence =
+      activated.length > 0
+        ? Math.max(
+            ...activated.map((a) => {
+              const parts = a.position.split('!');
+              return Number.parseInt(parts[2] || '0', 10) || 0;
+            }),
+          ) + 1
+        : 1;
+
+    const siteToken = generateSiteToken();
+    const positions: Array<{ assetId: string; position: string }> = [];
+
+    // Sort new assets by date descending (newest first) to match timeline order.
+    const sorted = [...newAssets].sort((a, b) => b.fileCreatedAt.getTime() - a.fileCreatedAt.getTime());
+
+    // Sort activated by date descending so the left-scan finds the correct
+    // date-adjacent neighbors regardless of the display (rank) order.
+    const byDate = [...activated].sort((a, b) => b.fileCreatedAt.getTime() - a.fileCreatedAt.getTime());
+
+    for (const newAsset of sorted) {
+      let prevRank: string | null = null;
+      let nextRank: string | null = null;
+
+      // Left scan over date-descending list: newer photos come first in the
+      // timeline, so we find the last photo NEWER than the new one as prev,
+      // and the first photo OLDER than the new one as next.
+      for (const a of byDate) {
+        if (a.fileCreatedAt > newAsset.fileCreatedAt) {
+          prevRank = extractRank(a.position);
+        } else {
+          nextRank = extractRank(a.position);
+          break;
+        }
+      }
+
+      // Date order and rank order are independent after manual reordering.
+      // Ensure prevRank < nextRank so generateRank gets them in the right order.
+      if (prevRank && nextRank && prevRank > nextRank) {
+        [prevRank, nextRank] = [nextRank, prevRank];
+      }
+
+      const rank = generateRank(prevRank, nextRank);
+      const position = generatePosition(rank, siteToken, sequence++);
+      positions.push({ assetId: newAsset.id, position });
+    }
+
+    if (positions.length > 0) {
+      await this.albumRepository.reorderAssets(albumId, positions);
+    }
   }
 
   private async findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {

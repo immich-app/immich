@@ -3,12 +3,14 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
+  AlbumAssetPositionItemDto,
   AlbumResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
+  MoveAlbumAssetDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
@@ -148,6 +150,34 @@ export class AlbumController {
     @Param() { id }: UUIDParamDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.removeAssets(auth, id, dto);
+  }
+
+  @Put(':id/assets/move')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated({ permission: Permission.AlbumAssetCreate })
+  @Endpoint({
+    summary: 'Move a single album asset',
+    description:
+      'Move an asset to a new position in the custom order. Automatically anchors prefix gaps. Only writes changed rows — incremental by design.',
+    history: new HistoryBuilder().added('v4'),
+  })
+  moveAlbumAsset(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: MoveAlbumAssetDto): Promise<void> {
+    return this.service.moveAsset(auth, id, dto);
+  }
+
+  @Get(':id/assets/positions')
+  @Authenticated({ permission: Permission.AlbumRead })
+  @Endpoint({
+    summary: 'Get activated album asset positions',
+    description:
+      'Returns the CRDT position strings for activated assets in the album, used to restore custom sort order.',
+    history: new HistoryBuilder().added('v4'),
+  })
+  getActivatedAssetPositions(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<AlbumAssetPositionItemDto[]> {
+    return this.service.getActivatedPositions(auth, id);
   }
 
   @Put(':id/users')
