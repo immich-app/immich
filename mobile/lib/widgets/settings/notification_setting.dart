@@ -48,6 +48,14 @@ class NotificationSetting extends HookConsumerWidget {
                   showPermissionsDialog();
                 }
               }),
+        )
+      else
+        SettingsButtonListTile(
+          icon: Icons.notifications_active_outlined,
+          title: 'notification_enabled_list_tile_title'.tr(),
+          subtileText: 'notification_enabled_list_tile_content'.tr(),
+          buttonText: 'notification_enabled_list_tile_open_button'.tr(),
+          onButtonTap: () => openAppSettings(),
         ),
     ];
 
