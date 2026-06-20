@@ -510,6 +510,7 @@ export type AlbumResponseDto = {
     /** Last modified asset timestamp */
     lastModifiedAssetTimestamp?: string;
     order?: AssetOrder;
+    orderBy?: AlbumOrderBy;
     /** Is shared album */
     shared: boolean;
     /** Start date (earliest asset) */
@@ -561,6 +562,7 @@ export type UpdateAlbumDto = {
     /** Enable activity feed */
     isActivityEnabled?: boolean;
     order?: AssetOrder;
+    orderBy?: AlbumOrderBy;
 };
 export type BulkIdsDto = {
     /** IDs to process */
@@ -573,6 +575,16 @@ export type BulkIdResponseDto = {
     id: string;
     /** Whether operation succeeded */
     success: boolean;
+};
+export type MoveAlbumAssetDto = {
+    /** The asset being moved */
+    assetId: string;
+    /** Full ordered asset list for prefix anchoring context */
+    assetIds: string[];
+};
+export type AlbumAssetPositionItemDto = {
+    assetId: string;
+    position: string;
 };
 export type MapMarkerResponseDto = {
     /** City name */
@@ -3940,6 +3952,32 @@ export function addAssetsToAlbum({ id, bulkIdsDto }: {
     })));
 }
 /**
+ * Move a single album asset
+ */
+export function moveAlbumAsset({ id, moveAlbumAssetDto }: {
+    id: string;
+    moveAlbumAssetDto: MoveAlbumAssetDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/albums/${encodeURIComponent(id)}/assets/move`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: moveAlbumAssetDto
+    })));
+}
+/**
+ * Get activated album asset positions
+ */
+export function getActivatedAssetPositions({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumAssetPositionItemDto[];
+    }>(`/albums/${encodeURIComponent(id)}/assets/positions`, {
+        ...opts
+    }));
+}
+/**
  * Retrieve album map markers
  */
 export function getAlbumMapMarkers({ id, key, slug }: {
@@ -7129,6 +7167,10 @@ export enum AlbumUserRole {
     Editor = "editor",
     Owner = "owner",
     Viewer = "viewer"
+}
+export enum AlbumOrderBy {
+    Date = "date",
+    Custom = "custom"
 }
 export enum BulkIdErrorReason {
     Duplicate = "duplicate",

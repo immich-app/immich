@@ -18,6 +18,7 @@ class UpdateAlbumDto {
     this.description = const Optional.absent(),
     this.isActivityEnabled = const Optional.absent(),
     this.order = const Optional.absent(),
+    this.orderBy = const Optional.absent(),
   });
 
   /// Album name
@@ -64,13 +65,22 @@ class UpdateAlbumDto {
   ///
   Optional<AssetOrder?> order;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<AlbumOrderBy?> orderBy;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
     other.albumName == albumName &&
     other.albumThumbnailAssetId == albumThumbnailAssetId &&
     other.description == description &&
     other.isActivityEnabled == isActivityEnabled &&
-    other.order == order;
+    other.order == order &&
+    other.orderBy == orderBy;
 
   @override
   int get hashCode =>
@@ -79,10 +89,11 @@ class UpdateAlbumDto {
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
-    (order == null ? 0 : order!.hashCode);
+    (order == null ? 0 : order!.hashCode) +
+    (orderBy == null ? 0 : orderBy!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order, orderBy=$orderBy]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -106,6 +117,10 @@ class UpdateAlbumDto {
       final value = this.order.value;
       json[r'order'] = value;
     }
+    if (this.orderBy.isPresent) {
+      final value = this.orderBy.value;
+      json[r'orderBy'] = value;
+    }
     return json;
   }
 
@@ -123,6 +138,7 @@ class UpdateAlbumDto {
         description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
         isActivityEnabled: json.containsKey(r'isActivityEnabled') ? Optional.present(mapValueOfType<bool>(json, r'isActivityEnabled')) : const Optional.absent(),
         order: json.containsKey(r'order') ? Optional.present(AssetOrder.fromJson(json[r'order'])) : const Optional.absent(),
+        orderBy: json.containsKey(r'orderBy') ? Optional.present(AlbumOrderBy.fromJson(json[r'orderBy'])) : const Optional.absent(),
       );
     }
     return null;

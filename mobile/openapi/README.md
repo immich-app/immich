@@ -88,10 +88,12 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**addUsersToAlbum**](doc//AlbumsApi.md#adduserstoalbum) | **PUT** /albums/{id}/users | Share album with users
 *AlbumsApi* | [**createAlbum**](doc//AlbumsApi.md#createalbum) | **POST** /albums | Create an album
 *AlbumsApi* | [**deleteAlbum**](doc//AlbumsApi.md#deletealbum) | **DELETE** /albums/{id} | Delete an album
+*AlbumsApi* | [**getActivatedAssetPositions**](doc//AlbumsApi.md#getactivatedassetpositions) | **GET** /albums/{id}/assets/positions | Get activated album asset positions
 *AlbumsApi* | [**getAlbumInfo**](doc//AlbumsApi.md#getalbuminfo) | **GET** /albums/{id} | Retrieve an album
 *AlbumsApi* | [**getAlbumMapMarkers**](doc//AlbumsApi.md#getalbummapmarkers) | **GET** /albums/{id}/map-markers | Retrieve album map markers
 *AlbumsApi* | [**getAlbumStatistics**](doc//AlbumsApi.md#getalbumstatistics) | **GET** /albums/statistics | Retrieve album statistics
 *AlbumsApi* | [**getAllAlbums**](doc//AlbumsApi.md#getallalbums) | **GET** /albums | List all albums
+*AlbumsApi* | [**moveAlbumAsset**](doc//AlbumsApi.md#movealbumasset) | **PUT** /albums/{id}/assets/move | Move a single album asset
 *AlbumsApi* | [**removeAssetFromAlbum**](doc//AlbumsApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | Remove assets from an album
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | Remove user from album
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | Update an album
@@ -353,6 +355,8 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
+ - [AlbumAssetPositionItemDto](doc//AlbumAssetPositionItemDto.md)
+ - [AlbumOrderBy](doc//AlbumOrderBy.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumStatisticsResponseDto](doc//AlbumStatisticsResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
@@ -489,6 +493,7 @@ Class | Method | HTTP request | Description
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
  - [MirrorAxis](doc//MirrorAxis.md)
  - [MirrorParameters](doc//MirrorParameters.md)
+ - [MoveAlbumAssetDto](doc//MoveAlbumAssetDto.md)
  - [NotificationCreateDto](doc//NotificationCreateDto.md)
  - [NotificationDeleteAllDto](doc//NotificationDeleteAllDto.md)
  - [NotificationDto](doc//NotificationDto.md)

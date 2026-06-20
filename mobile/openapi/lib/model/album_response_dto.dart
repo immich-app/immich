@@ -26,6 +26,7 @@ class AlbumResponseDto {
     required this.isActivityEnabled,
     this.lastModifiedAssetTimestamp = const Optional.absent(),
     this.order = const Optional.absent(),
+    this.orderBy = const Optional.absent(),
     required this.shared,
     this.startDate = const Optional.absent(),
     required this.updatedAt,
@@ -89,6 +90,14 @@ class AlbumResponseDto {
   ///
   Optional<AssetOrder?> order;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<AlbumOrderBy?> orderBy;
+
   /// Is shared album
   bool shared;
 
@@ -119,6 +128,7 @@ class AlbumResponseDto {
     other.isActivityEnabled == isActivityEnabled &&
     other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
     other.order == order &&
+    other.orderBy == orderBy &&
     other.shared == shared &&
     other.startDate == startDate &&
     other.updatedAt == updatedAt;
@@ -139,12 +149,13 @@ class AlbumResponseDto {
     (isActivityEnabled.hashCode) +
     (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
     (order == null ? 0 : order!.hashCode) +
+    (orderBy == null ? 0 : orderBy!.hashCode) +
     (shared.hashCode) +
     (startDate == null ? 0 : startDate!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, orderBy=$orderBy, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -177,6 +188,10 @@ class AlbumResponseDto {
       final value = this.order.value;
       json[r'order'] = value;
     }
+    if (this.orderBy.isPresent) {
+      final value = this.orderBy.value;
+      json[r'orderBy'] = value;
+    }
       json[r'shared'] = this.shared;
     if (this.startDate.isPresent) {
       final value = this.startDate.value;
@@ -208,6 +223,7 @@ class AlbumResponseDto {
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
         lastModifiedAssetTimestamp: json.containsKey(r'lastModifiedAssetTimestamp') ? Optional.present(mapDateTime(json, r'lastModifiedAssetTimestamp', r'')) : const Optional.absent(),
         order: json.containsKey(r'order') ? Optional.present(AssetOrder.fromJson(json[r'order'])) : const Optional.absent(),
+        orderBy: json.containsKey(r'orderBy') ? Optional.present(AlbumOrderBy.fromJson(json[r'orderBy'])) : const Optional.absent(),
         shared: mapValueOfType<bool>(json, r'shared')!,
         startDate: json.containsKey(r'startDate') ? Optional.present(mapDateTime(json, r'startDate', r'')) : const Optional.absent(),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,

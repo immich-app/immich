@@ -2622,6 +2622,116 @@
         "x-immich-state": "Stable"
       }
     },
+    "/albums/{id}/assets/move": {
+      "put": {
+        "description": "Move an asset to a new position in the custom order. Automatically anchors prefix gaps. Only writes changed rows — incremental by design.",
+        "operationId": "moveAlbumAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveAlbumAssetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Move a single album asset",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "albumAsset.create"
+      }
+    },
+    "/albums/{id}/assets/positions": {
+      "get": {
+        "description": "Returns the CRDT position strings for activated assets in the album, used to restore custom sort order.",
+        "operationId": "getActivatedAssetPositions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlbumAssetPositionItemDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get activated album asset positions",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "album.read"
+      }
+    },
     "/albums/{id}/map-markers": {
       "get": {
         "description": "Retrieve map marker information for a specific album by its ID.",
@@ -16500,6 +16610,29 @@
         ],
         "type": "object"
       },
+      "AlbumAssetPositionItemDto": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "position"
+        ],
+        "type": "object"
+      },
+      "AlbumOrderBy": {
+        "description": "Album sort mode",
+        "enum": [
+          "date",
+          "custom"
+        ],
+        "type": "string"
+      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
@@ -16564,6 +16697,9 @@
           },
           "order": {
             "$ref": "#/components/schemas/AssetOrder"
+          },
+          "orderBy": {
+            "$ref": "#/components/schemas/AlbumOrderBy"
           },
           "shared": {
             "description": "Is shared album",
@@ -20226,6 +20362,30 @@
         },
         "required": [
           "axis"
+        ],
+        "type": "object"
+      },
+      "MoveAlbumAssetDto": {
+        "properties": {
+          "assetId": {
+            "description": "The asset being moved",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "assetIds": {
+            "description": "Full ordered asset list for prefix anchoring context",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "assetIds"
         ],
         "type": "object"
       },
@@ -26851,6 +27011,9 @@
           },
           "order": {
             "$ref": "#/components/schemas/AssetOrder"
+          },
+          "orderBy": {
+            "$ref": "#/components/schemas/AlbumOrderBy"
           }
         },
         "type": "object"

@@ -307,6 +307,67 @@ class AlbumsApi {
     }
   }
 
+  /// Get activated album asset positions
+  ///
+  /// Returns the CRDT position strings for activated assets in the album, used to restore custom sort order.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getActivatedAssetPositionsWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/assets/positions'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get activated album asset positions
+  ///
+  /// Returns the CRDT position strings for activated assets in the album, used to restore custom sort order.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AlbumAssetPositionItemDto>?> getActivatedAssetPositions(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getActivatedAssetPositionsWithHttpInfo(id, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AlbumAssetPositionItemDto>') as List)
+        .cast<AlbumAssetPositionItemDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Retrieve an album
   ///
   /// Retrieve information about a specific album by its ID.
@@ -605,6 +666,60 @@ class AlbumsApi {
 
     }
     return null;
+  }
+
+  /// Move a single album asset
+  ///
+  /// Move an asset to a new position in the custom order. Automatically anchors prefix gaps. Only writes changed rows — incremental by design.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [MoveAlbumAssetDto] moveAlbumAssetDto (required):
+  Future<Response> moveAlbumAssetWithHttpInfo(String id, MoveAlbumAssetDto moveAlbumAssetDto, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/assets/move'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = moveAlbumAssetDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Move a single album asset
+  ///
+  /// Move an asset to a new position in the custom order. Automatically anchors prefix gaps. Only writes changed rows — incremental by design.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [MoveAlbumAssetDto] moveAlbumAssetDto (required):
+  Future<void> moveAlbumAsset(String id, MoveAlbumAssetDto moveAlbumAssetDto, { Future<void>? abortTrigger, }) async {
+    final response = await moveAlbumAssetWithHttpInfo(id, moveAlbumAssetDto, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Remove assets from an album

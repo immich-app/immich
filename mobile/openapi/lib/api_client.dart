@@ -193,6 +193,10 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AdminOnboardingUpdateDto':
           return AdminOnboardingUpdateDto.fromJson(value);
+        case 'AlbumAssetPositionItemDto':
+          return AlbumAssetPositionItemDto.fromJson(value);
+        case 'AlbumOrderBy':
+          return AlbumOrderByTypeTransformer().decode(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
         case 'AlbumStatisticsResponseDto':
@@ -465,6 +469,8 @@ class ApiClient {
           return MirrorAxisTypeTransformer().decode(value);
         case 'MirrorParameters':
           return MirrorParameters.fromJson(value);
+        case 'MoveAlbumAssetDto':
+          return MoveAlbumAssetDto.fromJson(value);
         case 'NotificationCreateDto':
           return NotificationCreateDto.fromJson(value);
         case 'NotificationDeleteAllDto':
