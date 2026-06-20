@@ -639,4 +639,175 @@ void main() {
       ).called(1);
     });
   });
+
+  group('burst member', () {
+    // A non-representative burst frame: photo_manager can't resolve it, so it
+    // streams the natively-read rendition and stacks under the rep's anchor.
+    final member = LocalAsset(
+      id: 'member-1',
+      name: 'member-1.heic',
+      type: AssetType.image,
+      createdAt: DateTime(2025, 1, 1, 12),
+      updatedAt: DateTime(2025, 1, 1, 12),
+      playbackStyle: AssetPlaybackStyle.image,
+      isEdited: false,
+      checksum: 'member-sha1',
+      burstId: 'burst-1',
+    );
+
+    late File memberFile;
+
+    UploadResult stubbedResult = UploadResult.success(remoteAssetId: 'member-remote');
+
+    setUp(() {
+      stubbedResult = UploadResult.success(remoteAssetId: 'member-remote');
+      memberFile = File('${tmp.path}/member-1.heic')..writeAsStringSync('member-bytes');
+      when(
+        () => mockNativeApi.getCurrentResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer((_) async => BaseResource(path: memberFile.path, sha1: 'member-sha1'));
+      when(() => mockAssetMedia.getOriginalFilename(any())).thenAnswer((_) async => 'member-1.heic');
+      when(() => mockLocalAsset.burstHasRepresentative(any())).thenAnswer((_) async => false);
+      when(
+        () => mockUpload.uploadFile(
+          file: any(named: 'file'),
+          originalFileName: any(named: 'originalFileName'),
+          fields: any(named: 'fields'),
+          cancelToken: any(named: 'cancelToken'),
+          onProgress: any(named: 'onProgress'),
+          logContext: any(named: 'logContext'),
+        ),
+      ).thenAnswer((_) async => stubbedResult);
+    });
+
+    Map<String, String> capturedFields() =>
+        verify(
+              () => mockUpload.uploadFile(
+                file: any(named: 'file'),
+                originalFileName: any(named: 'originalFileName'),
+                fields: captureAny(named: 'fields'),
+                cancelToken: any(named: 'cancelToken'),
+                onProgress: any(named: 'onProgress'),
+                logContext: any(named: 'logContext'),
+              ),
+            ).captured.single
+            as Map<String, String>;
+
+    test('stacks under the anchor with keepPrimary and marks synced', () async {
+      when(
+        () => mockLocalAsset.getBurstParentRemoteId(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => 'anchor-remote');
+
+      final successes = <String>[];
+      await sut.uploadManual([member], callbacks: UploadCallbacks(onSuccess: (_, remoteId) => successes.add(remoteId)));
+
+      final fields = capturedFields();
+      expect(fields['stackParentId'], 'anchor-remote');
+      expect(fields['keepPrimary'], 'true');
+      expect(successes, ['member-remote']);
+      verify(
+        () => mockLocalAsset.markSynced('member-1', priorRemoteId: 'member-remote', syncedChecksum: 'member-sha1'),
+      ).called(1);
+    });
+
+    test('gates (no upload) when the rep exists but has not uploaded yet', () async {
+      when(
+        () => mockLocalAsset.getBurstParentRemoteId(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => null);
+      when(() => mockLocalAsset.burstHasRepresentative(any())).thenAnswer((_) async => true);
+
+      await sut.uploadManual([member]);
+
+      verifyNever(
+        () => mockUpload.uploadFile(
+          file: any(named: 'file'),
+          originalFileName: any(named: 'originalFileName'),
+          fields: any(named: 'fields'),
+          cancelToken: any(named: 'cancelToken'),
+          onProgress: any(named: 'onProgress'),
+          logContext: any(named: 'logContext'),
+        ),
+      );
+      verifyNever(
+        () => mockLocalAsset.markSynced(
+          any(),
+          priorRemoteId: any(named: 'priorRemoteId'),
+          syncedChecksum: any(named: 'syncedChecksum'),
+        ),
+      );
+    });
+
+    test('uploads standalone (no stack fields) for a rep-less group', () async {
+      // No anchor and no representative (Keep Everything / re-pick): never gate,
+      // upload the frame on its own.
+      when(
+        () => mockLocalAsset.getBurstParentRemoteId(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => null);
+      when(() => mockLocalAsset.burstHasRepresentative(any())).thenAnswer((_) async => false);
+
+      final successes = <String>[];
+      await sut.uploadManual([member], callbacks: UploadCallbacks(onSuccess: (_, remoteId) => successes.add(remoteId)));
+
+      final fields = capturedFields();
+      expect(fields.containsKey('stackParentId'), isFalse);
+      expect(fields.containsKey('keepPrimary'), isFalse);
+      expect(successes, ['member-remote']);
+    });
+
+    test('reports an error and skips the upload when the rendition is gone', () async {
+      when(
+        () => mockLocalAsset.getBurstParentRemoteId(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => 'anchor-remote');
+      when(
+        () => mockNativeApi.getCurrentResource(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')),
+      ).thenAnswer((_) async => null);
+
+      final errors = <String>[];
+      await sut.uploadManual([member], callbacks: UploadCallbacks(onError: (_, msg) => errors.add(msg)));
+
+      expect(errors, hasLength(1));
+      verifyNever(
+        () => mockUpload.uploadFile(
+          file: any(named: 'file'),
+          originalFileName: any(named: 'originalFileName'),
+          fields: any(named: 'fields'),
+          cancelToken: any(named: 'cancelToken'),
+          onProgress: any(named: 'onProgress'),
+          logContext: any(named: 'logContext'),
+        ),
+      );
+    });
+
+    test('aborts the batch on cancellation', () async {
+      when(
+        () => mockLocalAsset.getBurstParentRemoteId(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => 'anchor-remote');
+      stubbedResult = UploadResult.cancelled();
+
+      final successes = <String>[];
+      await sut.uploadManual([member], callbacks: UploadCallbacks(onSuccess: (_, remoteId) => successes.add(remoteId)));
+
+      expect(sut.shouldAbortUpload, isTrue);
+      expect(successes, isEmpty);
+      verifyNever(
+        () => mockLocalAsset.markSynced(
+          any(),
+          priorRemoteId: any(named: 'priorRemoteId'),
+          syncedChecksum: any(named: 'syncedChecksum'),
+        ),
+      );
+    });
+
+    test('surfaces a quota error and aborts the batch', () async {
+      when(
+        () => mockLocalAsset.getBurstParentRemoteId(any(), ownerId: any(named: 'ownerId')),
+      ).thenAnswer((_) async => 'anchor-remote');
+      stubbedResult = UploadResult.error(errorMessage: 'Quota has been exceeded!', statusCode: 413);
+
+      final errors = <String>[];
+      await sut.uploadManual([member], callbacks: UploadCallbacks(onError: (_, msg) => errors.add(msg)));
+
+      expect(errors, ['Quota has been exceeded!']);
+      expect(sut.shouldAbortUpload, isTrue);
+    });
+  });
 }
