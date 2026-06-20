@@ -38,7 +38,8 @@
 </p>
 
 > [!WARNING]
-⚠️ Değerli fotoğraflarınız ve videolarınız için daima [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) yedekleme planını uygulayın!
+> ⚠️ Değerli fotoğraflarınız ve videolarınız için daima [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) yedekleme planını uygulayın!
+> 
 
 > [!NOTE]
 > Kurulum dahil olmak üzere resmi belgeleri https://immich.app/ adresinde bulabilirsiniz.
