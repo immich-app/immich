@@ -26,6 +26,7 @@
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
+    customSortedAssets?: TimelineAsset[];
   }
 
   let {
@@ -37,6 +38,7 @@
     isShared = false,
     album,
     person,
+    customSortedAssets = [],
   }: Props = $props();
 
   const getAsset = (id: string) => {
@@ -47,6 +49,14 @@
   };
 
   const getNextAsset = async (currentAsset: AssetResponseDto) => {
+    if (customSortedAssets.length > 0) {
+      const idx = customSortedAssets.findIndex((a) => a.id === currentAsset.id);
+      if (idx !== -1 && idx < customSortedAssets.length - 1) {
+        return getAsset(customSortedAssets[idx + 1].id);
+      }
+      return;
+    }
+
     const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
     if (!earlierTimelineAsset) {
       return;
@@ -55,6 +65,14 @@
   };
 
   const getPreviousAsset = async (currentAsset: AssetResponseDto) => {
+    if (customSortedAssets.length > 0) {
+      const idx = customSortedAssets.findIndex((a) => a.id === currentAsset.id);
+      if (idx > 0) {
+        return getAsset(customSortedAssets[idx - 1].id);
+      }
+      return;
+    }
+
     const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
     if (!laterTimelineAsset) {
       return;
@@ -81,6 +99,9 @@
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
+    // Explicitly track customSortedAssets so the cursor is rebuilt when
+    // the custom-sorted list becomes available (positions loaded).
+    void customSortedAssets;
     if (asset) {
       handlePromiseError(loadCloseAssets(asset));
     }

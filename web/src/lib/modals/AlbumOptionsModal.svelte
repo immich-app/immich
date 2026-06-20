@@ -11,6 +11,7 @@
   } from '$lib/services/album.service';
   import {
     AlbumUserRole,
+    AlbumOrderBy,
     AssetOrder,
     getAlbumInfo,
     getAllSharedLinks,
@@ -91,6 +92,16 @@
               />
             </Field>
           {/if}
+          <Field label={$t('sort_mode')} disabled={readOnly}>
+            <Select
+              value={album.orderBy ?? AlbumOrderBy.Date}
+              options={[
+                { label: $t('sort_by_date'), value: AlbumOrderBy.Date },
+                { label: $t('sort_custom'), value: AlbumOrderBy.Custom },
+              ]}
+              onChange={(value) => handleUpdateAlbum(album, { orderBy: value })}
+            />
+          </Field>
           <Field label={$t('comments_and_likes')} description={$t('let_others_respond')} disabled={readOnly}>
             <Switch
               checked={album.isActivityEnabled}

@@ -5,12 +5,14 @@ import {
   AlbumUserRole,
   BulkIdErrorReason,
   deleteAlbum,
+  moveAlbumAsset,
   removeUserFromAlbum,
   updateAlbumInfo,
   updateAlbumUser,
   type AlbumResponseDto,
   type AlbumsAddAssetsResponseDto,
   type BulkIdResponseDto,
+  type MoveAlbumAssetDto,
   type UpdateAlbumDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -267,4 +269,18 @@ export const handleConfirmAlbumDelete = async (album: AlbumResponseDto) => {
   const prompt = `${confirmation} ${description}`;
 
   return modalManager.showDialog({ prompt });
+};
+
+export const handleMoveAlbumAsset = async (
+  albumId: string,
+  dto: MoveAlbumAssetDto,
+) => {
+  try {
+    await moveAlbumAsset({ id: albumId, moveAlbumAssetDto: dto });
+    return true;
+  } catch (error) {
+    const $t = await getFormatter();
+    handleError(error, $t('errors.unable_to_reorder_album'));
+    return false;
+  }
 };

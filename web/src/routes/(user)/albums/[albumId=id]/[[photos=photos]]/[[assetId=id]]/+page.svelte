@@ -2,6 +2,7 @@
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
+  import AlbumReorder from '$lib/components/album-page/AlbumReorder.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
@@ -48,7 +49,15 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
-  import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import {
+    AlbumOrderBy,
+    AlbumUserRole,
+    AssetVisibility,
+    getActivatedAssetPositions,
+    getAlbumInfo,
+    updateAlbumInfo,
+    type AlbumResponseDto,
+  } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -66,11 +75,13 @@
     mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
+    mdiDragVertical,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
     mdiPlus,
     mdiPresentationPlay,
+    mdiSort,
   } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -87,6 +98,7 @@
   let { slideshowState, slideshowNavigation } = slideshowStore;
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
+  let interactionMode: 'reorder' | 'select' = $state('select');
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
 
@@ -208,6 +220,7 @@
 
   let album = $derived(data.album);
   let albumId = $derived(album.id);
+  let orderMode = $derived(album.orderBy === AlbumOrderBy.Custom ? 'custom' : 'date');
 
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
   const albumUsers = $derived(showAlbumUsers && containsEditors ? album.albumUsers.map(({ user }) => user) : []);
@@ -239,7 +252,10 @@
     handlePromiseError(activityManager.init(album.id));
   });
 
-  onDestroy(() => activityManager.reset());
+  onDestroy(() => {
+    activityManager.reset();
+    assetMultiSelectManager.clear();
+  });
 
   const isOwned = $derived(album.albumUsers[0].user.id === authManager.user.id);
 
@@ -287,12 +303,14 @@
 
     await refreshAlbum();
     timelineMultiSelectManager.clear();
+    positionsVersion++;
     await setModeToView();
   };
 
   const onAlbumShare = async () => {
     await refreshAlbum();
     await setModeToView();
+    positionsVersion++;
   };
 
   const onAlbumUserUpdate = ({ albumId, userId, role }: { albumId: string; userId: string; role: AlbumUserRole }) => {
@@ -310,7 +328,123 @@
     album = newAlbum;
 
     await invalidate('album:data');
+    positionsVersion++;
   };
+
+  const toggleOrderMode = async () => {
+    const prevOrderBy = album.orderBy;
+    const newOrderBy = prevOrderBy === AlbumOrderBy.Custom ? AlbumOrderBy.Date : AlbumOrderBy.Custom;
+    album = { ...album, orderBy: newOrderBy };
+    try {
+      await updateAlbumInfo({ id: albumId, updateAlbumDto: { orderBy: newOrderBy } });
+      album = await getAlbumInfo({ id: albumId });
+      await invalidate('album:data');
+    } catch (error) {
+      album = { ...album, orderBy: prevOrderBy };
+      handleError(error, $t('errors.unable_to_update_album_info'));
+    }
+    if (newOrderBy === AlbumOrderBy.Custom) {
+      interactionMode = 'select';
+    }
+    assetMultiSelectManager.clear();
+  };
+
+  const toggleInteractionMode = () => {
+    assetMultiSelectManager.clear();
+    interactionMode = interactionMode === 'reorder' ? 'select' : 'reorder';
+  };
+
+  const handleClickAsset = (asset: TimelineAsset) => {
+    void navigate({ targetRoute: 'current', assetId: asset.id });
+  };
+
+  const handleReorder = (reorderedAssets: TimelineAsset[]) => {
+    customSortedAssets = reorderedAssets;
+  };
+
+  let reorderAssets = $derived(
+    timelineManager?.months?.flatMap(
+      (month) => month.timelineDays?.flatMap((day) => day.viewerAssets?.map((va) => va.asset) ?? []) ?? [],
+    ) ?? [],
+  );
+
+  let positions = $state<Array<{ assetId: string; position: string }>>([]);
+  let positionsReady = $state(false);
+  // Reactive counter to trigger position re-fetch on album data changes
+  let positionsVersion = $state(0);
+
+  $effect(() => {
+    if (orderMode === 'custom' && timelineManager?.isInitialized) {
+      for (const month of timelineManager.months) {
+        if (!month.isLoaded) {
+          void timelineManager.loadTimelineMonth(month.yearMonth);
+        }
+      }
+    }
+  });
+
+  // Fetch positions when entering custom mode or when album data refreshes.
+  // positionsVersion is bumped by onAlbumUpdate / onAlbumAddAssets to cover
+  // cases where the album changes without orderMode or albumId changing.
+  $effect(() => {
+    if (orderMode === 'custom') {
+      // Track positionsVersion to re-fetch on album updates
+      void positionsVersion;
+      positionsReady = false;
+      void (async () => {
+        try {
+          positions = await getActivatedAssetPositions({ id: albumId }) ?? [];
+        } catch {
+          // silently ignore fetch errors
+        }
+        positionsReady = true;
+      })();
+    } else {
+      positions = [];
+      positionsReady = true;
+    }
+  });
+
+  // Reactively merge positions with timeline assets — updates whenever either changes
+  const sortedFromPositions = $derived.by(() => {
+    if (!positionsReady || positions.length === 0) {
+      return reorderAssets;
+    }
+    const positionSet = new Set(positions.map((p) => p.assetId));
+    const reorderMap = new Map(reorderAssets.map((a) => [a.id, a]));
+    // positions are already sorted by COLLATE "C" ASC from the server
+    const positioned = positions
+      .map((p) => reorderMap.get(p.assetId))
+      .filter((a) => a != null);
+    const unpositioned = reorderAssets.filter((a) => !positionSet.has(a.id));
+    return [...positioned, ...unpositioned];
+  });
+
+  let customSortedAssets = $state<TimelineAsset[]>([]);
+
+  // Sync derived sorted list into mutable state (which handleReorder can override)
+  $effect(() => {
+    if (orderMode === 'custom') {
+      customSortedAssets = sortedFromPositions;
+    }
+  });
+
+  const displayReorderAssets = $derived(
+    orderMode === 'custom' ? customSortedAssets : [],
+  );
+
+  const navigationSortedAssets = $derived(
+    orderMode === 'custom' && positionsReady && customSortedAssets.length > 0
+      ? customSortedAssets
+      : [],
+  );
+
+  const showCustomOrder = $derived(
+    orderMode === 'custom' &&
+      positionsReady &&
+      viewMode !== AlbumPageViewMode.SELECT_ASSETS &&
+      viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL,
+  );
 
   const { Cast } = $derived(getGlobalActions($t));
   const { Share } = $derived(getAlbumActions($t, album));
@@ -339,104 +473,142 @@
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <div class="relative w-full shrink">
-    <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
-      <Timeline
-        enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
-        {album}
-        {albumUsers}
-        bind:timelineManager
-        {options}
-        assetInteraction={currentAssetIntersection}
-        {isShared}
-        {isSelectionMode}
-        {singleSelect}
-        {showArchiveIcon}
-        {onSelect}
-        onEscape={handleEscape}
-        withStacked={true}
-      >
-        {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
-          {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
-            <!-- ALBUM TITLE -->
-            <section class="pt-8 md:pt-24">
-              <AlbumTitle
-                id={album.id}
-                albumName={album.albumName}
-                {isOwned}
-                onUpdate={(albumName) => (album = { ...album, albumName })}
-              />
+    <main
+      class="relative flex h-dvh flex-col overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6"
+    >
+      {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS && viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
+        <!-- ALBUM HEADER (shared between date and custom mode) -->
+        <section class="pt-8 md:pt-24">
+          <AlbumTitle
+            id={album.id}
+            albumName={album.albumName}
+            {isOwned}
+            onUpdate={(albumName) => (album = { ...album, albumName })}
+          />
 
-              {#if album.assetCount > 0}
-                <AlbumSummary {album} />
+          {#if album.assetCount > 0}
+            <AlbumSummary {album} />
+          {/if}
+
+          <!-- ALBUM SHARING -->
+          {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
+            <div class="my-3 flex gap-x-1">
+              <button
+                class="flex gap-x-1"
+                type="button"
+                onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+              >
+                {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
+                  <UserAvatar {user} size="md" />
+                {/each}
+
+                {#if albumHasViewers}
+                  <IconButton
+                    shape="round"
+                    aria-label={$t('view_all_users')}
+                    color="secondary"
+                    size="medium"
+                    icon={mdiDotsHorizontal}
+                  />
+                {/if}
+
+                {#if album.hasSharedLink && isOwned}
+                  <IconButton
+                    aria-label={$t('shared_link_manage_links')}
+                    color="secondary"
+                    size="medium"
+                    shape="round"
+                    icon={mdiLink}
+                  />
+                {/if}
+              </button>
+
+              {#if isOwned}
+                <ActionButton action={Share} />
               {/if}
+            </div>
+          {/if}
+          <AlbumDescription
+            id={album.id}
+            {isOwned}
+            bind:description={() => album.description, (description) => (album = { ...album, description })}
+          />
+        </section>
+      {/if}
 
-              <!-- ALBUM SHARING -->
-              {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
-                <div class="my-3 flex gap-x-1">
+      <!-- Reorder grid + Timeline: overlapping via absolute positioning for crossfade -->
+      <div class="relative flex-1">
+        <div
+          class="absolute inset-0 overflow-y-auto transition-opacity duration-250"
+          class:opacity-0={!showCustomOrder}
+          class:pointer-events-none={!showCustomOrder}
+          aria-hidden={!showCustomOrder}
+        >
+          {#if displayReorderAssets.length > 0}
+            <AlbumReorder {album} assets={displayReorderAssets} {interactionMode} onClickAsset={handleClickAsset} onReorder={handleReorder} />
+          {:else}
+            <div class="flex h-full items-center justify-center text-immich-fg/50">
+              {$t('loading')}
+            </div>
+          {/if}
+        </div>
+
+        <div
+          class="absolute inset-0 transition-opacity duration-250"
+          class:opacity-0={showCustomOrder}
+          class:pointer-events-none={showCustomOrder}
+          aria-hidden={showCustomOrder}
+        >
+          <Timeline
+            enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
+            {album}
+            {albumUsers}
+            bind:timelineManager
+            {options}
+            assetInteraction={currentAssetIntersection}
+            {isShared}
+            {isSelectionMode}
+            {singleSelect}
+            {showArchiveIcon}
+            {onSelect}
+            onEscape={handleEscape}
+            withStacked={true}
+            customSortedAssets={navigationSortedAssets}
+          >
+            {#if viewMode === AlbumPageViewMode.SELECT_ASSETS || viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
+              {#if viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
+                <!-- ALBUM TITLE -->
+                <section class="pt-8 md:pt-24">
+                  <AlbumTitle
+                    id={album.id}
+                    albumName={album.albumName}
+                    {isOwned}
+                    onUpdate={(albumName) => (album = { ...album, albumName })}
+                  />
+                </section>
+              {/if}
+            {/if}
+
+            {#if album.assetCount === 0}
+              <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
+                <div class="w-75">
+                  <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
                   <button
-                    class="flex gap-x-1"
                     type="button"
-                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                    onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
+                    class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
                   >
-                    <!-- owner & users with write access (collaborators) -->
-                    {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
-                      <UserAvatar {user} size="md" />
-                    {/each}
-
-                    <!-- display ellipsis if there are readonly users too -->
-                    {#if albumHasViewers}
-                      <IconButton
-                        shape="round"
-                        aria-label={$t('view_all_users')}
-                        color="secondary"
-                        size="medium"
-                        icon={mdiDotsHorizontal}
-                      />
-                    {/if}
-
-                    {#if album.hasSharedLink && isOwned}
-                      <IconButton
-                        aria-label={$t('shared_link_manage_links')}
-                        color="secondary"
-                        size="medium"
-                        shape="round"
-                        icon={mdiLink}
-                      />
-                    {/if}
+                    <span class="text-primary">
+                      <Icon icon={mdiPlus} size="24" />
+                    </span>
+                    <span class="text-lg">{$t('select_photos')}</span>
                   </button>
-
-                  {#if isOwned}
-                    <ActionButton action={Share} />
-                  {/if}
                 </div>
-              {/if}
-              <AlbumDescription
-                id={album.id}
-                {isOwned}
-                bind:description={() => album.description, (description) => (album = { ...album, description })}
-              />
-            </section>
-          {/if}
-
-          {#if album.assetCount === 0}
-            <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
-              <div class="w-75">
-                <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
-                <button
-                  type="button"
-                  onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
-                >
-                  <span class="text-primary">
-                    <Icon icon={mdiPlus} size="24" />
-                  </span>
-                  <span class="text-lg">{$t('select_photos')}</span>
-                </button>
-              </div>
-            </section>
-          {/if}
-        {/if}
-      </Timeline>
+              </section>
+            {/if}
+          </Timeline>
+        </div>
+      </div>
 
       {#if showActivityStatus}
         <div class="absolute inset-e-0 bottom-0 z-2 me-12 mb-6">
@@ -502,6 +674,28 @@
         <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
+
+            {#if orderMode === 'custom' && isEditor}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color={interactionMode === 'reorder' ? 'primary' : 'secondary'}
+                aria-label={interactionMode === 'reorder' ? $t('select_mode') : $t('drag_to_reorder')}
+                onclick={toggleInteractionMode}
+                icon={mdiDragVertical}
+              />
+            {/if}
+
+            {#if isEditor}
+              <IconButton
+                variant="ghost"
+                shape="round"
+                color={orderMode === 'custom' ? 'primary' : 'secondary'}
+                aria-label={orderMode === 'custom' ? $t('date_order') : $t('custom_order')}
+                onclick={toggleOrderMode}
+                icon={mdiSort}
+              />
+            {/if}
 
             {#if isEditor}
               <IconButton
