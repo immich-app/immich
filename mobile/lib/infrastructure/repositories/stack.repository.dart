@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
@@ -22,14 +21,6 @@ enum PriorState { live, trashed, missing }
 class DriftStackRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftStackRepository(this._db) : super(_db);
-
-  Future<List<Stack>> getAll(String userId) {
-    final query = _db.stackEntity.select()..where((e) => e.ownerId.equals(userId));
-
-    return query.map((stack) {
-      return stack.toDto();
-    }).get();
-  }
 
   // Find stacks whose primary should flip back after a revert: a local that was
   // uploaded as an edit (prior in the stack) now hashes to a DIFFERENT member
@@ -161,11 +152,5 @@ class DriftStackRepository extends DriftDatabaseRepository {
     return (_db.stackEntity.update()..where((e) => e.id.equals(stackId))).write(
       StackEntityCompanion(primaryAssetId: Value(primaryAssetId)),
     );
-  }
-}
-
-extension on StackEntityData {
-  Stack toDto() {
-    return Stack(id: id, createdAt: createdAt, updatedAt: updatedAt, ownerId: ownerId, primaryAssetId: primaryAssetId);
   }
 }
