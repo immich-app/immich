@@ -1,7 +1,6 @@
 import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { IntegrityReportSchema } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 import z from 'zod';
 
@@ -132,10 +131,6 @@ const FilenameParamSchema = z.object({
 
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
-const IntegrityReportParamSchema = z.object({ type: IntegrityReportSchema }).meta({ id: 'IntegrityReportDto' });
-
-export class IntegrityReportTypeParamDto extends createZodDto(IntegrityReportParamSchema) {}
-
 /**
  * Unified email validation
  * Converts email strings to lowercase and validates against HTML5 email regex
@@ -156,6 +151,7 @@ export const isoDatetimeToDate = z
   .codec(
     z.iso.datetime({
       error: (iss) => `Invalid input: expected ISO 8601 datetime string, received ${typeof iss.input}`,
+      offset: true,
     }),
     z.date(),
     {
@@ -186,10 +182,6 @@ export const isoDateToDate = z
     },
   )
   .meta({ example: '2024-01-01' });
-
-export const isValidTime = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid input: expected string in HH:mm format, received string');
 
 /**
  * Latitude in range [-90, 90]. Reuse for body or query params.

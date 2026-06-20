@@ -6,6 +6,7 @@ import { HLS_PLAYLIST_CONTENT_TYPE } from 'src/constants';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  HlsPlaylistHeaderDto,
   HlsSegmentHeaderDto,
   HlsSegmentParamDto,
   HlsSessionParamDto,
@@ -50,8 +51,17 @@ export class VideoStreamController {
     description: 'Returns an HLS media playlist for one variant of the streaming session.',
     history: new HistoryBuilder().added('v3').alpha('v3'),
   })
-  getMediaPlaylist(@Auth() auth: AuthDto, @Param() { id, sessionId }: HlsVariantParamDto) {
-    return this.service.getMediaPlaylist(auth, id, sessionId);
+  getMediaPlaylist(
+    @Auth() auth: AuthDto,
+    @Param() { id, sessionId, variantIndex }: HlsVariantParamDto,
+    @Headers() headers: HlsPlaylistHeaderDto,
+  ) {
+    try {
+      headers = HlsPlaylistHeaderDto.create(headers);
+    } catch (error) {
+      throw new ZodValidationException(error);
+    }
+    return this.service.getMediaPlaylist(auth, id, sessionId, variantIndex, headers[ImmichHeader.HlsPosition]);
   }
 
   @Get(':id/video/stream/:sessionId/:variantIndex/:filename')

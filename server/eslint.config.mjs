@@ -51,6 +51,7 @@ export default typescriptEslint.config([
       'unicorn/no-array-sort': 'off',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
       'require-await': 'off',
       '@typescript-eslint/require-await': 'error',
       curly: 2,

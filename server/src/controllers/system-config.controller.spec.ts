@@ -70,7 +70,7 @@ describe(SystemConfigController.name, () => {
           errorDto.validationError([
             {
               path: ['nightlyTasks', 'startTime'],
-              message: 'Invalid input: expected string in HH:mm format, received string',
+              message: 'Invalid input: expected string in HH:MM format, received string',
             },
           ]),
         );

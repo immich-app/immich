@@ -83,7 +83,7 @@
     "exclusion_pattern_description": "Kütüphaneyi tararken dosya ve klasörleri görmezden gelmek için dışlama desenlerini kullanabilirsiniz. RAW dosyaları gibi bazı dosya ve klasörleri içe aktarmak istemediğinizde bu seçeneği kullanabilirsiniz.",
     "export_config_as_json_description": "Geçerli sistem yapılandırmasını JSON dosyası olarak indir",
     "external_libraries_page_description": "Yönetici harici kütüphane sayfası",
-    "face_detection": "Yüz tarama",
+    "face_detection": "Yüz tespiti",
     "face_detection_description": "Makine öğrenimi kullanarak varlıklardaki yüzleri tespit et. Videolar için sadece küçük resim (thumbnail) dikkate alınır. 'Yenile' tüm varlıkları yeniden işler. 'Sıfırla', mevcut tüm yüz verilerini temizleyerek işlemi yeniden başlatır. 'Eksik' henüz işlenmemiş varlıkları sıraya alır. Tespit edilen yüzler, Yüz Tanıma işlemi tamamlandıktan sonra mevcut ya da yeni kişilere gruplanmak üzere Yüz Tanıma için sıraya alınacaktır.",
     "facial_recognition_job_description": "Algılanan yüzleri kişilere grupla. Bu adım, Yüz Tespit işlemi tamamlandıktan sonra çalışır. \"Sıfırla\", tüm yüzleri yeniden gruplandırır. \"Eksik\" ise henüz bir kişiye atanmamış yüzleri sıraya alır.",
     "failed_job_command": "{job} görevi için {command} komutu başarısız",

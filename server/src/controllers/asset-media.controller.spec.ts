@@ -112,6 +112,38 @@ describe(AssetMediaController.name, () => {
       );
     });
 
+    it('should accept a non-UTC timezone offset', async () => {
+      const fileCreatedAt = '2026-05-28T19:51:20.555+02:00';
+      const { status } = await request(ctx.getHttpServer())
+        .post('/assets')
+        .attach('assetData', assetData, filename)
+        .field({ ...makeUploadDto(), fileCreatedAt });
+
+      expect(status).toBe(200);
+      expect(service.uploadAsset).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({
+          fileCreatedAt: new Date(fileCreatedAt),
+        }),
+        expect.objectContaining({ originalName: 'example.png' }),
+        undefined,
+      );
+    });
+
+    it('should reject a timezone-less datetime', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/assets')
+        .attach('assetData', assetData, filename)
+        .field({ ...makeUploadDto(), fileCreatedAt: '2026-05-28T19:51:20.555706' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['fileCreatedAt'], message: 'Invalid input: expected ISO 8601 datetime string, received string' },
+        ]),
+      );
+    });
+
     it('should throw if `isFavorite` is not a boolean', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/assets')

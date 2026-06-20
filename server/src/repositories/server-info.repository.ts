@@ -69,7 +69,16 @@ export class ServerInfoRepository {
     try {
       const { versionCheck } = this.configRepository.getEnv();
       const url = new URL(versionCheck.url);
-      url.searchParams.append('channel', channel);
+      switch (channel) {
+        case ReleaseChannel.Stable: {
+          url.searchParams.append('channel', 'stable');
+          break;
+        }
+        case ReleaseChannel.ReleaseCandidate: {
+          url.searchParams.append('channel', 'rc');
+          break;
+        }
+      }
       const response = await fetch(url);
 
       if (!response.ok) {

@@ -21,6 +21,7 @@ import { ImmichFileResponse } from 'src/utils/file';
 import { getOutputSize } from 'src/utils/media';
 
 type AssetWithStreamInfo = { videoStream: VideoStreamInfo & { timeBase: number }; packets: VideoPacketInfo };
+type Segmentation = { fps: number; framesPerSegment: number; segmentCount: number; segmentDuration: number };
 type ApiSession = { lastRequestedSegment: number | null; lastVariantIndex: number | null };
 
 @Injectable()
@@ -71,7 +72,7 @@ export class HlsService extends BaseService {
     return this.generateMainPlaylist(sessionId, ffmpeg, asset);
   }
 
-  async getMediaPlaylist(auth: AuthDto, assetId: string, sessionId: string) {
+  async getMediaPlaylist(auth: AuthDto, assetId: string, sessionId: string, variantIndex: number, position?: number) {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [assetId] });
 
     const asset = await this.videoStreamRepository.getForMediaPlaylist(assetId, sessionId);
@@ -79,7 +80,11 @@ export class HlsService extends BaseService {
       throw new NotFoundException('Asset not found or metadata not yet ready for streaming');
     }
 
-    return this.generateMediaPlaylist(asset);
+    const segmentation = this.getSegmentation(asset);
+    const hintedSegment = position === undefined ? undefined : this.positionToSegmentIndex(segmentation, position);
+    this.prewarmVariant(assetId, sessionId, variantIndex, hintedSegment);
+
+    return this.generateMediaPlaylist(asset, segmentation);
   }
 
   async getSegment(
@@ -129,7 +134,7 @@ export class HlsService extends BaseService {
     const fps = ((asset.packets.packetCount * asset.videoStream.timeBase) / asset.packets.totalDuration).toFixed(3);
     const sourceResolution = Math.min(asset.videoStream.height, asset.videoStream.width);
     const targetResolution = Math.max(sourceResolution, HLS_VARIANTS[0].resolution);
-    const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`];
+    const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`, '#EXT-X-INDEPENDENT-SEGMENTS'];
     for (let i = 0; i < HLS_VARIANTS.length; i++) {
       const { resolution, bitrate, codec, codecString } = HLS_VARIANTS[i];
       if (resolution > targetResolution || !SUPPORTED_HWA_CODECS[ffmpeg.accel].includes(codec)) {
@@ -143,24 +148,33 @@ export class HlsService extends BaseService {
     }
     lines.push('');
 
-    if (lines.length === 3) {
+    if (lines.length === 4) {
       throw new NotFoundException('No supported variants for this video');
     }
 
     return lines.join('\n');
   }
 
-  private generateMediaPlaylist({ videoStream, packets }: AssetWithStreamInfo) {
+  private getSegmentation({ videoStream, packets }: AssetWithStreamInfo): Segmentation {
     const fps = (packets.packetCount * videoStream.timeBase) / packets.totalDuration;
     const framesPerSegment = Math.ceil(HLS_SEGMENT_DURATION * fps);
-    const fullSegmentDuration = framesPerSegment / fps;
     const segmentCount = Math.ceil(packets.outputFrames / framesPerSegment);
+    return { fps, framesPerSegment, segmentCount, segmentDuration: framesPerSegment / fps };
+  }
+
+  private positionToSegmentIndex({ segmentDuration, segmentCount }: Segmentation, position: number) {
+    return Math.min(Math.max(Math.floor(position / segmentDuration), 0), segmentCount - 1);
+  }
+
+  private generateMediaPlaylist({ packets }: AssetWithStreamInfo, segmentation: Segmentation) {
+    const { fps, framesPerSegment, segmentCount, segmentDuration: fullSegmentDuration } = segmentation;
     const lastSegmentFrames = packets.outputFrames - framesPerSegment * (segmentCount - 1);
     const lastSegmentDuration = lastSegmentFrames / fps;
 
     const lines = [
       '#EXTM3U',
       `#EXT-X-VERSION:${HLS_VERSION}`,
+      '#EXT-X-INDEPENDENT-SEGMENTS',
       `#EXT-X-TARGETDURATION:${HLS_SEGMENT_DURATION}`,
       '#EXT-X-MEDIA-SEQUENCE:0',
       '#EXT-X-PLAYLIST-TYPE:VOD',
@@ -173,6 +187,19 @@ export class HlsService extends BaseService {
     lines.push(`#EXTINF:${lastSegmentDuration.toFixed(6)},`, `seg_${segmentCount - 1}.m4s`, '#EXT-X-ENDLIST', '');
 
     return lines.join('\n');
+  }
+
+  private prewarmVariant(assetId: string, sessionId: string, variantIndex: number, hintedSegment?: number) {
+    const session = this.sessions.get(sessionId);
+    if (session?.lastVariantIndex === variantIndex) {
+      return;
+    }
+
+    const nextSegment = session && session.lastRequestedSegment !== null ? session.lastRequestedSegment + 1 : undefined;
+    const segmentIndex = hintedSegment ?? nextSegment;
+    if (segmentIndex !== undefined) {
+      this.websocketRepository.serverSend('HlsSegmentRequest', { sessionId, assetId, variantIndex, segmentIndex });
+    }
   }
 
   private getSegmentKey({ sessionId, variantIndex, segmentIndex }: ArgOf<'HlsSegmentResult'>) {
