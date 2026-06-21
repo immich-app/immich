@@ -788,6 +788,12 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
     const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'}`, `${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
+      // Workaround for https://github.com/immich-app/immich/issues/29220, to be revisited
+      // QSV seems to ignore -maxrate without -b:v
+      // -b:v alongside global_quality uses QVBR
+      if (!this.useCQP()) {
+        options.push('-b:v', `${bitrates.target}${bitrates.unit}`);
+      }
       options.push('-maxrate', `${bitrates.max}${bitrates.unit}`, '-bufsize', `${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
