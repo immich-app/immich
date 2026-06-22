@@ -7,7 +7,6 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
@@ -220,17 +219,6 @@
     const unsubscribes = [
       websocketEvents.on('on_upload_success', (asset: AssetResponseDto) => handleUpdateOrUpload(asset)),
       websocketEvents.on('on_asset_update', (asset: AssetResponseDto) => handleUpdateOrUpload(asset)),
-      eventManager.on({
-        AssetsUndoArchive: async (assets) => {
-          if (assets.length === 0) {
-            return;
-          }
-          const restoredAsset = assets[0];
-          const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
-          assetViewerManager.setAsset(asset);
-          await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
-        },
-      }),
     ];
     return () => {
       for (const unsubscribe of unsubscribes) {

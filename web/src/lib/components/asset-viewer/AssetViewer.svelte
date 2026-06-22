@@ -14,6 +14,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -23,6 +24,7 @@
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -147,6 +149,15 @@
     if (asset.id === updatedAsset.id) {
       cursor = { ...cursor, current: updatedAsset };
     }
+  };
+
+  const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
+    if (assets.length === 0) {
+      return;
+    }
+    const restoredAsset = assets[0];
+    await assetViewerManager.setAssetId(restoredAsset.id);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
   onMount(() => {
@@ -474,7 +485,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} />
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} />
 
 <svelte:document
   bind:fullscreenElement
