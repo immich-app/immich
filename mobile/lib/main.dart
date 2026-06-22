@@ -263,6 +263,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
+        scaffoldMessengerKey: scaffoldMessengerKey,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
