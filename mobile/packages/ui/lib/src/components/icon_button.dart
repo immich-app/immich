@@ -1,54 +1,77 @@
-import 'package:flutter/material.dart';
-import 'package:immich_ui/src/types.dart';
+import 'dart:async';
 
-class ImmichIconButton extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:immich_ui/immich_ui.dart';
+
+class ImmichIconButton extends StatefulWidget {
   final IconData icon;
-  final VoidCallback onPressed;
+  final FutureOr<void> Function() onPressed;
   final ImmichVariant variant;
   final ImmichColor color;
   final bool disabled;
+  final bool? loading;
 
   const ImmichIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
-    this.color = ImmichColor.primary,
-    this.variant = ImmichVariant.filled,
+    this.color = .primary,
+    this.variant = .filled,
     this.disabled = false,
+    this.loading,
   });
+
+  @override
+  State<ImmichIconButton> createState() => _ImmichIconButtonState();
+}
+
+class _ImmichIconButtonState extends State<ImmichIconButton> {
+  bool _loading = false;
+  bool get _isLoading => widget.loading ?? _loading;
+
+  Future<void> _onPressed() async {
+    setState(() => _loading = true);
+    try {
+      await widget.onPressed();
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final background = switch (variant) {
-      ImmichVariant.filled => switch (color) {
-          ImmichColor.primary => colorScheme.primary,
-          ImmichColor.secondary => colorScheme.secondary,
-        },
-      ImmichVariant.ghost => Colors.transparent,
+    final background = switch (widget.variant) {
+      .filled => switch (widget.color) {
+        .primary => colorScheme.primary,
+        .secondary => colorScheme.secondary,
+      },
+      .ghost => Colors.transparent,
     };
 
-    final foreground = switch (variant) {
-      ImmichVariant.filled => switch (color) {
-          ImmichColor.primary => colorScheme.onPrimary,
-          ImmichColor.secondary => colorScheme.onSecondary,
-        },
-      ImmichVariant.ghost => switch (color) {
-          ImmichColor.primary => colorScheme.primary,
-          ImmichColor.secondary => colorScheme.secondary,
-        },
+    final foreground = switch (widget.variant) {
+      .filled => switch (widget.color) {
+        .primary => colorScheme.onPrimary,
+        .secondary => colorScheme.onSecondary,
+      },
+      .ghost => switch (widget.color) {
+        .primary => colorScheme.primary,
+        .secondary => colorScheme.secondary,
+      },
     };
-
-    final effectiveOnPressed = disabled ? null : onPressed;
 
     return IconButton(
-      icon: Icon(icon),
-      onPressed: effectiveOnPressed,
-      style: IconButton.styleFrom(
-        backgroundColor: background,
-        foregroundColor: foreground,
-      ),
+      icon: _isLoading
+          ? const SizedBox.square(
+              dimension: ImmichIconSize.sm,
+              child: CircularProgressIndicator(strokeWidth: ImmichBorderWidth.md),
+            )
+          : Icon(widget.icon),
+      onPressed: widget.disabled || _isLoading ? null : _onPressed,
+      style: IconButton.styleFrom(backgroundColor: background, foregroundColor: foreground),
     );
   }
 }
