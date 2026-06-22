@@ -955,7 +955,7 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
-  YuccaModuleConfig = 900,
+  YuccaModuleConfig = 926,
 }
 
 export enum MaintenanceAction {

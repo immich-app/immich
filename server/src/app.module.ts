@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { /* ImmichEnvironment, */ ImmichWorker } from 'src/enum';
+import { ImmichEnvironment, ImmichWorker } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
@@ -57,10 +57,9 @@ const commonMiddleware = [
 const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
 
 const configRepository = new ConfigRepository();
-const { bull, cls, database, /* environment, */ otel, storage } = configRepository.getEnv();
+const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
-// const isYuccaDevelopmentMode = environment === ImmichEnvironment.Development;
-const isYuccaDevelopmentMode = true; // TODO[YUCCA]: for testing
+const isYuccaDevelopmentMode = environment === ImmichEnvironment.Development;
 const yuccaStatePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'yucca');
 
 const commonImports = [

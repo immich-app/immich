@@ -113,55 +113,6 @@
           />
         {/if}
 
-        <!-- TODO[YUCCA]: remove test buttons (reset backups / switch to maintenance mode) -->
-        {#if authManager.user.isAdmin}
-          <Button
-            leadingIcon={mdiProgressWrench}
-            onclick={() => handleSetMaintenanceMode({ action: MaintenanceAction.Start })}
-            class="hidden lg:flex"
-            variant="ghost"
-            size="medium"
-            color="danger"
-            >{$t('admin.maintenance_start')}
-          </Button>
-          <IconButton
-            color="danger"
-            shape="round"
-            variant="ghost"
-            size="medium"
-            onclick={() => handleSetMaintenanceMode({ action: MaintenanceAction.Start })}
-            title={$t('admin.maintenance_start')}
-            aria-label={$t('admin.maintenance_start')}
-            icon={mdiProgressWrench}
-            class="lg:hidden"
-          />
-          <Button
-            leadingIcon={mdiDeleteSweep}
-            onclick={async () => {
-              await sdk.resetOrchestrator();
-              globalThis.location.reload();
-            }}
-            class="hidden lg:flex"
-            variant="ghost"
-            size="medium"
-            color="danger">Reset Backups</Button
-          >
-          <IconButton
-            color="danger"
-            shape="round"
-            variant="ghost"
-            size="medium"
-            onclick={async () => {
-              await sdk.resetOrchestrator();
-              globalThis.location.reload();
-            }}
-            title="Reset Backups"
-            aria-label="Reset Backups"
-            icon={mdiDeleteSweep}
-            class="lg:hidden"
-          />
-        {/if}
-
         {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button
             leadingIcon={mdiTrayArrowUp}
