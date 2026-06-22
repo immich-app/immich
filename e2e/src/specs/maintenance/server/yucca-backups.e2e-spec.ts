@@ -306,7 +306,7 @@ describe('/yucca', () => {
               snapshots: [{ id: snapshotId }],
             },
           ],
-        } = await sdk.inspectRepositories(maintenanceRequestOpts);
+        } = await sdk.inspectRepositories({}, maintenanceRequestOpts);
 
         socket = io(baseUrl, {
           path: '/api/yucca/socket.io',

@@ -32,11 +32,6 @@
     <Button size="small" onclick={() => handleRestoreDatabaseBackup(filename)} disabled={isDeleting}>
       {$t('restore')}
     </Button>
-    <ContextMenuButton
-      disabled={isDeleting}
-      position="top-right"
-      aria-label={$t('open')}
-      items={[Download, Delete]}
-    />
+    <ContextMenuButton disabled={isDeleting} position="top-right" aria-label={$t('open')} items={[Download, Delete]} />
   {/snippet}
 </MaintenanceBackupCard>
