@@ -16,6 +16,7 @@ class LocalRepositoryDto {
     this.backends = const Optional.absent(),
     this.configuration = const Optional.absent(),
     required this.id,
+    this.meter = const Optional.absent(),
     required this.metrics,
     required this.name,
     required this.worm,
@@ -39,6 +40,14 @@ class LocalRepositoryDto {
 
   String id;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<RepositoryMeterDto?> meter;
+
   RepositoryMetricsDto metrics;
 
   String name;
@@ -50,6 +59,7 @@ class LocalRepositoryDto {
     other.backends == backends &&
     other.configuration == configuration &&
     other.id == id &&
+    other.meter == meter &&
     other.metrics == metrics &&
     other.name == name &&
     other.worm == worm;
@@ -60,12 +70,13 @@ class LocalRepositoryDto {
     (backends == null ? 0 : backends!.hashCode) +
     (configuration == null ? 0 : configuration!.hashCode) +
     (id.hashCode) +
+    (meter == null ? 0 : meter!.hashCode) +
     (metrics.hashCode) +
     (name.hashCode) +
     (worm.hashCode);
 
   @override
-  String toString() => 'LocalRepositoryDto[backends=$backends, configuration=$configuration, id=$id, metrics=$metrics, name=$name, worm=$worm]';
+  String toString() => 'LocalRepositoryDto[backends=$backends, configuration=$configuration, id=$id, meter=$meter, metrics=$metrics, name=$name, worm=$worm]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,6 +89,10 @@ class LocalRepositoryDto {
       json[r'configuration'] = value;
     }
       json[r'id'] = this.id;
+    if (this.meter.isPresent) {
+      final value = this.meter.value;
+      json[r'meter'] = value;
+    }
       json[r'metrics'] = this.metrics;
       json[r'name'] = this.name;
       json[r'worm'] = this.worm;
@@ -96,6 +111,7 @@ class LocalRepositoryDto {
         backends: json.containsKey(r'backends') ? Optional.present(RepositoryBackendsDto.fromJson(json[r'backends'])) : const Optional.absent(),
         configuration: json.containsKey(r'configuration') ? Optional.present(RepositoryConfigurationDto.fromJson(json[r'configuration'])) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
+        meter: json.containsKey(r'meter') ? Optional.present(RepositoryMeterDto.fromJson(json[r'meter'])) : const Optional.absent(),
         metrics: RepositoryMetricsDto.fromJson(json[r'metrics'])!,
         name: mapValueOfType<String>(json, r'name')!,
         worm: mapValueOfType<bool>(json, r'worm')!,

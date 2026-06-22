@@ -13,12 +13,23 @@ part of openapi.api;
 class OnboardingStatusResponseDto {
   /// Returns a new [OnboardingStatusResponseDto] instance.
   OnboardingStatusResponseDto({
+    this.error = const Optional.absent(),
     required this.hasBackend,
     required this.hasBackup,
     required this.hasOnboardedKey,
     required this.hasSchedule,
     required this.hasSkippedExtraConfig,
+    required this.hasTelemetry,
+    required this.status,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<String?> error;
 
   bool hasBackend;
 
@@ -30,33 +41,49 @@ class OnboardingStatusResponseDto {
 
   bool hasSkippedExtraConfig;
 
+  TelemetryLevel hasTelemetry;
+
+  BootstrapStatus status;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is OnboardingStatusResponseDto &&
+    other.error == error &&
     other.hasBackend == hasBackend &&
     other.hasBackup == hasBackup &&
     other.hasOnboardedKey == hasOnboardedKey &&
     other.hasSchedule == hasSchedule &&
-    other.hasSkippedExtraConfig == hasSkippedExtraConfig;
+    other.hasSkippedExtraConfig == hasSkippedExtraConfig &&
+    other.hasTelemetry == hasTelemetry &&
+    other.status == status;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (error == null ? 0 : error!.hashCode) +
     (hasBackend.hashCode) +
     (hasBackup.hashCode) +
     (hasOnboardedKey.hashCode) +
     (hasSchedule.hashCode) +
-    (hasSkippedExtraConfig.hashCode);
+    (hasSkippedExtraConfig.hashCode) +
+    (hasTelemetry.hashCode) +
+    (status.hashCode);
 
   @override
-  String toString() => 'OnboardingStatusResponseDto[hasBackend=$hasBackend, hasBackup=$hasBackup, hasOnboardedKey=$hasOnboardedKey, hasSchedule=$hasSchedule, hasSkippedExtraConfig=$hasSkippedExtraConfig]';
+  String toString() => 'OnboardingStatusResponseDto[error=$error, hasBackend=$hasBackend, hasBackup=$hasBackup, hasOnboardedKey=$hasOnboardedKey, hasSchedule=$hasSchedule, hasSkippedExtraConfig=$hasSkippedExtraConfig, hasTelemetry=$hasTelemetry, status=$status]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.error.isPresent) {
+      final value = this.error.value;
+      json[r'error'] = value;
+    }
       json[r'hasBackend'] = this.hasBackend;
       json[r'hasBackup'] = this.hasBackup;
       json[r'hasOnboardedKey'] = this.hasOnboardedKey;
       json[r'hasSchedule'] = this.hasSchedule;
       json[r'hasSkippedExtraConfig'] = this.hasSkippedExtraConfig;
+      json[r'hasTelemetry'] = this.hasTelemetry;
+      json[r'status'] = this.status;
     return json;
   }
 
@@ -69,11 +96,14 @@ class OnboardingStatusResponseDto {
       final json = value.cast<String, dynamic>();
 
       return OnboardingStatusResponseDto(
+        error: json.containsKey(r'error') ? Optional.present(mapValueOfType<String>(json, r'error')) : const Optional.absent(),
         hasBackend: mapValueOfType<bool>(json, r'hasBackend')!,
         hasBackup: mapValueOfType<bool>(json, r'hasBackup')!,
         hasOnboardedKey: mapValueOfType<bool>(json, r'hasOnboardedKey')!,
         hasSchedule: mapValueOfType<bool>(json, r'hasSchedule')!,
         hasSkippedExtraConfig: mapValueOfType<bool>(json, r'hasSkippedExtraConfig')!,
+        hasTelemetry: TelemetryLevel.fromJson(json[r'hasTelemetry'])!,
+        status: BootstrapStatus.fromJson(json[r'status'])!,
       );
     }
     return null;
@@ -126,6 +156,8 @@ class OnboardingStatusResponseDto {
     'hasOnboardedKey',
     'hasSchedule',
     'hasSkippedExtraConfig',
+    'hasTelemetry',
+    'status',
   };
 }
 

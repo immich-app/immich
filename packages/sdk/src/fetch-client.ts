@@ -2289,7 +2289,7 @@ export type DatabaseBackupConfig = {
     keepLastAmount: number;
 };
 export type SystemConfigBackupsDto = {
-    /** Whether the backups feature is in beta */
+    /** Whether the backups feature is enabled */
     beta: boolean;
     database: DatabaseBackupConfig;
 };
@@ -2843,6 +2843,7 @@ export type DeviceFlowResponseDto = {
     verificationUri: string;
 };
 export type BackendDto = {
+    description: string;
     error?: string;
     id: string;
     isOnline: boolean;
@@ -2922,11 +2923,14 @@ export type RunResponseDto = {
     run: RunDto;
 };
 export type OnboardingStatusResponseDto = {
+    error?: string;
     hasBackend: boolean;
     hasBackup: boolean;
     hasOnboardedKey: boolean;
     hasSchedule: boolean;
     hasSkippedExtraConfig: boolean;
+    hasTelemetry: TelemetryLevel;
+    status: BootstrapStatus;
 };
 export type CurrentRecoveryKeyResponse = {
     recoveryKey: string;
@@ -2947,6 +2951,11 @@ export type RepositoryConfigurationDto = {
     paths: string[];
     retentionPolicy?: (RetentionPolicyDto) | null;
 };
+export type RepositoryMeterDto = {
+    lastUpdated?: string;
+    objectCount: number;
+    sizeBytes: number;
+};
 export type RepositoryMetricsDto = {
     lastBackup?: string;
     lastBackupDuration?: number;
@@ -2957,6 +2966,7 @@ export type LocalRepositoryDto = {
     backends?: RepositoryBackendsDto;
     configuration?: RepositoryConfigurationDto;
     id: string;
+    meter?: RepositoryMeterDto;
     metrics: RepositoryMetricsDto;
     name: string;
     worm: boolean;
@@ -2990,6 +3000,7 @@ export type InspectedLocalRepositoryDto = {
     backends?: RepositoryBackendsDto;
     configuration?: RepositoryConfigurationDto;
     id: string;
+    meter?: RepositoryMeterDto;
     metrics: RepositoryMetricsDto;
     name: string;
     snapshots: SnapshotDto[];
@@ -3008,6 +3019,9 @@ export type RepositoryUpdateResponseDto = {
 };
 export type LogResponseDto = {
     logId: string;
+};
+export type RepositoryPrimaryBackendReconfigureRequestDto = {
+    backendId: string;
 };
 export type RepositoryCheckImportResponseDto = {
     readable: boolean;
@@ -7402,8 +7416,20 @@ export function importRecoveryKey({ importRecoveryKeyRequest }: {
         body: importRecoveryKeyRequest
     })));
 }
+export function reportError(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/report-error", {
+        ...opts,
+        method: "POST"
+    }));
+}
 export function skipOnboardingExtraConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/skip", {
+        ...opts,
+        method: "POST"
+    }));
+}
+export function enableTelemetry(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/yucca/onboarding/telemetry", {
         ...opts,
         method: "POST"
     }));
@@ -7431,11 +7457,15 @@ export function createRepository({ backend, repositoryCreateRequestDto }: {
         body: repositoryCreateRequestDto
     })));
 }
-export function inspectRepositories(opts?: Oazapfts.RequestOpts) {
+export function inspectRepositories({ backend }: {
+    backend?: string;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: RepositoryInspectResponseDto;
-    }>("/yucca/repository/inspect", {
+    }>(`/yucca/repository/inspect${QS.query(QS.explode({
+        backend
+    }))}`, {
         ...opts
     }));
 }
@@ -7473,6 +7503,19 @@ export function createBackup({ id }: {
         ...opts,
         method: "POST"
     }));
+}
+export function reconfigureRepositoryPrimaryBackend({ id, repositoryPrimaryBackendReconfigureRequestDto }: {
+    id: string;
+    repositoryPrimaryBackendReconfigureRequestDto: RepositoryPrimaryBackendReconfigureRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: RepositoryCreateResponseDto;
+    }>(`/yucca/repository/${encodeURIComponent(id)}/backend`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: repositoryPrimaryBackendReconfigureRequestDto
+    })));
 }
 export function checkImportRepository({ backend, id }: {
     backend: string;
@@ -8264,6 +8307,15 @@ export enum RunType {
     Restore = "restore",
     Backup = "backup",
     Forget = "forget"
+}
+export enum TelemetryLevel {
+    Full = "full",
+    None = "none"
+}
+export enum BootstrapStatus {
+    NotReady = "not-ready",
+    Ready = "ready",
+    Error = "error"
 }
 export enum TaskStatus {
     Incomplete = "incomplete",

@@ -13,25 +13,32 @@ part of openapi.api;
 class SystemConfigBackupsDto {
   /// Returns a new [SystemConfigBackupsDto] instance.
   SystemConfigBackupsDto({
+    required this.beta,
     required this.database,
   });
+
+  /// Whether the backups feature is enabled
+  bool beta;
 
   DatabaseBackupConfig database;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigBackupsDto &&
+    other.beta == beta &&
     other.database == database;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (beta.hashCode) +
     (database.hashCode);
 
   @override
-  String toString() => 'SystemConfigBackupsDto[database=$database]';
+  String toString() => 'SystemConfigBackupsDto[beta=$beta, database=$database]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'beta'] = this.beta;
       json[r'database'] = this.database;
     return json;
   }
@@ -45,6 +52,7 @@ class SystemConfigBackupsDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigBackupsDto(
+        beta: mapValueOfType<bool>(json, r'beta')!,
         database: DatabaseBackupConfig.fromJson(json[r'database'])!,
       );
     }
@@ -93,6 +101,7 @@ class SystemConfigBackupsDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'beta',
     'database',
   };
 }

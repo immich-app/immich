@@ -97,6 +97,9 @@ String parameterToString(dynamic value) {
   if (value is BackendType) {
     return BackendTypeTypeTransformer().encode(value).toString();
   }
+  if (value is BootstrapStatus) {
+    return BootstrapStatusTypeTransformer().encode(value).toString();
+  }
   if (value is BulkIdErrorReason) {
     return BulkIdErrorReasonTypeTransformer().encode(value).toString();
   }
@@ -201,6 +204,9 @@ String parameterToString(dynamic value) {
   }
   if (value is TaskType) {
     return TaskTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is TelemetryLevel) {
+    return TelemetryLevelTypeTransformer().encode(value).toString();
   }
   if (value is ToneMapping) {
     return ToneMappingTypeTransformer().encode(value).toString();

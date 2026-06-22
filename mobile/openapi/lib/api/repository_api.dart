@@ -529,7 +529,10 @@ class RepositoryApi {
   }
 
   /// Performs an HTTP 'GET /yucca/repository/inspect' operation and returns the [Response].
-  Future<Response> inspectRepositoriesWithHttpInfo({ Future<void>? abortTrigger, }) async {
+  /// Parameters:
+  ///
+  /// * [String] backend:
+  Future<Response> inspectRepositoriesWithHttpInfo({ String? backend, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/yucca/repository/inspect';
 
@@ -539,6 +542,10 @@ class RepositoryApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (backend != null) {
+      queryParams.addAll(_queryParams('', 'backend', backend));
+    }
 
     const contentTypes = <String>[];
 
@@ -555,8 +562,11 @@ class RepositoryApi {
     );
   }
 
-  Future<RepositoryInspectResponseDto?> inspectRepositories({ Future<void>? abortTrigger, }) async {
-    final response = await inspectRepositoriesWithHttpInfo(abortTrigger: abortTrigger,);
+  /// Parameters:
+  ///
+  /// * [String] backend:
+  Future<RepositoryInspectResponseDto?> inspectRepositories({ String? backend, Future<void>? abortTrigger, }) async {
+    final response = await inspectRepositoriesWithHttpInfo(backend: backend, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -614,6 +624,59 @@ class RepositoryApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LogResponseDto',) as LogResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'PUT /yucca/repository/{id}/backend' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [RepositoryPrimaryBackendReconfigureRequestDto] repositoryPrimaryBackendReconfigureRequestDto (required):
+  Future<Response> reconfigureRepositoryPrimaryBackendWithHttpInfo(String id, RepositoryPrimaryBackendReconfigureRequestDto repositoryPrimaryBackendReconfigureRequestDto, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/yucca/repository/{id}/backend'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = repositoryPrimaryBackendReconfigureRequestDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [RepositoryPrimaryBackendReconfigureRequestDto] repositoryPrimaryBackendReconfigureRequestDto (required):
+  Future<RepositoryCreateResponseDto?> reconfigureRepositoryPrimaryBackend(String id, RepositoryPrimaryBackendReconfigureRequestDto repositoryPrimaryBackendReconfigureRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await reconfigureRepositoryPrimaryBackendWithHttpInfo(id, repositoryPrimaryBackendReconfigureRequestDto, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'RepositoryCreateResponseDto',) as RepositoryCreateResponseDto;
     
     }
     return null;

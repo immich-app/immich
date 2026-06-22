@@ -325,6 +325,8 @@ class ApiClient {
           return BackendTypeTypeTransformer().decode(value);
         case 'BackendsResponseDto':
           return BackendsResponseDto.fromJson(value);
+        case 'BootstrapStatus':
+          return BootstrapStatusTypeTransformer().decode(value);
         case 'BulkIdErrorReason':
           return BulkIdErrorReasonTypeTransformer().decode(value);
         case 'BulkIdResponseDto':
@@ -645,8 +647,12 @@ class ApiClient {
           return RepositoryInspectResponseDto.fromJson(value);
         case 'RepositoryListResponseDto':
           return RepositoryListResponseDto.fromJson(value);
+        case 'RepositoryMeterDto':
+          return RepositoryMeterDto.fromJson(value);
         case 'RepositoryMetricsDto':
           return RepositoryMetricsDto.fromJson(value);
+        case 'RepositoryPrimaryBackendReconfigureRequestDto':
+          return RepositoryPrimaryBackendReconfigureRequestDto.fromJson(value);
         case 'RepositorySnapshotRestoreFromPointRequestDto':
           return RepositorySnapshotRestoreFromPointRequestDto.fromJson(value);
         case 'RepositorySnapshotRestoreRequestDto':
@@ -943,6 +949,8 @@ class ApiClient {
           return TaskStatusTypeTransformer().decode(value);
         case 'TaskType':
           return TaskTypeTypeTransformer().decode(value);
+        case 'TelemetryLevel':
+          return TelemetryLevelTypeTransformer().decode(value);
         case 'TemplateDto':
           return TemplateDto.fromJson(value);
         case 'TemplateResponseDto':

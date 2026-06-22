@@ -13,11 +13,14 @@ part of openapi.api;
 class BackendDto {
   /// Returns a new [BackendDto] instance.
   BackendDto({
+    required this.description,
     this.error = const Optional.absent(),
     required this.id,
     required this.isOnline,
     required this.type,
   });
+
+  String description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -35,6 +38,7 @@ class BackendDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is BackendDto &&
+    other.description == description &&
     other.error == error &&
     other.id == id &&
     other.isOnline == isOnline &&
@@ -43,16 +47,18 @@ class BackendDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (description.hashCode) +
     (error == null ? 0 : error!.hashCode) +
     (id.hashCode) +
     (isOnline.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'BackendDto[error=$error, id=$id, isOnline=$isOnline, type=$type]';
+  String toString() => 'BackendDto[description=$description, error=$error, id=$id, isOnline=$isOnline, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'description'] = this.description;
     if (this.error.isPresent) {
       final value = this.error.value;
       json[r'error'] = value;
@@ -72,6 +78,7 @@ class BackendDto {
       final json = value.cast<String, dynamic>();
 
       return BackendDto(
+        description: mapValueOfType<String>(json, r'description')!,
         error: json.containsKey(r'error') ? Optional.present(mapValueOfType<String>(json, r'error')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
         isOnline: mapValueOfType<bool>(json, r'isOnline')!,
@@ -123,6 +130,7 @@ class BackendDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'description',
     'id',
     'isOnline',
     'type',

@@ -92,6 +92,40 @@ class OnboardingApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /yucca/onboarding/telemetry' operation and returns the [Response].
+  Future<Response> enableTelemetryWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/yucca/onboarding/telemetry';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  Future<void> enableTelemetry({ Future<void>? abortTrigger, }) async {
+    final response = await enableTelemetryWithHttpInfo(abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'PUT /yucca/onboarding/recovery-key' operation and returns the [Response].
   /// Parameters:
   ///
@@ -172,6 +206,40 @@ class OnboardingApi {
     
     }
     return null;
+  }
+
+  /// Performs an HTTP 'POST /yucca/onboarding/report-error' operation and returns the [Response].
+  Future<Response> reportErrorWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/yucca/onboarding/report-error';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  Future<void> reportError({ Future<void>? abortTrigger, }) async {
+    final response = await reportErrorWithHttpInfo(abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 
   /// Performs an HTTP 'POST /yucca/onboarding/skip' operation and returns the [Response].
