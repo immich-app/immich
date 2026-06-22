@@ -290,6 +290,34 @@
       }
     },
     {
+      "name": "assetDataWebhook",
+      "title": "Trigger Webhook",
+      "description": "POST asset data to any URL",
+      "types": ["AssetV1"],
+      "hostFunctions": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "URL",
+            "description": "Asset data will be POSTed to this URL as a JSON object"
+          },
+          "headerName": {
+            "type": "string",
+            "title": "Header name",
+            "description": "The name of an additional header to include with the request (e.g. authentication)"
+          },
+          "headerValue": {
+            "type": "string",
+            "title": "Header value",
+            "description": "The value of the additional header"
+          }
+        },
+        "required": ["url"]
+      }
+    },
+    {
       "name": "noop1",
       "title": "DEV: Nested properties",
       "description": "Example configuration with nested properties",

@@ -74,12 +74,26 @@ export class WorkflowExecutionService extends BaseService {
     const addAssetsToAlbums = this.wrap<[dto: AlbumsAddAssetsDto]>((authDto, args) =>
       albumService.addAssetsToAlbums(authDto, ...args),
     );
+    const httpRequest = this.wrap<
+      [
+        url: string,
+        options?: {
+          method?: string;
+          headers?: Record<string, string>;
+          body?: string;
+        },
+      ]
+    >(async (_, args) => {
+      const res = await fetch(...args);
+      return res.text();
+    });
 
     const functions = {
       searchAlbums,
       createAlbum,
       addAssetsToAlbum,
       addAssetsToAlbums,
+      httpRequest,
     };
 
     const stubs: typeof functions = {
@@ -87,6 +101,7 @@ export class WorkflowExecutionService extends BaseService {
       createAlbum: dummy,
       addAssetsToAlbum: dummy,
       addAssetsToAlbums: dummy,
+      httpRequest: dummy,
     };
 
     const plugins = await this.pluginRepository.getForLoad();

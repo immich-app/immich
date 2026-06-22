@@ -181,3 +181,25 @@ export const assetAddToAlbums = () => {
     return {};
   });
 };
+
+export const assetDataWebhook = () => {
+  return wrapper<WorkflowType.AssetV1, { url: string; headerName?: string; headerValue?: string }>(
+    ({ config, data, functions }) => {
+      let headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (config.headerName && config.headerValue) {
+        headers[config.headerName] = config.headerValue;
+      }
+
+      functions.httpRequest(config.url, {
+        method: 'POST',
+        body: JSON.stringify(data.asset),
+        headers,
+      });
+
+      return {};
+    },
+  );
+};
