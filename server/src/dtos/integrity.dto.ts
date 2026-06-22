@@ -10,8 +10,6 @@ const IntegrityReportSummaryResponseSchema = z
   })
   .meta({ id: 'IntegrityReportSummaryResponseDto' });
 
-export class IntegrityReportSummaryResponseDto extends createZodDto(IntegrityReportSummaryResponseSchema) {}
-
 const IntegrityGetReportSchema = z
   .object({
     type: IntegrityReportSchema,
@@ -20,17 +18,14 @@ const IntegrityGetReportSchema = z
   })
   .meta({ id: 'IntegrityGetReportDto' });
 
-export class IntegrityGetReportDto extends createZodDto(IntegrityGetReportSchema) {}
-
 const IntegrityDeleteReportSchema = z.object({ type: IntegrityReport }).meta({ id: 'IntegrityDeleteReportDto' });
-
-export class IntegrityDeleteReportDto extends createZodDto(IntegrityDeleteReportSchema) {}
 
 const IntegrityReportResponseItemSchema = z.object({
   id: z.uuidv4().describe('Integrity report item id'),
   type: IntegrityReportSchema,
   path: z.string().describe('Integrity report item path'),
 });
+
 const IntegrityReportResponseSchema = z
   .object({
     items: z.array(IntegrityReportResponseItemSchema),
@@ -38,4 +33,10 @@ const IntegrityReportResponseSchema = z
   })
   .meta({ id: 'IntegrityReportResponseDto' });
 
+const IntegrityReportParamSchema = z.object({ type: IntegrityReportSchema }).meta({ id: 'IntegrityReportDto' });
+
+export class IntegrityReportSummaryResponseDto extends createZodDto(IntegrityReportSummaryResponseSchema) {}
+export class IntegrityGetReportDto extends createZodDto(IntegrityGetReportSchema) {}
+export class IntegrityDeleteReportDto extends createZodDto(IntegrityDeleteReportSchema) {}
 export class IntegrityReportResponseDto extends createZodDto(IntegrityReportResponseSchema) {}
+export class IntegrityReportTypeParamDto extends createZodDto(IntegrityReportParamSchema) {}

@@ -20,7 +20,6 @@ import {
   VideoCodecSchema,
   VideoContainerSchema,
 } from 'src/enum';
-import { isValidTime } from 'src/validation';
 import z from 'zod';
 
 /** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
@@ -206,7 +205,12 @@ const SystemConfigNewVersionCheckSchema = z
 
 const SystemConfigNightlyTasksSchema = z
   .object({
-    startTime: isValidTime.describe('Start time'),
+    startTime: z.iso
+      .time({
+        precision: -1,
+        error: (iss) => `Invalid input: expected string in HH:MM format, received ${typeof iss.input}`,
+      })
+      .describe('Start time (HH:MM)'),
     databaseCleanup: configBool.describe('Database cleanup'),
     missingThumbnails: configBool.describe('Missing thumbnails'),
     clusterNewFaces: configBool.describe('Cluster new faces'),
