@@ -72,11 +72,11 @@
     </div>
   {/if}
   <div class="flex flex-col gap-4 {root ? '' : 'border-l-4 border-gray-200 ps-2'}">
-    {#each Object.entries(schema.properties ?? {}) as [childKey, childSchema] (childKey)}
+    {#each Object.entries(schema.properties ?? {}).sort((a, b) => (a[1].uiHint?.order ?? 0) - (b[1].uiHint?.order ?? 0)) as [childKey, childSchema] (childKey)}
       <Self schema={childSchema} key={childKey} bind:config={getValue, setValue} />
     {/each}
   </div>
-{:else if schema.uiHint === 'AlbumId'}
+{:else if schema.uiHint?.type === 'AlbumId'}
   <SchemaAlbumPicker {label} {description} array={schema.array} bind:albumIds={getUiHintValue, setUiHintValue} />
 {:else if schema.enum && schema.array}
   <Field {label} {description}>
