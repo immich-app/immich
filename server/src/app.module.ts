@@ -59,7 +59,7 @@ const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: AP
 const configRepository = new ConfigRepository();
 const { bull, cls, database, environment, otel, storage } = configRepository.getEnv();
 
-const isYuccaDevelopmentMode = environment === ImmichEnvironment.Development;
+const isYuccaDevelopmentMode = environment !== ImmichEnvironment.Production;
 const yuccaStatePath = join(detectMediaLocation(storage.mediaLocation, existsSync), 'yucca');
 
 const commonImports = [
