@@ -12,22 +12,11 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { handleSetMaintenanceMode } from '$lib/services/maintenance.service';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { MaintenanceAction } from '@immich/sdk';
   import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
-  import {
-    mdiBellBadge,
-    mdiBellOutline,
-    mdiDeleteSweep,
-    mdiMagnify,
-    mdiMenu,
-    mdiProgressWrench,
-    mdiTrayArrowUp,
-  } from '@mdi/js';
-  import { sdk } from '@futo-org/backups-orchestrator-ui';
+  import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../ThemeButton.svelte';

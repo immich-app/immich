@@ -43,7 +43,7 @@
   );
 </script>
 
-<YuccaContext baseUrl={window.location.origin}>
+<YuccaContext baseUrl={globalThis.location.origin}>
   <AuthPageLayout
     withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
     withBackdrop={$status?.action === MaintenanceAction.Start}

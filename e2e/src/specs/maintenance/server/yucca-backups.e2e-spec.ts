@@ -193,10 +193,6 @@ describe('/yucca', () => {
               "isDirectory": true,
               "path": "/test",
             },
-            {
-              "isDirectory": true,
-              "path": "/yucca",
-            },
           ],
           "parent": "/",
           "path": "/",
@@ -214,6 +210,10 @@ describe('/yucca', () => {
             {
               "isDirectory": true,
               "path": "/data/upload",
+            },
+            {
+              "isDirectory": true,
+              "path": "/data/yucca",
             },
           ],
           "parent": "/",
@@ -322,7 +322,7 @@ describe('/yucca', () => {
           snapshotId,
           backendId,
           {
-            yuccaConfig: '/yucca',
+            yuccaConfig: '/data/yucca',
             include: ['/data'],
           },
           maintenanceRequestOpts,
