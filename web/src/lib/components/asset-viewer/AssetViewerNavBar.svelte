@@ -10,13 +10,11 @@
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/SetPersonFeaturedAction.svelte';
-  import SetProfilePictureAction from '$lib/components/asset-viewer/actions/SetProfilePictureAction.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/UnstackAction.svelte';
   import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import RemoveFromAlbumAction from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -82,6 +80,27 @@
     $if: () => !!onClose && !assetViewerManager.isFaceEditMode && !assetViewerManager.isEditFacesPanelOpen,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
+  });
+
+  const PlayOriginalVideo: ActionItem = $derived({
+    title: playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video'),
+    icon: mdiVideoOutline,
+    $if: () => asset.type === AssetTypeEnum.Video,
+    onAction: () => setPlayOriginalVideo(!playOriginalVideo),
+  });
+
+  const ViewInTimeline: ActionItem = $derived({
+    title: $t('view_in_timeline'),
+    icon: mdiImageSearch,
+    $if: () => isOwner && !isLocked && !asset.isArchived && !asset.isTrashed,
+    onAction: () => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id })),
+  });
+
+  const ViewSimilar: ActionItem = $derived({
+    title: $t('view_similar_photos'),
+    icon: mdiCompare,
+    $if: () => !isLocked && !asset.isArchived && !asset.isTrashed && smartSearchEnabled,
+    onAction: () => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id })),
   });
 
   const Actions = $derived(getAssetActions($t, asset));
@@ -169,41 +188,21 @@
         {#if person}
           <SetFeaturedPhotoAction {asset} {person} {onAction} />
         {/if}
-        {#if asset.type === AssetTypeEnum.Image && !isLocked}
-          <SetProfilePictureAction {asset} />
-        {/if}
 
-        {#if !isLocked}
-          {#if isOwner}
-            <ArchiveAction {asset} {onAction} {preAction} />
-            {#if !asset.isArchived && !asset.isTrashed}
-              <MenuOption
-                icon={mdiImageSearch}
-                onClick={() => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id }))}
-                text={$t('view_in_timeline')}
-              />
-            {/if}
-          {/if}
-          {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
-            <MenuOption
-              icon={mdiCompare}
-              onClick={() => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }))}
-              text={$t('view_similar_photos')}
-            />
-          {/if}
+        <ActionMenuItem action={Actions.SetProfilePicture} />
+
+        {#if isOwner && !isLocked}
+          <ArchiveAction {asset} {onAction} {preAction} />
         {/if}
+        <ActionMenuItem action={ViewInTimeline} />
+        <ActionMenuItem action={ViewSimilar} />
 
         {#if !asset.isTrashed && isOwner}
           <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
         {/if}
 
-        {#if asset.type === AssetTypeEnum.Video}
-          <MenuOption
-            icon={mdiVideoOutline}
-            onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
-            text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
-          />
-        {/if}
+        <ActionMenuItem action={PlayOriginalVideo} />
+
         {#if isOwner}
           <hr />
           <ActionMenuItem action={Actions.RefreshFacesJob} />

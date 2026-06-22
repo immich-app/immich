@@ -11,6 +11,7 @@ import {
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
+  mdiAccountCircleOutline,
   mdiAlertOutline,
   mdiCogRefreshOutline,
   mdiContentCopy,
@@ -41,6 +42,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
@@ -242,6 +244,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'e' }],
   };
 
+  const SetProfilePicture: ActionItem = {
+    title: $t('set_as_profile_picture'),
+    icon: mdiAccountCircleOutline,
+    $if: () => asset.type === AssetTypeEnum.Image && asset.visibility !== AssetVisibility.Locked,
+    onAction: () => modalManager.show(ProfileImageCropperModal, { asset }),
+  };
+
   const RefreshFacesJob: ActionItem = {
     title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
@@ -286,6 +295,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Tag,
     TagPeople,
     Edit,
+    SetProfilePicture,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
