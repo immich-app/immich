@@ -1,4 +1,10 @@
-import { LoginResponseDto, confirmRecoveryKey, enableTelemetry, importRecoveryKey, resetOrchestrator } from '@immich/sdk';
+import {
+  LoginResponseDto,
+  confirmRecoveryKey,
+  enableTelemetry,
+  importRecoveryKey,
+  resetOrchestrator,
+} from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { io, type Socket } from 'socket.io-client';
 import { asBearerAuth, baseUrl, utils } from 'src/utils';
