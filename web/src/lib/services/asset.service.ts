@@ -413,9 +413,6 @@ const handleRemoveAssetsFromAlbum = async (assetIds: string[], album: AlbumRespo
     });
 
     const count = results.filter(({ success }) => success).length;
-    if (count !== assetIds.length) {
-      throw new Error('Not all assets could be removed');
-    }
 
     toastManager.primary($t('assets_removed_count', { values: { count } }));
     eventManager.emit('AlbumRemoveAssets', { assetIds, albumIds: [album.id] });
