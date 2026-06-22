@@ -73,7 +73,10 @@ enum SettingsKey<T> {
   slideshowRepeat<bool>(),
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
-  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values));
+  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
+
+  // Feature message
+  featureMessageSeenVersion<int>();
 
   final _SettingsCodec<T>? _codecOverride;
 

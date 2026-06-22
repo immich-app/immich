@@ -18,6 +18,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -262,6 +263,7 @@ class LoginForm extends HookConsumerWidget {
           }
           unawaited(handleSyncFlow());
           ref.read(websocketProvider.notifier).connect();
+          unawaited(ref.read(featureMessageServiceProvider).markSeen());
           unawaited(context.router.replaceAll([const TabShellRoute()]));
           return;
         }
@@ -349,6 +351,7 @@ class LoginForm extends HookConsumerWidget {
               await getManageMediaPermission();
             }
             unawaited(handleSyncFlow());
+            unawaited(ref.read(featureMessageServiceProvider).markSeen());
             unawaited(context.router.replaceAll([const TabShellRoute()]));
             return;
           }

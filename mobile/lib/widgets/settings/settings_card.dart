@@ -8,13 +8,15 @@ class SettingsCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.settingRoute,
+    this.settingRoute,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
-  final PageRouteInfo settingRoute;
+  final PageRouteInfo? settingRoute;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class SettingsCard extends StatelessWidget {
           ),
           title: Text(title, style: context.textTheme.titleMedium!.copyWith(color: context.primaryColor)),
           subtitle: Text(subtitle, style: context.textTheme.bodyMedium),
-          onTap: () => context.pushRoute(settingRoute),
+          onTap: onTap ?? (settingRoute != null ? () => context.pushRoute(settingRoute!) : null),
         ),
       ),
     );
