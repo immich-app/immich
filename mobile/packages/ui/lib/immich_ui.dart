@@ -3,6 +3,7 @@ export 'src/components/column_button.dart';
 export 'src/components/form.dart';
 export 'src/components/formatted_text.dart';
 export 'src/components/icon_button.dart';
+export 'src/components/menu_item.dart';
 export 'src/components/password_input.dart';
 export 'src/components/text_button.dart';
 export 'src/components/text_input.dart';
