@@ -51,6 +51,8 @@
   };
 
   const setUiHintValue = (values: string[]) => setValue(schema.array ? values : values[0]);
+  const getSchemaProperties = (schema: JSONSchemaProperty) =>
+    Object.entries(schema.properties ?? {}).sort((a, b) => (a[1].uiHint?.order ?? 0) - (b[1].uiHint?.order ?? 0));
 
   const getBoolean = (defaultValue = false) => getValue<boolean>(defaultValue);
   const getString = () => getValue<string>();
@@ -72,7 +74,7 @@
     </div>
   {/if}
   <div class="flex flex-col gap-4 {root ? '' : 'border-l-4 border-gray-200 ps-2'}">
-    {#each Object.entries(schema.properties ?? {}).sort((a, b) => (a[1].uiHint?.order ?? 0) - (b[1].uiHint?.order ?? 0)) as [childKey, childSchema] (childKey)}
+    {#each getSchemaProperties(schema) as [childKey, childSchema] (childKey)}
       <Self schema={childSchema} key={childKey} bind:config={getValue, setValue} />
     {/each}
   </div>
