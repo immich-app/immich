@@ -399,7 +399,10 @@ export class IntegrityService extends BaseService {
       await this.integrityRepository.deleteByIds(outdatedReports);
     }
 
-    const missingFiles = results.filter(({ exists }) => !exists);
+    const missingFiles = Object.values(
+      Object.fromEntries(results.filter(({ exists }) => !exists).map((file) => [file.path, file])),
+    );
+
     if (missingFiles.length > 0) {
       await this.integrityRepository.create(
         missingFiles.map(({ path, assetId, fileAssetId }) => ({
