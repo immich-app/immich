@@ -36,6 +36,7 @@ export type Events = {
   AssetUpdate: [AssetResponseDto];
   AssetsArchive: [string[]];
   AssetsDelete: [string[]];
+  AssetsRestore: [AssetResponseDto[]];
   AssetEditsApplied: [string];
   AssetsTag: [string[]];
 

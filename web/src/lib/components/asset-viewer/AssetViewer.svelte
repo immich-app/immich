@@ -20,7 +20,6 @@
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
-  import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -69,7 +68,6 @@
     onAssetChange?: (asset: AssetResponseDto) => void;
     preAction?: PreAction;
     onAction?: OnAction;
-    onUndoDelete?: OnUndoDelete;
     onClose?: (assetId: string) => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
@@ -85,7 +83,6 @@
     onAssetChange,
     preAction,
     onAction,
-    onUndoDelete,
     onClose,
     onRemoveFromAlbum,
     onRandom,
@@ -314,11 +311,6 @@
 
   const handleAction = async (action: Action) => {
     switch (action.type) {
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
-        eventManager.emit('AssetsDelete', [asset.id]);
-        break;
-      }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         stack = action.stack;
         if (stack) {
@@ -501,7 +493,6 @@
         {stack}
         preAction={handlePreAction}
         onAction={handleAction}
-        {onUndoDelete}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {onRemoveFromAlbum}
         {playOriginalVideo}

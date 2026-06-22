@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Action } from '$lib/components/asset-viewer/actions/action';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import LargeAssetData from './LargeAssetData.svelte';
@@ -37,16 +36,14 @@
     return asset;
   };
 
-  const preAction = async (payload: Action) => {
-    if (payload.type == 'trash') {
+  const onAssetsDelete = async (assetIds: string[]) => {
+    if (assetIds.includes(assetCursor.current.id)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (await navigateToAsset(assetCursor?.nextAsset)) ||
         (await navigateToAsset(assetCursor?.previousAsset)) ||
         assetViewerManager.showAssetViewer(false);
     }
-  };
 
-  const onAssetsDelete = (assetIds: string[]) => {
     assets = assets.filter(({ id }) => !assetIds.includes(id));
   };
 
@@ -84,7 +81,6 @@
         cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onRandom}
-        {preAction}
         onClose={() => {
           assetViewerManager.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

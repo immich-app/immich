@@ -4,6 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
@@ -285,9 +286,7 @@
 
   const handleAction = async (action: Action) => {
     switch (action.type) {
-      case AssetAction.ARCHIVE:
-      case AssetAction.DELETE:
-      case AssetAction.TRASH: {
+      case AssetAction.ARCHIVE: {
         const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
         assets.splice(
           assets.findIndex((currentAsset) => currentAsset.id === action.asset.id),
@@ -302,6 +301,17 @@
         break;
       }
       // no default
+    }
+  };
+
+  const onAssetsDelete = async (assetIds: string[]) => {
+    const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
+    assets = assets.filter((asset) => !assetIds.includes(asset.id));
+    if (assets.length === 0) {
+      return await goto(Route.photos());
+    }
+    if (assetIds.includes(assetCursor.current.id) && nextAsset) {
+      await navigateToAsset(nextAsset);
     }
   };
 
@@ -337,6 +347,8 @@
 </script>
 
 <svelte:document onselectstart={onSelectStart} use:shortcuts={shortcutList} onscroll={() => updateSlidingWindow()} />
+
+<OnEvents {onAssetsDelete} />
 
 {#if assets.length > 0}
   <div
