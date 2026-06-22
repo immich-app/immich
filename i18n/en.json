@@ -1856,6 +1856,7 @@
   "select_trash_all": "Select trash all",
   "selected": "Selected",
   "selected_count": "{count, plural, other {# selected}}",
+  "selected_count_with_more": "{count, plural, other {Only # selected}}",
   "selected_gps_coordinates": "Selected GPS Coordinates",
   "send_message": "Send message",
   "send_welcome_email": "Send welcome email",
