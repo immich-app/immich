@@ -1,4 +1,4 @@
-import { LoginResponseDto, confirmRecoveryKey, importRecoveryKey, resetOrchestrator } from '@immich/sdk';
+import { LoginResponseDto, confirmRecoveryKey, enableTelemetry, importRecoveryKey, resetOrchestrator } from '@immich/sdk';
 import { expect, test } from '@playwright/test';
 import { io, type Socket } from 'socket.io-client';
 import { asBearerAuth, baseUrl, utils } from 'src/utils';
@@ -34,6 +34,7 @@ test.describe('Yucca Backups', () => {
     await resetOrchestrator({ headers });
     await importRecoveryKey({ importRecoveryKeyRequest: { recoveryKey: '0'.repeat(64) } }, { headers });
     await confirmRecoveryKey({ headers });
+    await enableTelemetry({ headers });
     await utils.mkFolder('/local-backend');
 
     socket = io(baseUrl, {
