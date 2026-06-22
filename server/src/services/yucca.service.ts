@@ -6,9 +6,8 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { DatabaseLock, ImmichWorker, StorageFolder } from 'src/enum';
 import { DatabaseRepository } from 'src/repositories/database.repository';
-import { ArgOf, EventRepository } from 'src/repositories/event.repository';
+import { ArgOf } from 'src/repositories/event.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { AuthService } from 'src/services/auth.service';
 import { getExternalDomain } from 'src/utils/misc';
@@ -18,11 +17,9 @@ export class YuccaService implements OnModuleInit, OnModuleDestroy {
   private lock = false;
 
   constructor(
-    private readonly logger: LoggingRepository,
     private readonly databaseRepository: DatabaseRepository,
     private readonly libraryRepository: LibraryRepository,
     private readonly authService: AuthService,
-    private readonly eventRepository: EventRepository,
     private readonly websocketRepository: WebsocketRepository,
     @Optional() private readonly moduleConfig: ModuleConfigRepository,
     @Optional() private readonly eventsGateway: EventsGateway,
