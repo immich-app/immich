@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:immich_ui/immich_ui.dart';
+import 'package:immich_ui/src/internal.dart';
 
 class ImmichIconButton extends StatefulWidget {
   final IconData icon;
@@ -52,16 +53,18 @@ class _ImmichIconButtonState extends State<ImmichIconButton> {
       .ghost => Colors.transparent,
     };
 
-    final foreground = switch (widget.variant) {
-      .filled => switch (widget.color) {
-        .primary => colorScheme.onPrimary,
-        .secondary => colorScheme.onSecondary,
-      },
-      .ghost => switch (widget.color) {
-        .primary => colorScheme.primary,
-        .secondary => colorScheme.secondary,
-      },
-    };
+    final foreground =
+        context.colorOverride ??
+        switch (widget.variant) {
+          .filled => switch (widget.color) {
+            .primary => colorScheme.onPrimary,
+            .secondary => colorScheme.onSecondary,
+          },
+          .ghost => switch (widget.color) {
+            .primary => colorScheme.primary,
+            .secondary => colorScheme.secondary,
+          },
+        };
 
     return IconButton(
       icon: _isLoading
