@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0-rc.1
+ * 3.0.0-rc.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -2501,7 +2501,7 @@ export type SystemConfigNightlyTasksDto = {
     generateMemories: boolean;
     /** Missing thumbnails */
     missingThumbnails: boolean;
-    /** Start time */
+    /** Start time (HH:MM) */
     startTime: string;
     /** Sync quota usage */
     syncQuotaUsage: boolean;
@@ -4452,12 +4452,13 @@ export function endSession({ id, key, sessionId, slug }: {
 /**
  * Get HLS media playlist
  */
-export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
+export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex, xImmichHlsPos }: {
     id: string;
     key?: string;
     sessionId: string;
     slug?: string;
     variantIndex: number;
+    xImmichHlsPos?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4466,7 +4467,10 @@ export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
         key,
         slug
     }))}`, {
-        ...opts
+        ...opts,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-hls-pos": xImmichHlsPos
+        })
     }));
 }
 /**
