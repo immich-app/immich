@@ -82,69 +82,6 @@ url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353224133"
 version = "7.1.3-6"
 backend = "github:jellyfin/jellyfin-ffmpeg"
 
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64"]
-checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-arm64-musl"]
-checksum = "sha256:bea03c670e8cc5bfe9edc0c5d624d4735421610cef5e808db93e7d8596952886"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linuxarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048876"
-
-[[tools."github:jellyfin/jellyfin-ffmpeg"]]
-version = "7.1.3-6"
-backend = "github:jellyfin/jellyfin-ffmpeg"
-
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_linux64-gpl.tar.xz"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-x64"]
-checksum = "sha256:39e99a7927468a6abec5f65d00f55010e8ff2ae3c2605294f179c94f6ae21af2"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linux64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048879"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.linux-x64-musl"]
-checksum = "sha256:39e99a7927468a6abec5f65d00f55010e8ff2ae3c2605294f179c94f6ae21af2"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_linux64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409048879"
-
-[[tools."github:jellyfin/jellyfin-ffmpeg"]]
-version = "7.1.3-6"
-backend = "github:jellyfin/jellyfin-ffmpeg"
-
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-arm64"]
-checksum = "sha256:e024d5e78d5414e75f0181036cd21373fafb9270c72894dfd7dbda2572439820"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_macarm64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995838"
-
-[[tools."github:jellyfin/jellyfin-ffmpeg"]]
-version = "7.1.3-6"
-backend = "github:jellyfin/jellyfin-ffmpeg"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.windows-x64"]
-checksum = "sha256:7b7168149689610296f3a187c717056ce0786cc125a31caf28056737e9ba1cc1"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_win64-clang-gpl.zip"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/409036094"
-
-[[tools."github:jellyfin/jellyfin-ffmpeg"]]
-version = "7.1.3-6"
-backend = "github:jellyfin/jellyfin-ffmpeg"
-
-[tools."github:jellyfin/jellyfin-ffmpeg".options]
-asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz"
-
-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-x64"]
-checksum = "sha256:066ede9774aaae97a18098aaeea8b7e0d286653eb8618f640476e99c59a536c2"
-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_mac64-gpl.tar.xz"
-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995889"
-
 [[tools."github:webassembly/binaryen"]]
 version = "version_124"
 backend = "github:webassembly/binaryen"
@@ -187,33 +124,6 @@ url_api = "https://api.github.com/repos/WebAssembly/binaryen/releases/assets/288
 [[tools.java]]
 version = "21.0.2"
 backend = "core:java"
-
-[tools.java."platforms.linux-arm64"]
-checksum = "sha256:08db1392a48d4eb5ea5315cf8f18b89dbaf36cda663ba882cf03c704c9257ec2"
-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-aarch64_bin.tar.gz"
-
-[tools.java."platforms.linux-x64"]
-checksum = "sha256:a2def047a73941e01a73739f92755f86b895811afb1f91243db214cff5bdac3f"
-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz"
-
-[tools.java."platforms.macos-arm64"]
-checksum = "sha256:b3d588e16ec1e0ef9805d8a696591bd518a5cea62567da8f53b5ce32d11d22e4"
-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz"
-
-[tools.java."platforms.macos-x64"]
-checksum = "sha256:8fd09e15dc406387a0aba70bf5d99692874e999bf9cd9208b452b5d76ac922d3"
-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-x64_bin.tar.gz"
-
-[tools.java."platforms.windows-x64"]
-checksum = "sha256:b6c17e747ae78cdd6de4d7532b3164b277daee97c007d3eaa2b39cca99882664"
-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
-
-[[tools.java]]
-version = "21.0.2"
-backend = "core:java"
-
-[tools.java.options]
-shorthand_vendor = "openjdk"
 
 [tools.java."platforms.linux-arm64"]
 checksum = "sha256:08db1392a48d4eb5ea5315cf8f18b89dbaf36cda663ba882cf03c704c9257ec2"
@@ -336,38 +246,6 @@ provenance = "github-attestations"
 checksum = "sha256:b3ddff2c2bf87d3996fadf074bac58cd2259f718a17912a04ae930e3775b30e9"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.5.2/pnpm-win32-x64.zip"
 provenance = "github-attestations"
-
-[[tools.restic]]
-version = "0.19.0"
-backend = "aqua:restic/restic"
-
-[tools.restic."platforms.linux-arm64"]
-checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
-
-[tools.restic."platforms.linux-arm64-musl"]
-checksum = "sha256:e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
-
-[tools.restic."platforms.linux-x64"]
-checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
-
-[tools.restic."platforms.linux-x64-musl"]
-checksum = "sha256:13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
-
-[tools.restic."platforms.macos-arm64"]
-checksum = "sha256:1475397bf759ef4be16a77b19dec650bdbfec00d2cacd82005553411cdd37997"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_arm64.bz2"
-
-[tools.restic."platforms.macos-x64"]
-checksum = "sha256:c9d9a71234bc0955fdba6da93cc9375f8793ec1e1cbce77a91014d536a969148"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_darwin_amd64.bz2"
-
-[tools.restic."platforms.windows-x64"]
-checksum = "sha256:6fa4219a70b1b5d1c429bb106a7f97f3d2a5aab74494db2e490b625edc486d8f"
-url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_windows_amd64.zip"
 
 [[tools.terragrunt]]
 version = "1.0.3"
