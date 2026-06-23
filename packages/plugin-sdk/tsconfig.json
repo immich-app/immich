@@ -20,6 +20,7 @@
     "sourceMap": false,
     "strict": true,
     "target": "esnext",
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
     "types": ["node", "@extism/js-pdk"],
     "verbatimModuleSyntax": true
   }

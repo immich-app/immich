@@ -15,6 +15,7 @@ declare module 'main' {
   export function assetMissingTimeZoneFilter(): I32;
   export function assetLocationFilter(): I32;
   export function assetTagFilter(): I32;
+  export function assetTypeFilter(): I32;
 
   // updates
   export function assetFavorite(): I32;

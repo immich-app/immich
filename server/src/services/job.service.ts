@@ -257,6 +257,8 @@ export class JobService extends BaseService {
         }
         break;
       }
+
+      // no default
     }
   }
 }

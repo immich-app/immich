@@ -55,7 +55,7 @@
   );
   const isGhost = $derived(step.id === 'ghost');
 
-  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint;
+  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint?.type;
   const toIds = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : [String(value)]);
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);

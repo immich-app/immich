@@ -96,7 +96,10 @@ export type JSONSchemaProperty = {
   array?: boolean;
   properties?: Record<string, JSONSchemaProperty>;
   required?: string[];
-  uiHint?: 'AlbumId' | 'AssetId' | 'PersonId' | 'TagId';
+  uiHint?: {
+    type?: 'AlbumId' | 'AssetId' | 'PersonId' | 'TagId';
+    order?: number;
+  };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
