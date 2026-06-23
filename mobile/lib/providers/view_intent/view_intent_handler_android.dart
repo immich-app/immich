@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -97,12 +98,6 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
 
     await _router.replaceAll([
       const TabShellRoute(),
-      // UniqueKey forces the AssetViewerPage widget to be fully recreated
-      // each time a "View in Immich" intent is handled. Without it, auto_route
-      // may reuse the existing route when the stack already contains an
-      // AssetViewerRoute, which preserves the old ConsumerState (and its
-      // PageController) and causes the viewer to stay frozen on the previous
-      // asset instead of loading the new one.
       AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
     ]);
   }
