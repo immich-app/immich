@@ -21,6 +21,7 @@ import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import UndoToast from '$lib/components/shared-components/UndoToast.svelte';
 import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
@@ -404,16 +405,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     asset.isArchived = data.isArchived;
     if (asset.isArchived) {
       const timelineAsset = toTimelineAsset(asset);
-      toastManager.primary(
-        {
-          description: $t('added_to_archive'),
-          button: {
-            label: $t('undo'),
-            onclick: () => undoArchiveAssets([timelineAsset]),
-          },
-        },
-        { timeout: 5000 },
-      );
+      showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);
     } else {
       toastManager.primary($t('removed_from_archive'));
     }
@@ -422,6 +414,21 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   }
 
   return asset;
+};
+
+const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
+  const $t = get(t);
+  toastManager.custom(
+    {
+      component: UndoToast,
+      props: {
+        description,
+        label: $t('undo'),
+        onAction: () => undoArchiveAssets(assets),
+      },
+    },
+    { timeout: 5000 },
+  );
 };
 
 const undoArchiveAssets = async (assets: TimelineAsset[]) => {
@@ -442,6 +449,7 @@ const undoArchiveAssets = async (assets: TimelineAsset[]) => {
     }
     eventManager.emit('AssetsUnarchive', assets);
     eventManager.emit('AssetsUndoArchive', assets);
+    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
   } catch (error) {
     handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
   }
@@ -459,16 +467,7 @@ export const archiveAssets = async (assets: TimelineAsset[], visibility: AssetVi
     }
 
     if (visibility === AssetVisibility.Archive) {
-      toastManager.primary(
-        {
-          description: $t('archived_count', { values: { count: ids.length } }),
-          button: {
-            label: $t('undo'),
-            onclick: () => undoArchiveAssets(assets),
-          },
-        },
-        { timeout: 5000 },
-      );
+      showUndoArchiveToast($t('archived_count', { values: { count: ids.length } }), assets);
     } else {
       toastManager.primary($t('unarchived_count', { values: { count: ids.length } }));
     }
