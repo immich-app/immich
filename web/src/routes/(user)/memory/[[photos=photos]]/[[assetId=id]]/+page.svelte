@@ -91,7 +91,7 @@
         {#each memoryManager.memories as memory, index (memory.id)}
           <a
             href={Route.memories({ id: memory.assets[0].id })}
-            class={`relative rounded-md bg-gray-50 p-2 pb-0 shadow-md transition-all hover:scale-102 hover:rotate-0 hover:shadow-lg sm:p-5 sm:pb-0 ${rotation()}`}
+            class={`relative rounded-md bg-gray-50 p-2 pb-0 shadow-md transition-all hover:scale-102 hover:rotate-0 hover:shadow-lg sm:p-5 sm:pb-0 dark:bg-gray-800 ${rotation()}`}
             bind:this={
               () => (index === memoryManager.memories.length - 1 ? lastElement : null),
               (e) => {
@@ -112,9 +112,7 @@
               class="aspect-square object-cover brightness-75"
               loading="lazy"
             />
-            <p
-              class="my-2 text-center text-sm font-medium text-ellipsis text-black capitalize hover:cursor-pointer sm:my-5"
-            >
+            <p class="my-2 text-center text-sm font-medium text-ellipsis capitalize hover:cursor-pointer sm:my-5">
               {$memoryLaneTitle(memory)}
             </p>
           </a>
