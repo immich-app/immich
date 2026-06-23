@@ -30,6 +30,7 @@ jobs:
           base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
           revision: open-api/immich-openapi-specs.json
           fail-on: ERR
+          review: false
 
   check-mobile-patches:
     runs-on: ubuntu-latest
