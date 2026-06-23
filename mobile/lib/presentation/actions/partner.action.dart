@@ -61,6 +61,16 @@ class PartnerRemoveAction extends BaseAction {
 }
 
 @visibleForTesting
+final candidatesStateProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
+  final currentUser = ref.watch(currentUserProvider);
+  // TODO: Refactor with a route guard to avoid this check in every provider
+  if (currentUser == null) {
+    return const Stream.empty();
+  }
+  return ref.watch(partnerServiceProvider).getCandidates(currentUser.id);
+});
+
+@visibleForTesting
 class PartnerSelectionDialog extends ConsumerWidget {
   const PartnerSelectionDialog({super.key});
 
@@ -113,13 +123,3 @@ class PartnerSelectionDialog extends ConsumerWidget {
     );
   }
 }
-
-@visibleForTesting
-final candidatesStateProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
-  final currentUser = ref.watch(currentUserProvider);
-  // TODO: Refactor with a route guard to avoid this check in every provider
-  if (currentUser == null) {
-    return const Stream.empty();
-  }
-  return ref.watch(partnerServiceProvider).getCandidates(currentUser.id);
-});
