@@ -22,4 +22,4 @@ SMTPS: set it to disabled
 
 <img src={require('./img/email-ms-settings.webp').default} width="80%" title="SMTP settings" />
 
-Maybe your account does not have IMAP enabled. To check your IMAP settings, follow [this link](https://support.microsoft.com/en-US/Outlook/pop-imap-and-smtp-settings-for-outlook-com).
+Maybe your account does not have SMTP enabled. To check your SMTP settings, follow [this link](https://support.microsoft.com/en-US/Outlook/pop-imap-and-smtp-settings-for-outlook-com).
