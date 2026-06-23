@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToStackAction from '$lib/components/asset-viewer/actions/AddToStackAction.svelte';
@@ -18,9 +17,7 @@
   import RemoveFromAlbumAction from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
-  import { Route } from '$lib/route';
   import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
@@ -36,7 +33,7 @@
     type StackResponseDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
-  import { mdiArrowLeft, mdiArrowRight, mdiCompare, mdiDotsVertical, mdiImageSearch, mdiVideoOutline } from '@mdi/js';
+  import { mdiArrowLeft, mdiArrowRight, mdiDotsVertical, mdiVideoOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -49,7 +46,7 @@
     onUndoDelete?: OnUndoDelete;
     onClose?: () => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
-    playOriginalVideo: boolean;
+    isPlayingOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
   }
 
@@ -63,14 +60,13 @@
     onUndoDelete = undefined,
     onClose,
     onRemoveFromAlbum,
-    playOriginalVideo = false,
+    isPlayingOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
 
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
   const isAlbumOwner = $derived(authManager.authenticated && album?.albumUsers[0].user.id === authManager.user.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
-  const smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
   const { Cast } = $derived(getGlobalActions($t));
 
@@ -83,27 +79,13 @@
   });
 
   const PlayOriginalVideo: ActionItem = $derived({
-    title: playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video'),
+    title: isPlayingOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video'),
     icon: mdiVideoOutline,
     $if: () => asset.type === AssetTypeEnum.Video,
-    onAction: () => setPlayOriginalVideo(!playOriginalVideo),
+    onAction: () => setPlayOriginalVideo(!isPlayingOriginalVideo),
   });
 
-  const ViewInTimeline: ActionItem = $derived({
-    title: $t('view_in_timeline'),
-    icon: mdiImageSearch,
-    $if: () => isOwner && !isLocked && !asset.isArchived && !asset.isTrashed,
-    onAction: () => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id })),
-  });
-
-  const ViewSimilar: ActionItem = $derived({
-    title: $t('view_similar_photos'),
-    icon: mdiCompare,
-    $if: () => !isLocked && !asset.isArchived && !asset.isTrashed && smartSearchEnabled,
-    onAction: () => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id })),
-  });
-
-  const Actions = $derived(getAssetActions($t, asset));
+  const Actions = $derived(getAssetActions($t, { ...asset, stackPrimaryAssetId: stack?.primaryAssetId }));
   const sharedLink = getSharedLink();
 </script>
 
@@ -194,8 +176,8 @@
         {#if isOwner && !isLocked}
           <ArchiveAction {asset} {onAction} {preAction} />
         {/if}
-        <ActionMenuItem action={ViewInTimeline} />
-        <ActionMenuItem action={ViewSimilar} />
+        <ActionMenuItem action={Actions.ViewInTimeline} />
+        <ActionMenuItem action={Actions.ViewSimilar} />
 
         {#if !asset.isTrashed && isOwner}
           <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
