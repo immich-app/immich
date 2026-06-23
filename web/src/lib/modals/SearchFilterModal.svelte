@@ -8,12 +8,13 @@
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/SearchRatingsSection.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/SearchTagsSection.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/SearchTextSection.svelte';
+  import SearchImagePropsSection from '$lib/components/shared-components/search-bar/SearchImagePropsSection.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
   import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
-  import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+  import { AssetTypeEnum, AssetVisibility, Orientation, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import type { DateTime } from 'luxon';
@@ -95,6 +96,9 @@
             ? MediaType.Video
             : MediaType.All,
       rating: searchQuery.rating,
+      imageProperties: {
+        orientation: withNullAsUndefined(searchQuery.orientation),
+      },
     };
   };
 
@@ -117,6 +121,9 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      imageProperties: {
+        orientation: undefined,
+      },
     };
   };
 
@@ -152,6 +159,12 @@
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
+      orientation:
+        filter.imageProperties.orientation === 'landscape'
+          ? Orientation.Landscape
+          : filter.imageProperties.orientation === 'portrait'
+            ? Orientation.Portrait
+            : undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
@@ -212,6 +225,9 @@
           <!-- DISPLAY OPTIONS -->
           <SearchDisplaySection bind:filters={filter.display} />
         </div>
+
+        <!-- IMAGE PROPERTIES -->
+        <SearchImagePropsSection bind:filters={filter.imageProperties} />
       </div>
     </form>
   </ModalBody>

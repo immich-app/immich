@@ -357,6 +357,42 @@ describe('/search', () => {
         expect(body.assets.items).toHaveLength(assets.length);
       });
     }
+
+    it('should search by orientation (landscape)', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .send({ orientation: 'landscape', withExif: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.assets).toBeDefined();
+      expect(Array.isArray(body.assets.items)).toBe(true);
+      expect(body.assets.items.length).toBeGreaterThan(0);
+
+      for (const asset of body.assets.items as AssetResponseDto[]) {
+        expect(asset.exifInfo?.exifImageWidth).toBeDefined();
+        expect(asset.exifInfo?.exifImageHeight).toBeDefined();
+        expect((asset.exifInfo?.exifImageWidth ?? 0) > (asset.exifInfo?.exifImageHeight ?? 0)).toBe(true);
+      }
+    });
+
+    it('should search by orientation (portrait)', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .send({ orientation: 'portrait', withExif: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.assets).toBeDefined();
+      expect(Array.isArray(body.assets.items)).toBe(true);
+      expect(body.assets.items.length).toBeGreaterThan(0);
+
+      for (const asset of body.assets.items as AssetResponseDto[]) {
+        expect(asset.exifInfo?.exifImageWidth).toBeDefined();
+        expect(asset.exifInfo?.exifImageHeight).toBeDefined();
+        expect((asset.exifInfo?.exifImageHeight ?? 0) > (asset.exifInfo?.exifImageWidth ?? 0)).toBe(true);
+      }
+    });
   });
 
   describe('POST /search/random', () => {

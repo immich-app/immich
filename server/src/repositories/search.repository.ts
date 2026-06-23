@@ -70,6 +70,7 @@ export interface SearchExifOptions {
   lensModel?: string | null;
   make?: string | null;
   model?: string | null;
+  orientation?: 'landscape' | 'portrait';
   state?: string | null;
   description?: string | null;
   rating?: number | null;
