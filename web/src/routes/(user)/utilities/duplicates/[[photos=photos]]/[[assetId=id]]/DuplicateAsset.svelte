@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locale } from '$lib/stores/preferences.store';
+  import { lang, locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
   import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -30,7 +30,8 @@
     initialVisibleCount = 5,
   }: Props = $props();
 
-  let isFromExternalLibrary = $derived(!!asset.libraryId);
+  const listFormat = $derived(new Intl.ListFormat($lang));
+  const isFromExternalLibrary = $derived(!!asset.libraryId);
 
   const visibleMetadataItems = $derived(
     getAllMetadataItems(asset, $t, $locale)
@@ -116,7 +117,13 @@
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}
       {:then albums}
-        {$t('in_albums', { values: { count: albums.length } })}
+        {#if albums.length === 1}
+          {albums[0].albumName}
+        {:else}
+          <span title={listFormat.format(albums.map(({ albumName }) => albumName))}>
+            {$t('in_albums', { values: { count: albums.length } })}
+          </span>
+        {/if}
       {/await}
     </InfoRow>
   </div>

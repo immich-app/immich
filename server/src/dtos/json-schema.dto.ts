@@ -14,7 +14,12 @@ const JsonSchemaPropertySchema = z
     enum: z.array(z.string()).optional().describe('Valid choices for enum types'),
     array: z.boolean().optional().describe('Type is an array type'),
     required: z.array(z.string()).optional().describe('A list of required properties'),
-    uiHint: z.string().optional(),
+    uiHint: z
+      .object({
+        type: z.string().optional(),
+        order: z.int().optional(),
+      })
+      .optional(),
     get properties() {
       return z.record(z.string(), JsonSchemaPropertySchema).optional();
     },

@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
@@ -34,11 +35,17 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (mounted) {
-      setState(() {
-        _showOverlay = state != AppLifecycleState.resumed;
-      });
+    if (!mounted) {
+      return;
     }
+    if (state == AppLifecycleState.paused) {
+      ref.read(authProvider.notifier).lockPinCode();
+      context.navigateTo(const TabShellRoute());
+      return;
+    }
+    setState(() {
+      _showOverlay = state != AppLifecycleState.resumed;
+    });
   }
 
   @override

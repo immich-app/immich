@@ -1,5 +1,5 @@
 import { wrapper } from '@immich/plugin-sdk';
-import { AssetVisibility, WorkflowType } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
 
 type AssetFileFilterConfig = {
   pattern: string;
@@ -122,6 +122,12 @@ export const assetDateFilter = () => {
     }
 
     return { workflow: { continue: assetDate >= startDate && assetDate <= endDate } };
+  });
+};
+
+export const assetTypeFilter = () => {
+  return wrapper<WorkflowType.AssetV1, { allowedTypes: AssetTypeEnum[] }>(({ config, data }) => {
+    return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
   });
 };
 

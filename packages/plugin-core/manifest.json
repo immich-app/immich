@@ -247,22 +247,22 @@
       "uiHints": ["Filter"]
     },
     {
-      "name": "filterFileType",
-      "title": "Filter by file type",
-      "description": "Filter assets by file type",
+      "name": "assetTypeFilter",
+      "title": "Filter by asset type",
+      "description": "Filter assets by type",
       "types": ["AssetV1"],
       "schema": {
         "type": "object",
         "properties": {
-          "fileTypes": {
-            "title": "File types",
-            "description": "Allowed file types",
+          "allowedTypes": {
+            "title": "Asset types",
+            "description": "Allowed asset types",
             "type": "string",
             "array": true,
-            "enum": ["image", "video"]
+            "enum": ["IMAGE", "VIDEO", "AUDIO", "OTHER"]
           }
         },
-        "required": ["fileTypes"]
+        "required": ["allowedTypes"]
       },
       "uiHints": ["Filter"]
     },
@@ -341,7 +341,9 @@
             "title": "Album IDs",
             "array": true,
             "description": "Target album IDs",
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId"
+            }
           },
           "albumName": {
             "type": "string",
@@ -431,14 +433,20 @@
             "type": "string",
             "title": "Album ID",
             "description": "Target album ID",
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId",
+              "order": 1
+            }
           },
           "albumIds": {
             "type": "string",
             "title": "Album IDs",
             "description": "Target album IDs",
             "array": true,
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId",
+              "order": 2
+            }
           }
         }
       }
