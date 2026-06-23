@@ -9,41 +9,42 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 class PartnerAddAction extends BaseAction {
-  const PartnerAddAction() : super(icon: Icons.person_add_rounded);
+  const PartnerAddAction();
 
   @override
-  String label(BuildContext context) => context.t.add_partner;
+  IconData get icon => Icons.person_add_rounded;
 
   @override
-  bool isVisible(BuildContext context, WidgetRef ref) => true;
+  String label(ActionScope scope) => scope.context.t.add_partner;
 
   @override
-  Future<void> onAction(BuildContext context, WidgetRef ref) async {
+  Future<void> onAction(ActionScope scope) async {
+    final ActionScope(:context, :ref, :authUser) = scope;
     final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
-    final currentUser = ref.read(currentUserProvider);
-    if (selected == null || currentUser == null) {
+    if (selected == null) {
       return;
     }
 
-    await ref.read(partnerServiceProvider).create(sharedById: currentUser.id, sharedWithId: selected.id);
+    await ref.read(partnerServiceProvider).create(sharedById: authUser.id, sharedWithId: selected.id);
   }
 }
 
 class PartnerRemoveAction extends BaseAction {
-  const PartnerRemoveAction({required this.sharedWithId, required this.partnerName})
-    : super(icon: Icons.person_remove_rounded);
+  const PartnerRemoveAction({required this.sharedWithId, required this.partnerName});
 
   final String sharedWithId;
   final String partnerName;
 
   @override
-  String label(BuildContext context) => context.t.remove;
+  IconData get icon => Icons.person_remove_rounded;
 
   @override
-  bool isVisible(BuildContext context, WidgetRef ref) => true;
+  String label(ActionScope scope) => scope.context.t.remove;
 
   @override
-  Future<void> onAction(BuildContext context, WidgetRef ref) async {
+  Future<void> onAction(ActionScope scope) async {
+    final ActionScope(:context, :ref, :authUser) = scope;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => ConfirmDialog(
@@ -51,12 +52,11 @@ class PartnerRemoveAction extends BaseAction {
         content: context.t.partner_page_stop_sharing_content(partner: partnerName),
       ),
     );
-    final currentUser = ref.read(currentUserProvider);
-    if (confirmed != true || currentUser == null) {
+    if (confirmed != true) {
       return;
     }
 
-    await ref.read(partnerServiceProvider).delete(sharedById: currentUser.id, sharedWithId: sharedWithId);
+    await ref.read(partnerServiceProvider).delete(sharedById: authUser.id, sharedWithId: sharedWithId);
   }
 }
 
