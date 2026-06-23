@@ -4,11 +4,9 @@
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToStackAction from '$lib/components/asset-viewer/actions/AddToStackAction.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/ArchiveAction.svelte';
-  import DeleteAction from '$lib/components/asset-viewer/actions/DeleteAction.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/KeepThisDeleteOthers.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
-  import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/SetPersonFeaturedAction.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/SetProfilePictureAction.svelte';
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
@@ -25,9 +23,8 @@
   import { Route } from '$lib/route';
   import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { getAssetActions } from '$lib/services/asset.service';
+  import { getAssetActions, handleTrashOrDelete } from '$lib/services/asset.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
-  import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -37,7 +34,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, shortcut, Tooltip, type ActionItem } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCompare, mdiDotsVertical, mdiImageSearch, mdiVideoOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -48,7 +45,6 @@
     stack?: StackResponseDto | null;
     preAction: PreAction;
     onAction: OnAction;
-    onUndoDelete?: OnUndoDelete;
     onClose?: () => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     playOriginalVideo: boolean;
@@ -62,7 +58,6 @@
     stack = null,
     preAction,
     onAction,
-    onUndoDelete = undefined,
     onClose,
     onRemoveFromAlbum,
     playOriginalVideo = false,
@@ -87,6 +82,10 @@
   const Actions = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 </script>
+
+<svelte:document
+  use:shortcut={{ shortcut: { key: 'Delete', shift: true }, onShortcut: () => handleTrashOrDelete(asset, true) }}
+/>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
@@ -128,10 +127,8 @@
     {/if}
 
     <ActionButton action={Actions.Edit} />
-
-    {#if isOwner}
-      <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
-    {/if}
+    <ActionButton action={Actions.Delete} />
+    <ActionButton action={Actions.PermanentlyDelete} />
 
     {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
@@ -139,10 +136,7 @@
 
         <ActionMenuItem action={Actions.Download} />
         <ActionMenuItem action={Actions.DownloadOriginal} />
-
-        {#if !isLocked && asset.isTrashed}
-          <RestoreAction {asset} {onAction} />
-        {/if}
+        <ActionMenuItem action={Actions.Restore} />
 
         <ActionMenuItem action={Actions.AddToAlbum} />
         {#if album && (isOwner || isAlbumOwner)}

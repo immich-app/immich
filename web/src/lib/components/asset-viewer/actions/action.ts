@@ -5,9 +5,6 @@ import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };
   [AssetAction.UNARCHIVE]: { asset: TimelineAsset };
-  [AssetAction.TRASH]: { asset: TimelineAsset };
-  [AssetAction.DELETE]: { asset: TimelineAsset };
-  [AssetAction.RESTORE]: { asset: TimelineAsset };
   [AssetAction.STACK]: { stack: StackResponseDto };
   [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
   [AssetAction.SET_STACK_PRIMARY_ASSET]: { stack: StackResponseDto };

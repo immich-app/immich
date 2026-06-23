@@ -3,7 +3,9 @@ import {
   AssetMediaSize,
   AssetTypeEnum,
   AssetVisibility,
+  deleteAssets,
   getAssetInfo,
+  restoreAssets,
   runAssetJobs,
   updateAsset,
   type AssetJobsDto,
@@ -15,12 +17,15 @@ import {
   mdiCogRefreshOutline,
   mdiContentCopy,
   mdiDatabaseRefreshOutline,
+  mdiDeleteForeverOutline,
+  mdiDeleteOutline,
   mdiDownload,
   mdiDownloadBox,
   mdiFaceRecognition,
   mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
+  mdiHistory,
   mdiImageRefreshOutline,
   mdiInformationOutline,
   mdiMagnifyMinusOutline,
@@ -34,14 +39,18 @@ import {
   mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { ProjectionType } from '$lib/constants';
 import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
+import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { showDeleteModal } from '$lib/stores/preferences.store';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
@@ -96,6 +105,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
+  const isDeletionPermanent = asset.isTrashed || !featureFlagsManager.value.trash;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -242,6 +252,29 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'e' }],
   };
 
+  const Delete: ActionItem = {
+    title: $t('delete'),
+    icon: mdiDeleteOutline,
+    $if: () => isOwner && !isDeletionPermanent,
+    onAction: () => handleTrashOrDelete(asset),
+    shortcuts: { key: 'Delete' },
+  };
+
+  const PermanentlyDelete: ActionItem = {
+    title: $t('permanently_delete'),
+    icon: mdiDeleteForeverOutline,
+    $if: () => isOwner && isDeletionPermanent,
+    onAction: () => handleTrashOrDelete(asset, true),
+    shortcuts: { key: 'Delete', shift: true },
+  };
+
+  const Restore: ActionItem = {
+    title: $t('restore'),
+    icon: mdiHistory,
+    $if: () => asset.visibility !== AssetVisibility.Locked && asset.isTrashed,
+    onAction: () => handleRestore(asset),
+  };
+
   const RefreshFacesJob: ActionItem = {
     title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
@@ -286,6 +319,9 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Tag,
     TagPeople,
     Edit,
+    Delete,
+    PermanentlyDelete,
+    Restore,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
@@ -364,6 +400,47 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
     eventManager.emit('AssetUpdate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
+  }
+};
+
+export const handleTrashOrDelete = async (asset: AssetResponseDto, force?: boolean) => {
+  const $t = await getFormatter();
+
+  if (force && get(showDeleteModal)) {
+    const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: 1 });
+    if (!confirmed) {
+      return;
+    }
+  }
+
+  try {
+    await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force } });
+    eventManager.emit('AssetsDelete', [asset.id]);
+    if (force) {
+      toastManager.primary($t('permanently_deleted_asset'));
+    } else {
+      toastManager.primary(
+        {
+          description: $t('moved_to_trash'),
+          button: { label: $t('undo'), color: 'secondary', onclick: () => handleRestore(asset) },
+        },
+        { timeout: 5000 },
+      );
+    }
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_delete_asset'));
+  }
+};
+
+const handleRestore = async (asset: AssetResponseDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
+    eventManager.emit('AssetsRestore', [asset]);
+    toastManager.primary($t('restored_asset'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_restore_assets'));
   }
 };
 
