@@ -325,6 +325,12 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CQMode':
           return CQModeTypeTransformer().decode(value);
+        case 'CalendarHeatmapResponseDto':
+          return CalendarHeatmapResponseDto.fromJson(value);
+        case 'CalendarHeatmapResponseDtoSeriesInner':
+          return CalendarHeatmapResponseDtoSeriesInner.fromJson(value);
+        case 'CalendarHeatmapType':
+          return CalendarHeatmapTypeTypeTransformer().decode(value);
         case 'CastResponse':
           return CastResponse.fromJson(value);
         case 'CastUpdate':
@@ -387,6 +393,14 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
+        case 'IntegrityReport':
+          return IntegrityReportTypeTransformer().decode(value);
+        case 'IntegrityReportResponseDto':
+          return IntegrityReportResponseDto.fromJson(value);
+        case 'IntegrityReportResponseDtoItemsInner':
+          return IntegrityReportResponseDtoItemsInner.fromJson(value);
+        case 'IntegrityReportSummaryResponseDto':
+          return IntegrityReportSummaryResponseDto.fromJson(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
         case 'JobName':
@@ -693,6 +707,10 @@ class ApiClient {
           return SyncAssetMetadataDeleteV1.fromJson(value);
         case 'SyncAssetMetadataV1':
           return SyncAssetMetadataV1.fromJson(value);
+        case 'SyncAssetOcrDeleteV1':
+          return SyncAssetOcrDeleteV1.fromJson(value);
+        case 'SyncAssetOcrV1':
+          return SyncAssetOcrV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
         case 'SyncAssetV2':
@@ -749,6 +767,12 @@ class ApiClient {
           return SystemConfigGeneratedImageDto.fromJson(value);
         case 'SystemConfigImageDto':
           return SystemConfigImageDto.fromJson(value);
+        case 'SystemConfigIntegrityChecks':
+          return SystemConfigIntegrityChecks.fromJson(value);
+        case 'SystemConfigIntegrityChecksumJob':
+          return SystemConfigIntegrityChecksumJob.fromJson(value);
+        case 'SystemConfigIntegrityJob':
+          return SystemConfigIntegrityJob.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigLibraryDto':

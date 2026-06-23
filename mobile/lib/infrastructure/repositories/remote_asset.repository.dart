@@ -194,12 +194,15 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> updateDateTime(List<String> ids, DateTime dateTime) {
+  Future<void> updateDateTime(List<String> ids, DateTime dateTime, {String? timeZone}) {
     return _db.batch((batch) async {
       for (final id in ids) {
         batch.update(
           _db.remoteExifEntity,
-          RemoteExifEntityCompanion(dateTimeOriginal: Value(dateTime)),
+          RemoteExifEntityCompanion(
+            dateTimeOriginal: Value(dateTime),
+            timeZone: timeZone == null ? const Value.absent() : Value(timeZone),
+          ),
           where: (e) => e.assetId.equals(id),
         );
         batch.update(

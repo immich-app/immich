@@ -16,6 +16,7 @@ class SystemConfigDto {
     required this.backup,
     required this.ffmpeg,
     required this.image,
+    required this.integrityChecks,
     required this.job,
     required this.library_,
     required this.logging,
@@ -41,6 +42,8 @@ class SystemConfigDto {
   SystemConfigFFmpegDto ffmpeg;
 
   SystemConfigImageDto image;
+
+  SystemConfigIntegrityChecks integrityChecks;
 
   SystemConfigJobDto job;
 
@@ -83,6 +86,7 @@ class SystemConfigDto {
     other.backup == backup &&
     other.ffmpeg == ffmpeg &&
     other.image == image &&
+    other.integrityChecks == integrityChecks &&
     other.job == job &&
     other.library_ == library_ &&
     other.logging == logging &&
@@ -108,6 +112,7 @@ class SystemConfigDto {
     (backup.hashCode) +
     (ffmpeg.hashCode) +
     (image.hashCode) +
+    (integrityChecks.hashCode) +
     (job.hashCode) +
     (library_.hashCode) +
     (logging.hashCode) +
@@ -128,13 +133,14 @@ class SystemConfigDto {
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, integrityChecks=$integrityChecks, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backup'] = this.backup;
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'image'] = this.image;
+      json[r'integrityChecks'] = this.integrityChecks;
       json[r'job'] = this.job;
       json[r'library'] = this.library_;
       json[r'logging'] = this.logging;
@@ -168,6 +174,7 @@ class SystemConfigDto {
         backup: SystemConfigBackupsDto.fromJson(json[r'backup'])!,
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         image: SystemConfigImageDto.fromJson(json[r'image'])!,
+        integrityChecks: SystemConfigIntegrityChecks.fromJson(json[r'integrityChecks'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
         library_: SystemConfigLibraryDto.fromJson(json[r'library'])!,
         logging: SystemConfigLoggingDto.fromJson(json[r'logging'])!,
@@ -236,6 +243,7 @@ class SystemConfigDto {
     'backup',
     'ffmpeg',
     'image',
+    'integrityChecks',
     'job',
     'library',
     'logging',

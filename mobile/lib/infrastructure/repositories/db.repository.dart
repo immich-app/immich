@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:drift/src/runtime/executor/stream_queries.dart' show StreamQueryStore;
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
@@ -35,6 +38,7 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3_connection_pool/sqlite3_connection_pool.dart';
 import 'package:sqlite_async/native.dart';
 import 'package:sqlite_async/sqlite_async.dart';
 
@@ -62,13 +66,24 @@ import 'package:sqlite_async/sqlite_async.dart';
     TrashedLocalAssetEntity,
     AssetEditEntity,
     SettingsEntity,
+    AssetOcrEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
 class Drift extends $Drift {
-  Drift(super.executor);
+  final SqliteConnectionPool? _updatePool;
 
-  Drift.sqlite(SqliteConnection db) : super(SqliteAsyncDriftConnection(db));
+  Drift(super.executor) : _updatePool = null;
+
+  Drift.sqlite(SqliteConnection db, SqliteConnectionPool updatePool)
+    : _updatePool = updatePool,
+      super(DatabaseConnection(SqliteAsyncQueryExecutor(db), streamQueries: _DriftPoolStreamQueries(updatePool)));
+
+  @override
+  Future<void> close() async {
+    await super.close();
+    _updatePool?.close();
+  }
 
   Future<void> reset() async {
     // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
@@ -105,7 +120,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 30;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -289,6 +304,13 @@ class Drift extends $Drift {
           from27To28: (m, v28) async {
             await m.createIndex(v28.idxLocalAssetCreatedAt);
           },
+          from28To29: (m, v29) async {
+            await m.createTable(v29.assetOcrEntity);
+            await m.createIndex(v29.idxAssetOcrAssetId);
+          },
+          from29To30: (m, v30) async {
+            await m.alterTable(TableMigration(v30.settings));
+          },
         ),
       );
 
@@ -319,11 +341,51 @@ class DriftDatabaseRepository {
   Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
 }
 
+// ignore: invalid_use_of_internal_member
+final class _DriftPoolStreamQueries extends StreamQueryStore {
+  _DriftPoolStreamQueries(this._pool);
+
+  final SqliteConnectionPool _pool;
+
+  @override
+  void handleTableUpdates(Set<TableUpdate> updates) {
+    if (updates.isEmpty) {
+      return;
+    }
+    _pool.dispatchUpdateNotification([for (final update in updates) update.table]);
+  }
+
+  @override
+  Stream<Set<TableUpdate>> updatesForSync(TableUpdateQuery query) {
+    return _pool.updatedTables
+        .map((tables) => {for (final table in tables) TableUpdate(table)})
+        .where((updates) => updates.any(query.matches));
+  }
+}
+
 Future<SqliteConnection> openSqliteConnection({required String name}) async {
+  return _openImmichDatabase(await _databaseFile(name));
+}
+
+Future<(SqliteConnection, SqliteConnectionPool)> openSqliteConnectionWithUpdatePool({required String name}) async {
+  final file = await _databaseFile(name);
+  final db = _openImmichDatabase(file);
+  await db.initialize();
+  final updatePool = SqliteConnectionPool.open(
+    name: file.path,
+    openConnections: () => throw StateError('Pool for "$name" should already be open via sqlite_async'),
+  );
+  return (db, updatePool);
+}
+
+Future<File> _databaseFile(String name) async {
   final dbFolder = await getApplicationDocumentsDirectory();
-  final file = File(p.join(dbFolder.path, '$name.sqlite'));
+  return File(p.join(dbFolder.path, '$name.sqlite'));
+}
+
+SqliteDatabase _openImmichDatabase(File file) {
   return SqliteDatabase.withFactory(
-    _ImmichSqliteOpenFactory(
+    ImmichSqliteOpenFactory(
       path: file.path,
       sqliteOptions: const SqliteOptions(
         journalMode: SqliteJournalMode.wal, // PRAGMA journal_mode (writer only)
@@ -334,8 +396,9 @@ Future<SqliteConnection> openSqliteConnection({required String name}) async {
   );
 }
 
-final class _ImmichSqliteOpenFactory extends NativeSqliteOpenFactory {
-  _ImmichSqliteOpenFactory({required super.path, super.sqliteOptions});
+@visibleForTesting
+final class ImmichSqliteOpenFactory extends NativeSqliteOpenFactory {
+  ImmichSqliteOpenFactory({required super.path, super.sqliteOptions});
 
   @override
   List<String> pragmaStatements(SqliteOpenOptions options) {

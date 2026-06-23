@@ -156,6 +156,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',
   [ApiTag.Faces]:
     'A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually.',
+  [ApiTag.Integrity]: 'Endpoints for viewing and managing integrity reports.',
   [ApiTag.Jobs]:
     'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
   [ApiTag.Libraries]:
@@ -222,6 +223,12 @@ export const SUPPORTED_HWA_CODECS: Record<TranscodeHardwareAcceleration, VideoCo
 export const HLS_BACKPRESSURE_PAUSE_SEGMENTS = 30;
 export const HLS_BACKPRESSURE_RESUME_SEGMENTS = 15;
 export const HLS_CLEANUP_INTERVAL_MS = 60 * 1000;
+export const HLS_CRF: Record<VideoCodec, number> = {
+  [VideoCodec.H264]: 23,
+  [VideoCodec.Hevc]: 28,
+  [VideoCodec.Vp9]: 31,
+  [VideoCodec.Av1]: 35,
+};
 export const HLS_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000;
 export const HLS_LEASE_DURATION_MS = 30 * 60 * 1000;
 export const HLS_PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';

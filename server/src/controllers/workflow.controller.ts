@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -81,9 +81,20 @@ export class WorkflowController {
     summary: 'Update a workflow',
     description:
       'Update the information of a specific workflow by its ID. This endpoint can be used to update the workflow name, description, trigger type, filters and actions order, etc.',
-    history: HistoryBuilder.v3(),
+    history: new HistoryBuilder().added('v3.0.0').deprecated('v3', { replacementId: 'updateWorkflow' }),
   })
   updateWorkflow(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: WorkflowUpdateDto,
+  ): Promise<WorkflowResponseDto> {
+    return this.service.update(auth, id, dto);
+  }
+
+  @Patch(':id')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.WorkflowUpdate })
+  updateWorkflowV3(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: WorkflowUpdateDto,

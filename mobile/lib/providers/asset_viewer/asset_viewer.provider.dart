@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
@@ -8,6 +10,7 @@ class AssetViewerState {
   final bool showingDetails;
   final bool showingControls;
   final bool isZoomed;
+  final bool showingOcr;
   final BaseAsset? currentAsset;
   final int stackIndex;
 
@@ -16,6 +19,7 @@ class AssetViewerState {
     this.showingDetails = false,
     this.showingControls = true,
     this.isZoomed = false,
+    this.showingOcr = false,
     this.currentAsset,
     this.stackIndex = 0,
   });
@@ -25,6 +29,7 @@ class AssetViewerState {
     bool? showingDetails,
     bool? showingControls,
     bool? isZoomed,
+    bool? showingOcr,
     BaseAsset? currentAsset,
     int? stackIndex,
   }) {
@@ -33,6 +38,7 @@ class AssetViewerState {
       showingDetails: showingDetails ?? this.showingDetails,
       showingControls: showingControls ?? this.showingControls,
       isZoomed: isZoomed ?? this.isZoomed,
+      showingOcr: showingOcr ?? this.showingOcr,
       currentAsset: currentAsset ?? this.currentAsset,
       stackIndex: stackIndex ?? this.stackIndex,
     );
@@ -40,7 +46,7 @@ class AssetViewerState {
 
   @override
   String toString() {
-    return 'AssetViewerState(opacity: $backgroundOpacity, showingDetails: $showingDetails, controls: $showingControls, isZoomed: $isZoomed)';
+    return 'AssetViewerState(opacity: $backgroundOpacity, showingDetails: $showingDetails, controls: $showingControls, isZoomed: $isZoomed, showingOcr: $showingOcr)';
   }
 
   @override
@@ -56,6 +62,7 @@ class AssetViewerState {
         other.showingDetails == showingDetails &&
         other.showingControls == showingControls &&
         other.isZoomed == isZoomed &&
+        other.showingOcr == showingOcr &&
         other.currentAsset == currentAsset &&
         other.stackIndex == stackIndex;
   }
@@ -66,23 +73,23 @@ class AssetViewerState {
       showingDetails.hashCode ^
       showingControls.hashCode ^
       isZoomed.hashCode ^
+      showingOcr.hashCode ^
       currentAsset.hashCode ^
       stackIndex.hashCode;
 }
 
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
+  StreamSubscription<BaseAsset?>? _assetSubscription;
+
   @override
   AssetViewerState build() {
-    ref.listen(_watchedCurrentAssetProvider, (_, next) {
-      final updated = next.valueOrNull;
-      if (updated != null) {
-        state = state.copyWith(currentAsset: updated);
-      }
-    });
+    ref.onDispose(() => _assetSubscription?.cancel());
     return const AssetViewerState();
   }
 
   void reset() {
+    _assetSubscription?.cancel();
+    _assetSubscription = null;
     state = const AssetViewerState();
   }
 
@@ -90,7 +97,17 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(currentAsset: asset, stackIndex: 0);
+    state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
+    _watchCurrentAsset(asset);
+  }
+
+  void _watchCurrentAsset(BaseAsset asset) {
+    _assetSubscription?.cancel();
+    _assetSubscription = ref.read(assetServiceProvider).watchAsset(asset).listen((updated) {
+      if (updated != null) {
+        state = state.copyWith(currentAsset: updated);
+      }
+    });
   }
 
   void setOpacity(double opacity) {
@@ -137,15 +154,10 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     }
     state = state.copyWith(stackIndex: index);
   }
+
+  void toggleOcr() {
+    state = state.copyWith(showingOcr: !state.showingOcr);
+  }
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
-
-final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
-  ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
-  final asset = ref.read(assetViewerProvider).currentAsset;
-  if (asset == null) {
-    return const Stream.empty();
-  }
-  return ref.read(assetServiceProvider).watchAsset(asset);
-});

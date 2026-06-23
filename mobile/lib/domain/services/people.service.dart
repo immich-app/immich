@@ -18,8 +18,8 @@ class DriftPeopleService {
     return _repository.getAssetPeople(assetId);
   }
 
-  Future<List<DriftPerson>> getAllPeople() {
-    return _repository.getAllPeople();
+  Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) {
+    return _repository.getAllPeople(minFaces: minFaces);
   }
 
   Future<int> updateName(String personId, String name) async {

@@ -478,8 +478,10 @@ export class MediaRepository {
       case 'av1': {
         return this.parseEnum(Av1Profile, profile);
       }
+      default: {
+        return null;
+      }
     }
-    return null;
   }
 
   private compareStreams(a: FfprobeStream, b: FfprobeStream): number {

@@ -41,7 +41,7 @@
     onInsertBefore: (index: number) => void;
     onDragOver: (index: number, event: DragEvent, boundingRect: DOMRect) => void;
     onDrop: (event: DragEvent) => void;
-    onDragEnd: () => void;
+    onDragEnd: (event: DragEvent) => void;
     onDragStart: (event: DragEvent) => void;
   };
 
@@ -55,7 +55,7 @@
   );
   const isGhost = $derived(step.id === 'ghost');
 
-  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint;
+  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint?.type;
   const toIds = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : [String(value)]);
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);
@@ -121,11 +121,11 @@
     onDragOver(index, event, event.currentTarget.getBoundingClientRect());
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (event: DragEvent) => {
     dragImage?.remove();
     dragImage = undefined;
     isDropTarget = false;
-    onDragEnd();
+    onDragEnd(event);
   };
 </script>
 

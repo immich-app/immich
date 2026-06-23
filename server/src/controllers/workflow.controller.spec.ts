@@ -95,15 +95,15 @@ describe(WorkflowController.name, () => {
     });
   });
 
-  describe('PUT /workflows/:id', () => {
+  describe('PATCH /workflows/:id', () => {
     it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/workflows/${factory.uuid()}`).send({});
+      await request(ctx.getHttpServer()).patch(`/workflows/${factory.uuid()}`).send({});
       expect(ctx.authenticate).toHaveBeenCalled();
     });
 
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
-        .put(`/workflows/invalid`)
+        .patch(`/workflows/invalid`)
         .set('Authorization', `Bearer token`)
         .send({});
       expect(status).toBe(400);

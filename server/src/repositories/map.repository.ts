@@ -78,8 +78,9 @@ export class MapRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID], [DummyValue.UUID]] })
   getMapMarkers(
+    authUserId: string,
     ownerIds: string[],
     albumIds: string[],
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
@@ -89,7 +90,7 @@ export class MapRepository {
         qb.where((eb) =>
           eb.or([
             eb('asset.visibility', '=', AssetVisibility.Timeline),
-            eb('asset.visibility', '=', AssetVisibility.Archive),
+            eb.and([eb('asset.ownerId', '=', authUserId), eb('asset.visibility', '=', AssetVisibility.Archive)]),
           ]),
         ),
       )

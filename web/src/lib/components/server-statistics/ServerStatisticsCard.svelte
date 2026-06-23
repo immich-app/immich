@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Icon, Text } from '@immich/ui';
+  import { Icon, Text, type MaybePromise } from '@immich/ui';
+  import type { Snippet } from 'svelte';
 
   type ValueData = {
     value: number;
@@ -8,12 +9,14 @@
   };
 
   interface Props {
-    icon: string;
+    icon?: string;
     title: string;
-    valuePromise: Promise<ValueData>;
+    valuePromise: MaybePromise<ValueData>;
+    tooltip?: string;
+    footer?: Snippet;
   }
 
-  let { icon, title, valuePromise }: Props = $props();
+  let { icon, title, valuePromise, tooltip, footer }: Props = $props();
   const zeros = (data?: ValueData) => {
     let length = 13;
     if (data) {
@@ -27,8 +30,10 @@
 
 <div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle p-5 text-primary">
   <div class="flex place-items-center gap-4">
-    <Icon {icon} size="40" />
-    <Text size="giant" fontWeight="medium">{title}</Text>
+    {#if icon}
+      <Icon {icon} size="40" />
+    {/if}
+    <Text size="giant" fontWeight="medium" title={tooltip}>{title}</Text>
   </div>
 
   {#await valuePromise}
@@ -47,6 +52,8 @@
       <span class="text-gray-300 dark:text-gray-600">{zeros()}</span>
     </div>
   {/await}
+
+  {@render footer?.()}
 </div>
 
 <style>

@@ -42,6 +42,7 @@ class BaseActionButton extends ConsumerWidget {
 
       return IconButton(
         onPressed: onPressed,
+        onLongPress: onLongPressed,
         icon: Icon(iconData, size: iconSize, color: iconColor),
       );
     }

@@ -1,5 +1,5 @@
 import { wrapper } from '@immich/plugin-sdk';
-import { AssetVisibility, WorkflowType } from '@immich/sdk';
+import { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
 
 type AssetFileFilterConfig = {
   pattern: string;
@@ -47,6 +47,57 @@ export const assetMissingTimeZoneFilter = () => {
     const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
     const needsTimeZone = config.inverse ? true : false;
     return { workflow: { continue: hasTimeZone === needsTimeZone } };
+  });
+};
+
+export const assetLocationFilter = () => {
+  return wrapper<
+    WorkflowType.AssetV1,
+    {
+      region?: { country?: string; state?: string; city?: string };
+      coordinate?: { latitude?: string; longitude?: string; radius?: number };
+    }
+  >(({ config, data }) => {
+    if (
+      (config.region?.country && config.region.country !== data.asset.exifInfo?.country) ||
+      (config.region?.state && config.region.state !== data.asset.exifInfo?.state) ||
+      (config.region?.city && config.region.city !== data.asset.exifInfo?.city)
+    ) {
+      return { workflow: { continue: false } };
+    }
+
+    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
+    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+
+    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+      return { workflow: { continue: true } };
+    }
+
+    const assetLat = data.asset.exifInfo?.latitude;
+    const assetLon = data.asset.exifInfo?.longitude;
+
+    if (assetLat === undefined || assetLat === null || assetLon === undefined || assetLon === null) {
+      return { workflow: { continue: false } };
+    }
+
+    const earthDiameter = 12742;
+    const deg = Math.PI / 180;
+    const delta = Math.asin(
+      Math.sqrt(
+        Math.pow(Math.sin((assetLat * deg - configLat * deg) / 2), 2) +
+          Math.cos(assetLat * deg) *
+            Math.cos(configLat * deg) *
+            Math.pow(Math.sin((assetLon * deg - configLon * deg) / 2), 2),
+      ),
+    );
+
+    return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  });
+};
+
+export const assetTypeFilter = () => {
+  return wrapper<WorkflowType.AssetV1, { allowedTypes: AssetTypeEnum[] }>(({ config, data }) => {
+    return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
   });
 };
 

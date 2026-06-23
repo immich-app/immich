@@ -5,6 +5,7 @@ import {
   HLS_BACKPRESSURE_PAUSE_SEGMENTS,
   HLS_BACKPRESSURE_RESUME_SEGMENTS,
   HLS_CLEANUP_INTERVAL_MS,
+  HLS_CRF,
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
   HLS_SEGMENT_DURATION,
@@ -30,6 +31,7 @@ type Session = {
   ownerId: string;
   paused: boolean;
   process: ChildProcess | null;
+  starting: boolean;
   startSegment: number | null;
   variantIndex: number | null;
 };
@@ -75,6 +77,7 @@ export class TranscodingService extends BaseService {
         ownerId,
         paused: false,
         process: null,
+        starting: false,
         startSegment: null,
         variantIndex: null,
       });
@@ -145,11 +148,19 @@ export class TranscodingService extends BaseService {
     } else if (session.process) {
       this.resumeTranscode(session);
       return;
+    } else if (session.starting) {
+      this.logger.debug(`Session ${sessionId} is already starting a transcode, skipping duplicate start request`);
+      return;
     }
 
-    const process = await this.startTranscode(session, variantIndex, segmentIndex);
-    if (process) {
-      session.process = process;
+    session.starting = true;
+    try {
+      const process = await this.startTranscode(session, variantIndex, segmentIndex);
+      if (process) {
+        session.process = process;
+      }
+    } finally {
+      session.starting = false;
     }
   }
 
@@ -211,6 +222,7 @@ export class TranscodingService extends BaseService {
           targetResolution: String(variant.resolution),
           maxBitrate: `${Math.round(variant.bitrate / 1000)}k`,
           gopSize: gop,
+          crf: HLS_CRF[variant.codec],
         },
         this.videoInterfaces,
         { strictGop: true, lowLatency: true },

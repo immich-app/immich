@@ -100,11 +100,17 @@ String parameterToString(dynamic value) {
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
+  if (value is CalendarHeatmapType) {
+    return CalendarHeatmapTypeTypeTransformer().encode(value).toString();
+  }
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
+  }
+  if (value is IntegrityReport) {
+    return IntegrityReportTypeTransformer().encode(value).toString();
   }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();

@@ -13,6 +13,8 @@ enum AssetVisibilityEnum { timeline, hidden, archive, locked }
 
 enum ActionSource { timeline, viewer }
 
+enum ShareAssetType { original, preview }
+
 enum CleanupStep { selectDate, scan, delete }
 
 enum AssetKeepType { none, photosOnly, videosOnly }

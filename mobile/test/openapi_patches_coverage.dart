@@ -31,6 +31,12 @@ void main() {
       if (!deserialized.contains(entry.key)) {
         continue;
       }
+
+      // Skip new DTOs
+      if (!baseRequired.containsKey(entry.key)) {
+        continue;
+      }
+
       final have = patched[entry.key] ?? const <String>{};
       final newlyRequired = entry.value.difference(
         baseRequired[entry.key] ?? const <String>{},

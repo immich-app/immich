@@ -63,9 +63,9 @@
 
   let { data }: Props = $props();
 
-  let { id, enabled, name, description, trigger } = $derived(data.workflow);
+  let { id, enabled, name, description, trigger } = $state(data.workflow);
   let steps = $state(data.workflow.steps.map((step) => ({ ...step, id: generateId() })));
-  let savedWorkflow = $state(cloneDeep(data.workflow));
+  let savedWorkflow = $derived(cloneDeep(data.workflow));
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
@@ -73,7 +73,13 @@
   let dragSourceId: string | undefined;
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({
+    name,
+    description,
+    enabled,
+    trigger,
+    steps: steps.map(({ id: _, ...step }) => step),
+  });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -395,7 +401,7 @@
               onInsertBefore={handleInsertStep}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              onDragEnd={() => (steps = steps.filter(({ id }) => id !== 'ghost'))}
+              onDragEnd={handleDrop}
               onDragStart={(event) => (dragSourceId = event.dataTransfer?.getData('text/plain'))}
             />
           </div>

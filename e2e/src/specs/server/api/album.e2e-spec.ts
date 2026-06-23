@@ -504,13 +504,14 @@ describe('/albums', () => {
       });
     });
 
-    it('should not be able to share album with owner', async () => {
+    it('should deduplicate owner from albumUsers on create', async () => {
       const { status, body } = await request(app)
         .post('/albums')
         .send({ albumName: 'New album', albumUsers: [{ role: AlbumUserRole.Editor, userId: user1.userId }] })
         .set('Authorization', `Bearer ${user1.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Cannot share album with owner'));
+      expect(status).toBe(201);
+      expect(body.albumUsers).toHaveLength(1);
+      expect(body.albumUsers[0]).toMatchObject({ role: AlbumUserRole.Owner, user: { id: user1.userId } });
     });
   });
 
@@ -729,8 +730,8 @@ describe('/albums', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }] });
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('User already added'));
+      expect(status).toBe(200);
+      expect(body.albumUsers.length).toEqual(1);
     });
 
     it('should not be able to add existing user to shared album', async () => {
@@ -744,8 +745,8 @@ describe('/albums', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }] });
 
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('User already added'));
+      expect(status).toBe(200);
+      expect(body.albumUsers.length).toEqual(2);
     });
   });
 

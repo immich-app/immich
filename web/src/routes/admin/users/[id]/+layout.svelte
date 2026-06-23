@@ -12,10 +12,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { type UserAdminResponseDto } from '@immich/sdk';
+  import { CalendarHeatmapType, getUserCalendarHeatmapAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import {
     Alert,
     Badge,
+    CardTitle,
     Code,
     CommandPaletteDefaultProvider,
     Container,
@@ -33,6 +34,7 @@
     mdiChartPie,
     mdiChartPieOutline,
     mdiCheckCircle,
+    mdiCloudUploadOutline,
     mdiDevices,
     mdiFeatureSearchOutline,
     mdiPlayCircle,
@@ -41,6 +43,9 @@
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { LayoutData } from './$types';
+  import { getHeatmapRange } from '$lib';
+  import Skeleton from '$lib/elements/Skeleton.svelte';
+  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
 
   type Props = {
     children?: Snippet;
@@ -205,6 +210,23 @@
             {/each}
           </Stack>
         </AdminCard>
+
+        <div class="col-span-2 px-4 py-2">
+          <div class="flex gap-2 text-primary">
+            <Icon icon={mdiCloudUploadOutline} size="1.5rem" />
+            <CardTitle>{$t('uploads')}</CardTitle>
+          </div>
+          {#await getUserCalendarHeatmapAdmin({ ...getHeatmapRange(), id: user.id, $type: CalendarHeatmapType.Upload })}
+            <Skeleton height={80} class="mt-2 rounded-lg" />
+          {:then data}
+            <CalendarHeatmap
+              {data}
+              itemLabel={(item) => $t('upload_day_count', { values: item })}
+              totalLabel={(count) => $t('uploads_count', { values: { count } })}
+            />
+          {/await}
+        </div>
+        <!-- </AdminCard> -->
       </div>
 
       {@render children?.()}

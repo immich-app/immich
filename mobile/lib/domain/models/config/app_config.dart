@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/network_config.dart';
+import 'package:immich_mobile/domain/models/config/share_config.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/config/timeline_config.dart';
@@ -30,6 +31,7 @@ class AppConfig {
   final AlbumConfig album;
   final BackupConfig backup;
   final NetworkConfig network;
+  final ShareConfig share;
 
   const AppConfig({
     this.logLevel = .info,
@@ -43,6 +45,7 @@ class AppConfig {
     this.album = const .new(),
     this.backup = const .new(),
     this.network = const .new(),
+    this.share = const .new(),
   });
 
   AppConfig copyWith({
@@ -57,6 +60,7 @@ class AppConfig {
     AlbumConfig? album,
     BackupConfig? backup,
     NetworkConfig? network,
+    ShareConfig? share,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
     theme: theme ?? this.theme,
@@ -69,6 +73,7 @@ class AppConfig {
     album: album ?? this.album,
     backup: backup ?? this.backup,
     network: network ?? this.network,
+    share: share ?? this.share,
   );
 
   @override
@@ -85,17 +90,18 @@ class AppConfig {
           other.slideshow == slideshow &&
           other.album == album &&
           other.backup == backup &&
-          other.network == network);
+          other.network == network &&
+          other.share == share);
 
   @override
   int get hashCode =>
-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network);
+      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share);
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
 
-  T read<T extends Object>(SettingsKey<T> key) =>
+  T read<T>(SettingsKey<T> key) =>
       (switch (key) {
             .logLevel => logLevel,
             .themePrimaryColor => theme.primaryColor,
@@ -135,7 +141,7 @@ class AppConfig {
             .cleanupKeepAlbumIds => cleanup.keepAlbumIds,
             .cleanupCutoffDaysAgo => cleanup.cutoffDaysAgo,
             .cleanupDefaultsInitialized => cleanup.defaultsInitialized,
-            .slideshowTransition => slideshow.transition,
+            .shareFileType => share.fileType,
             .slideshowRepeat => slideshow.repeat,
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
@@ -143,10 +149,10 @@ class AppConfig {
           })
           as T;
 
-  factory AppConfig.fromEntries(Map<SettingsKey<Object>, Object> overrides) =>
+  factory AppConfig.fromEntries(Map<SettingsKey, Object?> overrides) =>
       overrides.entries.fold(const AppConfig(), (config, entry) => config.write(entry.key, entry.value));
 
-  AppConfig write<T extends Object>(SettingsKey<T> key, T value) {
+  AppConfig write<T, U extends T>(SettingsKey<T> key, U value) {
     return switch (key) {
       .logLevel => copyWith(logLevel: value as LogLevel),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),
@@ -160,8 +166,10 @@ class AppConfig {
       .viewerAutoPlayVideo => copyWith(viewer: viewer.copyWith(autoPlayVideo: value as bool)),
       .viewerTapToNavigate => copyWith(viewer: viewer.copyWith(tapToNavigate: value as bool)),
       .networkAutoEndpointSwitching => copyWith(network: network.copyWith(autoEndpointSwitching: value as bool)),
-      .networkPreferredWifiName => copyWith(network: network.copyWith(preferredWifiName: (value as String))),
-      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: (value as String))),
+      .networkPreferredWifiName => copyWith(
+        network: network.copyWith(preferredWifiName: .fromNullable((value as String?))),
+      ),
+      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable((value as String?)))),
       .networkExternalEndpointList => copyWith(network: network.copyWith(externalEndpointList: value as List<String>)),
       .networkCustomHeaders => copyWith(network: network.copyWith(customHeaders: value as Map<String, String>)),
       .albumSortMode => copyWith(album: album.copyWith(sortMode: value as AlbumSortMode)),
@@ -186,7 +194,7 @@ class AppConfig {
       .cleanupKeepAlbumIds => copyWith(cleanup: cleanup.copyWith(keepAlbumIds: value as List<String>)),
       .cleanupCutoffDaysAgo => copyWith(cleanup: cleanup.copyWith(cutoffDaysAgo: value as int)),
       .cleanupDefaultsInitialized => copyWith(cleanup: cleanup.copyWith(defaultsInitialized: value as bool)),
-      .slideshowTransition => copyWith(slideshow: slideshow.copyWith(transition: value as bool)),
+      .shareFileType => copyWith(share: share.copyWith(fileType: value as ShareAssetType)),
       .slideshowRepeat => copyWith(slideshow: slideshow.copyWith(repeat: value as bool)),
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),

@@ -33,6 +33,7 @@ import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { IntegrityRepository } from 'src/repositories/integrity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -234,6 +235,7 @@ export type ServiceOverrides = {
   duplicateRepository: DuplicateRepository;
   email: EmailRepository;
   event: EventRepository;
+  integrityReport: IntegrityRepository;
   job: JobRepository;
   library: LibraryRepository;
   logger: LoggingRepository;
@@ -316,6 +318,7 @@ export const getMocks = () => {
     email: automock(EmailRepository, { args: [loggerMock] }),
     // eslint-disable-next-line no-sparse-arrays
     event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
+    integrityReport: automock(IntegrityRepository, { strict: false }),
     job: newJobRepositoryMock(),
     apiKey: automock(ApiKeyRepository),
     library: automock(LibraryRepository, { strict: false }),
@@ -385,6 +388,7 @@ export const newTestService = <T extends BaseService>(
     overrides.duplicateRepository || (mocks.duplicateRepository as As<DuplicateRepository>),
     overrides.email || (mocks.email as As<EmailRepository>),
     overrides.event || (mocks.event as As<EventRepository>),
+    overrides.integrityReport || (mocks.integrityReport as As<IntegrityRepository>),
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),
     overrides.machineLearning || (mocks.machineLearning as As<MachineLearningRepository>),
@@ -540,7 +544,44 @@ export const mockDuplex =
     return duplex;
   };
 
-export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  const stdoutStream = new Readable({
+    read() {
+      this.push(stdout); // write mock data to stdout
+      this.push(null); // end stream
+    },
+  });
+
+  return {
+    stdout: stdoutStream,
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        stdoutStream.once('end', () => callback(0));
+      }
+      if (event === 'error' && error) {
+        stdoutStream.once('end', () => callback(error));
+      }
+      if (event === 'exit') {
+        stdoutStream.once('end', () => callback(exitCode));
+      }
+    }),
+    kill: vitest.fn(),
+  } as unknown as ChildProcessWithoutNullStreams;
+});
+
+export async function* makeStream<T>(items: T[] = []): AsyncGenerator<T> {
   for (const item of items) {
     await Promise.resolve();
     yield item;

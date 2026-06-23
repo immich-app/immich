@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0
+ * 3.0.0-rc.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -73,6 +73,21 @@ export type DatabaseBackupListResponseDto = {
 export type DatabaseBackupUploadDto = {
     /** Database backup file */
     file?: Blob;
+};
+export type IntegrityReportResponseDto = {
+    items: {
+        /** Integrity report item id */
+        id: string;
+        /** Integrity report item path */
+        path: string;
+        "type": IntegrityReport;
+    }[];
+    nextCursor?: string;
+};
+export type IntegrityReportSummaryResponseDto = {
+    checksum_mismatch: number;
+    missing_file: number;
+    untracked_file: number;
 };
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
@@ -261,6 +276,20 @@ export type UserAdminUpdateDto = {
     shouldChangePassword?: boolean;
     /** Storage label */
     storageLabel?: string | null;
+};
+export type CalendarHeatmapResponseDto = {
+    /** Start date in UTC */
+    "from": string;
+    series: {
+        /** Activity count */
+        count: number;
+        /** Date in UTC */
+        date: string;
+    }[];
+    /** End date in UTC */
+    to: string;
+    /** Total activity count over the period */
+    totalCount: number;
 };
 export type AlbumsResponse = {
     defaultAssetOrder: AssetOrder;
@@ -644,7 +673,7 @@ export type AssetMediaResponseDto = {
 export type AssetBulkUpdateDto = {
     /** Original date and time */
     dateTimeOriginal?: string;
-    /** Relative time offset in seconds */
+    /** Relative time offset in minutes */
     dateTimeRelative?: number;
     /** Asset description */
     description?: string;
@@ -658,7 +687,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating in range [1-5], or null for unrated */
+    /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
     rating?: number | null;
     /** Time zone (IANA timezone) */
     timeZone?: string;
@@ -667,7 +696,7 @@ export type AssetBulkUpdateDto = {
 export type AssetBulkUploadCheckItem = {
     /** Base64 or hex encoded SHA1 hash */
     checksum: string;
-    /** Asset ID */
+    /** Client-side identifier echoed in the response to match results to inputs (e.g. filename) */
     id: string;
 };
 export type AssetBulkUploadCheckDto = {
@@ -678,7 +707,7 @@ export type AssetBulkUploadCheckResult = {
     action: AssetUploadAction;
     /** Existing asset ID if duplicate */
     assetId?: string;
-    /** Asset ID */
+    /** Client-side identifier echoed from the request to match results to inputs */
     id: string;
     /** Whether existing asset is trashed */
     isTrashed?: boolean;
@@ -905,7 +934,7 @@ export type UpdateAssetDto = {
     livePhotoVideoId?: string | null;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating in range [1-5], or null for unrated */
+    /** Rating in range [1-5] (starred), -1 (rejected), or null (unrated) */
     rating?: number | null;
     visibility?: AssetVisibility;
 };
@@ -1196,6 +1225,7 @@ export type QueuesResponseLegacyDto = {
     editor: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
     facialRecognition: QueueResponseLegacyDto;
+    integrityCheck: QueueResponseLegacyDto;
     library: QueueResponseLegacyDto;
     metadataExtraction: QueueResponseLegacyDto;
     migration: QueueResponseLegacyDto;
@@ -2335,6 +2365,27 @@ export type SystemConfigImageDto = {
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
+export type SystemConfigIntegrityChecksumJob = {
+    /** Cron expression for when the integrity check should run */
+    cronExpression: string;
+    /** Enabled */
+    enabled: boolean;
+    /** Percentage limit of the integrity checksum job */
+    percentageLimit: number;
+    /** How long the integrity checksum job may run for */
+    timeLimit: number;
+};
+export type SystemConfigIntegrityJob = {
+    /** Cron expression for when the integrity check should run */
+    cronExpression: string;
+    /** Enabled */
+    enabled: boolean;
+};
+export type SystemConfigIntegrityChecks = {
+    checksumFiles: SystemConfigIntegrityChecksumJob;
+    missingFiles: SystemConfigIntegrityJob;
+    untrackedFiles: SystemConfigIntegrityJob;
+};
 export type JobSettingsDto = {
     /** Concurrency */
     concurrency: number;
@@ -2343,6 +2394,7 @@ export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
     editor: JobSettingsDto;
     faceDetection: JobSettingsDto;
+    integrityCheck: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
@@ -2456,7 +2508,7 @@ export type SystemConfigNightlyTasksDto = {
     generateMemories: boolean;
     /** Missing thumbnails */
     missingThumbnails: boolean;
-    /** Start time */
+    /** Start time (HH:MM) */
     startTime: string;
     /** Sync quota usage */
     syncQuotaUsage: boolean;
@@ -2560,6 +2612,7 @@ export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
+    integrityChecks: SystemConfigIntegrityChecks;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -3006,6 +3059,44 @@ export type SyncAssetMetadataV1 = {
         [key: string]: any;
     };
 };
+export type SyncAssetOcrDeleteV1 = {
+    /** Original asset ID of the deleted OCR entry */
+    assetId: string;
+    /** Timestamp when the OCR entry was deleted */
+    deletedAt: string;
+    /** Audit row ID of the deleted OCR entry */
+    id: string;
+};
+export type SyncAssetOcrV1 = {
+    /** Asset ID */
+    assetId: string;
+    /** Confidence score of the bounding box */
+    boxScore: number;
+    /** OCR entry ID */
+    id: string;
+    /** Whether the OCR entry is visible */
+    isVisible: boolean;
+    /** Recognized text content */
+    text: string;
+    /** Confidence score of the recognized text */
+    textScore: number;
+    /** Top-left X coordinate (normalized 0–1) */
+    x1: number;
+    /** Top-right X coordinate (normalized 0–1) */
+    x2: number;
+    /** Bottom-right X coordinate (normalized 0–1) */
+    x3: number;
+    /** Bottom-left X coordinate (normalized 0–1) */
+    x4: number;
+    /** Top-left Y coordinate (normalized 0–1) */
+    y1: number;
+    /** Top-right Y coordinate (normalized 0–1) */
+    y2: number;
+    /** Bottom-right Y coordinate (normalized 0–1) */
+    y3: number;
+    /** Bottom-left Y coordinate (normalized 0–1) */
+    y4: number;
+};
 export type SyncAssetV1 = {
     /** Checksum */
     checksum: string;
@@ -3380,6 +3471,73 @@ export function downloadDatabaseBackup({ filename }: {
     }));
 }
 /**
+ * Get integrity report by type
+ */
+export function getIntegrityReport({ cursor, limit, $type }: {
+    cursor?: string;
+    limit?: number;
+    $type: IntegrityReport;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: IntegrityReportResponseDto;
+    }>(`/admin/integrity/report${QS.query(QS.explode({
+        cursor,
+        limit,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Delete integrity report item
+ */
+export function deleteIntegrityReport({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/integrity/report/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Download flagged file
+ */
+export function getIntegrityReportFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/integrity/report/${encodeURIComponent(id)}/file`, {
+        ...opts
+    }));
+}
+/**
+ * Export integrity report by type as CSV
+ */
+export function getIntegrityReportCsv({ $type }: {
+    $type: IntegrityReport;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/integrity/report/${encodeURIComponent($type)}/csv`, {
+        ...opts
+    }));
+}
+/**
+ * Get integrity report summary
+ */
+export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: IntegrityReportSummaryResponseDto;
+    }>("/admin/integrity/summary", {
+        ...opts
+    }));
+}
+/**
  * Set maintenance mode
  */
 export function setMaintenanceMode({ setMaintenanceModeDto }: {
@@ -3550,6 +3708,26 @@ export function updateUserAdmin({ id, userAdminUpdateDto }: {
         method: "PUT",
         body: userAdminUpdateDto
     })));
+}
+/**
+ * Retrieve calendar heatmap activity
+ */
+export function getUserCalendarHeatmapAdmin({ $from, id, to, $type }: {
+    $from?: string;
+    id: string;
+    to?: string;
+    $type?: CalendarHeatmapType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: CalendarHeatmapResponseDto;
+    }>(`/admin/users/${encodeURIComponent(id)}/calendar-heatmap${QS.query(QS.explode({
+        "from": $from,
+        to,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Retrieve user preferences
@@ -4281,12 +4459,13 @@ export function endSession({ id, key, sessionId, slug }: {
 /**
  * Get HLS media playlist
  */
-export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
+export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex, xImmichHlsPos }: {
     id: string;
     key?: string;
     sessionId: string;
     slug?: string;
     variantIndex: number;
+    xImmichHlsPos?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4295,19 +4474,23 @@ export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
         key,
         slug
     }))}`, {
-        ...opts
+        ...opts,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-hls-pos": xImmichHlsPos
+        })
     }));
 }
 /**
  * Get HLS segment or init file
  */
-export function getSegment({ filename, id, key, sessionId, slug, variantIndex }: {
+export function getSegment({ filename, id, key, sessionId, slug, variantIndex, xImmichHlsMsn }: {
     filename: string;
     id: string;
     key?: string;
     sessionId: string;
     slug?: string;
     variantIndex: number;
+    xImmichHlsMsn?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4316,7 +4499,10 @@ export function getSegment({ filename, id, key, sessionId, slug, variantIndex }:
         key,
         slug
     }))}`, {
-        ...opts
+        ...opts,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-hls-msn": xImmichHlsMsn
+        })
     }));
 }
 /**
@@ -6590,6 +6776,25 @@ export function updateMyUser({ userUpdateMeDto }: {
     })));
 }
 /**
+ * Retrieve calendar heatmap activity
+ */
+export function getMyCalendarHeatmap({ $from, to, $type }: {
+    $from?: string;
+    to?: string;
+    $type?: CalendarHeatmapType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: CalendarHeatmapResponseDto;
+    }>(`/users/me/calendar-heatmap${QS.query(QS.explode({
+        "from": $from,
+        to,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Delete user product key
  */
 export function deleteUserLicense(opts?: Oazapfts.RequestOpts) {
@@ -6883,6 +7088,11 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum IntegrityReport {
+    UntrackedFile = "untracked_file",
+    MissingFile = "missing_file",
+    ChecksumMismatch = "checksum_mismatch"
+}
 export enum MaintenanceAction {
     Start = "start",
     End = "end",
@@ -6915,6 +7125,10 @@ export enum UserStatus {
     Active = "active",
     Removing = "removing",
     Deleted = "deleted"
+}
+export enum CalendarHeatmapType {
+    Upload = "Upload",
+    Taken = "Taken"
 }
 export enum AssetOrder {
     Asc = "asc",
@@ -7145,7 +7359,16 @@ export enum ManualJobName {
     UserCleanup = "user-cleanup",
     MemoryCleanup = "memory-cleanup",
     MemoryCreate = "memory-create",
-    BackupDatabase = "backup-database"
+    BackupDatabase = "backup-database",
+    IntegrityMissingFiles = "integrity-missing-files",
+    IntegrityUntrackedFiles = "integrity-untracked-files",
+    IntegrityChecksumMismatch = "integrity-checksum-mismatch",
+    IntegrityMissingFilesRefresh = "integrity-missing-files-refresh",
+    IntegrityUntrackedFilesRefresh = "integrity-untracked-files-refresh",
+    IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh",
+    IntegrityMissingFilesDeleteAll = "integrity-missing-files-delete-all",
+    IntegrityUntrackedFilesDeleteAll = "integrity-untracked-files-delete-all",
+    IntegrityChecksumMismatchDeleteAll = "integrity-checksum-mismatch-delete-all"
 }
 export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
@@ -7165,6 +7388,7 @@ export enum QueueName {
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
     Workflow = "workflow",
+    IntegrityCheck = "integrityCheck",
     Editor = "editor"
 }
 export enum QueueCommand {
@@ -7187,13 +7411,11 @@ export enum PartnerDirection {
     SharedWith = "shared-with"
 }
 export enum WorkflowType {
-    AssetV1 = "AssetV1",
-    AssetPersonV1 = "AssetPersonV1"
+    AssetV1 = "AssetV1"
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
-    AssetMetadataExtraction = "AssetMetadataExtraction",
-    PersonRecognized = "PersonRecognized"
+    AssetMetadataExtraction = "AssetMetadataExtraction"
 }
 export enum QueueJobStatus {
     Active = "active",
@@ -7259,7 +7481,17 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowAssetTrigger = "WorkflowAssetTrigger"
+    WorkflowAssetTrigger = "WorkflowAssetTrigger",
+    IntegrityUntrackedFilesQueueAll = "IntegrityUntrackedFilesQueueAll",
+    IntegrityUntrackedFiles = "IntegrityUntrackedFiles",
+    IntegrityUntrackedRefresh = "IntegrityUntrackedRefresh",
+    IntegrityMissingFilesQueueAll = "IntegrityMissingFilesQueueAll",
+    IntegrityMissingFiles = "IntegrityMissingFiles",
+    IntegrityMissingFilesRefresh = "IntegrityMissingFilesRefresh",
+    IntegrityChecksumFiles = "IntegrityChecksumFiles",
+    IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
+    IntegrityDeleteReportType = "IntegrityDeleteReportType",
+    IntegrityDeleteReports = "IntegrityDeleteReports"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -7290,6 +7522,8 @@ export enum SyncEntityType {
     AssetEditDeleteV1 = "AssetEditDeleteV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
+    AssetOcrV1 = "AssetOcrV1",
+    AssetOcrDeleteV1 = "AssetOcrDeleteV1",
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
@@ -7350,6 +7584,7 @@ export enum SyncRequestType {
     AssetExifsV1 = "AssetExifsV1",
     AssetEditsV1 = "AssetEditsV1",
     AssetMetadataV1 = "AssetMetadataV1",
+    AssetOcrV1 = "AssetOcrV1",
     AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",

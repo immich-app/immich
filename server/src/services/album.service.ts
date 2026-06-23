@@ -98,17 +98,13 @@ export class AlbumService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    const albumUsers = dto.albumUsers || [];
+    const albumUsers = (dto.albumUsers || []).filter(({ userId }) => userId !== auth.user.id);
 
     for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
       if (!exists) {
         this.logger.debug('Album creation failed: user not found');
         throw new BadRequestException('Invalid user');
-      }
-
-      if (userId == auth.user.id) {
-        throw new BadRequestException('Cannot share album with owner');
       }
     }
 
@@ -294,7 +290,7 @@ export class AlbumService extends BaseService {
 
       const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
       if (exists) {
-        throw new BadRequestException('User already added');
+        continue;
       }
 
       const user = await this.userRepository.get(userId, {});

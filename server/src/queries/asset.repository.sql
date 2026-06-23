@@ -339,6 +339,22 @@ where
 limit
   $3
 
+-- AssetRepository.getCalendarHeatmap
+select
+  date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "date",
+  count(*) as "count"
+from
+  "asset"
+where
+  "ownerId" = $1::uuid
+  and "createdAt" >= $2
+  and "createdAt" < $3
+  and "deletedAt" is null
+group by
+  date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+order by
+  "date" asc
+
 -- AssetRepository.getTimeBuckets
 with
   "asset" as (

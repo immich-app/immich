@@ -129,6 +129,7 @@ export default typescriptEslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
     },

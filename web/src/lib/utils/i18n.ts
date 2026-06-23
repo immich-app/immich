@@ -19,7 +19,7 @@ const fileCodes = Object.keys(modules)
   .map((path) => path.match(/\/(\w+)\.json$/)?.[1])
   .filter(Boolean) as string[];
 
-const convertBCP47 = (code: string) => code.replaceAll('_', '-');
+export const convertBCP47 = (code: string) => code.replaceAll('_', '-');
 
 export const langCodes = fileCodes.map((code) => convertBCP47(code));
 
@@ -112,8 +112,11 @@ const capitalize = (string: string) =>
     .join(' ');
 
 const nonIntlNames: Record<string, string> = {
-  mfa: 'Malay (Pattani)',
   bi: 'Bislama',
+  kxm: 'Khmer Surin',
+  mfa: 'Malay (Pattani)',
+  swg: 'Schwäbisch',
+  tl: 'Tagalog',
 };
 
 const getLanguageName = (code: string) =>

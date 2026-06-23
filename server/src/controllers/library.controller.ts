@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -57,9 +57,20 @@ export class LibraryController {
   @Endpoint({
     summary: 'Update a library',
     description: 'Update an existing external library.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateLibrary' }),
   })
   updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
+    return this.service.update(id, dto);
+  }
+
+  @Patch(':id')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
+  updateLibraryV3(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.update(id, dto);
   }
 

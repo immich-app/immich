@@ -20,7 +20,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/remote_album_sliver_app_bar.dart';
-import 'package:openapi/api.dart' show Optional;
 
 @RoutePage()
 class RemoteAlbumPage extends ConsumerStatefulWidget {
@@ -248,13 +247,10 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
     try {
       final newTitle = titleController.text.trim();
       final newDescription = descriptionController.text.trim();
-      final description = newDescription.isEmpty
-          ? const Optional<String?>.present(null)
-          : Optional<String?>.present(newDescription);
 
       await ref
           .read(remoteAlbumProvider.notifier)
-          .updateAlbum(widget.album.id, name: newTitle, description: description);
+          .updateAlbum(widget.album.id, name: newTitle, description: newDescription);
 
       if (mounted) {
         Navigator.of(

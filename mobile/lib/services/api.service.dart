@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
@@ -179,7 +179,7 @@ class ApiService {
     }
     final network = SettingsRepository.instance.appConfig.network;
     final localEndpoint = network.localEndpoint;
-    if (localEndpoint.isNotEmpty) {
+    if (localEndpoint != null && localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
     }
     for (final url in network.externalEndpointList) {

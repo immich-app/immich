@@ -19,6 +19,11 @@ import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:logging/logging.dart';
 
+final backupAlbumCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  await ref.read(backupAlbumProvider.notifier).getAll();
+  return ref.read(backupAlbumProvider).length;
+});
+
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
   const DriftBackupAlbumSelectionPage({super.key});
@@ -44,7 +49,6 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _searchFocusNode = FocusNode();
 
     _enableSyncUploadAlbum.value = ref.read(appConfigProvider).backup.syncAlbums;
-    ref.read(backupAlbumProvider.notifier).getAll();
 
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
@@ -79,6 +83,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(backupAlbumCountProvider).isLoading;
     final albums = ref.watch(backupAlbumProvider);
     final albumCount = albums.length;
     // Filter albums based on search query
@@ -246,15 +251,32 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                     ],
                   ),
                 ),
-                SliverLayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.crossAxisExtent > 600) {
-                      return _AlbumSelectionGrid(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
-                    } else {
-                      return _AlbumSelectionList(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
-                    }
-                  },
-                ),
+                if (filteredAlbums.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Center(
+                      child: _searchQuery.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Text('album_search_not_found'.t(context: context)),
+                            )
+                          : isLoading
+                          ? const CircularProgressIndicator()
+                          : Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Text('no_albums_found'.t(context: context)),
+                            ),
+                    ),
+                  )
+                else
+                  SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.crossAxisExtent > 600) {
+                        return _AlbumSelectionGrid(filteredAlbums: filteredAlbums);
+                      } else {
+                        return _AlbumSelectionList(filteredAlbums: filteredAlbums);
+                      }
+                    },
+                  ),
               ],
             ),
             if (_handleLinkedAlbumFuture != null)
@@ -291,27 +313,11 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
 
 class _AlbumSelectionList extends StatelessWidget {
   final List<LocalAlbum> filteredAlbums;
-  final String searchQuery;
 
-  const _AlbumSelectionList({required this.filteredAlbums, required this.searchQuery});
+  const _AlbumSelectionList({required this.filteredAlbums});
 
   @override
   Widget build(BuildContext context) {
-    if (filteredAlbums.isEmpty && searchQuery.isNotEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text('album_search_not_found'.t(context: context)),
-          ),
-        ),
-      );
-    }
-
-    if (filteredAlbums.isEmpty) {
-      return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
-    }
-
     return SliverPadding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       sliver: SliverList(
@@ -325,27 +331,11 @@ class _AlbumSelectionList extends StatelessWidget {
 
 class _AlbumSelectionGrid extends StatelessWidget {
   final List<LocalAlbum> filteredAlbums;
-  final String searchQuery;
 
-  const _AlbumSelectionGrid({required this.filteredAlbums, required this.searchQuery});
+  const _AlbumSelectionGrid({required this.filteredAlbums});
 
   @override
   Widget build(BuildContext context) {
-    if (filteredAlbums.isEmpty && searchQuery.isNotEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text('album_search_not_found'.t(context: context)),
-          ),
-        ),
-      );
-    }
-
-    if (filteredAlbums.isEmpty) {
-      return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
-    }
-
     return SliverPadding(
       padding: const EdgeInsets.all(12.0),
       sliver: SliverGrid.builder(

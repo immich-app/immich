@@ -45,7 +45,7 @@ All the services are packaged to run as with single Docker Compose command.
 5. From the root directory, run:
 
 ```bash title="Start development server"
-make dev # required Makefile installed on the system.
+mise dev
 ```
 
 5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.
@@ -88,7 +88,7 @@ To see local changes to `@immich/ui` in Immich, do the following:
 3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)
 4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui/packages/ui')`)
 5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
-6. Start up the stack via `make dev`
+6. Start up the stack via `mise dev`
 7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)
 
 ### Mobile app

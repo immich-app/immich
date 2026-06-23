@@ -616,6 +616,17 @@ export class MetadataService extends BaseService {
     // never use duration from sidecar
     delete sidecarTags?.Duration;
 
+    // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
+    // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
+    if (mimeTypes.isHeifImage(asset.originalPath)) {
+      const orientation = this.getHeifOrientation(mediaTags);
+      if (orientation === null) {
+        delete mediaTags.Orientation;
+      } else {
+        mediaTags.Orientation = orientation;
+      }
+    }
+
     return {
       tags: { ...mediaTags, ...videoResult?.tags, ...sidecarTags },
       audio: videoResult?.audio,
@@ -1109,5 +1120,27 @@ export class MetadataService extends BaseService {
     }
 
     return { tags, audio, video, packets, format };
+  }
+
+  private getHeifOrientation(exifTags: ImmichTags): ExifOrientation | null {
+    // https://exiftool.org/TagNames/QuickTime.html#ItemPropCont
+    const rotation = typeof exifTags.Rotation === 'number' ? exifTags.Rotation : undefined;
+    switch (rotation) {
+      case 0: {
+        return ExifOrientation.Horizontal;
+      }
+      case 1: {
+        return ExifOrientation.Rotate270CW;
+      }
+      case 2: {
+        return ExifOrientation.Rotate180;
+      }
+      case 3: {
+        return ExifOrientation.Rotate90CW;
+      }
+      default: {
+        return null;
+      }
+    }
   }
 }

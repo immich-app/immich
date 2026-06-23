@@ -3,9 +3,11 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
@@ -36,7 +38,7 @@
 
   let filteredCandidates = $derived(
     searchTerm
-      ? candidates.filter((person) => person.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      ? candidates.filter((person) => normalizeSearchString(person.name).includes(normalizeSearchString(searchTerm)))
       : candidates,
   );
 
@@ -326,9 +328,10 @@
       });
 
       await assetViewerManager.setAssetId(assetId);
+      faceManager.clear();
+      onClose();
     } catch (error) {
       handleError(error, 'Error tagging face');
-    } finally {
       onClose();
     }
   };

@@ -80,7 +80,14 @@ export class QueueService extends BaseService {
     this.jobRepository.setup(this.services);
     if (this.worker === ImmichWorker.Microservices) {
       this.jobRepository.startWorkers();
+    } else if (this.worker === ImmichWorker.Api) {
+      this.jobRepository.watchWorkers();
     }
+  }
+
+  @OnEvent({ name: 'AppShutdown' })
+  onShutdown() {
+    this.jobRepository.teardown();
   }
 
   private updateConcurrency(config: SystemConfig) {
