@@ -81,7 +81,7 @@
   </div>
 {:else if schema.uiHint?.type === 'AlbumId'}
   <SchemaAlbumPicker {label} {description} array={schema.array} bind:albumIds={getUiHintValue, setUiHintValue} />
-{:else if schema.uiHint === 'TagId'}
+{:else if schema.uiHint?.type === 'TagId'}
   <SchemaTagPicker bind:tagIds={getUiHintValue, setUiHintValue} />
 {:else if schema.enum && schema.array}
   <Field {label} {description}>
