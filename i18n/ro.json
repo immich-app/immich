@@ -1523,7 +1523,6 @@
   "map_location_picker_page_use_location": "Folosește această locație",
   "map_location_service_disabled_content": "Serviciul de localizare trebuie să fie activat pentru a afișa resursele din locația actuală. Dorești să o activezi acum?",
   "map_location_service_disabled_title": "Serviciul de localizare este dezactivat",
-  "map_marker_for_images": "Marcator de hartă pentru imaginile realizate în {city}, {country}",
   "map_marker_with_image": "Marcator de hartă cu imagine",
   "map_no_location_permission_content": "Permisiunea de localizare este necesară pentru a afișa resursele din locația actuală. Dorești să o activezi acum?",
   "map_no_location_permission_title": "Permisiunea de localizare este dezactivată",

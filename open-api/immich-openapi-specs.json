@@ -17012,12 +17012,12 @@
           },
           "assetId": {
             "description": "Existing asset ID if duplicate",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "id": {
-            "description": "Asset ID",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "Client-side identifier echoed from the request to match results to inputs",
             "type": "string"
           },
           "isTrashed": {

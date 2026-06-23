@@ -1548,7 +1548,7 @@
   "map_location_picker_page_use_location": "Použít tuto polohu",
   "map_location_service_disabled_content": "Pro zobrazení fotek z vaší aktuální polohy musí být povolena služba určování polohy. Chcete ji nyní povolit?",
   "map_location_service_disabled_title": "Služba určování polohy je zakázána",
-  "map_marker_for_images": "Značka na mapě pro snímky pořízené v {city}, {country}",
+  "map_marker_for_image": "Značka na mapě pro obrázek pořízený ve městě {city}, {country}",
   "map_marker_with_image": "Značka mapy s obrázkem",
   "map_no_location_permission_content": "Oprávnění polohy je nutné pro zobrazení fotek z vaší aktuální polohy. Chcete oprávnění nyní povolit?",
   "map_no_location_permission_title": "Oprávnění polohy zamítnuto",

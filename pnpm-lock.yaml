@@ -353,8 +353,8 @@ importers:
         specifier: ^1.8.16
         version: 1.8.17
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: ^6.0.0
+        version: 6.0.3
 
   packages/sdk:
     dependencies:
