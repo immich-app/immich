@@ -22,6 +22,10 @@ import { UserTable } from 'src/schema/tables/user.table';
   using: 'gin',
   expression: 'f_unaccent("name") gin_trgm_ops',
 })
+@Index({
+  name: 'idx_person_assetCount',
+  columns: ['assetCount'],
+})
 @UpdatedAtTrigger('person_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
@@ -66,4 +70,7 @@ export class PersonTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'integer', default: 0 })
+  assetCount!: Generated<number>;
 }
