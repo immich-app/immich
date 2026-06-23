@@ -46,7 +46,9 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
     return query.map((row) {
       final asset = row.readTable(_db.remoteAssetEntity).toDto();
-      return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
+      final localId = row.read(_db.localAssetEntity.id);
+      // checksum-equality join: the local's bytes are the remote's
+      return asset.copyWith(localId: localId, localChecksum: localId == null ? null : asset.checksum);
     });
   }
 

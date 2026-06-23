@@ -12,6 +12,19 @@ class LocalAsset extends BaseAsset {
   final double? latitude;
   final double? longitude;
 
+  // Remote id of this asset's previous upload; used to stack a new edit under it.
+  final String? priorRemoteId;
+
+  // Local checksum at the last sync action; lets backup skip an already-handled
+  // local whose current render hashes fresh (the iOS revert case).
+  final String? syncedChecksum;
+
+  // iOS burst grouping. burstId = PHAsset.burstIdentifier (null for non-burst).
+  // isBurstRepresentative = the auto-picked lead frame (timeline tile + stack
+  // anchor).
+  final String? burstId;
+  final bool isBurstRepresentative;
+
   const LocalAsset({
     required this.id,
     String? remoteId,
@@ -32,6 +45,10 @@ class LocalAsset extends BaseAsset {
     this.latitude,
     this.longitude,
     required super.isEdited,
+    this.priorRemoteId,
+    this.syncedChecksum,
+    this.burstId,
+    this.isBurstRepresentative = false,
   }) : remoteAssetId = remoteId;
 
   @override
@@ -120,6 +137,10 @@ class LocalAsset extends BaseAsset {
     double? latitude,
     double? longitude,
     bool? isEdited,
+    String? priorRemoteId,
+    String? syncedChecksum,
+    String? burstId,
+    bool? isBurstRepresentative,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -140,6 +161,10 @@ class LocalAsset extends BaseAsset {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isEdited: isEdited ?? this.isEdited,
+      priorRemoteId: priorRemoteId ?? this.priorRemoteId,
+      syncedChecksum: syncedChecksum ?? this.syncedChecksum,
+      burstId: burstId ?? this.burstId,
+      isBurstRepresentative: isBurstRepresentative ?? this.isBurstRepresentative,
     );
   }
 }

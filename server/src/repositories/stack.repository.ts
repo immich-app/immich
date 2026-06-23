@@ -6,7 +6,7 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { StackTable } from 'src/schema/tables/stack.table';
-import { asUuid, withDefaultVisibility } from 'src/utils/database';
+import { asUuid, isStackPrimaryConstraint, withDefaultVisibility } from 'src/utils/database';
 
 export interface StackSearch {
   ownerId: string;
@@ -122,6 +122,86 @@ export class StackRepository {
         .where('id', '=', newRecord.id)
         .executeTakeFirstOrThrow();
     });
+  }
+
+  /**
+   * Link `newAssetId` into the stack containing `parentId`. By default the new
+   * asset becomes the stack primary (edit-pair semantics: the latest edit leads).
+   * With `keepPrimary`, the parent/existing primary is preserved and the new
+   * asset just joins — used for iOS burst frames so the representative stays the
+   * displayed cover.
+   */
+  async linkAsset(
+    ownerId: string,
+    newAssetId: string,
+    parentId: string,
+    keepPrimary = false,
+  ): Promise<{ stackId: string; created: boolean } | null> {
+    try {
+      return await this.db.transaction().execute(async (tx) => {
+        // Lock the parent so two concurrent uploads can't each create a stack for it.
+        const parent = await tx
+          .selectFrom('asset')
+          .select(['id', 'ownerId', 'stackId', 'deletedAt'])
+          .where('id', '=', asUuid(parentId))
+          .forUpdate()
+          .executeTakeFirst();
+
+        if (!parent || parent.ownerId !== ownerId || parent.deletedAt) {
+          return null;
+        }
+
+        // A re-uploaded duplicate can resolve to a trashed row; a trashed asset
+        // must never become (or, with keepPrimary, silently join) the stack.
+        const newAsset = await tx
+          .selectFrom('asset')
+          .select(['id', 'deletedAt'])
+          .where('id', '=', asUuid(newAssetId))
+          .forUpdate()
+          .executeTakeFirst();
+
+        if (!newAsset || newAsset.deletedAt) {
+          return null;
+        }
+
+        if (parent.stackId) {
+          await tx
+            .updateTable('asset')
+            .set({ stackId: parent.stackId, updatedAt: new Date() })
+            .where('id', '=', asUuid(newAssetId))
+            .execute();
+          // keepPrimary: leave the existing primary, just touch the stack;
+          // otherwise promote the newcomer.
+          await tx
+            .updateTable('stack')
+            .set(keepPrimary ? { updatedAt: new Date() } : { primaryAssetId: newAssetId, updatedAt: new Date() })
+            .where('id', '=', parent.stackId)
+            .execute();
+          return { stackId: parent.stackId, created: false };
+        }
+
+        const stack = await tx
+          .insertInto('stack')
+          .values({ ownerId, primaryAssetId: keepPrimary ? parent.id : newAssetId })
+          .returning('id')
+          .executeTakeFirstOrThrow();
+
+        await tx
+          .updateTable('asset')
+          .set({ stackId: stack.id, updatedAt: new Date() })
+          .where('id', 'in', [asUuid(newAssetId), parent.id])
+          .execute();
+
+        return { stackId: stack.id, created: true };
+      });
+    } catch (error) {
+      // newAssetId may already be another stack's primary (e.g. a retried upload).
+      // Treat the unique-constraint hit as "couldn't stack" rather than a 500.
+      if (isStackPrimaryConstraint(error)) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

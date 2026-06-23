@@ -17480,6 +17480,10 @@
             "description": "Mark as favorite",
             "type": "boolean"
           },
+          "keepPrimary": {
+            "description": "When stacking via stackParentId, keep the parent/existing asset as the stack primary instead of promoting this one. Used by iOS burst frames.",
+            "type": "boolean"
+          },
           "livePhotoVideoId": {
             "description": "Live photo video ID",
             "format": "uuid",
@@ -17496,6 +17500,12 @@
           "sidecarData": {
             "description": "Sidecar file data",
             "format": "binary",
+            "type": "string"
+          },
+          "stackParentId": {
+            "description": "Stack this asset onto the parent asset, with the new asset as the stack primary",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "visibility": {

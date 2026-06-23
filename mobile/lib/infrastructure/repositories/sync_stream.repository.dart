@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dar
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
@@ -71,6 +72,13 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             await _db.remoteAssetCloudIdEntity.deleteAll();
             await _db.assetEditEntity.deleteAll();
             await _db.assetOcrEntity.deleteAll();
+            // The edit-stacking stamps point at remote rows wiped above; left in
+            // place they'd make the next backup (possibly a different account or
+            // server) stack onto ids that no longer exist. Only stamped rows need
+            // clearing, so skip the full-table rewrite when none are set.
+            await (_db.localAssetEntity.update()
+                  ..where((e) => e.priorRemoteId.isNotNull() | e.syncedChecksum.isNotNull()))
+                .write(const LocalAssetEntityCompanion(priorRemoteId: Value(null), syncedChecksum: Value(null)));
           });
         } finally {
           // re-enable FK even if the transaction throws, otherwise the connection
@@ -195,7 +203,27 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateAssetsV1(Iterable<SyncAssetV1> data, {String debugLabel = 'user'}) async {
+  // websocket events are a point-in-time snapshot, so on the fast path don't overwrite
+  // link state the checkpoint sync owns (a motion video uploads visible then gets hidden).
+  RemoteAssetEntityCompanion _conflictUpdate(RemoteAssetEntityCompanion companion, bool fromWebsocket) {
+    if (!fromWebsocket) {
+      return companion;
+    }
+    // deletedAt is checkpoint-owned too: a debounced upload-ready snapshot always
+    // carries null and must not resurrect an asset trashed in the meantime.
+    return companion.copyWith(
+      visibility: const Value.absent(),
+      livePhotoVideoId: const Value.absent(),
+      stackId: const Value.absent(),
+      deletedAt: const Value.absent(),
+    );
+  }
+
+  Future<void> updateAssetsV1(
+    Iterable<SyncAssetV1> data, {
+    String debugLabel = 'user',
+    bool fromWebsocket = false,
+  }) async {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
@@ -224,7 +252,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate((_) => _conflictUpdate(companion, fromWebsocket)),
           );
         }
       });
@@ -234,7 +262,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateAssetsV2(Iterable<SyncAssetV2> data, {String debugLabel = 'user'}) async {
+  Future<void> updateAssetsV2(
+    Iterable<SyncAssetV2> data, {
+    String debugLabel = 'user',
+    bool fromWebsocket = false,
+  }) async {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
@@ -263,7 +295,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate((_) => _conflictUpdate(companion, fromWebsocket)),
           );
         }
       });

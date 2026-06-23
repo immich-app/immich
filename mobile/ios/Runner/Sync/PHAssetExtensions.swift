@@ -27,7 +27,9 @@ extension PHAsset {
       adjustmentTime: adjustmentTimestamp,
       latitude: location?.coordinate.latitude,
       longitude: location?.coordinate.longitude,
-      playbackStyle: platformPlaybackStyle
+      playbackStyle: platformPlaybackStyle,
+      burstId: burstIdentifier,
+      isBurstRepresentative: representsBurst
     )
   }
 

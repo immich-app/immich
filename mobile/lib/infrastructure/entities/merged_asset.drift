@@ -7,7 +7,13 @@ import 'local_album_asset.entity.dart';
 mergedAsset:
 SELECT
 	rae.id as remote_id,
-	(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1) as local_id,
+	-- local_id links a remote to its on-device copy, normally by checksum. A reverted iOS
+	-- edit re-encodes to fresh bytes so the checksum no longer matches, but its
+	-- prior_remote_id still points at this remote, so fall back to that.
+	COALESCE(
+		(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1),
+		(SELECT lae.id FROM local_asset_entity lae WHERE lae.prior_remote_id = rae.id LIMIT 1)
+	) as local_id,
 	rae.name,
 	rae."type",
 	rae.created_at as created_at,
@@ -18,6 +24,12 @@ SELECT
 	rae.is_favorite,
 	rae.thumb_hash,
 	rae.checksum,
+	-- the linked local's current checksum (same row local_id picks), so local
+	-- renders are cache-keyed by the bytes on device, not the server value.
+	COALESCE(
+		(SELECT lae.checksum FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1),
+		(SELECT lae.checksum FROM local_asset_entity lae WHERE lae.prior_remote_id = rae.id LIMIT 1)
+	) as local_checksum,
 	rae.owner_id,
 	rae.live_photo_video_id,
 	0 as orientation,
@@ -41,6 +53,9 @@ WHERE
 		rae.stack_id IS NULL
 		OR rae.id = se.primary_asset_id
 	)
+	-- iOS burst: hide non-representative members only in the pre-stack-sync window;
+	-- once stack_id is set the rae.id = se.primary_asset_id rule above already hides them.
+	AND (rae.stack_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum AND lae.burst_id IS NOT NULL AND lae.is_burst_representative = 0))
 
 UNION ALL
 
@@ -57,6 +72,7 @@ SELECT
 	lae.is_favorite,
 	NULL as thumb_hash,
 	lae.checksum,
+	lae.checksum as local_checksum,
 	NULL as owner_id,
 	NULL as live_photo_video_id,
 	lae.orientation,
@@ -82,6 +98,23 @@ AND NOT EXISTS (
     SELECT 1 FROM local_album_asset_entity laa
     INNER JOIN local_album_entity la on laa.album_id = la.id
     WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+)
+-- iOS edit-in-progress / revert: if this local was already uploaded (its
+-- prior_remote_id resolves to a remote row), hide the local tile so the remote
+-- (the edit, or the flipped-back original) is the single source of truth. Kills
+-- the transient 2-tile flicker and stops a reverted local from re-appearing.
+-- A trashed prior still hides it — trashing on the server shouldn't pop the
+-- photo back onto the local timeline; only a hard delete (row gone) does.
+AND NOT EXISTS (
+	SELECT 1 FROM remote_asset_entity rae WHERE rae.id = lae.prior_remote_id AND rae.owner_id IN :user_ids
+)
+-- iOS burst: show only the representative as a local tile; other members still back up + stack.
+-- A rep-less group (Keep Everything / re-pick) has no representative, so show every
+-- frame as an individual instead of hiding the whole group.
+AND (
+	lae.burst_id IS NULL
+	OR lae.is_burst_representative = 1
+	OR NOT EXISTS (SELECT 1 FROM local_asset_entity r WHERE r.burst_id = lae.burst_id AND r.is_burst_representative = 1)
 )
 ORDER BY created_at DESC
 LIMIT $limit;
@@ -115,6 +148,8 @@ FROM
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
 		)
+		-- iOS burst: hide non-representative members only in the pre-stack-sync window (see mergedAsset)
+		AND (rae.stack_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum AND lae.burst_id IS NOT NULL AND lae.is_burst_representative = 0))
 	UNION ALL
 	SELECT
 		CASE
@@ -135,6 +170,17 @@ FROM
 		SELECT 1 FROM local_album_asset_entity laa
 		INNER JOIN local_album_entity la on laa.album_id = la.id
 		WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+	)
+	-- iOS edit-in-progress / revert: hide a local already represented by a remote
+	-- row (trashed included, same as the tile query above).
+	AND NOT EXISTS (
+		SELECT 1 FROM remote_asset_entity rae WHERE rae.id = lae.prior_remote_id AND rae.owner_id IN :user_ids
+	)
+	-- iOS burst: count only the representative; a rep-less group counts every frame (see mergedAsset)
+	AND (
+		lae.burst_id IS NULL
+		OR lae.is_burst_representative = 1
+		OR NOT EXISTS (SELECT 1 FROM local_asset_entity r WHERE r.burst_id = lae.burst_id AND r.is_burst_representative = 1)
 	)
 )
 GROUP BY bucket_date

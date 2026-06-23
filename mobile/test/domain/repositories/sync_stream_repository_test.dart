@@ -4,8 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as domain;
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:openapi/api.dart';
 
@@ -28,26 +32,68 @@ SyncAssetV1 _createAsset({
   String ownerId = 'user-1',
   int? width,
   int? height,
+  AssetVisibility visibility = AssetVisibility.timeline,
+  AssetTypeEnum type = AssetTypeEnum.IMAGE,
+  String? livePhotoVideoId,
+  String? stackId,
+  bool isFavorite = false,
+  DateTime? deletedAt,
 }) {
   return SyncAssetV1(
     id: id,
     checksum: checksum,
     originalFileName: fileName,
-    type: AssetTypeEnum.IMAGE,
+    type: type,
     ownerId: ownerId,
-    isFavorite: false,
+    isFavorite: isFavorite,
     fileCreatedAt: DateTime(2024, 1, 1),
     fileModifiedAt: DateTime(2024, 1, 1),
     createdAt: DateTime(2024, 1, 1),
     localDateTime: DateTime(2024, 1, 1),
-    visibility: AssetVisibility.timeline,
+    visibility: visibility,
     width: width,
     height: height,
-    deletedAt: null,
+    deletedAt: deletedAt,
     duration: null,
     libraryId: null,
-    livePhotoVideoId: null,
-    stackId: null,
+    livePhotoVideoId: livePhotoVideoId,
+    stackId: stackId,
+    thumbhash: null,
+    isEdited: false,
+  );
+}
+
+SyncAssetV2 _createAssetV2({
+  required String id,
+  required String checksum,
+  required String fileName,
+  String ownerId = 'user-1',
+  AssetVisibility visibility = AssetVisibility.timeline,
+  AssetTypeEnum type = AssetTypeEnum.IMAGE,
+  String? livePhotoVideoId,
+  String? stackId,
+  bool isFavorite = false,
+  DateTime? deletedAt,
+}) {
+  return SyncAssetV2(
+    id: id,
+    checksum: checksum,
+    originalFileName: fileName,
+    type: type,
+    ownerId: ownerId,
+    isFavorite: isFavorite,
+    fileCreatedAt: DateTime(2024, 1, 1),
+    fileModifiedAt: DateTime(2024, 1, 1),
+    createdAt: DateTime(2024, 1, 1),
+    localDateTime: DateTime(2024, 1, 1),
+    visibility: visibility,
+    width: null,
+    height: null,
+    deletedAt: deletedAt,
+    duration: null,
+    libraryId: null,
+    livePhotoVideoId: livePhotoVideoId,
+    stackId: stackId,
     thumbhash: null,
     isEdited: false,
   );
@@ -189,6 +235,168 @@ void main() {
     });
   });
 
+  group('SyncStreamRepository - websocket fast-path link state', () {
+    Future<RemoteAssetEntityData> read(String id) =>
+        (db.remoteAssetEntity.select()..where((t) => t.id.equals(id))).getSingle();
+
+    test('fromWebsocket does not clobber visibility the checkpoint sync already hid', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'motion-video';
+
+      // checkpoint sync stored the real server state: a hidden motion video
+      await sut.updateAssetsV1([
+        _createAsset(
+          id: id,
+          checksum: 'cs',
+          fileName: 'IMG.mov',
+          type: AssetTypeEnum.VIDEO,
+          visibility: AssetVisibility.hidden,
+        ),
+      ]);
+
+      // a stale upload-ready event arrives with the upload-time state (timeline)
+      await sut.updateAssetsV1([
+        _createAsset(
+          id: id,
+          checksum: 'cs',
+          fileName: 'IMG.mov',
+          type: AssetTypeEnum.VIDEO,
+          visibility: AssetVisibility.timeline,
+        ),
+      ], fromWebsocket: true);
+
+      expect((await read(id)).visibility, domain.AssetVisibility.hidden);
+    });
+
+    test('authoritative sync (default) still overwrites visibility', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'asset-1';
+
+      await sut.updateAssetsV1([
+        _createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic', visibility: AssetVisibility.hidden),
+      ]);
+      await sut.updateAssetsV1([
+        _createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic', visibility: AssetVisibility.timeline),
+      ]);
+
+      expect((await read(id)).visibility, domain.AssetVisibility.timeline);
+    });
+
+    test('fromWebsocket still inserts a new asset with its payload visibility', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'new-asset';
+
+      await sut.updateAssetsV1([
+        _createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic', visibility: AssetVisibility.timeline),
+      ], fromWebsocket: true);
+
+      expect((await read(id)).visibility, domain.AssetVisibility.timeline);
+    });
+
+    test('fromWebsocket conflict keeps checkpoint livePhotoVideoId and stackId but applies other fields', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'edited-still-1';
+      const stackId = 'stack-001';
+
+      await db.stackEntity.insertOne(StackEntityCompanion.insert(id: stackId, ownerId: 'user-1', primaryAssetId: id));
+
+      // checkpoint linked the edited still to its base pair
+      await sut.updateAssetsV1([
+        _createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic', livePhotoVideoId: 'live-vid-001', stackId: stackId),
+      ]);
+
+      // stale websocket snapshot from upload time: no links yet, but favorite since
+      await sut.updateAssetsV1([
+        _createAsset(id: id, checksum: 'cs', fileName: 'IMG_RENAMED.heic', isFavorite: true),
+      ], fromWebsocket: true);
+
+      final row = await read(id);
+      expect(row.livePhotoVideoId, 'live-vid-001');
+      expect(row.stackId, stackId);
+      expect(row.name, 'IMG_RENAMED.heic', reason: 'non-link fields from the websocket payload must still apply');
+      expect(row.isFavorite, isTrue);
+    });
+
+    test('fromWebsocket conflict does not resurrect an asset the checkpoint trashed', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'trashed-asset';
+
+      await sut.updateAssetsV1([
+        _createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic', deletedAt: DateTime(2024, 2, 1)),
+      ]);
+
+      // debounced upload-ready snapshot always carries deletedAt null
+      await sut.updateAssetsV1([_createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic')], fromWebsocket: true);
+
+      expect((await read(id)).deletedAt, isNotNull);
+    });
+
+    test('authoritative sync (default) still overwrites livePhotoVideoId, stackId and deletedAt', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'unstacked-asset';
+      const stackId = 'stack-002';
+
+      await db.stackEntity.insertOne(StackEntityCompanion.insert(id: stackId, ownerId: 'user-1', primaryAssetId: id));
+
+      await sut.updateAssetsV1([
+        _createAsset(
+          id: id,
+          checksum: 'cs',
+          fileName: 'IMG.heic',
+          livePhotoVideoId: 'live-vid-002',
+          stackId: stackId,
+          deletedAt: DateTime(2024, 2, 1),
+        ),
+      ]);
+
+      // server unstacked + restored the asset; checkpoint sync must win
+      await sut.updateAssetsV1([_createAsset(id: id, checksum: 'cs', fileName: 'IMG.heic')]);
+
+      final row = await read(id);
+      expect(row.livePhotoVideoId, isNull);
+      expect(row.stackId, isNull);
+      expect(row.deletedAt, isNull);
+    });
+
+    test('fromWebsocket does not clobber visibility through updateAssetsV2', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'motion-video-v2';
+
+      await sut.updateAssetsV2([
+        _createAssetV2(
+          id: id,
+          checksum: 'cs',
+          fileName: 'IMG.mov',
+          type: AssetTypeEnum.VIDEO,
+          visibility: AssetVisibility.hidden,
+        ),
+      ]);
+
+      await sut.updateAssetsV2([
+        _createAssetV2(
+          id: id,
+          checksum: 'cs',
+          fileName: 'IMG.mov',
+          type: AssetTypeEnum.VIDEO,
+          visibility: AssetVisibility.timeline,
+        ),
+      ], fromWebsocket: true);
+
+      expect((await read(id)).visibility, domain.AssetVisibility.hidden);
+    });
+
+    test('fromWebsocket still inserts a new asset through updateAssetsV2', () async {
+      await sut.updateUsersV1([_createUser()]);
+      const id = 'new-asset-v2';
+
+      await sut.updateAssetsV2([
+        _createAssetV2(id: id, checksum: 'cs', fileName: 'IMG.heic', visibility: AssetVisibility.timeline),
+      ], fromWebsocket: true);
+
+      expect((await read(id)).visibility, domain.AssetVisibility.timeline);
+    });
+  });
+
   group('SyncStreamRepository - reset()', () {
     test('nulls linkedRemoteAlbumId on localAlbumEntity so FK refs do not dangle', () async {
       const localAlbumId = 'local-1';
@@ -238,6 +446,33 @@ void main() {
       expect(after.linkedRemoteAlbumId, isNull);
       expect(after.name, equals('Camera'));
       expect(after.backupSelection, equals(BackupSelection.none));
+    });
+
+    test('nulls priorRemoteId and syncedChecksum on localAssetEntity but keeps the row', () async {
+      const localId = 'local-edited';
+
+      await db.localAssetEntity.insertOne(
+        LocalAssetEntityCompanion.insert(
+          id: localId,
+          name: 'IMG.heic',
+          type: domain.AssetType.image,
+          checksum: const drift.Value('cs-local'),
+          priorRemoteId: const drift.Value('prior-remote-1'),
+          syncedChecksum: const drift.Value('cs-synced'),
+        ),
+      );
+
+      await sut.reset();
+
+      final after = await (db.localAssetEntity.select()..where((t) => t.id.equals(localId))).getSingle();
+      expect(
+        after.priorRemoteId,
+        isNull,
+        reason: 'the remote rows the stamps point at were wiped — a later backup must not stack onto dead ids',
+      );
+      expect(after.syncedChecksum, isNull);
+      expect(after.name, equals('IMG.heic'), reason: 'local asset row itself must be preserved');
+      expect(after.checksum, equals('cs-local'));
     });
   });
 }

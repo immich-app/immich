@@ -35,6 +35,12 @@ class PlatformAsset {
 
   final PlatformAssetPlaybackStyle playbackStyle;
 
+  // iOS burst grouping. `burstId` = PHAsset.burstIdentifier (null for non-burst
+  // assets). `isBurstRepresentative` = the auto-picked lead frame at detection
+  // time. android always returns null/false (no burstIdentifier equivalent).
+  final String? burstId;
+  final bool isBurstRepresentative;
+
   const PlatformAsset({
     required this.id,
     required this.name,
@@ -50,6 +56,8 @@ class PlatformAsset {
     this.latitude,
     this.longitude,
     this.playbackStyle = PlatformAssetPlaybackStyle.unknown,
+    this.burstId,
+    this.isBurstRepresentative = false,
   });
 }
 
@@ -103,6 +111,29 @@ class CloudIdResult {
   const CloudIdResult({required this.assetId, this.error, this.cloudId});
 }
 
+class BaseResource {
+  final String path;
+  final String sha1;
+
+  const BaseResource({required this.path, required this.sha1});
+}
+
+// The readable originals of an edited live photo: the still always, the paired
+// video when the asset still carries one. Both are temp copies the caller
+// uploads then deletes.
+class BaseLivePhoto {
+  final BaseResource still;
+  final BaseResource? video;
+
+  const BaseLivePhoto({required this.still, this.video});
+}
+
+// Whether an iOS asset currently carries a user edit, as opposed to a
+// capture-time Photographic Style or a reverted edit. `unknown` means the
+// adjustment data couldn't be read (e.g. the asset is offloaded to iCloud and
+// network wasn't allowed), so callers must not treat it as "not edited".
+enum EditState { notEdited, edited, unknown }
+
 @HostApi()
 abstract class NativeSyncApi {
   @async
@@ -143,4 +174,26 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  BaseResource? getBaseResource(String assetId, {bool allowNetworkAccess = false});
+
+  /// Streams the bytes immich treats as the asset's canonical content — the same
+  /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+  /// rendition). Used to upload iOS burst members: they're invisible to
+  /// photo_manager, so this is the only way to read their file, and streaming
+  /// the same resource the hash measured keeps the server checksum aligned with
+  /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  BaseResource? getCurrentResource(String assetId, {bool allowNetworkAccess = false});
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  EditState getEditState(String assetId, {bool allowNetworkAccess = false});
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  BaseLivePhoto? getBaseLivePhoto(String assetId, {bool allowNetworkAccess = false});
 }

@@ -6,6 +6,7 @@ import 'package:immich_mobile/infrastructure/repositories/partner.repository.dar
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
@@ -37,6 +38,8 @@ class MockDriftLocalAssetRepository extends Mock implements DriftLocalAssetRepos
 class MockRemoteAssetRepository extends Mock implements RemoteAssetRepository {}
 
 class MockTrashedLocalAssetRepository extends Mock implements DriftTrashedLocalAssetRepository {}
+
+class MockDriftStackRepository extends Mock implements DriftStackRepository {}
 
 class MockStorageRepository extends Mock implements StorageRepository {}
 

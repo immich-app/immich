@@ -64,6 +64,84 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> markSynced(String localId, {required String priorRemoteId, required String? syncedChecksum}) {
+    return (_db.localAssetEntity.update()..where((e) => e.id.equals(localId))).write(
+      LocalAssetEntityCompanion(priorRemoteId: Value(priorRemoteId), syncedChecksum: Value(syncedChecksum)),
+    );
+  }
+
+  /// The remote id to stack a burst member under: the prior_remote_id of any
+  /// already-uploaded member of the same burst (null until the first one lands).
+  /// The representative uploads first (non-reps gate on this), so the first hit
+  /// is the rep and `keepPrimary` pins it as the stack primary. Deliberately NOT
+  /// filtered to the representative: iOS can move the rep flag (a Photos re-pick),
+  /// and any in-stack member resolves to the same stack via linkAsset — so
+  /// returning whichever member uploaded keeps every later frame in one stack
+  /// instead of spawning a second when the cover moves. Stable order so repeated
+  /// lookups pick the same anchor.
+  Future<String?> getBurstParentRemoteId(String burstId, {String? ownerId}) async {
+    // Prefer the remote id stamped by a frame this device already uploaded.
+    final row =
+        await (_db.localAssetEntity.selectOnly()
+              ..addColumns([_db.localAssetEntity.priorRemoteId])
+              ..where(_db.localAssetEntity.burstId.equals(burstId) & _db.localAssetEntity.priorRemoteId.isNotNull())
+              ..orderBy([OrderingTerm.asc(_db.localAssetEntity.createdAt), OrderingTerm.asc(_db.localAssetEntity.id)])
+              ..limit(1))
+            .getSingleOrNull();
+    final priorRemoteId = row?.read(_db.localAssetEntity.priorRemoteId);
+    if (priorRemoteId != null) {
+      return priorRemoteId;
+    }
+    if (ownerId == null) {
+      return null;
+    }
+    // Pre-existing burst: the representative was backed up before this feature, so
+    // no local frame ever stamped a prior. Anchor onto the rep's already-synced
+    // remote row (matched by checksum) so the hidden members can still stack.
+    final rep =
+        await (_db.localAssetEntity.selectOnly()
+              ..addColumns([_db.remoteAssetEntity.id])
+              ..join([
+                innerJoin(
+                  _db.remoteAssetEntity,
+                  _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+                      _db.remoteAssetEntity.ownerId.equals(ownerId),
+                  useColumns: false,
+                ),
+              ])
+              ..where(
+                _db.localAssetEntity.burstId.equals(burstId) & _db.localAssetEntity.isBurstRepresentative.equals(true),
+              )
+              ..orderBy([OrderingTerm.asc(_db.localAssetEntity.createdAt), OrderingTerm.asc(_db.localAssetEntity.id)])
+              ..limit(1))
+            .getSingleOrNull();
+    return rep?.read(_db.remoteAssetEntity.id);
+  }
+
+  /// Whether the burst group still has a representative frame. A group can end up
+  /// rep-less (every frame is_burst_representative=0) after a Photos "Keep
+  /// Everything" / re-pick — its members can never anchor a stack, so callers
+  /// upload them standalone instead of gating forever.
+  Future<bool> burstHasRepresentative(String burstId) async {
+    final row =
+        await (_db.localAssetEntity.selectOnly()
+              ..addColumns([_db.localAssetEntity.id])
+              ..where(
+                _db.localAssetEntity.burstId.equals(burstId) & _db.localAssetEntity.isBurstRepresentative.equals(true),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
+  /// Drops the edit-stacking stamps so the next backup cycle re-resolves the
+  /// asset from scratch (used when the server says the stamped prior is gone).
+  Future<void> clearSyncStamps(String localId) {
+    return (_db.localAssetEntity.update()..where((e) => e.id.equals(localId))).write(
+      const LocalAssetEntityCompanion(priorRemoteId: Value(null), syncedChecksum: Value(null)),
+    );
+  }
+
   Future<void> delete(List<String> ids) {
     if (ids.isEmpty) {
       return Future.value();

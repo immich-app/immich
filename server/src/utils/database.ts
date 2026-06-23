@@ -79,6 +79,12 @@ export const isAssetChecksumConstraint = (error: unknown) =>
 export const isVideoStreamSessionPkConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;
 
+export const STACK_PRIMARY_CONSTRAINT = 'stack_primaryAssetId_uq';
+
+export const isStackPrimaryConstraint = (error: unknown) => {
+  return (error as PostgresError)?.constraint_name === STACK_PRIMARY_CONSTRAINT;
+};
+
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
 }

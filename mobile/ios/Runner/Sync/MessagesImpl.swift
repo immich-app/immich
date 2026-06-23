@@ -1,5 +1,6 @@
 import Photos
 import CryptoKit
+import UniformTypeIdentifiers
 
 struct AssetWrapper: Hashable, Equatable {
   let asset: PlatformAsset
@@ -115,7 +116,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
         options.includeHiddenAssets = false
-        
+
         let assets = getAssetsFromAlbum(in: album, options: options)
         
         let isCloud = album.assetCollectionSubtype == .albumCloudShared || album.assetCollectionSubtype == .albumMyPhotoStream
@@ -175,13 +176,14 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       deletedAssets.formUnion(details.deletedLocalIdentifiers)
       
       if (updated.isEmpty) { continue }
-      
+
       let options = PHFetchOptions()
       options.includeHiddenAssets = false
+      options.includeAllBurstAssets = true
       let result = PHAsset.fetchAssets(withLocalIdentifiers: Array(updated), options: options)
       for i in 0..<result.count {
         let asset = result.object(at: i)
-        
+
         // Asset wrapper only uses the id for comparison. Multiple change can contain the same asset, skip duplicate changes
         let predicate = PlatformAsset(
           id: asset.localIdentifier,
@@ -190,14 +192,28 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
           durationMs: 0,
           orientation: 0,
           isFavorite: false,
-          playbackStyle: .unknown
+          playbackStyle: .unknown,
+          isBurstRepresentative: false
         )
         if (updatedAssets.contains(AssetWrapper(with: predicate))) {
           continue
         }
-        
+
         let domainAsset = AssetWrapper(with: asset.toPlatformAsset())
         updatedAssets.insert(domainAsset)
+
+        // iOS reports only the representative in change details, so a delta sync
+        // would otherwise miss the other frames. Pull the full burst group
+        // explicitly and add each member (deduped by the wrapper's id).
+        if let burstId = asset.burstIdentifier {
+          let burstOptions = PHFetchOptions()
+          burstOptions.includeHiddenAssets = false
+          burstOptions.includeAllBurstAssets = true
+          let members = PHAsset.fetchAssets(withBurstIdentifier: burstId, options: burstOptions)
+          members.enumerateObjects { (member, _, _) in
+            updatedAssets.insert(AssetWrapper(with: member.toPlatformAsset()))
+          }
+        }
       }
     }
     
@@ -309,7 +325,12 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       var missingAssetIds = Set(assetIds)
       var assets = [PHAsset]()
       assets.reserveCapacity(assetIds.count)
-      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: nil).enumerateObjects { (asset, _, stop) in
+      // includeAllBurstAssets: a non-representative burst member is invisible to a
+      // default fetch-by-id, so without this it'd be reported "not found" and never
+      // hashed — leaving it out of the backup candidate set permanently.
+      let hashFetchOptions = PHFetchOptions()
+      hashFetchOptions.includeAllBurstAssets = true
+      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: hashFetchOptions).enumerateObjects { (asset, _, stop) in
         if Task.isCancelled {
           stop.pointee = true
           return
@@ -445,6 +466,11 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   }
   
   private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
+    // Surface every burst member, not just the auto-picked representative. Set in
+    // the shared fetch helper so album asset counts and the asset lists stay
+    // consistent — LocalSyncService compares assetCount against the synced set, so
+    // a count that excludes burst members while the list includes them wedges sync.
+    options.includeAllBurstAssets = true
     // Ensure to actually getting all assets for the Recents album
     if (album.assetCollectionSubtype == .smartAlbumUserLibrary) {
       return PHAsset.fetchAssets(with: options)
@@ -476,4 +502,334 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     }
     return mappings;
   }
+
+  // Streams the asset's current rendition — the same resource hashAssets hashes
+  // (getResource(): the isCurrent rendition, the lone .photo otherwise). Used for
+  // iOS burst members, which photo_manager can't resolve by id; streaming the same
+  // bytes the hash measured keeps the server checksum aligned with the local one
+  // (else the asset shows cloud-only). includeAllBurstAssets so a non-rep resolves.
+  func getCurrentResource(
+    assetId: String,
+    allowNetworkAccess: Bool,
+    completion: @escaping (Result<BaseResource?, Error>) -> Void
+  ) {
+    Task { [weak self] in
+      guard let self = self else { return }
+      let options = PHFetchOptions()
+      options.includeAllBurstAssets = true
+      guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: options).firstObject,
+        let resource = asset.getResource()
+      else {
+        return self.completeWhenActive(for: completion, with: .success(nil))
+      }
+      do {
+        let result = try await self.streamBaseResource(
+          resource: resource,
+          localId: assetId,
+          allowNetworkAccess: allowNetworkAccess
+        )
+        self.completeWhenActive(for: completion, with: .success(result))
+      } catch {
+        self.completeWhenActive(for: completion, with: .failure(error))
+      }
+    }
+  }
+
+  func getBaseResource(
+    assetId: String,
+    allowNetworkAccess: Bool,
+    completion: @escaping (Result<BaseResource?, Error>) -> Void
+  ) {
+    Task { [weak self] in
+      guard let self = self else { return }
+
+      do {
+        guard let originals = try await Self.originalsForEditedAsset(assetId, allowNetworkAccess: allowNetworkAccess)
+        else {
+          return self.completeWhenActive(for: completion, with: .success(nil))
+        }
+        let result = try await self.streamBaseResource(
+          resource: originals.still,
+          localId: assetId,
+          allowNetworkAccess: allowNetworkAccess
+        )
+        self.completeWhenActive(for: completion, with: .success(result))
+      } catch {
+        self.completeWhenActive(for: completion, with: .failure(error))
+      }
+    }
+  }
+
+  // Reads both readable originals of an edited live photo (still + paired video) so the
+  // backup can upload the unedited pair and stack the edit onto it. Same edited-only gate
+  // as getBaseResource. video is nil when the asset has no paired video left to recover
+  // (e.g. the edit turned Live off); the still temp is removed if the video read fails.
+  func getBaseLivePhoto(
+    assetId: String,
+    allowNetworkAccess: Bool,
+    completion: @escaping (Result<BaseLivePhoto?, Error>) -> Void
+  ) {
+    Task { [weak self] in
+      guard let self = self else { return }
+
+      do {
+        guard let originals = try await Self.originalsForEditedAsset(assetId, allowNetworkAccess: allowNetworkAccess)
+        else {
+          return self.completeWhenActive(for: completion, with: .success(nil))
+        }
+        let still = try await self.streamBaseResource(
+          resource: originals.still,
+          localId: assetId,
+          allowNetworkAccess: allowNetworkAccess
+        )
+        var video: BaseResource? = nil
+        if let videoRes = originals.video {
+          do {
+            video = try await self.streamBaseResource(
+              resource: videoRes,
+              localId: assetId,
+              allowNetworkAccess: allowNetworkAccess
+            )
+          } catch {
+            try? FileManager.default.removeItem(atPath: still.path)
+            throw error
+          }
+        }
+        self.completeWhenActive(for: completion, with: .success(BaseLivePhoto(still: still, video: video)))
+      } catch {
+        self.completeWhenActive(for: completion, with: .failure(error))
+      }
+    }
+  }
+
+  // Returns whether the asset carries a live Photos edit without reading the photo
+  // itself, only the small adjustment metadata. The revert probe relies on this to
+  // tell "not edited" apart from "couldn't read" (offloaded to iCloud), so it never
+  // mistakes an unreadable edit for a revert.
+  func getEditState(
+    assetId: String,
+    allowNetworkAccess: Bool,
+    completion: @escaping (Result<EditState, Error>) -> Void
+  ) {
+    Task { [weak self] in
+      guard let self = self else { return }
+      guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject else {
+        // Not in the library, so don't answer "not edited" (the caller acts on that).
+        return self.completeWhenActive(for: completion, with: .success(.unknown))
+      }
+      let state = await Self.classifyEdit(
+        resources: PHAssetResource.assetResources(for: asset),
+        allowNetworkAccess: allowNetworkAccess
+      )
+      self.completeWhenActive(for: completion, with: .success(state))
+    }
+  }
+
+  // adjustmentRenderTypes for a photo with no real edit: a plain capture, a
+  // Photographic Style, or a reverted edit. A real edit changes this value.
+  private static let kNoEditRenderTypes = 27648
+
+  // Idle deadline for the base-resource reads: cancel only after this long with no
+  // data received, so a stalled iCloud fetch can't hang the backup forever but a
+  // big original on a slow link keeps downloading as long as chunks flow.
+  private static let kBaseReadTimeoutSeconds: Double = 120
+
+  private final class ResourceRequestRef {
+    var id: PHAssetResourceDataRequestID?
+    // Written from the resource callback queue, read from the deadline timer;
+    // unsynchronized on purpose — the read below clamps, so the worst case is
+    // the timer re-arming one extra round.
+    var lastActivity = DispatchTime.now()
+  }
+
+  // Re-arming watchdog: fires after `delay`, cancels if nothing arrived for a full
+  // timeout window, otherwise re-arms for the remainder of the window.
+  private static func armIdleDeadline(_ ref: ResourceRequestRef, after delay: Double = kBaseReadTimeoutSeconds) {
+    DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
+      guard let id = ref.id else { return }
+      let nowNs = DispatchTime.now().uptimeNanoseconds
+      let lastNs = ref.lastActivity.uptimeNanoseconds
+      // lastActivity can race ahead of the captured now; treat that as activity.
+      let idle = nowNs > lastNs ? Double(nowNs - lastNs) / 1_000_000_000 : 0
+      if idle >= kBaseReadTimeoutSeconds {
+        PHAssetResourceManager.default().cancelDataRequest(id)
+      } else {
+        armIdleDeadline(ref, after: kBaseReadTimeoutSeconds - idle)
+      }
+    }
+  }
+
+  // Shared gate for the base readers: fetch the asset, classify the edit from its
+  // adjustment metadata, and pick the original resources. nil = positively nothing
+  // to recover (missing asset, not edited, or no readable original still). An
+  // unreadable plist throws instead — that's "can't tell right now", and Dart
+  // defers the asset rather than uploading the edit standalone for good.
+  private static func originalsForEditedAsset(
+    _ assetId: String,
+    allowNetworkAccess: Bool
+  ) async throws -> (still: PHAssetResource, video: PHAssetResource?)? {
+    guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject else {
+      return nil
+    }
+    let resources = PHAssetResource.assetResources(for: asset)
+    let state = await classifyEdit(resources: resources, allowNetworkAccess: allowNetworkAccess)
+    if state == .unknown {
+      throw PigeonError(
+        code: "unknownEditState",
+        message: "Could not read adjustment metadata for \(assetId)",
+        details: nil
+      )
+    }
+    guard state == .edited, let still = originalStillResource(resources) else {
+      return nil
+    }
+    return (still, originalPairedVideoResource(resources))
+  }
+
+  // Works out the edit state from Adjustments.plist only (never reads the photo).
+  // adjustmentRenderTypes is the signal: a real edit moves it off the baseline, while a
+  // plain capture, a Photographic Style, and a reverted edit all sit at the baseline. The
+  // editor id is NOT reliable: com.apple.camera authors both styles and some real edits
+  // (e.g. changing the Photographic Style after capture), so we key off the render types
+  // alone. Cleanup and object-removal write AdjustmentsSecondary.data, which we count as
+  // edited. unknown = couldn't read the plist (offloaded, no network).
+  private static func classifyEdit(resources: [PHAssetResource], allowNetworkAccess: Bool) async -> EditState {
+    if resources.contains(where: { $0.originalFilename == "AdjustmentsSecondary.data" }) {
+      return .edited
+    }
+    guard let adjRes = resources.first(where: { $0.originalFilename == "Adjustments.plist" }) else {
+      return .notEdited
+    }
+    guard let buf = await collectResourceData(adjRes, allowNetworkAccess: allowNetworkAccess),
+      let plist = try? PropertyListSerialization.propertyList(from: buf, options: [], format: nil) as? [String: Any]
+    else {
+      return .unknown
+    }
+    let renderTypes = (plist["adjustmentRenderTypes"] as? NSNumber)?.intValue
+    let isUserEdit = renderTypes != nil && renderTypes != kNoEditRenderTypes
+    return isUserEdit ? .edited : .notEdited
+  }
+
+  // The unedited original still, told apart from the edited "current" render by isCurrent.
+  // Prefer the non-current .photo; fall back to the .adjustmentBasePhoto flavor some
+  // creation-API / third-party-editor layouts use for the unaltered source (their .photo
+  // IS the edited render, so this must come before the bare .photo net); last, a lone
+  // .photo for single-resource assets or a failed isCurrent read.
+  private static func originalStillResource(_ resources: [PHAssetResource]) -> PHAssetResource? {
+    return resources.first(where: { $0.type == .photo && !$0.isCurrent })
+      ?? resources.first(where: { $0.type == .adjustmentBasePhoto })
+      ?? resources.first(where: { $0.type == .photo })
+  }
+
+  // The unedited original paired video, same isCurrent / adjustment-base ordering as the
+  // still. nil when the asset carries no paired video (not live, or Live turned off).
+  private static func originalPairedVideoResource(_ resources: [PHAssetResource]) -> PHAssetResource? {
+    return resources.first(where: { $0.type == .pairedVideo && !$0.isCurrent })
+      ?? resources.first(where: { $0.type == .adjustmentBasePairedVideo })
+      ?? resources.first(where: { $0.type == .pairedVideo })
+  }
+
+  private func streamBaseResource(
+    resource: PHAssetResource,
+    localId: String,
+    allowNetworkAccess: Bool
+  ) async throws -> BaseResource {
+    let safeId = localId.replacingOccurrences(of: "/", with: "_")
+    let suffix = UTType(resource.uniformTypeIdentifier)?.preferredFilenameExtension ?? "bin"
+    // Library/Caches, not tmp: the chain can span launches and clearCache wipes
+    // tmp at the start of every upload run. Swept by clearEditBaseCache instead.
+    let cacheRoot =
+      FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+      ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+    let tempDir = cacheRoot.appendingPathComponent("immich_base", isDirectory: true)
+    try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+    let unique = UUID().uuidString.prefix(8)
+    let tempUrl = tempDir.appendingPathComponent("\(safeId)_\(unique)_base.\(suffix)")
+
+    // Write the resource to disk and hash it chunk by chunk, so a big original (e.g.
+    // ProRAW) never sits fully in memory on the upload thread.
+    FileManager.default.createFile(atPath: tempUrl.path, contents: nil)
+    guard let handle = try? FileHandle(forWritingTo: tempUrl) else {
+      try? FileManager.default.removeItem(at: tempUrl)
+      throw PigeonError(
+        code: "baseResourceWriteFailed",
+        message: "Failed to open temp file for base resource \(localId)",
+        details: nil
+      )
+    }
+
+    var hasher = Insecure.SHA1()
+    let options = PHAssetResourceRequestOptions()
+    options.isNetworkAccessAllowed = allowNetworkAccess
+
+    // Deadline + cancellation so a stalled iCloud read can't hang the backup forever;
+    // a write failure also cancels right away instead of draining the download for nothing.
+    let requestRef = ResourceRequestRef()
+    let succeeded = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+      var writeFailed = false
+      requestRef.id = PHAssetResourceManager.default().requestData(
+        for: resource,
+        options: options,
+        dataReceivedHandler: { chunk in
+          requestRef.lastActivity = DispatchTime.now()
+          if writeFailed { return }
+          do {
+            try handle.write(contentsOf: chunk)
+            hasher.update(data: chunk)
+          } catch {
+            writeFailed = true
+            if let id = requestRef.id {
+              PHAssetResourceManager.default().cancelDataRequest(id)
+            }
+          }
+        },
+        completionHandler: { error in
+          requestRef.id = nil
+          continuation.resume(returning: error == nil && !writeFailed)
+        }
+      )
+      Self.armIdleDeadline(requestRef)
+    }
+
+    try? handle.close()
+
+    guard succeeded else {
+      try? FileManager.default.removeItem(at: tempUrl)
+      throw PigeonError(
+        code: "baseResourceReadFailed",
+        message: "Failed to read base resource for \(localId)",
+        details: nil
+      )
+    }
+
+    let sha1 = Data(hasher.finalize()).base64EncodedString()
+    return BaseResource(path: tempUrl.path, sha1: sha1)
+  }
+
+  private static func collectResourceData(
+    _ resource: PHAssetResource,
+    allowNetworkAccess: Bool
+  ) async -> Data? {
+    let options = PHAssetResourceRequestOptions()
+    options.isNetworkAccessAllowed = allowNetworkAccess
+    var buffer = Data()
+    let requestRef = ResourceRequestRef()
+    return await withCheckedContinuation { (continuation: CheckedContinuation<Data?, Never>) in
+      requestRef.id = PHAssetResourceManager.default().requestData(
+        for: resource,
+        options: options,
+        dataReceivedHandler: { data in
+          requestRef.lastActivity = DispatchTime.now()
+          buffer.append(data)
+        },
+        completionHandler: { error in
+          requestRef.id = nil
+          continuation.resume(returning: error == nil ? buffer : nil)
+        }
+      )
+      armIdleDeadline(requestRef)
+    }
+  }
+
 }

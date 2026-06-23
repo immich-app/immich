@@ -7,8 +7,10 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:logging/logging.dart';
 
 const String _kHashCancelledCode = "HASH_CANCELLED";
@@ -20,6 +22,8 @@ class HashService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final Completer<void>? _cancellation;
+  final DriftStackRepository _stackRepository;
+  final AssetApiRepository _assetApiRepository;
   final _log = Logger('HashService');
 
   HashService({
@@ -28,6 +32,8 @@ class HashService {
     required this._trashedLocalAssetRepository,
     required this._nativeSyncApi,
     this._cancellation,
+    required this._stackRepository,
+    required this._assetApiRepository,
     int? batchSize,
   }) : _batchSize = batchSize ?? kBatchHashFileLimit {
     // Stop the in-flight native hash call promptly on cancellation; the loops
@@ -65,6 +71,17 @@ class HashService {
           final pseudoAlbum = LocalAlbum(id: '-pseudoAlbum', name: 'Trash', updatedAt: DateTime.now());
           await _hashAssets(pseudoAlbum, trashedToHash, isTrashed: true);
         }
+      }
+
+      // Revert reconcile for non-styled photos: the reverted edit hashes back to the
+      // original's exact bytes, which are already the stack base, so it's not a backup
+      // candidate and never reaches upload. Flip the primary here. Styled photos
+      // re-encode to fresh bytes and get flipped on the upload path instead
+      // (EditRevertService.tryHandleRevert). Runs every cycle, not just when something
+      // hashed: a flip that failed (offline at hash time) has no second hash to ride,
+      // and the stack-driven target query is cheap and self-limiting.
+      if (CurrentPlatform.isIOS && !isCancelled) {
+        await _reconcileReverts();
       }
     } on PlatformException catch (e) {
       if (e.code == _kHashCancelledCode) {
@@ -141,6 +158,32 @@ class HashService {
       await _trashedLocalAssetRepository.updateHashes(hashed);
     } else {
       await _localAssetRepository.updateHashes(hashed);
+    }
+  }
+
+  Future<void> _reconcileReverts() async {
+    final List<StackReconcileTarget> targets;
+    try {
+      targets = await _stackRepository.findRevertReconcileTargets();
+    } catch (error, stack) {
+      _log.warning("findRevertReconcileTargets failed", error, stack);
+      return;
+    }
+
+    for (final target in targets) {
+      try {
+        await _assetApiRepository.setStackPrimary(target.stackId, target.newPrimaryId);
+        await _stackRepository.setPrimary(target.stackId, target.newPrimaryId);
+        // Roll priorRemoteId forward to the matched member (now the primary) so a
+        // later edit stacks onto THAT (the current render), not the old edit.
+        await _localAssetRepository.markSynced(
+          target.localAssetId,
+          priorRemoteId: target.newPrimaryId,
+          syncedChecksum: target.localAssetChecksum,
+        );
+      } catch (error, stack) {
+        _log.warning("revert reconcile flip failed for stack ${target.stackId}", error, stack);
+      }
     }
   }
 }

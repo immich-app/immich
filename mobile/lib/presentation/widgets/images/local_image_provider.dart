@@ -14,7 +14,11 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   final Size size;
   final AssetType assetType;
 
-  LocalThumbProvider({required this.id, required this.assetType, this.size = kThumbnailResolution});
+  // an on-device edit/revert keeps the same id but changes the bytes, so the checksum
+  // is what keys a cached thumbnail to its render.
+  final String? checksum;
+
+  LocalThumbProvider({required this.id, required this.assetType, this.checksum, this.size = kThumbnailResolution});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -44,13 +48,13 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
       return true;
     }
     if (other is LocalThumbProvider) {
-      return id == other.id;
+      return id == other.id && checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => id.hashCode ^ checksum.hashCode;
 }
 
 class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
@@ -59,8 +63,15 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final Size size;
   final AssetType assetType;
   final bool isAnimated;
+  final String? checksum;
 
-  LocalFullImageProvider({required this.id, required this.assetType, required this.size, required this.isAnimated});
+  LocalFullImageProvider({
+    required this.id,
+    required this.assetType,
+    required this.size,
+    required this.isAnimated,
+    this.checksum,
+  });
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -73,7 +84,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return AnimatedImageStreamCompleter(
         stream: _animatedCodec(key, decode),
         scale: 1.0,
-        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
           DiagnosticsProperty<String>('Id', key.id),
@@ -86,7 +97,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType, checksum: key.checksum)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
@@ -163,11 +174,11 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return true;
     }
     if (other is LocalFullImageProvider) {
-      return id == other.id && size == other.size && isAnimated == other.isAnimated;
+      return id == other.id && size == other.size && isAnimated == other.isAnimated && checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode ^ isAnimated.hashCode;
+  int get hashCode => id.hashCode ^ size.hashCode ^ isAnimated.hashCode ^ checksum.hashCode;
 }

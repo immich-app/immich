@@ -235,15 +235,47 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<List<LocalAsset>> getAssetsToHash(String albumId) {
-    final query =
-        _db.localAlbumAssetEntity.select().join([
-            innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-          ])
-          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
-          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
+  Future<List<LocalAsset>> getAssetsToHash(String albumId) async {
+    // iOS burst: hidden members live in the smart album, not a user album, so a
+    // burst added to a backup album would never hash its other frames. Let a
+    // member inherit hashing from its representative via a correlated EXISTS
+    // (var-safe — a large library could blow the SQLite variable limit otherwise).
+    final rep = _db.localAssetEntity.createAlias('rep');
 
-    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+    final query = _db.localAssetEntity.select()
+      ..where(
+        (lae) =>
+            lae.checksum.isNull() &
+            (existsQuery(
+                  _db.localAlbumAssetEntity.selectOnly()
+                    ..addColumns([_db.localAlbumAssetEntity.assetId])
+                    ..where(
+                      _db.localAlbumAssetEntity.albumId.equals(albumId) &
+                          _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
+                    ),
+                ) |
+                (lae.isBurstRepresentative.equals(false) &
+                    lae.burstId.isNotNull() &
+                    existsQuery(
+                      rep.selectOnly()
+                        ..addColumns([rep.id])
+                        ..join([
+                          innerJoin(
+                            _db.localAlbumAssetEntity,
+                            _db.localAlbumAssetEntity.assetId.equalsExp(rep.id),
+                            useColumns: false,
+                          ),
+                        ])
+                        ..where(
+                          rep.burstId.equalsExp(lae.burstId) &
+                              rep.isBurstRepresentative.equals(true) &
+                              _db.localAlbumAssetEntity.albumId.equals(albumId),
+                        ),
+                    ))),
+      )
+      ..orderBy([(lae) => OrderingTerm.desc(lae.createdAt)]);
+
+    return query.map((row) => row.toDto()).get();
   }
 
   Future<void> updateCloudMapping(Map<String, String> cloudMapping) {
@@ -305,6 +337,10 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           latitude: Value(asset.latitude),
           longitude: Value(asset.longitude),
           adjustmentTime: Value(asset.adjustmentTime),
+          // Re-synced on every delta (DoUpdate carries the same companion) so a
+          // Photos re-pick that moves the representative flag is reflected.
+          burstId: Value(asset.burstId),
+          isBurstRepresentative: Value(asset.isBurstRepresentative),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,

@@ -204,6 +204,8 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
             0L,
             isFavorite,
             playbackStyle = playbackStyle,
+            // Android has no burstIdentifier equivalent in MediaStore — bursts are iOS-only.
+            isBurstRepresentative = false,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
@@ -508,5 +510,26 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
   @Suppress("unused", "UNUSED_PARAMETER")
   fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult> {
     return emptyList()
+  }
+
+  // Android has no Photos-style edit original to stack; iOS-only.
+  fun getBaseResource(assetId: String, allowNetworkAccess: Boolean, callback: (Result<BaseResource?>) -> Unit) {
+    completeWhenActive(callback, Result.success(null))
+  }
+
+  // iOS-only; burst members are an iOS concept. Android resolves every asset via
+  // MediaStore already, so there's no hidden-member byte fetch to provide.
+  fun getCurrentResource(assetId: String, allowNetworkAccess: Boolean, callback: (Result<BaseResource?>) -> Unit) {
+    completeWhenActive(callback, Result.success(null))
+  }
+
+  // iOS-only; Android assets never carry a Photos-style edit.
+  fun getEditState(assetId: String, allowNetworkAccess: Boolean, callback: (Result<EditState>) -> Unit) {
+    completeWhenActive(callback, Result.success(EditState.NOT_EDITED))
+  }
+
+  // iOS-only; Android assets never carry a Photos-style live edit.
+  fun getBaseLivePhoto(assetId: String, allowNetworkAccess: Boolean, callback: (Result<BaseLivePhoto?>) -> Unit) {
+    completeWhenActive(callback, Result.success(null))
   }
 }

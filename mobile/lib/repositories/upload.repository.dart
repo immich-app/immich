@@ -31,6 +31,11 @@ class UploadRepository {
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
     FileDownloader().registerCallbacks(
+      group: kBackupEditPairGroup,
+      taskStatusCallback: (update) => onUploadStatus?.call(update),
+      taskProgressCallback: (update) => onTaskProgress?.call(update),
+    );
+    FileDownloader().registerCallbacks(
       group: kManualUploadGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
@@ -60,6 +65,11 @@ class UploadRepository {
   /// Get a list of tasks that are ENQUEUED or RUNNING
   Future<List<Task>> getActiveTasks(String group) {
     return FileDownloader().allTasks(group: group);
+  }
+
+  /// The ENQUEUED or RUNNING task with this id, if any.
+  Future<Task?> getTaskById(String taskId) {
+    return FileDownloader().taskForId(taskId);
   }
 
   Future<void> start() {

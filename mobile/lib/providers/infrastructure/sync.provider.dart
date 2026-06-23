@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/edit_revert.service.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
@@ -11,6 +12,8 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/stack.provider.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 
@@ -46,6 +49,15 @@ final localSyncServiceProvider = Provider(
   ),
 );
 
+final editRevertServiceProvider = Provider(
+  (ref) => EditRevertService(
+    nativeSyncApi: ref.watch(nativeSyncApiProvider),
+    stackRepository: ref.watch(driftStackProvider),
+    localAssetRepository: ref.watch(localAssetRepository),
+    assetApiRepository: ref.watch(assetApiRepositoryProvider),
+  ),
+);
+
 final hashServiceProvider = Provider(
   (ref) => HashService(
     localAlbumRepository: ref.watch(localAlbumRepository),
@@ -53,5 +65,7 @@ final hashServiceProvider = Provider(
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     cancellation: ref.watch(cancellationProvider),
+    stackRepository: ref.watch(driftStackProvider),
+    assetApiRepository: ref.watch(assetApiRepositoryProvider),
   ),
 );

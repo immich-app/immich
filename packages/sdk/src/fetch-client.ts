@@ -657,12 +657,16 @@ export type AssetMediaCreateDto = {
     filename?: string;
     /** Mark as favorite */
     isFavorite?: boolean;
+    /** When stacking via stackParentId, keep the parent/existing asset as the stack primary instead of promoting this one. Used by iOS burst frames. */
+    keepPrimary?: boolean;
     /** Live photo video ID */
     livePhotoVideoId?: string;
     /** Asset metadata items */
     metadata?: AssetMetadataUpsertItemDto[];
     /** Sidecar file data */
     sidecarData?: Blob;
+    /** Stack this asset onto the parent asset, with the new asset as the stack primary */
+    stackParentId?: string;
     visibility?: AssetVisibility;
 };
 export type AssetMediaResponseDto = {

@@ -183,6 +183,12 @@ enum PlatformAssetPlaybackStyle: Int {
   case videoLooping = 5
 }
 
+enum EditState: Int {
+  case notEdited = 0
+  case edited = 1
+  case unknown = 2
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct PlatformAsset: Hashable {
   var id: String
@@ -199,6 +205,8 @@ struct PlatformAsset: Hashable {
   var latitude: Double? = nil
   var longitude: Double? = nil
   var playbackStyle: PlatformAssetPlaybackStyle
+  var burstId: String? = nil
+  var isBurstRepresentative: Bool
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -217,6 +225,8 @@ struct PlatformAsset: Hashable {
     let latitude: Double? = nilOrValue(pigeonVar_list[11])
     let longitude: Double? = nilOrValue(pigeonVar_list[12])
     let playbackStyle = pigeonVar_list[13] as! PlatformAssetPlaybackStyle
+    let burstId: String? = nilOrValue(pigeonVar_list[14])
+    let isBurstRepresentative = pigeonVar_list[15] as! Bool
 
     return PlatformAsset(
       id: id,
@@ -232,7 +242,9 @@ struct PlatformAsset: Hashable {
       adjustmentTime: adjustmentTime,
       latitude: latitude,
       longitude: longitude,
-      playbackStyle: playbackStyle
+      playbackStyle: playbackStyle,
+      burstId: burstId,
+      isBurstRepresentative: isBurstRepresentative
     )
   }
   func toList() -> [Any?] {
@@ -251,13 +263,15 @@ struct PlatformAsset: Hashable {
       latitude,
       longitude,
       playbackStyle,
+      burstId,
+      isBurstRepresentative,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle)
+    return deepEqualsMessages(lhs.id, rhs.id) && deepEqualsMessages(lhs.name, rhs.name) && deepEqualsMessages(lhs.type, rhs.type) && deepEqualsMessages(lhs.createdAt, rhs.createdAt) && deepEqualsMessages(lhs.updatedAt, rhs.updatedAt) && deepEqualsMessages(lhs.width, rhs.width) && deepEqualsMessages(lhs.height, rhs.height) && deepEqualsMessages(lhs.durationMs, rhs.durationMs) && deepEqualsMessages(lhs.orientation, rhs.orientation) && deepEqualsMessages(lhs.isFavorite, rhs.isFavorite) && deepEqualsMessages(lhs.adjustmentTime, rhs.adjustmentTime) && deepEqualsMessages(lhs.latitude, rhs.latitude) && deepEqualsMessages(lhs.longitude, rhs.longitude) && deepEqualsMessages(lhs.playbackStyle, rhs.playbackStyle) && deepEqualsMessages(lhs.burstId, rhs.burstId) && deepEqualsMessages(lhs.isBurstRepresentative, rhs.isBurstRepresentative)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -276,6 +290,8 @@ struct PlatformAsset: Hashable {
     deepHashMessages(value: latitude, hasher: &hasher)
     deepHashMessages(value: longitude, hasher: &hasher)
     deepHashMessages(value: playbackStyle, hasher: &hasher)
+    deepHashMessages(value: burstId, hasher: &hasher)
+    deepHashMessages(value: isBurstRepresentative, hasher: &hasher)
   }
 }
 
@@ -458,6 +474,78 @@ struct CloudIdResult: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct BaseResource: Hashable {
+  var path: String
+  var sha1: String
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BaseResource? {
+    let path = pigeonVar_list[0] as! String
+    let sha1 = pigeonVar_list[1] as! String
+
+    return BaseResource(
+      path: path,
+      sha1: sha1
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      path,
+      sha1,
+    ]
+  }
+  static func == (lhs: BaseResource, rhs: BaseResource) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsMessages(lhs.path, rhs.path) && deepEqualsMessages(lhs.sha1, rhs.sha1)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("BaseResource")
+    deepHashMessages(value: path, hasher: &hasher)
+    deepHashMessages(value: sha1, hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct BaseLivePhoto: Hashable {
+  var still: BaseResource
+  var video: BaseResource? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BaseLivePhoto? {
+    let still = pigeonVar_list[0] as! BaseResource
+    let video: BaseResource? = nilOrValue(pigeonVar_list[1])
+
+    return BaseLivePhoto(
+      still: still,
+      video: video
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      still,
+      video,
+    ]
+  }
+  static func == (lhs: BaseLivePhoto, rhs: BaseLivePhoto) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return deepEqualsMessages(lhs.still, rhs.still) && deepEqualsMessages(lhs.video, rhs.video)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("BaseLivePhoto")
+    deepHashMessages(value: still, hasher: &hasher)
+    deepHashMessages(value: video, hasher: &hasher)
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -468,15 +556,25 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       }
       return nil
     case 130:
-      return PlatformAsset.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return EditState(rawValue: enumResultAsInt)
+      }
+      return nil
     case 131:
-      return PlatformAlbum.fromList(self.readValue() as! [Any?])
+      return PlatformAsset.fromList(self.readValue() as! [Any?])
     case 132:
-      return SyncDelta.fromList(self.readValue() as! [Any?])
+      return PlatformAlbum.fromList(self.readValue() as! [Any?])
     case 133:
-      return HashResult.fromList(self.readValue() as! [Any?])
+      return SyncDelta.fromList(self.readValue() as! [Any?])
     case 134:
+      return HashResult.fromList(self.readValue() as! [Any?])
+    case 135:
       return CloudIdResult.fromList(self.readValue() as! [Any?])
+    case 136:
+      return BaseResource.fromList(self.readValue() as! [Any?])
+    case 137:
+      return BaseLivePhoto.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -488,20 +586,29 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
     if let value = value as? PlatformAssetPlaybackStyle {
       super.writeByte(129)
       super.writeValue(value.rawValue)
-    } else if let value = value as? PlatformAsset {
+    } else if let value = value as? EditState {
       super.writeByte(130)
-      super.writeValue(value.toList())
-    } else if let value = value as? PlatformAlbum {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? PlatformAsset {
       super.writeByte(131)
       super.writeValue(value.toList())
-    } else if let value = value as? SyncDelta {
+    } else if let value = value as? PlatformAlbum {
       super.writeByte(132)
       super.writeValue(value.toList())
-    } else if let value = value as? HashResult {
+    } else if let value = value as? SyncDelta {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? CloudIdResult {
+    } else if let value = value as? HashResult {
       super.writeByte(134)
+      super.writeValue(value.toList())
+    } else if let value = value as? CloudIdResult {
+      super.writeByte(135)
+      super.writeValue(value.toList())
+    } else if let value = value as? BaseResource {
+      super.writeByte(136)
+      super.writeValue(value.toList())
+    } else if let value = value as? BaseLivePhoto {
+      super.writeByte(137)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -540,6 +647,16 @@ protocol NativeSyncApi {
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
   func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
+  func getBaseResource(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<BaseResource?, Error>) -> Void)
+  /// Streams the bytes immich treats as the asset's canonical content — the same
+  /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+  /// rendition). Used to upload iOS burst members: they're invisible to
+  /// photo_manager, so this is the only way to read their file, and streaming
+  /// the same resource the hash measured keeps the server checksum aligned with
+  /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+  func getCurrentResource(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<BaseResource?, Error>) -> Void)
+  func getEditState(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<EditState, Error>) -> Void)
+  func getBaseLivePhoto(assetId: String, allowNetworkAccess: Bool, completion: @escaping (Result<BaseLivePhoto?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -772,6 +889,92 @@ class NativeSyncApiSetup {
       }
     } else {
       getCloudIdForAssetIdsChannel.setMessageHandler(nil)
+    }
+    let getBaseResourceChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getBaseResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getBaseResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getBaseResourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        let allowNetworkAccessArg = args[1] as! Bool
+        api.getBaseResource(assetId: assetIdArg, allowNetworkAccess: allowNetworkAccessArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getBaseResourceChannel.setMessageHandler(nil)
+    }
+    /// Streams the bytes immich treats as the asset's canonical content — the same
+    /// resource [hashAssets] hashes (`PHAsset.getResource()`, the `.isCurrent`
+    /// rendition). Used to upload iOS burst members: they're invisible to
+    /// photo_manager, so this is the only way to read their file, and streaming
+    /// the same resource the hash measured keeps the server checksum aligned with
+    /// the local one (else the asset shows cloud-only). iOS-only; android returns null.
+    let getCurrentResourceChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCurrentResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCurrentResource\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getCurrentResourceChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        let allowNetworkAccessArg = args[1] as! Bool
+        api.getCurrentResource(assetId: assetIdArg, allowNetworkAccess: allowNetworkAccessArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getCurrentResourceChannel.setMessageHandler(nil)
+    }
+    let getEditStateChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getEditState\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getEditState\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getEditStateChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        let allowNetworkAccessArg = args[1] as! Bool
+        api.getEditState(assetId: assetIdArg, allowNetworkAccess: allowNetworkAccessArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getEditStateChannel.setMessageHandler(nil)
+    }
+    let getBaseLivePhotoChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getBaseLivePhoto\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getBaseLivePhoto\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getBaseLivePhotoChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdArg = args[0] as! String
+        let allowNetworkAccessArg = args[1] as! Bool
+        api.getBaseLivePhoto(assetId: assetIdArg, allowNetworkAccess: allowNetworkAccessArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getBaseLivePhotoChannel.setMessageHandler(nil)
     }
   }
 }

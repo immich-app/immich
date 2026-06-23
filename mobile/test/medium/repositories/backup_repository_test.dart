@@ -135,6 +135,101 @@ void main() {
       expect(result.remainder, 2); // local2 + local3
       expect(result.processing, 1); // local3
     });
+
+    test('reconciled asset with live prior remote counts in total but not remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // uploaded as edit pair: prior remote is live, but no remote row matches the local checksum
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(checksum: 'edited-1', syncedChecksum: 'edited-1', priorRemoteId: prior.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 0);
+      expect(result.processing, 0);
+    });
+
+    test('reverted-handled asset counts in total but not remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // revert handled: local re-hashed fresh, stamped synced + prior pointing at the base remote
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(
+        checksum: 'reverted-1',
+        syncedChecksum: 'reverted-1',
+        priorRemoteId: prior.id,
+      );
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 0);
+    });
+
+    test('reconciled asset with trashed prior remote stays out of remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // prior was trashed, not hard-deleted: the row still exists, so the revert
+      // stays handled — only a missing row re-opens the asset
+      final prior = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2025, 6));
+      final local = await ctx.newLocalAsset(checksum: 'edited-3', syncedChecksum: 'edited-3', priorRemoteId: prior.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 0);
+    });
+
+    test('reconciled asset with hard-deleted prior remote counts in remainder', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      // prior remote row is gone -> needs re-upload
+      final local = await ctx.newLocalAsset(checksum: 'edited-2', syncedChecksum: 'edited-2', priorRemoteId: 'gone');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 1);
+      expect(result.remainder, 1);
+    });
+
+    test('burst members inherit their representative\'s selected album in the counts', () async {
+      // getAllCounts drives the UI count + the foreground loop early-exit, so it
+      // must agree with getCandidates: hidden members count when the cover's
+      // album is selected, even though only the cover is album-tied.
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final rep = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: rep.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 3);
+      expect(result.remainder, 3);
+      expect(result.processing, 0);
+    });
+
+    test('burst members are not counted when their representative album is not selected', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.none);
+      final rep = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: rep.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 0);
+      expect(result.remainder, 0);
+    });
+
+    test('burst members are not counted when the rep is in both a selected and an excluded album', () async {
+      // exclude-wins must propagate to the hidden members: the rep is suppressed,
+      // so its members must not leak into the counts either.
+      final selected = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final excluded = await ctx.newLocalAlbum(backupSelection: BackupSelection.excluded);
+      final rep = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: rep.id);
+      await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: rep.id);
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 0);
+      expect(result.remainder, 0);
+    });
   });
 
   group('getCandidates', () {
@@ -162,6 +257,58 @@ void main() {
       final result = await sut.getCandidates(userId);
       expect(result.length, 1);
       expect(result.first.id, asset.id);
+    });
+
+    test('burst member inherits candidacy from its representative in a selected album', () async {
+      // iOS adds only the burst cover to a user album; the hidden members live in
+      // the smart album. They must still back up when the cover's album is selected.
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final rep = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      final member1 = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      final member2 = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      // only the representative is an album member
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: rep.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result.map((a) => a.id).toSet(), {rep.id, member1.id, member2.id});
+    });
+
+    test('burst member is NOT a candidate when its representative album is not selected', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.none);
+      final rep = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: rep.id);
+
+      expect(await sut.getCandidates(userId), isEmpty);
+    });
+
+    test('burstId filter returns only that burst\'s non-representative members', () async {
+      // The bg re-enqueue path calls getCandidates(userId, burstId: b) to grab just
+      // one burst's gated frames once its anchor lands — not the rep, not other bursts.
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final rep1 = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      final m1a = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      final m1b = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      final rep2 = await ctx.newLocalAsset(burstId: 'b2', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b2', isBurstRepresentative: false);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: rep1.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: rep2.id);
+
+      final result = await sut.getCandidates(userId, burstId: 'b1');
+      expect(result.map((a) => a.id).toSet(), {m1a.id, m1b.id});
+    });
+
+    test('burst member is NOT a candidate when the rep is in both a selected and an excluded album', () async {
+      // exclude-wins propagates: the rep is held back, so its hidden members must
+      // not upload either.
+      final selected = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final excluded = await ctx.newLocalAlbum(backupSelection: BackupSelection.excluded);
+      final rep = await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: true);
+      await ctx.newLocalAsset(burstId: 'b1', isBurstRepresentative: false);
+      await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: rep.id);
+      await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: rep.id);
+
+      expect(await sut.getCandidates(userId), isEmpty);
     });
 
     test('excludes asset already backed up for the same user', () async {
@@ -237,6 +384,65 @@ void main() {
       await ctx.newLocalAlbumAsset(albumId: album2.id, assetId: asset.id);
 
       final result = await sut.getCandidates(userId);
+      expect(result.length, 1);
+      expect(result.first.id, asset.id);
+    });
+
+    test('includes re-edited asset whose synced checksum is stale', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(checksum: 'edit-v2', syncedChecksum: 'edit-v1', priorRemoteId: prior.id);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result.length, 1);
+      expect(result.first.id, local.id);
+    });
+
+    test('excludes reconciled asset with live prior remote', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final prior = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(
+        checksum: 'reverted-2',
+        syncedChecksum: 'reverted-2',
+        priorRemoteId: prior.id,
+      );
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
+    });
+
+    test('excludes reconciled asset whose prior remote was trashed', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final prior = await ctx.newRemoteAsset(ownerId: userId, deletedAt: DateTime(2025, 6));
+      final local = await ctx.newLocalAsset(
+        checksum: 'reverted-3',
+        syncedChecksum: 'reverted-3',
+        priorRemoteId: prior.id,
+      );
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
+    });
+
+    test('includes reconciled asset whose prior remote was hard-deleted', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final local = await ctx.newLocalAsset(checksum: 'edit-v3', syncedChecksum: 'edit-v3', priorRemoteId: 'gone');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getCandidates(userId);
+      expect(result.length, 1);
+      expect(result.first.id, local.id);
+    });
+
+    test('includes asset with null checksum and synced checksum set when onlyHashed is false', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset(checksumOption: const Option.none(), syncedChecksum: 'old');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      final result = await sut.getCandidates(userId, onlyHashed: false);
       expect(result.length, 1);
       expect(result.first.id, asset.id);
     });

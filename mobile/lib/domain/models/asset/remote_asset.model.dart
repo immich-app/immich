@@ -13,6 +13,11 @@ class RemoteAsset extends BaseAsset {
   final DateTime? uploadedAt;
   final DateTime? deletedAt;
 
+  // The linked local's current checksum. Differs from [checksum] when the link
+  // came via priorRemoteId (the local re-encoded on device, e.g. a revert); local
+  // renders are cache-keyed by this so on-device changes aren't shown stale.
+  final String? localChecksum;
+
   const RemoteAsset({
     required this.id,
     String? localId,
@@ -33,6 +38,7 @@ class RemoteAsset extends BaseAsset {
     this.stackId,
     required super.isEdited,
     this.deletedAt,
+    this.localChecksum,
   }) : localAssetId = localId;
 
   @override
@@ -91,7 +97,8 @@ class RemoteAsset extends BaseAsset {
         visibility == other.visibility &&
         stackId == other.stackId &&
         uploadedAt == other.uploadedAt &&
-        deletedAt == other.deletedAt;
+        deletedAt == other.deletedAt &&
+        localChecksum == other.localChecksum;
   }
 
   @override
@@ -104,7 +111,8 @@ class RemoteAsset extends BaseAsset {
       visibility.hashCode ^
       stackId.hashCode ^
       uploadedAt.hashCode ^
-      deletedAt.hashCode;
+      deletedAt.hashCode ^
+      localChecksum.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -126,6 +134,7 @@ class RemoteAsset extends BaseAsset {
     String? stackId,
     bool? isEdited,
     DateTime? deletedAt,
+    String? localChecksum,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -147,6 +156,7 @@ class RemoteAsset extends BaseAsset {
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
       deletedAt: deletedAt ?? this.deletedAt,
+      localChecksum: localChecksum ?? this.localChecksum,
     );
   }
 }
@@ -174,6 +184,7 @@ class RemoteAssetExif extends RemoteAsset {
     super.livePhotoVideoId,
     super.stackId,
     super.isEdited = false,
+    super.localChecksum,
     this.exifInfo = const ExifInfo(),
   });
 
@@ -212,6 +223,7 @@ class RemoteAssetExif extends RemoteAsset {
     String? livePhotoVideoId,
     String? stackId,
     bool? isEdited,
+    String? localChecksum,
     ExifInfo? exifInfo,
   }) {
     return RemoteAssetExif(
@@ -234,6 +246,7 @@ class RemoteAssetExif extends RemoteAsset {
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
+      localChecksum: localChecksum ?? this.localChecksum,
       exifInfo: exifInfo ?? this.exifInfo, // Use the new parameter
     );
   }

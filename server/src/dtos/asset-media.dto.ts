@@ -48,6 +48,15 @@ const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
   isFavorite: stringToBool.optional().describe('Mark as favorite'),
   visibility: AssetVisibilitySchema.optional(),
   livePhotoVideoId: z.uuidv4().optional().describe('Live photo video ID'),
+  stackParentId: z
+    .uuidv4()
+    .optional()
+    .describe('Stack this asset onto the parent asset, with the new asset as the stack primary'),
+  keepPrimary: stringToBool
+    .optional()
+    .describe(
+      'When stacking via stackParentId, keep the parent/existing asset as the stack primary instead of promoting this one. Used by iOS burst frames.',
+    ),
   metadata: JsonParsed.pipe(z.array(AssetMetadataUpsertItemSchema)).optional().describe('Asset metadata items'),
   [UploadFieldName.SIDECAR_DATA]: z
     .any()
