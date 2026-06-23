@@ -18,10 +18,4 @@
   };
 </script>
 
-<Toast
-  color="primary"
-  title={$t('success')}
-  {description}
-  {onClose}
-  button={{ label, onclick: handleClick }}
-/>
+<Toast color="primary" title={$t('success')} {description} {onClose} button={{ label, onclick: handleClick }} />
