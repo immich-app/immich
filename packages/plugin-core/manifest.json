@@ -292,7 +292,7 @@
     {
       "name": "assetDataWebhook",
       "title": "Trigger Webhook",
-      "description": "POST asset data to any URL",
+      "description": "POST/PUT event data to any URL",
       "types": ["AssetV1"],
       "hostFunctions": true,
       "schema": {
@@ -301,7 +301,7 @@
           "url": {
             "type": "string",
             "title": "URL",
-            "description": "Asset data will be POSTed to this URL as a JSON object"
+            "description": "Event data will be PUT/POSTed to this URL as a JSON object"
           },
           "headerName": {
             "type": "string",
@@ -312,6 +312,12 @@
             "type": "string",
             "title": "Header value",
             "description": "The value of the additional header"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "The HTTP method to use in the request",
+            "enum": ["POST", "PUT"]
           }
         },
         "required": ["url"]
