@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+
+class ActionScope {
+  final BuildContext context;
+  final WidgetRef ref;
+  final UserDto authUser;
+
+  const ActionScope({required this.context, required this.ref, required this.authUser});
+}
 
 abstract class BaseAction {
-  final IconData icon;
+  const BaseAction();
 
-  const BaseAction({required this.icon});
+  IconData get icon;
 
-  String label(BuildContext context);
+  String label(ActionScope scope);
 
-  bool isVisible(BuildContext context, WidgetRef ref);
+  bool isVisible(ActionScope scope) => true;
 
-  Future<void> onAction(BuildContext context, WidgetRef ref);
+  Future<void> onAction(ActionScope scope);
 }

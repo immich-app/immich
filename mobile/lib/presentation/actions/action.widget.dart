@@ -2,30 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_ui/immich_ui.dart';
 
+class _ActionWidgetScope {
+  final String label;
+  final VoidCallback onAction;
+
+  const _ActionWidgetScope({required this.label, required this.onAction});
+}
+
 class _ActionWidget extends ConsumerWidget {
   final BaseAction action;
-  final Widget Function(Future<void> Function() onAction) builder;
+  final Widget Function(_ActionWidgetScope context) builder;
 
   const _ActionWidget({required this.action, required this.builder});
 
-  Future<void> _onAction(BuildContext context, WidgetRef ref) async {
+  Future<void> _onAction(ActionScope scope) async {
     try {
-      await action.onAction(context, ref);
+      await action.onAction(scope);
     } catch (error, stackTrace) {
-      handleError(context, error, stack: stackTrace, description: 'Action failed: ${action.runtimeType}');
+      handleError(scope.context, error, stack: stackTrace, description: 'Action failed: ${action.runtimeType}');
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!action.isVisible(context, ref)) {
+    final authUser = ref.watch(currentUserProvider);
+    if (authUser == null) {
       return const SizedBox.shrink();
     }
 
-    return builder(() => _onAction(context, ref));
+    final scope = ActionScope(context: context, ref: ref, authUser: authUser);
+    if (!action.isVisible(scope)) {
+      return const SizedBox.shrink();
+    }
+
+    return builder(.new(label: action.label(scope), onAction: () => _onAction(scope)));
   }
 }
 
@@ -38,7 +52,7 @@ class ActionIconButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (onAction) => ImmichIconButton(icon: action.icon, onPressed: onAction, variant: variant),
+    builder: (ctx) => ImmichIconButton(icon: action.icon, onPressed: ctx.onAction, variant: variant),
   );
 }
 
@@ -51,8 +65,8 @@ class ActionButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (onAction) =>
-        ImmichTextButton(labelText: action.label(context), icon: action.icon, onPressed: onAction, variant: variant),
+    builder: (ctx) =>
+        ImmichTextButton(labelText: ctx.label, icon: action.icon, onPressed: ctx.onAction, variant: variant),
   );
 }
 
@@ -64,7 +78,7 @@ class ActionColumnButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (onAction) => ImmichColumnButton(icon: action.icon, label: action.label(context), onPressed: onAction),
+    builder: (ctx) => ImmichColumnButton(icon: action.icon, label: ctx.label, onPressed: ctx.onAction),
   );
 }
 
@@ -76,6 +90,6 @@ class ActionMenuItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (onAction) => ImmichMenuItem(icon: action.icon, label: action.label(context), onPressed: onAction),
+    builder: (ctx) => ImmichMenuItem(icon: action.icon, label: ctx.label, onPressed: ctx.onAction),
   );
 }
