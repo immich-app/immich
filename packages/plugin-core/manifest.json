@@ -216,7 +216,9 @@
             "description": "Which tags the asset must have",
             "type": "string",
             "array": true,
-            "uiHint": "TagId"
+            "uiHint": {
+              "type": "TagId"
+            }
           },
           "matching": {
             "title": "Matching",
