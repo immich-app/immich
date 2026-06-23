@@ -278,7 +278,9 @@
             "title": "Album IDs",
             "array": true,
             "description": "Target album IDs",
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId"
+            }
           },
           "albumName": {
             "type": "string",
@@ -368,14 +370,20 @@
             "type": "string",
             "title": "Album ID",
             "description": "Target album ID",
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId",
+              "order": 1
+            }
           },
           "albumIds": {
             "type": "string",
             "title": "Album IDs",
             "description": "Target album IDs",
             "array": true,
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId",
+              "order": 2
+            }
           }
         }
       }
