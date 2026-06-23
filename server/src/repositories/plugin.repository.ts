@@ -216,6 +216,7 @@ export class PluginRepository {
               functions: {
                 'extism:host/user': functions ?? {},
               },
+              allowedHosts: runInWorker ? ['*'] : [],
               logger: {
                 trace: (message) => logger.verbose(message),
                 info: (message) => logger.log(message),

@@ -184,16 +184,14 @@ export const assetAddToAlbums = () => {
 
 export const assetDataWebhook = () => {
   return wrapper<WorkflowType.AssetV1, { url: string; headerName?: string; headerValue?: string; method?: string }>(
-    ({ config, data, functions }) => {
-      let headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
+    ({ config, data }) => {
+      const headers = new Headers({ 'Content-Type': 'application/json' });
 
       if (config.headerName && config.headerValue) {
-        headers[config.headerName] = config.headerValue;
+        headers.set(config.headerName, config.headerValue);
       }
 
-      functions.httpRequest(config.url, {
+      fetch(config.url, {
         method: config.method ?? 'POST',
         body: JSON.stringify(data.asset),
         headers,

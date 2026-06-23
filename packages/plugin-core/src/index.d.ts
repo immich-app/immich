@@ -5,7 +5,6 @@ declare module 'extism:host' {
     createAlbum(ptr: PTR): I64;
     addAssetsToAlbum(ptr: PTR): I64;
     addAssetsToAlbums(ptr: PTR): I64;
-    httpRequest(ptr: PTR): I64;
   }
 }
 
