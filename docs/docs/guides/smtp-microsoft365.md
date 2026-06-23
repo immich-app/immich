@@ -6,7 +6,7 @@ This guide walks you through how to get the information you need to set up your 
 
 There are different ways to create an app password, depending if you use a personal or business account. If you are using a personal account [use this Microsoft link](https://go.microsoft.com/fwlink/?linkid=2274139) to create an app password.
 
-If you are using a school or business account, visit https://myaccount.microsoft.com/securtiy-info, login, click on + Add sign-in method and then select "App password".
+If you are using a school or business account, visit [https://myaccount.microsoft.com/securtiy-info](https://myaccount.microsoft.com/security-info), login, click on + Add sign-in method and then select "App password".
 
 A password will be displayed; save it, it will be used for the password field when setting up the SMTP server in Immich.
 
