@@ -1548,7 +1548,6 @@
   "map_location_picker_page_use_location": "Usar esta localización",
   "map_location_service_disabled_content": "O servizo de localización debe estar activado para mostrar activos da súa localización actual. Quere activalo agora?",
   "map_location_service_disabled_title": "Servizo de localización deshabilitado",
-  "map_marker_for_images": "Marcador de mapa para imaxes tomadas en {city}, {country}",
   "map_marker_with_image": "Marcador de mapa con imaxe",
   "map_no_location_permission_content": "Necesítase permiso de localización para mostrar activos da súa localización actual. Quere permitilo agora?",
   "map_no_location_permission_title": "Permiso de localización denegado",

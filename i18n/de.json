@@ -1548,7 +1548,7 @@
   "map_location_picker_page_use_location": "Diesen Standort verwenden",
   "map_location_service_disabled_content": "Ortungsdienste müssen aktiviert sein, um Inhalte am aktuellen Standort anzuzeigen. Willst du die Ortungsdienste jetzt aktivieren?",
   "map_location_service_disabled_title": "Ortungsdienste deaktiviert",
-  "map_marker_for_images": "Kartenmarkierung für Bilder, die in {city}, {country} aufgenommen wurden",
+  "map_marker_for_image": "Kartenmarkierung für in {city}, {country} aufgenommenes Bild",
   "map_marker_with_image": "Kartenmarkierung mit Bild",
   "map_no_location_permission_content": "Ortungsdienste müssen aktiviert sein, um Inhalte am aktuellen Standort anzuzeigen. Willst du die Ortungsdienste jetzt aktivieren?",
   "map_no_location_permission_title": "Kein Zugriff auf den Standort",
