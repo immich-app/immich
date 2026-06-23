@@ -31,7 +31,7 @@
     "@types/node": "^24.13.2",
     "esbuild": "^0.28.0",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.0"
   },
   "peerDependencies": {
     "@extism/js-pdk": "^1.1.1"
