@@ -1391,7 +1391,6 @@
   "map_location_picker_page_use_location": "Ufnahmeort verwände",
   "map_location_service_disabled_content": "D’Ortigsdienscht müend aktiviert si, um Inhält am aktuelle Standort aazeige z chönne. Wotsch d’Ortigsdienscht jetzt aktiviere?",
   "map_location_service_disabled_title": "Ortigsdienscht deaktiviert",
-  "map_marker_for_images": "Charte-Markierige für Bilder, wo i {city}, {country} ufgnoh worde sind",
   "map_marker_with_image": "Charte-Markierig mit Bild",
   "map_no_location_permission_content": "D’Ortigsdienscht müend aktiviert si, um Inhält am aktuelle Standort aazeige z chönne. Wotsch d’Ortigsdienscht jetzt aktiviere?",
   "map_no_location_permission_title": "Kei Zuegriff uf dä Standort",
@@ -1528,5 +1527,8 @@
   "on_this_device": "Uf däm Grät",
   "onboarding": "Iistig",
   "onboarding_locale_description": "Wähl dini bevorzugti Sprooch. Du chasch die au spöter i dine Iistellige ändere.",
-  "onboarding_privacy_description": "Diä folgende (optionali) Funktione hänged vo externä Diänscht ab und chönd jederziit i de Iistellige deaktiviärt wärde."
+  "onboarding_privacy_description": "Diä folgende (optionali) Funktione hänged vo externä Diänscht ab und chönd jederziit i de Iistellige deaktiviärt wärde.",
+  "upload_finished": "Ufelade beändet",
+  "users": "Benutzer",
+  "waiting": "Usstehend"
 }

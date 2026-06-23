@@ -1548,7 +1548,6 @@
   "map_location_picker_page_use_location": "使用此位置",
   "map_location_service_disabled_content": "需要启用定位服务才能显示您当前位置的媒体文件。是否现在启用它？",
   "map_location_service_disabled_title": "定位服务已禁用",
-  "map_marker_for_images": "标记{city}、{country}拍摄照片的地图图标",
   "map_marker_with_image": "带预览图的地图标记",
   "map_no_location_permission_content": "需要位置权限才能显示您当前位置的照片/视频。现在要允许吗？",
   "map_no_location_permission_title": "位置权限被拒绝",
