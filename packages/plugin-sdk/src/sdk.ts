@@ -8,7 +8,7 @@ import type {
 } from 'src/types.js';
 
 export const wrapper = <
-  T extends WorkflowType = WorkflowType,
+  T extends WorkflowType,
   TConfig extends ConfigValue = ConfigValue,
 >(
   fn: (
