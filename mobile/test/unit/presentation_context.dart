@@ -10,6 +10,9 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 import '../test_utils.dart';
 
@@ -54,6 +57,7 @@ extension PumpPresentationWidget on WidgetTester {
           child: Builder(
             builder: (context) => MaterialApp(
               debugShowCheckedModeBanner: false,
+              scaffoldMessengerKey: scaffoldMessengerKey,
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
               locale: context.locale,
@@ -64,5 +68,24 @@ extension PumpPresentationWidget on WidgetTester {
       ),
     );
     await pumpAndSettle();
+  }
+
+  Future<void> pumpTestAction(BaseAction action, {List<Override> overrides = const []}) async {
+    await pumpTestWidget(
+      Scaffold(body: ActionIconButtonWidget(action: action)),
+      overrides: overrides,
+    );
+    await tap(find.byType(ImmichIconButton));
+    await pump();
+  }
+
+  Future<void> pumpUntilFound(Finder finder, {int maxFrames = 10}) async {
+    for (var i = 0; i < maxFrames; i++) {
+      await pump();
+      if (finder.evaluate().isNotEmpty) {
+        return;
+      }
+    }
+    throw StateError('pumpUntilFound: $finder not found within $maxFrames frames');
   }
 }
