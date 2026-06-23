@@ -17,11 +17,10 @@ import {
   type StackResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { toastManager } from '@immich/ui';
+import { toastManager, type ToastShow } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import UndoToast from '$lib/components/shared-components/UndoToast.svelte';
 import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
@@ -418,17 +417,17 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
 
 const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
   const $t = get(t);
-  toastManager.custom(
-    {
-      component: UndoToast,
-      props: {
-        description,
-        label: $t('undo'),
-        onAction: () => undoArchiveAssets(assets),
+  const toast: ToastShow & { onClose?: () => void } = {
+    description,
+    button: {
+      label: $t('undo'),
+      onclick: () => {
+        toast.onClose?.();
+        void undoArchiveAssets(assets);
       },
     },
-    { timeout: 5000 },
-  );
+  };
+  toastManager.primary(toast);
 };
 
 const undoArchiveAssets = async (assets: TimelineAsset[]) => {
