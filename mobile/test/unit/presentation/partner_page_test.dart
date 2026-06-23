@@ -19,7 +19,7 @@ void main() {
     testWidgets('shows the empty-state add button when there are no partners', (tester) async {
       final action = const PartnerAddAction();
 
-      await tester.pumpTestWidget(const PartnerSharedByList(partners: []));
+      await tester.pumpTestWidget(const PartnerSharedByList(partners: []), overrides: context.overrides);
 
       expect(find.byType(ListView), findsNothing);
       expect(find.widgetWithIcon(TextButton, action.icon), findsOneWidget);
@@ -28,7 +28,7 @@ void main() {
     testWidgets('renders a tile per partner with name and email', (tester) async {
       final partner1 = PartnerFactory.create();
       final partner2 = PartnerFactory.create();
-      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2]));
+      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2]), overrides: context.overrides);
 
       expect(find.byType(ListTile), findsNWidgets(2));
       expect(find.text(partner1.name), findsOneWidget);
@@ -41,7 +41,7 @@ void main() {
       final partner1 = PartnerFactory.create(inTimeline: true);
       final partner2 = PartnerFactory.create();
       final action = const PartnerRemoveAction(sharedWithId: '', partnerName: '');
-      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2]));
+      await tester.pumpTestWidget(PartnerSharedByList(partners: [partner1, partner2]), overrides: context.overrides);
       expect(find.byIcon(action.icon), findsNWidgets(2));
     });
   });
@@ -62,6 +62,7 @@ void main() {
     }
 
     List<Override> withCandidates(List<User> candidates) => [
+      ...context.overrides,
       candidatesStateProvider.overrideWith((ref) => Stream<Iterable<User>>.value(candidates)),
     ];
 

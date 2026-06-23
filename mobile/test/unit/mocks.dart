@@ -32,8 +32,8 @@ class RepositoryMocks {
 }
 
 class ServiceMocks {
-  final partner = PartnerStub(MockPartnerService());
-  final user = UserStub(MockUserService());
+  final PartnerStub partner = PartnerStub(MockPartnerService());
+  final UserStub user = UserStub(MockUserService());
 
   ServiceMocks() {
     resetAll();

@@ -6,22 +6,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../test_utils.dart';
+import 'factories/user_factory.dart';
+import 'mocks.dart';
 
 class PresentationContext {
-  const PresentationContext._();
+  PresentationContext._({required UserDto user}) : currentUser = user, mocks = ServiceMocks() {
+    when(mocks.user.tryGetMyUser).thenReturn(currentUser);
+  }
 
   static const String serverEndpoint = 'http://localhost:3000';
 
   static Drift? _db;
+
+  final UserDto currentUser;
+  final ServiceMocks mocks;
+
+  List<Override> get overrides => [currentUserProvider.overrideWith((ref) => CurrentUserProvider(mocks.user.service))];
 
   static Future<PresentationContext> create() async {
     TestUtils.init();
@@ -31,7 +43,7 @@ class PresentationContext {
       await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
       _db = db;
     }
-    return const PresentationContext._();
+    return PresentationContext._(user: UserFactory.createDto());
   }
 
   Future<void> dispose() async {
