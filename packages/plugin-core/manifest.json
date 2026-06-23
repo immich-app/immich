@@ -196,21 +196,33 @@
             "title": "Start date",
             "description": "Earliest date of assets to include",
             "properties": {
-              "month": {
-                "type": "number",
-                "title": "Month",
-                "description": "Month of the year to match"
-              },
               "day": {
                 "type": "number",
                 "title": "Day",
-                "description": "Day of the year to match"
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
               },
               "year": {
                 "type": "number",
                 "title": "Year",
-                "description": "Year to match"
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
               }
+            },
+            "uiHint": {
+              "order": 1
             }
           },
           "endDate": {
@@ -218,28 +230,43 @@
             "title": "End date",
             "description": "Latest date of assets to include",
             "properties": {
-              "month": {
-                "type": "number",
-                "title": "Month",
-                "description": "Month of the year to match"
-              },
               "day": {
                 "type": "number",
                 "title": "Day",
-                "description": "Day of the year to match"
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
               },
               "year": {
                 "type": "number",
                 "title": "Year",
-                "description": "Year to match"
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
               }
+            },
+            "uiHint": {
+              "order": 2
             }
           },
           "recurring": {
             "type": "boolean",
             "default": false,
             "title": "Match recurring dates",
-            "description": "Allow any assets with matching months/days regardless of the year"
+            "description": "Allow any assets with matching months/days regardless of the year",
+            "uiHint": {
+              "order": 3
+            }
           }
         },
         "required": ["recurring", "startDate", "endDate"]
