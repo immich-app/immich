@@ -300,10 +300,13 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
     if (showNotification) {
       toastManager.primary({
         description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-        button: {
+        button: (close) => ({
           label: $t('view_stack'),
-          onclick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
-        },
+          onclick: async () => {
+            await navigate({ targetRoute: 'current', assetId: stack.primaryAssetId });
+            close();
+          }
+        }),
       });
     }
 
@@ -419,13 +422,13 @@ const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
   const $t = get(t);
   const toast: ToastShow & { onClose?: () => void } = {
     description,
-    button: {
+    button: (close) => ({
       label: $t('undo'),
       onclick: () => {
-        toast.onClose?.();
+        close();
         void undoArchiveAssets(assets);
       },
-    },
+    }),
   };
   toastManager.primary(toast);
 };
