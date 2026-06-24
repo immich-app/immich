@@ -24,10 +24,20 @@ void main() {
       expect(ids, [remoteImage.id, mergedImage.id]);
     });
 
-    test('toggles selected ids without replacing the current list', () {
-      final ids = DynamicWallpaperService.toggleAssetIds(['a', 'b', 'c'], ['b', 'd']);
+    test('adds only missing ids without replacing the current list', () {
+      final update = DynamicWallpaperService.addMissingAssetIds(['a', 'b', 'c'], ['b', 'd']);
 
-      expect(ids, ['a', 'c', 'd']);
+      expect(update.assetIds, ['a', 'b', 'c', 'd']);
+      expect(update.addedCount, 1);
+      expect(update.skippedCount, 1);
+    });
+
+    test('deduplicates selected ids before counting additions', () {
+      final update = DynamicWallpaperService.addMissingAssetIds(['a'], ['a', 'b', 'b']);
+
+      expect(update.assetIds, ['a', 'b']);
+      expect(update.addedCount, 1);
+      expect(update.skippedCount, 1);
     });
 
     test('removes selected ids while preserving the remaining order', () {

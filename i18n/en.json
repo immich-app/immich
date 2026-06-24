@@ -878,6 +878,7 @@
   "dynamic_wallpaper_picker_subtitle": "{count} selected photos. Android will ask whether to use the live wallpaper on the home screen, lock screen, or both.",
   "dynamic_wallpaper_picker_title": "Activate wallpaper",
   "dynamic_wallpaper_remove_photo": "Remove photo",
+  "dynamic_wallpaper_selection_added": "Added {added} photos. {skipped} already in your wallpaper list.",
   "dynamic_wallpaper_selection_item_title": "Photo {index}",
   "dynamic_wallpaper_selection_saved": "Saved {count} photos for dynamic wallpaper",
   "dynamic_wallpaper_selection_subtitle": "{count} selected photos will rotate as your wallpaper.",

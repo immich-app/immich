@@ -28,7 +28,7 @@ class DynamicWallpaperActionButton extends ConsumerWidget {
           return;
         }
 
-        final nextAssetIds = await service.toggleSelection(assets);
+        final update = await service.addSelection(assets);
 
         if (!context.mounted) {
           return;
@@ -36,7 +36,12 @@ class DynamicWallpaperActionButton extends ConsumerWidget {
 
         ImmichToast.show(
           context: context,
-          msg: 'dynamic_wallpaper_selection_saved'.tr(namedArgs: {'count': nextAssetIds.length.toString()}),
+          msg: 'dynamic_wallpaper_selection_added'.tr(
+            namedArgs: {
+              'added': update.addedCount.toString(),
+              'skipped': update.skippedCount.toString(),
+            },
+          ),
         );
       },
       maxWidth: 100,
