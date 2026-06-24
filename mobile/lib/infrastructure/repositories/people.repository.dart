@@ -73,6 +73,12 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
   }
+
+  Future<int> updateVisibility(String personId, bool isHidden) {
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.write(PersonEntityCompanion(isHidden: Value(isHidden), updatedAt: Value(DateTime.now())));
+  }
 }
 
 extension on PersonEntityData {
