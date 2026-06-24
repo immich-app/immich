@@ -32,4 +32,9 @@ class PeopleService {
     await _personApiRepository.update(personId, birthday: birthday);
     return _repository.updateBirthday(personId, birthday);
   }
+
+  Future<int> updateIsHidden(String personId, bool isHidden) async {
+    await _personApiRepository.update(personId, isHidden: isHidden);
+    return _repository.updateIsHidden(personId, isHidden);
+  }
 }
