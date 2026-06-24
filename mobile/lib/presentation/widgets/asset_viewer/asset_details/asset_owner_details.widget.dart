@@ -11,7 +11,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/user_by_id.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 
 class AssetOwnerDetails extends ConsumerWidget {
   final BaseAsset asset;
@@ -32,28 +32,44 @@ class AssetOwnerDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // Use owner data from asset if available, otherwise fetch via API
-    final String ownerName;
-    final bool ownerHasProfileImage;
-    final DateTime? ownerProfileChangedAt;
-    final AvatarColor ownerAvatarColor;
-
     if (remote.ownerName.isNotEmpty) {
-      ownerName = remote.ownerName;
-      ownerHasProfileImage = remote.ownerHasProfileImage;
-      ownerProfileChangedAt = remote.ownerProfileChangedAt;
-      ownerAvatarColor = remote.ownerAvatarColor;
-    } else {
-      final ownerDto = ref.watch(userByIdProvider(remote.ownerId)).valueOrNull;
-      ownerName = ownerDto?.name ?? 'Unknown';
-      ownerHasProfileImage = ownerDto?.hasProfileImage ?? false;
-      ownerProfileChangedAt = ownerDto?.profileChangedAt;
-      ownerAvatarColor = ownerDto?.avatarColor ?? AvatarColor.primary;
+      return _buildOwnerTile(
+        context: context,
+        ownerId: remote.ownerId,
+        ownerName: remote.ownerName,
+        ownerHasProfileImage: remote.ownerHasProfileImage,
+        ownerProfileChangedAt: remote.ownerProfileChangedAt,
+        ownerAvatarColor: remote.ownerAvatarColor,
+      );
     }
 
+    return FutureBuilder<UserDto?>(
+      future: ref.read(userRepositoryProvider).getById(remote.ownerId),
+      builder: (context, snapshot) {
+        final ownerDto = snapshot.data;
+        return _buildOwnerTile(
+          context: context,
+          ownerId: remote.ownerId,
+          ownerName: ownerDto?.name ?? 'Unknown',
+          ownerHasProfileImage: ownerDto?.hasProfileImage ?? false,
+          ownerProfileChangedAt: ownerDto?.profileChangedAt,
+          ownerAvatarColor: ownerDto?.avatarColor ?? AvatarColor.primary,
+        );
+      },
+    );
+  }
+
+  Widget _buildOwnerTile({
+    required BuildContext context,
+    required String ownerId,
+    required String ownerName,
+    required bool ownerHasProfileImage,
+    required DateTime? ownerProfileChangedAt,
+    required AvatarColor ownerAvatarColor,
+  }) {
     final avatarColor = ownerAvatarColor.toColor();
     final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/users/${remote.ownerId}/profile-image'
+        '${Store.get(StoreKey.serverEndpoint)}/users/$ownerId/profile-image'
         '${ownerProfileChangedAt != null ? '?d=${ownerProfileChangedAt.millisecondsSinceEpoch}' : ''}';
 
     return Column(
