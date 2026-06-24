@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
+import 'package:immich_mobile/widgets/settings/dynamic_wallpaper_settings.dart';
 import 'package:immich_mobile/widgets/settings/free_up_space_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
@@ -26,6 +29,7 @@ enum SettingSection {
   notifications('notifications', Icons.notifications_none_rounded, "setting_notifications_subtitle"),
   preferences('preferences_settings_title', Icons.interests_outlined, "preferences_settings_subtitle"),
   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined, "asset_list_settings_subtitle"),
+  dynamicWallpaper('dynamic_wallpaper_settings_title', Icons.wallpaper_outlined, "dynamic_wallpaper_settings_subtitle"),
   beta('sync_status', Icons.sync_outlined, "sync_status_subtitle");
 
   final String title;
@@ -42,11 +46,16 @@ enum SettingSection {
     SettingSection.notifications => const NotificationSetting(),
     SettingSection.preferences => const PreferenceSetting(),
     SettingSection.timeline => const AssetListSettings(),
+    SettingSection.dynamicWallpaper => const DynamicWallpaperSettings(),
     SettingSection.beta => const SyncStatusAndActions(),
   };
 
   const SettingSection(this.title, this.icon, this.subtitle);
 }
+
+List<SettingSection> get _availableSettingSections => SettingSection.values
+    .where((section) => Platform.isAndroid || section != SettingSection.dynamicWallpaper)
+    .toList(growable: false);
 
 @RoutePage()
 class SettingsPage extends StatelessWidget {
@@ -66,7 +75,7 @@ class _MobileLayout extends StatelessWidget {
   const _MobileLayout();
   @override
   Widget build(BuildContext context) {
-    final List<Widget> settings = SettingSection.values
+    final List<Widget> settings = _availableSettingSections
         .expand(
           (setting) => setting == SettingSection.beta
               ? [
@@ -95,7 +104,8 @@ class _TabletLayout extends HookWidget {
   const _TabletLayout();
   @override
   Widget build(BuildContext context) {
-    final selectedSection = useState<SettingSection>(SettingSection.values.first);
+    final sections = _availableSettingSections;
+    final selectedSection = useState<SettingSection>(sections.first);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -104,7 +114,7 @@ class _TabletLayout extends HookWidget {
           flex: 2,
           child: CustomScrollView(
             slivers: [
-              ...SettingSection.values.map(
+              ...sections.map(
                 (s) => SliverToBoxAdapter(
                   child: ListTile(
                     title: Text(s.title).tr(),

@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
+import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/network_config.dart';
@@ -32,6 +33,7 @@ class AppConfig {
   final BackupConfig backup;
   final NetworkConfig network;
   final ShareConfig share;
+  final DynamicWallpaperConfig dynamicWallpaper;
 
   const AppConfig({
     this.logLevel = .info,
@@ -46,6 +48,7 @@ class AppConfig {
     this.backup = const .new(),
     this.network = const .new(),
     this.share = const .new(),
+    this.dynamicWallpaper = const .new(),
   });
 
   AppConfig copyWith({
@@ -61,6 +64,7 @@ class AppConfig {
     BackupConfig? backup,
     NetworkConfig? network,
     ShareConfig? share,
+    DynamicWallpaperConfig? dynamicWallpaper,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
     theme: theme ?? this.theme,
@@ -74,6 +78,7 @@ class AppConfig {
     backup: backup ?? this.backup,
     network: network ?? this.network,
     share: share ?? this.share,
+    dynamicWallpaper: dynamicWallpaper ?? this.dynamicWallpaper,
   );
 
   @override
@@ -91,15 +96,30 @@ class AppConfig {
           other.album == album &&
           other.backup == backup &&
           other.network == network &&
-          other.share == share);
+          other.share == share &&
+          other.dynamicWallpaper == dynamicWallpaper);
 
   @override
   int get hashCode =>
-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share);
+      Object.hash(
+        logLevel,
+        theme,
+        cleanup,
+        map,
+        timeline,
+        image,
+        viewer,
+        slideshow,
+        album,
+        backup,
+        network,
+        share,
+        dynamicWallpaper,
+      );
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, dynamicWallpaper: $dynamicWallpaper)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -146,6 +166,8 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .dynamicWallpaperAssetIds => dynamicWallpaper.assetIds,
+            .dynamicWallpaperIntervalMinutes => dynamicWallpaper.intervalMinutes,
           })
           as T;
 
@@ -199,6 +221,12 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .dynamicWallpaperAssetIds => copyWith(
+        dynamicWallpaper: dynamicWallpaper.copyWith(assetIds: value as List<String>),
+      ),
+      .dynamicWallpaperIntervalMinutes => copyWith(
+        dynamicWallpaper: dynamicWallpaper.copyWith(intervalMinutes: value as int),
+      ),
     };
   }
 }

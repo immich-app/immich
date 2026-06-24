@@ -125,6 +125,8 @@ class AuthService {
         .networkPreferredWifiName,
         .networkLocalEndpoint,
         .networkExternalEndpointList,
+        .dynamicWallpaperAssetIds,
+        .dynamicWallpaperIntervalMinutes,
       ]),
     ]);
   }

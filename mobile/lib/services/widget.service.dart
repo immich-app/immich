@@ -29,6 +29,9 @@ class WidgetService {
     await _repository.saveData(kWidgetServerEndpoint, "");
     await _repository.saveData(kWidgetAuthToken, "");
     await _repository.saveData(kWidgetCustomHeaders, "");
+    await _repository.saveData(kDynamicWallpaperAssetIds, "[]");
+    await _repository.saveData(kDynamicWallpaperIntervalMinutes, "60");
+    await _repository.saveData(kDynamicWallpaperNextIndex, "0");
 
     // wait 3 seconds to ensure the widget is updated, dont block
     Future.delayed(const Duration(seconds: 3), refreshWidgets);
