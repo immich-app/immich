@@ -5,11 +5,14 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import java.io.File
 
 class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperApi {
   override fun configure(assetIds: List<String>, intervalMinutes: Long, callback: (Result<Unit>) -> Unit) {
     try {
       DynamicWallpaperConfigStore.write(context, assetIds, intervalMinutes.toInt())
+      File(context.cacheDir, kDynamicWallpaperImageFilename).delete()
+      File(context.cacheDir, kDynamicWallpaperNextImageFilename).delete()
       ImmichWallpaperService.refreshActiveWallpapers()
       callback(Result.success(Unit))
     } catch (error: Throwable) {

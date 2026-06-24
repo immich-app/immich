@@ -10,7 +10,6 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
 final _dynamicWallpaperAssetProvider = FutureProvider.family(
@@ -19,14 +18,6 @@ final _dynamicWallpaperAssetProvider = FutureProvider.family(
 
 class DynamicWallpaperSettings extends ConsumerWidget {
   const DynamicWallpaperSettings({super.key});
-
-  static const _intervalOptions = [
-    SettingsRadioGroup(title: '15 min', value: 15),
-    SettingsRadioGroup(title: '30 min', value: 30),
-    SettingsRadioGroup(title: '1 h', value: 60),
-    SettingsRadioGroup(title: '6 h', value: 360),
-    SettingsRadioGroup(title: '24 h', value: 1440),
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,22 +40,6 @@ class DynamicWallpaperSettings extends ConsumerWidget {
     return SettingsSubPageScaffold(
       showDivider: true,
       settings: [
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: Text(
-            'dynamic_wallpaper_interval_title'.tr(),
-            style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-          ),
-          subtitle: SettingsRadioListTile<int>(
-            groups: _intervalOptions,
-            groupBy: config.intervalMinutes,
-            onRadioChanged: (value) {
-              if (value != null) {
-                service.configure(intervalMinutes: value);
-              }
-            },
-          ),
-        ),
         SettingsButtonListTile(
           icon: Icons.wallpaper_outlined,
           title: 'dynamic_wallpaper_picker_title'.tr(),
