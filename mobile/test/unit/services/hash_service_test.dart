@@ -25,7 +25,7 @@ void main() {
   });
 
   tearDown(() {
-    mocks.reset();
+    mocks.resetAll();
   });
 
   group('HashService', () {

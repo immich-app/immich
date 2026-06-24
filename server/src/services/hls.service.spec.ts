@@ -8,6 +8,7 @@ import { newTestService, ServiceMocks } from 'test/utils';
 // EXTINF values come from FFmpeg's playlist to enforce an exact match
 const eiffelExpectedMediaPlaylist = `#EXTM3U
 #EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-TARGETDURATION:2
 #EXT-X-MEDIA-SEQUENCE:0
 #EXT-X-PLAYLIST-TYPE:VOD
@@ -41,6 +42,7 @@ seg_11.m4s
 
 const waterfallExpectedMediaPlaylist = `#EXTM3U
 #EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-TARGETDURATION:2
 #EXT-X-MEDIA-SEQUENCE:0
 #EXT-X-PLAYLIST-TYPE:VOD
@@ -62,6 +64,7 @@ seg_5.m4s
 
 const trainExpectedMediaPlaylist = `#EXTM3U
 #EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-TARGETDURATION:2
 #EXT-X-MEDIA-SEQUENCE:0
 #EXT-X-PLAYLIST-TYPE:VOD
@@ -95,6 +98,7 @@ const sessionId = '00000000-0000-0000-0000-000000000000';
 
 const eiffelExpectedMasterDisabled = `#EXTM3U
 #EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=480x852,CODECS="av01.0.04M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/0/playlist.m3u8
 #EXT-X-STREAM-INF:BANDWIDTH=1200000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
@@ -117,6 +121,7 @@ ${sessionId}/8/playlist.m3u8
 
 const eiffelExpectedMasterRkmpp = `#EXTM3U
 #EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-STREAM-INF:BANDWIDTH=1200000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/1/playlist.m3u8
 #EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=480x852,CODECS="avc1.64001e,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
@@ -133,6 +138,7 @@ ${sessionId}/8/playlist.m3u8
 
 const waterfallExpectedMasterDisabled = `#EXTM3U
 #EXT-X-VERSION:7
+#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=480x852,CODECS="av01.0.04M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/0/playlist.m3u8
 #EXT-X-STREAM-INF:BANDWIDTH=1200000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
@@ -218,12 +224,58 @@ describe(HlsService.name, () => {
     it.each(fixtures)('matches FFmpeg for $data.originalPath', async ({ data, playlist }) => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.videoStream.getForMediaPlaylist.mockResolvedValue(data);
-      await expect(sut.getMediaPlaylist(auth, assetId, sessionId)).resolves.toBe(playlist);
+      await expect(sut.getMediaPlaylist(auth, assetId, sessionId, 0)).resolves.toBe(playlist);
     });
 
     it('throws NotFoundException when the session/asset cannot be loaded', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
-      await expect(sut.getMediaPlaylist(auth, assetId, sessionId)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(sut.getMediaPlaylist(auth, assetId, sessionId, 0)).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('prewarms transcoding at the segment containing the hinted position', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getForMediaPlaylist.mockResolvedValue(eiffelTower);
+      await sut.getMediaPlaylist(auth, assetId, sessionId, 1, 10.5);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsSegmentRequest', {
+        sessionId,
+        assetId,
+        variantIndex: 1,
+        segmentIndex: 5,
+      });
+    });
+
+    it('prewarms from the last requested segment when no hint is given', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getSession.mockResolvedValue({ id: sessionId, assetId } as never);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+      await sut.getSegment(auth, assetId, sessionId, 0, 'seg_5.m4s');
+
+      mocks.videoStream.getForMediaPlaylist.mockResolvedValue(eiffelTower);
+      await sut.getMediaPlaylist(auth, assetId, sessionId, 1);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsSegmentRequest', {
+        sessionId,
+        assetId,
+        variantIndex: 1,
+        segmentIndex: 6,
+      });
+    });
+
+    it('does not prewarm without a hint or prior segment traffic', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getForMediaPlaylist.mockResolvedValue(eiffelTower);
+      await sut.getMediaPlaylist(auth, assetId, sessionId, 1);
+      expect(mocks.websocket.serverSend).not.toHaveBeenCalled();
+    });
+
+    it('does not prewarm the variant the session is already playing', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+      mocks.videoStream.getSession.mockResolvedValue({ id: sessionId, assetId } as never);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+      await sut.getSegment(auth, assetId, sessionId, 1, 'seg_5.m4s');
+
+      mocks.videoStream.getForMediaPlaylist.mockResolvedValue(eiffelTower);
+      await sut.getMediaPlaylist(auth, assetId, sessionId, 1, 12.5);
+      expect(mocks.websocket.serverSend).not.toHaveBeenCalledWith('HlsSegmentRequest', expect.anything());
     });
   });
 
@@ -256,7 +308,7 @@ describe(HlsService.name, () => {
       });
     });
 
-    it('returns lastRequested + 1 for init.mp4 after a segment has been served', async () => {
+    it('returns lastRequested + 1 for init.mp4 without a target segment', async () => {
       await sut.getSegment(auth, assetId, sessionId, variantIndex, 'seg_5.m4s');
       mocks.websocket.serverSend.mockClear();
       await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4');
@@ -312,6 +364,35 @@ describe(HlsService.name, () => {
       await expect(sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+
+    it('uses the initSegment hint for init.mp4', async () => {
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4', 7);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex,
+        segmentIndex: 7,
+      });
+    });
+
+    it('prefers the initSegment hint over the lastRequested + 1 fallback', async () => {
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'seg_5.m4s'); // fallback would be 6
+      mocks.websocket.serverSend.mockClear();
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'init.mp4', 10);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex,
+        segmentIndex: 10,
+      });
+    });
+
+    it('ignores the initSegment hint for media segment requests (the filename wins)', async () => {
+      await sut.getSegment(auth, assetId, sessionId, variantIndex, 'seg_5.m4s', 99);
+      expect(mocks.websocket.serverSend).toHaveBeenCalledWith('HlsHeartbeat', {
+        sessionId,
+        variantIndex,
+        segmentIndex: 5,
+      });
     });
   });
 

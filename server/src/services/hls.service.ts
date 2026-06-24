@@ -21,6 +21,7 @@ import { ImmichFileResponse } from 'src/utils/file';
 import { getOutputSize } from 'src/utils/media';
 
 type AssetWithStreamInfo = { videoStream: VideoStreamInfo & { timeBase: number }; packets: VideoPacketInfo };
+type Segmentation = { fps: number; framesPerSegment: number; segmentCount: number; segmentDuration: number };
 type ApiSession = { lastRequestedSegment: number | null; lastVariantIndex: number | null };
 
 @Injectable()
@@ -58,7 +59,7 @@ export class HlsService extends BaseService {
 
     const asset = await this.videoStreamRepository.getForMainPlaylist(assetId);
     if (!asset) {
-      throw new NotFoundException('Asset is not yet ready for streaming');
+      throw new NotFoundException('Asset metadata is not yet ready for streaming');
     }
 
     // Sharing the sessionId allows only one microservices worker to successfully insert to the session table.
@@ -71,18 +72,29 @@ export class HlsService extends BaseService {
     return this.generateMainPlaylist(sessionId, ffmpeg, asset);
   }
 
-  async getMediaPlaylist(auth: AuthDto, assetId: string, sessionId: string) {
+  async getMediaPlaylist(auth: AuthDto, assetId: string, sessionId: string, variantIndex: number, position?: number) {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [assetId] });
 
     const asset = await this.videoStreamRepository.getForMediaPlaylist(assetId, sessionId);
     if (!asset) {
-      throw new NotFoundException('Asset not found or not yet ready for streaming');
+      throw new NotFoundException('Asset not found or metadata not yet ready for streaming');
     }
 
-    return this.generateMediaPlaylist(asset);
+    const segmentation = this.getSegmentation(asset);
+    const hintedSegment = position === undefined ? undefined : this.positionToSegmentIndex(segmentation, position);
+    this.prewarmVariant(assetId, sessionId, variantIndex, hintedSegment);
+
+    return this.generateMediaPlaylist(asset, segmentation);
   }
 
-  async getSegment(auth: AuthDto, assetId: string, sessionId: string, variantIndex: number, filename: string) {
+  async getSegment(
+    auth: AuthDto,
+    assetId: string,
+    sessionId: string,
+    variantIndex: number,
+    filename: string,
+    initSegment?: number,
+  ) {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [assetId] });
 
     const session = await this.videoStreamRepository.getSession(sessionId);
@@ -99,7 +111,7 @@ export class HlsService extends BaseService {
     });
 
     const apiSession = this.trackSession(sessionId, variantIndex);
-    const segmentIndex = this.getSegmentIndex(apiSession, filename);
+    const segmentIndex = this.getSegmentIndex(apiSession, filename, initSegment);
     this.websocketRepository.serverSend('HlsHeartbeat', { sessionId, variantIndex, segmentIndex });
 
     if (await this.storageRepository.checkFileExists(path, constants.R_OK)) {
@@ -122,7 +134,7 @@ export class HlsService extends BaseService {
     const fps = ((asset.packets.packetCount * asset.videoStream.timeBase) / asset.packets.totalDuration).toFixed(3);
     const sourceResolution = Math.min(asset.videoStream.height, asset.videoStream.width);
     const targetResolution = Math.max(sourceResolution, HLS_VARIANTS[0].resolution);
-    const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`];
+    const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`, '#EXT-X-INDEPENDENT-SEGMENTS'];
     for (let i = 0; i < HLS_VARIANTS.length; i++) {
       const { resolution, bitrate, codec, codecString } = HLS_VARIANTS[i];
       if (resolution > targetResolution || !SUPPORTED_HWA_CODECS[ffmpeg.accel].includes(codec)) {
@@ -136,24 +148,33 @@ export class HlsService extends BaseService {
     }
     lines.push('');
 
-    if (lines.length === 3) {
+    if (lines.length === 4) {
       throw new NotFoundException('No supported variants for this video');
     }
 
     return lines.join('\n');
   }
 
-  private generateMediaPlaylist({ videoStream, packets }: AssetWithStreamInfo) {
+  private getSegmentation({ videoStream, packets }: AssetWithStreamInfo): Segmentation {
     const fps = (packets.packetCount * videoStream.timeBase) / packets.totalDuration;
     const framesPerSegment = Math.ceil(HLS_SEGMENT_DURATION * fps);
-    const fullSegmentDuration = framesPerSegment / fps;
     const segmentCount = Math.ceil(packets.outputFrames / framesPerSegment);
+    return { fps, framesPerSegment, segmentCount, segmentDuration: framesPerSegment / fps };
+  }
+
+  private positionToSegmentIndex({ segmentDuration, segmentCount }: Segmentation, position: number) {
+    return Math.min(Math.max(Math.floor(position / segmentDuration), 0), segmentCount - 1);
+  }
+
+  private generateMediaPlaylist({ packets }: AssetWithStreamInfo, segmentation: Segmentation) {
+    const { fps, framesPerSegment, segmentCount, segmentDuration: fullSegmentDuration } = segmentation;
     const lastSegmentFrames = packets.outputFrames - framesPerSegment * (segmentCount - 1);
     const lastSegmentDuration = lastSegmentFrames / fps;
 
     const lines = [
       '#EXTM3U',
       `#EXT-X-VERSION:${HLS_VERSION}`,
+      '#EXT-X-INDEPENDENT-SEGMENTS',
       `#EXT-X-TARGETDURATION:${HLS_SEGMENT_DURATION}`,
       '#EXT-X-MEDIA-SEQUENCE:0',
       '#EXT-X-PLAYLIST-TYPE:VOD',
@@ -168,13 +189,30 @@ export class HlsService extends BaseService {
     return lines.join('\n');
   }
 
+  private prewarmVariant(assetId: string, sessionId: string, variantIndex: number, hintedSegment?: number) {
+    const session = this.sessions.get(sessionId);
+    if (session?.lastVariantIndex === variantIndex) {
+      return;
+    }
+
+    const nextSegment = session && session.lastRequestedSegment !== null ? session.lastRequestedSegment + 1 : undefined;
+    const segmentIndex = hintedSegment ?? nextSegment;
+    if (segmentIndex !== undefined) {
+      this.websocketRepository.serverSend('HlsSegmentRequest', { sessionId, assetId, variantIndex, segmentIndex });
+    }
+  }
+
   private getSegmentKey({ sessionId, variantIndex, segmentIndex }: ArgOf<'HlsSegmentResult'>) {
     return `${sessionId}:${variantIndex}:${segmentIndex}`;
   }
 
-  private getSegmentIndex(session: ApiSession, filename: string) {
+  private getSegmentIndex(session: ApiSession, filename: string, initSegment?: number) {
     if (filename.endsWith('.mp4')) {
-      return (session.lastRequestedSegment ?? -1) + 1;
+      // We need to know where to start transcoding, but the init.mp4 has no segment number in its name.
+      // We can infer this from the last requested segment, but this can be inaccurate given the client
+      // can load cached segments without reaching out to the server. `initSegment` acts as a hint to
+      // remove ambiguity when possible.
+      return initSegment ?? (session.lastRequestedSegment ?? -1) + 1;
     }
     const segmentIndex = Number.parseInt(HLS_SEGMENT_FILENAME_REGEX.exec(filename)![1]);
     session.lastRequestedSegment = segmentIndex;

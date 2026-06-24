@@ -50,6 +50,22 @@ export type SystemConfig = {
       enabled: boolean;
     };
   };
+  integrityChecks: {
+    missingFiles: {
+      enabled: boolean;
+      cronExpression: string;
+    };
+    untrackedFiles: {
+      enabled: boolean;
+      cronExpression: string;
+    };
+    checksumFiles: {
+      enabled: boolean;
+      cronExpression: string;
+      timeLimit: number;
+      percentageLimit: number;
+    };
+  };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
     enabled: boolean;
@@ -233,6 +249,22 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
     },
   },
+  integrityChecks: {
+    missingFiles: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+    },
+    untrackedFiles: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+    },
+    checksumFiles: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+      timeLimit: 60 * 60 * 1000, // 1 hour
+      percentageLimit: 1, // 100% of assets
+    },
+  },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
     [QueueName.SmartSearch]: { concurrency: 2 },
@@ -247,6 +279,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
   },
   logging: {

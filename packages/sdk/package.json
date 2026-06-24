@@ -1,6 +1,6 @@
 {
   "name": "@immich/sdk",
-  "version": "2.7.5",
+  "version": "3.0.0-rc.2",
   "description": "Auto-generated TypeScript SDK for the Immich API",
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
     "@oazapfts/runtime": "^1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^24.12.4",
+    "@types/node": "^24.13.2",
     "typescript": "^6.0.0"
   }
 }

@@ -9,6 +9,7 @@ import {
   PersonPathType,
   RawExtractedFormat,
   StorageFolder,
+  UserPathType,
 } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -327,12 +328,18 @@ export class StorageCore {
       case AssetFileType.EncodedVideo:
       case AssetFileType.Thumbnail:
       case AssetFileType.Preview:
-      case AssetFileType.Sidecar: {
+      case AssetFileType.Sidecar:
+      case AssetPathType.EncodedVideo: {
         return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
       }
 
       case PersonPathType.Face: {
         return this.personRepository.update({ id, thumbnailPath: newPath });
+      }
+
+      case UserPathType.Profile: {
+        this.logger.warn('Unexpected path type:', pathType);
+        return;
       }
     }
   }

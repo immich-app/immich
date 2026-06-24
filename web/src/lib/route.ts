@@ -1,4 +1,4 @@
-import { QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import { getBaseUrl, IntegrityReport, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
 import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
 
@@ -129,6 +129,8 @@ export const Route = {
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),
   systemStatistics: () => '/admin/server-status',
   systemMaintenance: (params?: { continue?: string }) => '/admin/maintenance' + asQueryString(params),
+  systemMaintenanceIntegrityReport: ({ reportType }: { reportType: IntegrityReport }) =>
+    `/admin/maintenance/integrity-report/${reportType}`,
 
   // tags
   tags: (params?: { path?: string }) => '/tags' + asQueryString(params),
@@ -152,6 +154,10 @@ export const Route = {
   // queues
   queues: () => '/admin/queues',
   viewQueue: ({ name }: { name: QueueName }) => `/admin/queues/${asQueueSlug(name)}`,
+
+  // integrity checks
+  integrityReportFile: (reportId: string) => `${getBaseUrl()}/admin/integrity/report/${reportId}/file`,
+  integrityReportCsv: (reportType: IntegrityReport) => `${getBaseUrl()}/admin/integrity/report/${reportType}/csv`,
 
   // continue helper for ensuring same-origin URLs
   continue: (url: string | null, fallback: string): string | URL => {

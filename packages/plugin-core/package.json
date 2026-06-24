@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "pnpm build:tsc && pnpm build:wasm",
-    "build:tsc": "tsc --noEmit && node esbuild.js",
+    "build:tsc": "mkdir -p dist && echo \"type Manifest = $(cat manifest.json); \nexport default Manifest;\" > dist/manifest.d.ts && tsc --noEmit && node esbuild.js",
     "build:wasm": "extism-js dist/index.js -i src/index.d.ts -o dist/plugin.wasm"
   },
   "keywords": [],

@@ -169,7 +169,9 @@
             preload={false}
           />
           {#if person.name}
-            <span class="absolute inset-s-0 bottom-2 w-full px-1 text-center font-medium text-white select-text">
+            <span
+              class="text-white-shadow absolute inset-s-0 bottom-2 w-full px-1 text-center font-medium text-white select-text"
+            >
               {person.name}
             </span>
           {/if}

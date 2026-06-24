@@ -104,6 +104,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   Future<void> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
+    await _optimizeDB();
     return _backgroundLoop(
       hashTimeout: hashTimeout,
       backupTimeout: backupTimeout,
@@ -121,6 +122,11 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       final sync = _ref?.read(backgroundSyncProvider);
       if (sync == null) {
         return;
+      }
+
+      // Only for Background Processing tasks
+      if (maxSeconds == null) {
+        await _optimizeDB();
       }
 
       // Run sync local, sync remote, hash and backup concurrently so the bg
@@ -193,6 +199,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
+  Future<void> _optimizeDB() async {
+    try {
+      await (_drift.optimize(allTables: true), _driftLogger.optimize()).wait;
+    } catch (error, stack) {
+      dPrint(() => "Error during background worker optimize: $error, $stack");
+    }
+  }
+
   Future<void> _cleanup() async {
     await runZonedGuarded(_handleCleanup, (error, stack) {
       dPrint(() => "Error during background worker cleanup: $error, $stack");
@@ -221,7 +235,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         if (nativeSyncApi != null) nativeSyncApi.cancelHashing(),
       ]);
       await workerManagerPatch.dispose().catchError((_) async {});
-      await Future.wait([LogService.I.dispose(), Store.dispose(), _drift.optimize(allTables: true)]);
+      await Future.wait([LogService.I.dispose(), Store.dispose()]);
       await _drift.close();
       await _driftLogger.close();
 

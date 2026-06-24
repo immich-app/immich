@@ -1,9 +1,10 @@
 #! /usr/bin/env node
-const { readFileSync, writeFileSync } = require('node:fs');
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const asVersion = (item) => {
   const { label, url } = item;
-  const [major, minor, patch] = label.substring(1).split('.').map(Number);
+  const [version] = label.substring(1).split('-');
+  const [major, minor, patch] = version.split('.').map(Number);
   return { major, minor, patch, label, url };
 };
 
@@ -31,7 +32,7 @@ for (const item of versions) {
   ) {
     versions = versions.filter((item) => item.label !== version.label);
     console.log(
-      `Removed ${version.label} (replaced with ${lastVersion.label})`
+      `Removed ${version.label} (replaced with ${lastVersion.label})`,
     );
     continue;
   }
@@ -41,5 +42,5 @@ for (const item of versions) {
 
 writeFileSync(
   filename,
-  JSON.stringify([newVersion, ...versions], null, 2) + '\n'
+  JSON.stringify([newVersion, ...versions], null, 2) + '\n',
 );

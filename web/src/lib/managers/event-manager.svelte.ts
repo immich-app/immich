@@ -3,6 +3,8 @@ import type {
   AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
+  IntegrityReport,
+  JobCreateDto,
   LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
@@ -80,6 +82,11 @@ export type Events = {
   SessionDelete: [];
 
   SystemConfigUpdate: [SystemConfigDto];
+
+  IntegrityReportDeleteStatus: [{ type?: IntegrityReport; id?: string; isDeleting: boolean }];
+  IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
+
+  JobCreate: [{ dto: JobCreateDto }];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];

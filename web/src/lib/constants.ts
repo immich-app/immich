@@ -69,7 +69,7 @@ export enum OpenQueryParam {
   PURCHASE_SETTINGS = 'user-purchase-settings',
 }
 
-export const maximumLengthSearchPeople = 1000;
+export const maximumLengthSearchPeople = 100;
 
 // time to load the map before displaying the loading spinner
 export const timeToLoadTheMap: number = 100;
