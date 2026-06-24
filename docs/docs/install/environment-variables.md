@@ -19,7 +19,7 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 
 | Variable           | Description                     | Default | Containers               |
 | :----------------- | :------------------------------ | :-----: | :----------------------- |
-| `IMMICH_VERSION`   | Image tags                      |  `v2`   | server, machine learning |
+| `IMMICH_VERSION`   | Image tags                      |  `v3`   | server, machine learning |
 | `UPLOAD_LOCATION`  | Host path for uploads           |         | server                   |
 | `DB_DATA_LOCATION` | Host path for Postgres database |         | database                 |
 
