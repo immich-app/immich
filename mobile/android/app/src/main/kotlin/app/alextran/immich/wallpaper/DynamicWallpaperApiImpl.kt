@@ -1,6 +1,7 @@
 package app.alextran.immich.wallpaper
 
 import android.app.WallpaperManager
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -9,7 +10,7 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
   override fun configure(assetIds: List<String>, intervalMinutes: Long, callback: (Result<Unit>) -> Unit) {
     try {
       DynamicWallpaperConfigStore.write(context, assetIds, intervalMinutes.toInt())
-      ImmichWallpaperService.refreshActiveWallpapers(context)
+      ImmichWallpaperService.refreshActiveWallpapers()
       callback(Result.success(Unit))
     } catch (error: Throwable) {
       callback(Result.failure(error))
@@ -25,7 +26,15 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
         )
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
-      context.startActivity(intent)
+      try {
+        context.startActivity(intent)
+      } catch (_: ActivityNotFoundException) {
+        context.startActivity(
+          Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          }
+        )
+      }
       callback(Result.success(Unit))
     } catch (error: Throwable) {
       callback(Result.failure(error))
@@ -34,7 +43,7 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
 
   override fun refresh(callback: (Result<Unit>) -> Unit) {
     try {
-      ImmichWallpaperService.refreshActiveWallpapers(context)
+      ImmichWallpaperService.refreshActiveWallpapers()
       callback(Result.success(Unit))
     } catch (error: Throwable) {
       callback(Result.failure(error))

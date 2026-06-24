@@ -26,7 +26,7 @@ object DynamicWallpaperConfigStore {
     val nextIndex = prefs.getString(kDynamicWallpaperNextIndex, "0")?.toIntOrNull() ?: 0
     val listType = object : TypeToken<List<String>>() {}.type
     val assetIds = runCatching {
-      gson.fromJson<List<String>>(assetIdsJson, listType)
+      gson.fromJson<List<String>>(assetIdsJson, listType) ?: emptyList()
     }.getOrDefault(emptyList())
 
     return DynamicWallpaperConfig(

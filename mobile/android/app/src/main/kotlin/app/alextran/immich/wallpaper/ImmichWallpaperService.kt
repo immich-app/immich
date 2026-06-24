@@ -26,7 +26,7 @@ class ImmichWallpaperService : WallpaperService() {
   companion object {
     private val activeEngines = Collections.synchronizedSet(mutableSetOf<WallpaperEngine>())
 
-    fun refreshActiveWallpapers(context: android.content.Context) {
+    fun refreshActiveWallpapers() {
       val engines = synchronized(activeEngines) { activeEngines.toList() }
       engines.forEach { it.refreshNow() }
     }
@@ -46,7 +46,6 @@ class ImmichWallpaperService : WallpaperService() {
     private val refreshRunnable = object : Runnable {
       override fun run() {
         refreshNow()
-        scheduleNext()
       }
     }
 
@@ -59,7 +58,6 @@ class ImmichWallpaperService : WallpaperService() {
       this.visible = visible
       if (visible) {
         refreshNow()
-        scheduleNext()
       } else {
         handler.removeCallbacks(refreshRunnable)
       }
@@ -83,6 +81,7 @@ class ImmichWallpaperService : WallpaperService() {
       refreshJob = scope.launch {
         updateWallpaper()
       }
+      scheduleNext()
     }
 
     private fun scheduleNext() {

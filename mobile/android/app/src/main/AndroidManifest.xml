@@ -152,6 +152,20 @@
              This is used by the Flutter tool to
     generate GeneratedPluginRegistrant.java -->
     <meta-data android:name="flutterEmbedding" android:value="2" />
+
+    <service
+      android:name=".wallpaper.ImmichWallpaperService"
+      android:exported="true"
+      android:label="@string/dynamic_wallpaper_title"
+      android:permission="android.permission.BIND_WALLPAPER">
+      <intent-filter>
+        <action android:name="android.service.wallpaper.WallpaperService" />
+      </intent-filter>
+      <meta-data
+        android:name="android.service.wallpaper"
+        android:resource="@xml/immich_live_wallpaper" />
+    </service>
+
     <!-- Disables default WorkManager initialization to use our custom initialization -->
     <provider
       android:name="androidx.startup.InitializationProvider"

@@ -26,7 +26,7 @@ class DynamicWallpaperService {
 
   const DynamicWallpaperService(this._settingsRepository, this._widgetRepository, this._api);
 
-  List<String> remoteImageIdsFromAssets(Iterable<BaseAsset> assets) {
+  static List<String> remoteImageIdsFrom(Iterable<BaseAsset> assets) {
     return assets
         .where((asset) => asset.isImage && asset.hasRemote)
         .map((asset) => asset.remoteId)
@@ -34,6 +34,8 @@ class DynamicWallpaperService {
         .toSet()
         .toList();
   }
+
+  List<String> remoteImageIdsFromAssets(Iterable<BaseAsset> assets) => remoteImageIdsFrom(assets);
 
   Future<void> saveSelection(Iterable<BaseAsset> assets) {
     return configure(assetIds: remoteImageIdsFromAssets(assets));
