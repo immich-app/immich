@@ -11,12 +11,13 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/asset_owner_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/user_by_id.provider.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:uuid/uuid.dart';
 
@@ -28,10 +29,11 @@ class _MockUserService extends Mock implements UserService {}
 
 void main() {
   late _MockUserService mockUserService;
+  late Drift db;
 
   setUpAll(() async {
     TestUtils.init();
-    final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
     await StoreService.I.put(StoreKey.serverEndpoint, 'http://localhost:3000');
   });
@@ -44,20 +46,15 @@ void main() {
     registerFallbackValue(RemoteAssetFactory.create());
   });
 
-  Widget buildTestWidget({
-    required BaseAsset asset,
-    UserDto? Function(String)? fetchUser,
-  }) {
-    final List<Override> overrides = [
+  tearDown(() async {
+    await db.delete(db.userEntity).go();
+  });
+
+  Widget buildTestWidget({required BaseAsset asset}) {
+    final overrides = <Override>[
       currentUserProvider.overrideWith((ref) => CurrentUserProvider(mockUserService)),
+      driftProvider.overrideWith((ref) => db),
     ];
-    if (fetchUser != null) {
-      overrides.add(
-        userByIdProvider.overrideWith(
-          (ref, userId) async => fetchUser(userId),
-        ),
-      );
-    }
 
     return EasyLocalization(
       supportedLocales: locales.values.toList(),
@@ -127,15 +124,25 @@ void main() {
       expect(find.text('Album Owner'), findsOneWidget);
     });
 
-    testWidgets('fetches owner name via API when asset has no owner data', (tester) async {
+    testWidgets('fetches owner name from local DB when asset has no owner data', (tester) async {
       when(() => mockUserService.tryGetMyUser()).thenReturn(
         UserFactory.createDto(name: 'Current User'),
+      );
+
+      final ownerId = 'owner-2';
+
+      await db.into(db.userEntity).insert(
+        UserEntityCompanion.insert(
+          id: ownerId,
+          name: 'Fetched Owner',
+          email: 'owner@test.com',
+        ),
       );
 
       final remoteAsset = RemoteAsset(
         id: const Uuid().v4(),
         name: 'photo.jpg',
-        ownerId: 'owner-2',
+        ownerId: ownerId,
         checksum: 'checksum-2',
         type: AssetType.image,
         createdAt: DateTime(2024),
@@ -143,16 +150,7 @@ void main() {
         isEdited: false,
       );
 
-      await tester.pumpWidget(
-        buildTestWidget(
-          asset: remoteAsset,
-          fetchUser: (userId) => UserFactory.createDto(
-            id: userId,
-            name: 'Fetched Owner',
-            avatarColor: AvatarColor.green,
-          ),
-        ),
-      );
+      await tester.pumpWidget(buildTestWidget(asset: remoteAsset));
       await tester.pumpAndSettle();
 
       expect(find.text('Fetched Owner'), findsOneWidget);
