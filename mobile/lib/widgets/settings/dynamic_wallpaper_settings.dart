@@ -163,7 +163,7 @@ class _DynamicWallpaperSelectionList extends StatelessWidget {
         proxyDecorator: proxyDecorator,
         shrinkWrap: true,
         itemCount: assetIds.length,
-        onReorder: (oldIndex, newIndex) {
+        onReorderItem: (oldIndex, newIndex) {
           service.reorderSelection(oldIndex, newIndex);
         },
         itemBuilder: (context, index) {
