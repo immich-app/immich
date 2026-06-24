@@ -26,33 +26,48 @@ if is_ipv6(bind_host):
     bind_host = f"[{bind_host}]"
 bind_address = f"{bind_host}:{non_prefixed_settings.immich_port}"
 
-try:
-    with subprocess.Popen(
-        [
-            "python",
-            "-m",
-            "gunicorn",
-            "immich_ml.main:app",
-            "-k",
-            "immich_ml.config.CustomUvicornWorker",
-            "-c",
-            module_dir / "gunicorn_conf.py",
-            "-b",
-            bind_address,
-            "-w",
-            str(settings.workers),
-            "-t",
-            str(settings.worker_timeout),
-            "--log-config-json",
-            module_dir / "log_conf.json",
-            "--keep-alive",
-            str(settings.http_keepalive_timeout_s),
-            "--graceful-timeout",
-            "10",
-            "--no-control-socket",
-        ],
-    ) as cmd:
-        cmd.wait()
-except KeyboardInterrupt:
-    cmd.send_signal(signal.SIGINT)
-exit(cmd.returncode)
+if os.name == "nt":
+    # gunicorn depends on the Unix-only `fcntl` module and cannot run on Windows,
+    # so launch uvicorn directly instead. See the "Running machine learning
+    # natively on Windows" guide in the docs.
+    import uvicorn
+
+    log.info("Running on Windows; starting uvicorn directly without gunicorn.")
+    uvicorn.run(
+        "immich_ml.main:app",
+        host=non_prefixed_settings.immich_host,
+        port=non_prefixed_settings.immich_port,
+        workers=settings.workers,
+        timeout_keep_alive=settings.http_keepalive_timeout_s,
+    )
+else:
+    try:
+        with subprocess.Popen(
+            [
+                "python",
+                "-m",
+                "gunicorn",
+                "immich_ml.main:app",
+                "-k",
+                "immich_ml.config.CustomUvicornWorker",
+                "-c",
+                module_dir / "gunicorn_conf.py",
+                "-b",
+                bind_address,
+                "-w",
+                str(settings.workers),
+                "-t",
+                str(settings.worker_timeout),
+                "--log-config-json",
+                module_dir / "log_conf.json",
+                "--keep-alive",
+                str(settings.http_keepalive_timeout_s),
+                "--graceful-timeout",
+                "10",
+                "--no-control-socket",
+            ],
+        ) as cmd:
+            cmd.wait()
+    except KeyboardInterrupt:
+        cmd.send_signal(signal.SIGINT)
+    exit(cmd.returncode)

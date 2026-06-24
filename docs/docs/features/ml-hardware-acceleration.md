@@ -18,7 +18,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 ## Limitations
 
 - The instructions and configurations here are specific to Docker Compose. Other container engines may require different configuration.
-- Only Linux and Windows (through WSL2) servers are supported.
+- Only Linux and Windows (through WSL2) servers are supported for the containerized machine learning service. To use an NVIDIA GPU on Windows without Docker or WSL2, run the service [natively on Windows](/guides/windows-machine-learning) instead.
 - ARM NN is only supported on devices with Mali GPUs. Other Arm devices are not supported.
 - Some models may not be compatible with certain backends. CUDA is the most reliable.
 - Search latency isn't improved by ARM NN due to model compatibility issues preventing its use. However, smart search jobs do make use of ARM NN.
@@ -44,6 +44,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - The server must have the official NVIDIA driver installed.
 - The installed driver must be >= 545 (it must support CUDA 12.3).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
+- On Windows, you can run the machine learning service [natively](/guides/windows-machine-learning) to use an NVIDIA GPU directly, without Docker or WSL2.
 
 #### ROCm
 

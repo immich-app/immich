@@ -979,7 +979,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiocache" },
     { name = "fastapi" },
-    { name = "gunicorn" },
+    { name = "gunicorn", marker = "sys_platform != 'win32'" },
     { name = "huggingface-hub" },
     { name = "insightface" },
     { name = "numpy" },
@@ -1060,7 +1060,7 @@ types = [
 requires-dist = [
     { name = "aiocache", specifier = ">=0.12.1,<1.0" },
     { name = "fastapi", specifier = ">=0.95.2,<1.0" },
-    { name = "gunicorn", specifier = ">=21.1.0" },
+    { name = "gunicorn", marker = "sys_platform != 'win32'", specifier = ">=21.1.0" },
     { name = "huggingface-hub", specifier = ">=1.0,<2.0" },
     { name = "insightface", specifier = ">=0.7.3,<2.0" },
     { name = "numpy", specifier = ">=2.4.0,<3.0" },

@@ -5,13 +5,22 @@ import sys
 from pathlib import Path
 from socket import socket
 
-from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
 from uvicorn import Server
-from uvicorn.workers import UvicornWorker
+
+try:
+    from gunicorn.arbiter import Arbiter
+    from uvicorn.workers import UvicornWorker
+except ModuleNotFoundError:
+    # gunicorn depends on the Unix-only `fcntl` module and is unavailable on
+    # Windows (uvicorn's gunicorn worker imports it transitively). The service
+    # runs uvicorn directly there (see `__main__`), so `CustomUvicornWorker`
+    # below is never used.
+    Arbiter = None
+    UvicornWorker = object  # type: ignore[assignment,misc]
 
 from .schemas import ModelPrecision
 
