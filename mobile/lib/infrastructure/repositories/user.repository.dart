@@ -11,6 +11,21 @@ class UserRepository {
   const UserRepository(this._db);
 
   Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
+
+  Future<UserDto?> getById(String id) async {
+    final user = await (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).getSingleOrNull();
+    if (user == null) {
+      return null;
+    }
+    return UserDto(
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      hasProfileImage: user.hasProfileImage,
+      profileChangedAt: user.profileChangedAt,
+      avatarColor: user.avatarColor,
+    );
+  }
 }
 
 class DriftAuthUserRepository extends DriftDatabaseRepository {
