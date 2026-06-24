@@ -201,7 +201,6 @@ class _DynamicWallpaperSelectionListItem extends StatelessWidget {
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: _DynamicWallpaperThumbnail(assetId: assetId),
-        title: Text('dynamic_wallpaper_selection_item_title'.tr(namedArgs: {'index': '${index + 1}'})),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

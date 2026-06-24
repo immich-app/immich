@@ -34,9 +34,15 @@ class DynamicWallpaperActionButton extends ConsumerWidget {
           return;
         }
 
+        final messageKey = switch ((update.addedCount > 0, update.skippedCount > 0)) {
+          (true, true) => 'dynamic_wallpaper_selection_added_and_skipped',
+          (true, false) => 'dynamic_wallpaper_selection_added_only',
+          _ => 'dynamic_wallpaper_selection_skipped_only',
+        };
+
         ImmichToast.show(
           context: context,
-          msg: 'dynamic_wallpaper_selection_added'.tr(
+          msg: messageKey.tr(
             namedArgs: {
               'added': update.addedCount.toString(),
               'skipped': update.skippedCount.toString(),
