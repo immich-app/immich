@@ -1,13 +1,18 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
@@ -49,6 +54,35 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
     }
   }
 
+  Future<void> handleEditVisibility(BuildContext context) async {
+    final newIsHidden = !_person.isHidden;
+
+    try {
+      final result = await ref.read(driftPeopleServiceProvider).updateVisibility(_person.id, newIsHidden);
+
+      if (result != 0) {
+        ref.invalidate(driftGetAllPeopleProvider);
+        ContextHelper(context).pop(newIsHidden);
+      }
+    } catch (error) {
+      dPrint(() => 'Error updating visibility: $error');
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ImmichToast.show(
+        context: context,
+        msg: 'scaffold_body_error_occurred'.t(context: context),
+        gravity: ToastGravity.BOTTOM,
+        toastType: ToastType.error,
+      );
+    }
+    setState(() {
+      _person = _person.copyWith(isHidden: newIsHidden);
+    });
+  }
+
   void showOptionSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -64,7 +98,12 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
             await handleEditBirthday(context);
             ContextHelper(context).pop();
           },
+          onEditVisibility: () async {
+            await handleEditVisibility(context);
+            ContextHelper(context).pop();
+          },
           birthdayExists: _person.birthDate != null,
+          isHidden: _person.isHidden,
         );
       },
     );
