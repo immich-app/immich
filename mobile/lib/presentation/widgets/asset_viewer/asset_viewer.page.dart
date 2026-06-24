@@ -129,7 +129,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
 
-    unawaited(restoreSystemUI());
+    unawaited(restoreEdgeToEdge());
 
     super.dispose();
   }
@@ -253,7 +253,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _setSystemUIMode(bool controls, bool details) {
     final immersive = !controls || (CurrentPlatform.isIOS && details);
-    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreSystemUI());
+    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge());
   }
 
   @override

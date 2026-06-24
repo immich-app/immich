@@ -50,7 +50,7 @@ class DriftMemoryPage extends HookConsumerWidget {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
       return () {
         // Clean up to normal edge to edge when we are done
-        restoreSystemUI();
+        restoreEdgeToEdge();
       };
     });
 
@@ -329,7 +329,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
                               context.maybePop();
-                              restoreSystemUI();
+                              restoreEdgeToEdge();
                             },
                             shape: const CircleBorder(),
                             color: Colors.white.withValues(alpha: 0.2),

@@ -77,7 +77,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _pageController.dispose();
     _crossfadeController.dispose();
     unawaited(WakelockPlus.disable());
-    unawaited(restoreSystemUI());
+    unawaited(restoreEdgeToEdge());
     super.dispose();
   }
 
@@ -256,7 +256,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _onTapUp() async {
-    await (_showAppBar ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive) : restoreSystemUI());
+    await (_showAppBar ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive) : restoreEdgeToEdge());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {

@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 /// setEnabledSystemUIMode(edgeToEdge) does NOT re-show bars that an immersive
 /// mode (immersive / immersiveSticky) previously hid. Explicitly request all
 /// overlays first, then return to edge-to-edge layout.
-Future<void> restoreSystemUI() async {
+Future<void> restoreEdgeToEdge() async {
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 }
