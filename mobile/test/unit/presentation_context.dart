@@ -23,7 +23,7 @@ import 'mocks.dart';
 
 class PresentationContext {
   PresentationContext._({required UserDto user}) : currentUser = user, mocks = ServiceMocks() {
-    when(mocks.user.tryGetMyUser).thenReturn(currentUser);
+    setup();
   }
 
   static const String serverEndpoint = 'http://localhost:3000';
@@ -46,10 +46,14 @@ class PresentationContext {
     return PresentationContext._(user: UserFactory.createDto());
   }
 
-  Future<void> dispose() async {
-    // TODO: Dispose the store and database after each test.
-    // This is currently not possible because the store is a singleton and is used across tests.
-    //  Refactor the store to be created per test to allow proper disposal.
+  void setup() {
+    when(mocks.user.tryGetMyUser).thenReturn(currentUser);
+  }
+
+  void dispose() {
+    addTearDown(() {
+      mocks.resetAll();
+    });
   }
 }
 
