@@ -35,10 +35,49 @@ class DynamicWallpaperService {
         .toList();
   }
 
+  static List<String> toggleAssetIds(List<String> currentAssetIds, Iterable<String> toggledAssetIds) {
+    final toggled = toggledAssetIds.toSet();
+
+    return [
+      ...currentAssetIds.where((assetId) => !toggled.contains(assetId)),
+      ...toggled.where((assetId) => !currentAssetIds.contains(assetId)),
+    ];
+  }
+
+  static List<String> removeAssetIds(List<String> currentAssetIds, Iterable<String> removedAssetIds) {
+    final removed = removedAssetIds.toSet();
+    return currentAssetIds.where((assetId) => !removed.contains(assetId)).toList();
+  }
+
+  static List<String> reorderAssetIds(List<String> currentAssetIds, int oldIndex, int newIndex) {
+    final nextAssetIds = [...currentAssetIds];
+    final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
+    final assetId = nextAssetIds.removeAt(oldIndex);
+    nextAssetIds.insert(adjustedNewIndex, assetId);
+    return nextAssetIds;
+  }
+
   List<String> remoteImageIdsFromAssets(Iterable<BaseAsset> assets) => remoteImageIdsFrom(assets);
 
   Future<void> saveSelection(Iterable<BaseAsset> assets) {
     return configure(assetIds: remoteImageIdsFromAssets(assets));
+  }
+
+  Future<List<String>> toggleSelection(Iterable<BaseAsset> assets) async {
+    final toggledAssetIds = remoteImageIdsFromAssets(assets);
+    final nextAssetIds = toggleAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, toggledAssetIds);
+    await configure(assetIds: nextAssetIds);
+    return nextAssetIds;
+  }
+
+  Future<void> removeSelection(Iterable<String> assetIds) {
+    final nextAssetIds = removeAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, assetIds);
+    return configure(assetIds: nextAssetIds);
+  }
+
+  Future<void> reorderSelection(int oldIndex, int newIndex) {
+    final nextAssetIds = reorderAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, oldIndex, newIndex);
+    return configure(assetIds: nextAssetIds);
   }
 
   Future<void> configure({List<String>? assetIds, int? intervalMinutes}) async {

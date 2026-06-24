@@ -23,5 +23,23 @@ void main() {
 
       expect(ids, [remoteImage.id, mergedImage.id]);
     });
+
+    test('toggles selected ids without replacing the current list', () {
+      final ids = DynamicWallpaperService.toggleAssetIds(['a', 'b', 'c'], ['b', 'd']);
+
+      expect(ids, ['a', 'c', 'd']);
+    });
+
+    test('removes selected ids while preserving the remaining order', () {
+      final ids = DynamicWallpaperService.removeAssetIds(['a', 'b', 'c', 'd'], ['b', 'd']);
+
+      expect(ids, ['a', 'c']);
+    });
+
+    test('reorders selected ids using ReorderableListView indexes', () {
+      final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 1, 4);
+
+      expect(ids, ['a', 'c', 'd', 'b']);
+    });
   });
 }
