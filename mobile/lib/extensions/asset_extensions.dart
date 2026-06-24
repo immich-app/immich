@@ -1,9 +1,25 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:openapi/api.dart' as api;
 
+AvatarColor _toAvatarColor(api.UserAvatarColor color) => switch (color) {
+  api.UserAvatarColor.red => AvatarColor.red,
+  api.UserAvatarColor.green => AvatarColor.green,
+  api.UserAvatarColor.blue => AvatarColor.blue,
+  api.UserAvatarColor.purple => AvatarColor.purple,
+  api.UserAvatarColor.orange => AvatarColor.orange,
+  api.UserAvatarColor.pink => AvatarColor.pink,
+  api.UserAvatarColor.amber => AvatarColor.amber,
+  api.UserAvatarColor.yellow => AvatarColor.yellow,
+  api.UserAvatarColor.gray => AvatarColor.gray,
+  _ => AvatarColor.primary,
+};
+
 extension DTOToAsset on api.AssetResponseDto {
+  api.UserResponseDto? get _owner => owner.orElse(null);
+
   RemoteAsset toDto() {
     return RemoteAsset(
       id: id,
@@ -13,6 +29,10 @@ extension DTOToAsset on api.AssetResponseDto {
       updatedAt: updatedAt,
       uploadedAt: createdAt,
       ownerId: ownerId,
+      ownerName: _owner?.name ?? '',
+      ownerAvatarColor: _owner != null ? _toAvatarColor(_owner!.avatarColor) : AvatarColor.primary,
+      ownerHasProfileImage: _owner?.profileImagePath.isNotEmpty ?? false,
+      ownerProfileChangedAt: _owner?.profileChangedAt,
       visibility: visibility.toAssetVisibility(),
       durationMs: duration,
       height: height?.toInt(),
@@ -36,6 +56,10 @@ extension DTOToAsset on api.AssetResponseDto {
       updatedAt: updatedAt,
       uploadedAt: createdAt,
       ownerId: ownerId,
+      ownerName: _owner?.name ?? '',
+      ownerAvatarColor: _owner != null ? _toAvatarColor(_owner!.avatarColor) : AvatarColor.primary,
+      ownerHasProfileImage: _owner?.profileImagePath.isNotEmpty ?? false,
+      ownerProfileChangedAt: _owner?.profileChangedAt,
       visibility: visibility.toAssetVisibility(),
       durationMs: duration,
       height: height?.toInt(),

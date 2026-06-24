@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/lo
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/rating_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/technical_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/asset_owner_details.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 
 class AssetDetails extends ConsumerWidget {
@@ -44,6 +45,7 @@ class AssetDetails extends ConsumerWidget {
             DateTimeDetails(asset: asset, exifInfo: exifInfo),
             PeopleDetails(asset: asset),
             LocationDetails(asset: asset, exifInfo: exifInfo),
+            AssetOwnerDetails(asset: asset, exifInfo: exifInfo),
             TechnicalDetails(asset: asset, exifInfo: exifInfo),
             RatingDetails(exifInfo: exifInfo),
             AppearsInDetails(asset: asset),
