@@ -4,7 +4,7 @@ import 'package:pigeon/pigeon.dart';
   PigeonOptions(
     dartOut: 'lib/platform/dynamic_wallpaper_api.g.dart',
     kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaper.g.kt',
-    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.wallpaper', includeErrorClass: false),
+    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.wallpaper', includeErrorClass: true),
     dartOptions: DartOptions(),
     dartPackageName: 'immich_mobile',
   ),
