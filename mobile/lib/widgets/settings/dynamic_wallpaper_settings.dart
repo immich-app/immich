@@ -196,27 +196,73 @@ class _DynamicWallpaperSelectionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: context.colorScheme.surface,
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: _DynamicWallpaperThumbnail(assetId: assetId),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: 'dynamic_wallpaper_remove_photo'.tr(),
-              onPressed: onRemove,
-              icon: const Icon(Icons.delete_outline),
-            ),
-            ReorderableDragStartListener(
-              index: index,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(Icons.drag_handle_rounded),
+    return Padding(
+      padding: EdgeInsets.only(top: index == 0 ? 0 : 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.colorScheme.surfaceContainerLow,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          border: Border.all(color: context.colorScheme.surfaceContainerHighest),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              _DynamicWallpaperThumbnail(assetId: assetId),
+              const SizedBox(width: 12),
+              _SelectionOrderBadge(index: index),
+              const Spacer(),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surface,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'dynamic_wallpaper_remove_photo'.tr(),
+                      onPressed: onRemove,
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        child: Icon(Icons.drag_handle_rounded),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectionOrderBadge extends StatelessWidget {
+  final int index;
+
+  const _SelectionOrderBadge({required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: context.colorScheme.primaryContainer,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+      ),
+      child: Text(
+        '${index + 1}',
+        style: context.textTheme.labelLarge?.copyWith(
+          color: context.colorScheme.onPrimaryContainer,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
