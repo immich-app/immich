@@ -67,7 +67,8 @@ export const getWrapper =
         functions: ReturnType<typeof hostFunctions>;
       },
     ) => WorkflowResponse<L> | undefined,
-  ) => {
+  ) =>
+  () => {
     const input = Host.inputString();
 
     try {

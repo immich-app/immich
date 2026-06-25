@@ -13,7 +13,7 @@
     "skipLibCheck": true, // Skip type checking of declaration files
     "strict": true, // Enable all strict type-checking options
     "target": "es2020", // Specify ECMAScript target version
-    "types": ["./src/index.d.ts", "./node_modules/@extism/js-pdk"] // Specify a list of type definition files to be included in the compilation
+    "types": ["./dist/index.d.ts", "./node_modules/@extism/js-pdk"] // Specify a list of type definition files to be included in the compilation
   },
   "exclude": [
     "node_modules" // Exclude the node_modules directory
