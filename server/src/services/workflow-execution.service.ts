@@ -90,7 +90,7 @@ export class WorkflowExecutionService extends BaseService {
     };
 
     const plugins = await this.pluginRepository.getForLoad();
-    for (const { id, name, version, wasmBytes, methods } of plugins) {
+    for (const { id, name, version, wasmBytes, methods, allowedHosts } of plugins) {
       const method = methods.some(({ hostFunctions }) => !hostFunctions);
       if (method) {
         const label = `${name}@${version}`;
@@ -108,7 +108,7 @@ export class WorkflowExecutionService extends BaseService {
         const label = `${name}@${version}/worker`;
         const key = this.getPluginKey({ id, hostFunctions: true });
         try {
-          await this.pluginRepository.load({ key, label, wasmBytes }, { runInWorker: true, functions });
+          await this.pluginRepository.load({ key, label, wasmBytes }, { runInWorker: true, functions, allowedHosts });
           this.logger.log(`Loaded plugin with host functions: ${label}`);
         } catch (error) {
           this.logger.error(`Unable to load plugin with host functions ${label} (${id})`, error);
@@ -214,6 +214,7 @@ export class WorkflowExecutionService extends BaseService {
           author: manifest.author,
           version: manifest.version,
           templates: manifest.templates,
+          allowedHosts: manifest.allowedHosts,
           wasmBytes,
           sha256hash,
         },

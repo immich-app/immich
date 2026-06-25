@@ -58,6 +58,7 @@ const PluginManifestSchema = z
     wasmPath: z.string().min(1).describe('WASM file path'),
     author: z.string().min(1).describe('Plugin author'),
     methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
+    allowedHosts: z.array(z.string()).optional().default([]).describe('Hostnames the plugin can access'),
     templates: z
       .array(PluginManifestTemplateSchema)
       .optional()

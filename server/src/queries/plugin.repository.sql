@@ -6,6 +6,7 @@ select
   "plugin"."name",
   "plugin"."version",
   "plugin"."wasmBytes",
+  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -36,6 +37,7 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
+  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -72,6 +74,7 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
+  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -108,6 +111,7 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
+  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -144,6 +148,7 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
+  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
