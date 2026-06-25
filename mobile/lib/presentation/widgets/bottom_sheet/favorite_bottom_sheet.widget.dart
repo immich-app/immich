@@ -68,7 +68,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
     }
 
     final assets = multiselect.selectedAssets.toList(growable: false);
-    final actions = [FavoriteAction(assets: assets, unfavorite: true)];
+    final actions = [FavoriteAction(assets: assets)];
 
     return BaseBottomSheet(
       initialChildSize: 0.4,

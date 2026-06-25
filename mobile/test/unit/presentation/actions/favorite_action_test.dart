@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../factories/remote_asset_factory.dart';
@@ -42,7 +40,7 @@ void main() {
     testWidgets('unfavorite the eligible owned assets', (tester) async {
       final asset = owned(isFavorite: true);
 
-      await tester.pumpTestAction(FavoriteAction(assets: [asset], unfavorite: true), overrides: overrides());
+      await tester.pumpTestAction(FavoriteAction(assets: [asset]), overrides: overrides());
 
       verify(() => context.mocks.asset.service.updateFavorite([asset.id], false)).called(1);
     });
@@ -79,17 +77,6 @@ void main() {
       await tester.pumpUntilFound(find.byType(SnackBar));
 
       expect(find.byType(SnackBar), findsOneWidget);
-    });
-
-    testWidgets('is hidden when no asset is eligible', (tester) async {
-      final asset = owned(isFavorite: true);
-
-      await tester.pumpTestWidget(
-        ActionIconButtonWidget(action: FavoriteAction(assets: [asset])),
-        overrides: overrides(),
-      );
-
-      expect(find.byType(ImmichIconButton), findsNothing);
     });
   });
 }
