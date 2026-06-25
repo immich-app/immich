@@ -5,6 +5,7 @@ declare module 'extism:host' {
     createAlbum(ptr: PTR): I64;
     addAssetsToAlbum(ptr: PTR): I64;
     addAssetsToAlbums(ptr: PTR): I64;
+    httpRequest(ptr: PTR): I64;
   }
 }
 
@@ -21,7 +22,6 @@ declare module 'main' {
   export function assetVisibility(): I32;
   export function assetArchive(): I32;
   export function assetLock(): I32;
-  export function assetTimeline(): I32;
   // export function assetTrash(): I32;
   export function assetAddToAlbums(): I32;
   export function webhook(): I32;

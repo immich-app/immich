@@ -43,9 +43,6 @@ export class PluginTable {
   @Column({ type: 'bytea' })
   sha256hash!: Buffer;
 
-  @Column({ type: 'character varying', default: [], array: true })
-  allowedHosts!: Generated<string[]>;
-
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

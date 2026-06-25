@@ -175,16 +175,18 @@ export const assetAddToAlbums = () => {
 };
 
 export const webhook = () => {
-  return wrapper<'webhook'>(({ config, data }) => {
-    const headers = new Headers({ 'Content-Type': 'application/json' });
+  return wrapper<'webhook'>(({ config, data, functions }) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
 
     if (config.headerName && config.headerValue) {
-      headers.set(config.headerName, config.headerValue);
+      headers[config.headerName] = config.headerValue;
     }
 
-    fetch(config.url, {
+    functions.httpRequest(config.url, {
       method: config.method ?? 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(data.asset),
       headers,
     });
 

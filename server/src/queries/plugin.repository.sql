@@ -6,7 +6,6 @@ select
   "plugin"."name",
   "plugin"."version",
   "plugin"."wasmBytes",
-  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -37,7 +36,6 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
-  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -50,6 +48,7 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -74,7 +73,6 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
-  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -87,6 +85,7 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -111,7 +110,6 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
-  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -124,6 +122,7 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -148,7 +147,6 @@ select
   "plugin"."createdAt",
   "plugin"."updatedAt",
   "plugin"."templates",
-  "plugin"."allowedHosts",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -161,6 +159,7 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -195,6 +194,7 @@ select
   "plugin_method"."types",
   "plugin_method"."schema",
   "plugin_method"."hostFunctions",
+  "plugin_method"."allowedHosts",
   "plugin_method"."uiHints"
 from
   "plugin_method"

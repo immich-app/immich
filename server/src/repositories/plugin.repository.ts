@@ -61,7 +61,6 @@ export class PluginRepository {
         'plugin.name',
         'plugin.version',
         'plugin.wasmBytes',
-        'plugin.allowedHosts',
         jsonArrayFrom(
           eb
             .selectFrom('plugin_method')
@@ -84,7 +83,6 @@ export class PluginRepository {
       'plugin.createdAt',
       'plugin.updatedAt',
       'plugin.templates',
-      'plugin.allowedHosts',
       jsonArrayFrom(
         eb
           .selectFrom('plugin_method')
@@ -162,7 +160,6 @@ export class PluginRepository {
             wasmBytes: eb.ref('excluded.wasmBytes'),
             templates: eb.ref('excluded.templates'),
             sha256hash: eb.ref('excluded.sha256hash'),
-            allowedHosts: eb.ref('excluded.allowedHosts'),
           })),
         )
         .returning(['id', 'name'])
@@ -194,6 +191,7 @@ export class PluginRepository {
                   description: ref('excluded.description'),
                   types: ref('excluded.types'),
                   hostFunctions: ref('excluded.hostFunctions'),
+                  allowedHosts: ref('excluded.allowedHosts'),
                   uiHints: ref('excluded.uiHints'),
                   schema: ref('excluded.schema'),
                 })),
@@ -245,7 +243,7 @@ export class PluginRepository {
     }
   }
 
-  async callMethod<T>({ pluginKey, methodName }: PluginMethod, input: unknown) {
+  async callMethod<T>({ pluginKey, methodName }: PluginMethod, input: unknown, context?: unknown) {
     const item = this.pluginMap.get(pluginKey);
     if (!item) {
       throw new Error(`No loaded plugin found for ${pluginKey}`);
@@ -256,7 +254,7 @@ export class PluginRepository {
     try {
       const plugin = await pool.acquire();
       try {
-        const result = await plugin.call(methodName, JSON.stringify(input));
+        const result = await plugin.call(methodName, JSON.stringify(input), context);
         return (result ? result.json() : result) as T;
       } finally {
         await pool.release(plugin);

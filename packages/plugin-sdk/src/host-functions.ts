@@ -13,6 +13,7 @@ declare module 'extism:host' {
     createAlbum(ptr: PTR): I64;
     addAssetsToAlbum(ptr: PTR): I64;
     addAssetsToAlbums(ptr: PTR): I64;
+    httpRequest(ptr: PTR): I64;
   }
 }
 
@@ -33,6 +34,16 @@ type HostFunctionResult<T> =
 
 type QueryParams<T extends (...args: any) => any> = Parameters<T>[0];
 type AlbumSearchDto = QueryParams<typeof getAllAlbums>;
+type HttpRequestOptions = {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+};
+type HttpResponse = {
+  ok: string;
+  status: number;
+  body: string;
+};
 
 export const hostFunctions = (authToken: string) => {
   const host = Host.getFunctions();
@@ -75,5 +86,11 @@ export const hostFunctions = (authToken: string) => {
       ),
     addAssetsToAlbums: ({ assetIds, albumIds }: AlbumsToAssets) =>
       call('addAssetsToAlbums', authToken, [{ albumIds, assetIds }]),
+    httpRequest: (url: string, options?: HttpRequestOptions) =>
+      call<[string, HttpRequestOptions | undefined], HttpResponse>(
+        'httpRequest',
+        authToken,
+        [url, options],
+      ),
   };
 };

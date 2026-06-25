@@ -5,7 +5,6 @@
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
   "wasmPath": "dist/plugin.wasm",
-  "allowedHosts": ["*"],
   "templates": [
     {
       "name": "screenshots-smart-album",
@@ -307,6 +306,7 @@
       "description": "POST/PUT event data to any URL",
       "types": ["AssetV1"],
       "hostFunctions": true,
+      "allowedHosts": ["*"],
       "schema": {
         "type": "object",
         "properties": {

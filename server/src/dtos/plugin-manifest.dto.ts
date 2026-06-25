@@ -18,6 +18,11 @@ const PluginManifestMethodSchema = z
     description: z.string().min(1).describe('Method description'),
     types: z.array(WorkflowTypeSchema).min(1).describe('Workflow type'),
     hostFunctions: z.boolean().optional().default(false).describe('Method uses host functions'),
+    allowedHosts: z
+      .array(z.string())
+      .optional()
+      .default([])
+      .describe('Hostnames the method can access (use * for wildcards)'),
     schema: PluginManifestMethodSchemaSchema.describe('Schema'),
     uiHints: z.array(z.string()).optional().describe('Ui hints, for example "filter"'),
   })
@@ -58,7 +63,6 @@ const PluginManifestSchema = z
     wasmPath: z.string().min(1).describe('WASM file path'),
     author: z.string().min(1).describe('Plugin author'),
     methods: z.array(PluginManifestMethodSchema).optional().default([]).describe('Plugin methods'),
-    allowedHosts: z.array(z.string()).optional().default([]).describe('Hostnames the plugin can access'),
     templates: z
       .array(PluginManifestTemplateSchema)
       .optional()
