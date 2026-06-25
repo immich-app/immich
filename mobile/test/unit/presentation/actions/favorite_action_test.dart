@@ -34,7 +34,7 @@ void main() {
     testWidgets('favorites the eligible owned assets', (tester) async {
       final asset = owned();
 
-      await tester.pumpTestAction(FavoriteAction(assets: [asset], favorite: true), overrides: overrides());
+      await tester.pumpTestAction(FavoriteAction(assets: [asset]), overrides: overrides());
 
       verify(() => context.mocks.asset.service.updateFavorite([asset.id], true)).called(1);
     });
@@ -42,7 +42,7 @@ void main() {
     testWidgets('unfavorite the eligible owned assets', (tester) async {
       final asset = owned(isFavorite: true);
 
-      await tester.pumpTestAction(FavoriteAction(assets: [asset], favorite: false), overrides: overrides());
+      await tester.pumpTestAction(FavoriteAction(assets: [asset], unfavorite: true), overrides: overrides());
 
       verify(() => context.mocks.asset.service.updateFavorite([asset.id], false)).called(1);
     });
@@ -51,7 +51,7 @@ void main() {
       final mine = owned();
       final theirs = RemoteAssetFactory.create();
 
-      await tester.pumpTestAction(FavoriteAction(assets: [mine, theirs], favorite: true), overrides: overrides());
+      await tester.pumpTestAction(FavoriteAction(assets: [mine, theirs]), overrides: overrides());
 
       verify(() => context.mocks.asset.service.updateFavorite([mine.id], true)).called(1);
     });
@@ -60,7 +60,7 @@ void main() {
       final first = owned();
       final second = owned();
 
-      await tester.pumpTestAction(FavoriteAction(assets: [first, second], favorite: true), overrides: overrides());
+      await tester.pumpTestAction(FavoriteAction(assets: [first, second]), overrides: overrides());
 
       verify(() => context.mocks.asset.service.updateFavorite([first.id, second.id], true)).called(1);
     });
@@ -69,16 +69,13 @@ void main() {
       final stale = owned();
       final alreadyFavorite = owned(isFavorite: true);
 
-      await tester.pumpTestAction(
-        FavoriteAction(assets: [stale, alreadyFavorite], favorite: true),
-        overrides: overrides(),
-      );
+      await tester.pumpTestAction(FavoriteAction(assets: [stale, alreadyFavorite]), overrides: overrides());
 
       verify(() => context.mocks.asset.service.updateFavorite([stale.id], true)).called(1);
     });
 
     testWidgets('shows a confirmation snackbar on success', (tester) async {
-      await tester.pumpTestAction(FavoriteAction(assets: [owned()], favorite: true), overrides: overrides());
+      await tester.pumpTestAction(FavoriteAction(assets: [owned()]), overrides: overrides());
       await tester.pumpUntilFound(find.byType(SnackBar));
 
       expect(find.byType(SnackBar), findsOneWidget);
@@ -88,7 +85,7 @@ void main() {
       final asset = owned(isFavorite: true);
 
       await tester.pumpTestWidget(
-        ActionIconButtonWidget(action: FavoriteAction(assets: [asset], favorite: true)),
+        ActionIconButtonWidget(action: FavoriteAction(assets: [asset])),
         overrides: overrides(),
       );
 

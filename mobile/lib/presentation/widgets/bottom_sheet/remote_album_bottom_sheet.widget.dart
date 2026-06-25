@@ -86,7 +86,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
     }
 
     final assets = multiselect.selectedAssets.toList(growable: false);
-    final actions = [FavoriteAction(assets: assets, favorite: true)];
+    final actions = [FavoriteAction(assets: assets)];
 
     return BaseBottomSheet(
       controller: sheetController,

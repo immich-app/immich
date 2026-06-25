@@ -6,19 +6,19 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 class FavoriteAction extends AssetAction<RemoteAsset> {
-  final bool favorite;
+  final bool unfavorite;
 
-  const FavoriteAction({required super.assets, required this.favorite});
-
-  @override
-  IconData get icon => favorite ? Icons.favorite_border_rounded : Icons.favorite_rounded;
+  const FavoriteAction({required super.assets, this.unfavorite = false});
 
   @override
-  String label(ActionScope scope) => favorite ? scope.context.t.favorite : scope.context.t.unfavorite;
+  IconData get icon => unfavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded;
+
+  @override
+  String label(ActionScope scope) => unfavorite ? scope.context.t.unfavorite : scope.context.t.favorite;
 
   @override
   Iterable<RemoteAsset> filter(ActionScope scope) => assets
-      .where((asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isFavorite != favorite)
+      .where((asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isFavorite == unfavorite)
       .cast<RemoteAsset>();
 
   @override
@@ -29,10 +29,10 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
     final ActionScope(:ref) = scope;
     final assets = filter(scope).map((asset) => asset.id).toList(growable: false);
 
-    await ref.read(assetServiceProvider).updateFavorite(assets, favorite);
-    final message = favorite
-        ? StaticTranslations.instance.favorite_action_prompt(count: assets.length)
-        : StaticTranslations.instance.unfavorite_action_prompt(count: assets.length);
+    await ref.read(assetServiceProvider).updateFavorite(assets, !unfavorite);
+    final message = unfavorite
+        ? StaticTranslations.instance.unfavorite_action_prompt(count: assets.length)
+        : StaticTranslations.instance.favorite_action_prompt(count: assets.length);
     snackbar.success(message);
   }
 }
