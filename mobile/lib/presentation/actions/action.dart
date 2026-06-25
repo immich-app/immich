@@ -28,5 +28,5 @@ abstract class AssetAction<T extends BaseAsset> extends BaseAction {
 
   const AssetAction({required this.assets});
 
-  Iterable<T> filter(ActionScope scope);
+  Iterable<T> filter(ActionScope scope) => assets.whereType<T>();
 }
