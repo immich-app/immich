@@ -24,5 +24,5 @@ declare module 'main' {
   export function assetTimeline(): I32;
   // export function assetTrash(): I32;
   export function assetAddToAlbums(): I32;
-  export function assetDataWebhook(): I32;
+  export function webhook(): I32;
 }
