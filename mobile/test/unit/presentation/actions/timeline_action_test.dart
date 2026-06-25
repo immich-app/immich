@@ -57,29 +57,42 @@ void main() {
     ),
   ];
 
-  ProviderContainer containerOf(WidgetTester tester) =>
-      ProviderScope.containerOf(tester.element(find.byType(ActionIconButtonWidget)), listen: false);
+  Future<(ActionScope, ProviderContainer)> pumpScope(WidgetTester tester) async {
+    late ActionScope scope;
+    late ProviderContainer container;
+    await tester.pumpTestWidget(
+      Consumer(
+        builder: (innerContext, ref, _) {
+          scope = ActionScope(context: innerContext, ref: ref, authUser: context.currentUser);
+          container = ProviderScope.containerOf(innerContext, listen: false);
+          return const SizedBox.shrink();
+        },
+      ),
+      overrides: seededOverrides(),
+    );
+    return (scope, container);
+  }
 
   group('TimelineAction', () {
     testWidgets('runs the wrapped action and then clears the selection', (tester) async {
       final inner = _FakeAction();
-
-      await tester.pumpTestAction(TimelineAction(action: inner), overrides: seededOverrides());
-      await tester.pumpAndSettle();
+      final (scope, container) = await pumpScope(tester);
+      await TimelineAction(action: inner).onAction(scope);
 
       expect(inner.ran, isTrue);
       expect(inner.selectionDuringOnAction, isTrue, reason: 'reset must run after the inner action, not before');
-      expect(containerOf(tester).read(multiSelectProvider).isEnabled, isFalse);
+      expect(container.read(multiSelectProvider).isEnabled, isFalse);
     });
 
-    testWidgets('clears the selection even when the wrapped action throws', (tester) async {
-      final inner = _FakeAction(error: Exception('boom'));
+    testWidgets('rethrows and keeps the selection when the wrapped action throws', (tester) async {
+      final error = Exception('boom');
+      final inner = _FakeAction(error: error);
+      final (scope, container) = await pumpScope(tester);
 
-      await tester.pumpTestAction(TimelineAction(action: inner), overrides: seededOverrides());
-      await tester.pumpAndSettle();
+      await expectLater(TimelineAction(action: inner).onAction(scope), throwsA(same(error)));
 
       expect(inner.ran, isTrue);
-      expect(containerOf(tester).read(multiSelectProvider).isEnabled, isFalse);
+      expect(container.read(multiSelectProvider).isEnabled, isTrue);
     });
 
     testWidgets('delegates visibility to the wrapped action', (tester) async {
