@@ -6,19 +6,21 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 class FavoriteAction extends AssetAction<RemoteAsset> {
-  final bool unfavorite;
+  final bool shouldFavorite;
 
-  const FavoriteAction({required super.assets, this.unfavorite = false});
-
-  @override
-  IconData get icon => unfavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded;
+  FavoriteAction({required super.assets}) : shouldFavorite = assets.any((asset) => !asset.isFavorite);
 
   @override
-  String label(ActionScope scope) => unfavorite ? scope.context.t.unfavorite : scope.context.t.favorite;
+  IconData get icon => shouldFavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded;
+
+  @override
+  String label(ActionScope scope) => shouldFavorite ? scope.context.t.favorite : scope.context.t.unfavorite;
 
   @override
   Iterable<RemoteAsset> filter(ActionScope scope) => assets
-      .where((asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isFavorite == unfavorite)
+      .where(
+        (asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isFavorite == !shouldFavorite,
+      )
       .cast<RemoteAsset>();
 
   @override
@@ -29,10 +31,10 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
     final ActionScope(:ref) = scope;
     final assets = filter(scope).map((asset) => asset.id).toList(growable: false);
 
-    await ref.read(assetServiceProvider).updateFavorite(assets, !unfavorite);
-    final message = unfavorite
-        ? StaticTranslations.instance.unfavorite_action_prompt(count: assets.length)
-        : StaticTranslations.instance.favorite_action_prompt(count: assets.length);
+    await ref.read(assetServiceProvider).updateFavorite(assets, shouldFavorite);
+    final message = shouldFavorite
+        ? StaticTranslations.instance.favorite_action_prompt(count: assets.length)
+        : StaticTranslations.instance.unfavorite_action_prompt(count: assets.length);
     snackbar.success(message);
   }
 }
