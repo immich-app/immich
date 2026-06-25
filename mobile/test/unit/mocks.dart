@@ -18,6 +18,7 @@ class RepositoryMocks {
   final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
+  final remoteAsset = MockRemoteAssetRepository();
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
@@ -89,6 +90,7 @@ class ServiceMocks {
 
   void _stubAssetService() {
     when(asset.updateFavorite).thenAnswer((_) async {});
+    when(asset.applyEdits).thenAnswer((_) async {});
   }
 }
 
@@ -96,6 +98,7 @@ void _registerFallbacks() {
   registerFallbackValue(LocalAlbumFactory.create());
   registerFallbackValue(LocalAssetFactory.create());
   registerFallbackValue(Uint8List(0));
+  registerFallbackValue(<AssetEdit>[]);
 }
 
 extension type const Stub<T extends Mock>(T mockedClass) {
@@ -167,6 +170,9 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
   Future<void> Function() get updateFavorite =>
       () => service.updateFavorite(any(), any());
+
+  Future<void> Function() get applyEdits =>
+      () => service.applyEdits(any(), any());
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {

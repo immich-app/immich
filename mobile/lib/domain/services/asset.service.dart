@@ -1,5 +1,6 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
@@ -76,5 +77,13 @@ class AssetService {
 
     await _apiRepository.updateFavorite(remoteIds, isFavorite);
     await _remoteRepository.updateFavorite(remoteIds, isFavorite);
+  }
+
+  Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
+    if (edits.isEmpty) {
+      await _apiRepository.removeEdits(remoteId);
+    } else {
+      await _apiRepository.editAsset(remoteId, edits);
+    }
   }
 }
