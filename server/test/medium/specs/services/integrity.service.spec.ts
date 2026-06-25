@@ -686,6 +686,22 @@ describe(IntegrityService.name, () => {
         nextCursor: undefined,
       });
     });
+
+    it('should skip external library files', async () => {
+      const { sut, ctx } = setup();
+      const job = ctx.getMock(JobRepository);
+      job.queue.mockResolvedValue(void 0);
+
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, isExternal: true });
+
+      await sut.handleChecksumFiles({ refreshOnly: false });
+
+      await expect(
+        ctx.get(IntegrityRepository).getIntegrityReport({ limit: 100 }, IntegrityReport.ChecksumFail),
+      ).resolves.toEqual({ items: [], nextCursor: undefined });
+    });
   });
 
   describe('handleChecksumRefresh', () => {

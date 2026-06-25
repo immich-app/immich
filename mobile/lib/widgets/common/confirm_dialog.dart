@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class ConfirmDialog extends StatelessWidget {
-  final Function onOk;
+  final Function? onOk;
   final String title;
   final String content;
   final String cancel;
@@ -11,7 +11,7 @@ class ConfirmDialog extends StatelessWidget {
 
   const ConfirmDialog({
     super.key,
-    required this.onOk,
+    this.onOk,
     required this.title,
     required this.content,
     this.cancel = "cancel",
@@ -21,7 +21,7 @@ class ConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void onOkPressed() {
-      onOk();
+      onOk?.call();
       context.pop(true);
     }
 

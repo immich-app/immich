@@ -79,6 +79,7 @@
     "cron_expression_description": "Setze das Scanintervall im Cron-Format. Für mehr Informationen, siehe z. B. <link>Crontab Guru</link>",
     "cron_expression_presets": "Vorlagen für Cron-Ausdrücke",
     "disable_login": "Login deaktivierä",
+    "download_csv": "CSV herunterladen",
     "duplicate_detection_job_description": "Verwendet maschinelles Lernen auf den Dateien, um Duplikate zu finden. Baut auf der intelligenten Suche auf",
     "exclusion_pattern_description": "Mit Ausschlussmustern können Dateien und Ordner beim Scannen deiner Bibliothek ignoriert werden. Dies ist nützlich, wenn du Ordner hast, die Dateien enthalten, die du nicht importieren möchtest, wie z. B. RAW-Dateien.",
     "export_config_as_json_description": "Aktuelle Systemkonfiguration als JSON-Datei herunterladen",

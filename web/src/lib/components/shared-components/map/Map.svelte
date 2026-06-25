@@ -38,7 +38,6 @@
     Control,
     ControlButton,
     ControlGroup,
-    FullscreenControl,
     GeoJSON,
     GeolocateControl,
     MapLibre,
@@ -343,7 +342,6 @@
 
       {#if !simplified}
         <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
         <ScaleControl />
         <AttributionControl compact={false} />
       {/if}
@@ -401,13 +399,13 @@
       >
         {#snippet children({ feature }: { feature: Feature })}
           {#if useLocationPin}
-            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[-50%] text-primary" />
+            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[calc(5px-50%)] text-primary" />
           {:else}
             <img
               src={getAssetMediaUrl({ id: feature.properties?.id })}
               class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
               alt={feature.properties?.city && feature.properties.country
-                ? $t('map_marker_for_images', {
+                ? $t('map_marker_for_image', {
                     values: { city: feature.properties.city, country: feature.properties.country },
                   })
                 : $t('map_marker_with_image')}
@@ -415,7 +413,7 @@
           {/if}
           {#if popup}
             <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-              {@render popup?.({ marker: asMarker(feature) })}
+              {@render popup({ marker: asMarker(feature) })}
             </Popup>
           {/if}
         {/snippet}

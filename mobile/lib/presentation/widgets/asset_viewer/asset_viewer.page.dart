@@ -24,6 +24,7 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
@@ -131,7 +132,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(restoreEdgeToEdge());
 
     super.dispose();
   }
@@ -275,10 +276,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _setSystemUIMode(bool controls, bool details) {
-    final mode = !controls || (CurrentPlatform.isIOS && details)
-        ? SystemUiMode.immersiveSticky
-        : SystemUiMode.edgeToEdge;
-    unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+    final immersive = !controls || (CurrentPlatform.isIOS && details);
+    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge());
   }
 
   @override

@@ -177,6 +177,7 @@ export class IntegrityRepository {
         'asset.id as assetId',
         'integrity_report.id as reportId',
       ])
+      .where('asset.isExternal', '=', sql.lit(false))
       .$if(startMarker !== undefined, (qb) => qb.where('integrity_report.createdAt', '>=', startMarker!))
       .$if(endMarker !== undefined, (qb) => qb.where('integrity_report.createdAt', '<=', endMarker!))
       .orderBy('integrity_report.createdAt', 'asc')

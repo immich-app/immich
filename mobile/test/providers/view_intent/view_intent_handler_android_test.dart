@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
@@ -14,14 +15,15 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
-import 'package:immich_mobile/services/auth.service.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -46,6 +48,11 @@ class MockWidgetService extends Mock implements WidgetService {}
 class FakePageRouteInfo extends Fake implements PageRouteInfo<dynamic> {}
 
 class FakeTimelineService extends Fake implements TimelineService {}
+
+class FakeAssetService extends Fake implements AssetService {
+  @override
+  Stream<BaseAsset?> watchAsset(BaseAsset asset) => const Stream.empty();
+}
 
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
@@ -141,6 +148,7 @@ void main() {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
           return authNotifier;
         }),
+        assetServiceProvider.overrideWithValue(FakeAssetService()),
       ],
     );
 
