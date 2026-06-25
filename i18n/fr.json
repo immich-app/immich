@@ -1548,7 +1548,7 @@
   "map_location_picker_page_use_location": "Utiliser ma position",
   "map_location_service_disabled_content": "Le service de localisation doit être activé pour afficher les médias de votre emplacement actuel. Souhaitez-vous l'activer maintenant ?",
   "map_location_service_disabled_title": "Service de localisation désactivé",
-  "map_marker_for_images": "Marqueur de carte pour les images prises à {city}, {country}",
+  "map_marker_for_image": "Marqueur de carte pour une image prise à {city}, {country}",
   "map_marker_with_image": "Marqueur de carte avec image",
   "map_no_location_permission_content": "L'autorisation de localisation est nécessaire pour afficher les médias de votre emplacement actuel. Souhaitez-vous l'autoriser maintenant ?",
   "map_no_location_permission_title": "Permission de localisation refusée",

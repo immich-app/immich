@@ -1479,7 +1479,6 @@
   "map_location_picker_page_use_location": "इस स्थान का उपयोग करें",
   "map_location_service_disabled_content": "आपके वर्तमान स्थान की संपत्तियाँ प्रदर्शित करने के लिए स्थान सेवा सक्षम होनी चाहिए। क्या आप इसे अभी सक्षम करना चाहते हैं?",
   "map_location_service_disabled_title": "स्थान सेवा अक्षम",
-  "map_marker_for_images": "{city}, {country} में ली गई छवियों के लिए मानचित्र मार्कर",
   "map_marker_with_image": "छवि के साथ मानचित्र मार्कर",
   "map_no_location_permission_content": "आपके वर्तमान स्थान से संपत्तियाँ प्रदर्शित करने के लिए स्थान अनुमति आवश्यक है। क्या आप इसे अभी अनुमति देना चाहते हैं?",
   "map_no_location_permission_title": "स्थान की अनुमति अस्वीकृत",

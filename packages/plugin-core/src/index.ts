@@ -1,13 +1,11 @@
-import { wrapper } from '@immich/plugin-sdk';
-import { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
+import { getWrapper } from '@immich/plugin-sdk';
+import { AssetVisibility } from '@immich/sdk';
+import type manifestType from '../dist/manifest';
 
-type AssetFileFilterConfig = {
-  pattern: string;
-  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
-  caseSensitive?: boolean;
-};
+const wrapper = getWrapper<manifestType>();
+
 export const assetFileFilter = () => {
-  return wrapper<WorkflowType.AssetV1, AssetFileFilterConfig>(({ data, config }) => {
+  return wrapper<'assetFileFilter'>(({ data, config }) => {
     const { pattern, matchType = 'contains', caseSensitive = false } = config;
 
     const { asset } = data;
@@ -43,7 +41,7 @@ export const assetFileFilter = () => {
 };
 
 export const assetMissingTimeZoneFilter = () => {
-  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+  return wrapper<'assetMissingTimeZoneFilter'>(({ config, data }) => {
     const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
     const needsTimeZone = config.inverse ? true : false;
     return { workflow: { continue: hasTimeZone === needsTimeZone } };
@@ -51,13 +49,7 @@ export const assetMissingTimeZoneFilter = () => {
 };
 
 export const assetLocationFilter = () => {
-  return wrapper<
-    WorkflowType.AssetV1,
-    {
-      region?: { country?: string; state?: string; city?: string };
-      coordinate?: { latitude?: string; longitude?: string; radius?: number };
-    }
-  >(({ config, data }) => {
+  return wrapper<'assetLocationFilter'>(({ config, data }) => {
     if (
       (config.region?.country && config.region.country !== data.asset.exifInfo?.country) ||
       (config.region?.state && config.region.state !== data.asset.exifInfo?.state) ||
@@ -96,13 +88,13 @@ export const assetLocationFilter = () => {
 };
 
 export const assetTypeFilter = () => {
-  return wrapper<WorkflowType.AssetV1, { allowedTypes: AssetTypeEnum[] }>(({ config, data }) => {
+  return wrapper<'assetTypeFilter'>(({ config, data }) => {
     return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
   });
 };
 
 export const assetFavorite = () => {
-  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+  return wrapper<'assetFavorite'>(({ config, data }) => {
     const target = config.inverse ? false : true;
     if (target !== data.asset.isFavorite) {
       return {
@@ -115,13 +107,13 @@ export const assetFavorite = () => {
 };
 
 export const assetVisibility = () => {
-  return wrapper<WorkflowType.AssetV1, { visibility: AssetVisibility }>(({ config }) => ({
-    changes: { asset: { visibility: config.visibility } },
+  return wrapper<'assetVisibility'>(({ config }) => ({
+    changes: { asset: { visibility: config.visibility as AssetVisibility } },
   }));
 };
 
 export const assetArchive = () => {
-  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+  return wrapper<'assetArchive'>(({ config, data }) => {
     if (!config.inverse && data.asset.visibility !== AssetVisibility.Archive) {
       return { changes: { asset: { visibility: AssetVisibility.Archive } } };
     }
@@ -135,7 +127,7 @@ export const assetArchive = () => {
 };
 
 export const assetLock = () => {
-  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(({ config, data }) => {
+  return wrapper<'assetLock'>(({ config, data }) => {
     if (!config.inverse && data.asset.visibility !== AssetVisibility.Locked) {
       return { changes: { asset: { visibility: AssetVisibility.Locked } } };
     }
@@ -148,13 +140,13 @@ export const assetLock = () => {
   });
 };
 
-export const assetTrash = () => {
-  // TODO use trash/untrash host functions
-  return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(() => ({}));
-};
+// export const assetTrash = () => {
+//   // TODO use trash/untrash host functions
+//   return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(() => ({}));
+// };
 
 export const assetAddToAlbums = () => {
-  return wrapper<WorkflowType.AssetV1, { albumIds: string[]; albumName?: string }>(({ config, data, functions }) => {
+  return wrapper<'assetAddToAlbums'>(({ config, data, functions }) => {
     const assetId = data.asset.id;
 
     if (config.albumIds.length === 0) {

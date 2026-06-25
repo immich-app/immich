@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -76,7 +77,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _pageController.dispose();
     _crossfadeController.dispose();
     unawaited(WakelockPlus.disable());
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(restoreEdgeToEdge());
     super.dispose();
   }
 
@@ -255,7 +256,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _onTapUp() async {
-    await SystemChrome.setEnabledSystemUIMode(_showAppBar ? SystemUiMode.immersive : SystemUiMode.edgeToEdge);
+    await (_showAppBar ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive) : restoreEdgeToEdge());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {

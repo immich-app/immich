@@ -12,6 +12,7 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
@@ -49,7 +50,7 @@ class DriftMemoryPage extends HookConsumerWidget {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
       return () {
         // Clean up to normal edge to edge when we are done
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        restoreEdgeToEdge();
       };
     });
 
@@ -328,7 +329,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
                               context.maybePop();
-                              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                              restoreEdgeToEdge();
                             },
                             shape: const CircleBorder(),
                             color: Colors.white.withValues(alpha: 0.2),

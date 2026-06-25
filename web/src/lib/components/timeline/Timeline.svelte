@@ -19,6 +19,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -59,7 +60,6 @@
         groupTitle: string,
         asset: TimelineAsset,
       ) => void,
-      event?: MouseEvent,
     ) => void;
   }
 
@@ -371,21 +371,6 @@
 
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
 
-  let shiftKeyIsDown = $state(false);
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
-  };
   const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
     if (asset) {
       void selectAssetCandidates(asset);
@@ -486,7 +471,7 @@
   };
 
   const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       return;
     }
 
@@ -506,13 +491,13 @@
   });
 
   $effect(() => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
-    if (shiftKeyIsDown && lastAssetMouseEvent) {
+    if (keyboardManager.shift && lastAssetMouseEvent) {
       void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
@@ -561,8 +546,6 @@
   };
 </script>
 
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
-
 <HotModuleReload
   onAfterUpdate={() => {
     const asset = page.url.searchParams.get('at');
@@ -600,12 +583,12 @@
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
       let amount = 50;
-      if (shiftKeyIsDown) {
+      if (keyboardManager.shift) {
         amount = 500;
       }
       if (evt.key === 'ArrowUp') {
         amount = -amount;
-        if (shiftKeyIsDown) {
+        if (keyboardManager.shift) {
           scrollableElement?.scrollBy({ top: amount, behavior: 'smooth' });
         }
       } else if (evt.key === 'ArrowDown') {
@@ -686,9 +669,9 @@
                 {asset}
                 {albumUsers}
                 {groupIndex}
-                onClick={(asset, event) => {
+                onClick={(asset) => {
                   if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick, event);
+                    onThumbnailClick(asset, timelineManager, timelineDay, _onClick);
                   } else {
                     _onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
                   }

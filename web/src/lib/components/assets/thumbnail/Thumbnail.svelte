@@ -44,7 +44,7 @@
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
     albumUsers?: UserResponseDto[];
-    onClick?: (asset: TimelineAsset, event?: MouseEvent) => void;
+    onClick?: (asset: TimelineAsset) => void;
     onPreview?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
@@ -93,12 +93,12 @@
     }
   };
 
-  const callClickHandlers = (e?: MouseEvent) => {
+  const callClickHandlers = () => {
     if (selected) {
-      onIconClickedHandler(e);
+      onIconClickedHandler();
       return;
     }
-    onClick?.($state.snapshot(asset), e);
+    onClick?.($state.snapshot(asset));
   };
 
   const handleClick = (e: MouseEvent) => {
@@ -109,7 +109,7 @@
 
     e.stopPropagation();
     e.preventDefault();
-    callClickHandlers(e);
+    callClickHandlers();
   };
 
   const onMouseEnter = () => {
@@ -342,7 +342,7 @@
 
         {#if !!assetOwner}
           <div class="absolute inset-e-2 bottom-1 z-2 max-w-[50%]">
-            <p class="max-w-full truncate text-xs font-medium text-white drop-shadow-lg">
+            <p class="text-white-shadow max-w-full truncate p-1 text-xs font-medium text-white">
               {assetOwner.name}
             </p>
           </div>
