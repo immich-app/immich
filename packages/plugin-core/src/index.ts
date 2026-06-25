@@ -174,8 +174,8 @@ export const assetAddToAlbums = () => {
   });
 };
 
-export const assetDataWebhook = () => {
-  return wrapper<'assetDataWebhook'>(({ config, data }) => {
+export const webhook = () => {
+  return wrapper<'webhook'>(({ config, data }) => {
     const headers = new Headers({ 'Content-Type': 'application/json' });
 
     if (config.headerName && config.headerValue) {
@@ -184,7 +184,7 @@ export const assetDataWebhook = () => {
 
     fetch(config.url, {
       method: config.method ?? 'POST',
-      body: JSON.stringify(data.asset),
+      body: JSON.stringify(data),
       headers,
     });
 

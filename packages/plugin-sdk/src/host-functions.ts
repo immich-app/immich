@@ -33,11 +33,6 @@ type HostFunctionResult<T> =
 
 type QueryParams<T extends (...args: any) => any> = Parameters<T>[0];
 type AlbumSearchDto = QueryParams<typeof getAllAlbums>;
-type HttpRequestOptions = {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: string;
-};
 
 export const hostFunctions = (authToken: string) => {
   const host = Host.getFunctions();

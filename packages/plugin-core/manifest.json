@@ -302,7 +302,7 @@
       }
     },
     {
-      "name": "assetDataWebhook",
+      "name": "webhook",
       "title": "Trigger Webhook",
       "description": "POST/PUT event data to any URL",
       "types": ["AssetV1"],
