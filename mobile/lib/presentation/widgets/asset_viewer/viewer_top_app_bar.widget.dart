@@ -61,9 +61,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           },
         ),
 
-      ActionIconButtonWidget(
-        action: FavoriteAction(assets: assetForAction, unfavorite: asset.isFavorite),
-      ),
+      ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
 
       ViewerKebabMenu(originalTheme: originalTheme),
     ];
