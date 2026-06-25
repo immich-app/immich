@@ -1,4 +1,4 @@
-import { EventsGateway } from '@futo-org/backups-orchestrator-api/dist';
+import { EventsGateway } from '@futo-org/backups-orchestrator-api';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';

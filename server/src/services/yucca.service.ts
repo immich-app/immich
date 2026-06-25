@@ -1,5 +1,4 @@
-import { EventsGateway, ModuleConfigRepository } from '@futo-org/backups-orchestrator-api/dist';
-import { GatewayEvent } from '@futo-org/backups-orchestrator-api/dist/events/events.gateway';
+import { EventsGateway, GatewayEvent, ModuleConfigRepository } from '@futo-org/backups-orchestrator-api';
 import { Injectable, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';

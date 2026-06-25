@@ -1,4 +1,4 @@
-import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api/dist';
+import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api';
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
