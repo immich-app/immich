@@ -4,40 +4,44 @@ import type manifestType from '../dist/manifest';
 
 const wrapper = getWrapper<manifestType>();
 
-export const assetFileFilter = () => {
-  return wrapper<'assetFileFilter'>(({ data, config }) => {
-    const { pattern, matchType = 'contains', caseSensitive = false } = config;
+type MatchValueConfig = {
+  pattern: string;
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  caseSensitive?: boolean;
+};
 
-    const { asset } = data;
+const matchValueResult = (value: string, config: MatchValueConfig) => {
+  const { pattern, matchType = 'contains', caseSensitive = false } = config;
+  const searchName = caseSensitive ? value : value.toLowerCase();
+  const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
 
-    const fileName = asset.originalFileName || '';
-    const searchName = caseSensitive ? fileName : fileName.toLowerCase();
-    const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
-
-    switch (matchType) {
-      case 'contains': {
-        return { workflow: { continue: searchName.includes(searchPattern) } };
-      }
-
-      case 'exact': {
-        return { workflow: { continue: searchName === searchPattern } };
-      }
-
-      case 'startsWith': {
-        return { workflow: { continue: searchName.startsWith(searchPattern) } };
-      }
-
-      case 'regex': {
-        const flags = caseSensitive ? '' : 'i';
-        const regex = new RegExp(searchPattern, flags);
-        return { workflow: { continue: regex.test(fileName) } };
-      }
-
-      default: {
-        return {};
-      }
+  switch (matchType) {
+    case 'contains': {
+      return { workflow: { continue: searchName.includes(searchPattern) } };
     }
-  });
+
+    case 'exact': {
+      return { workflow: { continue: searchName === searchPattern } };
+    }
+
+    case 'startsWith': {
+      return { workflow: { continue: searchName.startsWith(searchPattern) } };
+    }
+
+    case 'regex': {
+      const flags = caseSensitive ? '' : 'i';
+      const regex = new RegExp(searchPattern, flags);
+      return { workflow: { continue: regex.test(value) } };
+    }
+
+    default: {
+      return {};
+    }
+  }
+};
+
+export const assetFileFilter = () => {
+  return wrapper<'assetFileFilter'>(({ data, config }) => matchValueResult(data.asset.originalFileName || '', config));
 };
 
 export const assetMissingTimeZoneFilter = () => {
@@ -84,6 +88,16 @@ export const assetLocationFilter = () => {
     );
 
     return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  });
+};
+
+export const assetExifFilter = () => {
+  return wrapper<'assetExifFilter'>(({ config, data }) => {
+    if (!data.asset.exifInfo) {
+      return { workflow: { continue: false } };
+    }
+
+    return matchValueResult(String(data.asset.exifInfo[config.property] || ''), config);
   });
 };
 
