@@ -369,7 +369,7 @@ export class WorkflowExecutionService extends BaseService {
       const readResult = await read(type);
       let data = readResult.data;
       for (const step of workflow.steps) {
-        const payload: WorkflowEventPayload = {
+        const payload: WorkflowEventPayload<typeof type> = {
           trigger: workflow.trigger,
           type,
           config: step.config ?? {},

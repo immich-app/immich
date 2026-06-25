@@ -11,8 +11,10 @@ import {
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
+  mdiAccountCircleOutline,
   mdiAlertOutline,
   mdiCogRefreshOutline,
+  mdiCompare,
   mdiContentCopy,
   mdiDatabaseRefreshOutline,
   mdiDownload,
@@ -22,6 +24,7 @@ import {
   mdiHeart,
   mdiHeartOutline,
   mdiImageRefreshOutline,
+  mdiImageSearch,
   mdiInformationOutline,
   mdiMagnifyMinusOutline,
   mdiMagnifyPlusOutline,
@@ -34,14 +37,18 @@ import {
   mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { goto } from '$app/navigation';
 import { ProjectionType } from '$lib/constants';
 import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
 import { SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
 import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
@@ -92,10 +99,11 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
   return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
 };
 
-export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
+export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & { stackPrimaryAssetId?: string }) => {
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
+  const smartSearchEnabled = featureFlagsManager.value.smartSearch;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -242,6 +250,28 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'e' }],
   };
 
+  const SetProfilePicture: ActionItem = {
+    title: $t('set_as_profile_picture'),
+    icon: mdiAccountCircleOutline,
+    $if: () => asset.type === AssetTypeEnum.Image && asset.visibility !== AssetVisibility.Locked,
+    onAction: () => modalManager.show(ProfileImageCropperModal, { asset }),
+  };
+
+  const ViewInTimeline: ActionItem = {
+    title: $t('view_in_timeline'),
+    icon: mdiImageSearch,
+    $if: () => isOwner && asset.visibility !== AssetVisibility.Locked && !asset.isArchived && !asset.isTrashed,
+    onAction: () => goto(Route.photos({ at: asset.stackPrimaryAssetId ?? asset.id })),
+  };
+
+  const ViewSimilar: ActionItem = {
+    title: $t('view_similar_photos'),
+    icon: mdiCompare,
+    $if: () =>
+      asset.visibility !== AssetVisibility.Locked && !asset.isArchived && !asset.isTrashed && smartSearchEnabled,
+    onAction: () => goto(Route.search({ queryAssetId: asset.stackPrimaryAssetId ?? asset.id })),
+  };
+
   const RefreshFacesJob: ActionItem = {
     title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
@@ -286,6 +316,9 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Tag,
     TagPeople,
     Edit,
+    SetProfilePicture,
+    ViewInTimeline,
+    ViewSimilar,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
