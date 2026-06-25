@@ -32,6 +32,10 @@ class AssetService {
     return _remoteAssetRepository.get(id);
   }
 
+  Future<List<RemoteAsset>> getRemoteAssets(List<String> ids) {
+    return _remoteAssetRepository.getByIds(ids);
+  }
+
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
     if (asset.stackId == null) {
       return const [];

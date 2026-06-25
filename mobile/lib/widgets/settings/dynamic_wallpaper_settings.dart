@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
@@ -12,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
@@ -53,14 +55,8 @@ class DynamicWallpaperSettings extends ConsumerWidget {
           icon: Icons.photo_library_outlined,
           title: 'dynamic_wallpaper_select_title'.tr(),
           subtileText: 'dynamic_wallpaper_select_subtitle'.tr(),
-          buttonText: 'dynamic_wallpaper_select_photos'.tr(),
-          onButtonTap: () {
-            final rootRouter = context.router.root;
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            rootRouter.replaceAll(const [
-              TabShellRoute(children: [MainTimelineRoute()]),
-            ]);
-          },
+          buttonText: 'dynamic_wallpaper_manage_photos'.tr(),
+          onButtonTap: () => _selectWallpaperPhotos(context, ref, config.assetIds, service),
         ),
         SettingsButtonListTile(
           icon: Icons.download_for_offline_outlined,
@@ -94,6 +90,41 @@ class DynamicWallpaperSettings extends ConsumerWidget {
         _DynamicWallpaperSelectionTile(assetIds: config.assetIds, service: service),
       ],
     );
+  }
+
+  Future<void> _selectWallpaperPhotos(
+    BuildContext context,
+    WidgetRef ref,
+    List<String> currentAssetIds,
+    DynamicWallpaperService service,
+  ) async {
+    final initialAssets = await ref.read(assetServiceProvider).getRemoteAssets(currentAssetIds);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    final loadedAssetIds = initialAssets.map((asset) => asset.id).toSet();
+    final preservedAssetIds = currentAssetIds.where((assetId) => !loadedAssetIds.contains(assetId)).toList();
+
+    final selectedAssets = await context.pushRoute<Set<BaseAsset>>(
+      DriftAssetSelectionTimelineRoute(initialSelectedAssets: initialAssets.toSet()),
+    );
+
+    if (selectedAssets == null) {
+      return;
+    }
+
+    final nextAssetIds = await service.replaceSelection(selectedAssets, preservedAssetIds: preservedAssetIds);
+
+    ref.invalidate(_dynamicWallpaperPreparationStatusProvider);
+
+    if (context.mounted) {
+      ImmichToast.show(
+        context: context,
+        msg: 'dynamic_wallpaper_selection_saved'.tr(namedArgs: {'count': nextAssetIds.length.toString()}),
+      );
+    }
   }
 }
 

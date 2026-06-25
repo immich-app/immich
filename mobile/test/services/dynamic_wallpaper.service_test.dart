@@ -65,6 +65,25 @@ void main() {
       expect(ids, ['a', 'c']);
     });
 
+    test('replaces selection while preserving existing order and appending new ids', () {
+      final ids = DynamicWallpaperService.replaceAssetIdsFromSelection(
+        currentAssetIds: ['a', 'b', 'c'],
+        selectedAssetIds: ['c', 'a', 'd'],
+      );
+
+      expect(ids, ['a', 'c', 'd']);
+    });
+
+    test('preserves unresolved ids while replacing the timeline selection', () {
+      final ids = DynamicWallpaperService.replaceAssetIdsFromSelection(
+        currentAssetIds: ['a', 'b', 'c'],
+        selectedAssetIds: ['a'],
+        preservedAssetIds: ['b'],
+      );
+
+      expect(ids, ['a', 'b']);
+    });
+
     test('reorders selected ids using ReorderableListView indexes', () {
       final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 1, 4);
 
@@ -112,6 +131,31 @@ void main() {
         () => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, ['a', 'b']),
       ).called(1);
       expect(calls, ['native', 'settings']);
+    });
+
+    test('replaceSelection keeps only remote images and preserves unresolved ids', () async {
+      final settings = _MockSettingsRepository();
+      final api = _MockDynamicWallpaperApi();
+      final service = DynamicWallpaperService(settings, api, isAndroid: false);
+      final remoteA = RemoteAssetFactory.create(id: 'a');
+      final remoteC = RemoteAssetFactory.create(id: 'c');
+      final remoteVideo = RemoteAssetFactory.create(id: 'video').copyWith(type: AssetType.video);
+      final localImage = LocalAssetFactory.create(id: 'local');
+
+      when(
+        () => settings.appConfig,
+      ).thenReturn(const AppConfig(dynamicWallpaper: DynamicWallpaperConfig(assetIds: ['a', 'b'])));
+      when(
+        () => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, any()),
+      ).thenAnswer((_) async {});
+
+      final ids = await service.replaceSelection([remoteC, remoteA, remoteVideo, localImage], preservedAssetIds: ['b']);
+
+      expect(ids, ['a', 'b', 'c']);
+      verify(
+        () => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, ['a', 'b', 'c']),
+      ).called(1);
+      verifyNever(() => api.configure(any()));
     });
   });
 }

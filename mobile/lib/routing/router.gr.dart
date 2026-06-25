@@ -442,12 +442,14 @@ class DriftAssetSelectionTimelineRoute
   DriftAssetSelectionTimelineRoute({
     Key? key,
     Set<BaseAsset> lockedSelectionAssets = const {},
+    Set<BaseAsset> initialSelectedAssets = const {},
     List<PageRouteInfo>? children,
   }) : super(
          DriftAssetSelectionTimelineRoute.name,
          args: DriftAssetSelectionTimelineRouteArgs(
            key: key,
            lockedSelectionAssets: lockedSelectionAssets,
+           initialSelectedAssets: initialSelectedAssets,
          ),
          initialChildren: children,
        );
@@ -463,6 +465,7 @@ class DriftAssetSelectionTimelineRoute
       return DriftAssetSelectionTimelinePage(
         key: args.key,
         lockedSelectionAssets: args.lockedSelectionAssets,
+        initialSelectedAssets: args.initialSelectedAssets,
       );
     },
   );
@@ -472,15 +475,18 @@ class DriftAssetSelectionTimelineRouteArgs {
   const DriftAssetSelectionTimelineRouteArgs({
     this.key,
     this.lockedSelectionAssets = const {},
+    this.initialSelectedAssets = const {},
   });
 
   final Key? key;
 
   final Set<BaseAsset> lockedSelectionAssets;
 
+  final Set<BaseAsset> initialSelectedAssets;
+
   @override
   String toString() {
-    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
+    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets, initialSelectedAssets: $initialSelectedAssets}';
   }
 
   @override
@@ -491,12 +497,18 @@ class DriftAssetSelectionTimelineRouteArgs {
         const SetEquality<BaseAsset>().equals(
           lockedSelectionAssets,
           other.lockedSelectionAssets,
+        ) &&
+        const SetEquality<BaseAsset>().equals(
+          initialSelectedAssets,
+          other.initialSelectedAssets,
         );
   }
 
   @override
   int get hashCode =>
-      key.hashCode ^ const SetEquality<BaseAsset>().hash(lockedSelectionAssets);
+      key.hashCode ^
+      const SetEquality<BaseAsset>().hash(lockedSelectionAssets) ^
+      const SetEquality<BaseAsset>().hash(initialSelectedAssets);
 }
 
 /// generated route for

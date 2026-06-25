@@ -59,7 +59,10 @@ class MultiSelectState {
   }
 
   @override
-  int get hashCode => selectedAssets.hashCode ^ lockedSelectionAssets.hashCode ^ forceEnable.hashCode;
+  int get hashCode =>
+      const DeepCollectionEquality().hash(selectedAssets) ^
+      const DeepCollectionEquality().hash(lockedSelectionAssets) ^
+      forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
@@ -73,8 +76,26 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     return _defaultState ?? const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
   }
 
+  static bool containsAsset(Iterable<BaseAsset> assets, BaseAsset? asset) {
+    return asset != null && assets.any((a) => a == asset);
+  }
+
+  static Set<BaseAsset> addAssets(Set<BaseAsset> selectedAssets, Iterable<BaseAsset> assets) {
+    final next = selectedAssets.toSet();
+    for (final asset in assets) {
+      if (!containsAsset(next, asset)) {
+        next.add(asset);
+      }
+    }
+    return next;
+  }
+
+  static Set<BaseAsset> removeAssets(Set<BaseAsset> selectedAssets, Iterable<BaseAsset> assets) {
+    return selectedAssets.where((selected) => !assets.any((asset) => asset == selected)).toSet();
+  }
+
   void selectAsset(BaseAsset asset) {
-    if (state.selectedAssets.contains(asset)) {
+    if (containsAsset(state.selectedAssets, asset)) {
       return;
     }
 
@@ -82,7 +103,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void deselectAsset(BaseAsset asset) {
-    if (!state.selectedAssets.contains(asset)) {
+    if (!containsAsset(state.selectedAssets, asset)) {
       return;
     }
 
@@ -90,7 +111,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void toggleAssetSelection(BaseAsset asset) {
-    if (state.selectedAssets.contains(asset)) {
+    if (containsAsset(state.selectedAssets, asset)) {
       deselectAsset(asset);
     } else {
       selectAsset(asset);
@@ -104,20 +125,12 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   /// Bucket bulk operations
   void selectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
-    final selectedAssets = state.selectedAssets.toSet();
-
-    selectedAssets.addAll(assets);
-
-    state = state.copyWith(selectedAssets: selectedAssets);
+    state = state.copyWith(selectedAssets: addAssets(state.selectedAssets, assets));
   }
 
   void deselectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
-    final selectedAssets = state.selectedAssets.toSet();
-
-    selectedAssets.removeAll(assets);
-
-    state = state.copyWith(selectedAssets: selectedAssets);
+    state = state.copyWith(selectedAssets: removeAssets(state.selectedAssets, assets));
   }
 
   void toggleBucketSelection(int offset, int bucketCount) async {
@@ -131,19 +144,13 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
 
     // Check if all assets in this bucket are currently selected
-    final allSelected = bucketAssets.every((asset) => state.selectedAssets.contains(asset));
-
-    final selectedAssets = state.selectedAssets.toSet();
+    final allSelected = bucketAssets.every((asset) => containsAsset(state.selectedAssets, asset));
 
     if (allSelected) {
-      // If all assets in this bucket are selected, deselect them
-      selectedAssets.removeAll(bucketAssets);
+      state = state.copyWith(selectedAssets: removeAssets(state.selectedAssets, bucketAssets));
     } else {
-      // If not all assets in this bucket are selected, select them all
-      selectedAssets.addAll(bucketAssets);
+      state = state.copyWith(selectedAssets: addAssets(state.selectedAssets, bucketAssets));
     }
-
-    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void setLockedSelectionAssets(Set<BaseAsset> assets) {
@@ -159,5 +166,5 @@ final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, buc
   }
 
   // Check if all assets in the bucket are selected
-  return bucketAssets.every((asset) => selectedAssets.contains(asset));
+  return bucketAssets.every((asset) => MultiSelectNotifier.containsAsset(selectedAssets, asset));
 }, dependencies: [multiSelectProvider, timelineServiceProvider]);

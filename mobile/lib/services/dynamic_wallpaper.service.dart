@@ -25,7 +25,7 @@ class DynamicWallpaperService {
   final DynamicWallpaperApi _api;
   final bool _isAndroid;
 
-  const DynamicWallpaperService(this._settingsRepository, this._api, {bool? isAndroid})
+  DynamicWallpaperService(this._settingsRepository, this._api, {bool? isAndroid})
     : _isAndroid = isAndroid ?? Platform.isAndroid;
 
   static List<String> remoteImageIdsFrom(Iterable<BaseAsset> assets) {
@@ -67,6 +67,23 @@ class DynamicWallpaperService {
     return currentAssetIds.where((assetId) => !removed.contains(assetId)).toList();
   }
 
+  static List<String> replaceAssetIdsFromSelection({
+    required List<String> currentAssetIds,
+    required Iterable<String> selectedAssetIds,
+    Iterable<String> preservedAssetIds = const [],
+  }) {
+    final selected = deduplicatePreservingOrder(selectedAssetIds);
+    final selectedSet = selected.toSet();
+    final preservedSet = preservedAssetIds.toSet();
+    final retained = currentAssetIds
+        .where((assetId) => selectedSet.contains(assetId) || preservedSet.contains(assetId))
+        .toList();
+    final retainedSet = retained.toSet();
+    final added = selected.where((assetId) => !retainedSet.contains(assetId));
+
+    return deduplicatePreservingOrder([...retained, ...added]);
+  }
+
   static List<String> reorderAssetIds(List<String> currentAssetIds, int oldIndex, int newIndex) {
     final nextAssetIds = [...currentAssetIds];
     final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
@@ -86,6 +103,21 @@ class DynamicWallpaperService {
     }
 
     return update;
+  }
+
+  Future<List<String>> replaceSelection(
+    Iterable<BaseAsset> assets, {
+    Iterable<String> preservedAssetIds = const [],
+  }) async {
+    final selectedAssetIds = remoteImageIdsFromAssets(assets);
+    final nextAssetIds = replaceAssetIdsFromSelection(
+      currentAssetIds: _settingsRepository.appConfig.dynamicWallpaper.assetIds,
+      selectedAssetIds: selectedAssetIds,
+      preservedAssetIds: preservedAssetIds,
+    );
+
+    await configure(assetIds: nextAssetIds);
+    return nextAssetIds;
   }
 
   Future<void> removeSelection(Iterable<String> assetIds) {

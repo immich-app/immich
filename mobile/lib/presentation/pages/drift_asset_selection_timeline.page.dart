@@ -9,7 +9,12 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 @RoutePage()
 class DriftAssetSelectionTimelinePage extends ConsumerWidget {
   final Set<BaseAsset> lockedSelectionAssets;
-  const DriftAssetSelectionTimelinePage({super.key, this.lockedSelectionAssets = const {}});
+  final Set<BaseAsset> initialSelectedAssets;
+  const DriftAssetSelectionTimelinePage({
+    super.key,
+    this.lockedSelectionAssets = const {},
+    this.initialSelectedAssets = const {},
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +22,11 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
       overrides: [
         multiSelectProvider.overrideWith(
           () => MultiSelectNotifier(
-            MultiSelectState(selectedAssets: {}, lockedSelectionAssets: lockedSelectionAssets, forceEnable: true),
+            MultiSelectState(
+              selectedAssets: initialSelectedAssets,
+              lockedSelectionAssets: lockedSelectionAssets,
+              forceEnable: true,
+            ),
           ),
         ),
         timelineServiceProvider.overrideWith((ref) {

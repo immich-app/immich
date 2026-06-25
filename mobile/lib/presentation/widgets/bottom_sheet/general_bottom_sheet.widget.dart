@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -103,7 +105,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
               ? const TrashActionButton(source: ActionSource.timeline)
               : const DeletePermanentActionButton(source: ActionSource.timeline),
           const FavoriteActionButton(source: ActionSource.timeline),
-          if (multiselect.selectedAssets.any((asset) => asset.isImage && asset.hasRemote))
+          if (Platform.isAndroid && multiselect.selectedAssets.any((asset) => asset.isImage && asset.hasRemote))
             const DynamicWallpaperActionButton(),
           const ArchiveActionButton(source: ActionSource.timeline),
           if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),

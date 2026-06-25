@@ -1,4 +1,6 @@
 import 'package:drift/drift.dart';
+import 'package:collection/collection.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
@@ -56,6 +58,32 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<RemoteAsset?> get(String id) {
     return _assetSelectable(id).getSingleOrNull();
+  }
+
+  Future<List<RemoteAsset>> getByIds(List<String> ids) async {
+    if (ids.isEmpty) {
+      return const [];
+    }
+
+    final assets = <RemoteAsset>[];
+
+    for (final slice in ids.toSet().slices(kDriftMaxChunk)) {
+      final localId = subqueryExpression<String>(
+        _db.localAssetEntity.selectOnly()
+          ..addColumns([_db.localAssetEntity.id])
+          ..where(_db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum))
+          ..limit(1),
+      );
+
+      final query = _db.remoteAssetEntity.select().addColumns([localId])..where(_db.remoteAssetEntity.id.isIn(slice));
+
+      assets.addAll(
+        await query.map((row) => row.readTable(_db.remoteAssetEntity).toDto(localId: row.read(localId))).get(),
+      );
+    }
+
+    final assetById = {for (final asset in assets) asset.id: asset};
+    return ids.map((id) => assetById[id]).nonNulls.toList();
   }
 
   Future<RemoteAsset?> getByChecksum(String checksum) {
