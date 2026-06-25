@@ -88,7 +88,7 @@ export const assetLocationFilter = () => {
 };
 
 export const assetTagFilter = () => {
-  return wrapper<WorkflowType.AssetV1, { tags: string[]; matching: 'any' | 'all' | 'none' }>(({ config, data }) => {
+  return wrapper<'assetTagFilter'>(({ config, data }) => {
     const assetTags = data.asset.tags.map((tag) => tag.id);
 
     for (const tag of config.tags) {
