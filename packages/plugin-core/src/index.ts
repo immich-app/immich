@@ -88,14 +88,7 @@ export const assetLocationFilter = () => {
 };
 
 export const assetDateFilter = () => {
-  return wrapper<
-    WorkflowType.AssetV1,
-    {
-      startDate: { month: number; day: number; year: number };
-      endDate: { month: number; day: number; year: number };
-      recurring: boolean;
-    }
-  >(({ config, data }) => {
+  return wrapper<'assetDateFilter'>(({ config, data }) => {
     const assetDate = new Date(data.asset.localDateTime);
     let startDate = new Date(config.startDate.year, config.startDate.month - 1, config.startDate.day);
     let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day);

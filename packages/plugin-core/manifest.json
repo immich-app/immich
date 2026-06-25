@@ -223,7 +223,8 @@
             },
             "uiHint": {
               "order": 1
-            }
+            },
+            "required": ["day", "month", "year"]
           },
           "endDate": {
             "type": "object",
@@ -257,7 +258,8 @@
             },
             "uiHint": {
               "order": 2
-            }
+            },
+            "required": ["day", "month", "year"]
           },
           "recurring": {
             "type": "boolean",
