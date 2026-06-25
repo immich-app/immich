@@ -77,7 +77,7 @@ extension PumpPresentationWidget on WidgetTester {
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
               locale: context.locale,
-              home: Material(child: widget),
+              home: Scaffold(body: widget),
             ),
           ),
         ),
@@ -87,10 +87,7 @@ extension PumpPresentationWidget on WidgetTester {
   }
 
   Future<void> pumpTestAction(BaseAction action, {List<Override> overrides = const []}) async {
-    await pumpTestWidget(
-      Scaffold(body: ActionIconButtonWidget(action: action)),
-      overrides: overrides,
-    );
+    await pumpTestWidget(ActionIconButtonWidget(action: action), overrides: overrides);
     await tap(find.byType(ImmichIconButton));
     await pump();
   }
