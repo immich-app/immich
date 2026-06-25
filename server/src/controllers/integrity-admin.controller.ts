@@ -7,13 +7,14 @@ import {
   IntegrityGetReportDto,
   IntegrityReportResponseDto,
   IntegrityReportSummaryResponseDto,
+  IntegrityReportTypeParamDto,
 } from 'src/dtos/integrity.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { IntegrityService } from 'src/services/integrity.service';
 import { sendFile } from 'src/utils/file';
-import { IntegrityReportTypeParamDto, UUIDv7ParamDto } from 'src/validation';
+import { UUIDv7ParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller('admin/integrity')

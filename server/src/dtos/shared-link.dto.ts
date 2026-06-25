@@ -53,10 +53,10 @@ const SharedLinkLoginSchema = z
 
 const SharedLinkResponseSchema = z
   .object({
-    id: z.string().describe('Shared link ID'),
+    id: z.uuidv4().describe('Shared link ID'),
     description: z.string().nullable().describe('Link description'),
     password: z.string().nullable().describe('Has password'),
-    userId: z.string().describe('Owner user ID'),
+    userId: z.uuidv4().describe('Owner user ID'),
     key: z.string().describe('Encryption key (base64url)'),
     type: SharedLinkTypeSchema,
     createdAt: isoDatetimeToDate.describe('Creation date'),

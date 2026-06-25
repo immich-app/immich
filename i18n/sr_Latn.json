@@ -1370,7 +1370,6 @@
   "map_location_picker_page_use_location": "Koristite ovu lokaciju",
   "map_location_service_disabled_content": "Usluga lokacije mora biti omogućena da bi se prikazivala sredstva sa vaše trenutne lokacije. Da li želite da je sada omogućite?",
   "map_location_service_disabled_title": "Usluga lokacije je onemogućena",
-  "map_marker_for_images": "Označivač na mapi za slike snimljene u {city}, {country}",
   "map_marker_with_image": "Marker na mapi sa slikom",
   "map_no_location_permission_content": "Potrebna je dozvola za lokaciju da bi se prikazali resursi sa vaše trenutne lokacije. Da li želite da je sada dozvolite?",
   "map_no_location_permission_title": "Dozvola za lokaciju je odbijena",

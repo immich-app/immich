@@ -1532,7 +1532,6 @@
   "map_location_picker_page_use_location": "この位置情報を使う",
   "map_location_service_disabled_content": "現在地の項目を表示するには位置情報がオンである必要があります。有効化しますか？",
   "map_location_service_disabled_title": "位置情報がオフです",
-  "map_marker_for_images": "{country} {city}で撮影された写真の地図マーカー",
   "map_marker_with_image": "画像の地図マーカー",
   "map_no_location_permission_content": "現在地の項目を表示するには位置情報へのアクセスが必要です。許可しますか？",
   "map_no_location_permission_title": "位置情報へのアクセスが拒否されました",

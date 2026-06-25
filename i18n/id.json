@@ -1548,7 +1548,6 @@
   "map_location_picker_page_use_location": "Gunakan lokasi ini",
   "map_location_service_disabled_content": "Layanan lokasi perlu diaktifkan untuk menampilkan aset yang terletak di lokasi Anda saat ini. Ingin mengaktifkan layanan tersebut sekarang?",
   "map_location_service_disabled_title": "Layanan Lokasi nonaktif",
-  "map_marker_for_images": "Penanda peta untuk gambar yang diambil di {city}, {country}",
   "map_marker_with_image": "Penanda peta dengan gambar",
   "map_no_location_permission_content": "Izin lokasi diperlukan untuk menampilkan aset yang terletak di lokasi Anda. Ingin mengizinkannya sekarang?",
   "map_no_location_permission_title": "Izin Lokasi ditolak",
