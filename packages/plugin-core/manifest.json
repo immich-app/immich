@@ -223,7 +223,16 @@
       "name": "assetLock",
       "title": "Move to locked folder",
       "description": "Change visibility to locked",
-      "types": ["AssetV1"]
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "inverse": {
+            "title": "Inverse",
+            "description": "When true will unarchive any archived assets",
+            "type": "boolean"
+          }
+        }
+      }
     },
     {
       "name": "assetTimeline",

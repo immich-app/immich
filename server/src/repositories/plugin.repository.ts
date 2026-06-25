@@ -229,6 +229,7 @@ export class PluginRepository {
                 error: (message) => logger.error(message),
               } as Console,
               logLevel: asExtismLogLevel(logger.getLogLevel()),
+              enableWasiOutput: true,
             },
           ),
         destroy: (plugin) => plugin.close(),
