@@ -12,11 +12,32 @@ import 'package:pigeon/pigeon.dart';
 @HostApi()
 abstract class DynamicWallpaperApi {
   @async
-  void configure(List<String> assetIds, int intervalMinutes);
+  void configure(List<String> assetIds);
 
   @async
   void openLiveWallpaperPicker();
 
   @async
   void refresh();
+
+  @async
+  DynamicWallpaperStatus getStatus();
+}
+
+class DynamicWallpaperStatus {
+  final bool enabled;
+  final int selectedCount;
+  final int preparedCount;
+  final int missingCount;
+  final int failedCount;
+  final String? lastError;
+
+  const DynamicWallpaperStatus({
+    required this.enabled,
+    required this.selectedCount,
+    required this.preparedCount,
+    required this.missingCount,
+    required this.failedCount,
+    this.lastError,
+  });
 }

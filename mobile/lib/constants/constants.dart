@@ -34,10 +34,6 @@ const int kTimelineAssetLoadOppositeSize = 64;
 const String kWidgetAuthToken = "widget_auth_token";
 const String kWidgetServerEndpoint = "widget_server_url";
 const String kWidgetCustomHeaders = "widget_custom_headers";
-const String kDynamicWallpaperAssetIds = "dynamic_wallpaper_asset_ids";
-const String kDynamicWallpaperIntervalMinutes = "dynamic_wallpaper_interval_minutes";
-const String kDynamicWallpaperNextIndex = "dynamic_wallpaper_next_index";
-const String kDynamicWallpaperPreloadedIndex = "dynamic_wallpaper_preloaded_index";
 
 // add widget identifiers here for new widgets
 // these are used to force a widget refresh

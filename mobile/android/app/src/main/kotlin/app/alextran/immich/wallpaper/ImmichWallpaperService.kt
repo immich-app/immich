@@ -7,35 +7,33 @@ import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Build
 import android.os.SystemClock
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
-import app.alextran.immich.R
-import app.alextran.immich.widget.ImmichAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
-import java.io.FileOutputStream
 import java.util.Collections
 
 class ImmichWallpaperService : WallpaperService() {
   companion object {
     private val activeEngines = Collections.synchronizedSet(mutableSetOf<WallpaperEngine>())
     private val activeServices = Collections.synchronizedSet(mutableSetOf<ImmichWallpaperService>())
-    private const val WAKE_APPLY_DEBOUNCE_MS = 1_500L
+    private const val WAKE_APPLY_DEBOUNCE_MS = 1_000L
+    private val FALLBACK_COLOR = Color.rgb(18, 18, 18)
 
     fun refreshActiveWallpapers() {
-      val services = synchronized(activeServices) { activeServices.toList() }
-      services.forEach { it.refreshConfiguredWallpaper() }
+      val engines = synchronized(activeEngines) { activeEngines.toList() }
+      engines.forEach { it.drawLocalOrFallback() }
     }
   }
 
@@ -46,9 +44,8 @@ class ImmichWallpaperService : WallpaperService() {
   private val screenReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
       when (intent.action) {
-        Intent.ACTION_SCREEN_OFF -> preloadNextWallpaper()
         Intent.ACTION_SCREEN_ON,
-        Intent.ACTION_USER_PRESENT -> applyPreloadedWallpaperForWake()
+        Intent.ACTION_USER_PRESENT -> rotateVisibleWallpaperForWake()
       }
     }
   }
@@ -57,7 +54,6 @@ class ImmichWallpaperService : WallpaperService() {
     super.onCreate()
     activeServices.add(this)
     val filter = IntentFilter().apply {
-      addAction(Intent.ACTION_SCREEN_OFF)
       addAction(Intent.ACTION_SCREEN_ON)
       addAction(Intent.ACTION_USER_PRESENT)
     }
@@ -72,7 +68,7 @@ class ImmichWallpaperService : WallpaperService() {
 
   override fun onDestroy() {
     activeServices.remove(this)
-    unregisterReceiver(screenReceiver)
+    runCatching { unregisterReceiver(screenReceiver) }
     serviceScope.cancel()
     super.onDestroy()
   }
@@ -81,187 +77,74 @@ class ImmichWallpaperService : WallpaperService() {
     return WallpaperEngine()
   }
 
-  private fun preloadNextWallpaper() {
-    serviceScope.launch {
-      runCatching {
-        wallpaperOperationMutex.withLock {
-          preloadNextWallpaperLocked()
-        }
-      }
+  private fun rotateVisibleWallpaperForWake() {
+    val engines = synchronized(activeEngines) { activeEngines.filter { it.isWallpaperVisible } }
+    if (engines.isEmpty()) {
+      return
     }
-  }
 
-  private fun refreshConfiguredWallpaper() {
-    serviceScope.launch {
-      fetchAndApplyNextWallpaper()
-    }
-  }
-
-  private fun applyPreloadedWallpaperForWake() {
     val now = SystemClock.elapsedRealtime()
     if (now - lastWakeApplyElapsed < WAKE_APPLY_DEBOUNCE_MS) {
       return
     }
 
     serviceScope.launch {
-      val didApply = runCatching {
-        wallpaperOperationMutex.withLock {
-          applyPreloadedWallpaperLocked()
-        }
-      }.getOrDefault(false)
-
-      if (didApply) {
+      wallpaperOperationMutex.withLock {
+        rotateActiveIndex()
         lastWakeApplyElapsed = now
-        drawActiveWallpapers()
       }
+      refreshActiveWallpapers()
     }
   }
 
-  private suspend fun preloadNextWallpaperLocked() {
+  private fun rotateActiveIndex() {
     val config = DynamicWallpaperConfigStore.read(applicationContext)
-    val assetIds = config.assetIds
-    if (assetIds.isEmpty()) {
-      invalidatePreloadedWallpaper()
-      return
+    val nextIndex = DynamicWallpaperRotation.nextAvailableIndex(config) { assetId ->
+      DynamicWallpaperConfigStore.hasPreparedFile(applicationContext, assetId)
     }
 
-    val index = config.nextIndex % assetIds.size
-    if (isPreloadedWallpaperCurrent(config, index)) {
-      return
+    if (nextIndex != null) {
+      DynamicWallpaperConfigStore.writeActiveIndex(applicationContext, nextIndex)
     }
-
-    val serverConfig = ImmichAPI.getServerConfig(applicationContext) ?: return
-    val bitmap = runCatching { ImmichAPI(serverConfig).fetchImage(assetIds[index]) }.getOrNull() ?: return
-
-    runCatching {
-      saveCache(bitmap, nextCacheFile())
-      DynamicWallpaperConfigStore.writePreloadedIndex(applicationContext, index)
-    }.onFailure {
-      invalidatePreloadedWallpaper()
-    }
-  }
-
-  private suspend fun applyPreloadedWallpaperLocked(): Boolean {
-    val config = DynamicWallpaperConfigStore.read(applicationContext)
-    val assetIds = config.assetIds
-    if (assetIds.isEmpty()) {
-      invalidatePreloadedWallpaper()
-      return false
-    }
-
-    val index = config.nextIndex % assetIds.size
-    if (!isPreloadedWallpaperCurrent(config, index)) {
-      invalidatePreloadedWallpaper()
-      return false
-    }
-
-    return withContext(Dispatchers.IO) {
-      runCatching {
-        nextCacheFile().copyTo(cacheFile(), overwrite = true)
-        nextCacheFile().delete()
-        DynamicWallpaperConfigStore.clearPreloadedIndex(applicationContext)
-        DynamicWallpaperConfigStore.writeNextIndex(applicationContext, (index + 1) % assetIds.size)
-      }.isSuccess
-    }
-  }
-
-  private fun isPreloadedWallpaperCurrent(config: DynamicWallpaperConfig, index: Int): Boolean {
-    return config.preloadedIndex == index && nextCacheFile().exists()
-  }
-
-  private suspend fun fetchAndApplyNextWallpaper() {
-    wallpaperOperationMutex.withLock {
-      invalidatePreloadedWallpaper()
-
-      val config = DynamicWallpaperConfigStore.read(applicationContext)
-      val assetIds = config.assetIds
-      if (assetIds.isEmpty()) {
-        drawActiveWallpapers()
-        return@withLock
-      }
-
-      val serverConfig = ImmichAPI.getServerConfig(applicationContext)
-      if (serverConfig == null) {
-        drawActiveWallpapers()
-        return@withLock
-      }
-
-      val index = config.nextIndex % assetIds.size
-      val bitmap = runCatching { ImmichAPI(serverConfig).fetchImage(assetIds[index]) }.getOrNull()
-      if (bitmap == null) {
-        drawActiveWallpapers()
-        return@withLock
-      }
-
-      saveCache(bitmap, cacheFile())
-      DynamicWallpaperConfigStore.writeNextIndex(applicationContext, (index + 1) % assetIds.size)
-      drawActiveWallpapers()
-    }
-  }
-
-  private fun invalidatePreloadedWallpaper() {
-    nextCacheFile().delete()
-    DynamicWallpaperConfigStore.clearPreloadedIndex(applicationContext)
-  }
-
-  private fun drawActiveWallpapers() {
-    val engines = synchronized(activeEngines) { activeEngines.toList() }
-    engines.forEach { it.drawCachedOrFallback() }
-  }
-
-  private suspend fun saveCache(bitmap: Bitmap, file: File) = withContext(Dispatchers.IO) {
-    FileOutputStream(file).use { out ->
-      bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-    }
-  }
-
-  private fun cacheFile(): File {
-    return File(applicationContext.cacheDir, kDynamicWallpaperImageFilename)
-  }
-
-  private fun nextCacheFile(): File {
-    return File(applicationContext.cacheDir, kDynamicWallpaperNextImageFilename)
   }
 
   inner class WallpaperEngine : Engine() {
     private val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+    var isWallpaperVisible = false
+      private set
 
     override fun onCreate(surfaceHolder: SurfaceHolder) {
       super.onCreate(surfaceHolder)
+      setOffsetNotificationsEnabled(false)
       activeEngines.add(this)
     }
 
     override fun onVisibilityChanged(visible: Boolean) {
+      isWallpaperVisible = visible
       if (visible) {
-        if (cacheFile().exists()) {
-          drawCachedOrFallback()
-        } else {
-          drawFallback()
-          refreshConfiguredWallpaper()
-        }
+        drawLocalOrFallback()
       }
     }
 
     override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
       super.onSurfaceChanged(holder, format, width, height)
-      drawCachedOrFallback()
+      if (isWallpaperVisible) {
+        drawLocalOrFallback()
+      }
+    }
+
+    override fun onSurfaceDestroyed(holder: SurfaceHolder) {
+      isWallpaperVisible = false
+      super.onSurfaceDestroyed(holder)
     }
 
     override fun onDestroy() {
       activeEngines.remove(this)
+      isWallpaperVisible = false
       super.onDestroy()
     }
 
-    fun drawCachedOrFallback() {
-      val cached = loadCache()
-      if (cached != null) {
-        drawBitmap(cached)
-      } else {
-        drawFallback()
-      }
-    }
-
-    private fun drawBitmap(bitmap: Bitmap) {
+    fun drawLocalOrFallback() {
       val holder = surfaceHolder
       if (!holder.surface.isValid) {
         return
@@ -269,21 +152,62 @@ class ImmichWallpaperService : WallpaperService() {
 
       val canvas = runCatching { holder.lockCanvas() }.getOrNull() ?: return
       try {
-        drawCenterCrop(canvas, bitmap)
+        val bitmap = loadActiveBitmap(canvas.width, canvas.height)
+        if (bitmap == null) {
+          drawFallback(canvas)
+        } else {
+          drawCenterCrop(canvas, bitmap)
+          bitmap.recycle()
+        }
       } finally {
         holder.unlockCanvasAndPost(canvas)
       }
     }
 
-    private fun drawFallback() {
-      val fallback = BitmapFactory.decodeResource(resources, R.drawable.splash)
-      if (fallback != null) {
-        drawBitmap(fallback)
+    private fun loadActiveBitmap(targetWidth: Int, targetHeight: Int): Bitmap? {
+      val file = activeFile() ?: return null
+      val options = BitmapFactory.Options().apply {
+        inJustDecodeBounds = true
       }
+      BitmapFactory.decodeFile(file.absolutePath, options)
+
+      val sampleOptions = BitmapFactory.Options().apply {
+        inSampleSize = calculateInSampleSize(options, targetWidth, targetHeight)
+      }
+      return BitmapFactory.decodeFile(file.absolutePath, sampleOptions)
+    }
+
+    private fun activeFile(): File? {
+      val config = DynamicWallpaperConfigStore.read(applicationContext)
+      val activeIndex = DynamicWallpaperRotation.currentOrFirstAvailableIndex(config) { assetId ->
+        DynamicWallpaperConfigStore.hasPreparedFile(applicationContext, assetId)
+      } ?: return null
+
+      return DynamicWallpaperConfigStore.preparedFile(applicationContext, config.assetIds[activeIndex])
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+      val height = options.outHeight
+      val width = options.outWidth
+      var inSampleSize = 1
+
+      if (height > reqHeight || width > reqWidth) {
+        var halfHeight = height / 2
+        var halfWidth = width / 2
+        while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+          inSampleSize *= 2
+        }
+      }
+
+      return inSampleSize
+    }
+
+    private fun drawFallback(canvas: Canvas) {
+      canvas.drawColor(FALLBACK_COLOR)
     }
 
     private fun drawCenterCrop(canvas: Canvas, bitmap: Bitmap) {
-      canvas.drawColor(android.graphics.Color.BLACK)
+      canvas.drawColor(FALLBACK_COLOR)
 
       val canvasWidth = canvas.width
       val canvasHeight = canvas.height
@@ -303,15 +227,6 @@ class ImmichWallpaperService : WallpaperService() {
       val src = Rect(0, 0, bitmap.width, bitmap.height)
       val dst = Rect(left, top, left + targetWidth, top + targetHeight)
       canvas.drawBitmap(bitmap, src, dst, paint)
-    }
-
-    private fun loadCache(): Bitmap? {
-      val file = cacheFile()
-      if (!file.exists()) {
-        return null
-      }
-
-      return BitmapFactory.decodeFile(file.absolutePath)
     }
   }
 }

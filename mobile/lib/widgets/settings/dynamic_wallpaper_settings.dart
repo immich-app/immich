@@ -1,19 +1,26 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
 final _dynamicWallpaperAssetProvider = FutureProvider.family(
   (ref, String assetId) => ref.watch(assetServiceProvider).getRemoteAsset(assetId),
+);
+
+final _dynamicWallpaperPreparationStatusProvider = FutureProvider.autoDispose(
+  (ref) => ref.watch(dynamicWallpaperServiceProvider).getPreparationStatus(),
 );
 
 class DynamicWallpaperSettings extends ConsumerWidget {
@@ -23,6 +30,7 @@ class DynamicWallpaperSettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watch(appConfigProvider).dynamicWallpaper;
     final service = ref.watch(dynamicWallpaperServiceProvider);
+    final status = ref.watch(_dynamicWallpaperPreparationStatusProvider);
     final selectedCount = config.assetIds.length;
 
     if (!Platform.isAndroid) {
@@ -40,6 +48,42 @@ class DynamicWallpaperSettings extends ConsumerWidget {
     return SettingsSubPageScaffold(
       showDivider: true,
       settings: [
+        _DynamicWallpaperStatusTile(selectedCount: selectedCount, status: status),
+        SettingsButtonListTile(
+          icon: Icons.photo_library_outlined,
+          title: 'dynamic_wallpaper_select_title'.tr(),
+          subtileText: 'dynamic_wallpaper_select_subtitle'.tr(),
+          buttonText: 'dynamic_wallpaper_select_photos'.tr(),
+          onButtonTap: () {
+            final rootRouter = context.router.root;
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            rootRouter.replaceAll(const [
+              TabShellRoute(children: [MainTimelineRoute()]),
+            ]);
+          },
+        ),
+        SettingsButtonListTile(
+          icon: Icons.download_for_offline_outlined,
+          title: 'dynamic_wallpaper_prepare_title'.tr(),
+          subtitle: status.whenOrNull(
+            data: (status) => Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _DynamicWallpaperPreparationSummary(status: status),
+            ),
+          ),
+          subtileText: status.maybeWhen(
+            loading: () => 'dynamic_wallpaper_prepare_loading'.tr(),
+            error: (_, _) => 'dynamic_wallpaper_prepare_status_error'.tr(),
+            orElse: () => null,
+          ),
+          buttonText: 'dynamic_wallpaper_prepare_button'.tr(),
+          onButtonTap: selectedCount == 0
+              ? null
+              : () async {
+                  await service.refreshPreparedWallpapers();
+                  ref.invalidate(_dynamicWallpaperPreparationStatusProvider);
+                },
+        ),
         SettingsButtonListTile(
           icon: Icons.wallpaper_outlined,
           title: 'dynamic_wallpaper_picker_title'.tr(),
@@ -47,11 +91,62 @@ class DynamicWallpaperSettings extends ConsumerWidget {
           buttonText: 'dynamic_wallpaper_open_picker'.tr(),
           onButtonTap: selectedCount == 0 ? null : service.openPicker,
         ),
-        _DynamicWallpaperSelectionTile(
-          assetIds: config.assetIds,
-          service: service,
-        ),
+        _DynamicWallpaperSelectionTile(assetIds: config.assetIds, service: service),
       ],
+    );
+  }
+}
+
+class _DynamicWallpaperStatusTile extends StatelessWidget {
+  final int selectedCount;
+  final AsyncValue<DynamicWallpaperStatus> status;
+
+  const _DynamicWallpaperStatusTile({required this.selectedCount, required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = status.valueOrNull?.enabled == true && selectedCount > 0;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      horizontalTitleGap: 20,
+      leading: Icon(isEnabled ? Icons.check_circle_outline : Icons.pause_circle_outline),
+      title: Text(
+        isEnabled ? 'dynamic_wallpaper_enabled'.tr() : 'dynamic_wallpaper_disabled'.tr(),
+        style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+          'dynamic_wallpaper_status_subtitle'.tr(namedArgs: {'count': selectedCount.toString()}),
+          style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+        ),
+      ),
+    );
+  }
+}
+
+class _DynamicWallpaperPreparationSummary extends StatelessWidget {
+  final DynamicWallpaperStatus status;
+
+  const _DynamicWallpaperPreparationSummary({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = [
+      'dynamic_wallpaper_prepare_status'.tr(
+        namedArgs: {'prepared': status.preparedCount.toString(), 'selected': status.selectedCount.toString()},
+      ),
+      if (status.missingCount > 0)
+        'dynamic_wallpaper_prepare_missing'.tr(namedArgs: {'count': status.missingCount.toString()}),
+      if (status.failedCount > 0)
+        'dynamic_wallpaper_prepare_failed'.tr(namedArgs: {'count': status.failedCount.toString()}),
+      if (status.lastError != null) status.lastError,
+    ];
+
+    return Text(
+      parts.join('\n'),
+      style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
     );
   }
 }
@@ -60,10 +155,7 @@ class _DynamicWallpaperSelectionTile extends StatelessWidget {
   final List<String> assetIds;
   final DynamicWallpaperService service;
 
-  const _DynamicWallpaperSelectionTile({
-    required this.assetIds,
-    required this.service,
-  });
+  const _DynamicWallpaperSelectionTile({required this.assetIds, required this.service});
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +202,7 @@ class _DynamicWallpaperSelectionList extends StatelessWidget {
   final List<String> assetIds;
   final DynamicWallpaperService service;
 
-  const _DynamicWallpaperSelectionList({
-    required this.assetIds,
-    required this.service,
-  });
+  const _DynamicWallpaperSelectionList({required this.assetIds, required this.service});
 
   @override
   Widget build(BuildContext context) {

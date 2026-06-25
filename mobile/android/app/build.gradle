@@ -121,6 +121,9 @@ dependencies {
   implementation libs.compose.material3
   implementation libs.lifecycle.runtime.ktx
   implementation libs.material
+
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.robolectric:robolectric:4.14.1"
 }
 
 // This is uncommented in F-Droid build script

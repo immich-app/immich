@@ -1,0 +1,1711 @@
+diff --git a/i18n/en.json b/i18n/en.json
+index 830b5f915..d69577721 100644
+--- a/i18n/en.json
++++ b/i18n/en.json
+@@ -881,6 +881,23 @@
+   "duplicates": "Duplicates",
+   "duplicates_description": "Resolve each group by indicating which, if any, are duplicates.",
+   "duration": "Duration",
++  "dynamic_wallpaper_action": "Wallpaper photos",
++  "dynamic_wallpaper_android_only": "Dynamic wallpaper is only available on Android.",
++  "dynamic_wallpaper_clear_selection": "Clear selected photos",
++  "dynamic_wallpaper_interval_title": "Change interval",
++  "dynamic_wallpaper_no_supported_assets": "Select at least one backed up image",
++  "dynamic_wallpaper_open_picker": "Open Android wallpaper picker",
++  "dynamic_wallpaper_picker_subtitle": "{count} selected photos. Android will ask whether to use the live wallpaper on the home screen, lock screen, or both.",
++  "dynamic_wallpaper_picker_title": "Activate wallpaper",
++  "dynamic_wallpaper_remove_photo": "Remove photo",
++  "dynamic_wallpaper_selection_added_and_skipped": "Added {added} photo(s). {skipped} already in your wallpaper list.",
++  "dynamic_wallpaper_selection_added_only": "Added {added} photo(s).",
++  "dynamic_wallpaper_selection_saved": "Saved {count} photos for dynamic wallpaper",
++  "dynamic_wallpaper_selection_skipped_only": "{skipped} already in your wallpaper list.",
++  "dynamic_wallpaper_selection_subtitle": "{count} selected photos will rotate as your wallpaper.",
++  "dynamic_wallpaper_selection_title": "Selected photos",
++  "dynamic_wallpaper_settings_subtitle": "Rotate selected Immich photos on your Android wallpaper",
++  "dynamic_wallpaper_settings_title": "Dynamic Wallpaper",
+   "edit": "Edit",
+   "edit_album": "Edit album",
+   "edit_avatar": "Edit avatar",
+diff --git a/i18n/fr.json b/i18n/fr.json
+index b313e67fc..4e2c7f4a3 100644
+--- a/i18n/fr.json
++++ b/i18n/fr.json
+@@ -1014,6 +1014,23 @@
+   "duplicates": "Doublons",
+   "duplicates_description": "Examiner chaque groupe et indiquer s'il y a des doublons.",
+   "duration": "Durée",
++  "dynamic_wallpaper_action": "Photos du fond d'écran",
++  "dynamic_wallpaper_android_only": "Le fond d'écran dynamique est disponible uniquement sur Android.",
++  "dynamic_wallpaper_clear_selection": "Effacer les photos sélectionnées",
++  "dynamic_wallpaper_interval_title": "Intervalle de changement",
++  "dynamic_wallpaper_no_supported_assets": "Sélectionnez au moins une image sauvegardée",
++  "dynamic_wallpaper_open_picker": "Ouvrir le sélecteur de fond d'écran Android",
++  "dynamic_wallpaper_picker_subtitle": "{count} photos sélectionnées. Android vous demandera si vous voulez utiliser le fond d'écran animé sur l'écran d'accueil, l'écran de verrouillage ou les deux.",
++  "dynamic_wallpaper_picker_title": "Activer le fond d'écran",
++  "dynamic_wallpaper_remove_photo": "Retirer la photo",
++  "dynamic_wallpaper_selection_added_and_skipped": "{added} photo(s) ajoutée(s). {skipped} déjà dans la liste.",
++  "dynamic_wallpaper_selection_added_only": "{added} photo(s) ajoutée(s).",
++  "dynamic_wallpaper_selection_saved": "{count} photos enregistrées pour le fond d'écran dynamique",
++  "dynamic_wallpaper_selection_skipped_only": "{skipped} déjà dans la liste.",
++  "dynamic_wallpaper_selection_subtitle": "{count} photos sélectionnées défileront en fond d'écran.",
++  "dynamic_wallpaper_selection_title": "Photos sélectionnées",
++  "dynamic_wallpaper_settings_subtitle": "Faire défiler des photos Immich sélectionnées sur votre fond d'écran Android",
++  "dynamic_wallpaper_settings_title": "Fond d'écran dynamique",
+   "edit": "Modifier",
+   "edit_album": "Modifier l'album",
+   "edit_avatar": "Modifier l'avatar",
+diff --git a/mise.lock b/mise.lock
+index 44ecd6fdb..076ced2cb 100644
+--- a/mise.lock
++++ b/mise.lock
+@@ -82,18 +82,6 @@ url_api = "https://api.github.com/repos/extism/js-pdk/releases/assets/353224133"
+ version = "7.1.3-6"
+ backend = "github:jellyfin/jellyfin-ffmpeg"
+ 
+-[tools."github:jellyfin/jellyfin-ffmpeg".options]
+-asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
+-
+-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-arm64"]
+-checksum = "sha256:e024d5e78d5414e75f0181036cd21373fafb9270c72894dfd7dbda2572439820"
+-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_macarm64-gpl.tar.xz"
+-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995838"
+-
+-[[tools."github:jellyfin/jellyfin-ffmpeg"]]
+-version = "7.1.3-6"
+-backend = "github:jellyfin/jellyfin-ffmpeg"
+-
+ [tools."github:jellyfin/jellyfin-ffmpeg".options]
+ asset_pattern = "jellyfin-ffmpeg_*_portable_linux64-gpl.tar.xz"
+ 
+@@ -128,6 +116,18 @@ url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets
+ version = "7.1.3-6"
+ backend = "github:jellyfin/jellyfin-ffmpeg"
+ 
++[tools."github:jellyfin/jellyfin-ffmpeg".options]
++asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz"
++
++[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-x64"]
++checksum = "sha256:066ede9774aaae97a18098aaeea8b7e0d286653eb8618f640476e99c59a536c2"
++url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_mac64-gpl.tar.xz"
++url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995889"
++
++[[tools."github:jellyfin/jellyfin-ffmpeg"]]
++version = "7.1.3-6"
++backend = "github:jellyfin/jellyfin-ffmpeg"
++
+ [tools."github:jellyfin/jellyfin-ffmpeg"."platforms.windows-x64"]
+ checksum = "sha256:7b7168149689610296f3a187c717056ce0786cc125a31caf28056737e9ba1cc1"
+ url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_win64-clang-gpl.zip"
+@@ -138,12 +138,12 @@ version = "7.1.3-6"
+ backend = "github:jellyfin/jellyfin-ffmpeg"
+ 
+ [tools."github:jellyfin/jellyfin-ffmpeg".options]
+-asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz"
++asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
+ 
+-[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-x64"]
+-checksum = "sha256:066ede9774aaae97a18098aaeea8b7e0d286653eb8618f640476e99c59a536c2"
+-url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_mac64-gpl.tar.xz"
+-url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995889"
++[tools."github:jellyfin/jellyfin-ffmpeg"."platforms.macos-arm64"]
++checksum = "sha256:e024d5e78d5414e75f0181036cd21373fafb9270c72894dfd7dbda2572439820"
++url = "https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v7.1.3-6/jellyfin-ffmpeg_7.1.3-6_portable_macarm64-gpl.tar.xz"
++url_api = "https://api.github.com/repos/jellyfin/jellyfin-ffmpeg/releases/assets/408995838"
+ 
+ [[tools."github:webassembly/binaryen"]]
+ version = "version_124"
+diff --git a/mobile/android/app/src/main/AndroidManifest.xml b/mobile/android/app/src/main/AndroidManifest.xml
+index 1b8d2a97f..9ab506f12 100644
+--- a/mobile/android/app/src/main/AndroidManifest.xml
++++ b/mobile/android/app/src/main/AndroidManifest.xml
+@@ -152,6 +152,20 @@
+              This is used by the Flutter tool to
+     generate GeneratedPluginRegistrant.java -->
+     <meta-data android:name="flutterEmbedding" android:value="2" />
++
++    <service
++      android:name=".wallpaper.ImmichWallpaperService"
++      android:exported="true"
++      android:label="@string/dynamic_wallpaper_title"
++      android:permission="android.permission.BIND_WALLPAPER">
++      <intent-filter>
++        <action android:name="android.service.wallpaper.WallpaperService" />
++      </intent-filter>
++      <meta-data
++        android:name="android.service.wallpaper"
++        android:resource="@xml/immich_live_wallpaper" />
++    </service>
++
+     <!-- Disables default WorkManager initialization to use our custom initialization -->
+     <provider
+       android:name="androidx.startup.InitializationProvider"
+diff --git a/mobile/android/app/src/main/kotlin/app/alextran/immich/MainActivity.kt b/mobile/android/app/src/main/kotlin/app/alextran/immich/MainActivity.kt
+index fc9ab28fa..b85cdebab 100644
+--- a/mobile/android/app/src/main/kotlin/app/alextran/immich/MainActivity.kt
++++ b/mobile/android/app/src/main/kotlin/app/alextran/immich/MainActivity.kt
+@@ -21,10 +21,12 @@ import app.alextran.immich.images.RemoteImagesImpl
+ import app.alextran.immich.permission.PermissionApi
+ import app.alextran.immich.permission.PermissionApiImpl
+ import app.alextran.immich.sync.NativeSyncApi
+-import app.alextran.immich.sync.NativeSyncApiImpl26
+-import app.alextran.immich.sync.NativeSyncApiImpl30
+-import app.alextran.immich.viewintent.ViewIntentPlugin
+-import io.flutter.embedding.android.FlutterFragmentActivity
++import app.alextran.immich.sync.NativeSyncApiImpl26
++import app.alextran.immich.sync.NativeSyncApiImpl30
++import app.alextran.immich.viewintent.ViewIntentPlugin
++import app.alextran.immich.wallpaper.DynamicWallpaperApi
++import app.alextran.immich.wallpaper.DynamicWallpaperApiImpl
++import io.flutter.embedding.android.FlutterFragmentActivity
+ import io.flutter.embedding.engine.FlutterEngine
+ 
+ class MainActivity : FlutterFragmentActivity() {
+@@ -56,10 +58,11 @@ class MainActivity : FlutterFragmentActivity() {
+       val permissionApiImpl = PermissionApiImpl(ctx)
+       NativeSyncApi.setUp(messenger, nativeSyncApiImpl)
+       PermissionApi.setUp(messenger, permissionApiImpl)
+-      LocalImageApi.setUp(messenger, LocalImagesImpl(ctx))
+-      RemoteImageApi.setUp(messenger, RemoteImagesImpl(ctx))
+-
+-      BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
++      LocalImageApi.setUp(messenger, LocalImagesImpl(ctx))
++      RemoteImageApi.setUp(messenger, RemoteImagesImpl(ctx))
++      DynamicWallpaperApi.setUp(messenger, DynamicWallpaperApiImpl(ctx))
++
++      BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
+       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
+ 
+       flutterEngine.plugins.add(ViewIntentPlugin())
+diff --git a/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaper.g.kt b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaper.g.kt
+new file mode 100644
+index 000000000..a6ac8f9d2
+Binary files /dev/null and b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaper.g.kt differ
+diff --git a/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaperApiImpl.kt b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaperApiImpl.kt
+new file mode 100644
+index 000000000..42d13b634
+--- /dev/null
++++ b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaperApiImpl.kt
+@@ -0,0 +1,55 @@
++package app.alextran.immich.wallpaper
++
++import android.app.WallpaperManager
++import android.content.ActivityNotFoundException
++import android.content.ComponentName
++import android.content.Context
++import android.content.Intent
++import java.io.File
++
++class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperApi {
++  override fun configure(assetIds: List<String>, intervalMinutes: Long, callback: (Result<Unit>) -> Unit) {
++    try {
++      DynamicWallpaperConfigStore.write(context, assetIds, intervalMinutes.toInt())
++      File(context.cacheDir, kDynamicWallpaperImageFilename).delete()
++      File(context.cacheDir, kDynamicWallpaperNextImageFilename).delete()
++      ImmichWallpaperService.refreshActiveWallpapers()
++      callback(Result.success(Unit))
++    } catch (error: Throwable) {
++      callback(Result.failure(error))
++    }
++  }
++
++  override fun openLiveWallpaperPicker(callback: (Result<Unit>) -> Unit) {
++    try {
++      val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
++        putExtra(
++          WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
++          ComponentName(context, ImmichWallpaperService::class.java)
++        )
++        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++      }
++      try {
++        context.startActivity(intent)
++      } catch (_: ActivityNotFoundException) {
++        context.startActivity(
++          Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER).apply {
++            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++          }
++        )
++      }
++      callback(Result.success(Unit))
++    } catch (error: Throwable) {
++      callback(Result.failure(error))
++    }
++  }
++
++  override fun refresh(callback: (Result<Unit>) -> Unit) {
++    try {
++      ImmichWallpaperService.refreshActiveWallpapers()
++      callback(Result.success(Unit))
++    } catch (error: Throwable) {
++      callback(Result.failure(error))
++    }
++  }
++}
+diff --git a/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaperConfig.kt b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaperConfig.kt
+new file mode 100644
+index 000000000..dd763eddf
+--- /dev/null
++++ b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaperConfig.kt
+@@ -0,0 +1,70 @@
++package app.alextran.immich.wallpaper
++
++import android.content.Context
++import com.google.gson.Gson
++import com.google.gson.reflect.TypeToken
++import es.antonborri.home_widget.HomeWidgetPlugin
++
++const val kDynamicWallpaperAssetIds = "dynamic_wallpaper_asset_ids"
++const val kDynamicWallpaperIntervalMinutes = "dynamic_wallpaper_interval_minutes"
++const val kDynamicWallpaperNextIndex = "dynamic_wallpaper_next_index"
++const val kDynamicWallpaperPreloadedIndex = "dynamic_wallpaper_preloaded_index"
++const val kDynamicWallpaperImageFilename = "dynamic_wallpaper.jpg"
++const val kDynamicWallpaperNextImageFilename = "dynamic_wallpaper_next.jpg"
++
++data class DynamicWallpaperConfig(
++  val assetIds: List<String>,
++  val intervalMinutes: Int,
++  val nextIndex: Int,
++  val preloadedIndex: Int?,
++)
++
++object DynamicWallpaperConfigStore {
++  private val gson = Gson()
++
++  fun read(context: Context): DynamicWallpaperConfig {
++    val prefs = HomeWidgetPlugin.getData(context)
++    val assetIdsJson = prefs.getString(kDynamicWallpaperAssetIds, "[]") ?: "[]"
++    val intervalMinutes = prefs.getString(kDynamicWallpaperIntervalMinutes, "60")?.toIntOrNull() ?: 60
++    val nextIndex = prefs.getString(kDynamicWallpaperNextIndex, "0")?.toIntOrNull() ?: 0
++    val preloadedIndex = prefs.getString(kDynamicWallpaperPreloadedIndex, null)?.toIntOrNull()
++    val listType = object : TypeToken<List<String>>() {}.type
++    val assetIds = runCatching {
++      gson.fromJson<List<String>>(assetIdsJson, listType) ?: emptyList()
++    }.getOrDefault(emptyList())
++
++    return DynamicWallpaperConfig(
++      assetIds = assetIds,
++      intervalMinutes = intervalMinutes.coerceAtLeast(15),
++      nextIndex = nextIndex.coerceAtLeast(0),
++      preloadedIndex = preloadedIndex?.coerceAtLeast(0),
++    )
++  }
++
++  fun write(context: Context, assetIds: List<String>, intervalMinutes: Int) {
++    HomeWidgetPlugin.getData(context).edit()
++      .putString(kDynamicWallpaperAssetIds, gson.toJson(assetIds))
++      .putString(kDynamicWallpaperIntervalMinutes, intervalMinutes.coerceAtLeast(15).toString())
++      .putString(kDynamicWallpaperNextIndex, "0")
++      .remove(kDynamicWallpaperPreloadedIndex)
++      .apply()
++  }
++
++  fun writeNextIndex(context: Context, nextIndex: Int) {
++    HomeWidgetPlugin.getData(context).edit()
++      .putString(kDynamicWallpaperNextIndex, nextIndex.coerceAtLeast(0).toString())
++      .apply()
++  }
++
++  fun writePreloadedIndex(context: Context, preloadedIndex: Int) {
++    HomeWidgetPlugin.getData(context).edit()
++      .putString(kDynamicWallpaperPreloadedIndex, preloadedIndex.coerceAtLeast(0).toString())
++      .apply()
++  }
++
++  fun clearPreloadedIndex(context: Context) {
++    HomeWidgetPlugin.getData(context).edit()
++      .remove(kDynamicWallpaperPreloadedIndex)
++      .apply()
++  }
++}
+diff --git a/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/ImmichWallpaperService.kt b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/ImmichWallpaperService.kt
+new file mode 100644
+index 000000000..fe85aa504
+--- /dev/null
++++ b/mobile/android/app/src/main/kotlin/app/alextran/immich/wallpaper/ImmichWallpaperService.kt
+@@ -0,0 +1,317 @@
++package app.alextran.immich.wallpaper
++
++import android.content.BroadcastReceiver
++import android.content.Context
++import android.content.Intent
++import android.content.IntentFilter
++import android.graphics.Bitmap
++import android.graphics.BitmapFactory
++import android.graphics.Canvas
++import android.graphics.Paint
++import android.graphics.Rect
++import android.os.Build
++import android.os.SystemClock
++import android.service.wallpaper.WallpaperService
++import android.view.SurfaceHolder
++import app.alextran.immich.R
++import app.alextran.immich.widget.ImmichAPI
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.SupervisorJob
++import kotlinx.coroutines.cancel
++import kotlinx.coroutines.launch
++import kotlinx.coroutines.withContext
++import kotlinx.coroutines.sync.Mutex
++import kotlinx.coroutines.sync.withLock
++import java.io.File
++import java.io.FileOutputStream
++import java.util.Collections
++
++class ImmichWallpaperService : WallpaperService() {
++  companion object {
++    private val activeEngines = Collections.synchronizedSet(mutableSetOf<WallpaperEngine>())
++    private val activeServices = Collections.synchronizedSet(mutableSetOf<ImmichWallpaperService>())
++    private const val WAKE_APPLY_DEBOUNCE_MS = 1_500L
++
++    fun refreshActiveWallpapers() {
++      val services = synchronized(activeServices) { activeServices.toList() }
++      services.forEach { it.refreshConfiguredWallpaper() }
++    }
++  }
++
++  private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
++  private val wallpaperOperationMutex = Mutex()
++  private var lastWakeApplyElapsed = 0L
++
++  private val screenReceiver = object : BroadcastReceiver() {
++    override fun onReceive(context: Context, intent: Intent) {
++      when (intent.action) {
++        Intent.ACTION_SCREEN_OFF -> preloadNextWallpaper()
++        Intent.ACTION_SCREEN_ON,
++        Intent.ACTION_USER_PRESENT -> applyPreloadedWallpaperForWake()
++      }
++    }
++  }
++
++  override fun onCreate() {
++    super.onCreate()
++    activeServices.add(this)
++    val filter = IntentFilter().apply {
++      addAction(Intent.ACTION_SCREEN_OFF)
++      addAction(Intent.ACTION_SCREEN_ON)
++      addAction(Intent.ACTION_USER_PRESENT)
++    }
++
++    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
++      registerReceiver(screenReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
++    } else {
++      @Suppress("UnspecifiedRegisterReceiverFlag")
++      registerReceiver(screenReceiver, filter)
++    }
++  }
++
++  override fun onDestroy() {
++    activeServices.remove(this)
++    unregisterReceiver(screenReceiver)
++    serviceScope.cancel()
++    super.onDestroy()
++  }
++
++  override fun onCreateEngine(): Engine {
++    return WallpaperEngine()
++  }
++
++  private fun preloadNextWallpaper() {
++    serviceScope.launch {
++      runCatching {
++        wallpaperOperationMutex.withLock {
++          preloadNextWallpaperLocked()
++        }
++      }
++    }
++  }
++
++  private fun refreshConfiguredWallpaper() {
++    serviceScope.launch {
++      fetchAndApplyNextWallpaper()
++    }
++  }
++
++  private fun applyPreloadedWallpaperForWake() {
++    val now = SystemClock.elapsedRealtime()
++    if (now - lastWakeApplyElapsed < WAKE_APPLY_DEBOUNCE_MS) {
++      return
++    }
++
++    serviceScope.launch {
++      val didApply = runCatching {
++        wallpaperOperationMutex.withLock {
++          applyPreloadedWallpaperLocked()
++        }
++      }.getOrDefault(false)
++
++      if (didApply) {
++        lastWakeApplyElapsed = now
++        drawActiveWallpapers()
++      }
++    }
++  }
++
++  private suspend fun preloadNextWallpaperLocked() {
++    val config = DynamicWallpaperConfigStore.read(applicationContext)
++    val assetIds = config.assetIds
++    if (assetIds.isEmpty()) {
++      invalidatePreloadedWallpaper()
++      return
++    }
++
++    val index = config.nextIndex % assetIds.size
++    if (isPreloadedWallpaperCurrent(config, index)) {
++      return
++    }
++
++    val serverConfig = ImmichAPI.getServerConfig(applicationContext) ?: return
++    val bitmap = runCatching { ImmichAPI(serverConfig).fetchImage(assetIds[index]) }.getOrNull() ?: return
++
++    runCatching {
++      saveCache(bitmap, nextCacheFile())
++      DynamicWallpaperConfigStore.writePreloadedIndex(applicationContext, index)
++    }.onFailure {
++      invalidatePreloadedWallpaper()
++    }
++  }
++
++  private suspend fun applyPreloadedWallpaperLocked(): Boolean {
++    val config = DynamicWallpaperConfigStore.read(applicationContext)
++    val assetIds = config.assetIds
++    if (assetIds.isEmpty()) {
++      invalidatePreloadedWallpaper()
++      return false
++    }
++
++    val index = config.nextIndex % assetIds.size
++    if (!isPreloadedWallpaperCurrent(config, index)) {
++      invalidatePreloadedWallpaper()
++      return false
++    }
++
++    return withContext(Dispatchers.IO) {
++      runCatching {
++        nextCacheFile().copyTo(cacheFile(), overwrite = true)
++        nextCacheFile().delete()
++        DynamicWallpaperConfigStore.clearPreloadedIndex(applicationContext)
++        DynamicWallpaperConfigStore.writeNextIndex(applicationContext, (index + 1) % assetIds.size)
++      }.isSuccess
++    }
++  }
++
++  private fun isPreloadedWallpaperCurrent(config: DynamicWallpaperConfig, index: Int): Boolean {
++    return config.preloadedIndex == index && nextCacheFile().exists()
++  }
++
++  private suspend fun fetchAndApplyNextWallpaper() {
++    wallpaperOperationMutex.withLock {
++      invalidatePreloadedWallpaper()
++
++      val config = DynamicWallpaperConfigStore.read(applicationContext)
++      val assetIds = config.assetIds
++      if (assetIds.isEmpty()) {
++        drawActiveWallpapers()
++        return@withLock
++      }
++
++      val serverConfig = ImmichAPI.getServerConfig(applicationContext)
++      if (serverConfig == null) {
++        drawActiveWallpapers()
++        return@withLock
++      }
++
++      val index = config.nextIndex % assetIds.size
++      val bitmap = runCatching { ImmichAPI(serverConfig).fetchImage(assetIds[index]) }.getOrNull()
++      if (bitmap == null) {
++        drawActiveWallpapers()
++        return@withLock
++      }
++
++      saveCache(bitmap, cacheFile())
++      DynamicWallpaperConfigStore.writeNextIndex(applicationContext, (index + 1) % assetIds.size)
++      drawActiveWallpapers()
++    }
++  }
++
++  private fun invalidatePreloadedWallpaper() {
++    nextCacheFile().delete()
++    DynamicWallpaperConfigStore.clearPreloadedIndex(applicationContext)
++  }
++
++  private fun drawActiveWallpapers() {
++    val engines = synchronized(activeEngines) { activeEngines.toList() }
++    engines.forEach { it.drawCachedOrFallback() }
++  }
++
++  private suspend fun saveCache(bitmap: Bitmap, file: File) = withContext(Dispatchers.IO) {
++    FileOutputStream(file).use { out ->
++      bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
++    }
++  }
++
++  private fun cacheFile(): File {
++    return File(applicationContext.cacheDir, kDynamicWallpaperImageFilename)
++  }
++
++  private fun nextCacheFile(): File {
++    return File(applicationContext.cacheDir, kDynamicWallpaperNextImageFilename)
++  }
++
++  inner class WallpaperEngine : Engine() {
++    private val paint = Paint(Paint.FILTER_BITMAP_FLAG)
++
++    override fun onCreate(surfaceHolder: SurfaceHolder) {
++      super.onCreate(surfaceHolder)
++      activeEngines.add(this)
++    }
++
++    override fun onVisibilityChanged(visible: Boolean) {
++      if (visible) {
++        if (cacheFile().exists()) {
++          drawCachedOrFallback()
++        } else {
++          drawFallback()
++          refreshConfiguredWallpaper()
++        }
++      }
++    }
++
++    override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
++      super.onSurfaceChanged(holder, format, width, height)
++      drawCachedOrFallback()
++    }
++
++    override fun onDestroy() {
++      activeEngines.remove(this)
++      super.onDestroy()
++    }
++
++    fun drawCachedOrFallback() {
++      val cached = loadCache()
++      if (cached != null) {
++        drawBitmap(cached)
++      } else {
++        drawFallback()
++      }
++    }
++
++    private fun drawBitmap(bitmap: Bitmap) {
++      val holder = surfaceHolder
++      if (!holder.surface.isValid) {
++        return
++      }
++
++      val canvas = runCatching { holder.lockCanvas() }.getOrNull() ?: return
++      try {
++        drawCenterCrop(canvas, bitmap)
++      } finally {
++        holder.unlockCanvasAndPost(canvas)
++      }
++    }
++
++    private fun drawFallback() {
++      val fallback = BitmapFactory.decodeResource(resources, R.drawable.splash)
++      if (fallback != null) {
++        drawBitmap(fallback)
++      }
++    }
++
++    private fun drawCenterCrop(canvas: Canvas, bitmap: Bitmap) {
++      canvas.drawColor(android.graphics.Color.BLACK)
++
++      val canvasWidth = canvas.width
++      val canvasHeight = canvas.height
++      if (canvasWidth <= 0 || canvasHeight <= 0 || bitmap.width <= 0 || bitmap.height <= 0) {
++        return
++      }
++
++      val scale = maxOf(
++        canvasWidth.toFloat() / bitmap.width.toFloat(),
++        canvasHeight.toFloat() / bitmap.height.toFloat(),
++      )
++      val targetWidth = (bitmap.width * scale).toInt()
++      val targetHeight = (bitmap.height * scale).toInt()
++      val left = (canvasWidth - targetWidth) / 2
++      val top = (canvasHeight - targetHeight) / 2
++
++      val src = Rect(0, 0, bitmap.width, bitmap.height)
++      val dst = Rect(left, top, left + targetWidth, top + targetHeight)
++      canvas.drawBitmap(bitmap, src, dst, paint)
++    }
++
++    private fun loadCache(): Bitmap? {
++      val file = cacheFile()
++      if (!file.exists()) {
++        return null
++      }
++
++      return BitmapFactory.decodeFile(file.absolutePath)
++    }
++  }
++}
+diff --git a/mobile/android/app/src/main/kotlin/app/alextran/immich/widget/ImmichAPI.kt b/mobile/android/app/src/main/kotlin/app/alextran/immich/widget/ImmichAPI.kt
+index c55db8da9..19a134b8a 100644
+--- a/mobile/android/app/src/main/kotlin/app/alextran/immich/widget/ImmichAPI.kt
++++ b/mobile/android/app/src/main/kotlin/app/alextran/immich/widget/ImmichAPI.kt
+@@ -100,9 +100,16 @@ class ImmichAPI(cfg: ServerConfig) {
+     gson.fromJson(response, type)
+   }
+ 
+-  suspend fun fetchImage(asset: Asset): Bitmap = withContext(Dispatchers.IO) {
+-    val url = buildRequestURL("/assets/${asset.id}/thumbnail", listOf("size" to "preview", "edited" to "true"))
+-    val connection = url.openConnection()
++  suspend fun fetchImage(asset: Asset): Bitmap {
++    return fetchImage(asset.id)
++  }
++
++  suspend fun fetchImage(assetId: String): Bitmap = withContext(Dispatchers.IO) {
++    val url = buildRequestURL("/assets/$assetId/thumbnail", listOf("size" to "preview", "edited" to "true"))
++    val connection = (url.openConnection() as HttpURLConnection).apply {
++      requestMethod = "GET"
++      applyCustomHeaders()
++    }
+     val data = connection.getInputStream().readBytes()
+     BitmapFactory.decodeByteArray(data, 0, data.size)
+       ?: throw Exception("Invalid image data")
+diff --git a/mobile/android/app/src/main/res/values/strings.xml b/mobile/android/app/src/main/res/values/strings.xml
+index d543e3311..8632fef0f 100644
+--- a/mobile/android/app/src/main/res/values/strings.xml
++++ b/mobile/android/app/src/main/res/values/strings.xml
+@@ -5,6 +5,8 @@
+ 
+   <string name="memory_widget_description">See memories from Immich.</string>
+   <string name="random_widget_description">View a random image from your library or a specific album.</string>
++  <string name="dynamic_wallpaper_title">Immich</string>
++  <string name="dynamic_wallpaper_description">Show selected Immich photos as a live wallpaper.</string>
+ 
+   <string name="bg_downloader_notification_channel_name">Uploads and downloads</string>
+   <string name="bg_downloader_notification_channel_description">Progress updates for uploads and downloads</string>
+diff --git a/mobile/android/app/src/main/res/xml/immich_live_wallpaper.xml b/mobile/android/app/src/main/res/xml/immich_live_wallpaper.xml
+new file mode 100644
+index 000000000..6a3e1ab3f
+--- /dev/null
++++ b/mobile/android/app/src/main/res/xml/immich_live_wallpaper.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
++  android:description="@string/dynamic_wallpaper_description"
++  android:thumbnail="@drawable/splash" />
+diff --git a/mobile/lib/constants/constants.dart b/mobile/lib/constants/constants.dart
+index b7fec86b5..be32e6435 100644
+--- a/mobile/lib/constants/constants.dart
++++ b/mobile/lib/constants/constants.dart
+@@ -34,6 +34,10 @@ const int kTimelineAssetLoadOppositeSize = 64;
+ const String kWidgetAuthToken = "widget_auth_token";
+ const String kWidgetServerEndpoint = "widget_server_url";
+ const String kWidgetCustomHeaders = "widget_custom_headers";
++const String kDynamicWallpaperAssetIds = "dynamic_wallpaper_asset_ids";
++const String kDynamicWallpaperIntervalMinutes = "dynamic_wallpaper_interval_minutes";
++const String kDynamicWallpaperNextIndex = "dynamic_wallpaper_next_index";
++const String kDynamicWallpaperPreloadedIndex = "dynamic_wallpaper_preloaded_index";
+ 
+ // add widget identifiers here for new widgets
+ // these are used to force a widget refresh
+diff --git a/mobile/lib/domain/models/config/app_config.dart b/mobile/lib/domain/models/config/app_config.dart
+index 30e828311..3abe8da18 100644
+--- a/mobile/lib/domain/models/config/app_config.dart
++++ b/mobile/lib/domain/models/config/app_config.dart
+@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
+ import 'package:immich_mobile/domain/models/config/album_config.dart';
+ import 'package:immich_mobile/domain/models/config/backup_config.dart';
+ import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
++import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart';
+ import 'package:immich_mobile/domain/models/config/image_config.dart';
+ import 'package:immich_mobile/domain/models/config/map_config.dart';
+ import 'package:immich_mobile/domain/models/config/network_config.dart';
+@@ -32,6 +33,7 @@ class AppConfig {
+   final BackupConfig backup;
+   final NetworkConfig network;
+   final ShareConfig share;
++  final DynamicWallpaperConfig dynamicWallpaper;
+ 
+   const AppConfig({
+     this.logLevel = .info,
+@@ -46,6 +48,7 @@ class AppConfig {
+     this.backup = const .new(),
+     this.network = const .new(),
+     this.share = const .new(),
++    this.dynamicWallpaper = const .new(),
+   });
+ 
+   AppConfig copyWith({
+@@ -61,6 +64,7 @@ class AppConfig {
+     BackupConfig? backup,
+     NetworkConfig? network,
+     ShareConfig? share,
++    DynamicWallpaperConfig? dynamicWallpaper,
+   }) => .new(
+     logLevel: logLevel ?? this.logLevel,
+     theme: theme ?? this.theme,
+@@ -74,6 +78,7 @@ class AppConfig {
+     backup: backup ?? this.backup,
+     network: network ?? this.network,
+     share: share ?? this.share,
++    dynamicWallpaper: dynamicWallpaper ?? this.dynamicWallpaper,
+   );
+ 
+   @override
+@@ -91,15 +96,30 @@ class AppConfig {
+           other.album == album &&
+           other.backup == backup &&
+           other.network == network &&
+-          other.share == share);
++          other.share == share &&
++          other.dynamicWallpaper == dynamicWallpaper);
+ 
+   @override
+   int get hashCode =>
+-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share);
++      Object.hash(
++        logLevel,
++        theme,
++        cleanup,
++        map,
++        timeline,
++        image,
++        viewer,
++        slideshow,
++        album,
++        backup,
++        network,
++        share,
++        dynamicWallpaper,
++      );
+ 
+   @override
+   String toString() =>
+-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
++      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, dynamicWallpaper: $dynamicWallpaper)';
+ 
+   T read<T>(SettingsKey<T> key) =>
+       (switch (key) {
+@@ -146,6 +166,8 @@ class AppConfig {
+             .slideshowDuration => slideshow.duration,
+             .slideshowLook => slideshow.look,
+             .slideshowDirection => slideshow.direction,
++            .dynamicWallpaperAssetIds => dynamicWallpaper.assetIds,
++            .dynamicWallpaperIntervalMinutes => dynamicWallpaper.intervalMinutes,
+           })
+           as T;
+ 
+@@ -199,6 +221,12 @@ class AppConfig {
+       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
+       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
+       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
++      .dynamicWallpaperAssetIds => copyWith(
++        dynamicWallpaper: dynamicWallpaper.copyWith(assetIds: value as List<String>),
++      ),
++      .dynamicWallpaperIntervalMinutes => copyWith(
++        dynamicWallpaper: dynamicWallpaper.copyWith(intervalMinutes: value as int),
++      ),
+     };
+   }
+ }
+diff --git a/mobile/lib/domain/models/config/dynamic_wallpaper_config.dart b/mobile/lib/domain/models/config/dynamic_wallpaper_config.dart
+new file mode 100644
+index 000000000..ed2dc3e91
+--- /dev/null
++++ b/mobile/lib/domain/models/config/dynamic_wallpaper_config.dart
+@@ -0,0 +1,44 @@
++class DynamicWallpaperConfig {
++  final List<String> assetIds;
++  final int intervalMinutes;
++
++  const DynamicWallpaperConfig({
++    this.assetIds = const [],
++    this.intervalMinutes = 60,
++  });
++
++  DynamicWallpaperConfig copyWith({
++    List<String>? assetIds,
++    int? intervalMinutes,
++  }) => DynamicWallpaperConfig(
++    assetIds: assetIds ?? this.assetIds,
++    intervalMinutes: intervalMinutes ?? this.intervalMinutes,
++  );
++
++  @override
++  bool operator ==(Object other) =>
++      identical(this, other) ||
++      (other is DynamicWallpaperConfig &&
++          other.intervalMinutes == intervalMinutes &&
++          _listEquals(other.assetIds, assetIds));
++
++  @override
++  int get hashCode => Object.hash(Object.hashAll(assetIds), intervalMinutes);
++
++  @override
++  String toString() => 'DynamicWallpaperConfig(assetIds: $assetIds, intervalMinutes: $intervalMinutes)';
++}
++
++bool _listEquals<T>(List<T> a, List<T> b) {
++  if (a.length != b.length) {
++    return false;
++  }
++
++  for (var i = 0; i < a.length; i++) {
++    if (a[i] != b[i]) {
++      return false;
++    }
++  }
++
++  return true;
++}
+diff --git a/mobile/lib/domain/models/settings_key.dart b/mobile/lib/domain/models/settings_key.dart
+index 2933c301b..4346fc464 100644
+--- a/mobile/lib/domain/models/settings_key.dart
++++ b/mobile/lib/domain/models/settings_key.dart
+@@ -73,7 +73,11 @@ enum SettingsKey<T> {
+   slideshowRepeat<bool>(),
+   slideshowDuration<int>(),
+   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
+-  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values));
++  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
++
++  // Dynamic Wallpaper
++  dynamicWallpaperAssetIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
++  dynamicWallpaperIntervalMinutes<int>();
+ 
+   final _SettingsCodec<T>? _codecOverride;
+ 
+diff --git a/mobile/lib/pages/common/settings.page.dart b/mobile/lib/pages/common/settings.page.dart
+index 65970ee29..99813ebd2 100644
+--- a/mobile/lib/pages/common/settings.page.dart
++++ b/mobile/lib/pages/common/settings.page.dart
+@@ -1,3 +1,5 @@
++import 'dart:io';
++
+ import 'package:auto_route/auto_route.dart';
+ import 'package:easy_localization/easy_localization.dart';
+ import 'package:flutter/material.dart';
+@@ -9,6 +11,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
+ import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
+ import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
+ import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
++import 'package:immich_mobile/widgets/settings/dynamic_wallpaper_settings.dart';
+ import 'package:immich_mobile/widgets/settings/free_up_space_settings.dart';
+ import 'package:immich_mobile/widgets/settings/language_settings.dart';
+ import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
+@@ -26,6 +29,7 @@ enum SettingSection {
+   notifications('notifications', Icons.notifications_none_rounded, "setting_notifications_subtitle"),
+   preferences('preferences_settings_title', Icons.interests_outlined, "preferences_settings_subtitle"),
+   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined, "asset_list_settings_subtitle"),
++  dynamicWallpaper('dynamic_wallpaper_settings_title', Icons.wallpaper_outlined, "dynamic_wallpaper_settings_subtitle"),
+   beta('sync_status', Icons.sync_outlined, "sync_status_subtitle");
+ 
+   final String title;
+@@ -42,12 +46,17 @@ enum SettingSection {
+     SettingSection.notifications => const NotificationSetting(),
+     SettingSection.preferences => const PreferenceSetting(),
+     SettingSection.timeline => const AssetListSettings(),
++    SettingSection.dynamicWallpaper => const DynamicWallpaperSettings(),
+     SettingSection.beta => const SyncStatusAndActions(),
+   };
+ 
+   const SettingSection(this.title, this.icon, this.subtitle);
+ }
+ 
++List<SettingSection> get _availableSettingSections => SettingSection.values
++    .where((section) => Platform.isAndroid || section != SettingSection.dynamicWallpaper)
++    .toList(growable: false);
++
+ @RoutePage()
+ class SettingsPage extends StatelessWidget {
+   const SettingsPage({super.key});
+@@ -66,7 +75,7 @@ class _MobileLayout extends StatelessWidget {
+   const _MobileLayout();
+   @override
+   Widget build(BuildContext context) {
+-    final List<Widget> settings = SettingSection.values
++    final List<Widget> settings = _availableSettingSections
+         .expand(
+           (setting) => setting == SettingSection.beta
+               ? [
+@@ -95,7 +104,8 @@ class _TabletLayout extends HookWidget {
+   const _TabletLayout();
+   @override
+   Widget build(BuildContext context) {
+-    final selectedSection = useState<SettingSection>(SettingSection.values.first);
++    final sections = _availableSettingSections;
++    final selectedSection = useState<SettingSection>(sections.first);
+ 
+     return Row(
+       mainAxisAlignment: MainAxisAlignment.start,
+@@ -104,7 +114,7 @@ class _TabletLayout extends HookWidget {
+           flex: 2,
+           child: CustomScrollView(
+             slivers: [
+-              ...SettingSection.values.map(
++              ...sections.map(
+                 (s) => SliverToBoxAdapter(
+                   child: ListTile(
+                     title: Text(s.title).tr(),
+diff --git a/mobile/lib/platform/background_worker_lock_api.g.dart b/mobile/lib/platform/background_worker_lock_api.g.dart
+index c7836c4c6..f59e2fecc 100644
+Binary files a/mobile/lib/platform/background_worker_lock_api.g.dart and b/mobile/lib/platform/background_worker_lock_api.g.dart differ
+diff --git a/mobile/lib/platform/dynamic_wallpaper_api.g.dart b/mobile/lib/platform/dynamic_wallpaper_api.g.dart
+new file mode 100644
+index 000000000..0ab66b85a
+Binary files /dev/null and b/mobile/lib/platform/dynamic_wallpaper_api.g.dart differ
+diff --git a/mobile/lib/presentation/widgets/action_buttons/dynamic_wallpaper_action_button.widget.dart b/mobile/lib/presentation/widgets/action_buttons/dynamic_wallpaper_action_button.widget.dart
+new file mode 100644
+index 000000000..5ca2b9aaa
+--- /dev/null
++++ b/mobile/lib/presentation/widgets/action_buttons/dynamic_wallpaper_action_button.widget.dart
+@@ -0,0 +1,56 @@
++import 'package:easy_localization/easy_localization.dart';
++import 'package:flutter/material.dart';
++import 'package:hooks_riverpod/hooks_riverpod.dart';
++import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
++import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
++import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
++import 'package:immich_mobile/widgets/common/immich_toast.dart';
++
++class DynamicWallpaperActionButton extends ConsumerWidget {
++  const DynamicWallpaperActionButton({super.key});
++
++  @override
++  Widget build(BuildContext context, WidgetRef ref) {
++    return BaseActionButton(
++      iconData: Icons.wallpaper_outlined,
++      label: 'dynamic_wallpaper_action'.tr(),
++      onPressed: () async {
++        final assets = ref.read(multiSelectProvider).selectedAssets;
++        final service = ref.read(dynamicWallpaperServiceProvider);
++        final assetIds = service.remoteImageIdsFromAssets(assets);
++
++        if (assetIds.isEmpty) {
++          ImmichToast.show(
++            context: context,
++            msg: 'dynamic_wallpaper_no_supported_assets'.tr(),
++            toastType: ToastType.error,
++          );
++          return;
++        }
++
++        final update = await service.addSelection(assets);
++
++        if (!context.mounted) {
++          return;
++        }
++
++        final messageKey = switch ((update.addedCount > 0, update.skippedCount > 0)) {
++          (true, true) => 'dynamic_wallpaper_selection_added_and_skipped',
++          (true, false) => 'dynamic_wallpaper_selection_added_only',
++          _ => 'dynamic_wallpaper_selection_skipped_only',
++        };
++
++        ImmichToast.show(
++          context: context,
++          msg: messageKey.tr(
++            namedArgs: {
++              'added': update.addedCount.toString(),
++              'skipped': update.skippedCount.toString(),
++            },
++          ),
++        );
++      },
++      maxWidth: 100,
++    );
++  }
++}
+diff --git a/mobile/lib/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart b/mobile/lib/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart
+index c3a569407..c4a059e62 100644
+--- a/mobile/lib/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart
++++ b/mobile/lib/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart
+@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
+ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
+ import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
++import 'package:immich_mobile/presentation/widgets/action_buttons/dynamic_wallpaper_action_button.widget.dart';
+ import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
+ import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
+ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+@@ -102,6 +103,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
+               ? const TrashActionButton(source: ActionSource.timeline)
+               : const DeletePermanentActionButton(source: ActionSource.timeline),
+           const FavoriteActionButton(source: ActionSource.timeline),
++          if (multiselect.selectedAssets.any((asset) => asset.isImage && asset.hasRemote))
++            const DynamicWallpaperActionButton(),
+           const ArchiveActionButton(source: ActionSource.timeline),
+           if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
+           const EditDateTimeActionButton(source: ActionSource.timeline),
+diff --git a/mobile/lib/providers/infrastructure/platform.provider.dart b/mobile/lib/providers/infrastructure/platform.provider.dart
+index 9f8523592..cfbdf98fe 100644
+--- a/mobile/lib/providers/infrastructure/platform.provider.dart
++++ b/mobile/lib/providers/infrastructure/platform.provider.dart
+@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/services/background_worker.service.dart';
+ import 'package:immich_mobile/platform/background_worker_api.g.dart';
+ import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
+ import 'package:immich_mobile/platform/connectivity_api.g.dart';
++import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
+ import 'package:immich_mobile/platform/local_image_api.g.dart';
+ import 'package:immich_mobile/platform/native_sync_api.g.dart';
+ import 'package:immich_mobile/platform/network_api.g.dart';
+@@ -21,6 +22,8 @@ final permissionApiProvider = Provider<PermissionApi>((_) => PermissionApi());
+ 
+ final connectivityApiProvider = Provider<ConnectivityApi>((_) => ConnectivityApi());
+ 
++final dynamicWallpaperApiProvider = Provider<DynamicWallpaperApi>((_) => DynamicWallpaperApi());
++
+ final localImageApi = LocalImageApi();
+ 
+ final remoteImageApi = RemoteImageApi();
+diff --git a/mobile/lib/services/auth.service.dart b/mobile/lib/services/auth.service.dart
+index 0de22fd12..525b7d568 100644
+--- a/mobile/lib/services/auth.service.dart
++++ b/mobile/lib/services/auth.service.dart
+@@ -125,6 +125,8 @@ class AuthService {
+         .networkPreferredWifiName,
+         .networkLocalEndpoint,
+         .networkExternalEndpointList,
++        .dynamicWallpaperAssetIds,
++        .dynamicWallpaperIntervalMinutes,
+       ]),
+     ]);
+   }
+diff --git a/mobile/lib/services/dynamic_wallpaper.service.dart b/mobile/lib/services/dynamic_wallpaper.service.dart
+new file mode 100644
+index 000000000..ff0e8224a
+--- /dev/null
++++ b/mobile/lib/services/dynamic_wallpaper.service.dart
+@@ -0,0 +1,132 @@
++import 'dart:convert';
++import 'dart:io';
++
++import 'package:hooks_riverpod/hooks_riverpod.dart';
++import 'package:immich_mobile/constants/constants.dart';
++import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
++import 'package:immich_mobile/domain/models/settings_key.dart';
++import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
++import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
++import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
++import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
++import 'package:immich_mobile/repositories/widget.repository.dart';
++
++final dynamicWallpaperServiceProvider = Provider(
++  (ref) => DynamicWallpaperService(
++    ref.watch(settingsProvider),
++    ref.watch(widgetRepositoryProvider),
++    ref.watch(dynamicWallpaperApiProvider),
++  ),
++);
++
++class DynamicWallpaperSelectionUpdate {
++  final List<String> assetIds;
++  final int addedCount;
++  final int skippedCount;
++
++  const DynamicWallpaperSelectionUpdate({
++    required this.assetIds,
++    required this.addedCount,
++    required this.skippedCount,
++  });
++}
++
++class DynamicWallpaperService {
++  final SettingsRepository _settingsRepository;
++  final WidgetRepository _widgetRepository;
++  final DynamicWallpaperApi _api;
++
++  const DynamicWallpaperService(this._settingsRepository, this._widgetRepository, this._api);
++
++  static List<String> remoteImageIdsFrom(Iterable<BaseAsset> assets) {
++    return assets
++        .where((asset) => asset.isImage && asset.hasRemote)
++        .map((asset) => asset.remoteId)
++        .nonNulls
++        .toSet()
++        .toList();
++  }
++
++  static DynamicWallpaperSelectionUpdate addMissingAssetIds(
++    List<String> currentAssetIds,
++    Iterable<String> selectedAssetIds,
++  ) {
++    final current = currentAssetIds.toSet();
++    final selected = selectedAssetIds.toSet();
++    final added = selected.where((assetId) => !current.contains(assetId)).toList();
++
++    return DynamicWallpaperSelectionUpdate(
++      assetIds: [...currentAssetIds, ...added],
++      addedCount: added.length,
++      skippedCount: selected.length - added.length,
++    );
++  }
++
++  static List<String> removeAssetIds(List<String> currentAssetIds, Iterable<String> removedAssetIds) {
++    final removed = removedAssetIds.toSet();
++    return currentAssetIds.where((assetId) => !removed.contains(assetId)).toList();
++  }
++
++  static List<String> reorderAssetIds(List<String> currentAssetIds, int oldIndex, int newIndex) {
++    final nextAssetIds = [...currentAssetIds];
++    final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
++    final assetId = nextAssetIds.removeAt(oldIndex);
++    nextAssetIds.insert(adjustedNewIndex, assetId);
++    return nextAssetIds;
++  }
++
++  List<String> remoteImageIdsFromAssets(Iterable<BaseAsset> assets) => remoteImageIdsFrom(assets);
++
++  Future<void> saveSelection(Iterable<BaseAsset> assets) {
++    return configure(assetIds: remoteImageIdsFromAssets(assets));
++  }
++
++  Future<DynamicWallpaperSelectionUpdate> addSelection(Iterable<BaseAsset> assets) async {
++    final selectedAssetIds = remoteImageIdsFromAssets(assets);
++    final update = addMissingAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, selectedAssetIds);
++
++    if (update.addedCount > 0) {
++      await configure(assetIds: update.assetIds);
++    }
++
++    return update;
++  }
++
++  Future<void> removeSelection(Iterable<String> assetIds) {
++    final nextAssetIds = removeAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, assetIds);
++    return configure(assetIds: nextAssetIds);
++  }
++
++  Future<void> reorderSelection(int oldIndex, int newIndex) {
++    final nextAssetIds = reorderAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, oldIndex, newIndex);
++    return configure(assetIds: nextAssetIds);
++  }
++
++  Future<void> configure({List<String>? assetIds, int? intervalMinutes}) async {
++    final current = _settingsRepository.appConfig.dynamicWallpaper;
++    final nextAssetIds = assetIds ?? current.assetIds;
++    final nextIntervalMinutes = intervalMinutes ?? current.intervalMinutes;
++
++    await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
++    await _settingsRepository.write(SettingsKey.dynamicWallpaperIntervalMinutes, nextIntervalMinutes);
++    await _writeSharedConfig(nextAssetIds, nextIntervalMinutes);
++
++    if (Platform.isAndroid) {
++      await _api.configure(nextAssetIds, nextIntervalMinutes);
++    }
++  }
++
++  Future<void> clearSelection() => configure(assetIds: []);
++
++  Future<void> openPicker() async {
++    if (Platform.isAndroid) {
++      await _api.openLiveWallpaperPicker();
++    }
++  }
++
++  Future<void> _writeSharedConfig(List<String> assetIds, int intervalMinutes) async {
++    await _widgetRepository.setAppGroupId();
++    await _widgetRepository.saveData(kDynamicWallpaperAssetIds, jsonEncode(assetIds));
++    await _widgetRepository.saveData(kDynamicWallpaperIntervalMinutes, intervalMinutes.toString());
++  }
++}
+diff --git a/mobile/lib/services/widget.service.dart b/mobile/lib/services/widget.service.dart
+index 91f65dd68..c0a640d76 100644
+--- a/mobile/lib/services/widget.service.dart
++++ b/mobile/lib/services/widget.service.dart
+@@ -29,6 +29,10 @@ class WidgetService {
+     await _repository.saveData(kWidgetServerEndpoint, "");
+     await _repository.saveData(kWidgetAuthToken, "");
+     await _repository.saveData(kWidgetCustomHeaders, "");
++    await _repository.saveData(kDynamicWallpaperAssetIds, "[]");
++    await _repository.saveData(kDynamicWallpaperIntervalMinutes, "60");
++    await _repository.saveData(kDynamicWallpaperNextIndex, "0");
++    await _repository.saveData(kDynamicWallpaperPreloadedIndex, "");
+ 
+     // wait 3 seconds to ensure the widget is updated, dont block
+     Future.delayed(const Duration(seconds: 3), refreshWidgets);
+diff --git a/mobile/lib/widgets/settings/dynamic_wallpaper_settings.dart b/mobile/lib/widgets/settings/dynamic_wallpaper_settings.dart
+new file mode 100644
+index 000000000..61e0d9fda
+--- /dev/null
++++ b/mobile/lib/widgets/settings/dynamic_wallpaper_settings.dart
+@@ -0,0 +1,271 @@
++import 'dart:io';
++
++import 'package:easy_localization/easy_localization.dart';
++import 'package:flutter/material.dart';
++import 'package:hooks_riverpod/hooks_riverpod.dart';
++import 'package:immich_mobile/extensions/build_context_extensions.dart';
++import 'package:immich_mobile/extensions/theme_extensions.dart';
++import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
++import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
++import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
++import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
++import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
++import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
++
++final _dynamicWallpaperAssetProvider = FutureProvider.family(
++  (ref, String assetId) => ref.watch(assetServiceProvider).getRemoteAsset(assetId),
++);
++
++class DynamicWallpaperSettings extends ConsumerWidget {
++  const DynamicWallpaperSettings({super.key});
++
++  @override
++  Widget build(BuildContext context, WidgetRef ref) {
++    final config = ref.watch(appConfigProvider).dynamicWallpaper;
++    final service = ref.watch(dynamicWallpaperServiceProvider);
++    final selectedCount = config.assetIds.length;
++
++    if (!Platform.isAndroid) {
++      return SettingsSubPageScaffold(
++        settings: [
++          ListTile(
++            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
++            title: Text('dynamic_wallpaper_settings_title'.tr()),
++            subtitle: Text('dynamic_wallpaper_android_only'.tr()),
++          ),
++        ],
++      );
++    }
++
++    return SettingsSubPageScaffold(
++      showDivider: true,
++      settings: [
++        SettingsButtonListTile(
++          icon: Icons.wallpaper_outlined,
++          title: 'dynamic_wallpaper_picker_title'.tr(),
++          subtileText: 'dynamic_wallpaper_picker_subtitle'.tr(namedArgs: {'count': selectedCount.toString()}),
++          buttonText: 'dynamic_wallpaper_open_picker'.tr(),
++          onButtonTap: selectedCount == 0 ? null : service.openPicker,
++        ),
++        _DynamicWallpaperSelectionTile(
++          assetIds: config.assetIds,
++          service: service,
++        ),
++      ],
++    );
++  }
++}
++
++class _DynamicWallpaperSelectionTile extends StatelessWidget {
++  final List<String> assetIds;
++  final DynamicWallpaperService service;
++
++  const _DynamicWallpaperSelectionTile({
++    required this.assetIds,
++    required this.service,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final selectedCount = assetIds.length;
++
++    return ListTile(
++      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
++      horizontalTitleGap: 20,
++      isThreeLine: true,
++      leading: const Icon(Icons.photo_library_outlined),
++      title: Text(
++        'dynamic_wallpaper_selection_title'.tr(),
++        style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
++      ),
++      subtitle: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          const SizedBox(height: 4),
++          Text(
++            'dynamic_wallpaper_selection_subtitle'.tr(namedArgs: {'count': selectedCount.toString()}),
++            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
++          ),
++          if (assetIds.isNotEmpty) ...[
++            const SizedBox(height: 12),
++            _DynamicWallpaperSelectionList(assetIds: assetIds, service: service),
++            const SizedBox(height: 12),
++          ],
++          OutlinedButton.icon(
++            onPressed: selectedCount == 0
++                ? null
++                : () {
++                    service.clearSelection();
++                  },
++            icon: const Icon(Icons.clear_all_outlined),
++            label: Text('dynamic_wallpaper_clear_selection'.tr()),
++          ),
++        ],
++      ),
++    );
++  }
++}
++
++class _DynamicWallpaperSelectionList extends StatelessWidget {
++  final List<String> assetIds;
++  final DynamicWallpaperService service;
++
++  const _DynamicWallpaperSelectionList({
++    required this.assetIds,
++    required this.service,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    Widget proxyDecorator(Widget child, int _, Animation<double> animation) {
++      return AnimatedBuilder(
++        animation: animation,
++        builder: (context, child) => Material(
++          color: context.colorScheme.surfaceContainerHighest,
++          shadowColor: context.colorScheme.primary.withValues(alpha: 0.2),
++          child: child,
++        ),
++        child: child,
++      );
++    }
++
++    return ClipRRect(
++      borderRadius: const BorderRadius.all(Radius.circular(12)),
++      child: ReorderableListView.builder(
++        buildDefaultDragHandles: false,
++        primary: false,
++        physics: const NeverScrollableScrollPhysics(),
++        proxyDecorator: proxyDecorator,
++        shrinkWrap: true,
++        itemCount: assetIds.length,
++        onReorderItem: (oldIndex, newIndex) {
++          service.reorderSelection(oldIndex, newIndex);
++        },
++        itemBuilder: (context, index) {
++          final assetId = assetIds[index];
++          return _DynamicWallpaperSelectionListItem(
++            key: ValueKey(assetId),
++            assetId: assetId,
++            index: index,
++            onRemove: () {
++              service.removeSelection([assetId]);
++            },
++          );
++        },
++      ),
++    );
++  }
++}
++
++class _DynamicWallpaperSelectionListItem extends StatelessWidget {
++  final String assetId;
++  final int index;
++  final VoidCallback onRemove;
++
++  const _DynamicWallpaperSelectionListItem({
++    super.key,
++    required this.assetId,
++    required this.index,
++    required this.onRemove,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Padding(
++      padding: EdgeInsets.only(top: index == 0 ? 0 : 8),
++      child: DecoratedBox(
++        decoration: BoxDecoration(
++          color: context.colorScheme.surfaceContainerLow,
++          borderRadius: const BorderRadius.all(Radius.circular(12)),
++          border: Border.all(color: context.colorScheme.surfaceContainerHighest),
++        ),
++        child: Padding(
++          padding: const EdgeInsets.all(8),
++          child: Row(
++            children: [
++              _DynamicWallpaperThumbnail(assetId: assetId),
++              const SizedBox(width: 12),
++              _SelectionOrderBadge(index: index),
++              const Spacer(),
++              DecoratedBox(
++                decoration: BoxDecoration(
++                  color: context.colorScheme.surface,
++                  borderRadius: const BorderRadius.all(Radius.circular(10)),
++                ),
++                child: Row(
++                  mainAxisSize: MainAxisSize.min,
++                  children: [
++                    IconButton(
++                      tooltip: 'dynamic_wallpaper_remove_photo'.tr(),
++                      onPressed: onRemove,
++                      icon: const Icon(Icons.delete_outline),
++                    ),
++                    ReorderableDragStartListener(
++                      index: index,
++                      child: const Padding(
++                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
++                        child: Icon(Icons.drag_handle_rounded),
++                      ),
++                    ),
++                  ],
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _SelectionOrderBadge extends StatelessWidget {
++  final int index;
++
++  const _SelectionOrderBadge({required this.index});
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      width: 32,
++      height: 32,
++      alignment: Alignment.center,
++      decoration: BoxDecoration(
++        color: context.colorScheme.primaryContainer,
++        borderRadius: const BorderRadius.all(Radius.circular(8)),
++      ),
++      child: Text(
++        '${index + 1}',
++        style: context.textTheme.labelLarge?.copyWith(
++          color: context.colorScheme.onPrimaryContainer,
++          fontWeight: FontWeight.w700,
++        ),
++      ),
++    );
++  }
++}
++
++class _DynamicWallpaperThumbnail extends ConsumerWidget {
++  final String assetId;
++
++  const _DynamicWallpaperThumbnail({required this.assetId});
++
++  @override
++  Widget build(BuildContext context, WidgetRef ref) {
++    final asset = ref.watch(_dynamicWallpaperAssetProvider(assetId));
++
++    return SizedBox(
++      width: 56,
++      height: 56,
++      child: ClipRRect(
++        borderRadius: const BorderRadius.all(Radius.circular(8)),
++        child: asset.when(
++          data: (asset) => asset == null
++              ? Thumbnail.remote(remoteId: assetId, thumbhash: '')
++              : Thumbnail.fromAsset(asset: asset, size: const Size.square(112)),
++          error: (_, _) => Thumbnail.remote(remoteId: assetId, thumbhash: ''),
++          loading: () => ColoredBox(color: context.colorScheme.surfaceContainerHighest),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/mobile/mise.lock b/mobile/mise.lock
+index 763c02655..0ff99816f 100644
+--- a/mobile/mise.lock
++++ b/mobile/mise.lock
+@@ -11,6 +11,7 @@ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linu
+ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.1-stable.tar.xz"
+ 
+ [tools."aqua:flutter/flutter"."platforms.linux-x64"]
++checksum = "blake3:b7e0d033044e5a670baf083ea9ef66f76a32a89abe3791f2b0908f114c725a8f"
+ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.1-stable.tar.xz"
+ 
+ [tools."aqua:flutter/flutter"."platforms.linux-x64-musl"]
+@@ -29,15 +30,8 @@ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/wind
+ version = "1.37.0"
+ backend = "github:CQLabs/homebrew-dcm"
+ 
+-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64"]
+-checksum = "sha256:253da2512b149913dfe345bf9a62a79acb2d730f66e71162ba4a92dfc4224b82"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-arm-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543838"
+-
+-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64-musl"]
+-checksum = "sha256:253da2512b149913dfe345bf9a62a79acb2d730f66e71162ba4a92dfc4224b82"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-arm-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543838"
++[tools."github:CQLabs/homebrew-dcm".options]
++asset_pattern = "dcm-linux-x64-release.zip"
+ 
+ [tools."github:CQLabs/homebrew-dcm"."platforms.linux-x64"]
+ checksum = "sha256:477e086d4099c12f21e5ccd83b005d5fb945dd4cac4fd127fd9a08d7649af1cf"
+@@ -49,15 +43,12 @@ checksum = "sha256:477e086d4099c12f21e5ccd83b005d5fb945dd4cac4fd127fd9a08d7649af
+ url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-x64-release.zip"
+ url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543797"
+ 
+-[tools."github:CQLabs/homebrew-dcm"."platforms.macos-arm64"]
+-checksum = "sha256:30bede64367d09067093cc57af6ec9496d7717898138ded5cb98a16ac8dd9d93"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-macos-arm-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543757"
++[[tools."github:CQLabs/homebrew-dcm"]]
++version = "1.37.0"
++backend = "github:CQLabs/homebrew-dcm"
+ 
+-[tools."github:CQLabs/homebrew-dcm"."platforms.macos-x64"]
+-checksum = "sha256:e56cb99872be7445a4de1d37e5438ca70e3bcd83be7a2b9b385e3538881f8068"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-macos-x64-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543727"
++[tools."github:CQLabs/homebrew-dcm".options]
++asset_pattern = "dcm-windows-release.zip"
+ 
+ [tools."github:CQLabs/homebrew-dcm"."platforms.windows-x64"]
+ checksum = "sha256:f133470daa3fb0427f039b424392af7e917d7e7db6b556aa2a968ab0e31587da"
+@@ -85,23 +76,6 @@ url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/4045
+ version = "1.37.0"
+ backend = "github:CQLabs/homebrew-dcm"
+ 
+-[tools."github:CQLabs/homebrew-dcm".options]
+-asset_pattern = "dcm-linux-x64-release.zip"
+-
+-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-x64"]
+-checksum = "sha256:477e086d4099c12f21e5ccd83b005d5fb945dd4cac4fd127fd9a08d7649af1cf"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-x64-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543797"
+-
+-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-x64-musl"]
+-checksum = "sha256:477e086d4099c12f21e5ccd83b005d5fb945dd4cac4fd127fd9a08d7649af1cf"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-x64-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543797"
+-
+-[[tools."github:CQLabs/homebrew-dcm"]]
+-version = "1.37.0"
+-backend = "github:CQLabs/homebrew-dcm"
+-
+ [tools."github:CQLabs/homebrew-dcm".options]
+ asset_pattern = "dcm-macos-x64-release.zip"
+ 
+@@ -114,18 +88,6 @@ url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/4045
+ version = "1.37.0"
+ backend = "github:CQLabs/homebrew-dcm"
+ 
+-[tools."github:CQLabs/homebrew-dcm".options]
+-asset_pattern = "dcm-windows-release.zip"
+-
+-[tools."github:CQLabs/homebrew-dcm"."platforms.windows-x64"]
+-checksum = "sha256:f133470daa3fb0427f039b424392af7e917d7e7db6b556aa2a968ab0e31587da"
+-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-windows-release.zip"
+-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543660"
+-
+-[[tools."github:CQLabs/homebrew-dcm"]]
+-version = "1.37.0"
+-backend = "github:CQLabs/homebrew-dcm"
+-
+ [tools."github:CQLabs/homebrew-dcm".options]
+ asset_pattern = "dcm-macos-arm-release.zip"
+ 
+@@ -138,30 +100,6 @@ url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/4045
+ version = "21.0.2"
+ backend = "core:java"
+ 
+-[tools.java."platforms.linux-arm64"]
+-checksum = "sha256:08db1392a48d4eb5ea5315cf8f18b89dbaf36cda663ba882cf03c704c9257ec2"
+-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-aarch64_bin.tar.gz"
+-
+-[tools.java."platforms.linux-x64"]
+-checksum = "sha256:a2def047a73941e01a73739f92755f86b895811afb1f91243db214cff5bdac3f"
+-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz"
+-
+-[tools.java."platforms.macos-arm64"]
+-checksum = "sha256:b3d588e16ec1e0ef9805d8a696591bd518a5cea62567da8f53b5ce32d11d22e4"
+-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-aarch64_bin.tar.gz"
+-
+-[tools.java."platforms.macos-x64"]
+-checksum = "sha256:8fd09e15dc406387a0aba70bf5d99692874e999bf9cd9208b452b5d76ac922d3"
+-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_macos-x64_bin.tar.gz"
+-
+-[tools.java."platforms.windows-x64"]
+-checksum = "sha256:b6c17e747ae78cdd6de4d7532b3164b277daee97c007d3eaa2b39cca99882664"
+-url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
+-
+-[[tools.java]]
+-version = "21.0.2"
+-backend = "core:java"
+-
+ [tools.java.options]
+ shorthand_vendor = "openjdk"
+ 
+diff --git a/mobile/pigeon/dynamic_wallpaper_api.dart b/mobile/pigeon/dynamic_wallpaper_api.dart
+new file mode 100644
+index 000000000..776a524ee
+--- /dev/null
++++ b/mobile/pigeon/dynamic_wallpaper_api.dart
+@@ -0,0 +1,22 @@
++import 'package:pigeon/pigeon.dart';
++
++@ConfigurePigeon(
++  PigeonOptions(
++    dartOut: 'lib/platform/dynamic_wallpaper_api.g.dart',
++    kotlinOut: 'android/app/src/main/kotlin/app/alextran/immich/wallpaper/DynamicWallpaper.g.kt',
++    kotlinOptions: KotlinOptions(package: 'app.alextran.immich.wallpaper', includeErrorClass: true),
++    dartOptions: DartOptions(),
++    dartPackageName: 'immich_mobile',
++  ),
++)
++@HostApi()
++abstract class DynamicWallpaperApi {
++  @async
++  void configure(List<String> assetIds, int intervalMinutes);
++
++  @async
++  void openLiveWallpaperPicker();
++
++  @async
++  void refresh();
++}
+diff --git a/mobile/test/services/dynamic_wallpaper.service_test.dart b/mobile/test/services/dynamic_wallpaper.service_test.dart
+new file mode 100644
+index 000000000..034d5fd4f
+--- /dev/null
++++ b/mobile/test/services/dynamic_wallpaper.service_test.dart
+@@ -0,0 +1,55 @@
++import 'package:flutter_test/flutter_test.dart';
++import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
++import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
++
++import '../unit/factories/local_asset_factory.dart';
++import '../unit/factories/remote_asset_factory.dart';
++
++void main() {
++  group('DynamicWallpaperService', () {
++    test('keeps only remote image ids from selected assets', () {
++      final remoteImage = RemoteAssetFactory.create(id: 'remote-image');
++      final mergedImage = RemoteAssetFactory.create(id: 'merged-image').copyWith(localId: 'local-copy');
++      final remoteVideo = RemoteAssetFactory.create(id: 'remote-video').copyWith(type: AssetType.video);
++      final localImage = LocalAssetFactory.create(id: 'local-image');
++
++      final ids = DynamicWallpaperService.remoteImageIdsFrom([
++        remoteImage,
++        mergedImage,
++        remoteVideo,
++        localImage,
++        remoteImage,
++      ]);
++
++      expect(ids, [remoteImage.id, mergedImage.id]);
++    });
++
++    test('adds only missing ids without replacing the current list', () {
++      final update = DynamicWallpaperService.addMissingAssetIds(['a', 'b', 'c'], ['b', 'd']);
++
++      expect(update.assetIds, ['a', 'b', 'c', 'd']);
++      expect(update.addedCount, 1);
++      expect(update.skippedCount, 1);
++    });
++
++    test('deduplicates selected ids before counting additions', () {
++      final update = DynamicWallpaperService.addMissingAssetIds(['a'], ['a', 'b', 'b']);
++
++      expect(update.assetIds, ['a', 'b']);
++      expect(update.addedCount, 1);
++      expect(update.skippedCount, 1);
++    });
++
++    test('removes selected ids while preserving the remaining order', () {
++      final ids = DynamicWallpaperService.removeAssetIds(['a', 'b', 'c', 'd'], ['b', 'd']);
++
++      expect(ids, ['a', 'c']);
++    });
++
++    test('reorders selected ids using ReorderableListView indexes', () {
++      final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 1, 4);
++
++      expect(ids, ['a', 'c', 'd', 'b']);
++    });
++  });
++}

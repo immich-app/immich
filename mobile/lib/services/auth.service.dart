@@ -126,7 +126,6 @@ class AuthService {
         .networkLocalEndpoint,
         .networkExternalEndpointList,
         .dynamicWallpaperAssetIds,
-        .dynamicWallpaperIntervalMinutes,
       ]),
     ]);
   }

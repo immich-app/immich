@@ -76,8 +76,7 @@ enum SettingsKey<T> {
   slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
 
   // Dynamic Wallpaper
-  dynamicWallpaperAssetIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
-  dynamicWallpaperIntervalMinutes<int>();
+  dynamicWallpaperAssetIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string));
 
   final _SettingsCodec<T>? _codecOverride;
 

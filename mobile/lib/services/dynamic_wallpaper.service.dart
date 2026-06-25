@@ -1,22 +1,15 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
-import 'package:immich_mobile/repositories/widget.repository.dart';
 
 final dynamicWallpaperServiceProvider = Provider(
-  (ref) => DynamicWallpaperService(
-    ref.watch(settingsProvider),
-    ref.watch(widgetRepositoryProvider),
-    ref.watch(dynamicWallpaperApiProvider),
-  ),
+  (ref) => DynamicWallpaperService(ref.watch(settingsProvider), ref.watch(dynamicWallpaperApiProvider)),
 );
 
 class DynamicWallpaperSelectionUpdate {
@@ -24,27 +17,34 @@ class DynamicWallpaperSelectionUpdate {
   final int addedCount;
   final int skippedCount;
 
-  const DynamicWallpaperSelectionUpdate({
-    required this.assetIds,
-    required this.addedCount,
-    required this.skippedCount,
-  });
+  const DynamicWallpaperSelectionUpdate({required this.assetIds, required this.addedCount, required this.skippedCount});
 }
 
 class DynamicWallpaperService {
   final SettingsRepository _settingsRepository;
-  final WidgetRepository _widgetRepository;
   final DynamicWallpaperApi _api;
+  final bool _isAndroid;
 
-  const DynamicWallpaperService(this._settingsRepository, this._widgetRepository, this._api);
+  const DynamicWallpaperService(this._settingsRepository, this._api, {bool? isAndroid})
+    : _isAndroid = isAndroid ?? Platform.isAndroid;
 
   static List<String> remoteImageIdsFrom(Iterable<BaseAsset> assets) {
-    return assets
-        .where((asset) => asset.isImage && asset.hasRemote)
-        .map((asset) => asset.remoteId)
-        .nonNulls
-        .toSet()
-        .toList();
+    return deduplicatePreservingOrder(
+      assets.where((asset) => asset.isImage && asset.hasRemote).map((asset) => asset.remoteId).nonNulls,
+    );
+  }
+
+  static List<String> deduplicatePreservingOrder(Iterable<String> assetIds) {
+    final seen = <String>{};
+    final result = <String>[];
+
+    for (final assetId in assetIds) {
+      if (assetId.isNotEmpty && seen.add(assetId)) {
+        result.add(assetId);
+      }
+    }
+
+    return result;
   }
 
   static DynamicWallpaperSelectionUpdate addMissingAssetIds(
@@ -52,7 +52,7 @@ class DynamicWallpaperService {
     Iterable<String> selectedAssetIds,
   ) {
     final current = currentAssetIds.toSet();
-    final selected = selectedAssetIds.toSet();
+    final selected = deduplicatePreservingOrder(selectedAssetIds);
     final added = selected.where((assetId) => !current.contains(assetId)).toList();
 
     return DynamicWallpaperSelectionUpdate(
@@ -77,10 +77,6 @@ class DynamicWallpaperService {
 
   List<String> remoteImageIdsFromAssets(Iterable<BaseAsset> assets) => remoteImageIdsFrom(assets);
 
-  Future<void> saveSelection(Iterable<BaseAsset> assets) {
-    return configure(assetIds: remoteImageIdsFromAssets(assets));
-  }
-
   Future<DynamicWallpaperSelectionUpdate> addSelection(Iterable<BaseAsset> assets) async {
     final selectedAssetIds = remoteImageIdsFromAssets(assets);
     final update = addMissingAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, selectedAssetIds);
@@ -102,31 +98,43 @@ class DynamicWallpaperService {
     return configure(assetIds: nextAssetIds);
   }
 
-  Future<void> configure({List<String>? assetIds, int? intervalMinutes}) async {
+  Future<void> configure({List<String>? assetIds}) async {
     final current = _settingsRepository.appConfig.dynamicWallpaper;
-    final nextAssetIds = assetIds ?? current.assetIds;
-    final nextIntervalMinutes = intervalMinutes ?? current.intervalMinutes;
+    final nextAssetIds = deduplicatePreservingOrder(assetIds ?? current.assetIds);
+
+    if (_isAndroid) {
+      await _api.configure(nextAssetIds);
+    }
 
     await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
-    await _settingsRepository.write(SettingsKey.dynamicWallpaperIntervalMinutes, nextIntervalMinutes);
-    await _writeSharedConfig(nextAssetIds, nextIntervalMinutes);
-
-    if (Platform.isAndroid) {
-      await _api.configure(nextAssetIds, nextIntervalMinutes);
-    }
   }
 
   Future<void> clearSelection() => configure(assetIds: []);
 
   Future<void> openPicker() async {
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       await _api.openLiveWallpaperPicker();
     }
   }
 
-  Future<void> _writeSharedConfig(List<String> assetIds, int intervalMinutes) async {
-    await _widgetRepository.setAppGroupId();
-    await _widgetRepository.saveData(kDynamicWallpaperAssetIds, jsonEncode(assetIds));
-    await _widgetRepository.saveData(kDynamicWallpaperIntervalMinutes, intervalMinutes.toString());
+  Future<void> refreshPreparedWallpapers() async {
+    if (_isAndroid) {
+      await _api.refresh();
+    }
+  }
+
+  Future<DynamicWallpaperStatus> getPreparationStatus() async {
+    if (_isAndroid) {
+      return _api.getStatus();
+    }
+
+    final selectedCount = _settingsRepository.appConfig.dynamicWallpaper.assetIds.length;
+    return DynamicWallpaperStatus(
+      enabled: false,
+      selectedCount: selectedCount,
+      preparedCount: 0,
+      missingCount: selectedCount,
+      failedCount: 0,
+    );
   }
 }

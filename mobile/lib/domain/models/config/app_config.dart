@@ -167,7 +167,6 @@ class AppConfig {
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
             .dynamicWallpaperAssetIds => dynamicWallpaper.assetIds,
-            .dynamicWallpaperIntervalMinutes => dynamicWallpaper.intervalMinutes,
           })
           as T;
 
@@ -223,9 +222,6 @@ class AppConfig {
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
       .dynamicWallpaperAssetIds => copyWith(
         dynamicWallpaper: dynamicWallpaper.copyWith(assetIds: value as List<String>),
-      ),
-      .dynamicWallpaperIntervalMinutes => copyWith(
-        dynamicWallpaper: dynamicWallpaper.copyWith(intervalMinutes: value as int),
       ),
     };
   }

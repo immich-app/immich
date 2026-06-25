@@ -34,6 +34,133 @@ Object? _extractReplyValueOrThrow(
   return replyList.firstOrNull;
 }
 
+bool _deepEquals(Object? a, Object? b) {
+  if (identical(a, b)) {
+    return true;
+  }
+  if (a is double && b is double) {
+    if (a.isNaN && b.isNaN) {
+      return true;
+    }
+    return a == b;
+  }
+  if (a is List && b is List) {
+    return a.length == b.length &&
+        a.indexed
+            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+  }
+  if (a is Map && b is Map) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (final MapEntry<Object?, Object?> entryA in a.entries) {
+      bool found = false;
+      for (final MapEntry<Object?, Object?> entryB in b.entries) {
+        if (_deepEquals(entryA.key, entryB.key)) {
+          if (_deepEquals(entryA.value, entryB.value)) {
+            found = true;
+            break;
+          } else {
+            return false;
+          }
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return a == b;
+}
+
+int _deepHash(Object? value) {
+  if (value is List) {
+    return Object.hashAll(value.map(_deepHash));
+  }
+  if (value is Map) {
+    int result = 0;
+    for (final MapEntry<Object?, Object?> entry in value.entries) {
+      result += (_deepHash(entry.key) * 31) ^ _deepHash(entry.value);
+    }
+    return result;
+  }
+  if (value is double && value.isNaN) {
+    // Normalize NaN to a consistent hash.
+    return 0x7FF8000000000000.hashCode;
+  }
+  if (value is double && value == 0.0) {
+    // Normalize -0.0 to 0.0 so they have the same hash code.
+    return 0.0.hashCode;
+  }
+  return value.hashCode;
+}
+
+
+class DynamicWallpaperStatus {
+  DynamicWallpaperStatus({
+    required this.enabled,
+    required this.selectedCount,
+    required this.preparedCount,
+    required this.missingCount,
+    required this.failedCount,
+    this.lastError,
+  });
+
+  bool enabled;
+
+  int selectedCount;
+
+  int preparedCount;
+
+  int missingCount;
+
+  int failedCount;
+
+  String? lastError;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      enabled,
+      selectedCount,
+      preparedCount,
+      missingCount,
+      failedCount,
+      lastError,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static DynamicWallpaperStatus decode(Object result) {
+    result as List<Object?>;
+    return DynamicWallpaperStatus(
+      enabled: result[0]! as bool,
+      selectedCount: result[1]! as int,
+      preparedCount: result[2]! as int,
+      missingCount: result[3]! as int,
+      failedCount: result[4]! as int,
+      lastError: result[5] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! DynamicWallpaperStatus || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(enabled, other.enabled) && _deepEquals(selectedCount, other.selectedCount) && _deepEquals(preparedCount, other.preparedCount) && _deepEquals(missingCount, other.missingCount) && _deepEquals(failedCount, other.failedCount) && _deepEquals(lastError, other.lastError);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
 
 
 class _PigeonCodec extends StandardMessageCodec {
@@ -43,6 +170,9 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
+    }    else if (value is DynamicWallpaperStatus) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -51,6 +181,8 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
+      case 129:
+        return DynamicWallpaperStatus.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -70,14 +202,14 @@ class DynamicWallpaperApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> configure(List<String> assetIds, int intervalMinutes) async {
+  Future<void> configure(List<String> assetIds) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.configure$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds, intervalMinutes]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(
@@ -122,5 +254,24 @@ class DynamicWallpaperApi {
         isNullValid: true,
     )
     ;
+  }
+
+  Future<DynamicWallpaperStatus> getStatus() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.getStatus$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as DynamicWallpaperStatus;
   }
 }
