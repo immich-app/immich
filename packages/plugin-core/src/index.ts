@@ -156,22 +156,20 @@ export const assetAddToAlbums = wrapper<'assetAddToAlbums'>(({ config, data, fun
   return {};
 });
 
-export const webhook = () => {
-  return wrapper<'webhook'>(({ config, data, functions }) => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+export const webhook = wrapper<'webhook'>(({ config, data, functions }) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
 
-    if (config.headerName && config.headerValue) {
-      headers[config.headerName] = config.headerValue;
-    }
+  if (config.headerName && config.headerValue) {
+    headers[config.headerName] = config.headerValue;
+  }
 
-    functions.httpRequest(config.url, {
-      method: config.method ?? 'POST',
-      body: JSON.stringify(data.asset),
-      headers,
-    });
-
-    return {};
+  functions.httpRequest(config.url, {
+    method: config.method ?? 'POST',
+    body: JSON.stringify(data.asset),
+    headers,
   });
-};
+
+  return {};
+});
