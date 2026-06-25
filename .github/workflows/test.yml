@@ -45,6 +45,8 @@ jobs:
               - 'server/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
+              - 'packages/plugin-core/**'
+              - 'packages/plugin-sdk/**'
             cli:
               - 'packages/cli/**'
               - 'packages/sdk/**'
