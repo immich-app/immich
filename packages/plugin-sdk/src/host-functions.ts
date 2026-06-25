@@ -6,15 +6,11 @@ import {
   type CreateAlbumDto,
 } from '@immich/sdk';
 
-// keep in sync with plugin-core/src/index.d.ts';
 declare module 'extism:host' {
-  interface user {
-    searchAlbums(ptr: PTR): I64;
-    createAlbum(ptr: PTR): I64;
-    addAssetsToAlbum(ptr: PTR): I64;
-    addAssetsToAlbums(ptr: PTR): I64;
-    httpRequest(ptr: PTR): I64;
-  }
+  interface user extends Record<
+    (typeof availableFunctions)[number],
+    (ptr: PTR) => I64
+  > {}
 }
 
 type AlbumsToAssets = {
@@ -44,6 +40,14 @@ type HttpResponse = {
   status: number;
   body: string;
 };
+
+export const availableFunctions = [
+  'searchAlbums',
+  'createAlbum',
+  'addAssetsToAlbum',
+  'addAssetsToAlbums',
+  'httpRequest',
+] as const;
 
 export const hostFunctions = (authToken: string) => {
   const host = Host.getFunctions();
@@ -92,5 +96,5 @@ export const hostFunctions = (authToken: string) => {
         authToken,
         [url, options],
       ),
-  };
+  } satisfies Record<(typeof availableFunctions)[number], unknown>;
 };

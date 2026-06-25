@@ -336,6 +336,10 @@ importers:
         version: 6.0.3
 
   packages/plugin-sdk:
+    dependencies:
+      commander:
+        specifier: ^15.0.0
+        version: 15.0.0
     devDependencies:
       '@extism/js-pdk':
         specifier: ^1.1.1

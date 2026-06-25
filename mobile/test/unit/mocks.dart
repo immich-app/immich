@@ -34,6 +34,7 @@ class RepositoryMocks {
 class ServiceMocks {
   final PartnerStub partner = PartnerStub(MockPartnerService());
   final UserStub user = UserStub(MockUserService());
+  final asset = AssetStub(MockAssetService());
 
   ServiceMocks() {
     resetAll();
@@ -43,8 +44,10 @@ class ServiceMocks {
     _registerFallbacks();
     partner.reset();
     user.reset();
+    asset.reset();
     _stubUserService();
     _stubPartnerService();
+    _stubAssetService();
   }
 
   void _stubUserService() {
@@ -62,6 +65,10 @@ class ServiceMocks {
     when(partner.update).thenAnswer((_) async {});
     when(partner.create).thenAnswer((_) async {});
     when(partner.delete).thenAnswer((_) async {});
+  }
+
+  void _stubAssetService() {
+    when(asset.updateFavorite).thenAnswer((_) async {});
   }
 }
 
@@ -118,4 +125,9 @@ extension type const UserStub(MockUserService service) implements Stub<MockUserS
 
   Future<String?> Function() get createProfileImage =>
       () => service.createProfileImage(any(), any());
+}
+
+extension type const AssetStub(MockAssetService service) implements Stub<MockAssetService> {
+  Future<void> Function() get updateFavorite =>
+      () => service.updateFavorite(any(), any());
 }
