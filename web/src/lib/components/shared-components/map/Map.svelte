@@ -13,38 +13,45 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
-  import { mapSettings } from '$lib/stores/preferences.store';
+  import { mapSettings, mapShowHeatmap } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
-  import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-  import { isEqual, omit } from 'lodash-es';
+  import {
+    mdiCog,
+    mdiCrosshairsGps,
+    mdiImageMultiple,
+    mdiEarth,
+    mdiMap,
+    mdiMapMarker,
+    mdiMinus,
+    mdiPlus,
+  } from '@mdi/js';
+  import type { Feature, Point } from 'geojson';
+  import { isEqual } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import {
-    GlobeControl,
     LngLat,
     LngLatBounds,
     Marker,
+    type ExpressionSpecification,
     type GeoJSONSource,
     type LngLatLike,
+    type ProjectionSpecification,
     type Map,
     type MapMouseEvent,
   } from 'maplibre-gl';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
-    AttributionControl,
-    Control,
-    ControlButton,
-    ControlGroup,
     GeoJSON,
-    GeolocateControl,
+    HeatmapLayer,
     MapLibre,
     MarkerLayer,
-    NavigationControl,
     Popup,
-    ScaleControl,
+    Control,
+    ControlGroup,
+    ControlButton,
   } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
 
@@ -63,6 +70,8 @@
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
+    isTimelineOpen?: boolean;
+    onToggleTimeline?: () => void;
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
   }
@@ -82,6 +91,8 @@
     onClickPoint = () => {},
     popup,
     rounded = false,
+    isTimelineOpen = false,
+    onToggleTimeline,
     showSimpleControls = true,
     autoFitBounds = true,
   }: Props = $props();
@@ -99,14 +110,18 @@
     return bounds;
   })();
 
-  let map: Map | undefined = $state();
+  let map: Map | undefined = $state.raw();
   let marker: Marker | null = null;
   let abortController: AbortController;
+  let isGlobeView = $state(false);
 
-  const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
+  const mapTheme = $derived(themeManager.value);
   const styleUrl = $derived(
     mapTheme === Theme.Dark ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
   );
+  const mapProjection = $derived<ProjectionSpecification>({
+    type: isGlobeView ? 'globe' : 'mercator',
+  });
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (map) {
@@ -188,7 +203,7 @@
     };
   };
 
-  const asMarker = (feature: Feature<Geometry, GeoJsonProperties>): MapMarkerResponseDto => {
+  const asMarker = (feature: Feature): MapMarkerResponseDto => {
     const featurePoint = feature as FeaturePoint;
     const coords = LngLat.convert(featurePoint.geometry.coordinates as [number, number]);
     return {
@@ -241,16 +256,18 @@
     );
   }
 
-  const handleSettingsClick = async () => {
-    const settings = await modalManager.show(MapSettingsModal);
-    if (settings) {
-      const shouldUpdate = !isEqual(omit(settings, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
-      $mapSettings = settings;
-
-      if (shouldUpdate) {
-        mapMarkers = await loadMapMarkers();
-      }
-    }
+  const handleSettingsClick = () => {
+    handlePromiseError(
+      modalManager.show(MapSettingsModal).then(async (settings) => {
+        if (settings) {
+          const shouldUpdate = !isEqual(settings, $mapSettings);
+          $mapSettings = settings;
+          if (shouldUpdate) {
+            mapMarkers = await loadMapMarkers();
+          }
+        }
+      }),
+    );
   };
 
   afterNavigate(() => {
@@ -309,8 +326,24 @@
     untrack(() => map?.jumpTo({ center, zoom }));
   });
 
-  const onAssetsDelete = async () => {
-    mapMarkers = await loadMapMarkers();
+  const onAssetsDelete = () => {
+    handlePromiseError(
+      loadMapMarkers().then((markers) => {
+        mapMarkers = markers;
+      }),
+    );
+  };
+
+  const handleLocate = () => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => map?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 15 }),
+      (err) => handlePromiseError(Promise.reject(err)),
+      { enableHighAccuracy: true },
+    );
+  };
+
+  const toggleMapProjection = () => {
+    isGlobeView = !isGlobeView;
   };
 </script>
 
@@ -327,97 +360,164 @@
   fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
   attributionControl={false}
   diffStyleUpdates={true}
+  projection={mapProjection}
   onload={(event: Map) => {
     event.setMaxZoom(18);
     event.on('click', handleMapClick);
-    if (!simplified) {
-      event.addControl(new GlobeControl(), 'top-left');
-    }
   }}
   bind:map
 >
   {#snippet children({ map }: { map: Map })}
     {#if showSimpleControls}
-      <NavigationControl position="top-left" showCompass={!simplified} />
-
-      {#if !simplified}
-        <GeolocateControl position="top-left" />
-        <ScaleControl />
-        <AttributionControl compact={false} />
-      {/if}
-    {/if}
-
-    {#if showSettings}
-      <Control>
-        <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}>
-            <Icon icon={mdiCog} size="100%" class="text-black/80" />
-          </ControlButton>
-        </ControlGroup>
-      </Control>
-    {/if}
-
-    {#if onOpenInMapView && showSimpleControls}
       <Control position="top-right">
-        <ControlGroup>
-          <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
-          </ControlButton>
-        </ControlGroup>
+        <div class="pointer-events-auto mt-3 mr-3 flex flex-col gap-3">
+          {#if showSettings}
+            <ControlGroup class="m-0!">
+              <ControlButton title={$t('map_settings')} onclick={handleSettingsClick}>
+                <Icon icon={mdiCog} size="24" />
+              </ControlButton>
+            </ControlGroup>
+          {/if}
+
+          {#if !simplified}
+            <ControlGroup class="m-0!">
+              <ControlButton
+                title={isGlobeView ? $t('switch_to_flat_map') : $t('switch_to_globe_map')}
+                onclick={toggleMapProjection}
+              >
+                <Icon icon={isGlobeView ? mdiMap : mdiEarth} size="24" />
+              </ControlButton>
+            </ControlGroup>
+          {/if}
+
+          {#if onOpenInMapView}
+            <ControlGroup class="m-0!">
+              <ControlButton title={$t('open_in_map_view')} onclick={() => void onOpenInMapView()}>
+                <Icon icon={mdiMap} size="24" />
+              </ControlButton>
+            </ControlGroup>
+          {/if}
+
+          {#if onToggleTimeline}
+            <ControlGroup class="m-0!">
+              <ControlButton title={$t('timeline')} onclick={() => onToggleTimeline?.()}>
+                <Icon
+                  icon={mdiImageMultiple}
+                  size="24"
+                  class={isTimelineOpen ? 'text-immich-primary dark:text-immich-primary' : ''}
+                />
+              </ControlButton>
+            </ControlGroup>
+          {/if}
+        </div>
+      </Control>
+
+      <Control position="bottom-right">
+        <div class="pointer-events-auto·mr-3·mb-3·flex·flex-col·gap-3">
+          {#if !simplified}
+            <ControlGroup class="m-0!">
+              <ControlButton title={$t('geolocate')} onclick={handleLocate}>
+                <Icon icon={mdiCrosshairsGps} size="24" />
+              </ControlButton>
+            </ControlGroup>
+          {/if}
+
+          <ControlGroup class="m-0!">
+            <ControlButton title={$t('zoom_in')} onclick={() => map?.zoomIn()}>
+              <Icon icon={mdiPlus} size="24" />
+            </ControlButton>
+            <ControlButton title={$t('zoom_out')} onclick={() => map?.zoomOut()}>
+              <Icon icon={mdiMinus} size="24" />
+            </ControlButton>
+          </ControlGroup>
+        </div>
+      </Control>
+
+      <Control position="bottom-left">
+        <div
+          class="mb-3 ml-4 rounded-sm bg-white/70 px-2 py-0.5 text-[11px] font-medium text-black/80 shadow-sm backdrop-blur-md transition-all duration-300 ease-out dark:bg-immich-dark-gray/70 dark:text-white/80"
+        >
+          © OpenStreetMap
+        </div>
       </Control>
     {/if}
-
     <GeoJSON
       data={{
         type: 'FeatureCollection',
         features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
-      cluster={{ radius: 35, maxZoom: 18 }}
+      cluster={{ radius: 35, maxZoom: 17 }}
     >
-      <MarkerLayer
-        applyToClusters
-        asButton
-        onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
-      >
-        {#snippet children({ feature })}
-          <div
-            class="flex size-10 items-center justify-center rounded-full bg-immich-primary font-mono font-bold text-white opacity-90 shadow-lg transition-all duration-200 hover:bg-immich-dark-primary hover:text-immich-dark-bg"
-          >
-            {feature.properties?.point_count?.toLocaleString()}
-          </div>
-        {/snippet}
-      </MarkerLayer>
-      <MarkerLayer
-        applyToClusters={false}
-        asButton
-        onclick={(event) => {
-          if (!popup) {
-            handleAssetClick(event.feature.properties?.id, map);
-          }
-        }}
-      >
-        {#snippet children({ feature }: { feature: Feature })}
-          {#if useLocationPin}
-            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[calc(5px-50%)] text-primary" />
-          {:else}
-            <img
-              src={getAssetMediaUrl({ id: feature.properties?.id })}
-              class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
-              alt={feature.properties?.city && feature.properties.country
-                ? $t('map_marker_for_image', {
-                    values: { city: feature.properties.city, country: feature.properties.country },
-                  })
-                : $t('map_marker_with_image')}
-            />
-          {/if}
-          {#if popup}
-            <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-              {@render popup({ marker: asMarker(feature) })}
-            </Popup>
-          {/if}
-        {/snippet}
-      </MarkerLayer>
+      {#if $mapShowHeatmap}
+        <HeatmapLayer
+          id="asset-heatmap-layer"
+          paint={{
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0,
+              'rgba(255, 255, 255, 0)',
+              0.2,
+              'rgb(255, 235, 59)',
+              0.4,
+              'rgb(255, 152, 0)',
+              0.7,
+              'rgb(244, 67, 54)',
+              1,
+              'rgb(183, 28, 28)',
+            ] as ExpressionSpecification,
+            'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.8, 15, 2] as ExpressionSpecification,
+            'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 20, 15, 40] as ExpressionSpecification,
+            'heatmap-opacity': 0.8,
+          }}
+        />
+      {:else}
+        <MarkerLayer
+          applyToClusters
+          asButton
+          onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
+        >
+          {#snippet children({ feature })}
+            <div
+              class="flex size-10 items-center justify-center rounded-full bg-immich-primary font-mono font-bold text-white opacity-90 shadow-lg transition-all duration-200 hover:bg-immich-dark-primary hover:text-immich-dark-bg"
+            >
+              {feature.properties?.point_count?.toLocaleString()}
+            </div>
+          {/snippet}
+        </MarkerLayer>
+        <MarkerLayer
+          applyToClusters={false}
+          asButton
+          onclick={(event) => {
+            if (!popup) {
+              handleAssetClick(event.feature.properties?.id, map);
+            }
+          }}
+        >
+          {#snippet children({ feature }: { feature: Feature })}
+            {#if useLocationPin}
+              <Icon icon={mdiMapMarker} size="50px" class="translate-y-[-50%] text-primary" />
+            {:else}
+              <img
+                src={getAssetMediaUrl({ id: feature.properties?.id })}
+                class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
+                alt={feature.properties?.city && feature.properties.country
+                  ? $t('map_marker_for_image', {
+                      values: { city: feature.properties.city, country: feature.properties.country },
+                    })
+                  : $t('map_marker_with_image')}
+              />
+            {/if}
+            {#if popup}
+              <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
+                {@render popup?.({ marker: asMarker(feature) })}
+              </Popup>
+            {/if}
+          {/snippet}
+        </MarkerLayer>
+      {/if}
     </GeoJSON>
   {/snippet}
 </MapLibre>

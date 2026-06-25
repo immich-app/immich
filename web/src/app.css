@@ -178,3 +178,23 @@
     @apply bg-subtle rounded-lg;
   }
 }
+
+.maplibregl-ctrl-group {
+  @apply bg-white/70! shadow-lg! backdrop-blur-md dark:bg-immich-dark-gray/70! overflow-hidden border border-white/20 dark:border-white/10;
+}
+
+.maplibregl-ctrl-group {
+  @apply rounded-full!;
+}
+
+.maplibregl-ctrl-group:has(button:nth-child(2)) {
+  @apply rounded-2xl!;
+}
+
+.maplibregl-ctrl-group button {
+  @apply w-11! h-11! flex items-center justify-center text-black/80 transition-all hover:bg-white/90! dark:text-white/80 dark:hover:bg-immich-dark-gray/90!;
+}
+
+.maplibregl-ctrl-group button + button {
+  @apply border-t border-black/10 dark:border-white/10;
+}
