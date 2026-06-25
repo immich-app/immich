@@ -41,9 +41,7 @@ const matchValueResult = (value: string, config: MatchValueConfig) => {
 };
 
 export const assetFileFilter = () => {
-  return wrapper<'assetFileFilter'>(({ data, config }) => (
-    matchValueResult(data.asset.originalFileName || '', config),
-  );
+  return wrapper<'assetFileFilter'>(({ data, config }) => matchValueResult(data.asset.originalFileName || '', config));
 };
 
 export const assetMissingTimeZoneFilter = () => {
@@ -93,32 +91,8 @@ export const assetLocationFilter = () => {
   });
 };
 
-type AssetExifFilterConfig = MatchValueConfig & {
-  property:
-    | 'make'
-    | 'model'
-    | 'exifImageWidth'
-    | 'exifImageHeight'
-    | 'fileSizeInByte'
-    | 'orientation'
-    | 'lensModel'
-    | 'fNumber'
-    | 'focalLength'
-    | 'iso'
-    | 'description'
-    | 'fps'
-    | 'exposureTime'
-    | 'livePhotoCID'
-    | 'timeZone'
-    | 'projectionType'
-    | 'profileDescription'
-    | 'colorspace'
-    | 'bitsPerSample'
-    | 'rating';
-};
-
 export const assetExifFilter = () => {
-  return wrapper<WorkflowType.AssetV1, AssetExifFilterConfig>(({ config, data }) => {
+  return wrapper<'assetExifFilter'>(({ config, data }) => {
     if (!data.asset.exifInfo) {
       return { workflow: { continue: false } };
     }
