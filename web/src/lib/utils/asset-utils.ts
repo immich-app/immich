@@ -305,7 +305,7 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
           onclick: async () => {
             await navigate({ targetRoute: 'current', assetId: stack.primaryAssetId });
             close();
-          }
+          },
         }),
       });
     }
