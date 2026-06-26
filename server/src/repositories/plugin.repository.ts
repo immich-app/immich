@@ -20,7 +20,6 @@ export type PluginHostFunction = (callContext: CallContext, input: bigint) => Pr
 export type PluginLoadOptions = {
   runInWorker?: boolean;
   functions?: Record<string, PluginHostFunction>;
-  allowedHosts?: string[];
 };
 
 export type PluginMethodSearchResponse = {
@@ -204,7 +203,7 @@ export class PluginRepository {
     });
   }
 
-  async load({ key, label, wasmBytes }: PluginLoad, { runInWorker, functions, allowedHosts }: PluginLoadOptions) {
+  async load({ key, label, wasmBytes }: PluginLoad, { runInWorker, functions }: PluginLoadOptions) {
     const data = new Uint8Array(wasmBytes.buffer, wasmBytes.byteOffset, wasmBytes.byteLength);
     const logger = LoggingRepository.create(`Plugin:${label}`);
     const pool = createPool<ExtismPlugin>(
@@ -218,7 +217,6 @@ export class PluginRepository {
               functions: {
                 'extism:host/user': functions ?? {},
               },
-              allowedHosts,
               logger: {
                 trace: (message) => logger.verbose(message),
                 info: (message) => logger.log(message),
