@@ -20,6 +20,7 @@ import { resolveMethod } from 'src/utils/workflow';
 import { MediumTestContext } from 'test/medium.factory';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { getKyselyDB } from 'test/utils';
+import { Mock } from 'vitest';
 
 let initialized = false;
 
@@ -425,6 +426,32 @@ describe('core plugin', () => {
 
       await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
       await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
+
+  describe('webhook', () => {
+    it('should trigger a webhook on asset upload', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      global.fetch = vi.fn(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') })) as Mock;
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#webhook',
+            config: { url: 'http://localhost', method: 'POST' },
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+    });
+
+    afterEach(() => {
+      vi.clearAllMocks();
     });
   });
 });
