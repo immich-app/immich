@@ -155,3 +155,21 @@ export const assetAddToAlbums = wrapper<'assetAddToAlbums'>(({ config, data, fun
   functions.addAssetsToAlbums({ albumIds: config.albumIds, assetIds: [assetId] });
   return {};
 });
+
+export const webhook = wrapper<'webhook'>(({ config, data, functions }) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (config.headerName && config.headerValue) {
+    headers[config.headerName] = config.headerValue;
+  }
+
+  functions.httpRequest(config.url, {
+    method: config.method ?? 'POST',
+    body: JSON.stringify(data.asset),
+    headers,
+  });
+
+  return {};
+});
