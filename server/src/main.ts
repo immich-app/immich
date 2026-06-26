@@ -125,7 +125,7 @@ class Workers {
   }
 
   onError(name: ImmichWorker, error: Error) {
-    console.error(`${name} worker error: ${JSON.stringify(error)}, stack: ${error.stack}`);
+    console.error(`${name} worker error: ${error}, stack: ${error.stack}`);
   }
 
   onExit(name: ImmichWorker, exitCode: number | null) {
