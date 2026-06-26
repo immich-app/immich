@@ -16252,7 +16252,7 @@
     },
     {
       "name": "Faces",
-      "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
+      "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created manually."
     },
     {
       "name": "Integrity (admin)",
