@@ -20,7 +20,6 @@ import { resolveMethod } from 'src/utils/workflow';
 import { MediumTestContext } from 'test/medium.factory';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { getKyselyDB } from 'test/utils';
-import { Mock } from 'vitest';
 
 let initialized = false;
 
@@ -434,9 +433,8 @@ describe('core plugin', () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
 
-      globalThis.fetch = vi.fn(() =>
-        Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') }),
-      ) as Mock;
+      const fetchMock = vi.fn(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') }));
+      vi.stubGlobal('fetch', fetchMock);
 
       const workflow = await createWorkflow({
         ownerId: user.id,
@@ -450,10 +448,11 @@ describe('core plugin', () => {
       });
 
       await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      expect(fetchMock).toHaveBeenCalled();
     });
 
     afterEach(() => {
-      vi.clearAllMocks();
+      vi.unstubAllGlobals();
     });
   });
 });
