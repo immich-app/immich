@@ -855,11 +855,11 @@ export class MetadataService extends BaseService {
     const adjustedRegionList = regionInfo.RegionList.map((region) => {
       let { X, Y, W, H } = region.Area;
 
-      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers and limited to 16 decimal places.
-      X = Number(Number(X).toFixed(16));
-      Y = Number(Number(Y).toFixed(16));
-      W = Number(Number(W).toFixed(16));
-      H = Number(Number(H).toFixed(16));
+      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers.
+      X = Number(X);
+      Y = Number(Y);
+      W = Number(W);
+      H = Number(H);
 
       switch (orientation) {
         case ExifOrientation.MirrorHorizontal: {
