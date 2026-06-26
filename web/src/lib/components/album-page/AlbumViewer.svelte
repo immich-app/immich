@@ -34,7 +34,7 @@
 
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
-  const options = $derived({ albumId: album.id, order: album.order });
+  const options = $derived({ albumId: album.id, order: album.order, withStacked: true });
   let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   dragAndDropFilesStore.subscribe((value) => {
@@ -71,7 +71,7 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
-  <Timeline enableRouting={true} {album} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
+  <Timeline enableRouting={true} {album} bind:timelineManager {options} withStacked assetInteraction={assetMultiSelectManager}>
     <section class="px-2 pt-8 md:px-0 md:pt-24">
       <!-- ALBUM TITLE -->
       <h1 class="text-2xl text-primary transition-all outline-none md:text-4xl lg:text-6xl">
