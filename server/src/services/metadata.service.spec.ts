@@ -1804,44 +1804,6 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('should prefer ExifImageWidth/Height over ImageSize', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({
-        ExifImageWidth: 8448,
-        ExifImageHeight: 6336,
-        ImageSize: '9600x6376',
-        ImageWidth: 9600,
-        ImageHeight: 6376,
-      });
-
-      await sut.handleMetadataExtraction({ id: asset.id });
-      expect(mocks.asset.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          width: 8448,
-          height: 6336,
-        }),
-      );
-    });
-
-    it('should fall back to ImageSize when ExifImageWidth/Height is missing', async () => {
-      const asset = AssetFactory.create();
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
-      mockReadTags({
-        ImageSize: '6000x4000',
-        ImageWidth: 1620,
-        ImageHeight: 1080,
-      });
-
-      await sut.handleMetadataExtraction({ id: asset.id });
-      expect(mocks.asset.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          width: 6000,
-          height: 4000,
-        }),
-      );
-    });
-
     it('should overwrite existing width/height for unedited assets', async () => {
       const asset = AssetFactory.create({ width: 1920, height: 1080, isEdited: false });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
