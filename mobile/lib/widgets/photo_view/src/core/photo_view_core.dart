@@ -201,7 +201,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     } else if (scaleState == PhotoViewScaleState.zoomedIn) {
       animateRotation(controller.rotation, 0);
       if (_shouldAllowPanRotate()) {
-        animatePosition(controller.position, Offset.zero);
+        animatePosition(controller.position, clampPosition());
       }
     }
 
