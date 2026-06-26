@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -14,22 +15,31 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart'
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
+
+final _hlsVideoSessionIdRegex = RegExp(
+  r'/video/stream/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+);
+// For BC if we add an audio endpoint
+final _hlsAudioSessionIdRegex = RegExp(
+  r'/audio/stream/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+);
 
 class NativeVideoViewer extends ConsumerStatefulWidget {
   final BaseAsset asset;
   final String? localFilePath;
   final bool isCurrent;
   final bool showControls;
-  final Widget image;
+  final ImageProvider imageProvider;
 
   const NativeVideoViewer({
     super.key,
     required this.asset,
     this.localFilePath,
-    required this.image,
+    required this.imageProvider,
     this.isCurrent = false,
     this.showControls = true,
   });
@@ -46,6 +56,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   Timer? _loadTimer;
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
+  String? _remoteAssetId;
 
   VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
 
@@ -67,11 +78,16 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
       _notifier.pause();
+      _notifier.endHlsSession();
       return;
     }
 
-    // Prevent unnecessary loading when swiping between assets.
-    _loadTimer = Timer(const Duration(milliseconds: 200), _loadVideo);
+    if (ref.read(serverInfoProvider).serverFeatures.realtimeTranscoding) {
+      _loadVideo();
+    } else {
+      // Prevent unnecessary loading when swiping between assets.
+      _loadTimer = Timer(const Duration(milliseconds: 200), _loadVideo);
+    }
   }
 
   @override
@@ -141,14 +157,22 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      final remoteId = (videoAsset as RemoteAsset).id;
-
-      final serverEndpoint = Store.get(StoreKey.serverEndpoint);
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
-      final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-      final String videoUrl = videoAsset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
-          : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      final realtimeTranscoding = ref.read(serverInfoProvider).serverFeatures.realtimeTranscoding;
+      // Motion photo clips are short, so spinning up a transcoding session for them is wasteful
+      final useHls = !isOriginalVideo && videoAsset.livePhotoVideoId == null && realtimeTranscoding;
+      final remoteId = (videoAsset as RemoteAsset).id;
+      final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+      final String videoUrl;
+      if (useHls) {
+        videoUrl = '$serverEndpoint/assets/$remoteId/video/stream/main.m3u8';
+      } else {
+        final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
+        videoUrl = videoAsset.livePhotoVideoId != null
+            ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
+            : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      }
+      _remoteAssetId = remoteId;
 
       return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
     } catch (error) {
@@ -209,11 +233,17 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _notifier.onNativeStatusChanged();
   }
 
+  void _onSourceResolved() {
+    final url = _controller?.onPlaybackSourceResolved.value;
+    _notifier.updateHlsSession(assetId: _remoteAssetId, sessionId: url == null ? null : _extractHlsSessionId(url));
+  }
+
   void _removeListeners() {
     _controller?.onPlaybackPositionChanged.removeListener(_onPlaybackPositionChanged);
     _controller?.onPlaybackStatusChanged.removeListener(_onPlaybackStatusChanged);
     _controller?.onPlaybackReady.removeListener(_onPlaybackReady);
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
+    _controller?.onPlaybackSourceResolved.removeListener(_onSourceResolved);
   }
 
   void _loadVideo() async {
@@ -244,6 +274,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     nc.onPlaybackStatusChanged.addListener(_onPlaybackStatusChanged);
     nc.onPlaybackReady.addListener(_onPlaybackReady);
     nc.onPlaybackEnded.addListener(_onPlaybackEnded);
+    nc.onPlaybackSourceResolved.addListener(_onSourceResolved);
 
     _controller = nc;
 
@@ -252,30 +283,85 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
   }
 
+  /// Extracts the HLS session id from a resolved playlist or segment URL,
+  /// e.g. `https://host/api/assets/{id}/video/stream/{sessionId}/0/playlist.m3u8`.
+  String? _extractHlsSessionId(String url) =>
+      _hlsVideoSessionIdRegex.firstMatch(url)?.group(1) ?? _hlsAudioSessionIdRegex.firstMatch(url)?.group(1);
+
   @override
   Widget build(BuildContext context) {
-    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final image = Image(image: widget.imageProvider, fit: BoxFit.contain, alignment: Alignment.center);
+    if (ref.watch(castProvider.select((c) => c.isCasting))) {
+      return IgnorePointer(child: Center(child: image));
+    }
 
+    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
     return IgnorePointer(
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Center(child: widget.image),
-          if (!isCasting) ...[
-            Visibility.maintain(
-              visible: _isVideoReady,
-              child: NativeVideoPlayerView(onViewReady: _initController),
-            ),
-            Center(
-              child: AnimatedOpacity(
-                opacity: status == VideoPlaybackStatus.buffering ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 400),
-                child: const CircularProgressIndicator(),
-              ),
-            ),
-          ],
+          // The engine snaps the video platform view to the device-pixel grid; snap the
+          // placeholder the same way so it doesn't show a hairline past the video's edge.
+          _DevicePixelSnap(devicePixelRatio: MediaQuery.devicePixelRatioOf(context), child: image),
+          Visibility.maintain(
+            visible: _isVideoReady,
+            child: NativeVideoPlayerView(onViewReady: _initController),
+          ),
+          if (status == VideoPlaybackStatus.buffering) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
+  }
+}
+
+class _DevicePixelSnap extends SingleChildRenderObjectWidget {
+  final double devicePixelRatio;
+
+  const _DevicePixelSnap({required this.devicePixelRatio, required Widget super.child});
+
+  @override
+  _RenderDevicePixelSnap createRenderObject(BuildContext context) => _RenderDevicePixelSnap(devicePixelRatio);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderDevicePixelSnap renderObject) {
+    renderObject.devicePixelRatio = devicePixelRatio;
+  }
+}
+
+class _RenderDevicePixelSnap extends RenderShiftedBox {
+  _RenderDevicePixelSnap(this._devicePixelRatio) : super(null);
+
+  double _devicePixelRatio;
+  set devicePixelRatio(double value) {
+    if (_devicePixelRatio == value) {
+      return;
+    }
+    _devicePixelRatio = value;
+    markNeedsLayout();
+  }
+
+  /// The largest device-pixel-aligned extent that still tucks under the platform view.
+  double _snap(double extent) {
+    final scaled = extent * _devicePixelRatio;
+    final floored = scaled.floorToDouble();
+    if (floored == scaled) {
+      return extent;
+    }
+    final pixels = floored - 1;
+    return pixels <= 0 ? extent : pixels / _devicePixelRatio;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  void performLayout() {
+    size = constraints.biggest;
+    final child = this.child;
+    if (child == null) {
+      return;
+    }
+    child.layout(BoxConstraints.tight(Size(_snap(size.width), _snap(size.height))));
+    (child.parentData! as BoxParentData).offset = Offset.zero;
   }
 }

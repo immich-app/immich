@@ -66,7 +66,7 @@ class DriftMemoryCard extends StatelessWidget {
                     asset: asset,
                     isCurrent: isCurrent,
                     showControls: false,
-                    image: FullImage(asset, size: context.sizeData, fit: BoxFit.contain),
+                    imageProvider: getFullImageProvider(asset, size: context.sizeData),
                   ),
                 ),
               );

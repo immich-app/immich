@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
+import 'package:openapi/api.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 enum VideoPlaybackStatus { paused, playing, buffering, completed }
@@ -33,21 +35,25 @@ final videoPlayerProvider = StateNotifierProvider.autoDispose.family<VideoPlayer
   ref,
   name,
 ) {
-  return VideoPlayerNotifier();
+  return VideoPlayerNotifier(ref.read(apiServiceProvider).assetsApi);
 });
 
 class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   static final _log = Logger('VideoPlayerNotifier');
 
-  VideoPlayerNotifier() : super(_defaultState);
+  VideoPlayerNotifier(this._assetsApi) : super(_defaultState);
 
+  final AssetsApi _assetsApi;
   NativeVideoPlayerController? _controller;
   Timer? _bufferingTimer;
   Timer? _seekTimer;
   VideoPlaybackStatus? _holdStatus;
+  String? _hlsAssetId;
+  String? _hlsSessionId;
 
   @override
   void dispose() {
+    endHlsSession();
     _bufferingTimer?.cancel();
     _seekTimer?.cancel();
     WakelockPlus.disable();
@@ -58,6 +64,29 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
   void attachController(NativeVideoPlayerController controller) {
     _controller = controller;
+  }
+
+  void updateHlsSession({required String? assetId, required String? sessionId}) {
+    if (sessionId == null || sessionId == _hlsSessionId) {
+      return;
+    }
+    endHlsSession();
+    _hlsAssetId = assetId;
+    _hlsSessionId = sessionId;
+  }
+
+  void endHlsSession() {
+    final assetId = _hlsAssetId;
+    final sessionId = _hlsSessionId;
+    _hlsSessionId = null;
+    if (assetId == null || sessionId == null) {
+      return;
+    }
+    unawaited(
+      _assetsApi.endSession(assetId, sessionId).onError((error, stackTrace) {
+        _log.warning('Failed to end HLS session $sessionId for asset $assetId', error, stackTrace);
+      }),
+    );
   }
 
   Future<void> load(VideoSource source) async {

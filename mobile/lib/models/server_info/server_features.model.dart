@@ -7,6 +7,7 @@ class ServerFeatures {
   final bool passwordLogin;
   final bool ocr;
   final bool smartSearch;
+  final bool realtimeTranscoding;
 
   const ServerFeatures({
     required this.trash,
@@ -15,6 +16,7 @@ class ServerFeatures {
     required this.passwordLogin,
     this.ocr = false,
     this.smartSearch = false,
+    this.realtimeTranscoding = false,
   });
 
   ServerFeatures copyWith({
@@ -24,6 +26,7 @@ class ServerFeatures {
     bool? passwordLogin,
     bool? ocr,
     bool? smartSearch,
+    bool? realtimeTranscoding,
   }) {
     return ServerFeatures(
       trash: trash ?? this.trash,
@@ -32,12 +35,13 @@ class ServerFeatures {
       passwordLogin: passwordLogin ?? this.passwordLogin,
       ocr: ocr ?? this.ocr,
       smartSearch: smartSearch ?? this.smartSearch,
+      realtimeTranscoding: realtimeTranscoding ?? this.realtimeTranscoding,
     );
   }
 
   @override
   String toString() {
-    return 'ServerFeatures(trash: $trash, map: $map, oauthEnabled: $oauthEnabled, passwordLogin: $passwordLogin, ocr: $ocr, smartSearch: $smartSearch)';
+    return 'ServerFeatures(trash: $trash, map: $map, oauthEnabled: $oauthEnabled, passwordLogin: $passwordLogin, ocr: $ocr, smartSearch: $smartSearch, realtimeTranscoding: $realtimeTranscoding)';
   }
 
   ServerFeatures.fromDto(ServerFeaturesDto dto)
@@ -46,7 +50,8 @@ class ServerFeatures {
       oauthEnabled = dto.oauth,
       passwordLogin = dto.passwordLogin,
       ocr = dto.ocr,
-      smartSearch = dto.smartSearch;
+      smartSearch = dto.smartSearch,
+      realtimeTranscoding = dto.realtimeTranscoding;
 
   @override
   bool operator ==(covariant ServerFeatures other) {
@@ -59,7 +64,8 @@ class ServerFeatures {
         other.oauthEnabled == oauthEnabled &&
         other.passwordLogin == passwordLogin &&
         other.ocr == ocr &&
-        other.smartSearch == smartSearch;
+        other.smartSearch == smartSearch &&
+        other.realtimeTranscoding == realtimeTranscoding;
   }
 
   @override
@@ -69,6 +75,7 @@ class ServerFeatures {
         oauthEnabled.hashCode ^
         passwordLogin.hashCode ^
         ocr.hashCode ^
-        smartSearch.hashCode;
+        smartSearch.hashCode ^
+        realtimeTranscoding.hashCode;
   }
 }
