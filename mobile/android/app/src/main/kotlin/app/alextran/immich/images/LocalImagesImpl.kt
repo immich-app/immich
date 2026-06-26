@@ -12,6 +12,7 @@ import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
 import androidx.annotation.RequiresApi
+import androidx.exifinterface.media.ExifInterface
 import app.alextran.immich.NativeBuffer
 import kotlin.math.*
 import java.io.IOException
@@ -74,6 +75,11 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   companion object {
     val CANCELLED = Result.success<Map<String, Long>?>(null)
     val OPTIONS = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
+
+    // "Load original" decodes a raw at full res, and rotating it (below) needs a second bitmap, so a
+    // huge DNG would briefly hold two large copies. Cap the decode resolution to bound that. This
+    // only trims pixels on very large raws - they still come out upright, just downsampled.
+    const val MAX_RAW_DECODE_PIXELS = 24_000_000L
   }
 
   override fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit) {
@@ -200,16 +206,90 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     val uri = ContentUris.withAppendedId(Images.Media.EXTERNAL_CONTENT_URI, id)
+    // Only the Q+ ImageDecoder / loadThumbnail decoders skip EXIF orientation for raw (e.g. DNG).
+    // The pre-Q Glide / MediaStore-thumbnail paths already orient raw, so don't rotate those again.
+    val handleRaw = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isRawMime(uri)
+
     if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
-      return decodeSource(uri, size, signal)
+      // A "load original" request is unsized -> a full-res decode. For raw, that plus the rotation
+      // below would briefly hold two large bitmaps, so cap the raw decode to a safe pixel budget.
+      val bitmap = if (handleRaw && (size.width <= 0 || size.height <= 0)) {
+        decodeRawCapped(uri, signal)
+      } else {
+        decodeSource(uri, size, signal)
+      }
+      return if (handleRaw) applyExifRotation(uri, bitmap, signal) else bitmap
     }
 
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       resolver.loadThumbnail(uri, size, signal)
     } else {
       signal.setOnCancelListener { Images.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Images.Thumbnails.getThumbnail(resolver, id, Images.Thumbnails.MINI_KIND, OPTIONS)
     }
+    return if (handleRaw) applyExifRotation(uri, bitmap, signal) else bitmap
+  }
+
+  private fun isRawMime(uri: Uri): Boolean {
+    val mime = resolver.getType(uri) ?: return false
+    return mime.startsWith("image/x-") || mime == "image/dng"
+  }
+
+  // Full-res raw decode for "load original", sampled down to MAX_RAW_DECODE_PIXELS (power of two).
+  // Caps resolution only; the caller still rotates the result, so even huge raws end up upright.
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private fun decodeRawCapped(uri: Uri, signal: CancellationSignal): Bitmap {
+    signal.throwIfCanceled()
+    return ImageDecoder.decodeBitmap(ImageDecoder.createSource(resolver, uri)) { decoder, info, _ ->
+      val pixels = info.size.width.toLong() * info.size.height.toLong()
+      var sample = 1
+      while (pixels / (sample.toLong() * sample) > MAX_RAW_DECODE_PIXELS) {
+        sample *= 2
+      }
+      if (sample > 1) {
+        decoder.setTargetSampleSize(sample)
+      }
+      decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+      decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
+    }
+  }
+
+  // ImageDecoder / loadThumbnail skip EXIF orientation for raw (e.g. DNG) on Q+, so the decoded
+  // bitmap comes back unrotated. Rotate it ourselves to match the file. Runs on the decode pool.
+  private fun applyExifRotation(uri: Uri, bitmap: Bitmap, signal: CancellationSignal): Bitmap {
+    signal.throwIfCanceled()
+    val orientation = resolver.openInputStream(uri)?.use {
+      ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+    } ?: ExifInterface.ORIENTATION_NORMAL
+    val matrix = matrixForExifOrientation(orientation) ?: return bitmap
+    signal.throwIfCanceled()
+    // createBitmap cannot read a hardware-backed source; copy to a software bitmap first if needed.
+    val src = if (bitmap.config == Bitmap.Config.HARDWARE) {
+      bitmap.copy(Bitmap.Config.ARGB_8888, false).also { bitmap.recycle() }
+    } else {
+      bitmap
+    }
+    val rotated = Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, true)
+    if (rotated != src) {
+      src.recycle()
+    }
+    return rotated
+  }
+
+  // EXIF orientation (1-8) -> transform matrix, or null when no rotation/flip is needed.
+  private fun matrixForExifOrientation(orientation: Int): Matrix? {
+    val matrix = Matrix()
+    when (orientation) {
+      ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+      ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+      ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+      ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+      ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+      ExifInterface.ORIENTATION_TRANSPOSE -> matrix.apply { postRotate(90f); postScale(-1f, 1f) }
+      ExifInterface.ORIENTATION_TRANSVERSE -> matrix.apply { postRotate(270f); postScale(-1f, 1f) }
+      else -> return null
+    }
+    return matrix
   }
 
   private fun decodeVideoThumbnail(id: Long, target: Size, signal: CancellationSignal): Bitmap {
