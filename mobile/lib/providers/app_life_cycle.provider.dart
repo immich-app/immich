@@ -113,6 +113,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _handleBetaTimelineResume() async {
     unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
+    _log.info("Handling beta timeline resume");
     await _cancelSync();
 
     // Give isolates time to complete any ongoing database transactions
