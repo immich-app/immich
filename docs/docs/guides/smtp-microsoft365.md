@@ -4,7 +4,7 @@ This guide walks you through how to get the information you need to set up your 
 
 ## Create an app password
 
-You will need to generate an app password to use your Microsoft email in Immich. Depending on if you have a personal or business account, you can use https://go.microsoft.com/fwlink/?linkid=2274139 or https://myaccount.microsoft.com/securtiy-info respectively. 
+You will need to generate an app password to use your Microsoft email in Immich. Depending on if you have a personal or business account, you can use https://go.microsoft.com/fwlink/?linkid=2274139 or https://myaccount.microsoft.com/securtiy-info respectively.
 
 ## Entering the SMTP credential in Immich
 
