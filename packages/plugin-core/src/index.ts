@@ -1,175 +1,201 @@
-import { getWrapper } from '@immich/plugin-sdk';
+import { wrapper } from '@immich/plugin-sdk';
 import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
-const wrapper = getWrapper<Manifest>();
+const methods = wrapper<Manifest>({
+  assetAddToAlbums: ({ config, data, functions }) => {
+    const assetId = data.asset.id;
 
-export const assetFileFilter = wrapper<'assetFileFilter'>(({ data, config }) => {
-  const { pattern, matchType = 'contains', caseSensitive = false } = config;
+    if (config.albumIds.length === 0) {
+      if (!config.albumName) {
+        return {};
+      }
 
-  const { asset } = data;
+      const [existing] = functions.searchAlbums({ name: config.albumName });
+      if (!existing) {
+        const created = functions.createAlbum({ albumName: config.albumName, assetIds: [assetId] });
+        config.albumIds.push(created.id);
+        return {};
+      }
 
-  const fileName = asset.originalFileName || '';
-  const searchName = caseSensitive ? fileName : fileName.toLowerCase();
-  const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
-
-  switch (matchType) {
-    case 'contains': {
-      return { workflow: { continue: searchName.includes(searchPattern) } };
+      config.albumIds.push(existing.id);
     }
 
-    case 'exact': {
-      return { workflow: { continue: searchName === searchPattern } };
-    }
-
-    case 'startsWith': {
-      return { workflow: { continue: searchName.startsWith(searchPattern) } };
-    }
-
-    case 'regex': {
-      const flags = caseSensitive ? '' : 'i';
-      const regex = new RegExp(searchPattern, flags);
-      return { workflow: { continue: regex.test(fileName) } };
-    }
-
-    default: {
-      return {};
-    }
-  }
-});
-
-export const assetMissingTimeZoneFilter = wrapper<'assetMissingTimeZoneFilter'>(({ config, data }) => {
-  const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
-  const needsTimeZone = config.inverse ? true : false;
-  return { workflow: { continue: hasTimeZone === needsTimeZone } };
-});
-
-export const assetLocationFilter = wrapper<'assetLocationFilter'>(({ config, data }) => {
-  if (
-    (config.region?.country && config.region.country !== data.asset.exifInfo?.country) ||
-    (config.region?.state && config.region.state !== data.asset.exifInfo?.state) ||
-    (config.region?.city && config.region.city !== data.asset.exifInfo?.city)
-  ) {
-    return { workflow: { continue: false } };
-  }
-
-  const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
-  const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
-
-  if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
-    return { workflow: { continue: true } };
-  }
-
-  const assetLat = data.asset.exifInfo?.latitude;
-  const assetLon = data.asset.exifInfo?.longitude;
-
-  if (assetLat === undefined || assetLat === null || assetLon === undefined || assetLon === null) {
-    return { workflow: { continue: false } };
-  }
-
-  const earthDiameter = 12742;
-  const deg = Math.PI / 180;
-  const delta = Math.asin(
-    Math.sqrt(
-      Math.pow(Math.sin((assetLat * deg - configLat * deg) / 2), 2) +
-        Math.cos(assetLat * deg) *
-          Math.cos(configLat * deg) *
-          Math.pow(Math.sin((assetLon * deg - configLon * deg) / 2), 2),
-    ),
-  );
-
-  return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
-});
-
-export const assetTypeFilter = wrapper<'assetTypeFilter'>(({ config, data }) => {
-  return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
-});
-
-export const assetFavorite = wrapper<'assetFavorite'>(({ config, data }) => {
-  const target = config.inverse ? false : true;
-  if (target !== data.asset.isFavorite) {
-    return {
-      changes: {
-        asset: { isFavorite: target },
-      },
-    };
-  }
-});
-
-export const assetVisibility = wrapper<'assetVisibility'>(({ config }) => ({
-  changes: { asset: { visibility: config.visibility as AssetVisibility } },
-}));
-
-export const assetArchive = wrapper<'assetArchive'>(({ config, data }) => {
-  if (!config.inverse && data.asset.visibility !== AssetVisibility.Archive) {
-    return { changes: { asset: { visibility: AssetVisibility.Archive } } };
-  }
-
-  if (config.inverse && data.asset.visibility === AssetVisibility.Archive) {
-    return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
-  }
-
-  return {};
-});
-
-export const assetLock = wrapper<'assetLock'>(({ config, data }) => {
-  if (!config.inverse && data.asset.visibility !== AssetVisibility.Locked) {
-    return { changes: { asset: { visibility: AssetVisibility.Locked } } };
-  }
-
-  if (config.inverse && data.asset.visibility === AssetVisibility.Locked) {
-    return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
-  }
-
-  return {};
-});
-
-// export const assetTrash = () => {
-//   // TODO use trash/untrash host functions
-//   return wrapper<WorkflowType.AssetV1, { inverse?: boolean }>(() => ({}));
-// };
-
-export const assetAddToAlbums = wrapper<'assetAddToAlbums'>(({ config, data, functions }) => {
-  const assetId = data.asset.id;
-
-  if (config.albumIds.length === 0) {
-    if (!config.albumName) {
+    if (config.albumIds.length === 1) {
+      functions.addAssetsToAlbum(config.albumIds[0], [assetId]);
       return {};
     }
 
-    const [existing] = functions.searchAlbums({ name: config.albumName });
-    if (!existing) {
-      const created = functions.createAlbum({ albumName: config.albumName, assetIds: [assetId] });
-      config.albumIds.push(created.id);
-      return {};
-    }
-
-    config.albumIds.push(existing.id);
-  }
-
-  if (config.albumIds.length === 1) {
-    functions.addAssetsToAlbum(config.albumIds[0], [assetId]);
+    functions.addAssetsToAlbums({ albumIds: config.albumIds, assetIds: [assetId] });
     return {};
-  }
+  },
 
-  functions.addAssetsToAlbums({ albumIds: config.albumIds, assetIds: [assetId] });
-  return {};
+  assetArchive: ({ config, data }) => {
+    if (!config.inverse && data.asset.visibility !== AssetVisibility.Archive) {
+      return { changes: { asset: { visibility: AssetVisibility.Archive } } };
+    }
+
+    if (config.inverse && data.asset.visibility === AssetVisibility.Archive) {
+      return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
+    }
+
+    return {};
+  },
+
+  assetFavorite: ({ config, data }) => {
+    const target = config.inverse ? false : true;
+    if (target !== data.asset.isFavorite) {
+      return {
+        changes: {
+          asset: { isFavorite: target },
+        },
+      };
+    }
+  },
+
+  assetFileFilter: ({ data, config }) => {
+    const { pattern, matchType = 'contains', caseSensitive = false } = config;
+
+    const { asset } = data;
+
+    const fileName = asset.originalFileName || '';
+    const searchName = caseSensitive ? fileName : fileName.toLowerCase();
+    const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
+
+    switch (matchType) {
+      case 'contains': {
+        return { workflow: { continue: searchName.includes(searchPattern) } };
+      }
+
+      case 'exact': {
+        return { workflow: { continue: searchName === searchPattern } };
+      }
+
+      case 'startsWith': {
+        return { workflow: { continue: searchName.startsWith(searchPattern) } };
+      }
+
+      case 'regex': {
+        const flags = caseSensitive ? '' : 'i';
+        const regex = new RegExp(searchPattern, flags);
+        return { workflow: { continue: regex.test(fileName) } };
+      }
+
+      default: {
+        return {};
+      }
+    }
+  },
+
+  assetLocationFilter: ({ config, data }) => {
+    if (
+      (config.region?.country && config.region.country !== data.asset.exifInfo?.country) ||
+      (config.region?.state && config.region.state !== data.asset.exifInfo?.state) ||
+      (config.region?.city && config.region.city !== data.asset.exifInfo?.city)
+    ) {
+      return { workflow: { continue: false } };
+    }
+
+    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
+    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+
+    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+      return { workflow: { continue: true } };
+    }
+
+    const assetLat = data.asset.exifInfo?.latitude;
+    const assetLon = data.asset.exifInfo?.longitude;
+
+    if (assetLat === undefined || assetLat === null || assetLon === undefined || assetLon === null) {
+      return { workflow: { continue: false } };
+    }
+
+    const earthDiameter = 12742;
+    const deg = Math.PI / 180;
+    const delta = Math.asin(
+      Math.sqrt(
+        Math.pow(Math.sin((assetLat * deg - configLat * deg) / 2), 2) +
+          Math.cos(assetLat * deg) *
+            Math.cos(configLat * deg) *
+            Math.pow(Math.sin((assetLon * deg - configLon * deg) / 2), 2),
+      ),
+    );
+
+    return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  },
+
+  assetLock: ({ config, data }) => {
+    if (!config.inverse && data.asset.visibility !== AssetVisibility.Locked) {
+      return { changes: { asset: { visibility: AssetVisibility.Locked } } };
+    }
+
+    if (config.inverse && data.asset.visibility === AssetVisibility.Locked) {
+      return { changes: { asset: { visibility: AssetVisibility.Timeline } } };
+    }
+
+    return {};
+  },
+
+  assetMissingTimeZoneFilter: ({ config, data }) => {
+    const hasTimeZone = !!data.asset?.exifInfo?.timeZone;
+    const needsTimeZone = config.inverse ? true : false;
+    return { workflow: { continue: hasTimeZone === needsTimeZone } };
+  },
+
+  assetTypeFilter: ({ config, data }) => {
+    return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
+  },
+
+  assetVisibility: ({ config }) => ({
+    changes: { asset: { visibility: config.visibility as AssetVisibility } },
+  }),
+
+  webhook: ({ config, data, functions }) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (config.headerName && config.headerValue) {
+      headers[config.headerName] = config.headerValue;
+    }
+
+    functions.httpRequest(config.url, {
+      method: config.method ?? 'POST',
+      body: JSON.stringify(data.asset),
+      headers,
+    });
+
+    return {};
+  },
 });
 
-export const webhook = wrapper<'webhook'>(({ config, data, functions }) => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+const {
+  assetAddToAlbums,
+  assetArchive,
+  assetFavorite,
+  assetFileFilter,
+  assetLocationFilter,
+  assetLock,
+  assetMissingTimeZoneFilter,
+  assetTypeFilter,
+  assetVisibility,
+  webhook,
 
-  if (config.headerName && config.headerValue) {
-    headers[config.headerName] = config.headerValue;
-  }
+  // should be empty. ensures that every field is destructured
+  ...rest
+} = methods;
 
-  functions.httpRequest(config.url, {
-    method: config.method ?? 'POST',
-    body: JSON.stringify(data.asset),
-    headers,
-  });
+export {
+  assetAddToAlbums,
+  assetArchive,
+  assetFavorite,
+  assetFileFilter,
+  assetLocationFilter,
+  assetLock,
+  assetMissingTimeZoneFilter,
+  assetTypeFilter,
+  assetVisibility,
+  webhook,
+};
 
-  return {};
-});
+'All methods must be destructured and exported' satisfies string & typeof rest;
