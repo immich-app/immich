@@ -1380,8 +1380,8 @@ describe(MetadataService.name, () => {
       const faceTags = makeFaceTags({ Name: person.name });
 
       // Simulating EXIF returning a string with >16 decimal places
-      faceTags.RegionInfo!.RegionList[0].Area.X = '0.48564814814814824' as any;
-      faceTags.RegionInfo!.RegionList[0].Area.W = '0.2' as any;
+      faceTags.RegionInfo!.RegionList[0].Area.X = '0.48564814814814824';
+      faceTags.RegionInfo!.RegionList[0].Area.W = '0.2';
 
       mockReadTags(faceTags);
       mocks.person.getDistinctNames.mockResolvedValue([]);
