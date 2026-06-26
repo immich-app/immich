@@ -1,0 +1,54 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_ui/immich_ui.dart';
+
+import '../../factories/remote_asset_factory.dart';
+import '../../presentation_context.dart';
+
+void main() {
+  late PresentationContext context;
+
+  setUp(() async {
+    context = await PresentationContext.create();
+    await StoreService.I.put(StoreKey.advancedTroubleshooting, true);
+  });
+
+  tearDown(() {
+    context.dispose();
+  });
+
+  group('AssetDebugAction', () {
+    testWidgets('visible for a single asset when advanced troubleshooting is on', (tester) async {
+      await tester.pumpTestWidget(
+        ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
+        overrides: context.overrides,
+      );
+
+      expect(find.byType(ImmichIconButton), findsOneWidget);
+    });
+
+    testWidgets('hidden for multiple assets', (tester) async {
+      await tester.pumpTestWidget(
+        ActionIconButtonWidget(
+          action: AssetDebugAction(assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()]),
+        ),
+        overrides: context.overrides,
+      );
+
+      expect(find.byType(ImmichIconButton), findsNothing);
+    });
+
+    testWidgets('hidden when advanced troubleshooting is off', (tester) async {
+      await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
+      await tester.pumpTestWidget(
+        ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
+        overrides: context.overrides,
+      );
+
+      expect(find.byType(ImmichIconButton), findsNothing);
+    });
+  });
+}

@@ -6,14 +6,11 @@ import {
   type CreateAlbumDto,
 } from '@immich/sdk';
 
-// keep in sync with plugin-core/src/index.d.ts';
 declare module 'extism:host' {
-  interface user {
-    searchAlbums(ptr: PTR): I64;
-    createAlbum(ptr: PTR): I64;
-    addAssetsToAlbum(ptr: PTR): I64;
-    addAssetsToAlbums(ptr: PTR): I64;
-  }
+  interface user extends Record<
+    (typeof availableFunctions)[number],
+    (ptr: PTR) => I64
+  > {}
 }
 
 type AlbumsToAssets = {
@@ -33,6 +30,13 @@ type HostFunctionResult<T> =
 
 type QueryParams<T extends (...args: any) => any> = Parameters<T>[0];
 type AlbumSearchDto = QueryParams<typeof getAllAlbums>;
+
+export const availableFunctions = [
+  'searchAlbums',
+  'createAlbum',
+  'addAssetsToAlbum',
+  'addAssetsToAlbums',
+] as const;
 
 export const hostFunctions = (authToken: string) => {
   const host = Host.getFunctions();
@@ -75,5 +79,5 @@ export const hostFunctions = (authToken: string) => {
       ),
     addAssetsToAlbums: ({ assetIds, albumIds }: AlbumsToAssets) =>
       call('addAssetsToAlbums', authToken, [{ albumIds, assetIds }]),
-  };
+  } satisfies Record<(typeof availableFunctions)[number], unknown>;
 };

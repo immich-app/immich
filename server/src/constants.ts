@@ -155,7 +155,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',
   [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',
   [ApiTag.Faces]:
-    'A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually.',
+    'A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created manually.',
   [ApiTag.Integrity]: 'Endpoints for viewing and managing integrity reports.',
   [ApiTag.Jobs]:
     'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',

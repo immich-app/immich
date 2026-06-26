@@ -5,32 +5,25 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../factories/user_factory.dart';
-import '../../mocks.dart';
 import '../../presentation_context.dart';
 
 void main() {
   late PresentationContext context;
-  late UserDto currentUser;
-  final mocks = ServiceMocks();
 
   setUp(() async {
-    currentUser = UserFactory.createDto();
     context = await PresentationContext.create();
-    when(mocks.user.tryGetMyUser).thenReturn(currentUser);
   });
 
-  tearDown(() async {
-    mocks.resetAll();
-    await context.dispose();
+  tearDown(() {
+    context.dispose();
   });
 
   List<Override> overrides({List<User> candidates = const []}) => [
-    currentUserProvider.overrideWith((ref) => CurrentUserProvider(mocks.user.service)),
-    partnerServiceProvider.overrideWithValue(mocks.partner.service),
+    ...context.overrides,
+    partnerServiceProvider.overrideWithValue(context.mocks.partner.service),
     candidatesStateProvider.overrideWith((ref) => Stream<Iterable<User>>.value(candidates)),
   ];
 
@@ -43,7 +36,9 @@ void main() {
       await tester.tap(find.text(candidate.name));
       await tester.pumpAndSettle();
 
-      verify(() => mocks.partner.service.create(sharedById: currentUser.id, sharedWithId: candidate.id)).called(1);
+      verify(
+        () => context.mocks.partner.service.create(sharedById: context.currentUser.id, sharedWithId: candidate.id),
+      ).called(1);
     });
 
     testWidgets('creates nothing when the selection dialog is dismissed', (tester) async {
@@ -51,7 +46,7 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.escape); // dismiss without selecting
       await tester.pumpAndSettle();
 
-      verifyNever(mocks.partner.create);
+      verifyNever(context.mocks.partner.create);
     });
   });
 
@@ -65,7 +60,9 @@ void main() {
       await tester.tap(find.byType(TextButton).last); // confirm
       await tester.pumpAndSettle();
 
-      verify(() => mocks.partner.service.delete(sharedById: currentUser.id, sharedWithId: partner.id)).called(1);
+      verify(
+        () => context.mocks.partner.service.delete(sharedById: context.currentUser.id, sharedWithId: partner.id),
+      ).called(1);
     });
 
     testWidgets('deletes nothing when the confirmation is cancelled', (tester) async {
@@ -77,7 +74,7 @@ void main() {
       await tester.tap(find.byType(TextButton).first); // cancel
       await tester.pumpAndSettle();
 
-      verifyNever(mocks.partner.delete);
+      verifyNever(context.mocks.partner.delete);
     });
   });
 }
