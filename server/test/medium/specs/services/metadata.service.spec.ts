@@ -1,4 +1,3 @@
-import { exiftool } from 'exiftool-vendored';
 import { Kysely } from 'kysely';
 import { Stats } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
@@ -156,8 +155,7 @@ describe(MetadataService.name, () => {
     it('should ignore IFD1 thumbnail orientation when extracting metadata', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
-      const { filePath } = await createTestFile({ Description: '' });
-      await exiftool.write(filePath, {}, ['-overwrite_original', '-IFD1:Orientation#=6']);
+      const { filePath } = await createTestFile({ 'IFD1:Orientation#': 6 });
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
       await ctx.newExif({ assetId: asset.id, description: '' });
@@ -176,8 +174,7 @@ describe(MetadataService.name, () => {
     it('should ignore IFD1 thumbnail dimensions when extracting metadata', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
-      const { filePath } = await createTestFile({ Description: '' });
-      await exiftool.write(filePath, {}, ['-overwrite_original', '-IFD1:ImageWidth#=160', '-IFD1:ImageHeight#=120']);
+      const { filePath } = await createTestFile({ 'IFD1:ImageWidth#': 160, 'IFD1:ImageHeight#': 120 });
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
       await ctx.newExif({ assetId: asset.id, description: '' });
@@ -192,8 +189,7 @@ describe(MetadataService.name, () => {
     it('should keep IFD0 orientation when extracting metadata', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
-      const { filePath } = await createTestFile({ Description: '' });
-      await exiftool.write(filePath, {}, ['-overwrite_original', '-IFD0:Orientation#=6']);
+      const { filePath } = await createTestFile({ 'IFD0:Orientation#': 6 });
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
       await ctx.newExif({ assetId: asset.id, description: '' });
