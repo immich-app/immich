@@ -434,7 +434,9 @@ describe('core plugin', () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
 
-      global.fetch = vi.fn(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') })) as Mock;
+      globalThis.fetch = vi.fn(() =>
+        Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') }),
+      ) as Mock;
 
       const workflow = await createWorkflow({
         ownerId: user.id,
