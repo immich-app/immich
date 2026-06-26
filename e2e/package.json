@@ -26,7 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.0",
     "@faker-js/faker": "^10.1.0",
-    "@futo-org/backups-orchestrator-ui": "0.9.1",
+    "@futo-org/backups-orchestrator-ui": "0.10.0",
     "@immich/cli": "workspace:*",
     "@immich/e2e-auth-server": "workspace:*",
     "@immich/sdk": "workspace:*",
