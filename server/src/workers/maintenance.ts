@@ -10,7 +10,11 @@ async function bootstrap() {
   process.title = 'immich-maintenance';
   configureTelemetry();
 
-  const app = await NestFactory.create<NestExpressApplication>(MaintenanceModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(MaintenanceModule, {
+    bufferLogs: true,
+    // see comment in api.ts
+    moduleIdGeneratorAlgorithm: 'deep-hash',
+  });
   app.get(AppRepository).setCloseFn(() => app.close());
 
   void configureExpress(app, {

@@ -39,10 +39,6 @@ describe(MaintenanceWorkerService.name, () => {
       strict: false,
     });
 
-    const eventsGatewayMock = {
-      setAuthFn: vitest.fn(),
-    };
-
     sut = new MaintenanceWorkerService(
       mocks.logger as never,
       mocks.app,
@@ -54,7 +50,6 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.process,
       mocks.database as never,
       databaseBackupServiceMock,
-      eventsGatewayMock as never,
     );
 
     sut.mock({

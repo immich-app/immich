@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^3.0.0",
-    "@futo-org/backups-orchestrator-ui": "0.8.0",
+    "@futo-org/backups-orchestrator-ui": "0.9.1",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "workspace:*",
     "@immich/ui": "^0.81.1",

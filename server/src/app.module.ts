@@ -1,6 +1,6 @@
 import { OrchestrationApiModule } from '@futo-org/backups-orchestrator-api';
 import { BullModule } from '@nestjs/bullmq';
-import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { ClsModule } from 'nestjs-cls';
@@ -113,27 +113,55 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
     ...bullImports,
     ...commonImports,
     ScheduleModule.forRoot(),
-    OrchestrationApiModule.forRoot({
-      statePath: yuccaStatePath,
-      requireWsAuth: true,
-      requireLock: true,
-      developmentMode: isYuccaDevelopmentMode,
+    OrchestrationApiModule.forRootAsync({
+      imports: [forwardRef(() => ApiModule)],
+      inject: [AuthService, WebsocketRepository],
+      useFactory: (authService: AuthService, websocketRepository: WebsocketRepository) => ({
+        statePath: yuccaStatePath,
+        requireWsAuth: true,
+        requireLock: true,
+        developmentMode: isYuccaDevelopmentMode,
+        authenticate: (client) =>
+          authService.authenticate({
+            headers: client.request.headers,
+            queryParams: {},
+            metadata: { adminRoute: true, sharedLinkRoute: false, uri: '/api/yucca/socket.io' },
+          }),
+        onInternalEvent: (event) => {
+          websocketRepository.serverSend('YuccaEvent', event);
+        },
+      }),
     }),
   ],
   controllers: [...controllers],
   providers: [...common, ...apiMiddleware, { provide: IWorker, useValue: ImmichWorker.Api }],
+  exports: [AuthService, WebsocketRepository],
 })
 export class ApiModule extends BaseModule {}
 
 @Module({
   imports: [
     ...commonImports,
-    OrchestrationApiModule.forRoot({
-      statePath: yuccaStatePath,
-      externalBaseUrl: 'https://my.immich.app',
-      requireWsAuth: true,
-      requireLock: true,
-      developmentMode: isYuccaDevelopmentMode,
+    OrchestrationApiModule.forRootAsync({
+      imports: [forwardRef(() => MaintenanceModule)],
+      inject: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
+      useFactory: (
+        maintenanceWorkerService: MaintenanceWorkerService,
+        websocketRepository: MaintenanceWebsocketRepository,
+      ) => ({
+        statePath: yuccaStatePath,
+        externalBaseUrl: 'https://my.immich.app',
+        requireWsAuth: true,
+        requireLock: true,
+        developmentMode: isYuccaDevelopmentMode,
+        authenticate: async (client) => {
+          await maintenanceWorkerService.authenticate(client.request.headers);
+          return { user: { isAdmin: true } };
+        },
+        onInternalEvent: (event) => {
+          websocketRepository.serverSend('YuccaEvent', event);
+        },
+      }),
     }),
   ],
   controllers: [MaintenanceWorkerController],
@@ -154,6 +182,7 @@ export class ApiModule extends BaseModule {}
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
     { provide: IWorker, useValue: ImmichWorker.Maintenance },
   ],
+  exports: [MaintenanceWorkerService, MaintenanceWebsocketRepository],
 })
 export class MaintenanceModule {
   constructor(
