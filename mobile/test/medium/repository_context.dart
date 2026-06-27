@@ -217,8 +217,8 @@ class MediumRepositoryContext {
   }
 
   Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
-    imageWidth ??= TestUtils.randInt(999) + 1;
-    imageHeight ??= TestUtils.randInt(999) + 1;
+    imageWidth ??= TestUtils.randInt(999) + 2;
+    imageHeight ??= TestUtils.randInt(999) + 2;
 
     final x1 = TestUtils.randInt(imageWidth - 1);
     final y1 = TestUtils.randInt(imageHeight - 1);

@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/timeline.action.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+
+import '../../factories/remote_asset_factory.dart';
+import '../../presentation_context.dart';
+
+class _FakeAction extends BaseAction {
+  _FakeAction({this.visible = true, this.error});
+
+  final bool visible;
+  final Object? error;
+
+  bool ran = false;
+  bool? selectionDuringOnAction;
+
+  @override
+  IconData get icon => Icons.bolt;
+
+  @override
+  String label(ActionScope scope) => 'fake';
+
+  @override
+  bool isVisible(ActionScope scope) => visible;
+
+  @override
+  Future<void> onAction(ActionScope scope) async {
+    ran = true;
+    selectionDuringOnAction = scope.ref.read(multiSelectProvider).isEnabled;
+    if (error != null) {
+      throw error!;
+    }
+  }
+}
+
+void main() {
+  late PresentationContext context;
+
+  setUp(() async {
+    context = await PresentationContext.create();
+  });
+
+  tearDown(() {
+    context.dispose();
+  });
+
+  List<Override> seededOverrides() => [
+    ...context.overrides,
+    multiSelectProvider.overrideWith(
+      () => MultiSelectNotifier(
+        MultiSelectState(selectedAssets: {RemoteAssetFactory.create()}, lockedSelectionAssets: const {}),
+      ),
+    ),
+  ];
+
+  Future<(ActionScope, ProviderContainer)> pumpScope(WidgetTester tester) async {
+    late ActionScope scope;
+    late ProviderContainer container;
+    await tester.pumpTestWidget(
+      Consumer(
+        builder: (innerContext, ref, _) {
+          scope = ActionScope(context: innerContext, ref: ref, authUser: context.currentUser);
+          container = ProviderScope.containerOf(innerContext, listen: false);
+          return const SizedBox.shrink();
+        },
+      ),
+      overrides: seededOverrides(),
+    );
+    return (scope, container);
+  }
+
+  group('TimelineAction', () {
+    testWidgets('runs the wrapped action and then clears the selection', (tester) async {
+      final inner = _FakeAction();
+      final (scope, container) = await pumpScope(tester);
+      await TimelineAction(action: inner).onAction(scope);
+
+      expect(inner.ran, isTrue);
+      expect(inner.selectionDuringOnAction, isTrue, reason: 'reset must run after the inner action, not before');
+      expect(container.read(multiSelectProvider).isEnabled, isFalse);
+    });
+
+    testWidgets('rethrows and keeps the selection when the wrapped action throws', (tester) async {
+      final error = Exception('boom');
+      final inner = _FakeAction(error: error);
+      final (scope, container) = await pumpScope(tester);
+
+      await expectLater(TimelineAction(action: inner).onAction(scope), throwsA(same(error)));
+
+      expect(inner.ran, isTrue);
+      expect(container.read(multiSelectProvider).isEnabled, isTrue);
+    });
+
+    testWidgets('delegates visibility to the wrapped action', (tester) async {
+      await tester.pumpTestWidget(
+        ActionIconButtonWidget(action: TimelineAction(action: _FakeAction(visible: false))),
+        overrides: context.overrides,
+      );
+
+      expect(find.byType(ActionIconButtonWidget), findsOneWidget);
+      expect(find.byIcon(Icons.bolt), findsNothing);
+    });
+  });
+}
