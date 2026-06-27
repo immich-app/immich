@@ -3,8 +3,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
-import 'package:immich_ui/immich_ui.dart';
 
 class FavoriteAction extends AssetAction<RemoteAsset> {
   final bool favorite;
@@ -26,13 +26,13 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
 
   @override
   Future<void> onAction(ActionScope scope) async {
-    final ActionScope(:ref) = scope;
+    final ActionScope(:ref, :context) = scope;
     final assets = filter(scope).map((asset) => asset.id).toList(growable: false);
 
     await ref.read(assetServiceProvider).updateFavorite(assets, favorite);
     final message = favorite
-        ? StaticTranslations.instance.favorite_action_prompt(count: assets.length)
-        : StaticTranslations.instance.unfavorite_action_prompt(count: assets.length);
-    snackbar.success(message);
+        ? context.t.favorite_action_prompt(count: assets.length)
+        : context.t.unfavorite_action_prompt(count: assets.length);
+    ref.read(toastRepositoryProvider).success(message);
   }
 }
