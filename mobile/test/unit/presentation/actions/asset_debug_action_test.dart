@@ -6,7 +6,7 @@ import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 import '../../factories/remote_asset_factory.dart';
-import '../../presentation_context.dart';
+import '../presentation_context.dart';
 
 void main() {
   late PresentationContext context;
@@ -23,8 +23,8 @@ void main() {
   group('AssetDebugAction', () {
     testWidgets('visible for a single asset when advanced troubleshooting is on', (tester) async {
       await tester.pumpTestWidget(
+        context,
         ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
-        overrides: context.overrides,
       );
 
       expect(find.byType(ImmichIconButton), findsOneWidget);
@@ -32,10 +32,10 @@ void main() {
 
     testWidgets('hidden for multiple assets', (tester) async {
       await tester.pumpTestWidget(
+        context,
         ActionIconButtonWidget(
           action: AssetDebugAction(assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()]),
         ),
-        overrides: context.overrides,
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
@@ -44,8 +44,8 @@ void main() {
     testWidgets('hidden when advanced troubleshooting is off', (tester) async {
       await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
       await tester.pumpTestWidget(
+        context,
         ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
-        overrides: context.overrides,
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
