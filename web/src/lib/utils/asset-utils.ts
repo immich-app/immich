@@ -300,13 +300,10 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
     if (showNotification) {
       toastManager.primary({
         description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-        button: (close) => ({
+        button: {
           label: $t('view_stack'),
-          onclick: async () => {
-            await navigate({ targetRoute: 'current', assetId: stack.primaryAssetId });
-            close();
-          },
-        }),
+          onclick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
+        },
       });
     }
 
