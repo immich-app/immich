@@ -94,12 +94,12 @@ class _ImmichFormattedTextState extends State<ImmichFormattedText> {
 
       final tag = match.group(1)!.toLowerCase();
       final content = match.group(2)!;
-      final formattedSpan = (widget.spanBuilder ?? _defaultSpanBuilder)(tag);
-      final style = formattedSpan.style ?? _defaultTextStyle(tag);
+      final span = widget.spanBuilder?.call(tag);
+      final style = span?.style ?? _defaultTextStyle(tag);
 
       GestureRecognizer? recognizer;
-      if (formattedSpan.onTap != null) {
-        recognizer = TapGestureRecognizer()..onTap = formattedSpan.onTap;
+      if (span?.onTap != null) {
+        recognizer = TapGestureRecognizer()..onTap = span!.onTap;
         _recognizers.add(recognizer);
       }
       spans.add(TextSpan(text: content, style: style, recognizer: recognizer));
@@ -114,19 +114,12 @@ class _ImmichFormattedTextState extends State<ImmichFormattedText> {
     return spans;
   }
 
-  FormattedSpan _defaultSpanBuilder(String tag) => switch (tag) {
-        'b' => const FormattedSpan(style: TextStyle(fontWeight: FontWeight.bold)),
-        'link' => const FormattedSpan(style: TextStyle(decoration: TextDecoration.underline)),
-        _ when tag.endsWith('-link') => const FormattedSpan(style: TextStyle(decoration: TextDecoration.underline)),
-        _ => const FormattedSpan(),
-      };
-
   TextStyle? _defaultTextStyle(String tag) => switch (tag) {
-        'b' => const TextStyle(fontWeight: FontWeight.bold),
-        'link' => const TextStyle(decoration: TextDecoration.underline),
-        _ when tag.endsWith('-link') => const TextStyle(decoration: TextDecoration.underline),
-        _ => null,
-      };
+    'b' => const TextStyle(fontWeight: FontWeight.bold),
+    'link' => const TextStyle(decoration: TextDecoration.underline),
+    _ when tag.endsWith('-link') => const TextStyle(decoration: TextDecoration.underline),
+    _ => null,
+  };
 
   @override
   Widget build(BuildContext context) {

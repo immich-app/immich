@@ -27,6 +27,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
@@ -89,18 +90,9 @@ class LoginForm extends HookConsumerWidget {
     checkVersionMismatch() async {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
-        final appVersion = packageInfo.version;
-        final appMajorVersion = int.parse(appVersion.split('.')[0]);
-        final appMinorVersion = int.parse(appVersion.split('.')[1]);
-        final serverMajorVersion = serverInfo.serverVersion.major;
-        final serverMinorVersion = serverInfo.serverVersion.minor;
-
-        warningMessage.value = getVersionCompatibilityMessage(
-          appMajorVersion,
-          appMinorVersion,
-          serverMajorVersion,
-          serverMinorVersion,
-        );
+        final appSemVer = SemVer.fromString(packageInfo.version);
+        final serverSemVer = serverInfo.serverVersion;
+        warningMessage.value = getVersionCompatibilityMessage(appSemVer, serverSemVer);
       } catch (error) {
         warningMessage.value = 'Error checking version compatibility';
       }
