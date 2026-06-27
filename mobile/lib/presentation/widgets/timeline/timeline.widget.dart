@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
@@ -8,7 +7,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -20,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/drag_selection_controller.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -28,6 +27,27 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
+
+// First asset index of the row shown at [offset]. Pure for testing.
+@visibleForTesting
+int? assetIndexAtOffset(
+  List<Segment> segments,
+  double offset, {
+  required int columnCount,
+  required double maxScrollExtent,
+}) {
+  final clamped = offset.clamp(0.0, maxScrollExtent);
+  final segment = segments.findByOffset(clamped) ?? segments.lastOrNull;
+  if (segment == null) {
+    return null;
+  }
+  final rowIndex = segment.getMinChildIndexForScrollOffset(clamped);
+  if (rowIndex > segment.firstIndex) {
+    final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
+    return segment.firstAssetIndex + rowIndexInSegment * columnCount;
+  }
+  return segment.firstAssetIndex;
+}
 
 class Timeline extends StatelessWidget {
   const Timeline({
@@ -140,9 +160,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   StreamSubscription? _eventSubscription;
 
   // Drag selection state
+  static const _autoScrollStep = 175.0;
+  static const _autoScrollDuration = Duration(milliseconds: 125);
   bool _dragging = false;
-  TimelineAssetIndex? _dragAnchorIndex;
-  final Set<BaseAsset> _draggedAssets = HashSet();
+  DragSelectionController? _dragController;
   ScrollPhysics? _scrollPhysics;
 
   int _perRow = 4;
@@ -226,26 +247,18 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
   }
 
-  int? _getCurrentAssetIndex(List<Segment> segments) {
-    final currentOffset = _scrollController.offset.clamp(0.0, _scrollController.position.maxScrollExtent);
-    final segment = segments.findByOffset(currentOffset) ?? segments.lastOrNull;
-    int? targetAssetIndex;
-    if (segment != null) {
-      final rowIndex = segment.getMinChildIndexForScrollOffset(currentOffset);
-      if (rowIndex > segment.firstIndex) {
-        final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
-        final assetsPerRow = ref.read(timelineArgsProvider).columnCount;
-        final assetIndexInSegment = rowIndexInSegment * assetsPerRow;
-        targetAssetIndex = segment.firstAssetIndex + assetIndexInSegment;
-      } else {
-        targetAssetIndex = segment.firstAssetIndex;
-      }
-    }
-    return targetAssetIndex;
-  }
+  int? _getCurrentAssetIndex(List<Segment> segments) => _assetIndexAtOffset(segments, _scrollController.offset);
+
+  int? _assetIndexAtOffset(List<Segment> segments, double offset) => assetIndexAtOffset(
+    segments,
+    offset,
+    columnCount: ref.read(timelineArgsProvider).columnCount,
+    maxScrollExtent: _scrollController.position.maxScrollExtent,
+  );
 
   @override
   void dispose() {
+    _dragController?.dispose();
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
@@ -295,9 +308,21 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   // Drag selection methods
   void _setDragStartIndex(TimelineAssetIndex index) {
+    // Stop the old drag's controller so its in-flight read can't leak into this one.
+    _dragController?.dispose();
+    final timelineService = ref.read(timelineServiceProvider);
+    _dragController = DragSelectionController(
+      getAssetSafe: timelineService.getAssetSafe,
+      getAssetsRange: timelineService.getAssetsRange,
+      onChange: (select, deselect) {
+        if (!mounted) {
+          return;
+        }
+        ref.read(multiSelectProvider.notifier).selectRange(select, deselect);
+      },
+    )..start(index.assetIndex);
     setState(() {
       _scrollPhysics = const ClampingScrollPhysics();
-      _dragAnchorIndex = index;
       _dragging = true;
     });
   }
@@ -313,8 +338,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     });
     setState(() {
       _dragging = false;
-      _draggedAssets.clear();
     });
+    // Apply the full final range even if a read is still in flight on lift.
+    final finishing = _dragController?.end();
+    if (finishing != null) {
+      unawaited(finishing);
+    }
     final timelineState = ref.read(timelineStateProvider.notifier);
     Future.delayed(const Duration(milliseconds: 300), () {
       timelineState.setScrolling(false);
@@ -322,42 +351,33 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _dragScroll(ScrollDirection direction) {
-    _scrollController.animateTo(
-      _scrollController.offset + (direction == ScrollDirection.forward ? 175 : -175),
-      duration: const Duration(milliseconds: 125),
-      curve: Curves.easeOut,
-    );
+    final position = _scrollController.position;
+    final step = direction == ScrollDirection.forward ? _autoScrollStep : -_autoScrollStep;
+    final target = (_scrollController.offset + step).clamp(0.0, position.maxScrollExtent);
+    _scrollController.animateTo(target, duration: _autoScrollDuration, curve: Curves.easeOut);
+
+    // A held finger emits no move events, so extend the selection to the asset
+    // at the leading edge of the scroll instead.
+    final controller = _dragController;
+    if (controller == null) {
+      return;
+    }
+    final segments = ref.read(timelineSegmentProvider).valueOrNull;
+    if (segments == null) {
+      return;
+    }
+    final edgeOffset = direction == ScrollDirection.forward ? target + position.viewportDimension : target;
+    final edgeIndex = _assetIndexAtOffset(segments, edgeOffset);
+    if (edgeIndex != null) {
+      controller.enter(edgeIndex);
+    }
   }
 
   void _handleDragAssetEnter(TimelineAssetIndex index) {
-    if (_dragAnchorIndex == null || !_dragging) {
+    if (!_dragging) {
       return;
     }
-
-    final timelineService = ref.read(timelineServiceProvider);
-    final dragAnchorIndex = _dragAnchorIndex!;
-
-    // Calculate the range of assets to select
-    final startIndex = math.min(dragAnchorIndex.assetIndex, index.assetIndex);
-    final endIndex = math.max(dragAnchorIndex.assetIndex, index.assetIndex);
-    final count = endIndex - startIndex + 1;
-
-    // Load the assets in the range
-    if (timelineService.hasRange(startIndex, count)) {
-      final selectedAssets = timelineService.getAssets(startIndex, count);
-
-      // Clear previous drag selection and add new range
-      final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
-      for (final asset in _draggedAssets) {
-        multiSelectNotifier.deselectAsset(asset);
-      }
-      _draggedAssets.clear();
-
-      for (final asset in selectedAssets) {
-        multiSelectNotifier.selectAsset(asset);
-        _draggedAssets.add(asset);
-      }
-    }
+    _dragController?.enter(index.assetIndex);
   }
 
   @override
