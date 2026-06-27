@@ -1,5 +1,4 @@
 @Skip('Flaky test, needs investigation')
-@Tags(['widget'])
 library;
 
 import 'package:drift/drift.dart';
