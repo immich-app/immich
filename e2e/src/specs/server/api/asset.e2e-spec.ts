@@ -875,8 +875,8 @@ describe('/asset', () => {
           exifInfo: {
             make: 'SONY',
             model: 'ILCE-6300',
-            exifImageHeight: 4024,
-            exifImageWidth: 6048,
+            exifImageHeight: 4000,
+            exifImageWidth: 6000,
             exposureTime: '1/320',
             fNumber: 8,
             focalLength: 97,
@@ -897,8 +897,8 @@ describe('/asset', () => {
           exifInfo: {
             make: 'SONY',
             model: 'ILCE-7M2',
-            exifImageHeight: 4024,
-            exifImageWidth: 6048,
+            exifImageHeight: 4000,
+            exifImageWidth: 6000,
             exposureTime: '1.3',
             fNumber: 22,
             focalLength: 25,
@@ -943,8 +943,8 @@ describe('/asset', () => {
           exifInfo: {
             make: 'FUJIFILM',
             model: 'X100V',
-            exifImageHeight: 4160,
-            exifImageWidth: 6240,
+            exifImageHeight: 2944,
+            exifImageWidth: 4416,
             exposureTime: '1/4000',
             fNumber: 16,
             focalLength: 23,
