@@ -314,17 +314,22 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // replace the parent of the stack children with a new asset
-    if (asset.stack?.primaryAssetId === id) {
-      // this only includes timeline visible assets and excludes the primary asset
-      const stackAssetIds = asset.stack.assets.map((a) => a.id);
-      if (stackAssetIds.length >= 2) {
-        const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
-        await this.stackRepository.update(asset.stack.id, {
-          id: asset.stack.id,
-          primaryAssetId: newPrimaryAssetId,
-        });
-      } else {
+    if (asset.stack) {
+      // asset.stack.assets only includes timeline visible assets and excludes the primary asset
+      const remainingStackAssetIds = asset.stack.assets.map((a) => a.id).filter((assetId) => assetId !== id);
+
+      if (asset.stack.primaryAssetId === id) {
+        // the primary asset is being deleted: promote another asset to primary, or dissolve the
+        // stack when it would be left with a single asset
+        await (remainingStackAssetIds.length >= 2
+          ? this.stackRepository.update(asset.stack.id, {
+              id: asset.stack.id,
+              primaryAssetId: remainingStackAssetIds[0],
+            })
+          : this.stackRepository.delete(asset.stack.id));
+      } else if (remainingStackAssetIds.length === 0) {
+        // a non-primary asset is being deleted, leaving only the primary: dissolve the stack so it
+        // does not linger as a single-asset stack (e.g. when its library is deleted)
         await this.stackRepository.delete(asset.stack.id);
       }
     }
