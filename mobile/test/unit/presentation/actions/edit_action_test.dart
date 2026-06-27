@@ -6,25 +6,29 @@ import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/edit.action.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../domain/service.mock.dart';
 import '../../../infrastructure/repository.mock.dart';
 import '../../factories/remote_asset_factory.dart';
-import '../../presentation_context.dart';
 import '../../riverpod_mocks.dart';
+import '../presentation_context.dart';
 
 void main() {
   late PresentationContext context;
+  late MockRemoteAssetRepository remoteAssetRepo;
+  late MockAssetService assetService;
 
   const supportedVersion = ServerVersion(major: 2, minor: 6, patch: 0);
   const unsupportedVersion = ServerVersion(major: 2, minor: 5, patch: 9);
 
   setUp(() async {
     context = await PresentationContext.create();
+    remoteAssetRepo = context.repository.remoteAsset.repo;
+    assetService = context.service.asset.service;
   });
 
   tearDown(() {
@@ -32,7 +36,6 @@ void main() {
   });
 
   List<Override> overrides(ServerVersion version) => [
-    ...context.overrides,
     serverInfoProvider.overrideWith((ref) => FakeServerInfoNotifier(version)),
   ];
 
@@ -40,7 +43,7 @@ void main() {
       RemoteAssetFactory.create(ownerId: context.currentUser.id, type: type);
 
   Future<void> pumpAction(WidgetTester tester, EditAssetAction action, {ServerVersion version = supportedVersion}) =>
-      tester.pumpTestWidget(ActionIconButtonWidget(action: action), overrides: overrides(version));
+      tester.pumpTestWidget(context, ActionIconButtonWidget(action: action), overrides: overrides(version));
 
   group('EditAssetAction', () {
     testWidgets('visible for a single owned editable asset on a supported server', (tester) async {
@@ -77,18 +80,11 @@ void main() {
   group('EditAssetAction onAction', () {
     testWidgets('reads the edits and exif for the asset from the repository', (tester) async {
       final asset = owned();
-      final repository = MockRemoteAssetRepository();
-      when(() => repository.getAssetEdits(any())).thenAnswer((_) async => const <AssetEdit>[]);
-      when(() => repository.getExif(any())).thenAnswer((_) async => null);
-
-      await tester.pumpTestAction(
-        EditAssetAction(assets: [asset]),
-        overrides: [...overrides(supportedVersion), remoteAssetRepositoryProvider.overrideWithValue(repository)],
-      );
+      await tester.pumpTestAction(context, EditAssetAction(assets: [asset]), overrides: overrides(supportedVersion));
       await tester.pumpAndSettle();
 
-      verify(() => repository.getAssetEdits(asset.id)).called(1);
-      verify(() => repository.getExif(asset.id)).called(1);
+      verify(() => remoteAssetRepo.getAssetEdits(asset.id)).called(1);
+      verify(() => remoteAssetRepo.getExif(asset.id)).called(1);
     });
 
     testWidgets('applyEdits forwards the edits to the service and waits for both ready events', (tester) async {
@@ -97,22 +93,19 @@ void main() {
 
       late WidgetRef capturedRef;
       await tester.pumpTestWidget(
+        context,
         Consumer(
           builder: (_, ref, _) {
             capturedRef = ref;
             return const SizedBox.shrink();
           },
         ),
-        overrides: [
-          ...context.overrides,
-          assetServiceProvider.overrideWithValue(context.mocks.asset.service),
-          websocketProvider.overrideWith((ref) => websocket = FakeWebsocketNotifier(ref)),
-        ],
+        overrides: [websocketProvider.overrideWith((ref) => websocket = FakeWebsocketNotifier(ref))],
       );
 
       await EditAssetAction.applyEdits(capturedRef, 'asset-1', edits);
 
-      verify(() => context.mocks.asset.service.applyEdits('asset-1', edits)).called(1);
+      verify(() => assetService.applyEdits('asset-1', edits)).called(1);
       expect(websocket.waitedEvents, containsAll(['AssetEditReadyV1', 'AssetEditReadyV2']));
     });
   });
