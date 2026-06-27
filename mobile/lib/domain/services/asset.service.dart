@@ -104,4 +104,13 @@ class AssetService {
     await _remoteRepository.unStack(stackIds);
     await _apiRepository.unStack(stackIds);
   }
+
+  Future<void> updateVisibility(List<String> remoteIds, AssetVisibility visibility) async {
+    if (remoteIds.isEmpty) {
+      return;
+    }
+
+    await _apiRepository.updateVisibility(remoteIds, visibility);
+    await _remoteRepository.updateVisibility(remoteIds, visibility);
+  }
 }

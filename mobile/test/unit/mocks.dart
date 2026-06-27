@@ -94,6 +94,7 @@ class ServiceMocks {
     when(asset.stack).thenAnswer((_) async {});
     when(asset.unstack).thenAnswer((_) async {});
     when(asset.restoreTrash).thenAnswer((_) async {});
+    when(asset.updateVisibility).thenAnswer((_) async {});
   }
 }
 
@@ -101,6 +102,7 @@ void _registerFallbacks() {
   registerFallbackValue(LocalAlbumFactory.create());
   registerFallbackValue(LocalAssetFactory.create());
   registerFallbackValue(Uint8List(0));
+  registerFallbackValue(AssetVisibility.timeline);
 }
 
 extension type const Stub<T extends Mock>(T mockedClass) {
@@ -181,6 +183,9 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
 
   Future<void> Function() get restoreTrash =>
       () => service.restoreTrash(any());
+
+  Future<void> Function() get updateVisibility =>
+      () => service.updateVisibility(any(), any());
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {
