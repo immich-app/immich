@@ -90,16 +90,25 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> {
             _PageDots(controller: _controller, index: _index, count: featureMessageHighlights.length),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _advance,
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: Text(_isLast ? 'ok'.tr() : 'next'.tr(), key: ValueKey(_isLast)),
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14)),
+                    child: Text('feature_message_skip'.tr()),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _advance,
+                      style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Text(_isLast ? 'ok'.tr() : 'next'.tr(), key: ValueKey(_isLast)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
