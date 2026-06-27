@@ -39,7 +39,10 @@ const forSidecarJob = (
   };
 };
 
-const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: ImmichTags['Orientation']) => ({
+const makeFaceTags = (
+  face: Partial<{ Name: string }> = {},
+  orientation?: ImmichTags['Orientation'],
+): Partial<ImmichTags> => ({
   Orientation: orientation,
   RegionInfo: {
     AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },

@@ -933,16 +933,21 @@ export class MetadataService extends BaseService {
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
+      const X = region.Area.X as number;
+      const Y = region.Area.Y as number;
+      const W = region.Area.W as number;
+      const H = region.Area.H as number;
+
       const face = {
         id: this.cryptoRepository.randomUUID(),
         personId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((X - W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Y - H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((X + W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Y + H / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
