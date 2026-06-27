@@ -26,7 +26,7 @@ class EditAssetAction extends AssetAction<RemoteAsset> {
 
   @override
   Iterable<RemoteAsset> filter(ActionScope scope) =>
-      assets.where((asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isEditable).cast();
+      assets.whereType<RemoteAsset>().where((asset) => asset.ownerId == scope.authUser.id && asset.isEditable);
 
   @override
   bool isVisible(ActionScope scope) =>
@@ -55,16 +55,16 @@ class EditAssetAction extends AssetAction<RemoteAsset> {
       ),
     );
   }
+}
 
-  @visibleForTesting
-  static Future<void> applyEdits(WidgetRef ref, String remoteId, List<AssetEdit> edits) async {
-    final websocket = ref.read(websocketProvider.notifier);
+@visibleForTesting
+Future<void> applyEdits(WidgetRef ref, String remoteId, List<AssetEdit> edits) async {
+  final websocket = ref.read(websocketProvider.notifier);
 
-    bool isCurrentId(dynamic data) => data is Map && (data['asset'] as Map?)?['id'] == remoteId;
-    await ref.read(assetServiceProvider).applyEdits(remoteId, edits);
-    await Future.any([
-      websocket.waitForEvent('AssetEditReadyV1', isCurrentId, const Duration(seconds: 10)),
-      websocket.waitForEvent('AssetEditReadyV2', isCurrentId, const Duration(seconds: 10)),
-    ]).catchError((_) {});
-  }
+  bool isCurrentId(dynamic data) => data is Map && (data['asset'] as Map?)?['id'] == remoteId;
+  await ref.read(assetServiceProvider).applyEdits(remoteId, edits);
+  await Future.any([
+    websocket.waitForEvent('AssetEditReadyV1', isCurrentId, const Duration(seconds: 10)),
+    websocket.waitForEvent('AssetEditReadyV2', isCurrentId, const Duration(seconds: 10)),
+  ]).catchError((_) {});
 }

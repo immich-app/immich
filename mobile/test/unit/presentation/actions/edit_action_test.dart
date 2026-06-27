@@ -103,7 +103,7 @@ void main() {
         overrides: [websocketProvider.overrideWith((ref) => websocket = FakeWebsocketNotifier(ref))],
       );
 
-      await EditAssetAction.applyEdits(capturedRef, 'asset-1', edits);
+      await applyEdits(capturedRef, 'asset-1', edits);
 
       verify(() => assetService.applyEdits('asset-1', edits)).called(1);
       expect(websocket.waitedEvents, containsAll(['AssetEditReadyV1', 'AssetEditReadyV2']));
