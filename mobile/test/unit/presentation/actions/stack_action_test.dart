@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -38,7 +38,7 @@ void main() {
 
       await tester.pumpTestAction(context, StackAction(assets: [asset]));
 
-      verify(() => assetService.unStack(['stack'])).called(1);
+      verify(() => assetService.unstack(['stack'])).called(1);
     });
 
     testWidgets('prioritizes stack when mixed state', (tester) async {
@@ -66,14 +66,33 @@ void main() {
 
       await tester.pumpTestAction(context, StackAction(assets: [first, second]));
 
-      verify(() => assetService.unStack(['stack-1', 'stack-2'])).called(1);
+      verify(() => assetService.unstack(['stack-1', 'stack-2'])).called(1);
     });
 
-    testWidgets('shows a confirmation snackbar on success', (tester) async {
-      await tester.pumpTestAction(context, StackAction(assets: [owned(), owned()]));
-      await tester.pumpUntilFound(find.byType(SnackBar));
+    testWidgets('reports the stacked count through the toast repository', (tester) async {
+      final toast = context.repository.toast;
 
-      expect(find.byType(SnackBar), findsOneWidget);
+      await tester.pumpTestAction(context, StackAction(assets: [owned(), owned()]));
+
+      final message = verify(() => toast.success(captureAny())).captured.single as String;
+      expect(message, StaticTranslations.instance.stacked_assets_count(count: 2));
+    });
+
+    testWidgets('reports the unstacked count through the toast repository', (tester) async {
+      final toast = context.repository.toast;
+
+      await tester.pumpTestAction(
+        context,
+        StackAction(
+          assets: [
+            owned(stackId: 'stack-1'),
+            owned(stackId: 'stack-2'),
+          ],
+        ),
+      );
+
+      final message = verify(() => toast.success(captureAny())).captured.single as String;
+      expect(message, StaticTranslations.instance.unstacked_assets_count(count: 2));
     });
   });
 }

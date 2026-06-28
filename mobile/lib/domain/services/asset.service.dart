@@ -96,7 +96,7 @@ class AssetService {
     await _remoteRepository.stack(userId, stack);
   }
 
-  Future<void> unStack(List<String> stackIds) async {
+  Future<void> unstack(List<String> stackIds) async {
     if (stackIds.isEmpty) {
       return;
     }

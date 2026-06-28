@@ -92,7 +92,7 @@ class ServiceMocks {
   void _stubAssetService() {
     when(asset.updateFavorite).thenAnswer((_) async {});
     when(asset.stack).thenAnswer((_) async {});
-    when(asset.unStack).thenAnswer((_) async {});
+    when(asset.unstack).thenAnswer((_) async {});
     when(asset.restoreTrash).thenAnswer((_) async {});
   }
 }
@@ -176,8 +176,8 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
   Future<void> Function() get stack =>
       () => service.stack(any(), any());
 
-  Future<void> Function() get unStack =>
-      () => service.unStack(any());
+  Future<void> Function() get unstack =>
+      () => service.unstack(any());
 
   Future<void> Function() get restoreTrash =>
       () => service.restoreTrash(any());
