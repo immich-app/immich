@@ -86,4 +86,22 @@ class AssetService {
     await _apiRepository.restoreTrash(remoteIds);
     await _remoteRepository.restoreTrash(remoteIds);
   }
+
+  Future<void> stack(String userId, List<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
+      return;
+    }
+
+    final stack = await _apiRepository.stack(remoteIds);
+    await _remoteRepository.stack(userId, stack);
+  }
+
+  Future<void> unStack(List<String> stackIds) async {
+    if (stackIds.isEmpty) {
+      return;
+    }
+
+    await _remoteRepository.unStack(stackIds);
+    await _apiRepository.unStack(stackIds);
+  }
 }
