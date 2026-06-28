@@ -74,6 +74,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   AndroidModel?: string;
   DeviceManufacturer?: string;
   DeviceModelName?: string;
+
+  // Samsung specific tags
+  Author?: string;
+  SamsungModel?: string;
 }
 
 @Injectable()
