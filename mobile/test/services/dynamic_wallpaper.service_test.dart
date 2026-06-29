@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
 import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
@@ -14,6 +15,8 @@ import '../unit/factories/remote_asset_factory.dart';
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
 class _MockDynamicWallpaperApi extends Mock implements DynamicWallpaperApi {}
+
+class _MockAssetService extends Mock implements AssetService {}
 
 void main() {
   group('DynamicWallpaperService', () {
@@ -111,10 +114,14 @@ void main() {
     test('persists settings after Android configure succeeds', () async {
       final settings = _MockSettingsRepository();
       final api = _MockDynamicWallpaperApi();
-      final service = DynamicWallpaperService(settings, api, isAndroid: true);
+      final assetService = _MockAssetService();
+      final service = DynamicWallpaperService(settings, api, assetService: assetService, isAndroid: true);
       final calls = <String>[];
+      final assetA = RemoteAssetFactory.create(id: 'a').copyWith(localId: 'local-a');
+      final assetB = RemoteAssetFactory.create(id: 'b').copyWith(isEdited: true);
 
       when(() => settings.appConfig).thenReturn(const AppConfig());
+      when(() => assetService.getRemoteAssets(['a', 'b'])).thenAnswer((_) async => [assetA, assetB]);
       when(() => api.configure(any())).thenAnswer((_) async {
         calls.add('native');
       });
@@ -126,11 +133,37 @@ void main() {
 
       await service.configure(assetIds: ['a', 'b', 'a']);
 
-      verify(() => api.configure(['a', 'b'])).called(1);
+      verify(
+        () => api.configure([
+          DynamicWallpaperAssetRef(remoteId: 'a', localId: 'local-a', isEdited: false),
+          DynamicWallpaperAssetRef(remoteId: 'b', isEdited: true),
+        ]),
+      ).called(1);
       verify(
         () => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, ['a', 'b']),
       ).called(1);
       expect(calls, ['native', 'settings']);
+    });
+
+    test('refresh passes resolved refs without writing settings', () async {
+      final settings = _MockSettingsRepository();
+      final api = _MockDynamicWallpaperApi();
+      final assetService = _MockAssetService();
+      final service = DynamicWallpaperService(settings, api, assetService: assetService, isAndroid: true);
+      final assetA = RemoteAssetFactory.create(id: 'a').copyWith(localId: 'local-a');
+
+      when(
+        () => settings.appConfig,
+      ).thenReturn(const AppConfig(dynamicWallpaper: DynamicWallpaperConfig(assetIds: ['a'])));
+      when(() => assetService.getRemoteAssets(['a'])).thenAnswer((_) async => [assetA]);
+      when(() => api.refresh(any())).thenAnswer((_) async {});
+
+      await service.refreshPreparedWallpapers();
+
+      verify(
+        () => api.refresh([DynamicWallpaperAssetRef(remoteId: 'a', localId: 'local-a', isEdited: false)]),
+      ).called(1);
+      verifyNever(() => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, any()));
     });
 
     test('replaceSelection keeps only remote images and preserves unresolved ids', () async {

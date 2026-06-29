@@ -193,6 +193,48 @@ class FlutterError (
 ) : RuntimeException()
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class DynamicWallpaperAssetRef (
+  val remoteId: String,
+  val localId: String? = null,
+  val isEdited: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): DynamicWallpaperAssetRef {
+      val remoteId = pigeonVar_list[0] as String
+      val localId = pigeonVar_list[1] as String?
+      val isEdited = pigeonVar_list[2] as Boolean
+      return DynamicWallpaperAssetRef(remoteId, localId, isEdited)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      remoteId,
+      localId,
+      isEdited,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as DynamicWallpaperAssetRef
+    return DynamicWallpaperPigeonUtils.deepEquals(this.remoteId, other.remoteId) && DynamicWallpaperPigeonUtils.deepEquals(this.localId, other.localId) && DynamicWallpaperPigeonUtils.deepEquals(this.isEdited, other.isEdited)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.remoteId)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.localId)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.isEdited)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class DynamicWallpaperStatus (
   val enabled: Boolean,
   val selectedCount: Long,
@@ -250,6 +292,11 @@ private open class DynamicWallpaperPigeonCodec : StandardMessageCodec() {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          DynamicWallpaperAssetRef.fromList(it)
+        }
+      }
+      130.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           DynamicWallpaperStatus.fromList(it)
         }
       }
@@ -258,8 +305,12 @@ private open class DynamicWallpaperPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is DynamicWallpaperStatus -> {
+      is DynamicWallpaperAssetRef -> {
         stream.write(129)
+        writeValue(stream, value.toList())
+      }
+      is DynamicWallpaperStatus -> {
+        stream.write(130)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -270,9 +321,9 @@ private open class DynamicWallpaperPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface DynamicWallpaperApi {
-  fun configure(assetIds: List<String>, callback: (Result<Unit>) -> Unit)
+  fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit)
   fun openLiveWallpaperPicker(callback: (Result<Unit>) -> Unit)
-  fun refresh(callback: (Result<Unit>) -> Unit)
+  fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit)
   fun getStatus(callback: (Result<DynamicWallpaperStatus>) -> Unit)
 
   companion object {
@@ -289,8 +340,8 @@ interface DynamicWallpaperApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val assetIdsArg = args[0] as List<String>
-            api.configure(assetIdsArg) { result: Result<Unit> ->
+            val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
+            api.configure(assetsArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))
@@ -323,8 +374,10 @@ interface DynamicWallpaperApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.refresh$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.refresh{ result: Result<Unit> ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
+            api.refresh(assetsArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))

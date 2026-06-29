@@ -3,6 +3,7 @@ package app.alextran.immich.widget
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import app.alextran.immich.images.ExifBitmapUtils
 import app.alextran.immich.widget.model.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -101,10 +102,10 @@ class ImmichAPI(cfg: ServerConfig) {
   }
 
   suspend fun fetchImage(asset: Asset): Bitmap {
-    return fetchImage(asset.id)
+    return fetchPreviewImage(asset.id)
   }
 
-  suspend fun fetchImage(assetId: String): Bitmap = withContext(Dispatchers.IO) {
+  suspend fun fetchPreviewImage(assetId: String): Bitmap = withContext(Dispatchers.IO) {
     val url = buildRequestURL("/assets/$assetId/thumbnail", listOf("size" to "preview", "edited" to "true"))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
@@ -113,6 +114,16 @@ class ImmichAPI(cfg: ServerConfig) {
     val data = connection.getInputStream().readBytes()
     BitmapFactory.decodeByteArray(data, 0, data.size)
       ?: throw Exception("Invalid image data")
+  }
+
+  suspend fun fetchOriginalImage(assetId: String, targetWidth: Int, targetHeight: Int): Bitmap = withContext(Dispatchers.IO) {
+    val url = buildRequestURL("/assets/$assetId/original", listOf("edited" to "true"))
+    val connection = (url.openConnection() as HttpURLConnection).apply {
+      requestMethod = "GET"
+      applyCustomHeaders()
+    }
+    val data = connection.getInputStream().readBytes()
+    ExifBitmapUtils.decodeSampledBitmap(data, targetWidth, targetHeight) ?: throw Exception("Invalid image data")
   }
 
   suspend fun fetchAlbums(): List<Album> = withContext(Dispatchers.IO) {

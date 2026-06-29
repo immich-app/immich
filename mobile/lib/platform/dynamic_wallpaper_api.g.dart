@@ -9,22 +9,14 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List;
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
 
-Object? _extractReplyValueOrThrow(
-    List<Object?>? replyList,
-    String channelName, {
-    required bool isNullValid,
-}) {
+Object? _extractReplyValueOrThrow(List<Object?>? replyList, String channelName, {required bool isNullValid}) {
   if (replyList == null) {
     throw PlatformException(
       code: 'channel-error',
       message: 'Unable to establish connection on channel: "$channelName".',
     );
   } else if (replyList.length > 1) {
-    throw PlatformException(
-      code: replyList[0]! as String,
-      message: replyList[1] as String?,
-      details: replyList[2],
-    );
+    throw PlatformException(code: replyList[0]! as String, message: replyList[1] as String?, details: replyList[2]);
   } else if (!isNullValid && (replyList.isNotEmpty && replyList[0] == null)) {
     throw PlatformException(
       code: 'null-error',
@@ -45,9 +37,7 @@ bool _deepEquals(Object? a, Object? b) {
     return a == b;
   }
   if (a is List && b is List) {
-    return a.length == b.length &&
-        a.indexed
-            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+    return a.length == b.length && a.indexed.every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
     if (a.length != b.length) {
@@ -96,6 +86,50 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
+class DynamicWallpaperAssetRef {
+  DynamicWallpaperAssetRef({required this.remoteId, this.localId, required this.isEdited});
+
+  String remoteId;
+
+  String? localId;
+
+  bool isEdited;
+
+  List<Object?> _toList() {
+    return <Object?>[remoteId, localId, isEdited];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static DynamicWallpaperAssetRef decode(Object result) {
+    result as List<Object?>;
+    return DynamicWallpaperAssetRef(
+      remoteId: result[0]! as String,
+      localId: result[1] as String?,
+      isEdited: result[2]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! DynamicWallpaperAssetRef || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(remoteId, other.remoteId) &&
+        _deepEquals(localId, other.localId) &&
+        _deepEquals(isEdited, other.isEdited);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
 
 class DynamicWallpaperStatus {
   DynamicWallpaperStatus({
@@ -120,18 +154,12 @@ class DynamicWallpaperStatus {
   String? lastError;
 
   List<Object?> _toList() {
-    return <Object?>[
-      enabled,
-      selectedCount,
-      preparedCount,
-      missingCount,
-      failedCount,
-      lastError,
-    ];
+    return <Object?>[enabled, selectedCount, preparedCount, missingCount, failedCount, lastError];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static DynamicWallpaperStatus decode(Object result) {
     result as List<Object?>;
@@ -154,14 +182,18 @@ class DynamicWallpaperStatus {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(enabled, other.enabled) && _deepEquals(selectedCount, other.selectedCount) && _deepEquals(preparedCount, other.preparedCount) && _deepEquals(missingCount, other.missingCount) && _deepEquals(failedCount, other.failedCount) && _deepEquals(lastError, other.lastError);
+    return _deepEquals(enabled, other.enabled) &&
+        _deepEquals(selectedCount, other.selectedCount) &&
+        _deepEquals(preparedCount, other.preparedCount) &&
+        _deepEquals(missingCount, other.missingCount) &&
+        _deepEquals(failedCount, other.failedCount) &&
+        _deepEquals(lastError, other.lastError);
   }
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
-
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -170,8 +202,11 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is DynamicWallpaperStatus) {
+    } else if (value is DynamicWallpaperAssetRef) {
       buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else if (value is DynamicWallpaperStatus) {
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -182,6 +217,8 @@ class _PigeonCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 129:
+        return DynamicWallpaperAssetRef.decode(readValue(buffer)!);
+      case 130:
         return DynamicWallpaperStatus.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -194,34 +231,31 @@ class DynamicWallpaperApi {
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   DynamicWallpaperApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    : pigeonVar_binaryMessenger = binaryMessenger,
+      pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> configure(List<String> assetIds) async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.configure$pigeonVar_messageChannelSuffix';
+  Future<void> configure(List<DynamicWallpaperAssetRef> assets) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.configure$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assets]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
-    _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+    _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
   }
 
   Future<void> openLiveWallpaperPicker() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.openLiveWallpaperPicker$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.openLiveWallpaperPicker$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -230,34 +264,26 @@ class DynamicWallpaperApi {
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
-    _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+    _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
   }
 
-  Future<void> refresh() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.refresh$pigeonVar_messageChannelSuffix';
+  Future<void> refresh(List<DynamicWallpaperAssetRef> assets) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.refresh$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assets]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
-    _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: true,
-    )
-    ;
+    _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
   }
 
   Future<DynamicWallpaperStatus> getStatus() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.getStatus$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.getStatus$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -267,11 +293,10 @@ class DynamicWallpaperApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-        pigeonVar_replyList,
-        pigeonVar_channelName,
-        isNullValid: false,
-    )
-    ;
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
     return pigeonVar_replyValue! as DynamicWallpaperStatus;
   }
 }

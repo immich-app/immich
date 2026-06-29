@@ -9,10 +9,11 @@ import java.security.MessageDigest
 
 const val kDynamicWallpaperPrefsName = "dynamic_wallpaper"
 const val kDynamicWallpaperDirectoryName = "dynamic_wallpaper"
-const val kDynamicWallpaperConfigVersion = 2
+const val kDynamicWallpaperConfigVersion = 4
 
 private const val kEnabled = "enabled"
 private const val kAssetIds = "assetIds"
+private const val kAssetRefs = "assetRefs"
 private const val kActiveIndex = "activeIndex"
 private const val kConfigVersion = "configVersion"
 private const val kPreparationErrors = "preparationErrors"
@@ -20,20 +21,45 @@ private const val kLastPreparationError = "lastPreparationError"
 
 data class DynamicWallpaperConfig(
   val enabled: Boolean,
-  val assetIds: List<String>,
+  val assetRefs: List<DynamicWallpaperAssetRef>,
   val activeIndex: Int,
   val configVersion: Int,
+) {
+  val assetIds: List<String>
+    get() = assetRefs.map { it.remoteId }
+}
+
+private data class StoredDynamicWallpaperAssetRef(
+  val remoteId: String = "",
+  val localId: String? = null,
+  val isEdited: Boolean = false,
 )
 
 object DynamicWallpaperRotation {
+  fun refsFromAssetIds(assetIds: Iterable<String>): List<DynamicWallpaperAssetRef> {
+    return deduplicateRefsPreservingOrder(assetIds.map { DynamicWallpaperAssetRef(remoteId = it, isEdited = false) })
+  }
+
   fun deduplicatePreservingOrder(assetIds: Iterable<String>): List<String> {
+    return refsFromAssetIds(assetIds).map { it.remoteId }
+  }
+
+  fun deduplicateRefsPreservingOrder(assetRefs: Iterable<DynamicWallpaperAssetRef>): List<DynamicWallpaperAssetRef> {
     val seen = linkedSetOf<String>()
-    assetIds.forEach { assetId ->
-      if (assetId.isNotBlank()) {
-        seen.add(assetId)
+    val result = mutableListOf<DynamicWallpaperAssetRef>()
+    assetRefs.forEach { assetRef ->
+      val remoteId = assetRef.remoteId.trim()
+      if (remoteId.isNotBlank() && seen.add(remoteId)) {
+        result.add(
+          DynamicWallpaperAssetRef(
+            remoteId = remoteId,
+            localId = assetRef.localId?.takeIf { it.isNotBlank() },
+            isEdited = assetRef.isEdited,
+          )
+        )
       }
     }
-    return seen.toList()
+    return result
   }
 
   fun normalizeActiveIndex(activeIndex: Int, assetCount: Int): Int {
@@ -83,37 +109,54 @@ object DynamicWallpaperRotation {
 object DynamicWallpaperConfigStore {
   private val gson = Gson()
   private val listType = object : TypeToken<List<String>>() {}.type
+  private val refListType = object : TypeToken<List<StoredDynamicWallpaperAssetRef>>() {}.type
   private val errorMapType = object : TypeToken<Map<String, String>>() {}.type
 
   fun read(context: Context): DynamicWallpaperConfig {
     val prefs = prefs(context)
-    val assetIds = readAssetIds(prefs)
+    val assetRefs = readAssetRefs(prefs)
     val activeIndex = DynamicWallpaperRotation.normalizeActiveIndex(
       prefs.getInt(kActiveIndex, 0),
-      assetIds.size,
+      assetRefs.size,
     )
     val configVersion = prefs.getInt(kConfigVersion, 0)
     if (configVersion < kDynamicWallpaperConfigVersion) {
+      preparedDirectory(context).deleteRecursively()
+    }
+    if (configVersion < kDynamicWallpaperConfigVersion || !prefs.contains(kAssetRefs)) {
       prefs.edit()
+        .putString(kAssetRefs, gson.toJson(assetRefs.map { it.toStored() }))
+        .putString(kAssetIds, gson.toJson(assetRefs.map { it.remoteId }))
         .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
         .putInt(kActiveIndex, activeIndex)
         .apply()
     }
 
     return DynamicWallpaperConfig(
-      enabled = prefs.getBoolean(kEnabled, assetIds.isNotEmpty()),
-      assetIds = assetIds,
+      enabled = prefs.getBoolean(kEnabled, assetRefs.isNotEmpty()),
+      assetRefs = assetRefs,
       activeIndex = activeIndex,
       configVersion = kDynamicWallpaperConfigVersion,
     )
   }
 
-  fun writeSelection(context: Context, assetIds: List<String>) {
-    val normalizedAssetIds = DynamicWallpaperRotation.deduplicatePreservingOrder(assetIds)
-    prefs(context).edit()
-      .putBoolean(kEnabled, normalizedAssetIds.isNotEmpty())
-      .putString(kAssetIds, gson.toJson(normalizedAssetIds))
-      .putInt(kActiveIndex, 0)
+  fun writeSelection(context: Context, assetRefs: List<DynamicWallpaperAssetRef>, resetActiveIndex: Boolean = true) {
+    val normalizedAssetRefs = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs)
+    val prefs = prefs(context)
+    if (prefs.getInt(kConfigVersion, 0) < kDynamicWallpaperConfigVersion) {
+      preparedDirectory(context).deleteRecursively()
+    }
+    val activeIndex = if (resetActiveIndex) {
+      0
+    } else {
+      DynamicWallpaperRotation.normalizeActiveIndex(prefs.getInt(kActiveIndex, 0), normalizedAssetRefs.size)
+    }
+
+    prefs.edit()
+      .putBoolean(kEnabled, normalizedAssetRefs.isNotEmpty())
+      .putString(kAssetRefs, gson.toJson(normalizedAssetRefs.map { it.toStored() }))
+      .putString(kAssetIds, gson.toJson(normalizedAssetRefs.map { it.remoteId }))
+      .putInt(kActiveIndex, activeIndex)
       .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
       .remove(kPreparationErrors)
       .remove(kLastPreparationError)
@@ -183,6 +226,29 @@ object DynamicWallpaperConfigStore {
       val decoded = gson.fromJson<List<String>>(raw, listType) ?: emptyList()
       DynamicWallpaperRotation.deduplicatePreservingOrder(decoded)
     }.getOrDefault(emptyList())
+  }
+
+  private fun readAssetRefs(prefs: SharedPreferences): List<DynamicWallpaperAssetRef> {
+    val raw = prefs.getString(kAssetRefs, null)
+    if (raw != null) {
+      val refs = runCatching {
+        gson.fromJson<List<StoredDynamicWallpaperAssetRef>>(raw, refListType)
+          ?.map { it.toRef() }
+          .orEmpty()
+      }.getOrDefault(emptyList())
+
+      return DynamicWallpaperRotation.deduplicateRefsPreservingOrder(refs)
+    }
+
+    return DynamicWallpaperRotation.refsFromAssetIds(readAssetIds(prefs))
+  }
+
+  private fun DynamicWallpaperAssetRef.toStored(): StoredDynamicWallpaperAssetRef {
+    return StoredDynamicWallpaperAssetRef(remoteId = remoteId, localId = localId, isEdited = isEdited)
+  }
+
+  private fun StoredDynamicWallpaperAssetRef.toRef(): DynamicWallpaperAssetRef {
+    return DynamicWallpaperAssetRef(remoteId = remoteId, localId = localId, isEdited = isEdited)
   }
 
   private fun stableFileStem(assetId: String): String {

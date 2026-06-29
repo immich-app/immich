@@ -3,13 +3,19 @@ import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 
 final dynamicWallpaperServiceProvider = Provider(
-  (ref) => DynamicWallpaperService(ref.watch(settingsProvider), ref.watch(dynamicWallpaperApiProvider)),
+  (ref) => DynamicWallpaperService(
+    ref.watch(settingsProvider),
+    ref.watch(dynamicWallpaperApiProvider),
+    assetService: ref.watch(assetServiceProvider),
+  ),
 );
 
 class DynamicWallpaperSelectionUpdate {
@@ -23,9 +29,10 @@ class DynamicWallpaperSelectionUpdate {
 class DynamicWallpaperService {
   final SettingsRepository _settingsRepository;
   final DynamicWallpaperApi _api;
+  final AssetService? assetService;
   final bool _isAndroid;
 
-  DynamicWallpaperService(this._settingsRepository, this._api, {bool? isAndroid})
+  DynamicWallpaperService(this._settingsRepository, this._api, {this.assetService, bool? isAndroid})
     : _isAndroid = isAndroid ?? Platform.isAndroid;
 
   static List<String> remoteImageIdsFrom(Iterable<BaseAsset> assets) {
@@ -135,7 +142,7 @@ class DynamicWallpaperService {
     final nextAssetIds = deduplicatePreservingOrder(assetIds ?? current.assetIds);
 
     if (_isAndroid) {
-      await _api.configure(nextAssetIds);
+      await _api.configure(await _assetRefsFor(nextAssetIds));
     }
 
     await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
@@ -151,7 +158,8 @@ class DynamicWallpaperService {
 
   Future<void> refreshPreparedWallpapers() async {
     if (_isAndroid) {
-      await _api.refresh();
+      final currentAssetIds = _settingsRepository.appConfig.dynamicWallpaper.assetIds;
+      await _api.refresh(await _assetRefsFor(currentAssetIds));
     }
   }
 
@@ -168,5 +176,20 @@ class DynamicWallpaperService {
       missingCount: selectedCount,
       failedCount: 0,
     );
+  }
+
+  Future<List<DynamicWallpaperAssetRef>> _assetRefsFor(List<String> assetIds) async {
+    final assetService = this.assetService;
+    if (assetService == null || assetIds.isEmpty) {
+      return assetIds.map((assetId) => DynamicWallpaperAssetRef(remoteId: assetId, isEdited: false)).toList();
+    }
+
+    final assets = await assetService.getRemoteAssets(assetIds);
+    final assetById = {for (final asset in assets) asset.id: asset};
+
+    return assetIds.map((assetId) {
+      final asset = assetById[assetId];
+      return DynamicWallpaperAssetRef(remoteId: assetId, localId: asset?.localId, isEdited: asset?.isEdited ?? false);
+    }).toList();
   }
 }

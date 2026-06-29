@@ -12,16 +12,24 @@ import 'package:pigeon/pigeon.dart';
 @HostApi()
 abstract class DynamicWallpaperApi {
   @async
-  void configure(List<String> assetIds);
+  void configure(List<DynamicWallpaperAssetRef> assets);
 
   @async
   void openLiveWallpaperPicker();
 
   @async
-  void refresh();
+  void refresh(List<DynamicWallpaperAssetRef> assets);
 
   @async
   DynamicWallpaperStatus getStatus();
+}
+
+class DynamicWallpaperAssetRef {
+  final String remoteId;
+  final String? localId;
+  final bool isEdited;
+
+  const DynamicWallpaperAssetRef({required this.remoteId, this.localId, required this.isEdited});
 }
 
 class DynamicWallpaperStatus {
