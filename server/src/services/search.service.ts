@@ -73,9 +73,16 @@ export class SearchService extends BaseService {
       checksum = Buffer.from(dto.checksum, encoding);
     }
 
+    let userIds: string[] | undefined;
+
+    if (dto.albumIds && dto.albumIds.length > 0) {
+      await this.requireAccess({ auth, ids: dto.albumIds, permission: Permission.AlbumRead });
+    } else {
+      userIds = await this.getUserIdsToSearch(auth, dto.visibility);
+    }
+
     const page = dto.page ?? 1;
     const size = dto.size || 250;
-    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {

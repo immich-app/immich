@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
-import { AssetVisibility } from 'src/enum';
+import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -136,6 +136,43 @@ describe(SearchService.name, () => {
 
         expect(response.assets.items.length).toBe(1);
       });
+    });
+  });
+
+  describe('albumIds option', () => {
+    it('should return assets from shared album', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+
+      const { asset } = await ctx.newAsset({ ownerId: otherUser.id });
+      const { album } = await ctx.newAlbum({ ownerId: otherUser.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+      await ctx.newAlbumUser({ albumId: album.id, userId: user.id, role: AlbumUserRole.Editor });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const response = await sut.searchMetadata(auth, { albumIds: [album.id] });
+
+      expect(response.assets.items.length).toBe(1);
+    });
+
+    it('should not return assets for album, a user is not in, when partner sharing is enabled', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: otherUser.id, sharedWithId: user.id });
+
+      const { asset } = await ctx.newAsset({ ownerId: otherUser.id });
+      const { album } = await ctx.newAlbum({ ownerId: otherUser.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      await expect(sut.searchMetadata(auth, { albumIds: [album.id] })).rejects.toThrow(
+        'Not found or no album.read access',
+      );
     });
   });
 
