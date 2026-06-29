@@ -38,6 +38,7 @@ class EditAssetAction extends AssetAction<RemoteAsset> {
     final ActionScope(:context, :ref) = scope;
 
     final asset = filter(scope).first;
+    // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
     final remoteId = asset.id;
     final repository = ref.read(remoteAssetRepositoryProvider);
     final (edits, exif) = await (repository.getAssetEdits(remoteId), repository.getExif(remoteId)).wait;
