@@ -182,18 +182,25 @@ select
     from
       (
         select
-          "asset_face".*,
-          "person" as "person"
+          (
+            select
+              to_json(obj)
+            from
+              (
+                select
+                  "person".*
+                from
+                  "face_cluster"
+                  inner join "person" on "person"."faceClusterId" = "face_cluster"."id"
+                where
+                  "face_cluster"."id" = "asset_face"."faceClusterId"
+                limit
+                  $1
+              ) as obj
+          ) as "person",
+          "asset_face".*
         from
           "asset_face"
-          left join lateral (
-            select
-              "person".*
-            from
-              "person"
-            where
-              "asset_face"."personId" = "person"."id"
-          ) as "person" on true
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
@@ -224,7 +231,7 @@ from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = any ($1::uuid[])
+  "asset"."id" = any ($2::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "asset"
@@ -290,13 +297,44 @@ limit
 
 -- AssetRepository.getById
 select
-  "asset".*
+  "asset".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select distinct
+          unnest("album_user"."permissions") as "permission"
+        from
+          "album_user"
+          inner join "album_asset" on "album_user"."albumId" = "album_asset"."albumId"
+        where
+          "album_asset"."assetId" = "asset"."id"
+          and "album_user"."userId" = "asset"."ownerId"
+          and "album_user"."albumId" in (
+            select
+              "album_user"."albumId"
+            from
+              "album_user"
+            where
+              "album_user"."userId" = $1
+          )
+        union
+        select distinct
+          unnest("partner"."permissions") as "permission"
+        from
+          "partner"
+        where
+          "partner"."sharedById" = "asset"."ownerId"
+          and "partner"."sharedWithId" = $2
+      ) as agg
+  ) as "permissions"
 from
   "asset"
 where
-  "asset"."id" = $1::uuid
+  "asset"."id" = $3::uuid
 limit
-  $2
+  $4
 
 -- AssetRepository.updateAll
 update "asset"

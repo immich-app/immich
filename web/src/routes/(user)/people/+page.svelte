@@ -232,7 +232,7 @@
       }
 
       const personWithSimilarName = await findPeopleWithSimilarName(name, targetPerson.id);
-      if (personWithSimilarName) {
+      if (personWithSimilarName && personWithSimilarName.faceClusterId !== targetPerson.faceClusterId) {
         personMerge1 = targetPerson;
         personMerge2 = personWithSimilarName;
         potentialMergePeople = people

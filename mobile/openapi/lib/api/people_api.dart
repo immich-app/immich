@@ -455,14 +455,14 @@ class PeopleApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [MergePersonDto] mergePersonDto (required):
-  Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto, { Future<void>? abortTrigger, }) async {
+  /// * [MergeFaceClusterDto] mergeFaceClusterDto (required):
+  Future<Response> mergePersonWithHttpInfo(String id, MergeFaceClusterDto mergeFaceClusterDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/people/{id}/merge'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = mergePersonDto;
+    Object? postBody = mergeFaceClusterDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -491,9 +491,9 @@ class PeopleApi {
   ///
   /// * [String] id (required):
   ///
-  /// * [MergePersonDto] mergePersonDto (required):
-  Future<List<BulkIdResponseDto>?> mergePerson(String id, MergePersonDto mergePersonDto, { Future<void>? abortTrigger, }) async {
-    final response = await mergePersonWithHttpInfo(id, mergePersonDto, abortTrigger: abortTrigger,);
+  /// * [MergeFaceClusterDto] mergeFaceClusterDto (required):
+  Future<List<BulkIdResponseDto>?> mergePerson(String id, MergeFaceClusterDto mergeFaceClusterDto, { Future<void>? abortTrigger, }) async {
+    final response = await mergePersonWithHttpInfo(id, mergeFaceClusterDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -14,6 +14,7 @@ import {
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { person_delete_audit } from 'src/schema/functions';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
 import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('person')
@@ -44,9 +45,6 @@ export class PersonTable {
   ownerId!: string;
 
   @Column({ default: '' })
-  name!: Generated<string>;
-
-  @Column({ default: '' })
   thumbnailPath!: Generated<string>;
 
   @Column({ type: 'boolean', default: false })
@@ -54,6 +52,9 @@ export class PersonTable {
 
   @Column({ type: 'date', nullable: true })
   birthDate!: Timestamp | null;
+
+  @Column({ default: '' })
+  name!: Generated<string>;
 
   @ForeignKeyColumn(() => AssetFaceTable, { onDelete: 'SET NULL', nullable: true })
   faceAssetId!: string | null;
@@ -66,4 +67,7 @@ export class PersonTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @ForeignKeyColumn(() => FaceClusterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true, index: true })
+  faceClusterId!: string | null;
 }

@@ -10,9 +10,10 @@
 
   type Props = {
     asset: AssetResponseDto;
+    allowExifUpdate: boolean;
   };
 
-  const { asset }: Props = $props();
+  const { asset, allowExifUpdate }: Props = $props();
 
   const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
   const dateTime = $derived(
@@ -20,13 +21,8 @@
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromISODateTimeUTC(asset.localDateTime),
   );
-  const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
 
   const handleChangeDate = async () => {
-    if (!isOwner) {
-      return;
-    }
-
     await modalManager.show(AssetChangeDateModal, {
       asset: toTimelineAsset(asset),
       initialDate: dateTime,
@@ -40,8 +36,8 @@
     type="button"
     class="flex w-full place-items-start justify-between gap-4 py-4 text-start"
     onclick={handleChangeDate}
-    title={isOwner ? $t('edit_date') : ''}
-    class:hover:text-primary={isOwner}
+    title={allowExifUpdate ? $t('edit_date') : ''}
+    class:hover:text-primary={allowExifUpdate}
     data-testid="detail-panel-edit-date-button"
   >
     <div class="flex gap-4">
@@ -68,13 +64,13 @@
       </div>
     </div>
 
-    {#if isOwner}
+    {#if allowExifUpdate}
       <div class="p-1">
         <Icon icon={mdiPencil} size="20" />
       </div>
     {/if}
   </button>
-{:else if !dateTime && isOwner}
+{:else if !dateTime && allowExifUpdate}
   <div class="flex place-items-start justify-between gap-4 py-4">
     <div class="flex gap-4">
       <Icon icon={mdiCalendar} size="24" />

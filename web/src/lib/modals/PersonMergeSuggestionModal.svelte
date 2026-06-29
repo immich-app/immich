@@ -36,7 +36,7 @@
     try {
       await mergePerson({
         id: personToBeMergedInto.id,
-        mergePersonDto: { ids: [personToMerge.id] },
+        mergeFaceClusterDto: { ids: [personToMerge.id] },
       });
       toastManager.primary($t('merge_people_successfully'));
       onClose([personToMerge, personToBeMergedInto]);

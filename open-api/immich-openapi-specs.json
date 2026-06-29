@@ -2693,6 +2693,121 @@
         "x-immich-permission": "album.read"
       }
     },
+    "/albums/{id}/user/self": {
+      "get": {
+        "description": "Get the own sharing permissions in a specific album.",
+        "operationId": "getOwnAlbumUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharingOptionsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get own sharing permissions",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "x-immich-state": "Stable"
+      },
+      "put": {
+        "description": "Change the own sharing permissions in a specific album.",
+        "operationId": "updateOwnAlbumUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSharingOptionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update own sharing permissions",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "x-immich-state": "Stable"
+      }
+    },
     "/albums/{id}/user/{userId}": {
       "delete": {
         "description": "Remove a user from an album. Use an ID of \"me\" to leave a shared album.",
@@ -9167,7 +9282,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MergePersonDto"
+                "$ref": "#/components/schemas/MergeFaceClusterDto"
               }
             }
           },
@@ -17960,6 +18075,12 @@
             },
             "type": "array"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/SharingPermission"
+            },
+            "type": "array"
+          },
           "resized": {
             "description": "Is resized",
             "type": "boolean",
@@ -18031,6 +18152,7 @@
           "originalFileName",
           "originalPath",
           "ownerId",
+          "permissions",
           "thumbhash",
           "type",
           "updatedAt",
@@ -19232,6 +19354,7 @@
           "DatabaseBackup",
           "FacialRecognitionQueueAll",
           "FacialRecognition",
+          "FacialRecognitionMerge",
           "FileDelete",
           "FileMigrationQueueAll",
           "LibraryDeleteCheck",
@@ -19667,7 +19790,8 @@
           "integrity-checksum-mismatch-refresh",
           "integrity-missing-files-delete-all",
           "integrity-untracked-files-delete-all",
-          "integrity-checksum-mismatch-delete-all"
+          "integrity-checksum-mismatch-delete-all",
+          "person-group-merge"
         ],
         "type": "string"
       },
@@ -19999,10 +20123,10 @@
         },
         "type": "object"
       },
-      "MergePersonDto": {
+      "MergeFaceClusterDto": {
         "properties": {
           "ids": {
-            "description": "Person IDs to merge",
+            "description": "Face cluster IDs to merge",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -21048,6 +21172,11 @@
             ],
             "x-immich-state": "Stable"
           },
+          "faceClusterId": {
+            "description": "Face cluster ID",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "description": "Person ID",
             "format": "uuid",
@@ -21100,6 +21229,7 @@
         },
         "required": [
           "birthDate",
+          "faceClusterId",
           "id",
           "isHidden",
           "name",
@@ -23180,6 +23310,41 @@
         },
         "type": "object"
       },
+      "SharingOptionsResponseDto": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/SharingPermission"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "inTimeline",
+          "permissions"
+        ],
+        "type": "object"
+      },
+      "SharingPermission": {
+        "description": "Sharing permission schema",
+        "enum": [
+          "all",
+          "asset.read",
+          "asset.update",
+          "asset.edit",
+          "asset.delete",
+          "asset.share",
+          "exif.read",
+          "person.read",
+          "person.update",
+          "person.merge",
+          "person.delete"
+        ],
+        "type": "string"
+      },
       "SignUpDto": {
         "properties": {
           "email": {
@@ -24332,6 +24497,11 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
           },
+          "faceClusterId": {
+            "description": "Person ID",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "description": "Asset face ID",
             "format": "uuid",
@@ -24354,11 +24524,6 @@
             "description": "Is the face visible in the asset",
             "type": "boolean"
           },
-          "personId": {
-            "description": "Person ID",
-            "nullable": true,
-            "type": "string"
-          },
           "sourceType": {
             "description": "Source type",
             "type": "string"
@@ -24371,11 +24536,11 @@
           "boundingBoxY1",
           "boundingBoxY2",
           "deletedAt",
+          "faceClusterId",
           "id",
           "imageHeight",
           "imageWidth",
           "isVisible",
-          "personId",
           "sourceType"
         ],
         "type": "object"
@@ -27139,6 +27304,24 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateSharingOptionsDto": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/SharingPermission"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "inTimeline",
+          "permissions"
+        ],
         "type": "object"
       },
       "UsageByUserDto": {

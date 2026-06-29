@@ -3,6 +3,7 @@
   import DetailPanelDate from '$lib/components/asset-viewer/DetailPanelDate.svelte';
   import DetailPanelDescription from '$lib/components/asset-viewer/DetailPanelDescription.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/DetailPanelLocation.svelte';
+  import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/DetailPanelStarRating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/DetailPanelTags.svelte';
   import { timeToLoadTheMap } from '$lib/constants';
@@ -11,7 +12,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
+  import { getAssetMediaUrl, hasPermissions } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -20,6 +21,7 @@
     AssetMediaSize,
     getAllAlbums,
     getAssetInfo,
+    SharingPermission,
     type AlbumResponseDto,
     type AssetResponseDto,
   } from '@immich/sdk';
@@ -32,7 +34,6 @@
   import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
-  import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
 
   interface Props {
@@ -43,6 +44,7 @@
   let { asset, currentAlbum = null }: Props = $props();
 
   let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
+  const allowExifUpdate = $derived(hasPermissions(asset, SharingPermission.AssetUpdate, SharingPermission.ExifRead));
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -150,9 +152,9 @@
       </section>
     {/if}
 
-    <DetailPanelDescription {asset} {isOwner} />
-    <DetailPanelRating {asset} {isOwner} />
-    <DetailPanelPeople {asset} {isOwner} {previousRoute} />
+    <DetailPanelDescription {asset} {allowExifUpdate} />
+    <DetailPanelRating {asset} {allowExifUpdate} />
+    <DetailPanelPeople {asset} {previousRoute} />
 
     <div class="p-4">
       {#if asset.exifInfo}
@@ -163,7 +165,7 @@
         <Text size="small" color="muted">{$t('no_exif_info_available')}</Text>
       {/if}
 
-      <DetailPanelDate {asset} />
+      <DetailPanelDate {asset} {allowExifUpdate} />
 
       <div class="flex gap-4 py-4">
         <div><Icon icon={mdiImageOutline} size="24" /></div>
@@ -171,7 +173,7 @@
         <div>
           <p class="flex place-items-center gap-2 break-all whitespace-pre-wrap">
             {asset.originalFileName}
-            {#if isOwner}
+            {#if allowExifUpdate}
               <IconButton
                 icon={mdiInformationOutline}
                 aria-label={$t('show_file_location')}
@@ -274,7 +276,7 @@
         </div>
       {/if}
 
-      <DetailPanelLocation {isOwner} {asset} />
+      <DetailPanelLocation {allowExifUpdate} {asset} />
     </div>
   </section>
 

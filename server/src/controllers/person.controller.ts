@@ -20,7 +20,7 @@ import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceUpdateDto,
-  MergePersonDto,
+  MergeFaceClusterDto,
   PeopleResponseDto,
   PeopleUpdateDto,
   PersonCreateDto,
@@ -198,7 +198,7 @@ export class PersonController {
   mergePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: MergePersonDto,
+    @Body() dto: MergeFaceClusterDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.mergePerson(auth, id, dto);
   }

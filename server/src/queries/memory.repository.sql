@@ -47,7 +47,7 @@ select
               $1 as "one"
             from
               "asset_face"
-              inner join "person" on "person"."id" = "asset_face"."personId"
+              inner join "person" on "person"."faceClusterId" = "asset_face"."faceClusterId"
             where
               "asset_face"."assetId" = "asset"."id"
               and "person"."isHidden" = $2
@@ -86,7 +86,7 @@ select
               $1 as "one"
             from
               "asset_face"
-              inner join "person" on "person"."id" = "asset_face"."personId"
+              inner join "person" on "person"."faceClusterId" = "asset_face"."faceClusterId"
             where
               "asset_face"."assetId" = "asset"."id"
               and "person"."isHidden" = $2

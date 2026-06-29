@@ -26,6 +26,7 @@ export class PartnerFactory {
       sharedWithId,
       updatedAt: newDate(),
       updateId: newUuidV7(),
+      permissions: [],
       ...dto,
     })
       .sharedBy({ id: sharedById })

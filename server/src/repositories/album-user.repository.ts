@@ -38,4 +38,13 @@ export class AlbumUserRepository {
   async delete({ userId, albumId }: AlbumPermissionId): Promise<void> {
     await this.db.deleteFrom('album_user').where('userId', '=', userId).where('albumId', '=', albumId).execute();
   }
+
+  get({ userId, albumId }: AlbumPermissionId) {
+    return this.db
+      .selectFrom('album_user')
+      .select(['permissions', 'inTimeline'])
+      .where('userId', '=', userId)
+      .where('albumId', '=', albumId)
+      .executeTakeFirstOrThrow();
+  }
 }

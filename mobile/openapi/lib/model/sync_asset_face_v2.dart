@@ -19,11 +19,11 @@ class SyncAssetFaceV2 {
     required this.boundingBoxY1,
     required this.boundingBoxY2,
     required this.deletedAt,
+    required this.faceClusterId,
     required this.id,
     required this.imageHeight,
     required this.imageWidth,
     required this.isVisible,
-    required this.personId,
     required this.sourceType,
   });
 
@@ -57,6 +57,9 @@ class SyncAssetFaceV2 {
   /// Face deleted at
   DateTime? deletedAt;
 
+  /// Person ID
+  String? faceClusterId;
+
   /// Asset face ID
   String id;
 
@@ -75,9 +78,6 @@ class SyncAssetFaceV2 {
   /// Is the face visible in the asset
   bool isVisible;
 
-  /// Person ID
-  String? personId;
-
   /// Source type
   String sourceType;
 
@@ -89,11 +89,11 @@ class SyncAssetFaceV2 {
     other.boundingBoxY1 == boundingBoxY1 &&
     other.boundingBoxY2 == boundingBoxY2 &&
     other.deletedAt == deletedAt &&
+    other.faceClusterId == faceClusterId &&
     other.id == id &&
     other.imageHeight == imageHeight &&
     other.imageWidth == imageWidth &&
     other.isVisible == isVisible &&
-    other.personId == personId &&
     other.sourceType == sourceType;
 
   @override
@@ -105,15 +105,15 @@ class SyncAssetFaceV2 {
     (boundingBoxY1.hashCode) +
     (boundingBoxY2.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (faceClusterId == null ? 0 : faceClusterId!.hashCode) +
     (id.hashCode) +
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
     (isVisible.hashCode) +
-    (personId == null ? 0 : personId!.hashCode) +
     (sourceType.hashCode);
 
   @override
-  String toString() => 'SyncAssetFaceV2[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, deletedAt=$deletedAt, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, isVisible=$isVisible, personId=$personId, sourceType=$sourceType]';
+  String toString() => 'SyncAssetFaceV2[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, deletedAt=$deletedAt, faceClusterId=$faceClusterId, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, isVisible=$isVisible, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -129,15 +129,15 @@ class SyncAssetFaceV2 {
     } else {
       json[r'deletedAt'] = null;
     }
+    if (this.faceClusterId != null) {
+      json[r'faceClusterId'] = this.faceClusterId;
+    } else {
+      json[r'faceClusterId'] = null;
+    }
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
       json[r'isVisible'] = this.isVisible;
-    if (this.personId != null) {
-      json[r'personId'] = this.personId;
-    } else {
-      json[r'personId'] = null;
-    }
       json[r'sourceType'] = this.sourceType;
     return json;
   }
@@ -157,11 +157,11 @@ class SyncAssetFaceV2 {
         boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
         boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
         deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/'),
+        faceClusterId: mapValueOfType<String>(json, r'faceClusterId'),
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         isVisible: mapValueOfType<bool>(json, r'isVisible')!,
-        personId: mapValueOfType<String>(json, r'personId'),
         sourceType: mapValueOfType<String>(json, r'sourceType')!,
       );
     }
@@ -216,11 +216,11 @@ class SyncAssetFaceV2 {
     'boundingBoxY1',
     'boundingBoxY2',
     'deletedAt',
+    'faceClusterId',
     'id',
     'imageHeight',
     'imageWidth',
     'isVisible',
-    'personId',
     'sourceType',
   };
 }

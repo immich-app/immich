@@ -8,10 +8,10 @@
 
   interface Props {
     asset: AssetResponseDto;
-    isOwner: boolean;
+    allowExifUpdate: boolean;
   }
 
-  let { asset, isOwner }: Props = $props();
+  let { asset, allowExifUpdate }: Props = $props();
 
   let rating = $derived(asset.exifInfo?.rating ?? null) as Rating;
 
@@ -26,6 +26,10 @@
 
 {#if !authManager.isSharedLink && authManager.authenticated && authManager.preferences.ratings.enabled}
   <section class="px-4 pt-4">
-    <StarRating {rating} readOnly={!isOwner} onRating={(rating) => handlePromiseError(handleChangeRating(rating))} />
+    <StarRating
+      {rating}
+      readOnly={!allowExifUpdate}
+      onRating={(rating) => handlePromiseError(handleChangeRating(rating))}
+    />
   </section>
 {/if}

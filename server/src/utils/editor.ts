@@ -1,4 +1,3 @@
-import { AssetFace } from 'src/database';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ImageDimensions } from 'src/types';
 
@@ -31,11 +30,21 @@ const scale = (box: BoundingBox, target: ImageDimensions, source?: ImageDimensio
   };
 };
 
-export const checkFaceVisibility = (
-  faces: AssetFace[],
+export const checkFaceVisibility = <
+  T extends {
+    isVisible: boolean;
+    boundingBoxX1: number;
+    boundingBoxX2: number;
+    boundingBoxY1: number;
+    boundingBoxY2: number;
+    imageHeight: number;
+    imageWidth: number;
+  },
+>(
+  faces: T[],
   originalAssetDimensions: ImageDimensions,
   crop?: BoundingBox,
-): { visible: AssetFace[]; hidden: AssetFace[] } => {
+): { visible: T[]; hidden: T[] } => {
   if (!crop) {
     return {
       visible: faces.filter((face) => !face.isVisible),

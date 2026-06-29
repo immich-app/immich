@@ -32,10 +32,11 @@ import {
   JobStatus,
   Permission,
   QueueName,
+  SharingPermission,
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { requireElevatedPermission } from 'src/utils/access';
+import { hasPermissions, requireElevatedPermission } from 'src/utils/access';
 import {
   getAssetFiles,
   getDimensions,
@@ -62,14 +63,18 @@ export class AssetService extends BaseService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      owner: true,
-      faces: { person: true },
-      stack: { assets: true },
-      edits: true,
-      tags: true,
-    });
+    const asset = await this.assetRepository.getById(
+      id,
+      {
+        exifInfo: true,
+        owner: true,
+        faces: { person: true },
+        stack: { assets: true },
+        edits: true,
+        tags: true,
+      },
+      auth.user.id,
+    );
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -85,7 +90,7 @@ export class AssetService extends BaseService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+    if (!hasPermissions(data, SharingPermission.PersonRead)) {
       data.people = [];
     }
 

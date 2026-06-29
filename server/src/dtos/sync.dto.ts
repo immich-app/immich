@@ -365,10 +365,13 @@ const SyncAssetFaceV1Schema = z
   })
   .meta({ id: 'SyncAssetFaceV1' });
 
-const SyncAssetFaceV2Schema = SyncAssetFaceV1Schema.extend({
-  deletedAt: isoDatetimeToDate.nullable().describe('Face deleted at'),
-  isVisible: z.boolean().describe('Is the face visible in the asset'),
-}).meta({ id: 'SyncAssetFaceV2' });
+const SyncAssetFaceV2Schema = SyncAssetFaceV1Schema.omit({ personId: true })
+  .extend({
+    deletedAt: isoDatetimeToDate.nullable().describe('Face deleted at'),
+    isVisible: z.boolean().describe('Is the face visible in the asset'),
+    faceClusterId: z.string().nullable().describe('Person ID'),
+  })
+  .meta({ id: 'SyncAssetFaceV2' });
 
 const SyncAssetFaceDeleteV1Schema = z
   .object({ assetFaceId: z.uuidv4().describe('Asset face ID') })

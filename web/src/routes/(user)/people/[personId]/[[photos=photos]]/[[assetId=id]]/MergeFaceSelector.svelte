@@ -68,7 +68,7 @@
     try {
       let results = await mergePerson({
         id: person.id,
-        mergePersonDto: { ids: selectedPeople.map(({ id }) => id) },
+        mergeFaceClusterDto: { ids: selectedPeople.map(({ id }) => id) },
       });
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;

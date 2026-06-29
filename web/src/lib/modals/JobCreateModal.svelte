@@ -40,6 +40,7 @@
       title: $t('admin.maintenance_integrity_checksum_mismatch_refresh_job'),
       value: ManualJobName.IntegrityChecksumMismatchRefresh,
     },
+    { title: 'Person grouping', value: ManualJobName.PersonGroupMerge },
   ].map(({ value, title }) => ({ id: value, label: title, value }));
 
   let selectedJob: ComboBoxOption | undefined = $state(undefined);

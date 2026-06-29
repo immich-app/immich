@@ -9,6 +9,7 @@ import {
   MemoryType,
   Permission,
   SharedLinkType,
+  SharingPermission,
   SourceType,
   UserAvatarColor,
   UserStatus,
@@ -209,6 +210,7 @@ export type Partner = {
   updatedAt: Date;
   updateId: string;
   inTimeline: boolean;
+  permissions: SharingPermission[];
 };
 
 export type Place = {
@@ -252,6 +254,7 @@ export type Person = {
   faceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
+  faceClusterId: string | null;
 };
 
 export type AssetFace = {
@@ -264,7 +267,7 @@ export type AssetFace = {
   boundingBoxY2: number;
   imageHeight: number;
   imageWidth: number;
-  personId: string | null;
+  faceClusterId: string | null;
   sourceType: SourceType;
   person?: ShallowDehydrateObject<Person> | null;
   updatedAt: Date;

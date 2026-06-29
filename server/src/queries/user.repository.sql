@@ -397,3 +397,73 @@ set
 where
   "user"."deletedAt" is null
   and "user"."id" = $2::uuid
+
+-- UserRepository.getInSameTrustedGroup
+select
+  "user"."id"
+from
+  "user"
+where
+  "user"."trustedGroupId" = (
+    select
+      "user"."trustedGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $1
+  )
+
+-- UserRepository.mergeTrustedGroups
+update "user"
+set
+  "trustedGroupId" = "u"."trustedGroupId"
+from
+  "user" as "u"
+where
+  "u"."id" = $1
+  and "user"."trustedGroupId" = (
+    select
+      "user"."trustedGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $2
+      and "user"."trustedGroupId" != "u"."trustedGroupId"
+  )
+
+-- UserRepository.updateTrustedGroups
+update "user"
+set
+  "trustedGroupId" = uuid_generate_v4 ()
+where
+  "user"."trustedGroupId" = (
+    select
+      "user"."trustedGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $1
+  )
+  and "user"."id" != $2
+  and "user"."id" not in (
+    select
+      "partner"."sharedById" as "userId"
+    from
+      "partner"
+    where
+      "sharedWithId" = $3
+    union
+    select
+      "album_user"."userId"
+    from
+      "album_user"
+    where
+      "album_user"."albumId" in (
+        select
+          "album_user"."albumId"
+        from
+          "album_user"
+        where
+          "album_user"."userId" = $4
+      )
+  )

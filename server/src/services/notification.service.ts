@@ -85,7 +85,11 @@ export class NotificationService extends BaseService {
       return;
     }
 
-    this.logger.error(`Unable to run job handler (${job.name}): ${error}`, error?.stack, JSON.stringify(job.data));
+    this.logger.error(
+      `Unable to run job handler (${job.name}): ${error}`,
+      error?.stack,
+      'data' in job ? JSON.stringify(job.data) : {},
+    );
 
     switch (job.name) {
       case JobName.DatabaseBackup: {

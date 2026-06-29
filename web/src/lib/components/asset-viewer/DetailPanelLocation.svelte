@@ -7,11 +7,11 @@
   import { t } from 'svelte-i18n';
 
   type Props = {
-    isOwner: boolean;
+    allowExifUpdate: boolean;
     asset: AssetResponseDto;
   };
 
-  let { isOwner, asset = $bindable() }: Props = $props();
+  let { allowExifUpdate, asset = $bindable() }: Props = $props();
 
   const onAction = async () => {
     const point = await modalManager.show(GeolocationPointPickerModal, { asset });
@@ -34,9 +34,9 @@
   <button
     type="button"
     class="flex w-full place-items-start justify-between gap-4 py-4 text-start"
-    onclick={isOwner ? onAction : undefined}
-    title={isOwner ? $t('edit_location') : ''}
-    class:hover:text-primary={isOwner}
+    onclick={allowExifUpdate ? onAction : undefined}
+    title={allowExifUpdate ? $t('edit_location') : ''}
+    class:hover:text-primary={allowExifUpdate}
   >
     <div class="flex gap-4">
       <div><Icon icon={mdiMapMarkerOutline} size="24" /></div>
@@ -58,13 +58,13 @@
       </div>
     </div>
 
-    {#if isOwner}
+    {#if allowExifUpdate}
       <div>
         <Icon icon={mdiPencil} size="20" />
       </div>
     {/if}
   </button>
-{:else if !asset.exifInfo?.city && isOwner}
+{:else if !asset.exifInfo?.city && allowExifUpdate}
   <button
     type="button"
     class="flex w-full place-items-start justify-between gap-4 rounded-lg py-4 text-start hover:text-primary"

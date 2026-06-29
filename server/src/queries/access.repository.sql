@@ -149,6 +149,40 @@ where
     "albumAssets"."livePhotoVideoId"
   ] && array[$2]::uuid[]
 
+-- AccessRepository.asset.checkSharedAccess
+select
+  "album_asset"."assetId"
+from
+  "album_asset"
+  inner join "album_user" on "album_asset"."albumId" = "album_user"."albumId"
+  and "album_user"."userId" = $1
+where
+  "album_asset"."assetId" in ($2)
+  and "album_asset"."albumId" in (
+    select
+      "album_user"."albumId"
+    from
+      "album_user"
+    where
+      (
+        "album_user"."permissions" @> $3::sharing_permission_enum[]
+        or $4 = any ("album_user"."permissions")
+      )
+  )
+union
+select
+  "asset"."id" as "assetId"
+from
+  "partner"
+  inner join "asset" on "asset"."ownerId" = "partner"."sharedById"
+  and "asset"."id" in ($5)
+where
+  "partner"."sharedWithId" = $6
+  and (
+    "partner"."permissions" @> $7::sharing_permission_enum[]
+    or $8 = any ("partner"."permissions")
+  )
+
 -- AccessRepository.authDevice.checkOwnerAccess
 select
   "session"."id"

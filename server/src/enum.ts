@@ -309,6 +309,28 @@ export enum Permission {
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 
+export enum SharingPermission {
+  All = 'all',
+
+  AssetRead = 'asset.read',
+  AssetUpdate = 'asset.update',
+  AssetEdit = 'asset.edit',
+  AssetDelete = 'asset.delete',
+  AssetShare = 'asset.share',
+
+  ExifRead = 'exif.read',
+
+  PersonRead = 'person.read',
+  PersonUpdate = 'person.update',
+  PersonMerge = 'person.merge',
+  PersonDelete = 'person.delete',
+}
+
+export const SharingPermissionSchema = z
+  .enum(SharingPermission)
+  .describe('Sharing permission schema')
+  .meta({ id: 'SharingPermission' });
+
 export enum SharedLinkType {
   Album = 'ALBUM',
 
@@ -428,6 +450,7 @@ export enum ManualJobName {
   IntegrityMissingFilesDeleteAll = `integrity-missing-files-delete-all`,
   IntegrityUntrackedFilesDeleteAll = `integrity-untracked-files-delete-all`,
   IntegrityChecksumFilesDeleteAll = `integrity-checksum-mismatch-delete-all`,
+  PersonGroupMerge = 'person-group-merge',
 }
 
 export const ManualJobNameSchema = z.enum(ManualJobName).describe('Manual job name').meta({ id: 'ManualJobName' });
@@ -834,6 +857,7 @@ export enum JobName {
 
   FacialRecognitionQueueAll = 'FacialRecognitionQueueAll',
   FacialRecognition = 'FacialRecognition',
+  FacialRecognitionMerge = 'FacialRecognitionMerge',
 
   FileDelete = 'FileDelete',
   FileMigrationQueueAll = 'FileMigrationQueueAll',

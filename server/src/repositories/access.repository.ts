@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { AlbumUserRole, AssetVisibility } from 'src/enum';
+import { AlbumUserRole, AssetVisibility, SharingPermission } from 'src/enum';
+import { hasAssetPermissions } from 'src/repositories/asset.repository';
+import { hasPermissions } from 'src/repositories/person.repository';
 import { DB } from 'src/schema';
 import { asUuid } from 'src/utils/database';
 
@@ -273,6 +275,46 @@ class AssetAccess {
         return allowedIds;
       });
   }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET, [SharingPermission.All]] })
+  async checkSharedAccess(userId: string, assetIds: Set<string>, permissions: SharingPermission[]) {
+    const ids = await this.db
+      .selectFrom('album_asset')
+      .select('album_asset.assetId')
+      .where('album_asset.assetId', 'in', [...assetIds])
+      .where('album_asset.albumId', 'in', (eb) =>
+        eb
+          .selectFrom('album_user')
+          .select('album_user.albumId')
+          .where((eb) =>
+            eb.or([
+              eb('album_user.permissions', '@>', sql<SharingPermission[]>`${permissions}::sharing_permission_enum[]`),
+              eb(eb.val(SharingPermission.All), '=', eb.fn.any('album_user.permissions')),
+            ]),
+          ),
+      )
+      .innerJoin('album_user', (join) =>
+        join.onRef('album_asset.albumId', '=', 'album_user.albumId').on('album_user.userId', '=', userId),
+      )
+      .union((eb) =>
+        eb
+          .selectFrom('partner')
+          .where('partner.sharedWithId', '=', userId)
+          .where((eb) =>
+            eb.or([
+              eb('partner.permissions', '@>', sql<SharingPermission[]>`${permissions}::sharing_permission_enum[]`),
+              eb(eb.val(SharingPermission.All), '=', eb.fn.any('partner.permissions')),
+            ]),
+          )
+          .innerJoin('asset', (join) =>
+            join.onRef('asset.ownerId', '=', 'partner.sharedById').on('asset.id', 'in', [...assetIds]),
+          )
+          .select('asset.id as assetId'),
+      )
+      .execute();
+
+    return new Set(ids.map(({ assetId }) => assetId));
+  }
 }
 
 class AuthDeviceAccess {
@@ -451,6 +493,37 @@ class PersonAccess {
       .where('asset.ownerId', '=', userId)
       .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
+  }
+
+  async checkSharedAccess(userId: string, personIds: Set<string>, permissions: SharingPermission[]) {
+    if (personIds.size === 0) {
+      return new Set<string>();
+    }
+
+    const ids = await this.db
+      .selectFrom('person')
+      .select('person.id')
+      .where('person.id', 'in', [...personIds])
+      .where(hasPermissions(userId, permissions))
+      .execute();
+
+    return new Set(ids.map(({ id }) => id));
+  }
+
+  async checkSharedFaceAccess(userId: string, faceIds: Set<string>, permissions: SharingPermission[]) {
+    if (faceIds.size === 0) {
+      return new Set<string>();
+    }
+
+    const ids = await this.db
+      .selectFrom('asset_face')
+      .select('asset_face.id')
+      .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId'))
+      .where('asset_face.id', 'in', [...faceIds])
+      .where(hasAssetPermissions(userId, permissions))
+      .execute();
+
+    return new Set(ids.map(({ id }) => id));
   }
 }
 
