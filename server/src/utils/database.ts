@@ -373,12 +373,15 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
-  const visibility = options.visibility == null ? AssetVisibility.Timeline : options.visibility;
 
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('asset')
-    .where('asset.visibility', '=', visibility)
+    .$if(!!options.visibility, (qb) =>
+      options.visibility === 'not-locked'
+        ? qb.where('asset.visibility', '!=', AssetVisibility.Locked)
+        : qb.where('asset.visibility', '=', options.visibility!),
+    )
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(options.tagIds === null, (qb) =>
