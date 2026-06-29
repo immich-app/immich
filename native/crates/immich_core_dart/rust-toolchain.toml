@@ -1,0 +1,18 @@
+# The build hook (native_toolchain_rust) drives cargo via rustup and auto-installs
+# this toolchain + targets. Pin a version (never bare stable/beta) for reproducible
+# builds. Keep the channel in sync with mise.toml's rust pin.
+[toolchain]
+channel = "1.92.0"
+targets = [
+  # Android
+  "armv7-linux-androideabi",
+  "aarch64-linux-android",
+  "x86_64-linux-android",
+  # iOS (device + simulator)
+  "aarch64-apple-ios",
+  "aarch64-apple-ios-sim",
+  "x86_64-apple-ios",
+  # host (local test / macOS)
+  "aarch64-apple-darwin",
+  "x86_64-apple-darwin",
+]

@@ -1,0 +1,20 @@
+# Regenerate: `mise run codegen` (cbindgen header -> ffigen @Native bindings).
+# ffi-native mode emits top-level @Native externals + a library @DefaultAsset
+# pointing at the code asset hook/build.dart produces — no DynamicLibrary loader.
+# asset-id MUST equal the generated file's package URI (and the hook's assetName).
+name: ImmichNativeCoreBindings
+ffi-native:
+  asset-id: 'package:immich_native_core/src/ffi/bindings.g.dart'
+description: 'FFI bindings to immich_native_core — generated, do not edit.'
+output: 'lib/src/ffi/bindings.g.dart'
+headers:
+  entry-points:
+    - '../crates/immich_core_dart/include/immich_core.h'
+  include-directives:
+    - '**/immich_core.h'
+functions:
+  include:
+    - 'immich_core_.*'
+comments:
+  style: any
+  length: full

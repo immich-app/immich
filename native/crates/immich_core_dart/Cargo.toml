@@ -1,0 +1,21 @@
+[package]
+name = "immich_core_dart"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# native_toolchain_rust requires cdylib (the bundled lib) + staticlib (iOS). It
+# derives the artifact name from [package].name, so no [lib] name override here.
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+# hashing (SHA-1 asset identity) is the reason this lib exists — always on, so the
+# cbindgen header + ffigen bindings always match the exported symbols.
+[dependencies]
+immich_core = { path = "../immich_core", default-features = false, features = ["hashing", "image"] }
+
+[build-dependencies]
+cbindgen = { workspace = true }
+
+[lints]
+workspace = true

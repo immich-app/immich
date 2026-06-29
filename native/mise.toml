@@ -1,0 +1,68 @@
+[tools]
+rust = "1.92.0" # keep in sync with rust-toolchain.toml (the build hook uses rustup)
+
+[tasks.build]
+description = "Build all native core crates (host)"
+run = "cargo build --workspace"
+
+[tasks.test]
+description = "Run native core Rust tests"
+run = "cargo test --workspace"
+
+[tasks.fmt]
+description = "Format all crates"
+run = "cargo fmt --all"
+
+[tasks.lint]
+description = "Clippy (warnings = errors)"
+run = "cargo clippy --workspace --all-targets -- -D warnings"
+
+# Regen the committed cbindgen header + ffigen @Native bindings.
+[tasks."codegen:ffigen"]
+alias = "codegen"
+description = "Generate the C header (cbindgen) + Dart @Native bindings (ffigen)"
+sources = [
+    "crates/immich_core_dart/src/lib.rs",
+    "crates/immich_core_dart/cbindgen.toml",
+    "immich_native_core/ffigen.yaml",
+]
+outputs = [
+    "crates/immich_core_dart/include/immich_core.h",
+    "immich_native_core/lib/immich_native_core_bindings_generated.dart",
+]
+run = [
+    "cargo build -p immich_core_dart",
+    "cd immich_native_core && dart run ffigen --config ffigen.yaml && dart format lib/immich_native_core_bindings_generated.dart",
+]
+
+# Host FFI roundtrip through the real build hook — no device. Builds the Rust crate
+# via rustup + resolves the @Native code asset.
+[tasks."test:flutter"]
+description = "Host FFI roundtrip via the build hook (flutter test)"
+dir = "immich_native_core"
+run = "flutter test"
+
+[tasks."build:dart"]
+description = "Build the dart:ffi cdylib directly (host, raw cargo)"
+run = "cargo build -p immich_core_dart"
+
+[tasks."build:napi"]
+description = "Build the node addon + stage a .node for require() (server, unwired)"
+run = [
+    "cargo build -p immich_core_napi --release",
+    "cp target/release/libimmich_core_napi.dylib smoke/immich_core_napi.node 2>/dev/null || cp target/release/libimmich_core_napi.so smoke/immich_core_napi.node",
+]
+
+[tasks."smoke:dart"]
+description = "Host dart:ffi ABI roundtrip (raw DynamicLibrary on the cdylib)"
+depends = ["build:dart"]
+run = "dart run smoke/dart_smoke.dart target/debug/libimmich_core_dart.dylib"
+
+[tasks."smoke:node"]
+description = "Host napi roundtrip"
+depends = ["build:napi"]
+run = "node smoke/node_smoke.mjs"
+
+[tasks.smoke]
+description = "Rust tests + host dart:ffi + host napi roundtrips"
+depends = ["test", "smoke:dart", "smoke:node"]
