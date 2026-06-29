@@ -27,8 +27,8 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
       final now = DateTime.now();
       final localUtc = DateTime.utc(now.year, now.month, now.day, 0, 0, 0);
 
-      query.where(_db.memoryEntity.showAt.isSmallerOrEqualValue(localUtc));
-      query.where(_db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc));
+      query.where(_db.memoryEntity.showAt.isNull() | _db.memoryEntity.showAt.isSmallerOrEqualValue(localUtc));
+      query.where(_db.memoryEntity.hideAt.isNull() | _db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc));
     }
 
     query.orderBy([OrderingTerm.desc(_db.memoryEntity.memoryAt), OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
