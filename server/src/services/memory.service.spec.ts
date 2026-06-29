@@ -286,4 +286,54 @@ describe(MemoryService.name, () => {
       expect(mocks.memory.removeAssetIds).toHaveBeenCalledWith(memory.id, [asset.id]);
     });
   });
+
+  describe('onMemoriesCreate', () => {
+    it('should create custom aesthetic memories based on config', async () => {
+      const ownerId = newUuid();
+      mocks.user.getList.mockResolvedValue([{ id: ownerId } as any]);
+      mocks.systemMetadata.get.mockResolvedValue(null);
+      
+      // Mock database lock
+      mocks.database.withLock.mockImplementation(async (lock, fn) => await fn());
+
+      // Mock getConfig
+      sut.getConfig = jest.fn().mockResolvedValue({
+        machineLearning: {
+          enabled: true,
+          clip: { modelName: 'test-model' },
+          aestheticMemories: {
+            enabled: true,
+            customCards: [
+              {
+                id: 'custom-card-1',
+                title: 'Test Daily Memory',
+                clipPrompt: 'a test prompt',
+                frequency: 'daily',
+                maxPhotos: 5,
+                enabled: true,
+              }
+            ]
+          }
+        }
+      });
+
+      // Mock smart search to return some items
+      mocks.machineLearning.encodeText.mockResolvedValue('test-embedding');
+      mocks.search.searchSmart.mockResolvedValue({
+        items: [
+          { id: 'asset1' },
+          { id: 'asset2' },
+          { id: 'asset3' },
+        ] as any[],
+        count: 3,
+        facets: [],
+      });
+
+      await sut.onMemoriesCreate();
+
+      // Because frequency is 'daily', it should attempt to create CustomAesthetic memories
+      expect(mocks.search.searchSmart).toHaveBeenCalled();
+      expect(mocks.memory.create).toHaveBeenCalled();
+    });
+  });
 });

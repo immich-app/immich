@@ -50,8 +50,32 @@ class DriftMemoryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final yearsAgo = DateTime.now().year - memory.data.year;
-    final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+    final memoryType = memory.type;
+    String title = '';
+    switch (memoryType) {
+      case MemoryTypeEnum.onThisDay:
+        final yearsAgo = DateTime.now().year - memory.data.year;
+        title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+        break;
+      case MemoryTypeEnum.highlightWeek:
+        title = 'highlight_week'.t(context: context);
+        break;
+      case MemoryTypeEnum.highlightMonth:
+        title = 'highlight_month'.t(context: context);
+        break;
+      case MemoryTypeEnum.highlightYear:
+        title = 'highlight_year'.t(context: context);
+        break;
+      case MemoryTypeEnum.goldenHour:
+        title = 'golden_hour'.t(context: context);
+        break;
+      case MemoryTypeEnum.forestShade:
+        title = 'forest_shade'.t(context: context);
+        break;
+      case MemoryTypeEnum.customAesthetic:
+        title = memory.data.title ?? 'custom_aesthetic'.t(context: context);
+        break;
+    }
     return Center(
       child: Stack(
         children: [

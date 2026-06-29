@@ -170,6 +170,24 @@ const MachineLearningAvailabilityChecksSchema = z
   })
   .meta({ id: 'MachineLearningAvailabilityChecksDto' });
 
+const CustomMemoryCardSchema = z
+  .object({
+    id: z.string().uuid(),
+    title: z.string(),
+    clipPrompt: z.string(),
+    frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
+    maxPhotos: z.number().int().min(1).max(100),
+    enabled: configBool.describe('Enabled'),
+  })
+  .meta({ id: 'CustomMemoryCardDto' });
+
+const SystemConfigAestheticMemoriesSchema = z
+  .object({
+    enabled: configBool.describe('Enabled'),
+    customCards: z.array(CustomMemoryCardSchema),
+  })
+  .meta({ id: 'SystemConfigAestheticMemoriesDto' });
+
 const SystemConfigMachineLearningSchema = z
   .object({
     enabled: configBool.describe('Enabled'),
@@ -179,6 +197,7 @@ const SystemConfigMachineLearningSchema = z
     duplicateDetection: DuplicateDetectionConfigSchema,
     facialRecognition: FacialRecognitionConfigSchema,
     ocr: OcrConfigSchema,
+    aestheticMemories: SystemConfigAestheticMemoriesSchema,
   })
   .meta({ id: 'SystemConfigMachineLearningDto' });
 

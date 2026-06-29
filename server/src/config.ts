@@ -16,6 +16,15 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
+export type MemoryLaneCard = {
+  id: string;
+  title: string;
+  clipPrompt: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  maxPhotos: number;
+  enabled: boolean;
+};
+
 export type SystemConfig = {
   backup: {
     database: {
@@ -100,6 +109,10 @@ export type SystemConfig = {
       minDetectionScore: number;
       minRecognitionScore: number;
       maxResolution: number;
+    };
+    aestheticMemories: {
+      enabled: boolean;
+      customCards: MemoryLaneCard[];
     };
   };
   map: {
@@ -315,6 +328,10 @@ export const defaults = Object.freeze<SystemConfig>({
       minDetectionScore: 0.5,
       minRecognitionScore: 0.8,
       maxResolution: 736,
+    },
+    aestheticMemories: {
+      enabled: true,
+      customCards: [],
     },
   },
   map: {

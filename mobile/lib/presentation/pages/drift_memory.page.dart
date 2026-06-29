@@ -245,8 +245,32 @@ class DriftMemoryPage extends HookConsumerWidget {
                 );
               }
 
-              final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
-              final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+              final memoryType = memories[mIndex].type;
+              String title = '';
+              switch (memoryType) {
+                case MemoryTypeEnum.onThisDay:
+                  final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
+                  title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+                  break;
+                case MemoryTypeEnum.highlightWeek:
+                  title = 'highlight_week'.t(context: context);
+                  break;
+                case MemoryTypeEnum.highlightMonth:
+                  title = 'highlight_month'.t(context: context);
+                  break;
+                case MemoryTypeEnum.highlightYear:
+                  title = 'highlight_year'.t(context: context);
+                  break;
+                case MemoryTypeEnum.goldenHour:
+                  title = 'golden_hour'.t(context: context);
+                  break;
+                case MemoryTypeEnum.forestShade:
+                  title = 'forest_shade'.t(context: context);
+                  break;
+                case MemoryTypeEnum.customAesthetic:
+                  title = memories[mIndex].data.title ?? 'custom_aesthetic'.t(context: context);
+                  break;
+              }
               // Build horizontal page
               final assetController = memoryAssetPageControllers[mIndex];
               return Column(

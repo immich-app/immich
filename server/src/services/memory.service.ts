@@ -8,6 +8,7 @@ import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, m
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { isSmartSearchEnabled } from 'src/utils/misc';
 
 const DAYS = 3;
 
@@ -31,7 +32,15 @@ export class MemoryService extends BaseService {
 
         this.logger.log(`Creating memories for ${target.toISO()}`);
         try {
-          await Promise.all(users.map((owner) => this.createOnThisDayMemories(owner.id, target)));
+          const { machineLearning } = await this.getConfig({ withCache: false });
+          const isMlEnabled = isSmartSearchEnabled(machineLearning);
+          
+          await Promise.all(users.map(async (owner) => {
+            await this.createOnThisDayMemories(owner.id, target);
+            if (isMlEnabled) {
+              await this.createAestheticMemories(owner.id, target, machineLearning);
+            }
+          }));
         } catch (error) {
           this.logger.error(`Failed to create memories for ${target.toISO()}: ${error}`);
         }
@@ -63,6 +72,111 @@ export class MemoryService extends BaseService {
         ),
       ),
     );
+  }
+
+  private async createAestheticMemories(ownerId: string, target: DateTime, machineLearning: any) {
+    const showAt = target.startOf('day').toISO();
+    const hideAt = target.endOf('day').toISO();
+    const modelName = machineLearning.clip.modelName;
+
+    const createMemory = async (type: MemoryType, title: string | null, prompt: string | null, takenAfter: Date, takenBefore: Date, limit: number) => {
+      let embedding: string | undefined;
+      const searchPrompt = prompt || "beautiful, aesthetic, high quality photography, masterpiece";
+      try {
+        embedding = await this.machineLearningRepository.encodeText(searchPrompt, { modelName, language: 'en' });
+      } catch (e) {
+        this.logger.error(`Failed to encode text for memory type ${type}: ${e}`);
+        return;
+      }
+
+      if (!embedding) return;
+
+      const { items } = await this.searchRepository.searchSmart(
+        { page: 1, size: limit },
+        { 
+          userIds: [ownerId], 
+          embedding, 
+          takenAfter, 
+          takenBefore, 
+          withStacked: true, 
+          isFavorite: false,
+          isMotion: false 
+        }
+      );
+      
+      if (items.length >= 3) {
+        await this.memoryRepository.create(
+          {
+            ownerId,
+            type,
+            data: { year: target.year, ...(title ? { title } : {}) },
+            memoryAt: target.toISO()!,
+            showAt,
+            hideAt,
+          },
+          new Set(items.map((i) => i.id)),
+        );
+      }
+    };
+
+    const targetDate = target.toJSDate();
+
+    // Highlight Week: Sunday
+    if (target.weekday === 7) {
+      await createMemory(MemoryType.HighlightWeek, null, null, target.minus({ days: 7 }).toJSDate(), targetDate, 10);
+    }
+    // Highlight Month: 1st of the month
+    if (target.day === 1) {
+      await createMemory(MemoryType.HighlightMonth, null, null, target.minus({ months: 1 }).toJSDate(), targetDate, 15);
+    }
+    // Highlight Year: Dec 31
+    if (target.month === 12 && target.day === 31) {
+      await createMemory(MemoryType.HighlightYear, null, null, target.minus({ years: 1 }).toJSDate(), targetDate, 30);
+    }
+    // Golden Hour: Wednesday
+    if (target.weekday === 3) {
+      await createMemory(MemoryType.GoldenHour, null, "beautiful sunset or sunrise, golden hour, aesthetic", target.minus({ months: 1 }).toJSDate(), targetDate, 10);
+    }
+    // Forest Shade: Saturday
+    if (target.weekday === 6) {
+      await createMemory(MemoryType.ForestShade, null, "beautiful lush green forest, trees, nature, under the shade of forests", target.minus({ months: 1 }).toJSDate(), targetDate, 10);
+    }
+
+    // Custom Aesthetic Memories
+    if (machineLearning.aestheticMemories?.enabled && machineLearning.aestheticMemories.customCards) {
+      for (const card of machineLearning.aestheticMemories.customCards) {
+        if (!card.enabled) continue;
+
+        let shouldGenerate = false;
+        let takenAfter: DateTime = target;
+        
+        switch (card.frequency) {
+          case 'daily':
+            shouldGenerate = true;
+            takenAfter = target.minus({ days: 1 });
+            break;
+          case 'weekly':
+            // Generate on Sunday
+            shouldGenerate = target.weekday === 7;
+            takenAfter = target.minus({ days: 7 });
+            break;
+          case 'monthly':
+            // Generate on the 1st
+            shouldGenerate = target.day === 1;
+            takenAfter = target.minus({ months: 1 });
+            break;
+          case 'yearly':
+            // Generate on Dec 31
+            shouldGenerate = target.month === 12 && target.day === 31;
+            takenAfter = target.minus({ years: 1 });
+            break;
+        }
+
+        if (shouldGenerate) {
+          await createMemory(MemoryType.CustomAesthetic, card.title, card.clipPrompt, takenAfter.toJSDate(), targetDate, card.maxPhotos);
+        }
+      }
+    }
   }
 
   @OnJob({ name: JobName.MemoryCleanup, queue: QueueName.BackgroundTask })

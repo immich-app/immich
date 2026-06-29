@@ -24,10 +24,22 @@ class MemoryType {
   String toJson() => value;
 
   static const onThisDay = MemoryType._(r'on_this_day');
+  static const highlightWeek = MemoryType._(r'highlight_week');
+  static const highlightMonth = MemoryType._(r'highlight_month');
+  static const highlightYear = MemoryType._(r'highlight_year');
+  static const goldenHour = MemoryType._(r'golden_hour');
+  static const forestShade = MemoryType._(r'forest_shade');
+  static const customAesthetic = MemoryType._(r'custom_aesthetic');
 
   /// List of all possible values in this [enum][MemoryType].
   static const values = <MemoryType>[
     onThisDay,
+    highlightWeek,
+    highlightMonth,
+    highlightYear,
+    goldenHour,
+    forestShade,
+    customAesthetic,
   ];
 
   static MemoryType? fromJson(dynamic value) => MemoryTypeTypeTransformer().decode(value);
@@ -67,6 +79,12 @@ class MemoryTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'on_this_day': return MemoryType.onThisDay;
+        case r'highlight_week': return MemoryType.highlightWeek;
+        case r'highlight_month': return MemoryType.highlightMonth;
+        case r'highlight_year': return MemoryType.highlightYear;
+        case r'golden_hour': return MemoryType.goldenHour;
+        case r'forest_shade': return MemoryType.forestShade;
+        case r'custom_aesthetic': return MemoryType.customAesthetic;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

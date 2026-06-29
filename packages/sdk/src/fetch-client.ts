@@ -7393,7 +7393,12 @@ export enum MemorySearchOrder {
     Random = "random"
 }
 export enum MemoryType {
-    OnThisDay = "on_this_day"
+    OnThisDay = "on_this_day",
+    HighlightWeek = "highlight_week",
+    HighlightMonth = "highlight_month",
+    HighlightYear = "highlight_year",
+    GoldenHour = "golden_hour",
+    ForestShade = "forest_shade"
 }
 export enum PartnerDirection {
     SharedBy = "shared-by",

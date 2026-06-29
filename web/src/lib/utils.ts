@@ -370,6 +370,12 @@ export const memoryLaneTitle = derived(t, ($t) => {
     if (memory.type === MemoryType.OnThisDay) {
       return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
     }
+    if (memory.type === MemoryType.HighlightWeek) return $t('highlight_week');
+    if (memory.type === MemoryType.HighlightMonth) return $t('highlight_month');
+    if (memory.type === MemoryType.HighlightYear) return $t('highlight_year');
+    if (memory.type === MemoryType.GoldenHour) return $t('golden_hour');
+    if (memory.type === MemoryType.ForestShade) return $t('forest_shade');
+    if (memory.type === MemoryType.CustomAesthetic) return memory.data?.title || $t('custom_aesthetic', { default: 'Aesthetic Memory' });
 
     return $t('unknown');
   };

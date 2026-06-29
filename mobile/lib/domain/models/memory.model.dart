@@ -7,23 +7,33 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 enum MemoryTypeEnum {
   // do not change this order!
   onThisDay,
+  highlightWeek,
+  highlightMonth,
+  highlightYear,
+  goldenHour,
+  forestShade,
+  customAesthetic,
 }
 
 class MemoryData {
   final int year;
+  final String? title;
 
-  const MemoryData({required this.year});
+  const MemoryData({required this.year, this.title});
 
-  MemoryData copyWith({int? year}) {
-    return MemoryData(year: year ?? this.year);
+  MemoryData copyWith({int? year, String? title}) {
+    return MemoryData(year: year ?? this.year, title: title ?? this.title);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'year': year};
+    return <String, dynamic>{'year': year, 'title': title};
   }
 
   factory MemoryData.fromMap(Map<String, dynamic> map) {
-    return MemoryData(year: map['year'] as int);
+    return MemoryData(
+      year: map['year'] as int,
+      title: map['title'] as String?,
+    );
   }
 
   String toJson() => json.encode(toMap());
@@ -31,7 +41,7 @@ class MemoryData {
   factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => 'MemoryData(year: $year)';
+  String toString() => 'MemoryData(year: $year, title: $title)';
 
   @override
   bool operator ==(covariant MemoryData other) {
@@ -39,11 +49,11 @@ class MemoryData {
       return true;
     }
 
-    return other.year == year;
+    return other.year == year && other.title == title;
   }
 
   @override
-  int get hashCode => year.hashCode;
+  int get hashCode => year.hashCode ^ title.hashCode;
 }
 
 // Model for a memory stored in the server

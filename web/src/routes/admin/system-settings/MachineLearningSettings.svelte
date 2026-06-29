@@ -325,6 +325,59 @@
           />
         </div>
       </SettingAccordion>
+
+      <SettingAccordion title={$t('admin.machine_learning_aesthetic_memories_title', { default: 'Aesthetic Memories' })} subtitle={$t('admin.machine_learning_aesthetic_memories_description', { default: 'Dynamic memory cards generation.' })}>
+        <div class="flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_aesthetic_memories_enabled', { default: 'Enabled' })}
+            subtitle={$t('admin.machine_learning_aesthetic_memories_enabled_description', { default: 'Enable generating aesthetic custom memory cards' })}
+            {disabled}
+            bind:checked={configToEdit.machineLearning.aestheticMemories.enabled}
+          />
+
+          <hr />
+
+          {#each configToEdit.machineLearning.aestheticMemories.customCards as card, i (card.id)}
+            <div class="border p-4 rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 relative">
+              <div class="absolute right-2 top-2">
+                <IconButton aria-label="Delete" onclick={() => configToEdit.machineLearning.aestheticMemories.customCards.splice(i, 1)} icon={mdiTrashCanOutline} color="danger" />
+              </div>
+              
+              <SettingSwitch title="Enabled" subtitle="Enable this memory card" {disabled} bind:checked={card.enabled} />
+              
+              <SettingInputField inputType={SettingInputFieldType.TEXT} label="Title" description="The title of the memory shown in the UI" required bind:value={card.title} {disabled} isEdited={card.title !== config.machineLearning.aestheticMemories.customCards[i]?.title} />
+
+              <SettingInputField inputType={SettingInputFieldType.TEXT} label="CLIP Prompt" description="The visual criteria to search for" required bind:value={card.clipPrompt} {disabled} isEdited={card.clipPrompt !== config.machineLearning.aestheticMemories.customCards[i]?.clipPrompt} />
+
+              <SettingSelect label="Frequency" description="How often should this be generated?" bind:value={card.frequency} options={[ { text: 'Daily', value: 'daily' }, { text: 'Weekly', value: 'weekly' }, { text: 'Monthly', value: 'monthly' }, { text: 'Yearly', value: 'yearly' } ]} {disabled} isEdited={card.frequency !== config.machineLearning.aestheticMemories.customCards[i]?.frequency} />
+
+              <SettingInputField inputType={SettingInputFieldType.NUMBER} label="Max Photos" description="Maximum number of photos in the memory" required bind:value={card.maxPhotos} min={1} max={100} {disabled} isEdited={card.maxPhotos !== config.machineLearning.aestheticMemories.customCards[i]?.maxPhotos} />
+            </div>
+          {/each}
+
+          <div class="flex justify-end mt-2">
+            <Button
+              size="sm"
+              {disabled}
+              onclick={() => {
+                configToEdit.machineLearning.aestheticMemories.customCards = [
+                  ...configToEdit.machineLearning.aestheticMemories.customCards,
+                  {
+                    id: crypto.randomUUID(),
+                    title: 'New Memory',
+                    clipPrompt: 'beautiful sunset',
+                    frequency: 'weekly',
+                    maxPhotos: 10,
+                    enabled: true,
+                  },
+                ];
+              }}
+            >
+              {$t('admin.machine_learning_aesthetic_memories_add_card', { default: 'Add Card' })}
+            </Button>
+          </div>
+        </div>
+      </SettingAccordion>
       <SettingButtonsRow bind:configToEdit keys={['machineLearning']} {disabled} />
     </form>
   </div>
