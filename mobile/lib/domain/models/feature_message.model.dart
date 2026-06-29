@@ -1,49 +1,54 @@
+import 'dart:io';
+
+enum FeaturePlatform { all, android, ios }
+
 class FeatureHighlight {
-  final String image;
+  /// Asset path of the feature screenshot, or null to show a placeholder.
+  final String? image;
   final String titleKey;
   final String bodyKey;
+  final FeaturePlatform platform;
 
-  const FeatureHighlight({required this.image, required this.titleKey, required this.bodyKey});
+  const FeatureHighlight({
+    this.image,
+    required this.titleKey,
+    required this.bodyKey,
+    this.platform = FeaturePlatform.all,
+  });
+
+  bool get isVisibleOnCurrentPlatform => switch (platform) {
+    FeaturePlatform.all => true,
+    FeaturePlatform.android => Platform.isAndroid,
+    FeaturePlatform.ios => Platform.isIOS,
+  };
 }
 
 const int featureMessageHighlightVersion = 1;
 
 const String featureMessageReleaseLabel = '3.0.0';
 
+/// Highlights relevant to the current platform.
+List<FeatureHighlight> get visibleFeatureMessageHighlights =>
+    featureMessageHighlights.where((h) => h.isVisibleOnCurrentPlatform).toList();
+
 const List<FeatureHighlight> featureMessageHighlights = [
   FeatureHighlight(
     image: 'assets/feature_message/share_quality.webp',
-    titleKey: 'feature_message_share_quality_title',
-    bodyKey: 'feature_message_share_quality_body',
+    titleKey: 'share_quality_title',
+    bodyKey: 'share_quality_body',
   ),
   FeatureHighlight(
     image: 'assets/feature_message/slideshow.webp',
-    titleKey: 'feature_message_slideshow_title',
-    bodyKey: 'feature_message_slideshow_body',
+    titleKey: 'slideshow_title',
+    bodyKey: 'slideshow_body',
   ),
   FeatureHighlight(
     image: 'assets/feature_message/recently_added.webp',
-    titleKey: 'feature_message_recently_added_title',
-    bodyKey: 'feature_message_recently_added_body',
+    titleKey: 'recently_added_title',
+    bodyKey: 'recently_added_body',
   ),
-  FeatureHighlight(
-    image: 'assets/feature_message/non_destructive_editing.webp',
-    titleKey: 'feature_message_non_destructive_editing_title',
-    bodyKey: 'feature_message_non_destructive_editing_body',
-  ),
-  FeatureHighlight(
-    image: 'assets/feature_message/ocr.webp',
-    titleKey: 'feature_message_ocr_title',
-    bodyKey: 'feature_message_ocr_body',
-  ),
-  FeatureHighlight(
-    image: 'assets/feature_message/open_in_immich.webp',
-    titleKey: 'feature_message_open_in_immich_title',
-    bodyKey: 'feature_message_open_in_immich_body',
-  ),
-  FeatureHighlight(
-    image: 'assets/feature_message/upload_to_album.webp',
-    titleKey: 'feature_message_upload_to_album_title',
-    bodyKey: 'feature_message_upload_to_album_body',
-  ),
+
+  FeatureHighlight(image: 'assets/feature_message/ocr.webp', titleKey: 'ocr_title', bodyKey: 'ocr_body'),
+  FeatureHighlight(titleKey: 'open_in_immich_title', bodyKey: 'open_in_immich_body', platform: FeaturePlatform.android),
+  FeatureHighlight(titleKey: 'upload_to_album_title', bodyKey: 'upload_to_album_body'),
 ];

@@ -93,7 +93,7 @@ class _MobileLayout extends StatelessWidget {
       SettingsCard(
         icon: Icons.auto_awesome_outlined,
         title: 'whats_new'.tr(),
-        subtitle: 'feature_message_settings_subtitle'.tr(namedArgs: {'version': featureMessageReleaseLabel}),
+        subtitle: 'whats_new_settings_subtitle'.tr(namedArgs: {'version': featureMessageReleaseLabel}),
         onTap: () => showFeatureMessageDialog(context),
       ),
     );

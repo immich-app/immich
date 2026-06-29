@@ -37,9 +37,9 @@ class _FeatureMessageSheet extends StatelessWidget {
           ),
         ),
         SliverList.separated(
-          itemCount: featureMessageHighlights.length,
+          itemCount: visibleFeatureMessageHighlights.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (_, index) => _HighlightCard(highlight: featureMessageHighlights[index]),
+          itemBuilder: (_, index) => _HighlightCard(highlight: visibleFeatureMessageHighlights[index]),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
       ],
@@ -52,7 +52,7 @@ class _FeatureMessageSheet extends StatelessWidget {
             child: FilledButton(
               onPressed: () => Navigator.of(context).pop(),
               style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-              child: Text('feature_message_got_it'.tr()),
+              child: Text('got_it'.tr()),
             ),
           ),
         ),
@@ -66,6 +66,11 @@ class _HighlightCard extends StatelessWidget {
 
   const _HighlightCard({required this.highlight});
 
+  Widget _placeholder(BuildContext context) => ColoredBox(
+    color: context.colorScheme.surfaceContainerHigh,
+    child: Center(child: Icon(Icons.local_fire_department_rounded, color: context.colorScheme.primary, size: 48)),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -77,14 +82,13 @@ class _HighlightCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: AspectRatio(
               aspectRatio: 16 / 9,
-              child: Image.asset(
-                highlight.image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, _, __) => ColoredBox(
-                  color: context.colorScheme.surfaceContainerHighest,
-                  child: Icon(Icons.image_outlined, color: context.colorScheme.onSurfaceVariant, size: 48),
-                ),
-              ),
+              child: highlight.image == null
+                  ? _placeholder(context)
+                  : Image.asset(
+                      highlight.image!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, _, __) => _placeholder(context),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
