@@ -54,8 +54,11 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> {
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 64),
       clipBehavior: Clip.antiAlias,
-      backgroundColor: context.colorScheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+      backgroundColor: context.isDarkTheme ? context.colorScheme.surfaceContainerLow : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
+        side: BorderSide(color: context.primaryColor.withValues(alpha: 0.85), width: 5),
+      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: context.height * 0.9, maxWidth: 480),
         child: Column(
@@ -78,6 +81,8 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> {
                 ],
               ),
             ),
+            const SizedBox(height: 64),
+
             Expanded(
               child: PageView.builder(
                 controller: _controller,
@@ -89,22 +94,46 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> {
             const SizedBox(height: 8),
             _PageDots(controller: _controller, index: _index, count: featureMessageHighlights.length),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 26),
               child: Row(
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14)),
-                    child: Text('feature_message_skip'.tr()),
+                    child: Text('skip'.tr()),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: FilledButton(
-                      onPressed: _advance,
-                      style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: Text(_isLast ? 'ok'.tr() : 'next'.tr(), key: ValueKey(_isLast)),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100),
+                        boxShadow: [
+                          // Soft wide primary glow.
+                          BoxShadow(
+                            color: context.primaryColor.withValues(alpha: 0.38),
+                            blurRadius: 22,
+                            spreadRadius: -4,
+                            offset: const Offset(0, 10),
+                          ),
+                          // Tight contact shadow for grounding.
+                          BoxShadow(
+                            color: context.primaryColor.withValues(alpha: 0.22),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: FilledButton(
+                        onPressed: _advance,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          textStyle: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 16),
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: Text(_isLast ? 'ok'.tr() : 'next'.tr(), key: ValueKey(_isLast)),
+                        ),
                       ),
                     ),
                   ),
@@ -157,12 +186,12 @@ class _FeaturePage extends StatelessWidget {
               children: [
                 Text(
                   highlight.titleKey.tr(),
-                  style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                  style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 28),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   highlight.bodyKey.tr(),
-                  style: context.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
+                  style: context.textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
                 ),
               ],
             ),
