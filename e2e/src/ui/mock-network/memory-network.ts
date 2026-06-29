@@ -30,7 +30,7 @@ export const setupMemoryMockApiRoutes = async (
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
-        json: activeMemories,
+        json: { total: activeMemories.length, items: activeMemories, hasNextPage: false },
       });
     }
 
