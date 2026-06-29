@@ -117,7 +117,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchAlbumOptions &
   SearchOcrOptions;
 
-export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
+export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
+  SearchRelationOptions & { visibility?: AssetVisibility | 'not-locked' };
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
@@ -125,11 +126,11 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchEmbeddingOptions &
   SearchExifOptions &
   SearchOneToOneRelationOptions &
-  SearchStatusOptions &
+  Omit<SearchStatusOptions, 'visibility'> &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions;
+  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked' };
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
