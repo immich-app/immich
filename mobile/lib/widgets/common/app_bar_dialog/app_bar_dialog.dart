@@ -88,6 +88,14 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
     }
 
+    buildAdminSettingsButton() {
+      return buildActionButton(
+        Icons.admin_panel_settings_outlined,
+        "administration",
+        () => context.pushRoute(const AdminSettingsRoute()),
+      );
+    }
+
     buildFreeUpSpaceButton() {
       return buildActionButton(
         Icons.cleaning_services_outlined,
@@ -273,6 +281,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 buildAppLogButton(),
                 buildFreeUpSpaceButton(),
                 buildSettingButton(),
+                if (user?.isAdmin ?? false) buildAdminSettingsButton(),
                 buildSignOutButton(),
                 buildFooter(),
               ],

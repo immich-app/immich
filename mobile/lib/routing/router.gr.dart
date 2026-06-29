@@ -11,6 +11,69 @@
 part of 'router.dart';
 
 /// generated route for
+/// [AdminSettingsPage]
+class AdminSettingsRoute extends PageRouteInfo<void> {
+  const AdminSettingsRoute({List<PageRouteInfo>? children})
+    : super(AdminSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'AdminSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AdminSettingsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [AdminSettingsSubPage]
+class AdminSettingsSubRoute extends PageRouteInfo<AdminSettingsSubRouteArgs> {
+  AdminSettingsSubRoute({
+    required AdminSettingSection section,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+         AdminSettingsSubRoute.name,
+         args: AdminSettingsSubRouteArgs(section: section, key: key),
+         initialChildren: children,
+       );
+
+  static const String name = 'AdminSettingsSubRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AdminSettingsSubRouteArgs>();
+      return AdminSettingsSubPage(args.section, key: args.key);
+    },
+  );
+}
+
+class AdminSettingsSubRouteArgs {
+  const AdminSettingsSubRouteArgs({required this.section, this.key});
+
+  final AdminSettingSection section;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'AdminSettingsSubRouteArgs{section: $section, key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AdminSettingsSubRouteArgs) return false;
+    return section == other.section && key == other.key;
+  }
+
+  @override
+  int get hashCode => section.hashCode ^ key.hashCode;
+}
+
+/// generated route for
 /// [AppLogDetailPage]
 class AppLogDetailRoute extends PageRouteInfo<AppLogDetailRouteArgs> {
   AppLogDetailRoute({
