@@ -933,10 +933,10 @@ export class MetadataService extends BaseService {
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
-      const X = region.Area.X as number;
-      const Y = region.Area.Y as number;
-      const W = region.Area.W as number;
-      const H = region.Area.H as number;
+      const X = Number(region.Area.X);
+      const Y = Number(region.Area.Y);
+      const W = Number(region.Area.W);
+      const H = Number(region.Area.H);
 
       const face = {
         id: this.cryptoRepository.randomUUID(),
