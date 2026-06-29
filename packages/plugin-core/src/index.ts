@@ -3,6 +3,11 @@ import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
 const methods = wrapper<Manifest>({
+  assetAddTags: ({ config, data, functions }) => {
+    functions.bulkTagAssets({ assetIds: [data.asset.id], tagIds: config.tags });
+    return {};
+  },
+
   assetAddToAlbums: ({ config, data, functions }) => {
     const assetId = data.asset.id;
 
@@ -188,6 +193,7 @@ const methods = wrapper<Manifest>({
 });
 
 const {
+  assetAddTags,
   assetAddToAlbums,
   assetArchive,
   assetFavorite,
@@ -205,6 +211,7 @@ const {
 } = methods;
 
 export {
+  assetAddTags,
   assetAddToAlbums,
   assetArchive,
   assetFavorite,
