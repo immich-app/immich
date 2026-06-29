@@ -28,8 +28,8 @@ jobs:
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
-            root:
-              - 'misc/**'
+            scripts:
+              - 'packages/scripts/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
             i18n:
@@ -45,6 +45,8 @@ jobs:
               - 'server/**'
               - 'pnpm-lock.yaml'
               - 'mise.toml'
+              - 'packages/plugin-core/**'
+              - 'packages/plugin-sdk/**'
             cli:
               - 'packages/cli/**'
               - 'packages/sdk/**'
@@ -66,10 +68,10 @@ jobs:
             - '.github/workflows/test.yml'
           force-events: 'workflow_dispatch'
 
-  root-unit-tests:
-    name: Test the root workspace
+  script-unit-tests:
+    name: Scripts unit tests
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).root == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).scripts == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -92,7 +94,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Run unit tests
-        run: pnpm test
+        run: pnpm --filter @immich/scripts test
 
   server-unit-tests:
     name: Test & Lint Server
