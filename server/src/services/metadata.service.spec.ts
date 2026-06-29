@@ -39,7 +39,10 @@ const forSidecarJob = (
   };
 };
 
-const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: ImmichTags['Orientation']) => ({
+const makeFaceTags = (
+  face: Partial<{ Name: string }> = {},
+  orientation?: ImmichTags['Orientation'],
+): Partial<ImmichTags> => ({
   Orientation: orientation,
   RegionInfo: {
     AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
@@ -1369,6 +1372,35 @@ describe(MetadataService.name, () => {
       expect(mocks.person.createAll).not.toHaveBeenCalled();
       expect(mocks.person.refreshFaces).not.toHaveBeenCalled();
       expect(mocks.person.updateAll).not.toHaveBeenCalled();
+    });
+
+    it('should handle string coordinates in face region bounding box calculation by limiting to 16 decimal places', async () => {
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
+      const faceTags = makeFaceTags({ Name: person.name });
+
+      // Simulating EXIF returning a string with >16 decimal places
+      faceTags.RegionInfo!.RegionList[0].Area.X = '0.48564814814814824';
+      faceTags.RegionInfo!.RegionList[0].Area.W = '0.2';
+
+      mockReadTags(faceTags);
+      mocks.person.getDistinctNames.mockResolvedValue([]);
+      mocks.person.createAll.mockResolvedValue([person.id]);
+      mocks.person.update.mockResolvedValue(person);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+        [
+          expect.objectContaining({
+            boundingBoxX1: Math.floor((0.485_648_148_148_148_2 - 0.2 / 2) * 1000),
+          }),
+        ],
+        [],
+      );
     });
 
     it('should apply metadata face tags creating new people', async () => {

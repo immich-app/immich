@@ -982,7 +982,9 @@ class AssetsApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> getMediaPlaylistWithHttpInfo(String id, String sessionId, int variantIndex, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+  ///
+  /// * [num] xImmichHlsPos:
+  Future<Response> getMediaPlaylistWithHttpInfo(String id, String sessionId, int variantIndex, { String? key, String? slug, num? xImmichHlsPos, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/video/stream/{sessionId}/{variantIndex}/playlist.m3u8'
       .replaceAll('{id}', id)
@@ -1001,6 +1003,10 @@ class AssetsApi {
     }
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    if (xImmichHlsPos != null) {
+      headerParams[r'x-immich-hls-pos'] = parameterToString(xImmichHlsPos);
     }
 
     const contentTypes = <String>[];
@@ -1033,8 +1039,10 @@ class AssetsApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<String?> getMediaPlaylist(String id, String sessionId, int variantIndex, { String? key, String? slug, Future<void>? abortTrigger, }) async {
-    final response = await getMediaPlaylistWithHttpInfo(id, sessionId, variantIndex, key: key, slug: slug, abortTrigger: abortTrigger,);
+  ///
+  /// * [num] xImmichHlsPos:
+  Future<String?> getMediaPlaylist(String id, String sessionId, int variantIndex, { String? key, String? slug, num? xImmichHlsPos, Future<void>? abortTrigger, }) async {
+    final response = await getMediaPlaylistWithHttpInfo(id, sessionId, variantIndex, key: key, slug: slug, xImmichHlsPos: xImmichHlsPos, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

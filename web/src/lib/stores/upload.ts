@@ -98,6 +98,13 @@ function createUploadStore() {
             case UploadState.DONE: {
               break;
             }
+
+            case UploadState.PENDING:
+            case UploadState.STARTED:
+            case undefined: {
+              console.error('Cannot remove uploads in progress');
+              break;
+            }
           }
 
           return stats;

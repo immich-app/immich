@@ -261,10 +261,6 @@
         />
       {/if}
 
-      {#if show.brokenAsset}
-        <BrokenAsset class="absolute size-full text-xl" />
-      {/if}
-
       {#if show.preview}
         <ImageLayer
           {adaptiveImageLoader}
@@ -289,6 +285,10 @@
         />
       {/if}
     </div>
+
+    {#if show.brokenAsset}
+      <BrokenAsset class="absolute inset-0 z-10 size-full text-xl" />
+    {/if}
 
     {#if overlays}
       <div class="pointer-events-none absolute inset-0">

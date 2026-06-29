@@ -35,7 +35,7 @@ class AssetBulkUpdateDto {
   ///
   Optional<String?> dateTimeOriginal;
 
-  /// Relative time offset in seconds
+  /// Relative time offset in minutes
   ///
   /// Minimum value: -9007199254740991
   /// Maximum value: 9007199254740991

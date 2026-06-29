@@ -368,6 +368,7 @@ export const columns = {
     'plugin_method.types',
     'plugin_method.schema',
     'plugin_method.hostFunctions',
+    'plugin_method.allowedHosts',
     'plugin_method.uiHints',
   ],
   syncAsset: [
