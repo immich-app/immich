@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
@@ -47,7 +46,7 @@ class SettingsRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> write<T extends Object, U extends T>(SettingsKey<T> key, U value) async {
+  Future<void> write<T, U extends T>(SettingsKey<T> key, U value) async {
     if (value == _appConfig.read(key)) {
       return;
     }
@@ -56,10 +55,15 @@ class SettingsRepository extends DriftDatabaseRepository {
       return clear([key]);
     }
 
+    String? resolvedValue;
+    if (value != null) {
+      resolvedValue = key.encode(value);
+    }
+
     await _db
         .into(_db.settingsEntity)
         .insertOnConflictUpdate(
-          SettingsEntityCompanion.insert(key: key.name, value: key.encode(value), updatedAt: Value(DateTime.now())),
+          SettingsEntityCompanion.insert(key: key.name, value: .new(resolvedValue), updatedAt: .new(DateTime.now())),
         );
     _appConfig = _appConfig.write(key, value);
   }
@@ -77,7 +81,12 @@ class SettingsRepository extends DriftDatabaseRepository {
           return overrides;
         }
 
-        return {...overrides, metadataKey: metadataKey.decode(row.value)};
+        Object? decodedValue;
+        if (row.value != null) {
+          decodedValue = metadataKey.decode(row.value!);
+        }
+
+        return {...overrides, metadataKey: decodedValue};
       }),
     );
   }

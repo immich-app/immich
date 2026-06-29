@@ -55,8 +55,8 @@ final class None<T> extends Option<T> {
   int get hashCode => 0;
 }
 
-extension ObjectOptionExtension<T> on T? {
-  Option<T> toOption() => Option.fromNullable(this);
+extension NullableOptionExtension<T> on Option<T>? {
+  T? patch(T? current) => this == null ? current : this!.unwrapOrNull;
 }
 
 extension OptionToOptional<T> on Option<T> {

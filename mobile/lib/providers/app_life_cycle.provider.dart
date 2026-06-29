@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
@@ -115,6 +116,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
         _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
+      _ref.invalidate(driftMemoryFutureProvider);
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {

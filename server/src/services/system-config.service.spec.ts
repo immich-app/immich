@@ -319,14 +319,14 @@ describe(SystemConfigService.name, () => {
     it('should accept valid cron expressions', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(
-        JSON.stringify({ library: { scan: { cronExpression: '0 0 * * *' } } }),
+        JSON.stringify({ library: { scan: { cronExpression: '0 0 */3 * *' } } }),
       );
 
       await expect(sut.getSystemConfig()).resolves.toMatchObject({
         library: {
           scan: {
             enabled: true,
-            cronExpression: '0 0 * * *',
+            cronExpression: '0 0 */3 * *',
           },
         },
       });

@@ -1,3 +1,4 @@
+import { validateCronExpression } from 'cron';
 import { createZodDto } from 'nestjs-zod';
 import { SystemConfig } from 'src/config';
 import {
@@ -19,7 +20,6 @@ import {
   VideoCodecSchema,
   VideoContainerSchema,
 } from 'src/enum';
-import { isValidTime } from 'src/validation';
 import z from 'zod';
 
 /** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
@@ -43,7 +43,16 @@ const JobSettingsSchema = z
 
 const cronExpressionSchema = z
   .string()
-  .regex(/(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}/, 'Invalid cron expression')
+  .superRefine((value, ctx) => {
+    const validated = validateCronExpression(value);
+    if (!validated.valid) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Invalid cron expression. ${validated.error?.message ?? ''}`,
+        input: value,
+      });
+    }
+  })
   .describe('Cron expression');
 
 const DatabaseBackupSchema = z
@@ -194,7 +203,12 @@ const SystemConfigNewVersionCheckSchema = z
 
 const SystemConfigNightlyTasksSchema = z
   .object({
-    startTime: isValidTime.describe('Start time'),
+    startTime: z.iso
+      .time({
+        precision: -1,
+        error: (iss) => `Invalid input: expected string in HH:MM format, received ${typeof iss.input}`,
+      })
+      .describe('Start time (HH:MM)'),
     databaseCleanup: configBool.describe('Database cleanup'),
     missingThumbnails: configBool.describe('Missing thumbnails'),
     clusterNewFaces: configBool.describe('Cluster new faces'),

@@ -667,6 +667,7 @@ class TransformManager implements EditToolManager {
         desiredWidth = Math.max(minSize, Math.max(mouseX, 0) - x);
         break;
       }
+      // no default
     }
 
     // Height
@@ -683,10 +684,14 @@ class TransformManager implements EditToolManager {
         desiredHeight = Math.max(minSize, Math.max(mouseY, 0) - y);
         break;
       }
+      // no default
     }
 
     // Old
     switch (this.resizeSide) {
+      case ResizeBoundary.None: {
+        break;
+      }
       case ResizeBoundary.Left: {
         const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
         const finalWidth = clamp(w, minSize, canvas.clientWidth);

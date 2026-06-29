@@ -58,7 +58,7 @@ const WorkflowUpdateSchema = z
 
 const WorkflowResponseSchema = z
   .object({
-    id: z.string().describe('Workflow ID'),
+    id: z.uuidv4().describe('Workflow ID'),
     trigger: WorkflowTriggerSchema.describe('Workflow trigger type'),
     name: z.string().nullable().describe('Workflow name'),
     description: z.string().nullable().describe('Workflow description'),

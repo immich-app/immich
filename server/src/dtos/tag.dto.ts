@@ -70,7 +70,7 @@ export const TagsForAssetsResponseSchema = z
 
 export const TagResponseSchema = z
   .object({
-    id: z.string().describe('Tag ID'),
+    id: z.uuidv4().describe('Tag ID'),
     parentId: z.string().optional().describe('Parent tag ID'),
     name: z.string().describe('Tag name'),
     value: z.string().describe('Tag value (full path)'),
