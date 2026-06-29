@@ -4,12 +4,13 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/restore_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
@@ -42,11 +43,10 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final originalTheme = context.themeData;
 
+    final assets = [asset];
     final actions = <Widget>[
-      if (isInTrash && isOwner && asset.hasRemote)
-        const RestoreActionButton(source: ActionSource.viewer)
-      else
-        const ShareActionButton(source: ActionSource.viewer),
+      ActionColumnButtonWidget(action: RestoreAction(assets: assets)),
+      const ShareActionButton(source: ActionSource.viewer),
 
       if (!isInLockedView) ...[
         if (!isInTrash) ...[

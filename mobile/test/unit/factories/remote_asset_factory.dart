@@ -12,6 +12,7 @@ class RemoteAssetFactory {
     bool isFavorite = false,
     AssetVisibility visibility = AssetVisibility.timeline,
     String? stackId,
+    DateTime? deletedAt,
   }) {
     id = TestUtils.uuid(id);
 
@@ -27,6 +28,7 @@ class RemoteAssetFactory {
       visibility: visibility,
       stackId: stackId,
       isEdited: false,
+      deletedAt: deletedAt,
     );
   }
 }

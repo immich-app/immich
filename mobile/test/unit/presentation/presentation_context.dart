@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -43,6 +44,7 @@ class PresentationContext {
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
+    toastRepositoryProvider.overrideWithValue(repository.toast),
   ];
 
   static Future<PresentationContext> create() async {
