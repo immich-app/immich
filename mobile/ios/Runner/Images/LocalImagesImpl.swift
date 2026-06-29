@@ -24,12 +24,12 @@ class LocalImageApiImpl: LocalImageApi {
     let originalRequestOptions = PHImageRequestOptions()
     originalRequestOptions.isNetworkAccessAllowed = true
     originalRequestOptions.deliveryMode = .highQualityFormat
-    originalRequestOptions.resizeMode = .exact
+    originalRequestOptions.resizeMode = .fast
     originalRequestOptions.isSynchronous = true
     originalRequestOptions.version = .current
     return originalRequestOptions
   }()
-  private static let maxOriginalPixelSize: CGFloat = 8192
+  private static let maxOriginalPixelSize: CGFloat = 16384
 
   private static let registry = RequestRegistry<ImageRequest>()
 
@@ -119,8 +119,9 @@ class LocalImageApiImpl: LocalImageApi {
       }
 
       // PHImageManagerMaximumSize returns a distorted aspect ratio for images too large to render
-      // (extreme panoramas / long screenshots). Request a bounded, renderable size (under the 16384
-      // texture limit) with aspectFit instead, so the true ratio is kept on the same PhotoKit path.
+      // (extreme panoramas / long screenshots). Bound the long edge to 16384 (the GPU max texture
+      // size) with aspectFit so the true ratio is kept and the buffer stays renderable. .fast resize
+      // is enough, we only need the long edge under the limit, not an exact size.
       let isOriginal = !(width > 0 && height > 0)
       var image: UIImage?
       Self.imageManager.requestImage(
