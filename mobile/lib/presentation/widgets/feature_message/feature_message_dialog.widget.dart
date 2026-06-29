@@ -133,7 +133,7 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
                     Expanded(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
+                          borderRadius: const BorderRadius.all(Radius.circular(100)),
                           boxShadow: [
                             // Soft wide primary glow.
                             BoxShadow(
@@ -179,7 +179,12 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
 }
 
 class _GradientBorderPainter extends CustomPainter {
-  _GradientBorderPainter({required this.rotation, required this.colors, required this.radius, this.strokeWidth = 3});
+  const _GradientBorderPainter({
+    required this.rotation,
+    required this.colors,
+    required this.radius,
+    this.strokeWidth = 3,
+  });
 
   final double rotation;
   final List<Color> colors;
@@ -226,11 +231,11 @@ class _FeaturePage extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: const BorderRadius.all(Radius.circular(18)),
                 border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: const BorderRadius.all(Radius.circular(18)),
                 child: SizedBox(
                   width: double.infinity,
                   height: 256,
@@ -315,7 +320,7 @@ class _PageDots extends StatelessWidget {
               width: 7 + 16 * activeness,
               decoration: BoxDecoration(
                 color: Color.lerp(context.colorScheme.surfaceContainerHighest, primary, activeness),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
               ),
             );
           }),

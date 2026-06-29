@@ -79,7 +79,7 @@ class _HighlightCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: const BorderRadius.all(Radius.circular(16)),
             child: AspectRatio(
               aspectRatio: 16 / 9,
               child: highlight.image == null
