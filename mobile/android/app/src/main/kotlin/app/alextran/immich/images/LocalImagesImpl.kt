@@ -76,11 +76,6 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   companion object {
     val CANCELLED = Result.success<Map<String, Long>?>(null)
     val OPTIONS = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
-
-    // "Load original" decodes a raw at full res, and the orientation pass then walks every pixel, so
-    // cap the decode resolution to keep that bounded on huge DNGs. This only trims pixels on very
-    // large raws - they still come out upright, just downsampled.
-    const val MAX_RAW_DECODE_PIXELS = 24_000_000L
   }
 
   override fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit) {
@@ -218,14 +213,8 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     val orientation = if (handleRaw) rawOrientation(uri) else ExifInterface.ORIENTATION_NORMAL
 
     if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
-      // A "load original" request is unsized -> a full-res decode. For raw, cap it so the later
-      // orientation pass stays within a safe pixel budget.
-      val bitmap = if (handleRaw && (size.width <= 0 || size.height <= 0)) {
-        decodeRawCapped(uri, signal)
-      } else {
-        decodeSource(uri, size, signal)
-      }
-      return bitmap to orientation
+      // A "load original" request is unsized -> a full-res decode (a sized > 768 just samples to target).
+      return decodeSource(uri, size, signal) to orientation
     }
 
     val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -248,33 +237,14 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     } ?: ExifInterface.ORIENTATION_NORMAL
   }
 
-  // Full-res raw decode for "load original", sampled down to MAX_RAW_DECODE_PIXELS (power of two).
-  // Caps resolution only; the caller still rotates the result, so even huge raws end up upright.
-  @RequiresApi(Build.VERSION_CODES.Q)
-  private fun decodeRawCapped(uri: Uri, signal: CancellationSignal): Bitmap {
-    signal.throwIfCanceled()
-    return ImageDecoder.decodeBitmap(ImageDecoder.createSource(resolver, uri)) { decoder, info, _ ->
-      val pixels = info.size.width.toLong() * info.size.height.toLong()
-      var sample = 1
-      while (pixels / (sample.toLong() * sample) > MAX_RAW_DECODE_PIXELS) {
-        sample *= 2
-      }
-      if (sample > 1) {
-        decoder.setTargetSampleSize(sample)
-      }
-      decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-      decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
-    }
-  }
-
   // ImageDecoder / loadThumbnail skip EXIF orientation for raw (e.g. DNG) on Q+, so the decoded
   // bitmap comes back unrotated. Rotate it into the output buffer in native code (one pass, no
-  // intermediate rotated bitmap), falling back to Skia for any config the native path can't take.
+  // intermediate rotated bitmap).
   private fun rotateToNativeBuffer(bitmap: Bitmap, orientation: Int, signal: CancellationSignal): Map<String, Long> {
     signal.throwIfCanceled()
-    // Force ARGB_8888 so both the native pass and the Skia fallback are 4 bytes/pixel: the native
-    // rotate needs a lockable 8888 buffer, and toNativeBuffer() below allocates width*height*4 (an
-    // F16/HDR decode would otherwise under-allocate). No-op for the common already-8888 case.
+    // Force ARGB_8888: the native rotate needs a lockable 8888 buffer, and toNativeBuffer() below
+    // allocates width*height*4 (an F16/HDR decode would otherwise under-allocate). No-op for the
+    // common already-8888 case.
     val src = if (bitmap.config != Bitmap.Config.ARGB_8888) {
       val converted = bitmap.copy(Bitmap.Config.ARGB_8888, false)
       bitmap.recycle()
@@ -285,36 +255,16 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     try {
       val info = IntArray(3)
       val pointer = NativeImage.rotate(src, orientation, info)
-      if (pointer != 0L) {
-        return mapOf(
-          "pointer" to pointer,
-          "width" to info[0].toLong(),
-          "height" to info[1].toLong(),
-          "rowBytes" to info[2].toLong()
-        )
-      }
-      // Native path declined (unsupported config) -> rotate via Skia, then copy out.
-      val matrix = matrixForExifOrientation(orientation) ?: return src.toNativeBuffer()
-      return Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, true).toNativeBuffer()
+      if (pointer == 0L) throw IOException("native rotate failed for orientation $orientation")
+      return mapOf(
+        "pointer" to pointer,
+        "width" to info[0].toLong(),
+        "height" to info[1].toLong(),
+        "rowBytes" to info[2].toLong()
+      )
     } finally {
       if (!src.isRecycled) src.recycle()
     }
-  }
-
-  // EXIF orientation (1-8) -> transform matrix, or null when no rotation/flip is needed.
-  private fun matrixForExifOrientation(orientation: Int): Matrix? {
-    val matrix = Matrix()
-    when (orientation) {
-      ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-      ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-      ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-      ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
-      ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
-      ExifInterface.ORIENTATION_TRANSPOSE -> matrix.apply { postRotate(270f); postScale(-1f, 1f) }
-      ExifInterface.ORIENTATION_TRANSVERSE -> matrix.apply { postRotate(90f); postScale(-1f, 1f) }
-      else -> return null
-    }
-    return matrix
   }
 
   private fun decodeVideoThumbnail(id: Long, target: Size, signal: CancellationSignal): Bitmap {
