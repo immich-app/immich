@@ -61,7 +61,7 @@ describe('Tag DTOs', () => {
   describe('TagResponseDto', () => {
     it('should validate a valid TagResponseDto', () => {
       const data = {
-        id: '123e4567-e89b-12d3-a456-426614174000',
+        id: '123e4567-e89b-42d3-a456-426614174000',
         name: 'test-tag',
         value: 'parent/test-tag',
         createdAt: '2023-01-01T00:00:00.000Z',
@@ -74,13 +74,14 @@ describe('Tag DTOs', () => {
 
     it('should accept optional parentId and color', () => {
       const data = {
-        id: '123e4567-e89b-12d3-a456-426614174000',
+        id: '123e4567-e89b-42d3-a456-426614174000',
         name: 'test-tag',
         value: 'test-tag',
         createdAt: '2023-01-01T00:00:00.000Z',
         updatedAt: '2023-01-01T00:00:00.000Z',
       };
       const result = TagResponseSchema.safeParse(data);
+      console.log(result);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.parentId).toBeUndefined();
